@@ -5,7 +5,6 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
-  signOut,
   updateProfile
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import {
@@ -169,6 +168,20 @@ async function attachReferral(user) {
   };
 }
 
+async function tryAttachReferral(user) {
+  if (!pendingReferral) return { attached: false, message: '' };
+  try {
+    return await attachReferral(user);
+  } catch (error) {
+    console.warn('[NexusNova Referral]', error?.code || 'attach-failed');
+    setReferralState('RETRY NEEDED');
+    return {
+      attached: false,
+      message: 'Your account is ready, but referral attachment could not finish yet. Keep this page open and sign in again to retry the saved invite.'
+    };
+  }
+}
+
 function firebaseMessage(error) {
   const code = String(error?.code || '');
   const known = {
@@ -182,7 +195,7 @@ function firebaseMessage(error) {
     'auth/network-request-failed': 'Network connection failed. Check your internet and try again.'
   };
   if (known[code]) return known[code];
-  if (code.includes('permission-denied')) return 'Account was created, but secure profile/referral setup was blocked. Please retry or sign in again.';
+  if (code.includes('permission-denied')) return 'Secure profile setup was blocked. Please retry or sign in again.';
   return String(error?.message || 'Authentication failed.').replace(/^Firebase:\s*/i, '');
 }
 
@@ -231,16 +244,13 @@ form?.addEventListener('submit', async event => {
   setStatus(mode === 'register' ? 'Creating your NexusNova account…' : 'Signing in…');
 
   try {
-    let user;
-    let referralResult = { attached: false, message: '' };
-
     if (mode === 'register') {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
-      user = credential.user;
+      const user = credential.user;
       await updateProfile(user, { displayName: name });
       await ensureProfile(user, name);
-      if (pendingReferral) referralResult = await attachReferral(user);
       await sendEmailVerification(user);
+      const referralResult = await tryAttachReferral(user);
       window.gtag?.('event', 'sign_up', { method: 'email' });
 
       successCopy.textContent = referralResult.message
@@ -248,12 +258,11 @@ form?.addEventListener('submit', async event => {
         : 'Check your inbox and verify your email. Use this same email and password in the NexusNova app.';
       success.classList.add('show');
       form.hidden = true;
-      setStatus('Account created successfully.', 'success');
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      user = credential.user;
+      const user = credential.user;
       await ensureProfile(user);
-      if (pendingReferral) referralResult = await attachReferral(user);
+      const referralResult = await tryAttachReferral(user);
       window.gtag?.('event', 'login', { method: 'email' });
       const verify = user.emailVerified ? 'Email verified.' : 'Email not verified yet.';
       setStatus(`${verify} ${referralResult.message || 'Signed in to your NexusNova account.'}`, 'success');
@@ -267,13 +276,13 @@ form?.addEventListener('submit', async event => {
 });
 
 resend?.addEventListener('click', async () => {
-  if (!auth.currentUser) return setStatus('Sign in first to resend verification.', 'error');
+  if (!auth.currentUser) return;
   resend.disabled = true;
   try {
     await sendEmailVerification(auth.currentUser);
-    setStatus('Verification email sent again.', 'success');
+    resend.textContent = 'Verification sent';
   } catch (error) {
-    setStatus(firebaseMessage(error), 'error');
+    successCopy.textContent = firebaseMessage(error);
   } finally {
     resend.disabled = false;
   }
