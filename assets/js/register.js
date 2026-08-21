@@ -266,6 +266,7 @@ form?.addEventListener('submit', async event => {
       window.gtag?.('event', 'login', { method: 'email' });
       const verify = user.emailVerified ? 'Email verified.' : 'Email not verified yet.';
       setStatus(`${verify} ${referralResult.message || 'Signed in to your NexusNova account.'}`, 'success');
+      setTimeout(() => location.assign('account.html'), 450);
     }
   } catch (error) {
     console.error('[NexusNova Account]', error?.code || 'error');
