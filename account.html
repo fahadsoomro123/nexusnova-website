@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NexusNova Account Dashboard</title>
+  <meta name="description" content="View your NexusNova account verification and referral status.">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#02050d">
+  <link rel="canonical" href="https://nexusnovatools.com/account.html">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
+  <link rel="stylesheet" href="assets/css/account-dashboard.css">
+</head>
+<body class="nn-account-dashboard">
+<header class="site-header" data-header>
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html" aria-label="NexusNova home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA</strong><small>EVERYDAY DIGITAL HUB</small></span></a>
+    <button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button>
+    <nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Daily Tools</a><a href="popular-tools.html">Popular Tools</a><a href="guides.html">Guides</a><a href="app.html">App</a><a href="account.html" aria-current="page">Account</a></nav>
+  </div>
+</header>
+
+<main class="dashboard-main">
+  <div class="container dashboard-shell" data-dashboard hidden>
+    <section class="dashboard-hero">
+      <div>
+        <span class="kicker">NEXUSNOVA ACCOUNT // ONLINE</span>
+        <h1>Account connected.</h1>
+        <p>Your website session is connected to the same Firebase identity used by the NexusNova app.</p>
+      </div>
+      <div class="live-chip"><i></i><span data-live-state>SECURE SESSION</span></div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="dash-card profile-card">
+        <span class="dash-label">PROFILE</span>
+        <div class="profile-mark">N</div>
+        <h2 data-name>Loading…</h2>
+        <p data-email>Loading account…</p>
+        <div class="status-pill" data-verified>CHECKING</div>
+      </article>
+
+      <article class="dash-card">
+        <span class="dash-label">APP ACCOUNT</span>
+        <h3>Same NexusNova identity</h3>
+        <p>This website account is not separate from your app account. Use the same email and password in NexusNova.</p>
+        <div class="dash-state"><span>Profile</span><strong data-profile-state>CHECKING</strong></div>
+        <div class="dash-state"><span>Email</span><strong data-email-state>CHECKING</strong></div>
+      </article>
+
+      <article class="dash-card">
+        <span class="dash-label">REFERRAL STATUS</span>
+        <h3 data-referral-title>Checking attribution…</h3>
+        <p data-referral-copy>Reading your secure referral record.</p>
+        <div class="ref-code" data-referral-code hidden></div>
+        <div class="dash-state"><span>Status</span><strong data-referral-status>CHECKING</strong></div>
+      </article>
+
+      <article class="dash-card action-card">
+        <span class="dash-label">NEXT ACTION</span>
+        <h3>Continue with NexusNova</h3>
+        <p>Use your verified account in the NexusNova app, or return to the web tools.</p>
+        <div class="dashboard-actions">
+          <a class="btn btn-primary" href="app.html">NexusNova App</a>
+          <a class="btn" href="tools.html">Web Tools</a>
+          <button class="btn danger-btn" type="button" data-signout>Sign Out</button>
+        </div>
+      </article>
+    </section>
+
+    <p class="dashboard-note" data-dashboard-status role="status">Loading secure account state…</p>
+  </div>
+
+  <div class="container dashboard-loading" data-loading>
+    <div class="loading-core">N</div>
+    <strong>Connecting account…</strong>
+    <span>AUTH://FIREBASE • PROFILE://FIRESTORE</span>
+  </div>
+</main>
+
+<footer class="site-footer nn-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova.</span><span class="footer-online"><i></i> SECURE ACCOUNT GATEWAY</span></div></footer>
+<script src="assets/js/main.js" defer></script>
+<script type="module" src="assets/js/account-dashboard.js"></script>
+</body>
+</html>
