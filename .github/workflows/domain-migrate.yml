@@ -1,0 +1,83 @@
+name: One-time custom domain migration
+
+on:
+  push:
+    branches:
+      - domain-migration-20260822
+    paths:
+      - '.github/workflows/domain-migrate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: domain-migration-20260822
+          fetch-depth: 0
+
+      - name: Replace GitHub Pages URLs with custom domain
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          old = 'https://fahadsoomro123.github.io/nexusnova-website'
+          new = 'https://nexusnovatools.com'
+          targets = list(Path('.').glob('*.html')) + list(Path('guides').glob('*.html')) + [Path('robots.txt'), Path('sitemap.xml')]
+          changed = []
+          for p in targets:
+              text = p.read_text(encoding='utf-8')
+              updated = text.replace(old, new)
+              if updated != text:
+                  p.write_text(updated, encoding='utf-8')
+                  changed.append(str(p))
+          print('Updated:', ', '.join(changed))
+          PY
+
+      - name: Audit domain migration and GA4
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          old = 'https://fahadsoomro123.github.io/nexusnova-website'
+          new = 'https://nexusnovatools.com'
+          html = list(Path('.').glob('*.html')) + list(Path('guides').glob('*.html'))
+          stale = []
+          missing_main = []
+          for p in html:
+              text = p.read_text(encoding='utf-8')
+              if old in text:
+                  stale.append(str(p))
+              if 'assets/js/main.js' not in text:
+                  missing_main.append(str(p))
+          if stale:
+              raise SystemExit('Stale GitHub Pages URLs: ' + ', '.join(stale))
+          if missing_main:
+              raise SystemExit('Pages missing shared main.js/GA4 loader: ' + ', '.join(missing_main))
+          main_js = Path('assets/js/main.js').read_text(encoding='utf-8')
+          if 'G-YLPFKWSS12' not in main_js:
+              raise SystemExit('GA4 Measurement ID missing from main.js')
+          robots = Path('robots.txt').read_text(encoding='utf-8')
+          sitemap = Path('sitemap.xml').read_text(encoding='utf-8')
+          if old in robots or old in sitemap:
+              raise SystemExit('Old domain remains in robots/sitemap')
+          if new not in robots or new not in sitemap:
+              raise SystemExit('New custom domain missing from robots/sitemap')
+          print(f'PASS: {len(html)} HTML pages migrated; GA4 preserved; robots/sitemap updated.')
+          PY
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No migration changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html' 'guides/*.html' robots.txt sitemap.xml
+          git commit -m 'domain: migrate SEO URLs to nexusnovatools.com'
+          git push origin HEAD:domain-migration-20260822
