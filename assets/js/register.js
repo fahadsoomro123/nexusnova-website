@@ -1,0 +1,290 @@
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+  updateProfile
+} from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
+  authDomain: 'nexusnova-6ade2.firebaseapp.com',
+  projectId: 'nexusnova-6ade2',
+  storageBucket: 'nexusnova-6ade2.firebasestorage.app',
+  messagingSenderId: '49791194817',
+  appId: '1:49791194817:web:07f28326e0f15979536640',
+  measurementId: 'G-YLPFKWSS12'
+};
+
+const app = getApps()[0] || initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
+const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
+
+const form = document.querySelector('[data-account-form]');
+const nameField = document.querySelector('[data-name-field]');
+const confirmField = document.querySelector('[data-confirm-field]');
+const submit = document.querySelector('[data-submit]');
+const status = document.querySelector('[data-status]');
+const legal = document.querySelector('[data-register-legal]');
+const success = document.querySelector('[data-success]');
+const successCopy = document.querySelector('[data-success-copy]');
+const resend = document.querySelector('[data-resend]');
+const referralPanel = document.querySelector('[data-referral-panel]');
+const referralCodeEl = document.querySelector('[data-referral-code]');
+const referralState = document.querySelector('[data-referral-state]');
+const modeButtons = [...document.querySelectorAll('[data-mode]')];
+let mode = 'register';
+let pendingReferral = '';
+
+function cleanName(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+}
+
+function cleanReferral(value) {
+  const code = String(value || '').trim().toUpperCase();
+  return REFERRAL_RE.test(code) ? code : '';
+}
+
+function setStatus(message, kind = '') {
+  if (!status) return;
+  status.textContent = message;
+  if (kind) status.dataset.kind = kind;
+  else delete status.dataset.kind;
+}
+
+function setReferralState(message, good = false) {
+  if (!referralState) return;
+  referralState.textContent = message;
+  referralState.style.color = good ? '#57e2b7' : '';
+}
+
+function rememberReferral(code) {
+  pendingReferral = cleanReferral(code);
+  try {
+    if (pendingReferral) localStorage.setItem(REFERRAL_KEY, pendingReferral);
+    else localStorage.removeItem(REFERRAL_KEY);
+  } catch (_) {}
+}
+
+function loadReferral() {
+  const fromUrl = cleanReferral(new URLSearchParams(location.search).get('ref'));
+  let stored = '';
+  try { stored = cleanReferral(localStorage.getItem(REFERRAL_KEY)); } catch (_) {}
+  rememberReferral(fromUrl || stored);
+  if (!pendingReferral) return;
+  referralPanel.hidden = false;
+  referralCodeEl.textContent = pendingReferral;
+  setReferralState('READY', true);
+  window.gtag?.('event', 'referral_landing', { source: 'nexusnova_referral' });
+}
+
+function clearReferral() {
+  pendingReferral = '';
+  try { localStorage.removeItem(REFERRAL_KEY); } catch (_) {}
+}
+
+async function ensureProfile(user, requestedName = '') {
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) return snap.data() || {};
+  const name = cleanName(requestedName || user.displayName || user.email?.split('@')[0] || 'NexusNova User');
+  const profile = {
+    uid: user.uid,
+    name,
+    email: String(user.email || '').slice(0, 320),
+    balance: 0,
+    totalMined: 0,
+    tasksCompleted: 0,
+    completedTasks: {},
+    miningActive: false,
+    miningStartedAt: 0,
+    miningLastUpdate: 0,
+    sessionEarned: 0,
+    lastDailyReward: 0,
+    dailyRewardStreak: 0,
+    createdAt: serverTimestamp()
+  };
+  await setDoc(ref, profile);
+  return profile;
+}
+
+async function attachReferral(user) {
+  const code = pendingReferral;
+  if (!code || !user) return { attached: false, message: '' };
+
+  const ownRef = doc(db, 'referrals', user.uid);
+  const existing = await getDoc(ownRef);
+  if (existing.exists()) {
+    clearReferral();
+    return { attached: false, message: 'This account already has referral attribution.' };
+  }
+
+  const profileSnap = await getDoc(doc(db, 'users', user.uid));
+  if (!profileSnap.exists()) throw new Error('NexusNova profile is not ready yet.');
+
+  const createdAt = profileSnap.data()?.createdAt;
+  const createdMs = createdAt?.toMillis?.() || 0;
+  if (createdMs && Date.now() - createdMs > 24 * 60 * 60 * 1000) {
+    clearReferral();
+    return { attached: false, message: 'Referral window has expired for this existing account.' };
+  }
+
+  const codeSnap = await getDoc(doc(db, 'referralCodes', code));
+  if (!codeSnap.exists()) {
+    clearReferral();
+    return { attached: false, message: 'Referral code is not active.' };
+  }
+
+  const referrerUid = String(codeSnap.data()?.ownerUid || '');
+  if (!referrerUid || referrerUid === user.uid) {
+    clearReferral();
+    return { attached: false, message: 'Self-referrals are not allowed.' };
+  }
+
+  await setDoc(ownRef, {
+    referredUid: user.uid,
+    referrerUid,
+    code,
+    status: 'pending',
+    createdAt: serverTimestamp()
+  });
+  clearReferral();
+  setReferralState('ATTACHED', true);
+  window.gtag?.('event', 'referral_attached', { source: 'website_signup' });
+  return {
+    attached: true,
+    message: 'Referral attached. It becomes verified after email verification and the first completed 24-hour mining cycle.'
+  };
+}
+
+function firebaseMessage(error) {
+  const code = String(error?.code || '');
+  const known = {
+    'auth/email-already-in-use': 'An account already exists with this email. Use Sign In.',
+    'auth/invalid-email': 'Enter a valid email address.',
+    'auth/invalid-credential': 'Email or password is incorrect.',
+    'auth/user-not-found': 'Email or password is incorrect.',
+    'auth/wrong-password': 'Email or password is incorrect.',
+    'auth/weak-password': 'Choose a stronger password.',
+    'auth/too-many-requests': 'Too many attempts. Please wait and try again.',
+    'auth/network-request-failed': 'Network connection failed. Check your internet and try again.'
+  };
+  if (known[code]) return known[code];
+  if (code.includes('permission-denied')) return 'Account was created, but secure profile/referral setup was blocked. Please retry or sign in again.';
+  return String(error?.message || 'Authentication failed.').replace(/^Firebase:\s*/i, '');
+}
+
+function setMode(next) {
+  mode = next === 'signin' ? 'signin' : 'register';
+  modeButtons.forEach(button => {
+    const active = button.dataset.mode === mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  nameField.hidden = mode !== 'register';
+  confirmField.hidden = mode !== 'register';
+  form.elements.name.required = mode === 'register';
+  form.elements.confirmPassword.required = mode === 'register';
+  form.elements.password.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
+  form.elements.password.minLength = mode === 'register' ? 10 : 6;
+  submit.textContent = mode === 'register' ? 'CREATE NEXUSNOVA ACCOUNT' : 'SIGN IN TO NEXUSNOVA';
+  legal.hidden = mode !== 'register';
+  success.classList.remove('show');
+  setStatus(mode === 'register'
+    ? 'Create an account with email and password. A verification email will be sent after registration.'
+    : 'Sign in with the same email and password used in the NexusNova app.');
+}
+
+modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+
+form?.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (submit.disabled) return;
+  const data = new FormData(form);
+  const email = String(data.get('email') || '').trim();
+  const password = String(data.get('password') || '');
+  const name = cleanName(data.get('name'));
+  const confirmPassword = String(data.get('confirmPassword') || '');
+
+  if (!email) return setStatus('Enter your email address.', 'error');
+  if (mode === 'register') {
+    if (!name) return setStatus('Enter your name.', 'error');
+    if (password.length < 10) return setStatus('Use a password with at least 10 characters.', 'error');
+    if (password !== confirmPassword) return setStatus('Passwords do not match.', 'error');
+  } else if (password.length < 6) {
+    return setStatus('Enter your account password.', 'error');
+  }
+
+  submit.disabled = true;
+  setStatus(mode === 'register' ? 'Creating your NexusNova account…' : 'Signing in…');
+
+  try {
+    let user;
+    let referralResult = { attached: false, message: '' };
+
+    if (mode === 'register') {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      user = credential.user;
+      await updateProfile(user, { displayName: name });
+      await ensureProfile(user, name);
+      if (pendingReferral) referralResult = await attachReferral(user);
+      await sendEmailVerification(user);
+      window.gtag?.('event', 'sign_up', { method: 'email' });
+
+      successCopy.textContent = referralResult.message
+        ? `Check your inbox and verify your email. ${referralResult.message} Use this same email and password in the NexusNova app.`
+        : 'Check your inbox and verify your email. Use this same email and password in the NexusNova app.';
+      success.classList.add('show');
+      form.hidden = true;
+      setStatus('Account created successfully.', 'success');
+    } else {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      user = credential.user;
+      await ensureProfile(user);
+      if (pendingReferral) referralResult = await attachReferral(user);
+      window.gtag?.('event', 'login', { method: 'email' });
+      const verify = user.emailVerified ? 'Email verified.' : 'Email not verified yet.';
+      setStatus(`${verify} ${referralResult.message || 'Signed in to your NexusNova account.'}`, 'success');
+    }
+  } catch (error) {
+    console.error('[NexusNova Account]', error?.code || 'error');
+    setStatus(firebaseMessage(error), 'error');
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+resend?.addEventListener('click', async () => {
+  if (!auth.currentUser) return setStatus('Sign in first to resend verification.', 'error');
+  resend.disabled = true;
+  try {
+    await sendEmailVerification(auth.currentUser);
+    setStatus('Verification email sent again.', 'success');
+  } catch (error) {
+    setStatus(firebaseMessage(error), 'error');
+  } finally {
+    resend.disabled = false;
+  }
+});
+
+onAuthStateChanged(auth, user => {
+  if (!user) return;
+  if (mode === 'signin') {
+    setStatus(user.emailVerified ? 'You are already signed in.' : 'You are signed in; email verification is still pending.', 'success');
+  }
+});
+
+loadReferral();
+setMode('register');
