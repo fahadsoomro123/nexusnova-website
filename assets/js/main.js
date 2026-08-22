@@ -14,8 +14,8 @@
 })();
 
 (()=>{
-  const inGuides=location.pathname.includes('/guides/');
-  const base=inGuides?'../':'';
+  const inSubdir=location.pathname.includes('/guides/')||location.pathname.includes('/news/');
+  const base=inSubdir?'../':'';
   const styles=[['scifi',`${base}assets/css/scifi.css`],['motion',`${base}assets/css/motion.css`]];
   styles.forEach(([key,href])=>{
     if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
@@ -39,8 +39,8 @@
 
   const pathParts=location.pathname.split('/').filter(Boolean);
   const path=pathParts[pathParts.length-1]||'index.html';
-  const inGuides=location.pathname.includes('/guides/');
-  const base=inGuides?'../':'';
+  const inSubdir=location.pathname.includes('/guides/')||location.pathname.includes('/news/');
+  const base=inSubdir?'../':'';
   const button=document.querySelector('[data-menu-btn]');
   const nav=document.querySelector('[data-nav]');
 
@@ -62,6 +62,16 @@
       link.href=trendingHref;
       link.textContent='Trending';
       if(popular) popular.insertAdjacentElement('afterend',link);
+      else nav.appendChild(link);
+    }
+
+    const worldHref=`${base}world-conflict-updates.html`;
+    if(!nav.querySelector(`a[href="${worldHref}"]`)){
+      const guides=nav.querySelector(`a[href="${base}guides.html"]`);
+      const link=document.createElement('a');
+      link.href=worldHref;
+      link.textContent='World Updates';
+      if(guides) guides.insertAdjacentElement('beforebegin',link);
       else nav.appendChild(link);
     }
 
@@ -133,7 +143,7 @@
   }
 
   const motionOkay=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const revealTargets=[...document.querySelectorAll('.section,.trend-card,.trend-workspace,.trend-info-card,.bento-card,.system-panel,.metric-grid article,.cta,.final-terminal')];
+  const revealTargets=[...document.querySelectorAll('.section,.trend-card,.trend-workspace,.trend-info-card,.bento-card,.system-panel,.metric-grid article,.cta,.final-terminal,.news-card,.news-status,.article-body,.side-panel')];
   if(motionOkay&&'IntersectionObserver' in window){
     revealTargets.forEach(el=>el.classList.add('nn-reveal'));
     const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');observer.unobserve(entry.target)}})},{threshold:.08,rootMargin:'0px 0px -35px 0px'});
