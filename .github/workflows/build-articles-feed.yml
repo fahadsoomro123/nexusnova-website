@@ -50,7 +50,7 @@ jobs:
 
       - name: Publish feed when changed
         run: |
-          if git diff --quiet -- articles.json; then
+          if [ -z "$(git status --porcelain -- articles.json)" ]; then
             echo 'articles.json already current.'
             exit 0
           fi
