@@ -113,3 +113,61 @@
   if(!document.querySelector('script[data-nova-assistant]')){const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)}
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
 })();
+
+(()=>{
+  const addJsonLd=(id,data)=>{
+    if(document.getElementById(id)) return;
+    const script=document.createElement('script');
+    script.id=id;
+    script.type='application/ld+json';
+    script.textContent=JSON.stringify(data);
+    document.head.appendChild(script);
+  };
+  const path=location.pathname;
+  const absolute=url=>new URL(url,location.origin).href;
+  const isHome=path==='/'||/\/index\.html$/.test(path);
+  if(isHome){
+    addJsonLd('nexusnova-organization-schema',{
+      '@context':'https://schema.org',
+      '@type':'Organization',
+      name:'NexusNova Tools',
+      alternateName:'NexusNova',
+      url:'https://nexusnovatools.com/',
+      logo:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg',
+      description:'Free browser tools and practical guides for PDF, images, calculators, QR codes, text and productivity.',
+      sameAs:['https://github.com/fahadsoomro123']
+    });
+  }
+  if(/\/articles\/[^/]+\.html$/.test(path)){
+    const articleSchema=[...document.querySelectorAll('script[type="application/ld+json"]')].find(script=>{
+      try{return JSON.parse(script.textContent||'{}')['@type']==='Article'}catch{return false}
+    });
+    if(articleSchema){
+      try{
+        const data=JSON.parse(articleSchema.textContent||'{}');
+        data.author={...(data.author||{}),'@type':'Organization',name:'NexusNova Editorial Team',url:'https://nexusnovatools.com/editorial-team.html'};
+        data.publisher={...(data.publisher||{}),'@type':'Organization',name:'NexusNova Tools',url:'https://nexusnovatools.com/',logo:{'@type':'ImageObject',url:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg'}};
+        articleSchema.textContent=JSON.stringify(data);
+      }catch{}
+    }
+    const title=document.querySelector('.article-main h1,h1')?.textContent?.trim()||document.title;
+    addJsonLd('nexusnova-breadcrumb-schema',{
+      '@context':'https://schema.org',
+      '@type':'BreadcrumbList',
+      itemListElement:[
+        {'@type':'ListItem',position:1,name:'Home',item:absolute('../index.html')},
+        {'@type':'ListItem',position:2,name:'Articles',item:absolute('../articles.html')},
+        {'@type':'ListItem',position:3,name:title,item:location.href.split('#')[0]}
+      ]
+    });
+    const meta=[...document.querySelectorAll('.article-meta span')].find(el=>el.textContent.trim()==='NexusNova Editorial Team');
+    if(meta&&!meta.querySelector('a')){
+      const link=document.createElement('a');
+      link.href='../editorial-team.html';
+      link.textContent='NexusNova Editorial Team';
+      link.setAttribute('aria-label','About the NexusNova Editorial Team');
+      meta.textContent='';
+      meta.appendChild(link);
+    }
+  }
+})();
