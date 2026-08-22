@@ -1,0 +1,61 @@
+name: Build NexusNova Articles Feed
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '.github/scripts/build_articles_feed.py'
+      - '.github/workflows/build-articles-feed.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-articles-feed
+  cancel-in-progress: true
+
+jobs:
+  build-feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate feed from published article pages
+        run: python .github/scripts/build_articles_feed.py
+
+      - name: Validate feed
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('articles.json').read_text(encoding='utf-8'))
+          assert data.get('version') == 1
+          assert isinstance(data.get('items'), list)
+          for item in data['items']:
+              assert item.get('title')
+              assert str(item.get('url', '')).startswith('https://nexusnovatools.com/')
+          print(f"PASS: {len(data['items'])} article(s)")
+          PY
+
+      - name: Publish feed when changed
+        run: |
+          if git diff --quiet -- articles.json; then
+            echo 'articles.json already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add articles.json
+          git commit -m 'content: refresh articles feed [skip ci]'
+          git push
