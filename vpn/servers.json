@@ -3,7 +3,17 @@
   "service": "Nova VPN",
   "protocol": "wireguard",
   "routing": "full-tunnel",
-  "status": "awaiting-production-infrastructure",
-  "updatedAt": "2026-08-22T11:15:00+05:00",
-  "servers": []
+  "status": "production",
+  "updatedAt": "2026-08-22T20:49:00+05:00",
+  "servers": [
+    {
+      "id": "node-1",
+      "name": "Nova VPN Node 1",
+      "country": "India",
+      "city": "Mumbai",
+      "healthUrl": "https://node-1.vpn.nexusnovatools.com/health",
+      "provisionUrl": "https://node-1.vpn.nexusnovatools.com/v1/lease",
+      "enabled": true
+    }
+  ]
 }
