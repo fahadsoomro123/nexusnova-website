@@ -16,10 +16,7 @@
 (()=>{
   const inGuides=location.pathname.includes('/guides/');
   const base=inGuides?'../':'';
-  const styles=[
-    ['scifi',`${base}assets/css/scifi.css`],
-    ['motion',`${base}assets/css/motion.css`]
-  ];
+  const styles=[['scifi',`${base}assets/css/scifi.css`],['motion',`${base}assets/css/motion.css`]];
   styles.forEach(([key,href])=>{
     if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
     const link=document.createElement('link');
@@ -105,6 +102,10 @@
       </div>`;
       anchor.insertAdjacentElement('afterend',section);
     }
+  }
+
+  if(path==='index.html'){
+    document.querySelectorAll('.section-rail>span').forEach((span,index)=>{span.textContent=String(index+1).padStart(2,'0')});
   }
 
   if(path==='tools.html'&&!document.querySelector('[data-popular-tools-notice]')){
