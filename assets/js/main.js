@@ -14,139 +14,37 @@
 })();
 
 (()=>{
-  const inSubdir=location.pathname.includes('/guides/')||location.pathname.includes('/news/');
+  const inSubdir=/\/(guides|articles)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const styles=[['scifi',`${base}assets/css/scifi.css`],['motion',`${base}assets/css/motion.css`]];
   styles.forEach(([key,href])=>{
     if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
     const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href=href;
-    link.dataset[`nexusnova${key[0].toUpperCase()}${key.slice(1)}`]='';
-    document.head.appendChild(link);
+    link.rel='stylesheet';link.href=href;link.dataset[`nexusnova${key[0].toUpperCase()}${key.slice(1)}`]='';document.head.appendChild(link);
   });
   document.documentElement.classList.add('nexusnova-scifi');
 })();
 
 (()=>{
-  const year=document.querySelector('[data-year]');
-  if(year) year.textContent=String(new Date().getFullYear());
-
-  const header=document.querySelector('[data-header]');
-  const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>8);
-  updateHeader();
-  window.addEventListener('scroll',updateHeader,{passive:true});
-
-  const pathParts=location.pathname.split('/').filter(Boolean);
-  const path=pathParts[pathParts.length-1]||'index.html';
-  const inSubdir=location.pathname.includes('/guides/')||location.pathname.includes('/news/');
+  const inSubdir=/\/(guides|articles)\//.test(location.pathname);
   const base=inSubdir?'../':'';
-  const button=document.querySelector('[data-menu-btn]');
-  const nav=document.querySelector('[data-nav]');
-
+  const year=document.querySelector('[data-year]');if(year)year.textContent=String(new Date().getFullYear());
+  const header=document.querySelector('[data-header]');const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>6);updateHeader();window.addEventListener('scroll',updateHeader,{passive:true});
+  const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   if(nav){
-    const popularHref=`${base}popular-tools.html`;
-    if(!nav.querySelector(`a[href="${popularHref}"]`)){
-      const daily=nav.querySelector(`a[href="${base}tools.html"]`);
-      const link=document.createElement('a');
-      link.href=popularHref;
-      link.textContent='Popular Tools';
-      if(daily) daily.insertAdjacentElement('afterend',link);
-      else nav.appendChild(link);
-    }
-
-    const trendingHref=`${base}trending-tools.html`;
-    if(!nav.querySelector(`a[href="${trendingHref}"]`)){
-      const popular=nav.querySelector(`a[href="${popularHref}"]`);
-      const link=document.createElement('a');
-      link.href=trendingHref;
-      link.textContent='Trending';
-      if(popular) popular.insertAdjacentElement('afterend',link);
-      else nav.appendChild(link);
-    }
-
-    const worldHref=`${base}world-conflict-updates.html`;
-    if(!nav.querySelector(`a[href="${worldHref}"]`)){
-      const guides=nav.querySelector(`a[href="${base}guides.html"]`);
-      const link=document.createElement('a');
-      link.href=worldHref;
-      link.textContent='World Updates';
-      if(guides) guides.insertAdjacentElement('beforebegin',link);
-      else nav.appendChild(link);
-    }
-
-    const accountHref=`${base}register.html`;
-    if(!nav.querySelector(`a[href="${accountHref}"]`)&&!nav.querySelector(`a[href="${base}account.html"]`)){
-      const link=document.createElement('a');
-      link.href=accountHref;
-      link.textContent='Account';
-      const contact=nav.querySelector(`a[href="${base}contact.html"]`);
-      if(contact) contact.insertAdjacentElement('beforebegin',link);
-      else nav.appendChild(link);
-    }
-  }
-
-  if(button&&nav){
-    const closeMenu=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};
-    button.addEventListener('click',()=>{const isOpen=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(isOpen))});
-    nav.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu()});
-    window.addEventListener('resize',()=>{if(window.innerWidth>720)closeMenu()});
-  }
-
-  if(path==='index.html'&&!document.querySelector('[data-trending-banner]')){
-    const anchor=document.querySelector('[data-popular-banner]');
-    if(anchor){
-      const section=document.createElement('section');
-      section.className='section nn-section';
-      section.dataset.trendingBanner='';
-      section.innerHTML=`<div class="container">
-        <div class="section-rail"><span>02</span><i></i><small>SEARCH-LED EXPANSION</small></div>
-        <div class="section-head nn-head"><div><span class="kicker">20 NEW BROWSER TOOLS</span><h2>More useful reasons to come back.</h2></div><p>QR codes, scientific and finance calculators, timers, image conversion, PDF workflows and developer-friendly converters — each with a focused page and clear purpose.</p></div>
-        <div class="bento-grid">
-          <a class="bento-card bento-wide" href="qr-code-generator.html"><span class="bento-code">WEB://QR</span><div class="bento-icon">⌗</div><div><h3>QR Code Generator</h3><p>Create QR codes for links and text.</p></div><strong>OPEN ↗</strong></a>
-          <a class="bento-card" href="scientific-calculator.html"><span class="bento-code">CALC://SCI</span><div class="bento-icon">∑</div><div><h3>Scientific Calculator</h3><p>Trig, logs, roots and powers.</p></div><strong>OPEN ↗</strong></a>
-          <a class="bento-card" href="merge-pdf.html"><span class="bento-code">PDF://MERGE</span><div class="bento-icon">▤</div><div><h3>Merge PDF</h3><p>Combine PDF files in your browser.</p></div><strong>OPEN ↗</strong></a>
-          <a class="bento-card" href="image-resizer.html"><span class="bento-code">IMG://SIZE</span><div class="bento-icon">▣</div><div><h3>Image Resizer</h3><p>Resize images to exact pixel dimensions.</p></div><strong>OPEN ↗</strong></a>
-          <a class="bento-card bento-wide bento-accent" href="trending-tools.html"><span class="bento-code">GRID://20</span><div class="bento-icon">⌁</div><div><h3>Explore 20 New Tools</h3><p>Browse the full search-led utility grid.</p></div><strong>EXPLORE ALL ↗</strong></a>
-        </div>
-      </div>`;
-      anchor.insertAdjacentElement('afterend',section);
-    }
-  }
-
-  if(path==='index.html'){
-    document.querySelectorAll('.section-rail>span').forEach((span,index)=>{span.textContent=String(index+1).padStart(2,'0')});
-  }
-
-  if(path==='tools.html'&&!document.querySelector('[data-popular-tools-notice]')){
-    const search=document.querySelector('.search-tools');
-    if(search){
-      const note=document.createElement('div');
-      note.className='notice';
-      note.dataset.popularToolsNotice='';
-      note.style.marginBottom='18px';
-      note.innerHTML=`<strong>Need image, PDF, QR or specialist tools?</strong> <a href="trending-tools.html" style="color:var(--accent);font-weight:800">Open Trending Tools →</a>`;
-      search.insertAdjacentElement('beforebegin',note);
-    }
-  }
-
-  const toolSearch=document.querySelector('[data-tool-search]');
-  if(toolSearch){
-    const cards=[...document.querySelectorAll('[data-tool-card]')];
-    const empty=document.querySelector('[data-no-results]');
-    toolSearch.addEventListener('input',()=>{
-      const q=toolSearch.value.trim().toLowerCase();
-      let shown=0;
-      cards.forEach(card=>{const match=!q||card.textContent.toLowerCase().includes(q);card.classList.toggle('hidden',!match);card.style.display=match?'':'none';if(match)shown+=1});
-      if(empty) empty.style.display=shown===0?'block':'none';
+    [...nav.querySelectorAll('a')].forEach(link=>{if(/world-conflict-updates|\/news\//i.test(link.getAttribute('href')||''))link.remove()});
+    [['tools.html','Tools'],['trending-tools.html','Trending'],['articles.html','Articles'],['guides.html','Guides']].forEach(([file,label])=>{
+      const href=`${base}${file}`;if(nav.querySelector(`a[href="${href}"]`))return;const link=document.createElement('a');link.href=href;link.textContent=label;const app=nav.querySelector(`a[href="${base}app.html"]`);if(app)app.insertAdjacentElement('beforebegin',link);else nav.appendChild(link);
     });
+    const accountHref=`${base}register.html`;if(!nav.querySelector(`a[href="${accountHref}"]`)&&!nav.querySelector(`a[href="${base}account.html"]`)){const link=document.createElement('a');link.href=accountHref;link.textContent='Account';nav.appendChild(link)}
   }
-
-  const motionOkay=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const revealTargets=[...document.querySelectorAll('.section,.trend-card,.trend-workspace,.trend-info-card,.bento-card,.system-panel,.metric-grid article,.cta,.final-terminal,.news-card,.news-status,.article-body,.side-panel')];
-  if(motionOkay&&'IntersectionObserver' in window){
-    revealTargets.forEach(el=>el.classList.add('nn-reveal'));
-    const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');observer.unobserve(entry.target)}})},{threshold:.08,rootMargin:'0px 0px -35px 0px'});
-    revealTargets.forEach(el=>observer.observe(el));
-  }else revealTargets.forEach(el=>el.classList.add('nn-visible'));
+  if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
+  const toolSearch=document.querySelector('[data-tool-search]');
+  if(toolSearch){const cards=[...document.querySelectorAll('[data-tool-card]')];const empty=document.querySelector('[data-no-results]');const apply=()=>{const q=toolSearch.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const match=!q||card.textContent.toLowerCase().includes(q);card.classList.toggle('hidden',!match);if(match)shown++});empty?.classList.toggle('show',shown===0)};toolSearch.addEventListener('input',apply);const q=new URLSearchParams(location.search).get('q');if(q){toolSearch.value=q;apply()}}
+  const homeSearch=document.querySelector('[data-home-search]');
+  if(homeSearch){const form=homeSearch.closest('form');const cards=[...document.querySelectorAll('[data-home-tool]')];const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};homeSearch.addEventListener('input',filter);form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();const first=cards.find(card=>!card.classList.contains('hidden'));if(first?.href)location.href=first.href;else location.href=`trending-tools.html?q=${encodeURIComponent(q)}`})}
+  const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
+  if(motionOkay&&'IntersectionObserver'in window){targets.forEach(el=>el.classList.add('nn-reveal'));const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,rootMargin:'0px 0px -18px'});targets.forEach(el=>io.observe(el))}else targets.forEach(el=>el.classList.add('nn-visible'));
+  if(!document.querySelector('script[data-nova-assistant]')){const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)}
+  if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
 })();
