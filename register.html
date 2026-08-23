@@ -1,91 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Create NexusNova Account</title>
-  <meta name="description" content="Create or access your NexusNova app account securely on the official NexusNova website.">
-  <meta name="robots" content="noindex,follow">
-  <meta name="theme-color" content="#02050d">
-  <link rel="canonical" href="https://nexusnovatools.com/register.html">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/site.css">
-  <link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
-  <link rel="stylesheet" href="assets/css/account.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Create NexusNova Account — NexusNova Tools</title>
+  <meta name="description" content="Create or access your NexusNova app account securely on the official NexusNova Tools website.">
+  <meta name="robots" content="noindex,follow"><meta name="theme-color" content="#f5f7fb">
+  <link rel="canonical" href="https://nexusnovatools.com/register.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi><link rel="stylesheet" href="assets/css/account.css">
 </head>
 <body class="nn-account">
-<header class="site-header" data-header>
-  <div class="container nav-wrap">
-    <a class="brand" href="index.html" aria-label="NexusNova home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA</strong><small>EVERYDAY DIGITAL HUB</small></span></a>
-    <button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button>
-    <nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Daily Tools</a><a href="popular-tools.html">Popular Tools</a><a href="guides.html">Guides</a><a href="app.html">App</a><a href="register.html" aria-current="page">Account</a></nav>
-  </div>
-</header>
-
-<main class="account-main">
-  <div class="account-shell">
-    <section class="account-intro" aria-labelledby="account-title">
-      <div>
-        <span class="kicker">NEXUSNOVA ACCOUNT GATEWAY</span>
-        <h1 id="account-title">One account.<span>Same NexusNova app.</span></h1>
-        <p>Create your NexusNova account here, verify your email, then use the same email and password in the NexusNova app. Referral attribution uses the app's existing secure Firestore rules.</p>
-        <div class="account-points">
-          <div class="account-point"><i>01</i><div><b>Same Firebase account</b><small>The website does not create a separate website-only identity.</small></div></div>
-          <div class="account-point"><i>02</i><div><b>Email verification</b><small>Secure value-bearing app actions remain protected until verification.</small></div></div>
-          <div class="account-point"><i>03</i><div><b>Real referral attribution</b><small>A referral is attached once to an eligible new account; verification still depends on the app's existing rules.</small></div></div>
-        </div>
-      </div>
-      <div class="account-system"><i></i><span>AUTH://FIREBASE • PROFILE://FIRESTORE • DOMAIN://NEXUSNOVATOOLS.COM</span></div>
-    </section>
-
-    <section class="account-card" aria-label="NexusNova account form">
-      <div class="account-tabs" role="tablist" aria-label="Account mode">
-        <button type="button" class="active" data-mode="register" role="tab" aria-selected="true">CREATE ACCOUNT</button>
-        <button type="button" data-mode="signin" role="tab" aria-selected="false">SIGN IN</button>
-      </div>
-
-      <div class="referral-panel" data-referral-panel hidden>
-        <small>Referral invite detected</small>
-        <div class="referral-code"><strong data-referral-code></strong><span data-referral-state>READY</span></div>
-      </div>
-
-      <form class="account-form" data-account-form novalidate>
-        <label class="account-field" data-name-field>
-          <span>Your name</span>
-          <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Your name" required>
-        </label>
-        <label class="account-field">
-          <span>Email address</span>
-          <input type="email" name="email" maxlength="320" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@example.com" required>
-        </label>
-        <div class="password-row">
-          <label class="account-field">
-            <span>Password</span>
-            <input type="password" name="password" minlength="10" autocomplete="new-password" placeholder="Minimum 10 characters" required>
-          </label>
-          <label class="account-field" data-confirm-field>
-            <span>Confirm password</span>
-            <input type="password" name="confirmPassword" minlength="10" autocomplete="new-password" placeholder="Repeat password" required>
-          </label>
-        </div>
-        <button class="account-submit" type="submit" data-submit>CREATE NEXUSNOVA ACCOUNT</button>
-        <p class="account-status" data-status role="status" aria-live="polite">Create an account with email and password. A verification email will be sent after registration.</p>
-        <p class="account-legal" data-register-legal>By creating an account, you agree to the <a href="terms.html">Terms</a> and acknowledge the <a href="privacy.html">Privacy Policy</a>. Never share your password or verification code.</p>
-      </form>
-
-      <section class="account-success" data-success>
-        <h2>Account created.</h2>
-        <p data-success-copy>Check your inbox and verify your email. You can then use this same account in the NexusNova app.</p>
-        <div class="hero-actions"><button class="btn btn-primary" type="button" data-resend>Resend verification</button><a class="btn" href="index.html">Back to website</a></div>
-      </section>
-    </section>
-  </div>
-</main>
-
-<footer class="site-footer nn-footer">
-  <div class="container footer-bottom"><span>© <span data-year></span> NexusNova.</span><span class="footer-online"><i></i> SECURE ACCOUNT GATEWAY</span></div>
-</footer>
-<script src="assets/js/main.js" defer></script>
-<script type="module" src="assets/js/register.js"></script>
-</body>
-</html>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="smart-tools.html">Smart</a><a href="articles.html">Articles</a><a href="tech.html">Tech</a><a href="register.html" aria-current="page">Account</a></nav></div></header>
+<main class="account-main"><div class="account-shell"><section class="account-intro" aria-labelledby="account-title"><div><span class="kicker">NEXUSNOVA ACCOUNT GATEWAY</span><h1 id="account-title">One account.<span>Same NexusNova app.</span></h1><p>Create your NexusNova account here, verify your email, then use the same email and password in the NexusNova app. Referral attribution uses the app's existing secure Firestore rules.</p><div class="account-points"><div class="account-point"><i>01</i><div><b>Same Firebase account</b><small>The website does not create a separate website-only identity.</small></div></div><div class="account-point"><i>02</i><div><b>Email verification</b><small>Secure value-bearing app actions remain protected until verification.</small></div></div><div class="account-point"><i>03</i><div><b>Real referral attribution</b><small>A referral is attached once to an eligible new account; verification still depends on the app's existing rules.</small></div></div></div></div><div class="account-system"><i></i><span>AUTH://FIREBASE • PROFILE://FIRESTORE • DOMAIN://NEXUSNOVATOOLS.COM</span></div></section><section class="account-card" aria-label="NexusNova account form"><div class="account-tabs" role="tablist" aria-label="Account mode"><button type="button" class="active" data-mode="register" role="tab" aria-selected="true">CREATE ACCOUNT</button><button type="button" data-mode="signin" role="tab" aria-selected="false">SIGN IN</button></div><div class="referral-panel" data-referral-panel hidden><small>Referral invite detected</small><div class="referral-code"><strong data-referral-code></strong><span data-referral-state>READY</span></div></div><form class="account-form" data-account-form novalidate><label class="account-field" data-name-field><span>Your name</span><input type="text" name="name" maxlength="80" autocomplete="name" placeholder="Your name" required></label><label class="account-field"><span>Email address</span><input type="email" name="email" maxlength="320" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="name@example.com" required></label><div class="password-row"><label class="account-field"><span>Password</span><input type="password" name="password" minlength="10" autocomplete="new-password" placeholder="Minimum 10 characters" required></label><label class="account-field" data-confirm-field><span>Confirm password</span><input type="password" name="confirmPassword" minlength="10" autocomplete="new-password" placeholder="Repeat password" required></label></div><button class="account-submit" type="submit" data-submit>CREATE NEXUSNOVA ACCOUNT</button><p class="account-status" data-status role="status" aria-live="polite">Create an account with email and password. A verification email will be sent after registration.</p><p class="account-legal" data-register-legal>By creating an account, you agree to the <a href="terms.html">Terms</a> and acknowledge the <a href="privacy.html">Privacy Policy</a>. Never share your password or verification code.</p></form><section class="account-success" data-success><h2>Account created.</h2><p data-success-copy>Check your inbox and verify your email. You can then use this same account in the NexusNova app.</p><div class="hero-actions"><button class="btn btn-primary" type="button" data-resend>Resend verification</button><a class="btn" href="index.html">Back to website</a></div></section></section></div></main>
+<footer class="site-footer nn-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span class="footer-online"><i></i> SECURE ACCOUNT GATEWAY</span></div></footer>
+<script src="assets/js/main.js" defer></script><script type="module" src="assets/js/register.js"></script>
+</body></html>
