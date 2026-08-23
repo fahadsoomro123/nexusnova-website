@@ -88,5 +88,19 @@ body{
   background:conic-gradient(from 30deg,rgba(59,130,246,.09),rgba(139,92,246,.09),rgba(236,72,153,.07),rgba(20,184,166,.09),rgba(59,130,246,.09));
 }
 @media(max-width:1080px){.nav a{padding:8px 7px!important;font-size:.88rem}}
-@media(max-width:720px){.nav a{padding:11px 12px!important;font-size:.95rem}.nn-tool-symbol{transform:none}}
+@media(max-width:720px){
+  .nav{max-height:calc(100dvh - 82px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .nav a{min-height:44px;padding:11px 12px!important;font-size:.95rem;display:flex;align-items:center}
+  .menu-btn{min-width:44px;min-height:44px}
+  .nn-tool-symbol{transform:none}
+  input,select,textarea{font-size:16px}
+  .btn,.action-btn,.trend-action{min-height:44px}
+  .page-hero h1{font-size:clamp(36px,11vw,52px)!important;line-height:1.02}
+  .page-hero p,.trend-tool-head>p{font-size:15px!important}
+}
+@media(max-width:420px){
+  .brand-copy small,.brand small{letter-spacing:.07em}
+  .brand-copy strong{font-size:13px!important}
+  .brand-mark{width:36px;height:36px}
+}
 @media(prefers-reduced-motion:reduce){.home-tool,.trend-card,.tool-card,.popular-card,.category-card,.article-card,.btn,.nn-tool-symbol{transition:none!important;transform:none!important}}
