@@ -37,14 +37,15 @@
   const header=document.querySelector('[data-header]');const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>6);updateHeader();window.addEventListener('scroll',updateHeader,{passive:true});
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App'],['register.html','Account']
+      ['index.html','Home'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App'],['register.html','Account']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
       const link=document.createElement('a');link.href=`${base}${file}`;link.textContent=label;
-      if(page===file||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
+      if(page===file||(file==='gaming.html'&&gamingPages.has(page))||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
       nav.appendChild(link);
     });
   }
@@ -108,7 +109,7 @@
   document.querySelectorAll('.home-tool,.tool-card,.trend-card,.popular-card,.category-card').forEach(decorateCard);
   document.querySelectorAll('.command-dock a,.node').forEach(el=>{if(el.querySelector(':scope > .nn-tool-symbol'))return;el.insertBefore(symbolFor(el),el.firstChild)});
   const pageFile=(location.pathname.split('/').pop()||'').toLowerCase();
-  const hubFiles=new Set(['','index.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
+  const hubFiles=new Set(['','index.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
   if(pageFile&&!hubFiles.has(pageFile)){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
 
   const searchIndex=[
@@ -142,6 +143,15 @@
     ['unix-timestamp-converter.html','Unix Timestamp Converter','unix epoch date time developer'],
     ['resume-builder.html','Resume Builder','cv resume job career'],
     ['ai-prompt-builder.html','AI Prompt Builder','ai prompt generator writing'],
+    ['gaming.html','Gaming Tools','gaming aim sensitivity edpi fps reaction minecraft steam settings'],
+    ['gaming-sensitivity-converter.html','CS2 ↔ Valorant Sensitivity Converter','gaming cs2 valorant aim sensitivity convert mouse'],
+    ['edpi-calculator.html','Gaming eDPI Calculator','gaming edpi dpi sensitivity aim mouse'],
+    ['fps-frame-time-calculator.html','FPS & Frame Time Calculator','gaming fps frame time milliseconds performance'],
+    ['reaction-time-test.html','Reaction Time Test','gaming reaction speed reflex test'],
+    ['minecraft-coordinate-converter.html','Minecraft Nether Coordinate Converter','minecraft nether overworld coordinates convert'],
+    ['steam-playtime-calculator.html','Steam Playtime Calculator','steam gaming playtime hours daily weekly monthly'],
+    ['gaming-settings-notes.html','Gaming Settings & Crosshair Notes','gaming settings crosshair dpi sensitivity notes local'],
+    ['gamer-name-generator.html','Gamer Name Generator','gaming gamer tag name generator ideas'],
     ['developer-tools.html','Developer Tools','json base64 uuid sha url developer'],
     ['articles.html','Practical Articles','articles guides learning'],
     ['tech.html','Tech & Security','passkeys security ai browser quantum tech'],
