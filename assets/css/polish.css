@@ -105,48 +105,50 @@ body{
 }
 @media(prefers-reduced-motion:reduce){.home-tool,.trend-card,.tool-card,.popular-card,.category-card,.article-card,.btn,.nn-tool-symbol{transition:none!important;transform:none!important}}
 
-/* Creator intro — homepage only. */
+/* Creator intro — soft premium homepage section. */
 .nn-home main::after{
-  content:"MEET THE CREATOR\A\A Hi, I’m Fahad.\A Junior Elementary School Teacher • Creator of NexusNova Tools\A\A I built NexusNova Tools to make everyday digital tasks simpler, faster and easier to access.\A\A If NexusNova Tools helps you and you’d like to support my work, a cup of tea or coffee is always appreciated. Secure support options will be added soon.";
+  content:"MEET THE CREATOR\A\A Hi, I’m Fahad.\A Junior Elementary School Teacher • Creator of NexusNova Tools\A\A I built NexusNova Tools to make everyday digital tasks simpler, faster and easier to access. The goal is practical utility for students, teachers and everyday users.\A\A Education first  •  User focused  •  Practical tools\A\A If NexusNova Tools helps you and you’d like to support my work, a cup of tea or coffee is always appreciated. Secure support options will be added soon.";
   display:block;
   box-sizing:border-box;
   max-width:1180px;
-  min-height:430px;
+  min-height:330px;
   margin:42px auto 0;
-  padding:54px 54px 54px 430px;
-  border:1px solid rgba(56,189,248,.28);
-  border-radius:28px;
-  color:#eaf6ff;
+  padding:48px 54px 46px 355px;
+  border:1px solid rgba(255,255,255,.96);
+  border-radius:32px;
+  color:#17233b;
   white-space:pre-line;
-  font-size:17px;
-  line-height:1.75;
-  letter-spacing:.01em;
-  box-shadow:0 24px 70px rgba(2,15,32,.22),inset 0 1px 0 rgba(255,255,255,.08);
-  background-color:#07111f;
+  font-size:16px;
+  line-height:1.65;
+  letter-spacing:.005em;
+  box-shadow:0 24px 60px rgba(65,78,125,.12),inset 0 1px 0 rgba(255,255,255,.95);
+  background-color:#f9fbff;
   background-image:
-    linear-gradient(90deg,rgba(7,17,31,.05) 0 34%,rgba(7,17,31,.78) 48%,rgba(7,17,31,.98) 100%),
     url("../fahad-creator.svg"),
-    linear-gradient(rgba(56,189,248,.05) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(56,189,248,.05) 1px,transparent 1px);
-  background-size:auto,350px 390px,28px 28px,28px 28px;
-  background-position:center,left 28px center,0 0,0 0;
-  background-repeat:no-repeat,no-repeat,repeat,repeat;
+    radial-gradient(circle at 6% 18%,rgba(139,92,246,.16) 0 60px,transparent 61px),
+    radial-gradient(circle at 92% 18%,rgba(20,184,166,.13) 0 48px,transparent 49px),
+    radial-gradient(circle at 84% 82%,rgba(59,130,246,.10) 0 76px,transparent 77px),
+    linear-gradient(125deg,#f7f3ff 0%,#ffffff 42%,#eefbff 100%);
+  background-size:265px 265px,auto,auto,auto,auto;
+  background-position:42px center,left top,right top,right bottom,center;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat;
 }
 @media(max-width:760px){
   .nn-home main::after{
     min-height:0;
     margin:30px 14px 0;
-    padding:300px 24px 30px;
-    border-radius:22px;
+    padding:195px 24px 30px;
+    border-radius:24px;
     font-size:15px;
-    line-height:1.65;
+    line-height:1.6;
+    text-align:left;
     background-image:
       url("../fahad-creator.svg"),
-      linear-gradient(rgba(56,189,248,.05) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(56,189,248,.05) 1px,transparent 1px),
-      linear-gradient(160deg,#07111f,#0b1b34 58%,#10233a);
-    background-size:200px 250px,24px 24px,24px 24px,auto;
-    background-position:center 26px,0 0,0 0,center;
-    background-repeat:no-repeat,repeat,repeat,no-repeat;
+      radial-gradient(circle at 8% 18%,rgba(139,92,246,.14) 0 48px,transparent 49px),
+      radial-gradient(circle at 92% 12%,rgba(20,184,166,.12) 0 42px,transparent 43px),
+      linear-gradient(155deg,#f7f3ff 0%,#ffffff 48%,#eefbff 100%);
+    background-size:155px 155px,auto,auto,auto;
+    background-position:center 24px,left top,right top,center;
+    background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
   }
 }
