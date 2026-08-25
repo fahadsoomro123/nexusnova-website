@@ -24,21 +24,44 @@ jobs:
           python -m py_compile nexusnova-dev-ai/agent.py
           python -m py_compile nexusnova-dev-ai/mobile_gateway.py
           python -m py_compile nexusnova-dev-ai/power_engine.py
-      - name: Import Power v2 modules
+          python -m py_compile nexusnova-dev-ai/mobile_gateway_v6.py
+          python -m py_compile nexusnova-dev-ai/power_engine_v6.py
+          python -m py_compile nexusnova-dev-ai/project_tools_v6.py
+          python -m py_compile nexusnova-dev-ai/git_tools_v6.py
+      - name: Import V2 and V6 modules
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import agent, mobile_gateway, power_engine
+          import mobile_gateway_v6, power_engine_v6, project_tools_v6, git_tools_v6
           assert power_engine.VERSION == '2.0.0'
           assert mobile_gateway.VERSION == '2.0.0'
-          print('NOVA AI Power v2 imports OK')
+          assert power_engine_v6.VERSION == '6.0.0'
+          assert mobile_gateway_v6.VERSION == '6.0.0'
+          assert project_tools_v6.VERSION == '6.0.0'
+          assert git_tools_v6.VERSION == '6.0.0'
+          names={x['function']['name'] for x in mobile_gateway_v6.all_specs()}
+          for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe'):
+              assert required in names, required
+          assert 'git_commit' not in names
+          print('NOVA AI POWER V6 imports/tool policy OK')
+          PY
+      - name: Verify V6 routing
+        run: |
+          cd nexusnova-dev-ai
+          python - <<'PY'
+          import power_engine_v6 as p
+          assert p.route('simple hello','chat','auto') == 'fast'
+          assert p.route('meri nayi app bana do','builder','auto') == 'builder'
+          assert p.route('deep website audit fix seo auth and build','power','auto') == 'deep'
+          print('V6 router OK')
           PY
       - name: Verify required files
         run: |
           test -f nexusnova-dev-ai/SYSTEM_PROMPT.md
           test -f nexusnova-dev-ai/NEXUSNOVA_KNOWLEDGE.md
-          test -f nexusnova-dev-ai/START_NEXUSNOVA_AI.bat
-          test -f nexusnova-dev-ai/START_MOBILE_GATEWAY.bat
           test -f nexusnova-dev-ai/INSTALL_MODEL.bat
           test -f nexusnova-dev-ai/SETUP_GITHUB.bat
-          test -f nexusnova-dev-ai/power_engine.py
+          test -f nexusnova-dev-ai/START_NOVA_AI_V6.bat
+          test -f nexusnova-dev-ai/CHECK_HARDWARE_V6.bat
+          test -f nexusnova-dev-ai/V6-DESIGN.md
