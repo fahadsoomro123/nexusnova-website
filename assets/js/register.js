@@ -15,7 +15,7 @@ import {
   setDoc,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js';
+import { telegramSessionCall, linkTelegramAccountCall } from './telegram-account-api.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
@@ -30,9 +30,6 @@ const firebaseConfig = {
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app);
-const telegramSessionCall = httpsCallable(functions, 'telegramSession');
-const linkTelegramAccountCall = httpsCallable(functions, 'linkTelegramAccount');
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';
@@ -135,8 +132,8 @@ async function linkTelegramForUser(user) {
   const context = await telegramBootstrapPromise;
   if (!context?.initData || !user) return { linked: false, message: '' };
   try {
-    await user.getIdToken(true);
-    const response = await linkTelegramAccountCall({ initData: context.initData });
+    const idToken = await user.getIdToken(true);
+    const response = await linkTelegramAccountCall({ initData: context.initData, idToken });
     const verifiedUser = response?.data?.user || context.user;
     telegramContext = { ...context, linked: true, user: verifiedUser };
     paintTelegram(verifiedUser, 'LINKED', 'Telegram and NexusNova now use the same secure account.');

@@ -24,9 +24,14 @@ test('account pages use server verification and Firebase linking callables', () 
   const register = read('assets/js/register.js');
   const dashboard = read('assets/js/account-dashboard.js');
   for (const source of [register, dashboard]) {
-    assert.match(source, /httpsCallable\(functions,'?telegramSession'?\)|httpsCallable\(functions, 'telegramSession'\)/);
+    assert.match(source, /telegramSessionCall/);
     assert.match(source, /linkTelegramAccount/);
+    assert.doesNotMatch(source, /firebase-functions\.js|httpsCallable/);
   }
+  const api = read('assets/js/telegram-account-api.js');
+  assert.match(api, /\/api\/telegram\/session/);
+  assert.match(api, /\/api\/telegram\/link/);
+  assert.match(api, /Authorization = `Bearer \$\{idToken\}`/);
   assert.match(register, /signInWithCustomToken/);
   assert.match(dashboard, /signInWithCustomToken/);
   assert.match(read('register.html'), /data-telegram-panel/);
