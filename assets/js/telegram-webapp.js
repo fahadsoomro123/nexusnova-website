@@ -1,13 +1,18 @@
 // NexusNova Telegram Mini App bridge.
-// Raw initData is always verified by the backend before it is trusted for auth.
+// Raw Telegram initData is never trusted here; the backend validates it before auth.
 (function bootstrapNexusNovaTelegram(global) {
   'use strict';
 
   const telegram = global.Telegram?.WebApp || null;
+  const webView = global.Telegram?.WebView || null;
   const SESSION_INIT_DATA_KEY = 'nexusnova_telegram_init_data_v1';
+  const TELEGRAM_INIT_PARAMS_KEY = '__telegram__initParams';
 
   function cleanText(value, maxLength) {
-    return String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, maxLength);
+    return String(value ?? '')
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .trim()
+      .slice(0, maxLength);
   }
 
   function cleanPhotoUrl(value) {
@@ -38,19 +43,41 @@
     });
   }
 
-  function getStoredInitData() {
+  function readStorage(key) {
     try {
-      return sessionStorage.getItem(SESSION_INIT_DATA_KEY) || '';
+      return global.sessionStorage?.getItem(key) || '';
     } catch (_) {
       return '';
     }
   }
 
-  function saveInitData(value) {
+  function writeStorage(key, value) {
     if (!value) return;
     try {
-      sessionStorage.setItem(SESSION_INIT_DATA_KEY, value);
+      global.sessionStorage?.setItem(key, value);
     } catch (_) {}
+  }
+
+  function readTelegramStoredInitData() {
+    const stored = readStorage(TELEGRAM_INIT_PARAMS_KEY);
+    if (!stored) return '';
+    try {
+      const parsed = JSON.parse(stored);
+      return typeof parsed?.tgWebAppData === 'string' ? parsed.tgWebAppData : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function readHashInitData() {
+    try {
+      const hash = String(global.location?.hash || '').replace(/^#/, '');
+      if (!hash) return '';
+      const params = new URLSearchParams(hash);
+      return params.get('tgWebAppData') || '';
+    } catch (_) {
+      return '';
+    }
   }
 
   function userFromInitData(value) {
@@ -64,20 +91,34 @@
     }
   }
 
-  const liveInitData = typeof telegram?.initData === 'string' ? telegram.initData : '';
-  if (liveInitData) saveInitData(liveInitData);
+  const candidates = [
+    ['webapp', typeof telegram?.initData === 'string' ? telegram.initData : ''],
+    ['webview', typeof webView?.initParams?.tgWebAppData === 'string' ? webView.initParams.tgWebAppData : ''],
+    ['hash', readHashInitData()],
+    ['telegram-storage', readTelegramStoredInitData()],
+    ['nexusnova-storage', readStorage(SESSION_INIT_DATA_KEY)]
+  ];
 
-  // Telegram attaches initData to the initial Mini App page. Normal same-origin
-  // navigation can lose that launch fragment, so reuse the signed raw string from
-  // this WebView session. The backend still performs HMAC + freshness validation.
-  const initData = liveInitData || getStoredInitData();
+  const selected = candidates.find(([, value]) => typeof value === 'string' && value.length > 0) || ['none', ''];
+  const source = selected[0];
+  const initData = selected[1];
+
+  if (initData) writeStorage(SESSION_INIT_DATA_KEY, initData);
+
   const unsafeUser =
     normalizeUnsafeUser(telegram?.initDataUnsafe?.user) ||
     userFromInitData(initData);
+
+  const reason = !initData
+    ? 'missing-init-data'
+    : (!unsafeUser ? 'missing-user' : '');
+
   const available = Boolean(initData && unsafeUser);
 
   const bridge = Object.freeze({
     isAvailable: available,
+    source,
+    reason,
     platform: cleanText(telegram?.platform, 32),
     version: cleanText(telegram?.version, 24),
     user: unsafeUser,
@@ -86,6 +127,9 @@
     },
     getUser() {
       return unsafeUser ? { ...unsafeUser } : null;
+    },
+    getDiagnostic() {
+      return { available, source, reason };
     },
     close() {
       if (!telegram) return false;
@@ -106,12 +150,21 @@
     try { telegram?.setHeaderColor?.('#07111f'); } catch (_) {}
     try { telegram?.setBackgroundColor?.('#02050d'); } catch (_) {}
     document.documentElement.dataset.telegramMiniApp = 'true';
-    document.documentElement.style.setProperty('--nexusnova-tg-platform', "'" + (bridge.platform || 'unknown') + "'");
+    document.documentElement.dataset.telegramInitSource = source;
+    document.documentElement.style.setProperty(
+      '--nexusnova-tg-platform',
+      "'" + (bridge.platform || 'unknown') + "'"
+    );
   }
 
   try {
     global.dispatchEvent(new CustomEvent('nexusnova:telegram-ready', {
-      detail: { available, user: bridge.getUser() }
+      detail: {
+        available,
+        user: bridge.getUser(),
+        source,
+        reason
+      }
     }));
   } catch (_) {}
 })(window);
