@@ -19,12 +19,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Compile local agent
-        run: python -m py_compile nexusnova-dev-ai/agent.py
+      - name: Compile local AI modules
+        run: |
+          python -m py_compile nexusnova-dev-ai/agent.py
+          python -m py_compile nexusnova-dev-ai/mobile_gateway.py
+          python -m py_compile nexusnova-dev-ai/power_engine.py
+      - name: Import Power v2 modules
+        run: |
+          cd nexusnova-dev-ai
+          python - <<'PY'
+          import agent, mobile_gateway, power_engine
+          assert power_engine.VERSION == '2.0.0'
+          assert mobile_gateway.VERSION == '2.0.0'
+          print('NOVA AI Power v2 imports OK')
+          PY
       - name: Verify required files
         run: |
           test -f nexusnova-dev-ai/SYSTEM_PROMPT.md
           test -f nexusnova-dev-ai/NEXUSNOVA_KNOWLEDGE.md
           test -f nexusnova-dev-ai/START_NEXUSNOVA_AI.bat
+          test -f nexusnova-dev-ai/START_MOBILE_GATEWAY.bat
           test -f nexusnova-dev-ai/INSTALL_MODEL.bat
           test -f nexusnova-dev-ai/SETUP_GITHUB.bat
+          test -f nexusnova-dev-ai/power_engine.py
