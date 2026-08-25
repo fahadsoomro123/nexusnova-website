@@ -21,11 +21,20 @@ export default {
           { command: "help", description: "Get help and support" },
           { command: "tools", description: "Explore NexusNova tools" },
           { command: "website", description: "Open NexusNova website" },
+          { command: "news", description: "Latest NexusNova updates" },
           { command: "support", description: "Contact NexusNova support" }
         ]
       });
 
-      return Response.json({ success: true, webhook, commands });
+      const menuButton = await telegram(token, "setChatMenuButton", {
+        menu_button: {
+          type: "web_app",
+          text: "🚀 Open NexusNova Tools",
+          web_app: { url: "https://nexusnovatools.com/" }
+        }
+      });
+
+      return Response.json({ success: true, webhook, commands, menuButton });
     }
 
     if (request.method === "POST" && url.pathname === "/webhook") {
@@ -52,28 +61,35 @@ async function handleMessage(token, message) {
   const firstName = message.from?.first_name || "there";
   const rawText = message.text || "";
   const command = rawText.trim().split(/\s+/)[0].split("@")[0].toLowerCase();
+  const privateChat = message.chat?.type === "private";
 
-  if (command === "/start") return sendWelcome(token, chatId, firstName);
+  if (command === "/start") return sendWelcome(token, chatId, firstName, privateChat);
 
   if (command === "/help") {
     return sendMessage(token, chatId,
-      `🆘 <b>NexusNova Help</b>\n\n/start - Start NexusNova Assistant\n/tools - Explore NexusNova tools\n/website - Open the official website\n/support - Get support\n/help - Show this help message\n\n🌐 nexusnovatools.com`,
-      mainKeyboard());
+      `🆘 <b>NexusNova Help</b>\n\n/start - Start NexusNova Assistant\n/tools - Explore NexusNova tools\n/website - Open the official website\n/news - Latest NexusNova updates\n/support - Get support\n/help - Show this help message\n\n🌐 nexusnovatools.com`,
+      mainKeyboard(privateChat));
   }
 
   if (command === "/tools") {
     return sendMessage(token, chatId,
       `🛠 <b>NexusNova Tools</b>\n\nFree browser tools for PDF, images, AI, gaming, calculators, productivity and more.\n\nTap the button below to explore.`,
       { inline_keyboard: [
-        [{ text: "🛠 Open NexusNova Tools", url: "https://nexusnovatools.com/" }],
-        [{ text: "🔥 Trending Tools", url: "https://nexusnovatools.com/trending-tools.html" }]
+        [miniAppButton("🛠 Open NexusNova Tools", "https://nexusnovatools.com/", privateChat)],
+        [miniAppButton("🔥 Trending Tools", "https://nexusnovatools.com/trending-tools.html", privateChat)]
       ] });
   }
 
   if (command === "/website") {
     return sendMessage(token, chatId,
       `🌐 <b>NexusNova Official Website</b>\n\nhttps://nexusnovatools.com/`,
-      { inline_keyboard: [[{ text: "🌐 Open Website", url: "https://nexusnovatools.com/" }]] });
+      { inline_keyboard: [[miniAppButton("🚀 Open Mini App", "https://nexusnovatools.com/", privateChat)]] });
+  }
+
+  if (command === "/news") {
+    return sendMessage(token, chatId,
+      `📰 <b>NexusNova Updates</b>\n\nRead the latest tools, guides and technology updates inside NexusNova.`,
+      { inline_keyboard: [[miniAppButton("📰 Open Latest Updates", "https://nexusnovatools.com/articles.html", privateChat)]] });
   }
 
   if (command === "/support") {
@@ -87,10 +103,10 @@ async function handleMessage(token, message) {
 
   return sendMessage(token, chatId,
     `👋 Welcome to <b>NexusNova AI Assistant</b>.\n\nChoose a command from the menu or tap a button below.`,
-    mainKeyboard());
+    mainKeyboard(privateChat));
 }
 
-async function sendWelcome(token, chatId, firstName) {
+async function sendWelcome(token, chatId, firstName, privateChat) {
   const caption = `🚀 <b>Welcome to NexusNova, ${escapeHtml(firstName)}!</b>\n\nYour official NexusNova assistant for free online tools, updates and support.\n\n🛠 Explore useful tools\n🔥 Discover trending utilities\n🌐 Visit NexusNova Tools\n💬 Get official support\n\nChoose an option below 👇`;
 
   try {
@@ -105,7 +121,7 @@ async function sendWelcome(token, chatId, firstName) {
           photo,
           caption,
           parse_mode: "HTML",
-          reply_markup: mainKeyboard()
+          reply_markup: mainKeyboard(privateChat)
         });
         if (result.ok) return result;
       }
@@ -114,15 +130,19 @@ async function sendWelcome(token, chatId, firstName) {
     console.error("Welcome photo error:", error);
   }
 
-  return sendMessage(token, chatId, caption, mainKeyboard());
+  return sendMessage(token, chatId, caption, mainKeyboard(privateChat));
 }
 
-function mainKeyboard() {
+function miniAppButton(text, url, privateChat) {
+  return privateChat ? { text, web_app: { url } } : { text, url };
+}
+
+function mainKeyboard(privateChat = true) {
   return {
     inline_keyboard: [
-      [{ text: "🛠 Explore Tools", url: "https://nexusnovatools.com/" }],
+      [miniAppButton("🚀 Open NexusNova Mini App", "https://nexusnovatools.com/", privateChat)],
       [
-        { text: "🌐 Website", url: "https://nexusnovatools.com/" },
+        miniAppButton("📰 Updates", "https://nexusnovatools.com/articles.html", privateChat),
         { text: "📢 Telegram", url: "https://t.me/NexusNovaTools" }
       ],
       [{ text: "💬 Support", url: "https://nexusnovatools.com/contact.html" }]

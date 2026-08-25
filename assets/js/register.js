@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
   sendEmailVerification,
   updateProfile
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
@@ -14,6 +15,7 @@ import {
   setDoc,
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
@@ -28,8 +30,12 @@ const firebaseConfig = {
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const functions = getFunctions(app);
+const telegramSessionCall = httpsCallable(functions, 'telegramSession');
+const linkTelegramAccountCall = httpsCallable(functions, 'linkTelegramAccount');
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
+const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';
 
 const form = document.querySelector('[data-account-form]');
 const nameField = document.querySelector('[data-name-field]');
@@ -43,9 +49,106 @@ const resend = document.querySelector('[data-resend]');
 const referralPanel = document.querySelector('[data-referral-panel]');
 const referralCodeEl = document.querySelector('[data-referral-code]');
 const referralState = document.querySelector('[data-referral-state]');
+const telegramPanel = document.querySelector('[data-telegram-panel]');
+const telegramPhoto = document.querySelector('[data-telegram-photo]');
+const telegramName = document.querySelector('[data-telegram-name]');
+const telegramUsername = document.querySelector('[data-telegram-username]');
+const telegramState = document.querySelector('[data-telegram-state]');
+const telegramCopy = document.querySelector('[data-telegram-copy]');
 const modeButtons = [...document.querySelectorAll('[data-mode]')];
 let mode = 'register';
 let pendingReferral = '';
+let telegramContext = null;
+let telegramBootstrapPromise = Promise.resolve(null);
+
+function paintTelegram(user, state, copy) {
+  if (!telegramPanel || !user) return;
+  telegramPanel.hidden = false;
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Telegram user';
+  if (telegramName) telegramName.textContent = fullName;
+  if (telegramUsername) telegramUsername.textContent = user.username ? `@${user.username} • ID ${user.id}` : `Telegram ID ${user.id}`;
+  if (telegramState) telegramState.textContent = state;
+  if (telegramCopy) telegramCopy.textContent = copy;
+  if (telegramPhoto) {
+    telegramPhoto.hidden = !user.photoUrl;
+    if (user.photoUrl) {
+      telegramPhoto.src = user.photoUrl;
+      telegramPhoto.alt = `${fullName} Telegram profile`;
+    } else {
+      telegramPhoto.removeAttribute('src');
+    }
+  }
+}
+
+function telegramErrorMessage(error) {
+  const code = String(error?.code || '');
+  if (code.includes('already-exists')) return 'This Telegram account is already linked to another NexusNova account.';
+  if (code.includes('failed-precondition')) return 'Sign in again before linking Telegram.';
+  if (code.includes('permission-denied')) return 'Telegram verification expired. Close and reopen the Mini App.';
+  return 'Telegram linking could not finish. Your email account remains available.';
+}
+
+async function bootstrapTelegram() {
+  const bridge = window.NexusNovaTelegram;
+  if (!bridge?.isAvailable) return null;
+
+  const detected = bridge.getUser();
+  paintTelegram(detected, 'VERIFYING', 'Checking this Telegram launch securely…');
+
+  try {
+    const response = await telegramSessionCall({ initData: bridge.getInitData() });
+    const result = response?.data || {};
+    if (!result.user?.id) throw new Error('Verified Telegram user is missing.');
+    telegramContext = {
+      initData: bridge.getInitData(),
+      linked: result.linked === true,
+      user: result.user
+    };
+    paintTelegram(
+      result.user,
+      result.linked ? 'VERIFIED + LINKED' : 'VERIFIED',
+      result.linked
+        ? 'Telegram identity verified. Opening its linked NexusNova account…'
+        : 'Telegram identity verified. Create an account or sign in below to link it.'
+    );
+
+    if (result.linked && result.customToken) {
+      if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+      let skipAutoLogin = false;
+      try { skipAutoLogin = sessionStorage.getItem(TELEGRAM_SKIP_KEY) === '1'; } catch (_) {}
+      if (!auth.currentUser && !skipAutoLogin) {
+        const credential = await signInWithCustomToken(auth, result.customToken);
+        await ensureProfile(credential.user);
+        window.gtag?.('event', 'login', { method: 'telegram_mini_app' });
+        setTimeout(() => location.assign('account.html'), 250);
+      }
+    }
+    return telegramContext;
+  } catch (error) {
+    console.warn('[NexusNova Telegram]', error?.code || 'verification-failed');
+    paintTelegram(detected, 'NOT VERIFIED', 'Secure Telegram verification is unavailable. Email sign-in still works normally.');
+    return null;
+  }
+}
+
+async function linkTelegramForUser(user) {
+  const context = await telegramBootstrapPromise;
+  if (!context?.initData || !user) return { linked: false, message: '' };
+  try {
+    await user.getIdToken(true);
+    const response = await linkTelegramAccountCall({ initData: context.initData });
+    const verifiedUser = response?.data?.user || context.user;
+    telegramContext = { ...context, linked: true, user: verifiedUser };
+    paintTelegram(verifiedUser, 'LINKED', 'Telegram and NexusNova now use the same secure account.');
+    window.gtag?.('event', 'telegram_account_linked', { source: 'mini_app' });
+    return { linked: true, message: 'Telegram account linked securely.' };
+  } catch (error) {
+    console.warn('[NexusNova Telegram]', error?.code || 'link-failed');
+    const message = telegramErrorMessage(error);
+    paintTelegram(context.user, 'LINK NOT COMPLETED', message);
+    return { linked: false, message };
+  }
+}
 
 function cleanName(value) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
@@ -247,26 +350,30 @@ form?.addEventListener('submit', async event => {
     if (mode === 'register') {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       const user = credential.user;
+      try { sessionStorage.removeItem(TELEGRAM_SKIP_KEY); } catch (_) {}
       await updateProfile(user, { displayName: name });
       await ensureProfile(user, name);
       await sendEmailVerification(user);
       const referralResult = await tryAttachReferral(user);
+      const telegramResult = await linkTelegramForUser(user);
       window.gtag?.('event', 'sign_up', { method: 'email' });
 
-      successCopy.textContent = referralResult.message
-        ? `Check your inbox and verify your email. ${referralResult.message} Use this same email and password in the NexusNova app.`
-        : 'Check your inbox and verify your email. Use this same email and password in the NexusNova app.';
+      const setupMessages = [referralResult.message, telegramResult.message].filter(Boolean).join(' ');
+      successCopy.textContent = `Check your inbox and verify your email. ${setupMessages} Use this same email and password in the NexusNova app.`.replace(/\s+/g, ' ').trim();
       success.classList.add('show');
       form.hidden = true;
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
       const user = credential.user;
+      try { sessionStorage.removeItem(TELEGRAM_SKIP_KEY); } catch (_) {}
       await ensureProfile(user);
       const referralResult = await tryAttachReferral(user);
+      const telegramResult = await linkTelegramForUser(user);
       window.gtag?.('event', 'login', { method: 'email' });
       const verify = user.emailVerified ? 'Email verified.' : 'Email not verified yet.';
-      setStatus(`${verify} ${referralResult.message || 'Signed in to your NexusNova account.'}`, 'success');
-      setTimeout(() => location.assign('account.html'), 450);
+      const connected = [referralResult.message, telegramResult.message].filter(Boolean).join(' ') || 'Signed in to your NexusNova account.';
+      setStatus(`${verify} ${connected}`, 'success');
+      setTimeout(() => location.assign('account.html'), 650);
     }
   } catch (error) {
     console.error('[NexusNova Account]', error?.code || 'error');
@@ -298,3 +405,4 @@ onAuthStateChanged(auth, user => {
 
 loadReferral();
 setMode('register');
+telegramBootstrapPromise = bootstrapTelegram();
