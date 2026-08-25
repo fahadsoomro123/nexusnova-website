@@ -91,6 +91,16 @@
     }
   }
 
+  function authDateFromInitData(value) {
+    if (!value) return '';
+    try {
+      const raw = String(new URLSearchParams(value).get('auth_date') || '').trim();
+      return /^\d{1,12}$/.test(raw) ? raw : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
   const candidates = [
     ['webapp', typeof telegram?.initData === 'string' ? telegram.initData : ''],
     ['webview', typeof webView?.initParams?.tgWebAppData === 'string' ? webView.initParams.tgWebAppData : ''],
@@ -108,6 +118,7 @@
   const unsafeUser =
     normalizeUnsafeUser(telegram?.initDataUnsafe?.user) ||
     userFromInitData(initData);
+  const authDate = authDateFromInitData(initData);
 
   const reason = !initData
     ? 'missing-init-data'
@@ -119,6 +130,7 @@
     isAvailable: available,
     source,
     reason,
+    authDate,
     platform: cleanText(telegram?.platform, 32),
     version: cleanText(telegram?.version, 24),
     user: unsafeUser,
@@ -128,8 +140,11 @@
     getUser() {
       return unsafeUser ? { ...unsafeUser } : null;
     },
+    getAuthDate() {
+      return authDate;
+    },
     getDiagnostic() {
-      return { available, source, reason };
+      return { available, source, reason, authDatePresent: Boolean(authDate) };
     },
     close() {
       if (!telegram) return false;
@@ -163,7 +178,8 @@
         available,
         user: bridge.getUser(),
         source,
-        reason
+        reason,
+        authDatePresent: Boolean(authDate)
       }
     }));
   } catch (_) {}
