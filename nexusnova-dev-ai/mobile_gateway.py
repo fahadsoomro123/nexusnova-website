@@ -5,9 +5,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import agent as core
+import power_engine as power
 
 APP='NexusNova Mobile AI Gateway'
-VERSION='1.3.0'
+VERSION='2.0.0'
 MAX_BODY=2_000_000
 MAX_HISTORY=20
 MAX_MEMORY=100
@@ -68,12 +69,27 @@ def classify_memory(text: str):
 def mode_tools(mode: str):
     all_specs=core.tool_specs()
     write_tools={'list_files','read_file','search_text','write_file','git_status','git_diff','git_create_branch','run_checks','git_commit','git_push_pr','web_search','web_fetch'}
-    allowed={'chat':set(),'web':{'web_search','web_fetch'},'website':write_tools,'dev':write_tools}.get((mode or 'chat').lower(),set())
+    allowed={
+        'chat':set(),
+        'web':{'web_search','web_fetch'},
+        'research':{'web_search','web_fetch'},
+        'website':write_tools,
+        'dev':write_tools,
+        'power':write_tools,
+    }.get((mode or 'chat').lower(),set())
     return [s for s in all_specs if s.get('function',{}).get('name') in allowed]
 
 
 def mode_instructions(mode: str) -> str:
-    if mode=='web': return 'WEB MODE: Use public web search/fetch whenever freshness matters. Give concise sourced answers. Do not modify workspace files.'
+    if mode=='web':
+        return 'WEB MODE: Use public web search/fetch whenever freshness matters. Give concise sourced answers. Do not modify workspace files.'
+    if mode=='research':
+        return '''DEEP RESEARCH MODE:
+- Break the question into subquestions before searching.
+- Use multiple independent current sources where possible; fetch primary/official sources for important claims.
+- Compare conflicting claims and dates instead of silently choosing one.
+- Clearly separate verified facts, uncertainty, and recommendations.
+- Do not modify workspace files.'''
     if mode=='website':
         return '''WEBSITE MODE — HIGH AUTONOMY FOR A NON-DEVELOPER OWNER:
 - Translate simple Roman Urdu requests into technical work yourself. Do not ask the owner for file names, code, libraries or implementation details when repo/web research can answer them.
@@ -86,14 +102,32 @@ def mode_instructions(mode: str) -> str:
 - Run recognized checks, inspect diff, summarize exactly what changed, and commit clean work.
 - Push/PR only when GitHub writes are explicitly armed. Never push directly to main.
 - The owner wants outcomes, not coding homework.'''
-    if mode=='dev': return 'DEV MODE: Inspect before editing. Preserve working features. Prefer branch -> minimal edit -> checks -> diff -> commit. Push/PR only when GitHub writes are armed.'
+    if mode=='power':
+        return '''POWER MODE — MAXIMUM SAFE AUTONOMY:
+- This mode is for complex multi-step NexusNova tasks. Resolve technical details yourself from repository evidence and current web research.
+- Work systematically: inspect -> plan -> execute with tools -> test/check -> inspect diff/evidence -> self-review -> correct serious gaps.
+- You may combine website, development, SEO, content, debugging and research tools as needed.
+- Preserve working functionality and prefer minimal reversible changes over broad rewrites.
+- Never claim success without evidence. If a tool/check is unavailable, say so explicitly and continue with the strongest safe evidence available.
+- For repository changes create/use a non-main branch before editing. Never push directly to main.
+- Push/PR remains blocked until GitHub writes are explicitly armed.
+- Do not ask Fahad for implementation details the repo or web can answer.'''
+    if mode=='dev':
+        return 'DEV MODE: Inspect before editing. Preserve working features. Prefer branch -> minimal edit -> checks -> diff -> commit. Push/PR only when GitHub writes are armed.'
     return 'CHAT MODE: Answer normally. Do not modify workspace files.'
 
 
-def gateway_turn(ws,base,model,prompt,history,user,mode):
-    tools=mode_tools(mode); msgs=[{'role':'system','content':prompt+'\n\n'+mode_instructions(mode)}]+history[-MAX_HISTORY:]+[{'role':'user','content':user}]; used=[]
-    for _ in range(core.MAX_TOOL_ROUNDS):
-        payload={'model':model,'messages':msgs,'stream':False,'options':{'temperature':0.2}}
+def gateway_turn(ws,base,model,prompt,history,user,mode,plan='',correction_note='',max_rounds=12):
+    tools=mode_tools(mode)
+    system=prompt+'\n\n'+mode_instructions(mode)
+    if plan:
+        system+='\n\nPOWER V2 EXECUTION PLAN (use as a checklist, but adapt when tool evidence proves it wrong):\n'+plan[:8000]
+    if correction_note:
+        system+='\n\n'+correction_note[:9000]
+    msgs=[{'role':'system','content':system}]+history[-MAX_HISTORY:]+[{'role':'user','content':user}]
+    used=[]
+    for _ in range(max_rounds):
+        payload={'model':model,'messages':msgs,'stream':False,'options':{'temperature':0.15 if mode in {'power','website','dev','research'} else 0.2}}
         if tools: payload['tools']=tools
         try: r=core.http_json(base+'/api/chat',payload)
         except Exception as e: raise RuntimeError(f'Ollama se connect nahi hua: {e}')
@@ -126,7 +160,6 @@ class Gateway:
 
     def rules(self): return read_lines(self.rules_path)
     def memories(self): return read_lines(self.memory_path)
-
     def memory_state(self): return {'ok':True,'rules':self.rules(),'memory':self.memories()}
 
     def remember(self,body):
@@ -152,12 +185,22 @@ class Gateway:
 
     def health(self):
         ready,models=core.ollama_ready(self.ollama)
-        return {'ok':ready,'app':APP,'version':VERSION,'model':self.model,'ollama':ready,'models':models,'modes':['chat','web','website','dev'],'workspace':str(self.ws.root),'github_writes':bool(core.STATE.get('github_writes')),'rules_count':len(self.rules()),'memory_count':len(self.memories())}
+        return {
+            'ok':ready,'app':APP,'version':VERSION,'power_engine':power.VERSION,'model':self.model,
+            'ollama':ready,'models':models,'modes':['chat','web','research','website','dev','power'],
+            'reasoning':['auto','fast','standard','deep'],'workspace':str(self.ws.root),
+            'github_writes':bool(core.STATE.get('github_writes')),'rules_count':len(self.rules()),'memory_count':len(self.memories())
+        }
 
     def chat(self,body):
-        message=str(body.get('message','')).strip()[:12000]; mode=str(body.get('mode','chat')).strip().lower()
-        if mode not in {'chat','web','website','dev'}: mode='chat'
+        message=str(body.get('message','')).strip()[:12000]
+        mode=str(body.get('mode','chat')).strip().lower()
+        if mode not in {'chat','web','research','website','dev','power'}: mode='chat'
         if not message: return 400,{'ok':False,'error':'Message required.'}
+        requested_reasoning=str(body.get('reasoning','auto')).strip().lower()
+        if mode=='power': requested_reasoning='deep'
+        elif mode=='research' and requested_reasoning in {'auto','fast'}: requested_reasoning='deep'
+        level=power.complexity(message,mode,requested_reasoning)
         app_context=str(body.get('app_context','')).strip()[:8000]; history=safe_history(body.get('history'))
         captured=self.auto_capture(message)
         prompt=core.load_prompt(Path(__file__).resolve().parent)
@@ -168,8 +211,22 @@ class Gateway:
             prompt+='\n\nOWNER MEMORY — stable context from earlier chats. Use it when relevant; never invent details not present here:\n- '+'\n- '.join(memory[-60:])
         if app_context: prompt+='\n\nMOBILE APP CONTEXT (read-only; never invent missing values):\n'+app_context
         try:
-            reply,used=gateway_turn(self.ws,self.ollama,self.model,prompt,history,message,mode)
-            return 200,{'ok':True,'reply':reply,'mode':mode,'model':self.model,'tools_used':used,'github_writes':bool(core.STATE.get('github_writes')),'memory_captured':captured,'rules_count':len(self.rules()),'memory_count':len(self.memories())}
+            plan=power.make_plan(core,self.ollama,self.model,prompt,message,mode,level)
+            max_rounds=18 if level=='deep' else (14 if level=='standard' else 10)
+            reply,used=gateway_turn(self.ws,self.ollama,self.model,prompt,history,message,mode,plan=plan,max_rounds=max_rounds)
+            review=power.review(core,self.ollama,self.model,prompt,message,mode,reply,used,level)
+            corrected=False
+            if level=='deep' and not review.get('pass'):
+                note=power.correction_prompt(plan,review)
+                corrected_reply,used2=gateway_turn(self.ws,self.ollama,self.model,prompt,history,message,mode,plan=plan,correction_note=note,max_rounds=max_rounds)
+                used.extend(used2); reply=corrected_reply; corrected=True
+                review=power.review(core,self.ollama,self.model,prompt,message,mode,reply,used,level)
+            return 200,{
+                'ok':True,'reply':reply,'mode':mode,'model':self.model,'tools_used':used,
+                'github_writes':bool(core.STATE.get('github_writes')),'memory_captured':captured,
+                'rules_count':len(self.rules()),'memory_count':len(self.memories()),
+                'power':{'version':power.VERSION,'reasoning':level,'planned':bool(plan),'review_pass':bool(review.get('pass')),'review_summary':review.get('summary',''),'corrected':corrected}
+            }
         except Exception as e: return 503,{'ok':False,'error':str(e)}
 
     def github_toggle(self,body):
@@ -180,7 +237,7 @@ class Gateway:
 
 def make_handler(gateway: Gateway):
     class Handler(BaseHTTPRequestHandler):
-        server_version='NexusNovaMobileAI/1.3'
+        server_version='NexusNovaMobileAI/2.0'
         def log_message(self,fmt,*args): sys.stdout.write('[mobile-ai] '+(fmt%args)+'\n')
         def cors(self):
             self.send_header('Access-Control-Allow-Origin','*'); self.send_header('Access-Control-Allow-Headers','Content-Type, X-NexusNova-Token'); self.send_header('Access-Control-Allow-Methods','GET, POST, OPTIONS'); self.send_header('Cache-Control','no-store')
@@ -213,9 +270,13 @@ def make_handler(gateway: Gateway):
 
 
 def main():
-    ap=argparse.ArgumentParser(description=APP); ap.add_argument('--workspace',default=os.environ.get('NEXUSNOVA_WORKSPACE','..')); ap.add_argument('--host',default=os.environ.get('NEXUSNOVA_MOBILE_HOST','127.0.0.1')); ap.add_argument('--port',type=int,default=int(os.environ.get('NEXUSNOVA_MOBILE_PORT','8787'))); ap.add_argument('--model',default=core.DEFAULT_MODEL); ap.add_argument('--ollama',default=core.DEFAULT_OLLAMA); args=ap.parse_args()
+    ap=argparse.ArgumentParser(description=APP)
+    ap.add_argument('--workspace',default=os.environ.get('NEXUSNOVA_WORKSPACE','..'))
+    ap.add_argument('--host',default=os.environ.get('NEXUSNOVA_MOBILE_HOST','127.0.0.1'))
+    ap.add_argument('--port',type=int,default=int(os.environ.get('NEXUSNOVA_MOBILE_PORT','8787')))
+    ap.add_argument('--model',default=core.DEFAULT_MODEL); ap.add_argument('--ollama',default=core.DEFAULT_OLLAMA); args=ap.parse_args()
     app_dir=Path(__file__).resolve().parent; token,token_path=load_or_create_token(app_dir); gateway=Gateway(args.workspace,args.ollama,args.model,token,app_dir); ready,models=core.ollama_ready(args.ollama)
-    print(f'\n{APP} {VERSION}\nWorkspace: {gateway.ws.root}\nModel: {args.model}\nOllama: {"READY" if ready else "NOT READY"} {models}\nPairing token file: {token_path}\nPairing token: {token}\nModes: Chat | Web | Website | Dev\nPersistent rules: {len(gateway.rules())} | memory: {len(gateway.memories())}\nGitHub writes: OFF (explicitly arm from paired mobile client)\nListening: http://{args.host}:{args.port}\n')
+    print(f'\n{APP} {VERSION} | Power Engine {power.VERSION}\nWorkspace: {gateway.ws.root}\nModel: {args.model}\nOllama: {"READY" if ready else "NOT READY"} {models}\nPairing token file: {token_path}\nPairing token: {token}\nModes: Chat | Web | Research | Website | Dev | Power\nReasoning: Auto | Fast | Standard | Deep\nPersistent rules: {len(gateway.rules())} | memory: {len(gateway.memories())}\nGitHub writes: OFF (explicitly arm from paired mobile client)\nListening: http://{args.host}:{args.port}\n')
     server=ThreadingHTTPServer((args.host,args.port),make_handler(gateway))
     try: server.serve_forever()
     except KeyboardInterrupt: pass
