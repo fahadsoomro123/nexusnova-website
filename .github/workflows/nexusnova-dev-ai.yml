@@ -28,33 +28,41 @@ jobs:
           python -m py_compile nexusnova-dev-ai/power_engine_v6.py
           python -m py_compile nexusnova-dev-ai/project_tools_v6.py
           python -m py_compile nexusnova-dev-ai/git_tools_v6.py
-      - name: Import V2 and V6 modules
+          python -m py_compile nexusnova-dev-ai/specialists_v6.py
+      - name: Import V2 and V6 Ultimate modules
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import agent, mobile_gateway, power_engine
-          import mobile_gateway_v6, power_engine_v6, project_tools_v6, git_tools_v6
+          import mobile_gateway_v6, power_engine_v6, project_tools_v6, git_tools_v6, specialists_v6
           assert power_engine.VERSION == '2.0.0'
           assert mobile_gateway.VERSION == '2.0.0'
           assert power_engine_v6.VERSION == '6.0.0'
+          assert power_engine_v6.ULTIMATE is True
           assert mobile_gateway_v6.VERSION == '6.0.0'
           assert project_tools_v6.VERSION == '6.0.0'
           assert git_tools_v6.VERSION == '6.0.0'
+          assert specialists_v6.VERSION.endswith('ultimate')
           names={x['function']['name'] for x in mobile_gateway_v6.all_specs()}
           for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe'):
               assert required in names, required
           assert 'git_commit' not in names
-          print('NOVA AI POWER V6 imports/tool policy OK')
+          print('NOVA AI POWER V6 Ultimate imports/tool policy OK')
           PY
-      - name: Verify V6 routing
+      - name: Verify V6 routing and specialists
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import power_engine_v6 as p
+          import specialists_v6 as s
           assert p.route('simple hello','chat','auto') == 'fast'
           assert p.route('meri nayi app bana do','builder','auto') == 'builder'
           assert p.route('deep website audit fix seo auth and build','power','auto') == 'deep'
-          print('V6 router OK')
+          roles=s.select('Android APK login bug fix aur test karo','power','deep')
+          assert len(roles) >= 2
+          assert 'android' in roles or 'debugger' in roles
+          assert len(roles) <= 3
+          print('V6 Ultimate router/specialists OK:', roles)
           PY
       - name: Verify required files
         run: |
@@ -65,3 +73,5 @@ jobs:
           test -f nexusnova-dev-ai/START_NOVA_AI_V6.bat
           test -f nexusnova-dev-ai/CHECK_HARDWARE_V6.bat
           test -f nexusnova-dev-ai/V6-DESIGN.md
+          test -f nexusnova-dev-ai/README_V6.md
+          test -f nexusnova-dev-ai/specialists_v6.py
