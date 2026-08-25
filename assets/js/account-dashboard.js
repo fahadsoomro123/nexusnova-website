@@ -1,15 +1,12 @@
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithCustomToken, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-functions.js';
+import { telegramSessionCall, linkTelegramAccountCall } from './telegram-account-api.js';
 
 const firebaseConfig={apiKey:'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',authDomain:'nexusnova-6ade2.firebaseapp.com',projectId:'nexusnova-6ade2',storageBucket:'nexusnova-6ade2.firebasestorage.app',messagingSenderId:'49791194817',appId:'1:49791194817:web:07f28326e0f15979536640',measurementId:'G-YLPFKWSS12'};
 const app=getApps()[0]||initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
-const functions=getFunctions(app);
-const telegramSessionCall=httpsCallable(functions,'telegramSession');
-const linkTelegramAccountCall=httpsCallable(functions,'linkTelegramAccount');
 const TELEGRAM_SKIP_KEY='nexusnova_skip_telegram_autologin_v1';
 
 const dashboard=document.querySelector('[data-dashboard]');
@@ -135,8 +132,8 @@ telegramLinkButton?.addEventListener('click',async()=>{
   setText('[data-telegram-state]','LINKING');
   setText('[data-telegram-copy]','Verifying the Telegram launch and linking this NexusNova account…');
   try{
-    await user.getIdToken(true);
-    const response=await linkTelegramAccountCall({initData:bridge.getInitData()});
+    const idToken=await user.getIdToken(true);
+    const response=await linkTelegramAccountCall({initData:bridge.getInitData(),idToken});
     paintTelegram(response?.data?.user||window.NexusNovaTelegram.getUser(),{linked:true,copy:'Telegram and NexusNova now use the same secure account.'});
     if(status)status.textContent='Telegram account linked securely.';
     window.gtag?.('event','telegram_account_linked',{source:'account_dashboard'});
