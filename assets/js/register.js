@@ -58,6 +58,25 @@ let pendingReferral = '';
 let telegramContext = null;
 let telegramBootstrapPromise = Promise.resolve(null);
 
+function telegramLaunchKey() {
+  const authDate = String(window.NexusNovaTelegram?.getAuthDate?.() || window.NexusNovaTelegram?.authDate || '').trim();
+  return authDate ? `tg:${authDate}` : '';
+}
+
+function telegramAutoLoginSkippedForCurrentLaunch() {
+  let stored = '';
+  try { stored = sessionStorage.getItem(TELEGRAM_SKIP_KEY) || ''; } catch (_) {}
+  if (!stored) return false;
+  if (stored === '1') {
+    try { sessionStorage.removeItem(TELEGRAM_SKIP_KEY); } catch (_) {}
+    return false;
+  }
+  const current = telegramLaunchKey();
+  if (current && stored === current) return true;
+  try { sessionStorage.removeItem(TELEGRAM_SKIP_KEY); } catch (_) {}
+  return false;
+}
+
 function paintTelegram(user, state, copy) {
   if (!telegramPanel || !user) return;
   telegramPanel.hidden = false;
@@ -79,10 +98,12 @@ function paintTelegram(user, state, copy) {
 
 function telegramErrorMessage(error) {
   const code = String(error?.code || '');
+  const detail = String(error?.message || '').trim();
   if (code.includes('already-exists')) return 'This Telegram account is already linked to another NexusNova account.';
-  if (code.includes('failed-precondition')) return 'Sign in again before linking Telegram.';
-  if (code.includes('permission-denied')) return 'Telegram verification expired. Close and reopen the Mini App.';
-  return 'Telegram linking could not finish. Your email account remains available.';
+  if (code.includes('failed-precondition')) return detail || 'Telegram account service needs configuration.';
+  if (code.includes('permission-denied')) return detail || 'Telegram verification expired. Close and reopen the Mini App.';
+  if (code.includes('unavailable') || code.includes('network')) return detail || 'Telegram account service is unavailable.';
+  return detail || 'Telegram linking could not finish. Your email account remains available.';
 }
 
 async function bootstrapTelegram() {
@@ -105,25 +126,35 @@ async function bootstrapTelegram() {
       result.user,
       result.linked ? 'VERIFIED + LINKED' : 'VERIFIED',
       result.linked
-        ? 'Telegram identity verified. Opening its linked NexusNova account…'
+        ? 'Telegram identity verified. Signing in to its linked NexusNova account…'
         : 'Telegram identity verified. Create an account or sign in below to link it.'
     );
 
-    if (result.linked && result.customToken) {
+    if (result.linked) {
+      if (!result.customToken) {
+        paintTelegram(result.user, 'LINKED • TOKEN MISSING', 'Telegram is linked, but the backend did not return a Firebase sign-in token.');
+        setStatus('Telegram is linked, but automatic sign-in could not receive a Firebase token.', 'error');
+        return telegramContext;
+      }
       if (typeof auth.authStateReady === 'function') await auth.authStateReady();
-      let skipAutoLogin = false;
-      try { skipAutoLogin = sessionStorage.getItem(TELEGRAM_SKIP_KEY) === '1'; } catch (_) {}
+      const skipAutoLogin = telegramAutoLoginSkippedForCurrentLaunch();
       if (!auth.currentUser && !skipAutoLogin) {
+        setStatus('Telegram account recognized. Signing you in automatically…');
         const credential = await signInWithCustomToken(auth, result.customToken);
+        try { sessionStorage.removeItem(TELEGRAM_SKIP_KEY); } catch (_) {}
         await ensureProfile(credential.user);
         window.gtag?.('event', 'login', { method: 'telegram_mini_app' });
-        setTimeout(() => location.assign('account.html'), 250);
+        setTimeout(() => location.assign('account.html'), 150);
+      } else if (skipAutoLogin) {
+        paintTelegram(result.user, 'SIGNED OUT', 'You signed out during this Telegram launch. Reopen the Mini App from the bot to sign in automatically again.');
       }
     }
     return telegramContext;
   } catch (error) {
     console.warn('[NexusNova Telegram]', error?.code || 'verification-failed');
-    paintTelegram(detected, 'NOT VERIFIED', 'Secure Telegram verification is unavailable. Email sign-in still works normally.');
+    const message = telegramErrorMessage(error);
+    paintTelegram(detected, 'AUTO-LOGIN FAILED', message);
+    setStatus(`Telegram automatic sign-in failed: ${message}`, 'error');
     return null;
   }
 }

@@ -25,6 +25,30 @@ function setVerified(verified){const pill=document.querySelector('[data-verified
 function setTelegramState(value){setText('[data-telegram-state]',value);}
 function fallbackAvatar(name='N'){const letter=String(name||'N').trim().charAt(0).toUpperCase()||'N';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#52f4d0"/><stop offset=".55" stop-color="#72d9ff"/><stop offset="1" stop-color="#9f8dff"/></linearGradient></defs><rect width="108" height="108" rx="28" fill="#06111e"/><rect x="2" y="2" width="104" height="104" rx="26" fill="url(#g)" opacity=".95"/><text x="54" y="69" text-anchor="middle" font-size="48" font-family="Arial,sans-serif" font-weight="800" fill="#03100f">${letter}</text></svg>`;return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;}
 
+function telegramLaunchKey(){
+  const authDate=String(window.NexusNovaTelegram?.getAuthDate?.()||window.NexusNovaTelegram?.authDate||'').trim();
+  return authDate?`tg:${authDate}`:'';
+}
+
+function telegramAutoLoginSkippedForCurrentLaunch(){
+  let stored='';
+  try{stored=sessionStorage.getItem(TELEGRAM_SKIP_KEY)||'';}catch(_){}
+  if(!stored)return false;
+  if(stored==='1'){
+    try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}
+    return false;
+  }
+  const current=telegramLaunchKey();
+  if(current&&stored===current)return true;
+  try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}
+  return false;
+}
+
+function markTelegramAutoLoginSkippedForCurrentLaunch(){
+  const current=telegramLaunchKey();
+  try{sessionStorage.setItem(TELEGRAM_SKIP_KEY,current||'1');}catch(_){}
+}
+
 function paintTelegram(user,{linked=false,copy='',state=''}={}){
   const fullName=user?[user.firstName,user.lastName].filter(Boolean).join(' '):'No Telegram account linked';
   setText('[data-telegram-name]',fullName||'Telegram user');
@@ -166,14 +190,20 @@ async function resolveSignedOutWithTelegram(){
   if(resolvingSignedOut)return;
   resolvingSignedOut=true;
   try{
-    let skip=false;try{skip=sessionStorage.getItem(TELEGRAM_SKIP_KEY)==='1';}catch(_){}
-    if(skip){location.replace('register.html');return;}
-    const result=await getTelegramSession();
+    if(telegramAutoLoginSkippedForCurrentLaunch()){location.replace('register.html?signedout=1');return;}
+    const result=await getTelegramSession({force:true});
     const session=result.data;
-    if(session?.linked&&session.customToken){await signInWithCustomToken(auth,session.customToken);window.gtag?.('event','login',{method:'telegram_mini_app'});return;}
-    location.replace(window.NexusNovaTelegram?.isAvailable?'register.html?telegram=1':'register.html');
-  }catch(error){console.warn('[NexusNova Telegram]',error?.code||'sign-in-failed');location.replace('register.html');}
-  finally{resolvingSignedOut=false;}
+    if(session?.linked&&session.customToken){
+      await signInWithCustomToken(auth,session.customToken);
+      window.gtag?.('event','login',{method:'telegram_mini_app'});
+      return;
+    }
+    const reason=session?.linked?'linked-token-missing':String(result.error?.code||'not-linked');
+    location.replace(window.NexusNovaTelegram?.isAvailable?`register.html?telegram=1&reason=${encodeURIComponent(reason)}`:'register.html');
+  }catch(error){
+    console.warn('[NexusNova Telegram]',error?.code||'sign-in-failed');
+    location.replace(`register.html?telegram=1&reason=${encodeURIComponent(String(error?.code||'sign-in-failed'))}`);
+  }finally{resolvingSignedOut=false;}
 }
 
 onAuthStateChanged(auth,user=>{if(!user){resolveSignedOutWithTelegram();return;}try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}loadAccount(user);});
@@ -197,4 +227,4 @@ telegramLinkButton?.addEventListener('click',async()=>{
   }
 });
 
-document.querySelector('[data-signout]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-signout]');button.disabled=true;try{try{sessionStorage.setItem(TELEGRAM_SKIP_KEY,'1');}catch(_){}await signOut(auth);location.replace('register.html');}catch(error){console.error('[NexusNova Dashboard]',error?.code||'signout-failed');button.disabled=false;}});
+document.querySelector('[data-signout]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-signout]');button.disabled=true;try{markTelegramAutoLoginSkippedForCurrentLaunch();await signOut(auth);location.replace('register.html?signedout=1');}catch(error){console.error('[NexusNova Dashboard]',error?.code||'signout-failed');button.disabled=false;}});
