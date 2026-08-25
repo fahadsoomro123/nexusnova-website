@@ -6,6 +6,7 @@
   const telegram = global.Telegram?.WebApp || null;
   const webView = global.Telegram?.WebView || null;
   const SESSION_INIT_DATA_KEY = 'nexusnova_telegram_init_data_v1';
+  const SESSION_DISPLAY_USER_KEY = 'nexusnova_telegram_display_user_v1';
   const TELEGRAM_INIT_PARAMS_KEY = '__telegram__initParams';
 
   function cleanText(value, maxLength) {
@@ -29,17 +30,17 @@
   function normalizeUnsafeUser(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const id = String(raw.id ?? '').trim();
-    const firstName = cleanText(raw.first_name, 80);
+    const firstName = cleanText(raw.first_name ?? raw.firstName, 80);
     if (!/^\d{1,20}$/.test(id) || !firstName) return null;
     return Object.freeze({
       id,
       username: cleanText(raw.username, 64),
       firstName,
-      lastName: cleanText(raw.last_name, 80),
-      photoUrl: cleanPhotoUrl(raw.photo_url),
-      languageCode: cleanText(raw.language_code, 16),
-      isPremium: raw.is_premium === true,
-      allowsWriteToPm: raw.allows_write_to_pm === true
+      lastName: cleanText(raw.last_name ?? raw.lastName, 80),
+      photoUrl: cleanPhotoUrl(raw.photo_url ?? raw.photoUrl),
+      languageCode: cleanText(raw.language_code ?? raw.languageCode, 16),
+      isPremium: raw.is_premium === true || raw.isPremium === true,
+      allowsWriteToPm: raw.allows_write_to_pm === true || raw.allowsWriteToPm === true
     });
   }
 
@@ -56,6 +57,47 @@
     try {
       global.sessionStorage?.setItem(key, value);
     } catch (_) {}
+  }
+
+  function readStoredDisplayUser() {
+    const stored = readStorage(SESSION_DISPLAY_USER_KEY);
+    if (!stored) return null;
+    try {
+      return normalizeUnsafeUser(JSON.parse(stored));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeDisplayUser(user) {
+    if (!user?.id) return;
+    try {
+      writeStorage(SESSION_DISPLAY_USER_KEY, JSON.stringify({
+        id: user.id,
+        username: user.username || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        photoUrl: user.photoUrl || '',
+        languageCode: user.languageCode || '',
+        isPremium: user.isPremium === true,
+        allowsWriteToPm: user.allowsWriteToPm === true
+      }));
+    } catch (_) {}
+  }
+
+  function mergeDisplayUser(baseUser, cachedUser) {
+    if (!baseUser) return null;
+    if (!cachedUser || String(cachedUser.id || '') !== String(baseUser.id || '')) return baseUser;
+    return Object.freeze({
+      ...baseUser,
+      username: baseUser.username || cachedUser.username || '',
+      firstName: baseUser.firstName || cachedUser.firstName || '',
+      lastName: baseUser.lastName || cachedUser.lastName || '',
+      photoUrl: baseUser.photoUrl || cachedUser.photoUrl || '',
+      languageCode: baseUser.languageCode || cachedUser.languageCode || '',
+      isPremium: baseUser.isPremium === true || cachedUser.isPremium === true,
+      allowsWriteToPm: baseUser.allowsWriteToPm === true || cachedUser.allowsWriteToPm === true
+    });
   }
 
   function readTelegramStoredInitData() {
@@ -115,9 +157,12 @@
 
   if (initData) writeStorage(SESSION_INIT_DATA_KEY, initData);
 
-  const unsafeUser =
-    normalizeUnsafeUser(telegram?.initDataUnsafe?.user) ||
-    userFromInitData(initData);
+  const liveUnsafeUser = normalizeUnsafeUser(telegram?.initDataUnsafe?.user);
+  const signedDisplayUser = userFromInitData(initData);
+  const baseUser = liveUnsafeUser || signedDisplayUser;
+  const unsafeUser = mergeDisplayUser(baseUser, readStoredDisplayUser());
+  if (unsafeUser) writeDisplayUser(unsafeUser);
+
   const authDate = authDateFromInitData(initData);
 
   const reason = !initData
@@ -144,7 +189,7 @@
       return authDate;
     },
     getDiagnostic() {
-      return { available, source, reason, authDatePresent: Boolean(authDate) };
+      return { available, source, reason, authDatePresent: Boolean(authDate), photoPresent: Boolean(unsafeUser?.photoUrl) };
     },
     close() {
       if (!telegram) return false;
@@ -179,7 +224,8 @@
         user: bridge.getUser(),
         source,
         reason,
-        authDatePresent: Boolean(authDate)
+        authDatePresent: Boolean(authDate),
+        photoPresent: Boolean(unsafeUser?.photoUrl)
       }
     }));
   } catch (_) {}
