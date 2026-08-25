@@ -38,23 +38,23 @@ test('account pages use server verification and Firebase linking callables', () 
   assert.match(read('account.html'), /data-telegram-link/);
 });
 
-test('Telegram sign-out skip is scoped to one signed Mini App launch', () => {
-  const bridge = read('assets/js/telegram-webapp.js');
+test('Telegram register gateway bypasses the heavy manual form for a fresh Mini App launch', () => {
+  const registerPage = read('register.html');
+  assert.match(registerPage, /bridge\?\.isAvailable && !fallback/);
+  assert.match(registerPage, /location\.replace\('account\.html\?telegram=1'\)/);
+  assert.match(registerPage, /params\.has\('reason'\) \|\| params\.has\('signedout'\)/);
+  assert.match(registerPage, /data-telegram-auto-login-error/);
+});
+
+test('launch-scoped Telegram auto-login guard does not permanently suppress a future launch', () => {
   const register = read('assets/js/register.js');
   const dashboard = read('assets/js/account-dashboard.js');
-  assert.match(bridge, /getAuthDate\(\)/);
-  assert.match(bridge, /authDateFromInitData/);
-  for (const source of [register, dashboard]) {
-    assert.match(source, /telegramLaunchKey/);
-    assert.match(source, /`tg:\$\{authDate\}`/);
-    assert.match(source, /telegramAutoLoginSkippedForCurrentLaunch/);
-  }
+  const bridge = read('assets/js/telegram-webapp.js');
+  assert.match(bridge, /getAuthDate/);
+  assert.match(register, /telegramLaunchKey/);
+  assert.match(register, /stored === '1'/);
+  assert.match(dashboard, /telegramAutoLoginSkippedForCurrentLaunch/);
   assert.match(dashboard, /markTelegramAutoLoginSkippedForCurrentLaunch/);
-  assert.match(register, /Telegram account recognized\. Signing you in automatically/);
-  assert.match(read('register.html'), /telegram-webapp\.js\?v=20260826-1/);
-  assert.match(read('register.html'), /register\.js\?v=20260826-1/);
-  assert.match(read('account.html'), /telegram-webapp\.js\?v=20260826-1/);
-  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-1/);
 });
 
 test('prototype localStorage identity persistence is removed', () => {
