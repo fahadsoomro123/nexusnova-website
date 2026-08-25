@@ -38,6 +38,25 @@ test('account pages use server verification and Firebase linking callables', () 
   assert.match(read('account.html'), /data-telegram-link/);
 });
 
+test('Telegram sign-out skip is scoped to one signed Mini App launch', () => {
+  const bridge = read('assets/js/telegram-webapp.js');
+  const register = read('assets/js/register.js');
+  const dashboard = read('assets/js/account-dashboard.js');
+  assert.match(bridge, /getAuthDate\(\)/);
+  assert.match(bridge, /authDateFromInitData/);
+  for (const source of [register, dashboard]) {
+    assert.match(source, /telegramLaunchKey/);
+    assert.match(source, /`tg:\$\{authDate\}`/);
+    assert.match(source, /telegramAutoLoginSkippedForCurrentLaunch/);
+  }
+  assert.match(dashboard, /markTelegramAutoLoginSkippedForCurrentLaunch/);
+  assert.match(register, /Telegram account recognized\. Signing you in automatically/);
+  assert.match(read('register.html'), /telegram-webapp\.js\?v=20260826-1/);
+  assert.match(read('register.html'), /register\.js\?v=20260826-1/);
+  assert.match(read('account.html'), /telegram-webapp\.js\?v=20260826-1/);
+  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-1/);
+});
+
 test('prototype localStorage identity persistence is removed', () => {
   const bridge = read('assets/js/telegram-webapp.js');
   assert.doesNotMatch(bridge, /telegramUser|localStorage/);
