@@ -56,10 +56,12 @@ test('normal browser fallback is inert and safe', () => {
   assert.equal(bridge.reason, 'missing-init-data');
   assert.equal(bridge.getInitData(), '');
   assert.equal(bridge.getUser(), null);
+  assert.equal(bridge.getAuthDate(), '');
+  assert.equal(bridge.getDiagnostic().authDatePresent, false);
   assert.equal(calls.at(-1)[0], 'event');
 });
 
-test('Telegram launch exposes required display fields and raw initData', () => {
+test('Telegram launch exposes required display fields, raw initData and launch auth date', () => {
   let ready = 0;
   let expanded = 0;
   const initData = makeInitData({
@@ -93,6 +95,8 @@ test('Telegram launch exposes required display fields and raw initData', () => {
   assert.equal(bridge.user.firstName, 'Fahad');
   assert.equal(bridge.user.photoUrl, 'https://t.me/i/userpic/320/test.jpg');
   assert.match(bridge.getInitData(), /auth_date/);
+  assert.equal(bridge.getAuthDate(), '1800000000');
+  assert.equal(bridge.getDiagnostic().authDatePresent, true);
   assert.equal(store.get('nexusnova_telegram_init_data_v1'), initData);
   assert.equal(root.dataset.telegramMiniApp, 'true');
   assert.equal(root.dataset.telegramInitSource, 'webapp');
@@ -128,6 +132,7 @@ test('recovers signed initData from Telegram SDK session storage after navigatio
   assert.equal(bridge.source, 'telegram-storage');
   assert.equal(bridge.getUser().id, '123456789');
   assert.equal(bridge.getInitData(), initData);
+  assert.equal(bridge.getAuthDate(), '1800000000');
 });
 
 test('recovers signed initData from Telegram launch hash', () => {
@@ -147,6 +152,7 @@ test('recovers signed initData from Telegram launch hash', () => {
   assert.equal(bridge.source, 'hash');
   assert.equal(bridge.getUser().id, '123456789');
   assert.equal(bridge.getInitData(), initData);
+  assert.equal(bridge.getAuthDate(), '1800000000');
 });
 
 test('recovers signed initData from Telegram WebView init params', () => {
@@ -159,4 +165,5 @@ test('recovers signed initData from Telegram WebView init params', () => {
   assert.equal(bridge.isAvailable, true);
   assert.equal(bridge.source, 'webview');
   assert.equal(bridge.getUser().id, '123456789');
+  assert.equal(bridge.getAuthDate(), '1800000000');
 });
