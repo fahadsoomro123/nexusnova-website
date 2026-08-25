@@ -38,6 +38,14 @@ test('account pages use server verification and Firebase linking callables', () 
   assert.match(read('account.html'), /data-telegram-link/);
 });
 
+test('linked account display can use the fresh Telegram photo without changing verified identity', () => {
+  const dashboard = read('assets/js/account-dashboard.js');
+  assert.match(dashboard, /function telegramDisplayUser\(serverUser\)/);
+  assert.match(dashboard, /String\(local\.id\|\|''\)!==String\(serverUser\.id\|\|''\)/);
+  assert.match(dashboard, /photoUrl:local\.photoUrl\|\|serverUser\.photoUrl\|\|''/);
+  assert.match(dashboard, /paintTelegram\(telegramDisplayUser\(linkedTelegram\)/);
+});
+
 test('Telegram register gateway bypasses the heavy manual form for a fresh Mini App launch', () => {
   const registerPage = read('register.html');
   assert.match(registerPage, /bridge\?\.isAvailable && !fallback/);

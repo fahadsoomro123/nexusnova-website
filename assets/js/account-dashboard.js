@@ -25,6 +25,19 @@ function setVerified(verified){const pill=document.querySelector('[data-verified
 function setTelegramState(value){setText('[data-telegram-state]',value);}
 function fallbackAvatar(name='N'){const letter=String(name||'N').trim().charAt(0).toUpperCase()||'N';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#52f4d0"/><stop offset=".55" stop-color="#72d9ff"/><stop offset="1" stop-color="#9f8dff"/></linearGradient></defs><rect width="108" height="108" rx="28" fill="#06111e"/><rect x="2" y="2" width="104" height="104" rx="26" fill="url(#g)" opacity=".95"/><text x="54" y="69" text-anchor="middle" font-size="48" font-family="Arial,sans-serif" font-weight="800" fill="#03100f">${letter}</text></svg>`;return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;}
 
+function telegramDisplayUser(serverUser){
+  const local=window.NexusNovaTelegram?.getUser?.()||null;
+  if(!serverUser)return local;
+  if(!local||String(local.id||'')!==String(serverUser.id||''))return serverUser;
+  return {
+    ...serverUser,
+    firstName:serverUser.firstName||local.firstName||'',
+    lastName:serverUser.lastName||local.lastName||'',
+    username:serverUser.username||local.username||'',
+    photoUrl:local.photoUrl||serverUser.photoUrl||''
+  };
+}
+
 function telegramLaunchKey(){
   const authDate=String(window.NexusNovaTelegram?.getAuthDate?.()||window.NexusNovaTelegram?.authDate||'').trim();
   return authDate?`tg:${authDate}`:'';
@@ -105,19 +118,19 @@ async function linkTelegramForSignedInUser(user,verifiedTelegram){
   if(linkingTelegram||!user||!bridge?.isAvailable||!verifiedTelegram?.id)return false;
   linkingTelegram=true;
   if(telegramLinkButton)telegramLinkButton.disabled=true;
-  paintTelegram(verifiedTelegram,{state:'LINKING',copy:'Telegram verified. Connecting it to this NexusNova account automatically…'});
+  paintTelegram(telegramDisplayUser(verifiedTelegram),{state:'LINKING',copy:'Telegram verified. Connecting it to this NexusNova account automatically…'});
   try{
     const idToken=await user.getIdToken(true);
     const response=await linkTelegramAccountCall({initData:bridge.getInitData(),idToken});
     const linkedUser=response?.data?.user||verifiedTelegram;
-    paintTelegram(linkedUser,{linked:true,copy:'Telegram and NexusNova now use the same secure account.'});
+    paintTelegram(telegramDisplayUser(linkedUser),{linked:true,copy:'Telegram and NexusNova now use the same secure account.'});
     if(status)status.textContent='Telegram account linked securely.';
     window.gtag?.('event','telegram_account_linked',{source:'account_dashboard_auto'});
     return true;
   }catch(error){
     console.warn('[NexusNova Telegram link]',error?.code||'link-failed');
     const info=telegramErrorText(error);
-    paintTelegram(verifiedTelegram,{state:info.state,copy:info.copy});
+    paintTelegram(telegramDisplayUser(verifiedTelegram),{state:info.state,copy:info.copy});
     if(status)status.textContent=`Telegram link not completed: ${String(error?.message||error?.code||'unknown-error')}`;
     return false;
   }finally{
@@ -141,7 +154,7 @@ async function loadAccount(user){
 
     const linkedTelegram=profile.telegram?.linked===true?profile.telegram:null;
     if(linkedTelegram){
-      paintTelegram(linkedTelegram,{linked:true,copy:'Server-verified Telegram identity is synced with this Firebase profile.'});
+      paintTelegram(telegramDisplayUser(linkedTelegram),{linked:true,copy:'Server-verified Telegram identity is synced with this Firebase profile.'});
     }else{
       const bridge=window.NexusNovaTelegram;
       const localTelegram=bridge?.getUser?.()||null;
@@ -150,7 +163,7 @@ async function loadAccount(user){
       const session=sessionResult.data;
       if(session?.user?.id){
         if(session.linked===true){
-          paintTelegram(session.user,{linked:true,copy:'Telegram identity is already linked on the secure backend.'});
+          paintTelegram(telegramDisplayUser(session.user),{linked:true,copy:'Telegram identity is already linked on the secure backend.'});
         }else{
           await linkTelegramForSignedInUser(active,session.user);
         }
