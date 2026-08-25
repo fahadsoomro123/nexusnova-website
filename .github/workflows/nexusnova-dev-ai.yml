@@ -75,3 +75,10 @@ jobs:
           test -f nexusnova-dev-ai/V6-DESIGN.md
           test -f nexusnova-dev-ai/README_V6.md
           test -f nexusnova-dev-ai/specialists_v6.py
+      - name: Package NOVA AI V6 Ultimate
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusNova-Dev-AI-V6-Ultimate
+          path: nexusnova-dev-ai/
+          if-no-files-found: error
+          retention-days: 30
