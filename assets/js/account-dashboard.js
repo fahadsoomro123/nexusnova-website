@@ -23,6 +23,7 @@ let linkingTelegram=false;
 function showDashboard(){if(loading)loading.hidden=true;if(dashboard)dashboard.hidden=false;}
 function setVerified(verified){const pill=document.querySelector('[data-verified]');if(pill){pill.textContent=verified?'EMAIL VERIFIED':'EMAIL NOT VERIFIED';pill.classList.toggle('unverified',!verified);}setText('[data-email-state]',verified?'VERIFIED':'PENDING');}
 function setTelegramState(value){setText('[data-telegram-state]',value);}
+function fallbackAvatar(name='N'){const letter=String(name||'N').trim().charAt(0).toUpperCase()||'N';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#52f4d0"/><stop offset=".55" stop-color="#72d9ff"/><stop offset="1" stop-color="#9f8dff"/></linearGradient></defs><rect width="108" height="108" rx="28" fill="#06111e"/><rect x="2" y="2" width="104" height="104" rx="26" fill="url(#g)" opacity=".95"/><text x="54" y="69" text-anchor="middle" font-size="48" font-family="Arial,sans-serif" font-weight="800" fill="#03100f">${letter}</text></svg>`;return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;}
 
 function paintTelegram(user,{linked=false,copy='',state=''}={}){
   const fullName=user?[user.firstName,user.lastName].filter(Boolean).join(' '):'No Telegram account linked';
@@ -30,30 +31,47 @@ function paintTelegram(user,{linked=false,copy='',state=''}={}){
   setText('[data-telegram-username]',user?(user.username?`@${user.username} • ID ${user.id}`:`Telegram ID ${user.id}`):'Open this page from @NexusNovaToolsBot to connect.');
   setText('[data-telegram-copy]',copy||(linked?'Telegram and NexusNova use the same secure identity.':'Telegram is not linked to this NexusNova account.'));
   setTelegramState(state||(linked?'LINKED':(user?'READY TO LINK':'NOT CONNECTED')));
-  if(telegramPhoto){telegramPhoto.hidden=!user?.photoUrl;if(user?.photoUrl){telegramPhoto.src=user.photoUrl;telegramPhoto.alt=`${fullName} Telegram profile`;}else telegramPhoto.removeAttribute('src');}
+  if(telegramPhoto){
+    if(user){
+      telegramPhoto.hidden=false;
+      telegramPhoto.alt=`${fullName||'Telegram'} avatar`;
+      telegramPhoto.onerror=()=>{telegramPhoto.onerror=null;telegramPhoto.src=fallbackAvatar(fullName);};
+      telegramPhoto.src=user.photoUrl||fallbackAvatar(fullName);
+    }else{
+      telegramPhoto.hidden=true;
+      telegramPhoto.removeAttribute('src');
+      telegramPhoto.onerror=null;
+    }
+  }
   if(telegramLinkButton)telegramLinkButton.hidden=linked||!user||!window.NexusNovaTelegram?.isAvailable;
 }
 
 function telegramErrorText(error){
   const code=String(error?.code||'unknown-error').replace(/^functions\//,'');
+  const detail=String(error?.message||'').trim();
   if(code.includes('already-exists'))return {state:'ALREADY LINKED',copy:'This Telegram identity is linked to another NexusNova account.'};
   if(code.includes('telegram-session-expired'))return {state:'SESSION EXPIRED',copy:'Telegram session expired. Close the Mini App and open it again from the bot.'};
   if(code.includes('invalid-telegram-signature'))return {state:'VERIFY FAILED',copy:'Telegram verification failed on the backend.'};
-  if(code.includes('firebase-config-missing'))return {state:'BACKEND CONFIG',copy:'Telegram backend is missing a Firebase Cloudflare variable.'};
-  if(code.includes('google-auth-failed'))return {state:'BACKEND AUTH',copy:'Firebase service authentication failed in the Cloudflare Worker.'};
-  if(code.includes('firebase-private-key'))return {state:'PRIVATE KEY ERROR',copy:'The Firebase private key in Cloudflare could not be loaded.'};
-  if(code.includes('firestore'))return {state:'DATABASE ERROR',copy:'Telegram verification worked, but Firestore linking failed.'};
-  if(code.includes('unavailable')||code.includes('network'))return {state:'BACKEND OFFLINE',copy:'The Telegram account service could not be reached.'};
-  return {state:'LINK ERROR',copy:`Telegram linking failed (${code}).`};
+  if(code.includes('firebase-config-missing'))return {state:'BACKEND CONFIG',copy:detail||'Telegram backend is missing a Firebase Cloudflare variable.'};
+  if(code.includes('google-auth-failed'))return {state:'BACKEND AUTH',copy:detail||'Firebase service authentication failed in the Cloudflare Worker.'};
+  if(code.includes('firebase-private-key'))return {state:'PRIVATE KEY ERROR',copy:detail||'The Firebase private key in Cloudflare could not be loaded.'};
+  if(code.includes('firestore'))return {state:'DATABASE ERROR',copy:detail||'Telegram verification worked, but Firestore linking failed.'};
+  if(code.includes('unavailable')||code.includes('network'))return {state:'BACKEND OFFLINE',copy:detail||'The Telegram account service could not be reached.'};
+  return {state:'LINK ERROR',copy:detail||`Telegram linking failed (${code}).`};
 }
 
-async function getTelegramSession(){
+async function getTelegramSession({force=false}={}){
   const bridge=window.NexusNovaTelegram;
-  if(!bridge?.isAvailable)return {data:null,error:{code:'telegram-not-detected'}};
+  if(!bridge?.isAvailable)return {data:null,error:{code:'telegram-not-detected',message:'Telegram Mini App launch data was not detected.'}};
+  if(force)telegramSessionPromise=null;
   if(!telegramSessionPromise){
-    telegramSessionPromise=telegramSessionCall({initData:bridge.getInitData()})
+    const pending=telegramSessionCall({initData:bridge.getInitData()})
       .then(response=>({data:response?.data||null,error:null}))
       .catch(error=>{console.warn('[NexusNova Telegram session]',error?.code||'session-failed');return {data:null,error};});
+    telegramSessionPromise=pending;
+    const result=await pending;
+    if(result.error)telegramSessionPromise=null;
+    return result;
   }
   return telegramSessionPromise;
 }
@@ -76,7 +94,7 @@ async function linkTelegramForSignedInUser(user,verifiedTelegram){
     console.warn('[NexusNova Telegram link]',error?.code||'link-failed');
     const info=telegramErrorText(error);
     paintTelegram(verifiedTelegram,{state:info.state,copy:info.copy});
-    if(status)status.textContent=`Telegram link not completed: ${String(error?.code||'unknown-error')}`;
+    if(status)status.textContent=`Telegram link not completed: ${String(error?.message||error?.code||'unknown-error')}`;
     return false;
   }finally{
     linkingTelegram=false;
@@ -115,7 +133,7 @@ async function loadAccount(user){
       }else if(sessionResult.error){
         const info=telegramErrorText(sessionResult.error);
         paintTelegram(localTelegram,{state:info.state,copy:info.copy});
-        if(status)status.textContent=`Telegram verification error: ${String(sessionResult.error?.code||'unknown-error')}`;
+        if(status)status.textContent=`Telegram verification error: ${String(sessionResult.error?.message||sessionResult.error?.code||'unknown-error')}`;
       }else{
         paintTelegram(localTelegram,{state:localTelegram?'NOT VERIFIED':'NOT CONNECTED',copy:localTelegram?'Telegram was detected but secure verification returned no user.':'Open this account from @NexusNovaToolsBot to connect Telegram.'});
       }
@@ -162,9 +180,21 @@ onAuthStateChanged(auth,user=>{if(!user){resolveSignedOutWithTelegram();return;}
 
 telegramLinkButton?.addEventListener('click',async()=>{
   const user=auth.currentUser;const bridge=window.NexusNovaTelegram;if(!user||!bridge?.isAvailable)return;
-  const result=await getTelegramSession();
-  if(result.data?.user?.id){await linkTelegramForSignedInUser(user,result.data.user);return;}
-  const local=bridge.getUser?.()||null;const info=telegramErrorText(result.error||{code:'verification-failed'});paintTelegram(local,{state:info.state,copy:info.copy});
+  const originalText=telegramLinkButton.textContent;
+  telegramLinkButton.disabled=true;
+  telegramLinkButton.textContent='Checking…';
+  try{
+    const local=bridge.getUser?.()||null;
+    if(local)paintTelegram(local,{state:'VERIFYING',copy:'Retrying the Telegram backend with current Cloudflare settings…'});
+    const result=await getTelegramSession({force:true});
+    if(result.data?.user?.id){await linkTelegramForSignedInUser(user,result.data.user);return;}
+    const info=telegramErrorText(result.error||{code:'verification-failed'});
+    paintTelegram(local,{state:info.state,copy:info.copy});
+    if(status)status.textContent=`Telegram verification error: ${String(result.error?.message||result.error?.code||'unknown-error')}`;
+  }finally{
+    telegramLinkButton.disabled=false;
+    telegramLinkButton.textContent=originalText||'Link Telegram';
+  }
 });
 
 document.querySelector('[data-signout]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-signout]');button.disabled=true;try{try{sessionStorage.setItem(TELEGRAM_SKIP_KEY,'1');}catch(_){}await signOut(auth);location.replace('register.html');}catch(error){console.error('[NexusNova Dashboard]',error?.code||'signout-failed');button.disabled=false;}});
