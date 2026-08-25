@@ -45,6 +45,12 @@ test('bot worker opens Web Apps privately and keeps group URL fallback', () => {
   assert.match(worker, /web_app/);
   assert.match(worker, /privateChat \? \{ text, web_app: \{ url \} \} : \{ text, url \}/);
   assert.match(worker, /command === "\/news"/);
+  assert.match(worker, /url\.pathname === "\/status"/);
+  assert.match(worker, /getWebhookInfo/);
+  assert.match(worker, /getMyCommands/);
+  assert.match(worker, /secret_token/);
+  assert.match(worker, /X-Telegram-Bot-Api-Secret-Token/);
+  assert.match(worker, /if \(!response\.ok \|\| !result\.ok\)/);
 });
 
 test('privacy and deletion pages disclose linked Telegram data', () => {
