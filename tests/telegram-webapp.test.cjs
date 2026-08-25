@@ -8,9 +8,9 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../assets/js/telegram-webapp.js'), 'utf8');
 
-function makeInitData(user = { id: 123456789, first_name: 'Fahad', username: 'fahad_test' }) {
+function makeInitData(user = { id: 123456789, first_name: 'Fahad', username: 'fahad_test' }, authDate = '1800000000') {
   return new URLSearchParams({
-    auth_date: '1800000000',
+    auth_date: authDate,
     hash: 'abc',
     user: JSON.stringify(user)
   }).toString();
@@ -100,14 +100,16 @@ test('Telegram launch exposes required display fields, raw initData and launch a
   assert.equal(bridge.getDiagnostic().authDatePresent, true);
   assert.equal(bridge.getDiagnostic().photoPresent, true);
   assert.equal(store.get('nexusnova_telegram_init_data_v1'), initData);
-  assert.match(store.get('nexusnova_telegram_display_user_v1'), /test\.jpg/);
+  const cached = JSON.parse(store.get('nexusnova_telegram_display_user_v2'));
+  assert.equal(cached.authDate, '1800000000');
+  assert.equal(cached.user.photoUrl, 'https://t.me/i/userpic/320/test.jpg');
   assert.equal(root.dataset.telegramMiniApp, 'true');
   assert.equal(root.dataset.telegramInitSource, 'webapp');
   assert.equal(ready, 1);
   assert.equal(expanded, 1);
 });
 
-test('preserves live Telegram photo for display across same-session navigation', () => {
+test('preserves live Telegram photo across navigation only for the same signed launch', () => {
   const initDataWithoutPhoto = makeInitData({
     id: 123456789,
     first_name: 'Fahad',
@@ -147,16 +149,49 @@ test('never applies a cached display photo to a different Telegram ID', () => {
     { initData, initDataUnsafe: {}, ready() {}, expand() {}, close() {} },
     {
       storage: {
-        nexusnova_telegram_display_user_v1: JSON.stringify({
-          id: '111',
-          firstName: 'Cached',
-          photoUrl: 'https://t.me/i/userpic/320/wrong.jpg'
+        nexusnova_telegram_display_user_v2: JSON.stringify({
+          authDate: '1800000000',
+          user: {
+            id: '111',
+            firstName: 'Cached',
+            photoUrl: 'https://t.me/i/userpic/320/wrong.jpg'
+          }
         })
       }
     }
   );
   assert.equal(bridge.getUser().id, '222');
   assert.equal(bridge.getUser().photoUrl, '');
+});
+
+test('never carries a cached display photo into a different Telegram launch', () => {
+  const initData = makeInitData({ id: 123456789, first_name: 'Fahad' }, '1800000100');
+  const { bridge, store } = runBridge(
+    { initData, initDataUnsafe: {}, ready() {}, expand() {}, close() {} },
+    {
+      storage: {
+        nexusnova_telegram_display_user_v2: JSON.stringify({
+          authDate: '1800000000',
+          user: {
+            id: '123456789',
+            firstName: 'Fahad',
+            photoUrl: 'https://t.me/i/userpic/320/stale.jpg'
+          }
+        }),
+        nexusnova_telegram_display_user_v1: JSON.stringify({
+          id: '123456789',
+          firstName: 'Legacy',
+          photoUrl: 'https://t.me/i/userpic/320/legacy.jpg'
+        })
+      }
+    }
+  );
+  assert.equal(bridge.getAuthDate(), '1800000100');
+  assert.equal(bridge.getUser().photoUrl, '');
+  assert.equal(store.has('nexusnova_telegram_display_user_v1'), false);
+  const refreshed = JSON.parse(store.get('nexusnova_telegram_display_user_v2'));
+  assert.equal(refreshed.authDate, '1800000100');
+  assert.equal(refreshed.user.photoUrl, '');
 });
 
 test('initDataUnsafe alone never activates Telegram identity', () => {
