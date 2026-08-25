@@ -46,6 +46,16 @@ test('linked account display can use the fresh Telegram photo without changing v
   assert.match(dashboard, /paintTelegram\(telegramDisplayUser\(linkedTelegram\)/);
 });
 
+test('Telegram avatar never renders as an empty dark box', () => {
+  const dashboard = read('assets/js/account-dashboard.js');
+  assert.match(dashboard, /function telegramPublicAvatarUrl\(user\)/);
+  assert.match(dashboard, /https:\/\/t\.me\/i\/userpic\/320\//);
+  assert.match(dashboard, /telegramPhoto\.style\.backgroundImage/);
+  assert.match(dashboard, /telegramPhoto\.onerror=loadNext/);
+  assert.match(dashboard, /telegramPhoto\.src=fallback/);
+  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-4/);
+});
+
 test('Telegram register gateway bypasses the heavy manual form for a fresh Mini App launch', () => {
   const registerPage = read('register.html');
   assert.match(registerPage, /bridge\?\.isAvailable && !fallback/);
