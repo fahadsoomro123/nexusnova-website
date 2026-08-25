@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+  <script src="assets/js/telegram-webapp.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NexusNova Account Dashboard — NexusNova Tools</title>
@@ -25,7 +27,7 @@
   <div class="container dashboard-shell" data-dashboard hidden>
     <section class="dashboard-hero"><div><span class="kicker">NEXUSNOVA ACCOUNT // ONLINE</span><h1>Account connected.</h1><p>Your website session is connected to the same Firebase identity used by the NexusNova app.</p></div><div class="live-chip"><i></i><span data-live-state>SECURE SESSION</span></div></section>
     <section class="dashboard-grid">
-      <article class="dash-card profile-card"><span class="dash-label">PROFILE</span><div class="profile-mark">N</div><h2 data-name>Loading…</h2><p data-email>Loading account…</p><div class="status-pill" data-verified>CHECKING</div></article>
+      <article class="dash-card profile-card"><span class="dash-label">PROFILE</span><div class="profile-mark">N</div><h2 data-name>Loading…</h2><p data-email>Loading account…</p><div class="status-pill" data-verified>CHECKING</div></article><article class="dash-card telegram-card"><span class="dash-label">TELEGRAM MINI APP</span><div class="telegram-profile-row"><img class="dashboard-telegram-photo" data-telegram-photo alt="" hidden><div><h3 data-telegram-name>Checking Telegram…</h3><p data-telegram-username>Reading Mini App launch context.</p></div></div><p class="telegram-dashboard-copy" data-telegram-copy>Secure Telegram identity status is loading.</p><div class="dash-state"><span>Connection</span><strong data-telegram-state>CHECKING</strong></div><button class="btn telegram-link-btn" type="button" data-telegram-link hidden>Link Telegram</button></article>
       <article class="dash-card"><span class="dash-label">APP ACCOUNT</span><h3>Same NexusNova identity</h3><p>This website account is not separate from your app account. Use the same email and password in NexusNova.</p><div class="dash-state"><span>Profile</span><strong data-profile-state>CHECKING</strong></div><div class="dash-state"><span>Email</span><strong data-email-state>CHECKING</strong></div></article>
       <article class="dash-card"><span class="dash-label">REFERRAL STATUS</span><h3 data-referral-title>Checking attribution…</h3><p data-referral-copy>Reading your secure referral record.</p><div class="ref-code" data-referral-code hidden></div><div class="dash-state"><span>Status</span><strong data-referral-status>CHECKING</strong></div></article>
       <article class="dash-card action-card"><span class="dash-label">NEXT ACTION</span><h3>Continue with NexusNova</h3><p>Use your verified account in the NexusNova app, or return to the web tools.</p><div class="dashboard-actions"><a class="btn btn-primary" href="app.html">NexusNova App</a><a class="btn" href="smart-tools.html">Smart Tools</a><a class="btn" href="tools.html">Web Tools</a><button class="btn danger-btn" type="button" data-signout>Sign Out</button></div></article>
@@ -39,3 +41,4 @@
 <script type="module" src="assets/js/account-dashboard.js"></script>
 </body>
 </html>
+
