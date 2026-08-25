@@ -19,49 +19,38 @@ let telegramSessionPromise=null;
 let loadedUid='';
 let resolvingSignedOut=false;
 let linkingTelegram=false;
+let telegramPhotoRequest=0;
 
 function showDashboard(){if(loading)loading.hidden=true;if(dashboard)dashboard.hidden=false;}
 function setVerified(verified){const pill=document.querySelector('[data-verified]');if(pill){pill.textContent=verified?'EMAIL VERIFIED':'EMAIL NOT VERIFIED';pill.classList.toggle('unverified',!verified);}setText('[data-email-state]',verified?'VERIFIED':'PENDING');}
 function setTelegramState(value){setText('[data-telegram-state]',value);}
 function fallbackAvatar(name='N'){const letter=String(name||'N').trim().charAt(0).toUpperCase()||'N';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#52f4d0"/><stop offset=".55" stop-color="#72d9ff"/><stop offset="1" stop-color="#9f8dff"/></linearGradient></defs><rect width="108" height="108" rx="28" fill="#06111e"/><rect x="2" y="2" width="104" height="104" rx="26" fill="url(#g)" opacity=".95"/><text x="54" y="69" text-anchor="middle" font-size="48" font-family="Arial,sans-serif" font-weight="800" fill="#03100f">${letter}</text></svg>`;return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;}
 
-function telegramPublicAvatarUrl(user){
-  const username=String(user?.username||'').replace(/^@/,'').trim();
-  if(!/^[A-Za-z0-9_]{5,32}$/.test(username))return '';
-  return `https://t.me/i/userpic/320/${encodeURIComponent(username)}.jpg`;
-}
-
 function setTelegramPhoto(user,fullName){
   if(!telegramPhoto)return;
+  const request=++telegramPhotoRequest;
   const fallback=fallbackAvatar(fullName);
+  const photoUrl=String(user?.photoUrl||'').trim();
+
+  // Paint a real fallback immediately. Never leave the visible img pointed at a
+  // remote URL that may fail inside Telegram WebView.
   telegramPhoto.hidden=false;
   telegramPhoto.alt=`${fullName||'Telegram'} avatar`;
   telegramPhoto.referrerPolicy='no-referrer';
-  telegramPhoto.style.backgroundImage=`url("${fallback}")`;
-  telegramPhoto.style.backgroundSize='cover';
-  telegramPhoto.style.backgroundPosition='center';
+  telegramPhoto.onerror=null;
+  telegramPhoto.onload=null;
+  telegramPhoto.removeAttribute('style');
+  telegramPhoto.src=fallback;
 
-  const candidates=[
-    telegramPublicAvatarUrl(user),
-    String(user?.photoUrl||'').trim()
-  ].filter((value,index,array)=>value&&array.indexOf(value)===index);
-
-  let index=0;
-  const loadNext=()=>{
-    if(index>=candidates.length){
-      telegramPhoto.onerror=null;
-      telegramPhoto.onload=null;
-      telegramPhoto.src=fallback;
-      return;
-    }
-    telegramPhoto.src=candidates[index++];
+  if(!photoUrl)return;
+  const probe=new Image();
+  probe.referrerPolicy='no-referrer';
+  probe.onload=()=>{
+    if(request!==telegramPhotoRequest)return;
+    if(probe.naturalWidth>0&&probe.naturalHeight>0)telegramPhoto.src=photoUrl;
   };
-
-  telegramPhoto.onerror=loadNext;
-  telegramPhoto.onload=()=>{
-    if(!telegramPhoto.naturalWidth||!telegramPhoto.naturalHeight)loadNext();
-  };
-  loadNext();
+  probe.onerror=()=>{};
+  probe.src=photoUrl;
 }
 
 function telegramDisplayUser(serverUser){
@@ -111,6 +100,7 @@ function paintTelegram(user,{linked=false,copy='',state=''}={}){
     if(user){
       setTelegramPhoto(user,fullName);
     }else{
+      telegramPhotoRequest+=1;
       telegramPhoto.hidden=true;
       telegramPhoto.removeAttribute('src');
       telegramPhoto.removeAttribute('style');
@@ -131,7 +121,7 @@ function telegramErrorText(error){
   if(code.includes('google-auth-failed'))return {state:'BACKEND AUTH',copy:detail||'Firebase service authentication failed in the Cloudflare Worker.'};
   if(code.includes('firebase-private-key'))return {state:'PRIVATE KEY ERROR',copy:detail||'The Firebase private key in Cloudflare could not be loaded.'};
   if(code.includes('firestore'))return {state:'DATABASE ERROR',copy:detail||'Telegram verification worked, but Firestore linking failed.'};
-  if(code.includes('unavailable')||code.includes('network'))return {state:'BACKEND OFFLINE',copy:detail||'The Telegram account service could not be reached.'};
+  if(code.includes('unavailable')||code.includes('network')||code.includes('timeout'))return {state:'BACKEND OFFLINE',copy:detail||'The Telegram account service could not be reached.'};
   return {state:'LINK ERROR',copy:detail||`Telegram linking failed (${code}).`};
 }
 
