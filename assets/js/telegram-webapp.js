@@ -6,7 +6,8 @@
   const telegram = global.Telegram?.WebApp || null;
   const webView = global.Telegram?.WebView || null;
   const SESSION_INIT_DATA_KEY = 'nexusnova_telegram_init_data_v1';
-  const SESSION_DISPLAY_USER_KEY = 'nexusnova_telegram_display_user_v1';
+  const SESSION_DISPLAY_USER_KEY = 'nexusnova_telegram_display_user_v2';
+  const LEGACY_DISPLAY_USER_KEY = 'nexusnova_telegram_display_user_v1';
   const TELEGRAM_INIT_PARAMS_KEY = '__telegram__initParams';
 
   function cleanText(value, maxLength) {
@@ -59,45 +60,10 @@
     } catch (_) {}
   }
 
-  function readStoredDisplayUser() {
-    const stored = readStorage(SESSION_DISPLAY_USER_KEY);
-    if (!stored) return null;
+  function removeStorage(key) {
     try {
-      return normalizeUnsafeUser(JSON.parse(stored));
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function writeDisplayUser(user) {
-    if (!user?.id) return;
-    try {
-      writeStorage(SESSION_DISPLAY_USER_KEY, JSON.stringify({
-        id: user.id,
-        username: user.username || '',
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        photoUrl: user.photoUrl || '',
-        languageCode: user.languageCode || '',
-        isPremium: user.isPremium === true,
-        allowsWriteToPm: user.allowsWriteToPm === true
-      }));
+      global.sessionStorage?.removeItem(key);
     } catch (_) {}
-  }
-
-  function mergeDisplayUser(baseUser, cachedUser) {
-    if (!baseUser) return null;
-    if (!cachedUser || String(cachedUser.id || '') !== String(baseUser.id || '')) return baseUser;
-    return Object.freeze({
-      ...baseUser,
-      username: baseUser.username || cachedUser.username || '',
-      firstName: baseUser.firstName || cachedUser.firstName || '',
-      lastName: baseUser.lastName || cachedUser.lastName || '',
-      photoUrl: baseUser.photoUrl || cachedUser.photoUrl || '',
-      languageCode: baseUser.languageCode || cachedUser.languageCode || '',
-      isPremium: baseUser.isPremium === true || cachedUser.isPremium === true,
-      allowsWriteToPm: baseUser.allowsWriteToPm === true || cachedUser.allowsWriteToPm === true
-    });
   }
 
   function readTelegramStoredInitData() {
@@ -143,6 +109,62 @@
     }
   }
 
+  function readStoredDisplayUser(authDate, baseUser) {
+    if (!authDate || !baseUser?.id) return null;
+    const stored = readStorage(SESSION_DISPLAY_USER_KEY);
+    if (!stored) return null;
+    try {
+      const parsed = JSON.parse(stored);
+      if (String(parsed?.authDate || '') !== authDate) {
+        removeStorage(SESSION_DISPLAY_USER_KEY);
+        return null;
+      }
+      const user = normalizeUnsafeUser(parsed?.user);
+      if (!user || String(user.id) !== String(baseUser.id)) {
+        removeStorage(SESSION_DISPLAY_USER_KEY);
+        return null;
+      }
+      return user;
+    } catch (_) {
+      removeStorage(SESSION_DISPLAY_USER_KEY);
+      return null;
+    }
+  }
+
+  function writeDisplayUser(user, authDate) {
+    if (!user?.id || !authDate) return;
+    try {
+      writeStorage(SESSION_DISPLAY_USER_KEY, JSON.stringify({
+        authDate,
+        user: {
+          id: user.id,
+          username: user.username || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          photoUrl: user.photoUrl || '',
+          languageCode: user.languageCode || '',
+          isPremium: user.isPremium === true,
+          allowsWriteToPm: user.allowsWriteToPm === true
+        }
+      }));
+    } catch (_) {}
+  }
+
+  function mergeDisplayUser(baseUser, cachedUser) {
+    if (!baseUser) return null;
+    if (!cachedUser || String(cachedUser.id || '') !== String(baseUser.id || '')) return baseUser;
+    return Object.freeze({
+      ...baseUser,
+      username: baseUser.username || cachedUser.username || '',
+      firstName: baseUser.firstName || cachedUser.firstName || '',
+      lastName: baseUser.lastName || cachedUser.lastName || '',
+      photoUrl: baseUser.photoUrl || cachedUser.photoUrl || '',
+      languageCode: baseUser.languageCode || cachedUser.languageCode || '',
+      isPremium: baseUser.isPremium === true || cachedUser.isPremium === true,
+      allowsWriteToPm: baseUser.allowsWriteToPm === true || cachedUser.allowsWriteToPm === true
+    });
+  }
+
   const candidates = [
     ['webapp', typeof telegram?.initData === 'string' ? telegram.initData : ''],
     ['webview', typeof webView?.initParams?.tgWebAppData === 'string' ? webView.initParams.tgWebAppData : ''],
@@ -154,16 +176,16 @@
   const selected = candidates.find(([, value]) => typeof value === 'string' && value.length > 0) || ['none', ''];
   const source = selected[0];
   const initData = selected[1];
+  const authDate = authDateFromInitData(initData);
 
   if (initData) writeStorage(SESSION_INIT_DATA_KEY, initData);
+  removeStorage(LEGACY_DISPLAY_USER_KEY);
 
   const liveUnsafeUser = normalizeUnsafeUser(telegram?.initDataUnsafe?.user);
   const signedDisplayUser = userFromInitData(initData);
   const baseUser = liveUnsafeUser || signedDisplayUser;
-  const unsafeUser = mergeDisplayUser(baseUser, readStoredDisplayUser());
-  if (unsafeUser) writeDisplayUser(unsafeUser);
-
-  const authDate = authDateFromInitData(initData);
+  const unsafeUser = mergeDisplayUser(baseUser, readStoredDisplayUser(authDate, baseUser));
+  if (unsafeUser) writeDisplayUser(unsafeUser, authDate);
 
   const reason = !initData
     ? 'missing-init-data'
