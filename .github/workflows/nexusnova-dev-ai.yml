@@ -1,0 +1,30 @@
+name: NexusNova Dev AI Check
+
+on:
+  pull_request:
+    paths:
+      - 'nexusnova-dev-ai/**'
+      - '.github/workflows/nexusnova-dev-ai.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile local agent
+        run: python -m py_compile nexusnova-dev-ai/agent.py
+      - name: Verify required files
+        run: |
+          test -f nexusnova-dev-ai/SYSTEM_PROMPT.md
+          test -f nexusnova-dev-ai/NEXUSNOVA_KNOWLEDGE.md
+          test -f nexusnova-dev-ai/START_NEXUSNOVA_AI.bat
+          test -f nexusnova-dev-ai/INSTALL_MODEL.bat
+          test -f nexusnova-dev-ai/SETUP_GITHUB.bat
