@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, json, os, secrets, sys, urllib.request
+import argparse, json, os, secrets, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import agent as core
 
 APP='NexusNova Mobile AI Gateway'
-VERSION='1.0.0'
+VERSION='1.1.0'
 MAX_BODY=2_000_000
 MAX_HISTORY=20
 WRITE_CONFIRM='ENABLE GITHUB WRITES'
@@ -40,21 +40,53 @@ def safe_history(value):
 def mode_tools(mode: str):
     mode=(mode or 'chat').lower()
     all_specs=core.tool_specs()
+    write_tools={'list_files','read_file','search_text','write_file','git_status','git_diff','git_create_branch','run_checks','git_commit','git_push_pr','web_search','web_fetch'}
     allowed={
         'chat':set(),
         'web':{'web_search','web_fetch'},
-        'dev':{'list_files','read_file','search_text','write_file','git_status','git_diff','git_create_branch','run_checks','git_commit','git_push_pr','web_search','web_fetch'},
+        'website':write_tools,
+        'dev':write_tools,
     }.get(mode,set())
     return [s for s in all_specs if s.get('function',{}).get('name') in allowed]
 
 
+def mode_instructions(mode: str) -> str:
+    if mode=='web':
+        return '''WEB MODE:
+- Use public web search/fetch whenever freshness matters.
+- Give concise, sourced research-oriented answers.
+- Do not modify workspace files.'''
+    if mode=='website':
+        return '''WEBSITE MODE — HIGH AUTONOMY FOR A NON-DEVELOPER OWNER:
+The owner should be able to give one simple Roman Urdu instruction such as "homepage design better karo", "SEO improve karo", "article likho", "broken links fix karo", or "ye feature website par add karo".
+
+Your job is to translate that simple instruction into the technical work yourself. Do NOT ask the owner to name files, write code, choose libraries, or explain implementation details when the repository can answer those questions.
+
+For every website-changing task:
+1. Inspect the repository and current implementation first. Search before editing.
+2. Preserve working features and existing branding unless the owner explicitly asks to replace them.
+3. If currently on main/master, create a clearly named non-main branch before edits.
+4. Make the smallest complete change that actually fulfills the request; avoid fake placeholders.
+5. For visual work, keep mobile responsiveness, accessibility, loading performance, and existing behavior intact.
+6. For SEO/content work, prefer useful original content over mass keyword pages. Use fresh web research when the topic is time-sensitive. Keep canonical/meta/internal links/sitemap/feed consistency where relevant.
+7. For articles, write a complete publish-ready article and wire it into the appropriate article hub/internal links when that is part of the site's pattern.
+8. Run recognized checks/tests when available, inspect git diff, and summarize exactly what changed.
+9. Commit completed work locally when appropriate.
+10. GitHub push/PR is allowed only when GitHub writes have been explicitly armed; otherwise stop safely after local commit/diff and tell the owner that only publishing permission is still off.
+
+Do not turn this into a coding lesson unless asked. The owner wants outcomes, not implementation homework.'''
+    if mode=='dev':
+        return '''DEV MODE:
+- You may inspect and edit the configured NexusNova workspace.
+- Preserve working features and inspect before editing.
+- Prefer branch -> minimal edit -> checks -> diff -> commit.
+- GitHub push/PR remains blocked unless explicitly armed.'''
+    return 'CHAT MODE: Answer normally. Do not modify workspace files.'
+
+
 def gateway_turn(ws, base, model, prompt, history, user, mode):
     tools=mode_tools(mode)
-    mode_note={
-        'chat':'CHAT MODE: Answer normally. Do not modify workspace files.',
-        'web':'WEB MODE: Use public web search/fetch when freshness matters. Do not modify workspace files.',
-        'dev':'DEV MODE: You may inspect and edit the configured NexusNova workspace. Preserve working features. Prefer branch -> inspect -> minimal edit -> checks -> diff. GitHub push/PR remains blocked unless explicitly armed.',
-    }.get(mode,'CHAT MODE: Answer normally.')
+    mode_note=mode_instructions(mode)
     msgs=[{'role':'system','content':prompt+'\n\n'+mode_note}]+history[-MAX_HISTORY:]+[{'role':'user','content':user}]
     used=[]
     for _ in range(core.MAX_TOOL_ROUNDS):
@@ -103,12 +135,22 @@ class Gateway:
 
     def health(self):
         ready,models=core.ollama_ready(self.ollama)
-        return {'ok':ready,'app':APP,'version':VERSION,'model':self.model,'ollama':ready,'models':models,'github_writes':bool(core.STATE.get('github_writes'))}
+        return {
+            'ok':ready,
+            'app':APP,
+            'version':VERSION,
+            'model':self.model,
+            'ollama':ready,
+            'models':models,
+            'modes':['chat','web','website','dev'],
+            'workspace':str(self.ws.root),
+            'github_writes':bool(core.STATE.get('github_writes'))
+        }
 
     def chat(self, body):
         message=str(body.get('message','')).strip()[:12000]
         mode=str(body.get('mode','chat')).strip().lower()
-        if mode not in {'chat','web','dev'}: mode='chat'
+        if mode not in {'chat','web','website','dev'}: mode='chat'
         if not message: return 400,{'ok':False,'error':'Message required.'}
         app_context=str(body.get('app_context','')).strip()[:8000]
         history=safe_history(body.get('history'))
@@ -117,7 +159,14 @@ class Gateway:
             prompt += '\n\nMOBILE APP CONTEXT (read-only; never invent missing values):\n' + app_context
         try:
             reply,used=gateway_turn(self.ws,self.ollama,self.model,prompt,history,message,mode)
-            return 200,{'ok':True,'reply':reply,'mode':mode,'model':self.model,'tools_used':used,'github_writes':bool(core.STATE.get('github_writes'))}
+            return 200,{
+                'ok':True,
+                'reply':reply,
+                'mode':mode,
+                'model':self.model,
+                'tools_used':used,
+                'github_writes':bool(core.STATE.get('github_writes'))
+            }
         except Exception as e:
             return 503,{'ok':False,'error':str(e)}
 
@@ -131,7 +180,7 @@ class Gateway:
 
 def make_handler(gateway: Gateway):
     class Handler(BaseHTTPRequestHandler):
-        server_version='NexusNovaMobileAI/1.0'
+        server_version='NexusNovaMobileAI/1.1'
         def log_message(self, fmt, *args):
             sys.stdout.write('[mobile-ai] '+(fmt%args)+'\n')
         def cors(self):
@@ -188,6 +237,7 @@ def main():
     print(f'Ollama: {"READY" if ready else "NOT READY"} {models}')
     print(f'Pairing token file: {token_path}')
     print(f'Pairing token: {token}')
+    print('Modes: Chat | Web | Website | Dev')
     print('GitHub writes: OFF (can be explicitly armed from paired mobile client)')
     print(f'Listening: http://{args.host}:{args.port}')
     print('For phone access, put an HTTPS tunnel (for example Cloudflare Tunnel/Tailscale HTTPS) in front of this local port.\n')
