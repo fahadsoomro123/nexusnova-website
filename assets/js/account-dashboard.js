@@ -25,6 +25,45 @@ function setVerified(verified){const pill=document.querySelector('[data-verified
 function setTelegramState(value){setText('[data-telegram-state]',value);}
 function fallbackAvatar(name='N'){const letter=String(name||'N').trim().charAt(0).toUpperCase()||'N';const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#52f4d0"/><stop offset=".55" stop-color="#72d9ff"/><stop offset="1" stop-color="#9f8dff"/></linearGradient></defs><rect width="108" height="108" rx="28" fill="#06111e"/><rect x="2" y="2" width="104" height="104" rx="26" fill="url(#g)" opacity=".95"/><text x="54" y="69" text-anchor="middle" font-size="48" font-family="Arial,sans-serif" font-weight="800" fill="#03100f">${letter}</text></svg>`;return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;}
 
+function telegramPublicAvatarUrl(user){
+  const username=String(user?.username||'').replace(/^@/,'').trim();
+  if(!/^[A-Za-z0-9_]{5,32}$/.test(username))return '';
+  return `https://t.me/i/userpic/320/${encodeURIComponent(username)}.jpg`;
+}
+
+function setTelegramPhoto(user,fullName){
+  if(!telegramPhoto)return;
+  const fallback=fallbackAvatar(fullName);
+  telegramPhoto.hidden=false;
+  telegramPhoto.alt=`${fullName||'Telegram'} avatar`;
+  telegramPhoto.referrerPolicy='no-referrer';
+  telegramPhoto.style.backgroundImage=`url("${fallback}")`;
+  telegramPhoto.style.backgroundSize='cover';
+  telegramPhoto.style.backgroundPosition='center';
+
+  const candidates=[
+    telegramPublicAvatarUrl(user),
+    String(user?.photoUrl||'').trim()
+  ].filter((value,index,array)=>value&&array.indexOf(value)===index);
+
+  let index=0;
+  const loadNext=()=>{
+    if(index>=candidates.length){
+      telegramPhoto.onerror=null;
+      telegramPhoto.onload=null;
+      telegramPhoto.src=fallback;
+      return;
+    }
+    telegramPhoto.src=candidates[index++];
+  };
+
+  telegramPhoto.onerror=loadNext;
+  telegramPhoto.onload=()=>{
+    if(!telegramPhoto.naturalWidth||!telegramPhoto.naturalHeight)loadNext();
+  };
+  loadNext();
+}
+
 function telegramDisplayUser(serverUser){
   const local=window.NexusNovaTelegram?.getUser?.()||null;
   if(!serverUser)return local;
@@ -70,14 +109,13 @@ function paintTelegram(user,{linked=false,copy='',state=''}={}){
   setTelegramState(state||(linked?'LINKED':(user?'READY TO LINK':'NOT CONNECTED')));
   if(telegramPhoto){
     if(user){
-      telegramPhoto.hidden=false;
-      telegramPhoto.alt=`${fullName||'Telegram'} avatar`;
-      telegramPhoto.onerror=()=>{telegramPhoto.onerror=null;telegramPhoto.src=fallbackAvatar(fullName);};
-      telegramPhoto.src=user.photoUrl||fallbackAvatar(fullName);
+      setTelegramPhoto(user,fullName);
     }else{
       telegramPhoto.hidden=true;
       telegramPhoto.removeAttribute('src');
+      telegramPhoto.removeAttribute('style');
       telegramPhoto.onerror=null;
+      telegramPhoto.onload=null;
     }
   }
   if(telegramLinkButton)telegramLinkButton.hidden=linked||!user||!window.NexusNovaTelegram?.isAvailable;
