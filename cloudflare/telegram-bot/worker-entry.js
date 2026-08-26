@@ -34,6 +34,18 @@ async function decorateAccountResponse(request, response, env) {
   const sig = await signAvatar(env.TELEGRAM_BOT_TOKEN, id, expires);
   const backendOrigin = new URL(request.url).origin;
   data.user.avatarUrl = `${backendOrigin}${AVATAR_PATH}?id=${encodeURIComponent(id)}&expires=${expires}&sig=${sig}`;
+
+  // Telegram WebViews can occasionally refuse a cross-origin image request even
+  // when the signed proxy is healthy. Embed the smallest current profile photo in
+  // the already authenticated session response as a private, short-lived fallback.
+  const inlineAvatar = await telegramAvatarAsset(env.TELEGRAM_BOT_TOKEN, id, true).catch(() => null);
+  if (inlineAvatar?.bytes?.byteLength) {
+    data.user.avatarDataUrl = `data:${inlineAvatar.contentType};base64,${bytesToBase64(inlineAvatar.bytes)}`;
+    data.user.avatarState = 'available';
+  } else {
+    data.user.avatarState = 'unavailable';
+  }
+
   return jsonResponse(data, response);
 }
 
@@ -68,42 +80,57 @@ async function telegramAvatar(request, env) {
     return noStore('Invalid avatar request.', 403);
   }
 
+  const asset = await telegramAvatarAsset(token, id, false).catch(() => null);
+  if (!asset?.bytes?.byteLength) {
+    return noStore('Telegram profile photo is unavailable.', 404);
+  }
+
+  const headers = new Headers();
+  headers.set('Content-Type', asset.contentType);
+  headers.set('Cache-Control', `private, max-age=${AVATAR_TTL_SECONDS}`);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  return new Response(asset.bytes, { status: 200, headers });
+}
+
+async function telegramAvatarAsset(token, id, preferSmall) {
   const numericId = Number(id);
-  if (!Number.isSafeInteger(numericId)) return noStore('Invalid Telegram ID.', 400);
+  if (!Number.isSafeInteger(numericId)) return null;
 
   const photos = await telegramApi(token, 'getUserProfilePhotos', {
     user_id: numericId,
     offset: 0,
     limit: 1
-  }).catch(() => null);
+  });
   const sizes = photos?.result?.photos?.[0];
-  if (!Array.isArray(sizes) || sizes.length === 0) {
-    return noStore('Telegram profile photo is unavailable.', 404);
-  }
+  if (!Array.isArray(sizes) || sizes.length === 0) return null;
 
-  const fileId = sizes[sizes.length - 1]?.file_id;
-  if (!fileId) return noStore('Telegram profile photo is unavailable.', 404);
+  const selected = preferSmall ? sizes[0] : sizes[sizes.length - 1];
+  const fileId = selected?.file_id;
+  if (!fileId) return null;
 
-  const file = await telegramApi(token, 'getFile', { file_id: fileId }).catch(() => null);
+  const file = await telegramApi(token, 'getFile', { file_id: fileId });
   const filePath = String(file?.result?.file_path || '');
-  if (!filePath || filePath.includes('..') || filePath.startsWith('/')) {
-    return noStore('Telegram profile photo is unavailable.', 404);
-  }
+  if (!filePath || filePath.includes('..') || filePath.startsWith('/')) return null;
 
   const upstream = await fetch(`https://api.telegram.org/file/bot${token}/${filePath}`, {
     redirect: 'follow'
-  }).catch(() => null);
-  if (!upstream?.ok || !upstream.body) {
-    return noStore('Telegram profile photo is unavailable.', 404);
-  }
+  });
+  if (!upstream?.ok) return null;
 
   const upstreamType = String(upstream.headers.get('Content-Type') || '').toLowerCase();
   const contentType = upstreamType.startsWith('image/') ? upstreamType : 'image/jpeg';
-  const headers = new Headers();
-  headers.set('Content-Type', contentType);
-  headers.set('Cache-Control', `private, max-age=${AVATAR_TTL_SECONDS}`);
-  headers.set('X-Content-Type-Options', 'nosniff');
-  return new Response(upstream.body, { status: 200, headers });
+  const bytes = new Uint8Array(await upstream.arrayBuffer());
+  return bytes.byteLength ? { bytes, contentType } : null;
+}
+
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+  return btoa(binary);
 }
 
 async function telegramApi(token, method, body) {
