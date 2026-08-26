@@ -24,9 +24,9 @@ export default {
 async function decorateAccountResponse(request, response, env) {
   if (!response.ok || !env.TELEGRAM_BOT_TOKEN) return response;
 
-  const data = await response.json().catch(() => null);
+  const data = await response.clone().json().catch(() => null);
   if (!data?.ok || !validTelegramId(data?.user?.id)) {
-    return jsonResponse(data, response);
+    return data === null ? response : jsonResponse(data, response);
   }
 
   const id = String(data.user.id);
@@ -38,7 +38,6 @@ async function decorateAccountResponse(request, response, env) {
 }
 
 function jsonResponse(data, original) {
-  if (data === null) return original;
   const headers = new Headers(original.headers);
   headers.set('Content-Type', 'application/json; charset=utf-8');
   headers.set('Cache-Control', 'no-store');
@@ -98,8 +97,10 @@ async function telegramAvatar(request, env) {
     return noStore('Telegram profile photo is unavailable.', 404);
   }
 
+  const upstreamType = String(upstream.headers.get('Content-Type') || '').toLowerCase();
+  const contentType = upstreamType.startsWith('image/') ? upstreamType : 'image/jpeg';
   const headers = new Headers();
-  headers.set('Content-Type', upstream.headers.get('Content-Type') || 'image/jpeg');
+  headers.set('Content-Type', contentType);
   headers.set('Cache-Control', `private, max-age=${AVATAR_TTL_SECONDS}`);
   headers.set('X-Content-Type-Options', 'nosniff');
   return new Response(upstream.body, { status: 200, headers });
