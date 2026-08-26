@@ -42,7 +42,9 @@ async function refreshTelegramAvatar() {
     const response = await telegramSessionCall({ initData: bridge.getInitData() });
     const serverUser = response?.data?.user || null;
     const localUser = bridge.getUser?.() || null;
-    const avatarUrl = String(serverUser?.avatarUrl || '').trim();
+    const inlineAvatar = String(serverUser?.avatarDataUrl || '').trim();
+    const proxyAvatar = String(serverUser?.avatarUrl || '').trim();
+    const avatarUrl = inlineAvatar || proxyAvatar;
 
     if (!avatarUrl || !serverUser?.id || !localUser?.id ||
         String(serverUser.id) !== String(localUser.id)) return;
@@ -54,6 +56,7 @@ async function refreshTelegramAvatar() {
     telegramPhoto.alt = `${[serverUser.firstName, serverUser.lastName].filter(Boolean).join(' ') || 'Telegram'} avatar`;
     telegramPhoto.referrerPolicy = 'no-referrer';
     telegramPhoto.src = avatarUrl;
+    telegramPhoto.dataset.avatarSource = inlineAvatar ? 'inline' : 'proxy';
     succeeded = true;
   } catch (_) {
     // Existing dashboard fallback remains visible while a short retry sequence runs.
