@@ -44,3 +44,5 @@ jobs:
           curl --fail --silent --show-error --max-time 20 \
             'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/status' \
             | python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True; w=d.get("webhookInfo",{}).get("result",{}); assert w.get("url","").endswith("/webhook"); print("Telegram Worker healthy; pending_update_count=", w.get("pending_update_count",0), "last_error=", w.get("last_error_message","none"))'
+
+# This workflow intentionally repairs the Telegram webhook after Worker changes.
