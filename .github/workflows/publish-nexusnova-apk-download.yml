@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download prepared NexusNova APK artifact
+      - name: Download permanent-signed NexusNova APK artifact
         env:
-          APK_ARTIFACT_URL: 'https://sdmntprindiasocentral.oaiusercontent.com/files/00000000-d928-8211-b926-c615d1e93c33/raw?se=2026-08-25T22%3A48%3A21Z&sp=r&sv=2026-02-06&sr=b&scid=b5d1f196-afa7-5545-a8d9-e78e70831c27&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-25T01%3A09%3A26Z&ske=2026-08-26T01%3A09%3A26Z&sks=b&skv=2026-02-06&sig=oU0JX5lqoPmJfCy23DZjh%2B4OIvi89RC1cwAHYaCmW0U%3D'
+          APK_ARTIFACT_URL: 'https://sdmntprindiasocentral.oaiusercontent.com/files/00000000-2f8c-8211-b90c-58b62a641c00/raw?se=2026-08-26T06%3A42%3A24Z&sp=r&sv=2026-02-06&sr=b&scid=79e2e58b-1dad-500b-a1ef-c20b110eb4fe&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-26T01%3A46%3A19Z&ske=2026-08-27T01%3A46%3A19Z&sks=b&skv=2026-02-06&sig=BBnoyQLICi0lMUZTxvq8Ke8p%2BYprif6tEUBG12cVctU%3D'
         run: |
           set -euo pipefail
           curl --fail --location "$APK_ARTIFACT_URL" -o /tmp/nexusnova-apk-artifact.zip
@@ -27,13 +27,13 @@ jobs:
           test -n "$APK"
           test -s "$APK"
           mkdir -p downloads
-          cp "$APK" downloads/NexusNova-PUBLIC-OTA-FIX-TEST.apk
-          sha256sum downloads/NexusNova-PUBLIC-OTA-FIX-TEST.apk > downloads/NexusNova-PUBLIC-OTA-FIX-TEST.sha256
+          cp "$APK" downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk
+          sha256sum downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk > downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.sha256
       - name: Publish APK on nexusnovatools.com
         run: |
           set -euo pipefail
           git config user.name 'NexusNova Download Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add downloads/NexusNova-PUBLIC-OTA-FIX-TEST.apk downloads/NexusNova-PUBLIC-OTA-FIX-TEST.sha256
-          git commit -m 'Publish NexusNova public OTA fix APK'
+          git add downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.sha256
+          git commit -m 'Publish NexusNova permanent signed OTA v1.0.4 APK'
           git push origin HEAD:main
