@@ -15,6 +15,11 @@ on:
       - 'tests/**'
       - 'package.json'
       - '.github/workflows/telegram-mini-app.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/telegram-bot/**'
+      - '.github/workflows/telegram-mini-app.yml'
   workflow_dispatch:
 
 permissions:
@@ -31,3 +36,20 @@ jobs:
           node-version: '20'
       - run: npm test
       - run: npm run check
+      - name: Repair and verify production Telegram webhook
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
+          sleep 20
+          for attempt in 1 2 3 4 5 6; do
+            if body=$(curl --fail --silent --show-error --max-time 20 "$base/setup"); then
+              echo "$body" | python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True; w=d.get("webhookInfo",{}).get("result",{}); assert w.get("url","").endswith("/webhook"); print("Webhook configured; pending_update_count=", w.get("pending_update_count",0), "last_error=", w.get("last_error_message","none"))'
+              curl --fail --silent --show-error --max-time 20 "$base/status" | python -c 'import json,sys; d=json.load(sys.stdin); assert d.get("ok") is True; w=d.get("webhookInfo",{}).get("result",{}); assert w.get("url","").endswith("/webhook"); print("Worker healthy; pending_update_count=", w.get("pending_update_count",0), "last_error=", w.get("last_error_message","none"))'
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Telegram webhook repair failed after retries.' >&2
+          exit 1
