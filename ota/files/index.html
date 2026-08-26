@@ -7,38 +7,29 @@
   <meta name="color-scheme" content="dark">
   <meta name="nexusnova-app-check-site-key" content="6LfEc4Q1AAAAAOohkqSv0p76iwPTeHI98hqVIwls">
   <title>NexusNova Fresh</title>
-  <link rel="stylesheet" href="./assets/styles/tokens.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/app.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-weather.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-instruments.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-selected-visuals.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-weather-real.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-mine.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-vpn.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/features.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/core-apps.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/discover-apps.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/faith-security.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-suites.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-news.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-entertainment.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-library.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-live-channels.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-islamic.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-location.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-family.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/premium-splash.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/phone-visible-fixes.css?ota=nxhub-924ef27b169d">
-  <link rel="stylesheet" href="./assets/styles/nova-hub-compact-icons-v2.css?ota=nxhub-924ef27b169d">
-
-  <script>
-  (function(){
-    try {
-      if ('caches' in window) caches.keys().then(function(keys){ return Promise.all(keys.filter(function(k){return /^nexusnova/i.test(k);}).map(function(k){return caches.delete(k);})); }).catch(function(){});
-      if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ try{r.update();}catch(e){} }); }).catch(function(){});
-    } catch(e) {}
-  })();
-  </script>
+  <link rel="stylesheet" href="./assets/styles/tokens.css">
+  <link rel="stylesheet" href="./assets/styles/app.css">
+  <link rel="stylesheet" href="./assets/styles/premium-weather.css">
+  <link rel="stylesheet" href="./assets/styles/premium-instruments.css">
+  <link rel="stylesheet" href="./assets/styles/premium-selected-visuals.css">
+  <link rel="stylesheet" href="./assets/styles/premium-weather-real.css">
+  <link rel="stylesheet" href="./assets/styles/premium-mine.css">
+  <link rel="stylesheet" href="./assets/styles/premium-vpn.css">
+  <link rel="stylesheet" href="./assets/styles/features.css">
+  <link rel="stylesheet" href="./assets/styles/core-apps.css">
+  <link rel="stylesheet" href="./assets/styles/discover-apps.css">
+  <link rel="stylesheet" href="./assets/styles/faith-security.css">
+  <link rel="stylesheet" href="./assets/styles/premium-suites.css">
+  <link rel="stylesheet" href="./assets/styles/premium-news.css">
+  <link rel="stylesheet" href="./assets/styles/premium-entertainment.css">
+  <link rel="stylesheet" href="./assets/styles/premium-library.css">
+  <link rel="stylesheet" href="./assets/styles/premium-live-channels.css">
+  <link rel="stylesheet" href="./assets/styles/premium-islamic.css">
+  <link rel="stylesheet" href="./assets/styles/premium-location.css">
+  <link rel="stylesheet" href="./assets/styles/premium-family.css">
+  <link rel="stylesheet" href="./assets/styles/premium-splash.css">
+  <link rel="stylesheet" href="./assets/styles/phone-visible-fixes.css">
+  <link rel="stylesheet" href="./assets/styles/nova-hub-compact-icons-v2.css">
 </head>
 <body>
   <div id="nx-app" class="nx-app" aria-live="polite">
@@ -49,9 +40,10 @@
     </nav>
   </div>
   <noscript>NexusNova requires JavaScript.</noscript>
-  <script type="module" src="./src/emergency-sos.js?ota=nxhub-924ef27b169d"></script>
-  <script type="module" src="./src/features/apps/security-lock-suite.js?ota=nxhub-924ef27b169d"></script>
-  <script type="module" src="./src/main.js?ota=nxhub-924ef27b169d"></script>
+  <script type="module" src="./src/emergency-sos.js"></script>
+  <script type="module" src="./src/features/apps/security-lock-suite.js"></script>
+  <script type="module" src="./src/runtime-bugfixes-v1.js"></script>
+  <script type="module" src="./src/main.js"></script>
   <!-- Native Android App Check OTA sync marker. -->
   <!-- Online recovery release 2026-08-25. -->
 </body>
