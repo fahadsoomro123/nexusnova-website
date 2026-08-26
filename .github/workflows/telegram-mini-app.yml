@@ -3,11 +3,15 @@ name: Telegram Mini App Check
 on:
   pull_request:
     paths:
+      - 'account.html'
       - 'assets/js/telegram-webapp.js'
       - 'assets/js/telegram-account-api.js'
+      - 'assets/js/telegram-avatar-refresh.js'
       - 'assets/js/register.js'
       - 'assets/js/account-dashboard.js'
       - 'cloudflare/telegram-bot/worker.js'
+      - 'cloudflare/telegram-bot/worker-entry.js'
+      - 'cloudflare/telegram-bot/wrangler.jsonc'
       - 'tests/**'
       - 'package.json'
       - '.github/workflows/telegram-mini-app.yml'

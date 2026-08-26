@@ -170,6 +170,19 @@ async function linkTelegramForSignedInUser(user,verifiedTelegram){
 async function loadAccount(user){
   if(loadedUid===user.uid)return;
   loadedUid=user.uid;
+
+  // Firebase already confirmed this user is signed in. Reveal the account shell
+  // immediately so slow profile, Telegram, or referral requests cannot make the
+  // Mini App look frozen while the secure details continue syncing.
+  setText('[data-name]',user.displayName||user.email?.split('@')[0]||'NexusNova User');
+  setText('[data-email]',user.email||'');
+  setText('[data-profile-state]','SYNCING');
+  setVerified(user.emailVerified===true);
+  const launchTelegram=window.NexusNovaTelegram?.getUser?.()||null;
+  if(launchTelegram)paintTelegram(launchTelegram,{state:'VERIFYING',copy:'Telegram Mini App detected. Verifying secure account state…'});
+  if(status)status.textContent='Account signed in. Syncing secure profile details…';
+  showDashboard();
+
   try{
     await user.reload();
     const active=auth.currentUser||user;
@@ -218,12 +231,10 @@ async function loadAccount(user){
       setText('[data-referral-status]','DIRECT');
     }
     if(status&&!status.textContent.includes('Telegram'))status.textContent='Secure account state loaded from Firebase.';
-    showDashboard();
     window.gtag?.('event','account_dashboard_view',{email_verified:active.emailVerified===true,telegram_linked:Boolean(profile.telegram?.linked)});
   }catch(error){
     console.error('[NexusNova Dashboard]',error?.code||'load-failed');
     if(status)status.textContent='Account is signed in, but some profile details could not be loaded.';
-    showDashboard();
   }
 }
 
