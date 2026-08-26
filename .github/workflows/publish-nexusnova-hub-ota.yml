@@ -1,0 +1,105 @@
+name: Publish NexusNova Hub OTA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-nexusnova-hub-ota.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract current signed app web assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK_URL='https://raw.githubusercontent.com/fahadsoomro123/nexusnova-website/main/downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk'
+          curl --fail --location "$APK_URL" -o /tmp/nexusnova.apk
+          rm -rf /tmp/nxapk
+          mkdir -p /tmp/nxapk
+          unzip -q /tmp/nexusnova.apk 'assets/www/*' -d /tmp/nxapk
+          test -s /tmp/nxapk/assets/www/index.html
+          test -s /tmp/nxapk/assets/www/src/main.js
+          test -s /tmp/nxapk/assets/www/src/features/hub/hub-screen.js
+          test -s /tmp/nxapk/assets/www/assets/styles/nova-hub-compact-icons-v2.css
+          test "$(find /tmp/nxapk/assets/www/assets/icons/nova-hub -type f -name '*.webp' | wc -l)" -ge 54
+
+      - name: Build cache-busting Hub OTA package
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(git rev-parse HEAD)"
+          ROOT=/tmp/nxapk/assets/www
+          OUT=ota/files
+          rm -rf "$OUT"
+          mkdir -p "$OUT/src/features/hub" "$OUT/assets/styles" "$OUT/assets/icons/nova-hub"
+          cp "$ROOT/index.html" "$OUT/index.html"
+          cp "$ROOT/src/main.js" "$OUT/src/main.js"
+          cp "$ROOT/src/features/hub/hub-screen.js" "$OUT/src/features/hub/hub-screen.js"
+          cp "$ROOT/src/features/hub/app-registry.js" "$OUT/src/features/hub/app-registry.js"
+          cp "$ROOT/assets/styles/nova-hub-compact-icons-v2.css" "$OUT/assets/styles/nova-hub-compact-icons-v2.css"
+          cp "$ROOT/assets/icons/nova-hub/"*.webp "$OUT/assets/icons/nova-hub/"
+
+          VERSION="$VERSION" python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+          version=os.environ['VERSION']
+          token='nxhub-'+version[:12]
+          index=Path('ota/files/index.html')
+          s=index.read_text(encoding='utf-8')
+          # Bust WebView/HTTP cache for all local CSS and JS requests without changing paths seen by OTA.
+          s=re.sub(r'(href="\./[^"?]+\.css)(")', rf'\1?ota={token}\2', s)
+          s=re.sub(r'(src="\./[^"?]+\.js)(")', rf'\1?ota={token}\2', s)
+          clear_script=f'''\n  <script>\n  (function(){{\n    try {{\n      if ('caches' in window) caches.keys().then(function(keys){{ return Promise.all(keys.filter(function(k){{return /^nexusnova/i.test(k);}}).map(function(k){{return caches.delete(k);}})); }}).catch(function(){{}});\n      if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){{ rs.forEach(function(r){{ try{{r.update();}}catch(e){{}} }}); }}).catch(function(){{}});\n    }} catch(e) {{}}\n  }})();\n  </script>\n'''
+          s=s.replace('</head>', clear_script+'</head>', 1)
+          index.write_text(s, encoding='utf-8')
+
+          main=Path('ota/files/src/main.js')
+          m=main.read_text(encoding='utf-8')
+          m=m.replace("from './features/hub/hub-screen.js';", f"from './features/hub/hub-screen.js?ota={token}';")
+          m=m.replace("from './features/hub/app-registry.js';", f"from './features/hub/app-registry.js?ota={token}';")
+          main.write_text(m, encoding='utf-8')
+
+          hub=Path('ota/files/src/features/hub/hub-screen.js')
+          h=hub.read_text(encoding='utf-8')
+          h=h.replace("from './app-registry.js';", f"from './app-registry.js?ota={token}';")
+          hub.write_text(h, encoding='utf-8')
+          PY
+
+          grep -Fq 'Search Nova Hub' "$OUT/src/features/hub/hub-screen.js"
+          ! grep -Fq 'ALL APPS' "$OUT/src/features/hub/hub-screen.js"
+          ! grep -Fq 'nx-hub-filters' "$OUT/src/features/hub/hub-screen.js"
+          grep -Fq 'nova-hub-compact-icons-v2.css?ota=' "$OUT/index.html"
+
+          VERSION="$VERSION" python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path('ota/files')
+          files=[]
+          for p in sorted(x for x in root.rglob('*') if x.is_file()):
+              b=p.read_bytes()
+              files.append({
+                  'path':p.relative_to(root).as_posix(),
+                  'sha256':hashlib.sha256(b).hexdigest(),
+                  'size':len(b),
+              })
+          manifest={'files':files,'schema':1,'version':os.environ['VERSION']}
+          Path('ota/manifest.json').write_text(json.dumps(manifest,separators=(',',':'))+'\n',encoding='utf-8')
+          print('OTA files:',len(files),'bytes:',sum(x['size'] for x in files))
+          PY
+
+      - name: Publish Hub OTA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota/manifest.json ota/files
+          git commit -m 'Publish Nova Hub cache-busting OTA update'
+          git push origin HEAD:main
