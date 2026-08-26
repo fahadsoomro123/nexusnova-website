@@ -20,3 +20,7 @@ This Worker powers `@NexusNovaToolsBot`, Telegram Mini App buttons, webhook hand
 7. Delete the downloaded service-account JSON from the device after the encrypted Worker secret is saved.
 
 `worker-entry.js` delegates the existing bot/auth routes to `worker.js` and adds the signed `/api/telegram/avatar` proxy. The `/setup` route configures the webhook secret, bot commands, and Telegram menu Web App button. The `/api/telegram/session` and `/api/telegram/link` routes accept requests only from `https://nexusnovatools.com` and never return either server secret.
+
+## Cloudflare Builds
+
+Cloudflare Builds is connected to the `main` branch with `cloudflare/telegram-bot` as the root directory and `npx wrangler deploy` as the production deploy command. This note also provides a harmless Git-triggered deployment check after connecting the repository.
