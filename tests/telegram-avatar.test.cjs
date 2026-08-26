@@ -23,15 +23,30 @@ test('Cloudflare entrypoint securely proxies the current Telegram profile photo'
   assert.match(entry, /X-Content-Type-Options/);
 });
 
-test('linked account refresh applies only the avatar for the same Telegram identity', () => {
+test('linked account refresh applies only the avatar for the same Telegram identity and retries transient failures', () => {
   const refresh = read('assets/js/telegram-avatar-refresh.js');
   const account = read('account.html');
 
-  assert.match(account, /telegram-avatar-refresh\.js\?v=20260826-1/);
+  assert.match(account, /telegram-avatar-refresh\.js\?v=20260826-2/);
   assert.match(refresh, /telegramSessionCall/);
   assert.match(refresh, /textContent \|\| ''\)\.trim\(\)\.toUpperCase\(\) !== 'LINKED'/);
   assert.match(refresh, /String\(serverUser\.id\) !== String\(localUser\.id\)/);
   assert.match(refresh, /serverUser\?\.avatarUrl/);
-  assert.match(refresh, /probe\.naturalWidth/);
+  assert.match(refresh, /MAX_AVATAR_ATTEMPTS = 3/);
+  assert.match(refresh, /scheduleRetry/);
+  assert.match(refresh, /probeAvatar/);
   assert.doesNotMatch(refresh, /TELEGRAM_BOT_TOKEN|bot\$\{token\}/);
+});
+
+test('signed-in account becomes visible before remote profile refresh waits', () => {
+  const dashboard = read('assets/js/account-dashboard.js');
+  const account = read('account.html');
+  const loadAccount = dashboard.indexOf('async function loadAccount(user)');
+  const reveal = dashboard.indexOf('showDashboard();', loadAccount);
+  const reload = dashboard.indexOf('await user.reload();', loadAccount);
+
+  assert.ok(loadAccount >= 0, 'loadAccount should exist');
+  assert.ok(reveal > loadAccount, 'dashboard reveal should be inside loadAccount');
+  assert.ok(reload > reveal, 'dashboard should reveal before waiting for user.reload');
+  assert.match(account, /account-dashboard\.js\?v=20260826-6/);
 });
