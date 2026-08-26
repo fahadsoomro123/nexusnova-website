@@ -31,30 +31,35 @@ jobs:
           python -m py_compile nexusnova-dev-ai/git_tools_v6.py
           python -m py_compile nexusnova-dev-ai/specialists_v6.py
           python -m py_compile nexusnova-dev-ai/workspaces_v6.py
-      - name: Import V2, V6 Ultimate and Work modules
+          python -m py_compile nexusnova-dev-ai/work_runtime_v6.py
+          python -m py_compile nexusnova-dev-ai/work_intelligence_v6.py
+      - name: Import V2, V6 Ultimate and Work MAX modules
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import agent, mobile_gateway, power_engine
-          import mobile_gateway_v6, mobile_gateway_work_v6, power_engine_v6, project_tools_v6, git_tools_v6, specialists_v6, workspaces_v6
+          import mobile_gateway_v6, mobile_gateway_work_v6, power_engine_v6, project_tools_v6, git_tools_v6, specialists_v6
+          import workspaces_v6, work_runtime_v6, work_intelligence_v6
           assert power_engine.VERSION == '2.0.0'
           assert mobile_gateway.VERSION == '2.0.0'
           assert power_engine_v6.VERSION == '6.0.0'
           assert power_engine_v6.ULTIMATE is True
           assert mobile_gateway_v6.VERSION == '6.0.0'
-          assert mobile_gateway_work_v6.VERSION == '6.1.0-work'
-          assert workspaces_v6.VERSION == '6.1.0-work'
+          assert mobile_gateway_work_v6.VERSION == '6.2.0-work-max'
+          assert workspaces_v6.VERSION == '6.2.0-work-max'
+          assert work_runtime_v6.VERSION == '6.2.0-work-max'
+          assert work_intelligence_v6.VERSION == '6.2.0-work-max'
           assert project_tools_v6.VERSION == '6.0.0'
           assert git_tools_v6.VERSION == '6.0.0'
           assert specialists_v6.VERSION.endswith('ultimate')
           names={x['function']['name'] for x in mobile_gateway_work_v6.all_specs()}
-          for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe','work_open','work_context','work_task','work_note','work_save_artifact'):
+          for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe','work_open','work_context','work_task','work_note','work_set_instructions','work_save_file','work_read_file','work_save_artifact'):
               assert required in names, required
           assert 'git_commit' not in names
           allowed=mobile_gateway_work_v6.mode_tool_names('work')
-          for required in ('work_open','work_context','work_task','work_note','work_save_artifact','web_search','write_file','run_build'):
+          for required in ('work_open','work_context','work_task','work_note','work_save_artifact','work_save_file','work_read_file','web_search','write_file','run_build'):
               assert required in allowed, required
-          print('NOVA AI V6 Ultimate + Work imports/tool policy OK')
+          print('NOVA AI V6 Ultimate + Work MAX imports/tool policy OK')
           PY
       - name: Verify V6 routing and specialists
         run: |
@@ -71,24 +76,50 @@ jobs:
           assert len(roles) <= 3
           print('V6 Ultimate router/specialists OK:', roles)
           PY
-      - name: Verify Work persistence primitives
+      - name: Verify Work MAX persistence primitives
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import tempfile
-          from pathlib import Path
           import agent, workspaces_v6 as w
           with tempfile.TemporaryDirectory() as td:
               ws=agent.Workspace(td)
               assert w.work_open(ws,'Demo Work','Build a demo')['ok']
+              assert w.work_set_instructions(ws,'Keep UI simple and mobile first',name='Demo Work')['ok']
               assert w.work_task(ws,'add','Make first screen',name='Demo Work')['ok']
               assert w.work_note(ws,'Use a simple mobile layout',name='Demo Work')['ok']
+              assert w.work_save_file(ws,'requirements.md','# Requirements',name='Demo Work')['ok']
               assert w.work_save_artifact(ws,'plan.md','# Plan',name='Demo Work')['ok']
+              assert w.work_read_file(ws,'files/requirements.md',name='Demo Work')['content']=='# Requirements'
               state=w.work_context(ws,'Demo Work')
               assert state['workspace']['objective']=='Build a demo'
+              assert 'mobile first' in state['instructions']
               assert len(state['tasks'])==1
+              assert state['files'][0]['path']=='files/requirements.md'
               assert state['artifacts'][0]['path']=='artifacts/plan.md'
-              print('NOVA Work persistence OK')
+              print('NOVA Work MAX persistence OK')
+          PY
+      - name: Verify persistent background job runtime
+        run: |
+          cd nexusnova-dev-ai
+          python - <<'PY'
+          import tempfile,time
+          from pathlib import Path
+          import work_runtime_v6 as r
+          def runner(body,progress,cancel):
+              progress('testing','dummy runner');return 200,{'ok':True,'reply':'done','work':{'ok':True},'power':{'review_pass':True}}
+          with tempfile.TemporaryDirectory() as td:
+              rt=r.WorkRuntime(Path(td),runner)
+              x=rt.submit({'message':'build demo','work_workspace':'Demo'})
+              assert x['ok'];jid=x['job']['id']
+              for _ in range(50):
+                  row=rt.get(jid)
+                  if row['status'] in r.TERMINAL:break
+                  time.sleep(.05)
+              assert row['status']=='completed',row
+              assert row['result']['reply']=='done'
+              assert rt.stats()['completed']==1
+              print('NOVA Work MAX background runtime OK')
           PY
       - name: Verify required files
         run: |
@@ -102,11 +133,13 @@ jobs:
           test -f nexusnova-dev-ai/README_V6.md
           test -f nexusnova-dev-ai/specialists_v6.py
           test -f nexusnova-dev-ai/workspaces_v6.py
+          test -f nexusnova-dev-ai/work_runtime_v6.py
+          test -f nexusnova-dev-ai/work_intelligence_v6.py
           test -f nexusnova-dev-ai/mobile_gateway_work_v6.py
-      - name: Package NOVA AI V6 Ultimate Work
+      - name: Package NOVA AI V6 Ultimate Work MAX
         uses: actions/upload-artifact@v4
         with:
-          name: NexusNova-Dev-AI-V6-Ultimate-Work
+          name: NexusNova-Dev-AI-V6-Ultimate-Work-MAX
           path: nexusnova-dev-ai/
           if-no-files-found: error
           retention-days: 30

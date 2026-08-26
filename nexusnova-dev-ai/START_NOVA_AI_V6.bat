@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ===============================================
-echo      NEXUSNOVA NOVA AI V6 ULTIMATE + WORK
+echo      NEXUSNOVA NOVA AI V6 ULTIMATE + WORK MAX
 echo ===============================================
 echo.
 where python >nul 2>nul
@@ -31,13 +31,14 @@ start "NexusNova Ollama" /min cmd /c "ollama serve"
 timeout /t 2 /nobreak >nul
 
 echo.
-echo Starting NOVA AI V6 ULTIMATE + WORK gateway...
+echo Starting NOVA AI V6 ULTIMATE + WORK MAX gateway...
 echo Persistent Workspaces: ON
- echo Keep this window open while using NOVA AI from your phone.
+echo Local background Work jobs: ON while this PC stays running
+echo Keep this window open while using NOVA AI from your phone.
 echo GitHub writes stay OFF until explicitly armed.
 echo.
 python mobile_gateway_work_v6.py --workspace ".." --host 127.0.0.1 --port 8787
 
 echo.
-echo NOVA AI V6 ULTIMATE + WORK stopped.
+echo NOVA AI V6 ULTIMATE + WORK MAX stopped.
 pause
