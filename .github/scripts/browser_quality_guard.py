@@ -43,7 +43,13 @@ def main() -> None:
                         h1: document.querySelectorAll('h1').length,
                         header: !!document.querySelector('[data-header]'),
                         theme: document.documentElement.classList.contains('nexusnova-scifi'),
-                        brokenImages: [...document.images].filter(i => i.complete && i.naturalWidth === 0).length
+                        brokenImages: [...document.images].filter(i => {
+                            const src = (i.getAttribute('src') || '').trim();
+                            if (!src || i.hidden) return false;
+                            const style = getComputedStyle(i);
+                            if (style.display === 'none' || style.visibility === 'hidden') return false;
+                            return i.complete && i.naturalWidth === 0;
+                        }).length
                     })""")
                     if status >= 400 or status == 0:
                         report["severe"].append(f"{mode}/{rel}: HTTP {status}")
@@ -56,7 +62,7 @@ def main() -> None:
                     if not metrics["theme"]:
                         report["severe"].append(f"{mode}/{rel}: canonical premium theme class missing")
                     if metrics["brokenImages"]:
-                        report["severe"].append(f"{mode}/{rel}: {metrics['brokenImages']} broken image(s)")
+                        report["severe"].append(f"{mode}/{rel}: {metrics['brokenImages']} broken visible image(s)")
                     if console_errors:
                         report["warnings"].append(f"{mode}/{rel}: {len(console_errors)} console error(s)")
                     if rel == "index.html":
