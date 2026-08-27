@@ -7,7 +7,8 @@ from urllib.parse import urlsplit, unquote
 
 ROOT = Path('.')
 SITE = 'https://nexusnovatools.com/'
-SKIP_DIRS = {'.git', 'node_modules', 'vendor'}
+# ota/ is an internal Android update payload, not a public website content section.
+SKIP_DIRS = {'.git', 'node_modules', 'vendor', 'ota'}
 
 
 class AuditParser(HTMLParser):
@@ -180,11 +181,12 @@ def main() -> None:
             severe.append(f'duplicate canonical {canonical}: ' + ' | '.join(paths))
 
     report = [
-        'NEXUSNOVA FULL-SITE QUALITY AUDIT',
+        'NEXUSNOVA PUBLIC WEBSITE QUALITY AUDIT',
         f'HTML pages scanned: {len(pages)}',
         f'Indexable pages: {indexable}',
         f'Severe findings: {len(severe)}',
         f'Warnings: {len(warnings)}',
+        'Scope note: internal ota/ Android payload is excluded from public-site SEO checks.',
         '',
         'SEVERE FINDINGS',
         *(severe or ['None']),
