@@ -1,0 +1,41 @@
+name: NexusNova Social Sample Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/social-sample-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sample-post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      SOCIAL_WEBHOOK_URL: ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create one-time sample payload
+        run: |
+          cat > autopilot-publish.json <<'JSON'
+          {
+            "title": "🚀 NexusNova Social Automation Test",
+            "summary": "This is a one-time sample post to verify NexusNova's automatic social publishing setup. Official site: NexusNova Tools.",
+            "url": "https://nexusnovatools.com/"
+          }
+          JSON
+
+      - name: Publish sample to configured social channels
+        run: python .github/scripts/distribute_update.py
