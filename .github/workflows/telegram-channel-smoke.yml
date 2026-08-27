@@ -1,0 +1,46 @@
+name: NexusNova Telegram Channel Smoke Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/telegram-channel-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  telegram-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+    steps:
+      - name: Verify Telegram channel posting
+        run: |
+          python - <<'PY'
+          import json, os, urllib.request
+          token = os.environ.get('TELEGRAM_BOT_TOKEN','').strip()
+          chat = os.environ.get('TELEGRAM_CHANNEL_ID','').strip()
+          if not token:
+              raise SystemExit('TELEGRAM_BOT_TOKEN is missing')
+          if not chat:
+              raise SystemExit('TELEGRAM_CHANNEL_ID is missing')
+          payload = {
+              'chat_id': chat,
+              'text': 'NexusNova automation connection test ✅',
+              'disable_web_page_preview': True,
+          }
+          req = urllib.request.Request(
+              f'https://api.telegram.org/bot{token}/sendMessage',
+              data=json.dumps(payload).encode('utf-8'),
+              headers={'Content-Type':'application/json','User-Agent':'NexusNovaTrafficAutopilot/1.0'},
+              method='POST',
+          )
+          with urllib.request.urlopen(req, timeout=20) as r:
+              data = json.loads(r.read().decode('utf-8'))
+          print(json.dumps({'ok': bool(data.get('ok')), 'chat_type': data.get('result',{}).get('chat',{}).get('type'), 'chat_username': data.get('result',{}).get('chat',{}).get('username'), 'message_id': data.get('result',{}).get('message_id')}, indent=2))
+          if not data.get('ok'):
+              raise SystemExit('Telegram API did not accept the message')
+          PY
