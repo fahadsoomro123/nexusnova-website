@@ -107,6 +107,7 @@ def main() -> None:
     warnings: list[str] = []
     severe: list[str] = []
     indexable = 0
+    theme_covered = 0
     titles: dict[str, list[str]] = {}
     canonicals: dict[str, list[str]] = {}
 
@@ -124,6 +125,13 @@ def main() -> None:
         is_indexable = 'noindex' not in robots
         if is_indexable:
             indexable += 1
+
+        # Every public page must get the canonical 2026 design either directly or via main.js.
+        has_theme = 'assets/css/scifi.css' in text or 'assets/js/main.js' in text
+        if has_theme:
+            theme_covered += 1
+        else:
+            severe.append(f'{rel}: missing canonical NexusNova theme coverage')
 
         title = parser.clean_title
         if not title:
@@ -183,6 +191,7 @@ def main() -> None:
     report = [
         'NEXUSNOVA PUBLIC WEBSITE QUALITY AUDIT',
         f'HTML pages scanned: {len(pages)}',
+        f'Pages with canonical premium theme coverage: {theme_covered}/{len(pages)}',
         f'Indexable pages: {indexable}',
         f'Severe findings: {len(severe)}',
         f'Warnings: {len(warnings)}',
