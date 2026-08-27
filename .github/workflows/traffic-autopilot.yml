@@ -37,7 +37,10 @@ jobs:
       GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
       X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
       FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
       FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
       SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
