@@ -1,0 +1,97 @@
+name: NexusNova Weekly Growth Audit
+
+on:
+  schedule:
+    - cron: '30 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-weekly-growth-audit
+  cancel-in-progress: true
+
+jobs:
+  deep-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install browser QA dependencies
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Static SEO and design-system audit
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Start local site
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
+          echo $! > /tmp/nexusnova-http.pid
+          sleep 2
+
+      - name: Desktop and mobile browser guard with screenshots
+        run: python .github/scripts/browser_quality_guard.py
+
+      - name: Lighthouse SEO performance accessibility checks
+        continue-on-error: true
+        run: |
+          mkdir -p quality-artifacts/lighthouse
+          for page in index.html tools.html trending-tools.html articles.html tech.html; do
+            name="${page%.html}"
+            npx --yes lighthouse@latest "http://127.0.0.1:8000/$page" --quiet --chrome-flags="--headless --no-sandbox" --only-categories=performance,seo,accessibility --output=json --output-path="quality-artifacts/lighthouse/$name.json"
+          done
+
+      - name: Build readable Lighthouse summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=[]
+          for p in sorted(Path('quality-artifacts/lighthouse').glob('*.json')):
+              try:
+                  d=json.loads(p.read_text())
+                  cats=d.get('categories',{})
+                  rows.append({
+                      'page':p.stem,
+                      'performance':round(100*cats.get('performance',{}).get('score',0)),
+                      'seo':round(100*cats.get('seo',{}).get('score',0)),
+                      'accessibility':round(100*cats.get('accessibility',{}).get('score',0)),
+                  })
+              except Exception:
+                  pass
+          Path('quality-artifacts/lighthouse-summary.json').write_text(json.dumps(rows,indent=2)+'\n')
+          print(json.dumps(rows,indent=2))
+          PY
+
+      - name: Add audit summary
+        if: always()
+        run: |
+          echo '## Weekly NexusNova Growth Audit' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat quality-artifacts/lighthouse-summary.json >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload design screenshots and performance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-weekly-growth-audit-${{ github.run_id }}
+          path: |
+            quality-artifacts/
+            site-quality-report.txt
+          if-no-files-found: warn
+          retention-days: 30
