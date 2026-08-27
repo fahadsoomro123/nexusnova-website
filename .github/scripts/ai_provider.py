@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -109,9 +110,11 @@ def _failure_reason(exc: Exception) -> str:
     return exc.__class__.__name__
 
 
+def _retryable(exc: Exception) -> bool:
+    return isinstance(exc, urllib.error.HTTPError) and exc.code in {429, 500, 502, 503, 504}
+
+
 def _call_gemini(prompt: str, key: str, model: str) -> dict | None:
-    # GenerateContent remains fully supported and is a better fit for this one-shot,
-    # latency-sensitive editorial JSON task than the agent-oriented Interactions API.
     endpoint = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
         + urllib.parse.quote(model, safe="-._")
@@ -152,23 +155,31 @@ def _call_openai(prompt: str, key: str, model: str) -> dict | None:
 def ai_json(prompt: str) -> dict | None:
     """Gemini-first editorial JSON generation with OpenAI as failover only.
 
-    A valid Gemini JSON response (including publish=false) is authoritative and does
-    not trigger OpenAI. Fallback occurs only when Gemini is unavailable, errors, or
-    returns unusable/non-JSON output.
+    Gemini gets a few bounded retries for transient capacity/rate-limit errors. A
+    valid Gemini JSON response (including publish=false) is authoritative and does
+    not trigger OpenAI. OpenAI is attempted only after Gemini is genuinely unusable.
     """
     _reset_status()
 
     gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
     gemini_model = os.getenv("GEMINI_MODEL", "").strip() or "gemini-3.7-flash"
     if gemini_key:
-        try:
-            data = _call_gemini(prompt, gemini_key, gemini_model)
-            if isinstance(data, dict):
-                _record("gemini", gemini_model, True)
-                return data
-            _record("gemini", gemini_model, False, "invalid JSON response")
-        except Exception as exc:
-            _record("gemini", gemini_model, False, _failure_reason(exc))
+        retry_delays = (5, 15)
+        for attempt in range(3):
+            try:
+                data = _call_gemini(prompt, gemini_key, gemini_model)
+                if isinstance(data, dict):
+                    _record("gemini", gemini_model, True)
+                    return data
+                _record("gemini", gemini_model, False, "invalid JSON response")
+                break
+            except Exception as exc:
+                retryable = _retryable(exc)
+                _record("gemini", gemini_model, False, _failure_reason(exc))
+                if retryable and attempt < len(retry_delays):
+                    time.sleep(retry_delays[attempt])
+                    continue
+                break
     else:
         _record("gemini", gemini_model, False, "GEMINI_API_KEY not configured")
 
