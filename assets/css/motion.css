@@ -1,33 +1,8 @@
-/* NexusNova minimal motion layer — no blur, no infinite animation. */
+/* NexusNova motion layer — purposeful, lightweight, accessibility-safe. */
 html{scroll-behavior:smooth}
-.nn-reveal{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease}
+.nn-reveal{opacity:0;transform:translateY(12px);transition:opacity .42s ease,transform .42s cubic-bezier(.2,.7,.2,1)}
 .nn-reveal.nn-visible{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nn-reveal,.nn-reveal.nn-visible{opacity:1;transform:none;transition:none}}
-
-/* Creator portrait rendering fix — use the verified WebP directly instead of nesting it inside an external SVG. */
 img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;object-fit:cover;aspect-ratio:1;border-radius:50%}
-.nn-home main::after{
-  background-image:
-    radial-gradient(circle at center,transparent 0 104px,rgba(255,255,255,.98) 105px 112px,#f7f9ff 113px 100%),
-    url("../fahad-creator.webp"),
-    radial-gradient(circle at 6% 18%,rgba(139,92,246,.16) 0 60px,transparent 61px),
-    radial-gradient(circle at 92% 18%,rgba(20,184,166,.13) 0 48px,transparent 49px),
-    radial-gradient(circle at 84% 82%,rgba(59,130,246,.10) 0 76px,transparent 77px),
-    linear-gradient(125deg,#f7f3ff 0%,#ffffff 42%,#eefbff 100%)!important;
-  background-size:265px 265px,224px 224px,auto,auto,auto,auto!important;
-  background-position:42px center,62px center,left top,right top,right bottom,center!important;
-  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat!important;
-}
-@media(max-width:760px){
-  .nn-home main::after{
-    background-image:
-      radial-gradient(circle at center,transparent 0 61px,rgba(255,255,255,.98) 62px 67px,#f7f9ff 68px 100%),
-      url("../fahad-creator.webp"),
-      radial-gradient(circle at 8% 18%,rgba(139,92,246,.14) 0 48px,transparent 49px),
-      radial-gradient(circle at 92% 12%,rgba(20,184,166,.12) 0 42px,transparent 43px),
-      linear-gradient(155deg,#f7f3ff 0%,#ffffff 48%,#eefbff 100%)!important;
-    background-size:155px 155px,132px 132px,auto,auto,auto!important;
-    background-position:center 24px,center 35px,left top,right top,center!important;
-    background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat!important;
-  }
-}
+/* Never generate page sections or backgrounds from the motion stylesheet. */
+.nn-home main::after{content:none!important;display:none!important;background:none!important}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nn-reveal,.nn-reveal.nn-visible{opacity:1;transform:none;transition:none}}
