@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import feedparser
+import ai_provider
 import traffic_autopilot as core
 
 SOURCES = [
@@ -91,6 +92,9 @@ def collect_trends() -> tuple[list[dict], list[str]]:
 def main() -> None:
     if not os.getenv("GSC_SITE_URL", "").strip():
         os.environ["GSC_SITE_URL"] = "sc-domain:nexusnovatools.com"
+    # Keep the established article builder and safety gates, but route its AI call
+    # through the Gemini-first provider with OpenAI used only as technical failover.
+    core.ai_json = ai_provider.ai_json
     history = core.load_json(core.HISTORY_PATH, {"version": 1, "articles": [], "seo_refresh": {}})
     trends, feed_errors = collect_trends()
     pulse = core.write_pulse(trends)
@@ -115,12 +119,14 @@ def main() -> None:
         "feed_errors": feed_errors,
         "article_published": published,
         "article_candidate": core.public_item(candidate) if candidate else None,
+        "ai": ai_provider.status(),
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
-        "safety": {"max_articles_per_run": 1, "minimum_article_score": 14, "source_allowlist_only": True, "direct_article_urls_only": True, "live_tech_max_age_days": 35, "no_publish_when_source_too_thin": True},
+        "safety": {"max_articles_per_run": 1, "minimum_article_score": 14, "source_allowlist_only": True, "direct_article_urls_only": True, "live_tech_max_age_days": 35, "no_publish_when_source_too_thin": True, "gemini_primary_openai_failover_only": True},
     }
     core.REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"trend_items": len(pulse.get("items", [])), "published": published["url"] if published else None, "gsc_connected": analytics_report.get("connected", False), "feed_errors": len(feed_errors)}, indent=2))
+    ai_status = ai_provider.status()
+    print(json.dumps({"trend_items": len(pulse.get("items", [])), "published": published["url"] if published else None, "ai_provider": ai_status.get("provider"), "gsc_connected": analytics_report.get("connected", False), "feed_errors": len(feed_errors)}, indent=2))
 
 
 if __name__ == "__main__":
