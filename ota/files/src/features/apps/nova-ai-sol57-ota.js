@@ -335,6 +335,7 @@ export function renderNovaSol57() {
   let files = [];
   let busy = false;
   let activeController = null;
+  let stopRequested = false;
   let plusMenu = null;
   let voiceSession = false;
   let voiceRecognition = null;
@@ -462,6 +463,7 @@ export function renderNovaSol57() {
     const ui = currentUi();
     const prior = [...thread.turns];
     busy = true;
+    stopRequested = false;
     sendButton.classList.add('stop'); sendButton.textContent = '■';
     input.value = '';
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
@@ -479,7 +481,7 @@ export function renderNovaSol57() {
           meta = [result.model || 'Local model', ui.mode === 'work' ? 'Work' : ui.mode === 'research' ? 'Research' : 'Chat'].filter(Boolean).join(' • ');
           setStatus(`${result.model || 'Local NOVA'} • ${ui.mode}${result.githubWrites ? ' • GitHub writes ON' : ''}`);
         } catch (error) {
-          if (activeController?.signal?.aborted) throw error;
+          if (stopRequested || activeController?.signal?.aborted) throw error;
           setStatus(`Local gateway unavailable • built-in fallback: ${String(error?.message || error).slice(0, 100)}`);
           const fallbackText = files.length ? `${text}\n\nAttached text/code context:\n${attachmentContext(files)}` : text;
           reply = await fallback.ask(fallbackText, ui);
@@ -496,7 +498,7 @@ export function renderNovaSol57() {
       if (fromVoice && voiceSession && readVoice().autoSpeak) await voiceSpeak(reply);
       return reply;
     } catch (error) {
-      const stopped = /timed out or was stopped/i.test(String(error?.message || '')) && activeController?.signal?.aborted;
+      const stopped = stopRequested || /timed out or was stopped/i.test(String(error?.message || ''));
       if (!stopped) {
         const message = `NOVA could not complete that request: ${String(error?.message || error || 'Unknown error').slice(0, 220)}`;
         addBubble({ role: 'assistant', text: message, meta: 'No action completed' }, true);
@@ -504,12 +506,13 @@ export function renderNovaSol57() {
       } else setStatus('Stopped.');
       return '';
     } finally {
-      busy = false; activeController = null;
+      busy = false; activeController = null; stopRequested = false;
       sendButton.classList.remove('stop'); sendButton.textContent = '↑';
     }
   }
 
   function stopRequest() {
+    stopRequested = true;
     if (activeController) activeController.abort();
     busy = false; activeController = null;
     sendButton.classList.remove('stop'); sendButton.textContent = '↑';
