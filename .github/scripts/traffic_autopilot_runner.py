@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import feedparser
 import traffic_autopilot as core
@@ -43,6 +43,8 @@ def direct_link(entry, feed_url: str) -> str:
                 continue
             if "feeds.feedburner.com" in lower:
                 continue
+            if value.startswith("http://"):
+                value = "https://" + value[len("http://"):]
             return value
     return ""
 
@@ -51,7 +53,7 @@ def collect_trends() -> tuple[list[dict], list[str]]:
     rows: list[dict] = []
     errors: list[str] = []
     for source in SOURCES:
-        feed = feedparser.parse(source["url"], agent="NexusNovaTrafficAutopilot/2.1 (+https://nexusnovatools.com/)")
+        feed = feedparser.parse(source["url"], agent="NexusNovaTrafficAutopilot/2.2 (+https://nexusnovatools.com/)")
         if getattr(feed, "bozo", False) and not feed.entries:
             errors.append(f"{source['name']}: feed parse failed")
             continue
@@ -73,6 +75,9 @@ def collect_trends() -> tuple[list[dict], list[str]]:
     category_counts: dict[str, int] = {}
     for row in rows:
         key = core.normalize_title(row["title"])
+        published = row.get("published")
+        if isinstance(published, datetime) and core.NOW - published > timedelta(days=35):
+            continue
         if row["score"] < 7 or not key or key in seen or category_counts.get(row["category"], 0) >= 2:
             continue
         seen.add(key)
@@ -112,7 +117,7 @@ def main() -> None:
         "article_candidate": core.public_item(candidate) if candidate else None,
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
-        "safety": {"max_articles_per_run": 1, "minimum_article_score": 14, "source_allowlist_only": True, "direct_article_urls_only": True, "no_publish_when_source_too_thin": True},
+        "safety": {"max_articles_per_run": 1, "minimum_article_score": 14, "source_allowlist_only": True, "direct_article_urls_only": True, "live_tech_max_age_days": 35, "no_publish_when_source_too_thin": True},
     }
     core.REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"trend_items": len(pulse.get("items", [])), "published": published["url"] if published else None, "gsc_connected": analytics_report.get("connected", False), "feed_errors": len(feed_errors)}, indent=2))
