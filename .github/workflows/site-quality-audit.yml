@@ -1,6 +1,8 @@
 name: NexusNova Site Quality Audit
 
 on:
+  schedule:
+    - cron: '45 2 * * *'
   push:
     branches: [main]
     paths:
