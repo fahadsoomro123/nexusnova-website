@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: '30 3 * * 0'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/weekly-growth-audit.yml'
+      - '.github/scripts/browser_quality_guard.py'
+      - '.github/scripts/site_quality_audit.py'
+      - 'assets/css/live-tech-pulse.css'
+      - 'assets/js/live-tech-pulse.js'
 
 permissions:
   contents: read
