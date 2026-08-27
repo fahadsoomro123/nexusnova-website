@@ -29,6 +29,14 @@ def post_form(url: str, payload: dict) -> None:
         print(url.split("?")[0], response.status)
 
 
+def get_json(url: str) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": "NexusNovaTrafficAutopilot/1.0"})
+    with urllib.request.urlopen(req, timeout=25) as response:
+        data = json.loads(response.read().decode("utf-8"))
+        print(url.split("?")[0], response.status)
+        return data
+
+
 def oauth1_header(method: str, url: str, api_key: str, api_secret: str, access_token: str, access_secret: str) -> str:
     def enc(value: str) -> str:
         return urllib.parse.quote(str(value), safe="~-._")
@@ -67,6 +75,22 @@ def post_x(title: str, url: str) -> None:
     post_json(endpoint, {"text": text}, {"Authorization": auth})
 
 
+def resolve_facebook_page_token(page_id: str, token: str) -> str:
+    query = urllib.parse.urlencode({
+        "fields": "id,name,access_token",
+        "access_token": token,
+    })
+    data = get_json(
+        f"https://graph.facebook.com/v26.0/{urllib.parse.quote(page_id)}?{query}"
+    )
+    if str(data.get("id", "")) != page_id:
+        raise RuntimeError("Facebook token resolved a different Page ID")
+    page_token = str(data.get("access_token", "")).strip()
+    if not page_token:
+        raise RuntimeError("Facebook Page access token was not returned")
+    return page_token
+
+
 def main() -> None:
     if not PUBLISH.exists():
         print("No new article this run; social distribution skipped.")
@@ -98,7 +122,15 @@ def main() -> None:
     fb_token = os.getenv("FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
     if fb_page and fb_token:
         try:
-            post_form(f"https://graph.facebook.com/v24.0/{urllib.parse.quote(fb_page)}/feed", {"message": f"{title}\n\n{summary}", "link": url, "access_token": fb_token})
+            page_token = resolve_facebook_page_token(fb_page, fb_token)
+            post_form(
+                f"https://graph.facebook.com/v26.0/{urllib.parse.quote(fb_page)}/feed",
+                {
+                    "message": f"{title}\n\n{summary}",
+                    "link": url,
+                    "access_token": page_token,
+                },
+            )
             sent += 1
         except Exception as exc:
             print("Facebook warning:", exc)
