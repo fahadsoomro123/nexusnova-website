@@ -1,0 +1,133 @@
+name: NexusNova Daily Traffic Autopilot
+
+on:
+  schedule:
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/traffic_autopilot.py'
+      - '.github/scripts/submit_indexnow.py'
+      - '.github/scripts/distribute_update.py'
+      - '.github/workflows/traffic-autopilot.yml'
+      - 'assets/js/live-tech-pulse.js'
+      - 'assets/css/live-tech-pulse.css'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-traffic-autopilot
+  cancel-in-progress: false
+
+jobs:
+  daily-growth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+      GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install automation dependencies
+        run: python -m pip install --disable-pip-version-check pillow google-auth requests
+
+      - name: Compile automation scripts
+        run: |
+          python -m py_compile .github/scripts/traffic_autopilot.py
+          python -m py_compile .github/scripts/site_quality_audit.py
+          python -m py_compile .github/scripts/submit_indexnow.py
+          python -m py_compile .github/scripts/distribute_update.py
+
+      - name: Collect official tech trends and update growth surfaces
+        run: python .github/scripts/traffic_autopilot.py
+
+      - name: Rebuild machine-readable article feed
+        run: python .github/scripts/build_articles_feed.py
+
+      - name: Full public-site SEO and link audit
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Strict safety gate
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          report=Path('site-quality-report.txt').read_text(encoding='utf-8')
+          m=re.search(r'Severe findings:\s*(\d+)',report)
+          severe=int(m.group(1)) if m else 999
+          print(f'Severe findings: {severe}')
+          if severe:
+              raise SystemExit('Autopilot blocked: public-site audit has severe findings.')
+          PY
+
+      - name: Commit safe daily changes
+        id: commit
+        run: |
+          git config user.name 'nexusnova-autopilot[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap-autopilot.xml sitemap-index.xml llms.txt
+          if [ -d assets/generated ]; then git add assets/generated; fi
+          git add articles/
+          if [ -z "$(git status --porcelain)" ]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'No useful public change today.'
+            exit 0
+          fi
+          git commit -m "automation: daily traffic autopilot ${GITHUB_RUN_ID}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+
+      - name: Submit changed pages to IndexNow
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        run: python .github/scripts/submit_indexnow.py
+
+      - name: Distribute a new article to configured social channels
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        run: python .github/scripts/distribute_update.py
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          echo '## NexusNova Daily Traffic Autopilot' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f traffic-autopilot-report.json ]; then cat traffic-autopilot-report.json >> "$GITHUB_STEP_SUMMARY"; else echo '{"status":"report unavailable"}'; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f site-quality-report.txt ]; then cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload private run diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-traffic-autopilot-${{ github.run_id }}
+          path: |
+            traffic-autopilot-report.json
+            site-quality-report.txt
+            autopilot-publish.json
+            autopilot-changed-urls.txt
+          if-no-files-found: ignore
+          retention-days: 14
