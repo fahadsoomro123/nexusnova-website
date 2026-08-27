@@ -38,8 +38,12 @@ def direct_link(entry, feed_url: str) -> str:
     for value in candidates:
         value = (value or "").strip()
         if value.startswith(("https://", "http://")) and value.rstrip("/") != feed_norm:
-            if not value.lower().rstrip("/").endswith(("/feed", "/rss", "/rss.xml")):
-                return value
+            lower = value.lower().rstrip("/")
+            if "/feeds/" in lower or lower.endswith(("/feed", "/rss", "/rss.xml")):
+                continue
+            if "feeds.feedburner.com" in lower:
+                continue
+            return value
     return ""
 
 
@@ -47,7 +51,7 @@ def collect_trends() -> tuple[list[dict], list[str]]:
     rows: list[dict] = []
     errors: list[str] = []
     for source in SOURCES:
-        feed = feedparser.parse(source["url"], agent="NexusNovaTrafficAutopilot/2.0 (+https://nexusnovatools.com/)")
+        feed = feedparser.parse(source["url"], agent="NexusNovaTrafficAutopilot/2.1 (+https://nexusnovatools.com/)")
         if getattr(feed, "bozo", False) and not feed.entries:
             errors.append(f"{source['name']}: feed parse failed")
             continue
@@ -57,7 +61,8 @@ def collect_trends() -> tuple[list[dict], list[str]]:
             if not title or not url:
                 continue
             summary = core.clean_text(entry.get("summary", "") or entry.get("description", ""))
-            row = {"title": title, "url": url, "summary": summary, "published": parsed_time(entry), **source}
+            # Feed metadata comes first so the resolved per-entry URL cannot be overwritten by source['url'].
+            row = {**source, "title": title, "url": url, "summary": summary, "published": parsed_time(entry)}
             row["category"] = core.infer_category(f"{title} {summary}", source["category"])
             row["score"] = core.score_item(row)
             rows.append(row)
