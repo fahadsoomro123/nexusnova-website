@@ -1,0 +1,156 @@
+name: Publish NOVA 5.7 Sol OTA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-nova57-ota.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fix final stop-request guardrail
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('ota/files/src/features/apps/nova-ai-sol57-ota.js')
+          s = p.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  '  let activeController = null;\n  let plusMenu = null;',
+                  '  let activeController = null;\n  let stopRequested = false;\n  let plusMenu = null;'
+              ),
+              (
+                  '    busy = true;\n    sendButton.classList.add(\'stop\'); sendButton.textContent = \'■\';',
+                  '    busy = true;\n    stopRequested = false;\n    sendButton.classList.add(\'stop\'); sendButton.textContent = \'■\';'
+              ),
+              (
+                  '          if (activeController?.signal?.aborted) throw error;',
+                  '          if (stopRequested || activeController?.signal?.aborted) throw error;'
+              ),
+              (
+                  "      const stopped = /timed out or was stopped/i.test(String(error?.message || '')) && activeController?.signal?.aborted;",
+                  "      const stopped = stopRequested || /timed out or was stopped/i.test(String(error?.message || ''));"
+              ),
+              (
+                  '      busy = false; activeController = null;\n      sendButton.classList.remove(\'stop\'); sendButton.textContent = \'↑\';',
+                  '      busy = false; activeController = null; stopRequested = false;\n      sendButton.classList.remove(\'stop\'); sendButton.textContent = \'↑\';'
+              ),
+              (
+                  '  function stopRequest() {\n    if (activeController) activeController.abort();\n    busy = false; activeController = null;',
+                  '  function stopRequest() {\n    stopRequested = true;\n    if (activeController) activeController.abort();\n    busy = false; activeController = null;'
+              )
+          ]
+          for old, new in replacements:
+              if new in s:
+                  continue
+              if old not in s:
+                  raise SystemExit(f'OTA stop guard anchor missing: {old[:70]!r}')
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Verify NOVA 5.7 OTA syntax and routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp ota/files/src/features/apps/app-screen.js /tmp/app-screen.mjs
+          cp ota/files/src/features/apps/nova-ai-sol57-ota.js /tmp/nova-ai-sol57-ota.mjs
+          node --check /tmp/app-screen.mjs
+          node --check /tmp/nova-ai-sol57-ota.mjs
+          grep -Fq "import { novaSol57Renderers } from './nova-ai-sol57-ota.js';" ota/files/src/features/apps/app-screen.js
+          grep -Fq 'novaSol57Renderers[id] ||' ota/files/src/features/apps/app-screen.js
+          grep -Fq "export const novaSol57Renderers = Object.freeze({ ai: renderNovaSol57 });" ota/files/src/features/apps/nova-ai-sol57-ota.js
+          grep -Fq "tier: 'FREE'" ota/files/src/features/apps/nova-ai-sol57-ota.js
+          grep -Fq "tier: 'PAID'" ota/files/src/features/apps/nova-ai-sol57-ota.js
+          grep -Fq '/api/voice/synthesize' ota/files/src/features/apps/nova-ai-sol57-ota.js
+          grep -Fq '/api/video/generate' ota/files/src/features/apps/nova-ai-sol57-ota.js
+          grep -Fq 'stopRequested || activeController?.signal?.aborted' ota/files/src/features/apps/nova-ai-sol57-ota.js
+
+      - name: Generate hash-verified OTA manifest
+        shell: bash
+        env:
+          OTA_VERSION: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          files = [
+              'assets/styles/nova-hub-compact-icons-v2.css',
+              'src/features/apps/news-suite.js',
+              'src/features/apps/nova-ai-v6-phase1.js',
+              'src/features/apps/app-screen.js',
+              'src/features/apps/nova-ai-sol57-ota.js',
+          ]
+          root = Path('ota/files')
+          rows = []
+          total = 0
+          for rel in files:
+              p = root / rel
+              if not p.is_file():
+                  raise SystemExit(f'OTA file missing: {rel}')
+              data = p.read_bytes()
+              total += len(data)
+              rows.append({
+                  'path': rel,
+                  'sha256': hashlib.sha256(data).hexdigest(),
+                  'size': len(data),
+              })
+          version = os.environ['OTA_VERSION'].strip().lower()
+          if len(version) != 40 or any(c not in '0123456789abcdef' for c in version):
+              raise SystemExit('OTA version must be a 40-character hex commit id')
+          manifest = {'files': rows, 'schema': 1, 'version': version}
+          Path('ota/manifest.json').write_text(json.dumps(manifest, separators=(',', ':')) + '\n', encoding='utf-8')
+          print(f'OTA version {version} • {len(rows)} files • {total} bytes')
+          for row in rows:
+              print(row['sha256'], row['size'], row['path'])
+          PY
+          python3 -m json.tool ota/manifest.json >/dev/null
+
+      - name: Verify manifest hashes before publish
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          manifest = json.loads(Path('ota/manifest.json').read_text(encoding='utf-8'))
+          if manifest.get('schema') != 1:
+              raise SystemExit('Wrong OTA schema')
+          for item in manifest['files']:
+              data = (Path('ota/files') / item['path']).read_bytes()
+              if len(data) != item['size']:
+                  raise SystemExit(f"Size mismatch: {item['path']}")
+              if hashlib.sha256(data).hexdigest() != item['sha256']:
+                  raise SystemExit(f"SHA-256 mismatch: {item['path']}")
+          print('All OTA manifest hashes verified.')
+          PY
+
+      - name: Publish verified OTA package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota/files/src/features/apps/nova-ai-sol57-ota.js ota/manifest.json
+          if git diff --cached --quiet; then
+            echo 'Verified OTA already published.'
+            exit 0
+          fi
+          git commit -m "Publish verified NOVA 5.7 Sol OTA $GITHUB_SHA"
+          git pull --rebase origin main
+          git push origin HEAD:main
