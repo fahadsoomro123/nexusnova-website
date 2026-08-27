@@ -1,0 +1,35 @@
+name: NexusNova Instagram Direct ID Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/instagram-direct-id-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - name: Query Instagram account directly
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, urllib.error
+          token=os.environ['FACEBOOK_PAGE_ACCESS_TOKEN'].strip()
+          ig_id='17841437315789411'
+          q=urllib.parse.urlencode({'fields':'id,username,name','access_token':token})
+          url=f'https://graph.facebook.com/v26.0/{ig_id}?{q}'
+          try:
+              with urllib.request.urlopen(url, timeout=25) as r:
+                  data=json.loads(r.read().decode())
+                  print(json.dumps({'http_status':r.status,'data':data}, indent=2))
+          except urllib.error.HTTPError as e:
+              body=e.read().decode('utf-8','replace')
+              print(json.dumps({'http_status':e.code,'response':body[:1200]}, indent=2))
+              raise
+          PY
