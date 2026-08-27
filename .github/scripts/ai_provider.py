@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 
 _STATUS: dict = {
@@ -20,7 +21,7 @@ def _reset_status() -> None:
 def _record(provider: str, model: str, ok: bool, reason: str | None = None) -> None:
     row = {"provider": provider, "model": model, "ok": ok}
     if reason:
-        row["reason"] = reason[:180]
+        row["reason"] = reason[:220]
     _STATUS.setdefault("attempts", []).append(row)
     if ok:
         _STATUS["provider"] = provider
@@ -57,7 +58,7 @@ def _json_from_text(text: str) -> dict | None:
     return None
 
 
-def _request_json(url: str, body: dict, headers: dict[str, str], timeout: int = 90) -> dict:
+def _request_json(url: str, body: dict, headers: dict[str, str], timeout: int) -> dict:
     request = urllib.request.Request(
         url,
         data=json.dumps(body).encode("utf-8"),
@@ -70,12 +71,13 @@ def _request_json(url: str, body: dict, headers: dict[str, str], timeout: int = 
 
 def _gemini_text(payload: dict) -> str:
     chunks: list[str] = []
-    for step in payload.get("steps", []) or []:
-        if step.get("type") != "model_output":
-            continue
-        for content in step.get("content", []) or []:
-            if content.get("type") == "text" and isinstance(content.get("text"), str):
-                chunks.append(content["text"])
+    for candidate in payload.get("candidates", []) or []:
+        content = candidate.get("content") or {}
+        for part in content.get("parts", []) or []:
+            if part.get("thought") is True:
+                continue
+            if isinstance(part.get("text"), str):
+                chunks.append(part["text"])
     return "\n".join(chunks)
 
 
@@ -92,22 +94,41 @@ def _openai_text(payload: dict) -> str:
 
 def _failure_reason(exc: Exception) -> str:
     if isinstance(exc, urllib.error.HTTPError):
-        return f"HTTP {exc.code}"
+        detail = ""
+        try:
+            payload = json.loads(exc.read().decode("utf-8", errors="ignore"))
+            error = payload.get("error") if isinstance(payload, dict) else None
+            if isinstance(error, dict):
+                detail = str(error.get("message") or error.get("status") or "")
+        except Exception:
+            detail = ""
+        detail = " ".join(detail.split())[:150]
+        return f"HTTP {exc.code}" + (f": {detail}" if detail else "")
     if isinstance(exc, urllib.error.URLError):
         return "network error"
     return exc.__class__.__name__
 
 
 def _call_gemini(prompt: str, key: str, model: str) -> dict | None:
+    # GenerateContent remains fully supported and is a better fit for this one-shot,
+    # latency-sensitive editorial JSON task than the agent-oriented Interactions API.
+    endpoint = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        + urllib.parse.quote(model, safe="-._")
+        + ":generateContent"
+    )
     payload = _request_json(
-        "https://generativelanguage.googleapis.com/v1beta/interactions",
+        endpoint,
         {
-            "model": model,
-            "input": prompt,
-            "store": False,
-            "response_format": {"type": "text", "mime_type": "application/json"},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "maxOutputTokens": 3200,
+                "thinkingConfig": {"thinkingLevel": "low"},
+            },
         },
         {"x-goog-api-key": key},
+        timeout=70,
     )
     return _json_from_text(_gemini_text(payload))
 
@@ -118,10 +139,12 @@ def _call_openai(prompt: str, key: str, model: str) -> dict | None:
         {
             "model": model,
             "input": prompt,
-            "temperature": 0.2,
+            "reasoning": {"effort": "low"},
             "max_output_tokens": 3200,
+            "store": False,
         },
         {"Authorization": f"Bearer {key}"},
+        timeout=90,
     )
     return _json_from_text(_openai_text(payload))
 
@@ -150,7 +173,9 @@ def ai_json(prompt: str) -> dict | None:
         _record("gemini", gemini_model, False, "GEMINI_API_KEY not configured")
 
     openai_key = os.getenv("OPENAI_API_KEY", "").strip()
-    openai_model = os.getenv("OPENAI_MODEL", "").strip() or "gpt-5.6"
+    # Luna is deliberately the default failover: OpenAI should be a rare, lower-cost
+    # backup rather than the normal path. OPENAI_MODEL can still override it.
+    openai_model = os.getenv("OPENAI_MODEL", "").strip() or "gpt-5.6-luna"
     if openai_key:
         try:
             data = _call_openai(prompt, openai_key, openai_model)
