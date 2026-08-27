@@ -1,0 +1,53 @@
+name: NexusNova Facebook Visible Sample
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/facebook-visible-sample.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - name: Create explicit published Facebook sample and verify object
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, urllib.error
+          page_id=os.environ['FACEBOOK_PAGE_ID'].strip()
+          system_token=os.environ['FACEBOOK_PAGE_ACCESS_TOKEN'].strip()
+          q=urllib.parse.urlencode({'fields':'id,name,access_token','access_token':system_token})
+          with urllib.request.urlopen(f'https://graph.facebook.com/v26.0/{page_id}?{q}', timeout=25) as r:
+              page=json.loads(r.read().decode())
+          page_token=page['access_token']
+          payload=urllib.parse.urlencode({
+              'message':'🚀 NexusNova Facebook Automation Test\n\nFacebook auto-posting ka live sample test.\n\nhttps://nexusnovatools.com/',
+              'published':'true',
+              'access_token':page_token,
+          }).encode()
+          req=urllib.request.Request(f'https://graph.facebook.com/v26.0/{page_id}/feed',data=payload,method='POST',headers={'Content-Type':'application/x-www-form-urlencoded'})
+          with urllib.request.urlopen(req, timeout=25) as r:
+              created=json.loads(r.read().decode())
+              print('CREATE_HTTP',r.status)
+              print('CREATE_RESPONSE',json.dumps(created))
+          post_id=str(created.get('id',''))
+          if not post_id:
+              raise SystemExit('No post id returned')
+          q=urllib.parse.urlencode({'fields':'id,message,created_time,permalink_url,is_published','access_token':page_token})
+          try:
+              with urllib.request.urlopen(f'https://graph.facebook.com/v26.0/{urllib.parse.quote(post_id)}?{q}', timeout=25) as r:
+                  obj=json.loads(r.read().decode())
+                  print('VERIFY_HTTP',r.status)
+                  print('VERIFY_RESPONSE',json.dumps(obj))
+          except urllib.error.HTTPError as e:
+              print('VERIFY_HTTP',e.code)
+              print('VERIFY_ERROR',e.read().decode('utf-8','replace')[:1000])
+          print('DIRECT_URL',f'https://www.facebook.com/{page_id}/posts/{post_id.split("_")[-1]}')
+          PY
