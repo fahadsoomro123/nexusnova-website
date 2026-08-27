@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/traffic_autopilot.py'
+      - '.github/scripts/traffic_autopilot_runner.py'
       - '.github/scripts/submit_indexnow.py'
       - '.github/scripts/distribute_update.py'
       - '.github/workflows/traffic-autopilot.yml'
@@ -49,17 +50,18 @@ jobs:
           python-version: '3.12'
 
       - name: Install automation dependencies
-        run: python -m pip install --disable-pip-version-check pillow google-auth requests
+        run: python -m pip install --disable-pip-version-check pillow google-auth requests feedparser
 
       - name: Compile automation scripts
         run: |
           python -m py_compile .github/scripts/traffic_autopilot.py
+          python -m py_compile .github/scripts/traffic_autopilot_runner.py
           python -m py_compile .github/scripts/site_quality_audit.py
           python -m py_compile .github/scripts/submit_indexnow.py
           python -m py_compile .github/scripts/distribute_update.py
 
       - name: Collect official tech trends and update growth surfaces
-        run: python .github/scripts/traffic_autopilot.py
+        run: python .github/scripts/traffic_autopilot_runner.py
 
       - name: Rebuild machine-readable article feed
         run: python .github/scripts/build_articles_feed.py
