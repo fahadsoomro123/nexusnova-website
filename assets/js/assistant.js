@@ -100,3 +100,14 @@
   core.addEventListener('error',()=>console.error('NOVA assistant core failed to load.'));
   document.head.appendChild(core);
 })();
+
+(()=>{
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(page!=='index.html'&&location.pathname!=='/')return;
+  if(!document.querySelector('link[data-nexusnova-live-tech]')){
+    const link=document.createElement('link');link.rel='stylesheet';link.href='assets/css/live-tech-pulse.css';link.dataset.nexusnovaLiveTech='';document.head.appendChild(link);
+  }
+  if(!document.querySelector('script[data-nexusnova-live-tech]')){
+    const script=document.createElement('script');script.src='assets/js/live-tech-pulse.js';script.defer=true;script.dataset.nexusnovaLiveTech='';document.body.appendChild(script);
+  }
+})();
