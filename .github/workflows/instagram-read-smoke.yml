@@ -1,0 +1,39 @@
+name: NexusNova Instagram Read Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/instagram-read-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - name: Resolve connected Instagram account
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, urllib.error
+          page_id=os.environ['FACEBOOK_PAGE_ID'].strip()
+          token=os.environ['FACEBOOK_PAGE_ACCESS_TOKEN'].strip()
+          q=urllib.parse.urlencode({'fields':'id,name,access_token,instagram_business_account{id,username}','access_token':token})
+          url=f'https://graph.facebook.com/v26.0/{page_id}?{q}'
+          try:
+              with urllib.request.urlopen(url, timeout=25) as r:
+                  data=json.loads(r.read().decode())
+                  ig=data.get('instagram_business_account') or {}
+                  print(json.dumps({'http_status':r.status,'page_name':data.get('name'),'ig_connected':bool(ig.get('id')),'ig_id':ig.get('id'),'ig_username':ig.get('username')}, indent=2))
+                  if not ig.get('id'):
+                      raise SystemExit('No connected Instagram business account returned')
+          except urllib.error.HTTPError as e:
+              body=e.read().decode('utf-8','replace')
+              print(json.dumps({'http_status':e.code,'response':body[:1200]}, indent=2))
+              raise
+          PY
