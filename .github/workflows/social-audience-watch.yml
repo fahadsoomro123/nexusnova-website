@@ -1,0 +1,116 @@
+name: NexusNova Social Audience Watch
+
+on:
+  schedule:
+    - cron: '5 3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/social_audience_metrics.py'
+      - '.github/workflows/social-audience-watch.yml'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nexusnova-social-audience-watch
+  cancel-in-progress: true
+
+jobs:
+  audience-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile audience tracker
+        run: python -m py_compile .github/scripts/social_audience_metrics.py
+
+      - name: Measure social audience and connection health
+        env:
+          NEXUSNOVA_RECORD_AUDIENCE: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '1' || '0' }}
+        run: python .github/scripts/social_audience_metrics.py
+
+      - name: Commit daily audience history
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          if [ ! -f assets/data/social-audience-history.json ]; then
+            echo 'No audience history generated.'
+            exit 0
+          fi
+          git add assets/data/social-audience-history.json
+          if [ -z "$(git status --porcelain)" ]; then
+            echo 'Audience history unchanged.'
+            exit 0
+          fi
+          git config user.name 'nexusnova-audience-watch[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "automation: social audience snapshot ${GITHUB_RUN_ID}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Open or close social connection incident
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const title = '[Social Growth] Account connection problem';
+            if (!fs.existsSync('social-audience-metrics.json')) {
+              core.notice('No social audience report; incident state unchanged.');
+              return;
+            }
+            const data = JSON.parse(fs.readFileSync('social-audience-metrics.json', 'utf8'));
+            const failures = [];
+            for (const platform of ['facebook', 'instagram', 'telegram']) {
+              const row = data[platform] || {};
+              if (row.configured && row.error) failures.push(`${platform}: ${String(row.error).slice(0, 240)}`);
+            }
+            const q = `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${title}"`;
+            const found = await github.rest.search.issuesAndPullRequests({q, per_page: 10});
+            const current = found.data.items.find(x => x.title === title && !x.pull_request);
+            if (failures.length) {
+              const body = `The automatic social audience watchdog found connection/access problems.\n\n${failures.map(x => `- ${x}`).join('\n')}\n\nRun: ${context.runId}\n\nNo secrets are included in this report.`;
+              if (current) {
+                await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: current.number, body});
+              } else {
+                await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body});
+              }
+            } else if (current) {
+              await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: current.number, body: `✅ Social account connections are healthy again. Auto-closing from run ${context.runId}.`});
+              await github.rest.issues.update({owner: context.repo.owner, repo: context.repo.repo, issue_number: current.number, state: 'closed'});
+            }
+
+      - name: Publish audience summary
+        if: always()
+        run: |
+          echo '## NexusNova Social Audience Watch' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          cat social-audience-report.txt 2>/dev/null || echo 'Audience report unavailable.'
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload private audience diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-social-audience-${{ github.run_id }}
+          path: |
+            social-audience-metrics.json
+            social-audience-report.txt
+          if-no-files-found: ignore
+          retention-days: 14
