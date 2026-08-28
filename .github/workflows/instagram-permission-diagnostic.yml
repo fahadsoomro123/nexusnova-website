@@ -1,0 +1,53 @@
+name: NexusNova Instagram Permission Diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/instagram-permission-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+    steps:
+      - name: Diagnose token scopes and Instagram linkage
+        run: |
+          python - <<'PY'
+          import json, os, urllib.parse, urllib.request, urllib.error
+
+          token=os.environ['FACEBOOK_PAGE_ACCESS_TOKEN'].strip()
+          page_id=os.environ['FACEBOOK_PAGE_ID'].strip()
+
+          def get(path, params):
+              q=urllib.parse.urlencode({**params, 'access_token': token})
+              url=f'https://graph.facebook.com/v26.0/{path}?{q}'
+              try:
+                  with urllib.request.urlopen(url, timeout=25) as r:
+                      return r.status, json.loads(r.read().decode())
+              except urllib.error.HTTPError as e:
+                  body=e.read().decode('utf-8','replace')
+                  try: data=json.loads(body)
+                  except Exception: data={'raw':body[:1200]}
+                  return e.code, data
+
+          status, perms=get('me/permissions', {})
+          granted=[]
+          for p in perms.get('data',[]) if isinstance(perms,dict) else []:
+              if p.get('status')=='granted': granted.append(p.get('permission'))
+          print(json.dumps({'permissions_http':status,'granted_permissions':sorted(granted)}, indent=2))
+
+          status, page=get(page_id, {'fields':'id,name,instagram_business_account{id,username},connected_instagram_account{id,username}'})
+          out={'page_http':status,'page_id':page.get('id') if isinstance(page,dict) else None,'page_name':page.get('name') if isinstance(page,dict) else None}
+          if isinstance(page,dict):
+              out['instagram_business_account']=page.get('instagram_business_account')
+              out['connected_instagram_account']=page.get('connected_instagram_account')
+              if 'error' in page: out['error']=page['error']
+          print(json.dumps(out, indent=2))
+          PY
