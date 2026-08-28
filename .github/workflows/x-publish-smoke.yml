@@ -1,0 +1,45 @@
+name: NexusNova X Publish Smoke Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/x-publish-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  x-publish-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify X production OAuth publishing
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import os
+          from pathlib import Path
+
+          required = ('X_API_KEY','X_API_KEY_SECRET','X_ACCESS_TOKEN','X_ACCESS_TOKEN_SECRET')
+          missing = [name for name in required if not os.environ.get(name,'').strip()]
+          if missing:
+              raise SystemExit('Missing X secrets: ' + ', '.join(missing))
+
+          path = Path('.github/scripts/distribute_update.py')
+          spec = importlib.util.spec_from_file_location('nexusnova_social', path)
+          module = importlib.util.module_from_spec(spec)
+          assert spec and spec.loader
+          spec.loader.exec_module(module)
+
+          module.post_x('NexusNova automation connection test ✅', 'https://nexusnovatools.com/')
+          print('X publish smoke request completed successfully.')
+          PY
