@@ -9,6 +9,8 @@ on:
     paths:
       - '.github/scripts/traffic_autopilot.py'
       - '.github/scripts/traffic_autopilot_runner.py'
+      - '.github/scripts/traffic_diagnosis.py'
+      - '.github/scripts/prepare_daily_social.py'
       - '.github/scripts/ai_provider.py'
       - '.github/scripts/submit_indexnow.py'
       - '.github/scripts/distribute_update.py'
@@ -66,6 +68,8 @@ jobs:
           python -m py_compile .github/scripts/ai_provider.py
           python -m py_compile .github/scripts/traffic_autopilot.py
           python -m py_compile .github/scripts/traffic_autopilot_runner.py
+          python -m py_compile .github/scripts/traffic_diagnosis.py
+          python -m py_compile .github/scripts/prepare_daily_social.py
           python -m py_compile .github/scripts/site_quality_audit.py
           python -m py_compile .github/scripts/submit_indexnow.py
           python -m py_compile .github/scripts/prepare_instagram_media.py
@@ -74,8 +78,18 @@ jobs:
       - name: Collect official tech trends and update growth surfaces
         run: python .github/scripts/traffic_autopilot_runner.py
 
+      - name: Generate traffic diagnosis
+        continue-on-error: true
+        run: python .github/scripts/traffic_diagnosis.py
+
       - name: Prepare Instagram-safe article image
         run: python .github/scripts/prepare_instagram_media.py
+
+      - name: Prepare daily social value post
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        env:
+          NEXUSNOVA_DAILY_SOCIAL: '1'
+        run: python .github/scripts/prepare_daily_social.py
 
       - name: Rebuild machine-readable article feed
         run: python .github/scripts/build_articles_feed.py
@@ -119,7 +133,7 @@ jobs:
         continue-on-error: true
         run: python .github/scripts/submit_indexnow.py
 
-      - name: Distribute a new article to configured social channels
+      - name: Distribute useful update to configured social channels
         if: steps.commit.outputs.changed == 'true'
         continue-on-error: true
         run: python .github/scripts/distribute_update.py
@@ -132,6 +146,7 @@ jobs:
           if [ -f traffic-autopilot-report.json ]; then cat traffic-autopilot-report.json >> "$GITHUB_STEP_SUMMARY"; else echo '{"status":"report unavailable"}'; fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f traffic-diagnosis.txt ]; then cat traffic-diagnosis.txt >> "$GITHUB_STEP_SUMMARY"; fi
           if [ -f site-quality-report.txt ]; then cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"; fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
@@ -142,8 +157,11 @@ jobs:
           name: nexusnova-traffic-autopilot-${{ github.run_id }}
           path: |
             traffic-autopilot-report.json
+            traffic-diagnosis.json
+            traffic-diagnosis.txt
             site-quality-report.txt
             autopilot-publish.json
+            social-publish.json
             autopilot-changed-urls.txt
           if-no-files-found: ignore
           retention-days: 14
