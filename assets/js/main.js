@@ -51,6 +51,23 @@
   }
   if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
+  const socialProfiles=[
+    ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
+    ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
+    ['Instagram','@nexusnovatools','https://www.instagram.com/nexusnovatools/'],
+    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools']
+  ];
+  const footerGrid=document.querySelector('.site-footer .footer-console,.site-footer .footer-grid');
+  if(footerGrid&&!footerGrid.querySelector('[data-social-links]')){
+    const brandColumn=footerGrid.firstElementChild;
+    if(brandColumn){
+      const title=document.createElement('div');title.className='footer-title';title.dataset.socialLinks='';title.textContent='Follow NexusNova';brandColumn.appendChild(title);
+      const links=document.createElement('div');links.className='footer-links';links.setAttribute('aria-label','Official NexusNova social profiles');
+      socialProfiles.forEach(([platform,handle,href])=>{const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='me noopener noreferrer';link.textContent=`${platform} · ${handle}`;links.appendChild(link)});
+      brandColumn.appendChild(links);
+    }
+  }
+
   const iconArt={
     image:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m5.5 17 4.2-4.2 3.1 3.1 2.4-2.4 3.3 3.5"/>',
     pdf:'<path d="M6 2.8h7l5 5V21H6z"/><path d="M13 2.8V8h5"/><path d="M8.8 12.2h6.4M8.8 15.2h6.4M8.8 18.2h4.2"/>',
@@ -176,7 +193,7 @@
 (()=>{
   const addJsonLd=(id,data)=>{if(document.getElementById(id))return;const script=document.createElement('script');script.id=id;script.type='application/ld+json';script.textContent=JSON.stringify(data);document.head.appendChild(script)};
   const path=location.pathname;const absolute=url=>new URL(url,location.origin).href;const isHome=path==='/'||/\/index\.html$/.test(path);
-  if(isHome){addJsonLd('nexusnova-organization-schema',{'@context':'https://schema.org','@type':'Organization',name:'NexusNova Tools',alternateName:'NexusNova',url:'https://nexusnovatools.com/',logo:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg',description:'Free browser tools and practical guides for PDF, images, privacy, calculators, QR codes, AI and productivity.',sameAs:['https://github.com/fahadsoomro123']})}
+  if(isHome){addJsonLd('nexusnova-organization-schema',{'@context':'https://schema.org','@type':'Organization',name:'NexusNova Tools',alternateName:'NexusNova',url:'https://nexusnovatools.com/',logo:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg',description:'Free browser tools and practical guides for PDF, images, privacy, calculators, QR codes, AI and productivity.',sameAs:['https://x.com/NexusNovaTools','https://www.facebook.com/NexusNovaTools/','https://www.instagram.com/nexusnovatools/','https://t.me/NexusNovaTools','https://github.com/fahadsoomro123']})}
   const section=/\/(articles|tech)\/[^/]+\.html$/.exec(path)?.[1];
   if(section){
     const articleSchema=[...document.querySelectorAll('script[type="application/ld+json"]')].find(script=>{try{return JSON.parse(script.textContent||'{}')['@type']==='Article'}catch{return false}});
