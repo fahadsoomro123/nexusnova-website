@@ -59,7 +59,7 @@ jobs:
               raise SystemExit('Meta did not return a Page access token')
 
           q2 = urllib.parse.urlencode({
-              'fields': 'id,username,account_type,name',
+              'fields': 'id,username,name',
               'access_token': page_token,
           })
           profile = get(f'https://graph.facebook.com/v26.0/{urllib.parse.quote(ig_id)}?{q2}', 'instagram_profile_lookup')
@@ -68,7 +68,6 @@ jobs:
               'facebook_page_name': page.get('name'),
               'instagram_id': profile.get('id'),
               'instagram_username': profile.get('username'),
-              'instagram_account_type': profile.get('account_type'),
               'instagram_name': profile.get('name'),
           }, indent=2))
           if not profile.get('id') or not profile.get('username'):
