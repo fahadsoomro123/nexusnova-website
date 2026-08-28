@@ -1,0 +1,81 @@
+name: NexusNova Traffic Autopilot Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/ai_provider.py'
+      - '.github/scripts/traffic_autopilot.py'
+      - '.github/scripts/traffic_autopilot_runner.py'
+      - '.github/scripts/traffic_diagnosis.py'
+      - '.github/scripts/search_growth_autopilot.py'
+      - '.github/scripts/adsense_readiness_audit.py'
+      - '.github/scripts/prepare_daily_social.py'
+      - '.github/scripts/site_quality_audit.py'
+      - '.github/scripts/submit_indexnow.py'
+      - '.github/scripts/distribute_update.py'
+      - '.github/scripts/prepare_instagram_media.py'
+      - '.github/workflows/traffic-autopilot.yml'
+      - '.github/workflows/traffic-autopilot-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile automation scripts
+        run: |
+          python -m py_compile .github/scripts/ai_provider.py
+          python -m py_compile .github/scripts/traffic_autopilot.py
+          python -m py_compile .github/scripts/traffic_autopilot_runner.py
+          python -m py_compile .github/scripts/traffic_diagnosis.py
+          python -m py_compile .github/scripts/search_growth_autopilot.py
+          python -m py_compile .github/scripts/adsense_readiness_audit.py
+          python -m py_compile .github/scripts/prepare_daily_social.py
+          python -m py_compile .github/scripts/site_quality_audit.py
+          python -m py_compile .github/scripts/submit_indexnow.py
+          python -m py_compile .github/scripts/prepare_instagram_media.py
+          python -m py_compile .github/scripts/distribute_update.py
+
+      - name: Search-growth credential-free smoke test
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ''
+          NEXUSNOVA_AUTO_OPTIMIZE: '0'
+        run: |
+          python .github/scripts/search_growth_autopilot.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('search-growth-opportunities.json').read_text())
+          assert data.get('error') == 'GOOGLE_SERVICE_ACCOUNT_JSON not configured'
+          assert not Path('search-growth-changed-files.txt').exists()
+          print('Credential-free smoke test passed.')
+          PY
+
+      - name: Full public-site quality audit
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Enforce zero severe site findings
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          report=Path('site-quality-report.txt').read_text(encoding='utf-8')
+          m=re.search(r'Severe findings:\s*(\d+)', report)
+          severe=int(m.group(1)) if m else 999
+          print(f'Severe findings: {severe}')
+          if severe:
+              raise SystemExit('Validation failed: severe public-site findings detected.')
+          PY
