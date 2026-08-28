@@ -1,0 +1,83 @@
+name: NexusNova Repository Housekeeping
+
+on:
+  schedule:
+    - cron: '30 3 * * 0'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/repository-housekeeping.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: nexusnova-repository-housekeeping
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Remove old Actions artifacts and caches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const keepDays = 7;
+            const cutoff = Date.now() - keepDays * 24 * 60 * 60 * 1000;
+
+            let artifactCount = 0;
+            let artifactBytes = 0;
+            for (let page = 1; ; page++) {
+              const res = await github.request('GET /repos/{owner}/{repo}/actions/artifacts', {
+                owner, repo, per_page: 100, page
+              });
+              const rows = res.data.artifacts || [];
+              for (const artifact of rows) {
+                const created = Date.parse(artifact.created_at || 0);
+                if (artifact.expired || (created && created < cutoff)) {
+                  await github.request('DELETE /repos/{owner}/{repo}/actions/artifacts/{artifact_id}', {
+                    owner, repo, artifact_id: artifact.id
+                  });
+                  artifactCount += 1;
+                  artifactBytes += Number(artifact.size_in_bytes || 0);
+                }
+              }
+              if (rows.length < 100) break;
+            }
+
+            let cacheCount = 0;
+            let cacheBytes = 0;
+            for (let page = 1; ; page++) {
+              const res = await github.request('GET /repos/{owner}/{repo}/actions/caches', {
+                owner, repo, per_page: 100, page
+              });
+              const rows = res.data.actions_caches || [];
+              for (const cache of rows) {
+                const accessed = Date.parse(cache.last_accessed_at || cache.created_at || 0);
+                if (accessed && accessed < cutoff) {
+                  await github.request('DELETE /repos/{owner}/{repo}/actions/caches/{cache_id}', {
+                    owner, repo, cache_id: cache.id
+                  });
+                  cacheCount += 1;
+                  cacheBytes += Number(cache.size_in_bytes || 0);
+                }
+              }
+              if (rows.length < 100) break;
+            }
+
+            const mb = n => (n / 1024 / 1024).toFixed(2);
+            core.summary
+              .addHeading('NexusNova Repository Housekeeping')
+              .addRaw(`Retention window: ${keepDays} days\n`)
+              .addRaw(`Deleted artifacts: ${artifactCount} (${mb(artifactBytes)} MB)\n`)
+              .addRaw(`Deleted caches: ${cacheCount} (${mb(cacheBytes)} MB)\n`)
+              .addRaw('Source code, releases, branches and production APKs were not modified.\n')
+              .write();
+
+            console.log(`Deleted ${artifactCount} artifacts (${mb(artifactBytes)} MB)`);
+            console.log(`Deleted ${cacheCount} caches (${mb(cacheBytes)} MB)`);
