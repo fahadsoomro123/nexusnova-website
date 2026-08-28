@@ -10,6 +10,7 @@ on:
       - '.github/scripts/traffic_autopilot.py'
       - '.github/scripts/traffic_autopilot_runner.py'
       - '.github/scripts/traffic_diagnosis.py'
+      - '.github/scripts/adsense_readiness_audit.py'
       - '.github/scripts/prepare_daily_social.py'
       - '.github/scripts/ai_provider.py'
       - '.github/scripts/submit_indexnow.py'
@@ -69,6 +70,7 @@ jobs:
           python -m py_compile .github/scripts/traffic_autopilot.py
           python -m py_compile .github/scripts/traffic_autopilot_runner.py
           python -m py_compile .github/scripts/traffic_diagnosis.py
+          python -m py_compile .github/scripts/adsense_readiness_audit.py
           python -m py_compile .github/scripts/prepare_daily_social.py
           python -m py_compile .github/scripts/site_quality_audit.py
           python -m py_compile .github/scripts/submit_indexnow.py
@@ -96,6 +98,10 @@ jobs:
 
       - name: Full public-site SEO and link audit
         run: python .github/scripts/site_quality_audit.py
+
+      - name: AdSense structural readiness audit
+        continue-on-error: true
+        run: python .github/scripts/adsense_readiness_audit.py
 
       - name: Strict safety gate
         run: |
@@ -147,6 +153,7 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo '```text' >> "$GITHUB_STEP_SUMMARY"
           if [ -f traffic-diagnosis.txt ]; then cat traffic-diagnosis.txt >> "$GITHUB_STEP_SUMMARY"; fi
+          if [ -f adsense-readiness.txt ]; then cat adsense-readiness.txt >> "$GITHUB_STEP_SUMMARY"; fi
           if [ -f site-quality-report.txt ]; then cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"; fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
@@ -159,6 +166,8 @@ jobs:
             traffic-autopilot-report.json
             traffic-diagnosis.json
             traffic-diagnosis.txt
+            adsense-readiness.json
+            adsense-readiness.txt
             site-quality-report.txt
             autopilot-publish.json
             social-publish.json
