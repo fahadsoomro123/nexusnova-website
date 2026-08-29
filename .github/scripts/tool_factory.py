@@ -87,7 +87,7 @@ def validate_spec(spec: dict) -> dict:
         field_id = slugify(str(raw.get("id") or "")).replace("-", "_")
         label = " ".join(str(raw.get("label") or "").split())
         ftype = str(raw.get("type") or "").strip().lower()
-        if not re.fullmatch(r"[a-z][a-z0-9_]{1,24}", field_id):
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,24}", field_id):
             raise ValueError("Invalid field id.")
         if field_id in seen:
             raise ValueError("Duplicate field id.")
