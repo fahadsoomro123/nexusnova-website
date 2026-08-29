@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/tool_factory.py'
+      - '.github/scripts/ai_provider.py'
       - '.github/workflows/tool-factory.yml'
 
 permissions:
@@ -25,7 +26,7 @@ jobs:
   self-test:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,6 +36,24 @@ jobs:
         run: python -m py_compile .github/scripts/tool_factory.py .github/scripts/ai_provider.py
       - name: Run deterministic factory self-test
         run: python .github/scripts/tool_factory.py --self-test
+      - name: Live AI provider fallback smoke test
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+        run: |
+          python - <<'PY'
+          import json,sys
+          sys.path.insert(0,'.github/scripts')
+          from ai_provider import ai_json,status
+          data=ai_json('Return one JSON object only with exactly these fields: {"ok":true,"purpose":"nexusnova-tool-factory-smoke"}.')
+          safe=status()
+          print('Provider smoke status:',json.dumps(safe,ensure_ascii=False))
+          if not isinstance(data,dict) or data.get('ok') is not True:
+              raise SystemExit('Live AI provider fallback smoke test failed.')
+          print('Live AI provider fallback smoke test PASS')
+          PY
 
   build-draft-pr:
     if: github.event_name == 'workflow_dispatch'
