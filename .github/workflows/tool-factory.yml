@@ -39,7 +39,7 @@ jobs:
       - name: Live AI provider fallback smoke test
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_MODEL: gemini-3.6-flash
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: |
@@ -62,7 +62,7 @@ jobs:
     env:
       TOOL_IDEA: ${{ inputs.tool_idea }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      GEMINI_MODEL: gemini-3.6-flash
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
       GH_TOKEN: ${{ github.token }}
