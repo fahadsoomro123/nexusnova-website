@@ -1,0 +1,204 @@
+name: NexusNova New Tool Social Launch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-new-tool-social-launch
+  cancel-in-progress: false
+
+jobs:
+  announce-new-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install social image dependency
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Detect newly published dedicated tools
+        id: detect
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+
+          before=os.environ['BEFORE_SHA']
+          after=os.environ['AFTER_SHA']
+          history_path=Path('assets/data/new-tool-social-history.json')
+          history=[]
+          if history_path.exists():
+              try:
+                  history=json.loads(history_path.read_text(encoding='utf-8'))
+              except Exception:
+                  history=[]
+          posted={str(x.get('slug','')) for x in history if isinstance(x,dict)}
+
+          if not before or set(before)=={'0'}:
+              names=[]
+          else:
+              proc=subprocess.run(['git','diff','--diff-filter=A','--name-only',before,after,'--','*.html'],capture_output=True,text=True,check=True)
+              names=[x.strip() for x in proc.stdout.splitlines() if x.strip()]
+
+          tools=[]
+          for name in names:
+              p=Path(name)
+              if p.parent != Path('.') or p.suffix.lower() != '.html' or not p.exists():
+                  continue
+              text=p.read_text(encoding='utf-8',errors='ignore')
+              if 'WebApplication' not in text or 'tool-card' not in text:
+                  continue
+              if p.stem in posted:
+                  print('Already announced, skipping:', name)
+                  continue
+              tools.append(name)
+
+          Path('new-tool-files.txt').write_text('\n'.join(tools)+('\n' if tools else ''),encoding='utf-8')
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+              out.write(f"count={len(tools)}\n")
+          print('New dedicated tools:', tools)
+          PY
+
+      - name: Compile social launch scripts
+        if: steps.detect.outputs.count != '0'
+        run: |
+          python -m py_compile .github/scripts/prepare_new_tool_social.py
+          python -m py_compile .github/scripts/distribute_update.py
+          python -m py_compile .github/scripts/distribute_social_growth.py
+
+      - name: Generate Instagram-safe launch cards
+        if: steps.detect.outputs.count != '0'
+        run: |
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            python .github/scripts/prepare_new_tool_social.py "$file"
+          done < new-tool-files.txt
+
+      - name: Publish launch cards to website
+        if: steps.detect.outputs.count != '0'
+        run: |
+          git config user.name 'nexusnova-social[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/generated/
+          if [ -n "$(git status --porcelain -- assets/generated/)" ]; then
+            git commit -m "automation: social cards for newly published tools ${GITHUB_RUN_ID}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo 'Launch cards already tracked; no card commit needed.'
+          fi
+
+      - name: Announce each new tool on configured social channels
+        if: steps.detect.outputs.count != '0'
+        run: |
+          : > new-tool-social-results.jsonl
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            python .github/scripts/prepare_new_tool_social.py "$file"
+
+            python - <<'PY'
+          import json,time,urllib.request
+          item=json.load(open('social-growth-publish.json',encoding='utf-8'))
+          for label,url in [('tool',item['url']),('launch image',item['instagram_image'])]:
+              ok=False
+              for attempt in range(18):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaNewToolLaunch/1.0'})
+                      with urllib.request.urlopen(req,timeout=15) as r:
+                          if 200 <= r.status < 300:
+                              ok=True
+                              print(label,'is public:',url)
+                              break
+                  except Exception as exc:
+                      print(label,'not public yet:',attempt+1,exc)
+                  time.sleep(10)
+              if not ok:
+                  raise SystemExit(f'{label} did not become public; social post blocked.')
+          PY
+
+            python .github/scripts/distribute_social_growth.py
+            python - <<'PY'
+          import json
+          from datetime import datetime,timezone
+          from pathlib import Path
+          item=json.load(open('social-growth-publish.json',encoding='utf-8'))
+          report=json.load(open('social-distribution-report.json',encoding='utf-8'))
+          Path('new-tool-social-results.jsonl').open('a',encoding='utf-8').write(json.dumps({'item':item,'report':report},ensure_ascii=False)+'\n')
+          if int(report.get('successful_destinations',0)) > 0:
+              hp=Path('assets/data/new-tool-social-history.json')
+              rows=[]
+              if hp.exists():
+                  try: rows=json.loads(hp.read_text(encoding='utf-8'))
+                  except Exception: rows=[]
+              if not isinstance(rows,list): rows=[]
+              slug=Path(item['source_file']).stem
+              rows=[x for x in rows if isinstance(x,dict) and x.get('slug') != slug]
+              rows.append({'slug':slug,'url':item['url'],'campaign':item['campaign'],'announced_at':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),'successful_destinations':report.get('successful_destinations',0),'outcomes':report.get('outcomes',[])})
+              hp.parent.mkdir(parents=True,exist_ok=True)
+              hp.write_text(json.dumps(rows[-200:],indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          PY
+          done < new-tool-files.txt
+
+      - name: Save announcement history
+        if: steps.detect.outputs.count != '0'
+        run: |
+          git add assets/data/new-tool-social-history.json 2>/dev/null || true
+          if [ -n "$(git status --porcelain -- assets/data/new-tool-social-history.json)" ]; then
+            git commit -m "automation: record new tool social launches ${GITHUB_RUN_ID}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Publish social launch summary
+        if: always()
+        run: |
+          echo '## NexusNova New Tool Social Launch' >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.detect.outputs.count }}" = "0" ]; then
+            echo 'No newly added dedicated tool page required an announcement.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Detected new tool pages: ${{ steps.detect.outputs.count }}" >> "$GITHUB_STEP_SUMMARY"
+            echo '```jsonl' >> "$GITHUB_STEP_SUMMARY"
+            if [ -f new-tool-social-results.jsonl ]; then cat new-tool-social-results.jsonl >> "$GITHUB_STEP_SUMMARY"; fi
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload private social diagnostics
+        if: always() && steps.detect.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-new-tool-social-${{ github.run_id }}
+          path: |
+            new-tool-files.txt
+            new-tool-social-results.jsonl
+            social-growth-publish.json
+            social-distribution-report.json
+          if-no-files-found: ignore
+          retention-days: 14
