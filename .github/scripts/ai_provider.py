@@ -175,6 +175,20 @@ def _unique(values: list[str]) -> list[str]:
     return out
 
 
+def _prepare_prompt(prompt: str) -> str:
+    """Add narrow guidance only for the Safe Tool Factory.
+
+    The factory already hard-blocks risky owner ideas locally and validates generated
+    JavaScript before a PR can exist. This note prevents the model from treating
+    ordinary offline calculators/converters as unsafe just because the prompt also
+    asks for privacy, SEO, structured data or related links.
+    """
+    marker = "safe tool-spec generator for NexusNova Tools"
+    if marker.lower() not in prompt.lower():
+        return prompt
+    return prompt + '''\n\nTOOL FACTORY CLASSIFICATION NOTE:\n- The owner idea has already passed the repository's local hard-risk screen before this request reaches you.\n- Ordinary browser-only calculators, converters, text utilities and measurement tools are publishable. For those, set publishable=true.\n- Asking for a privacy note, SEO metadata, structured data, related links, formulas, examples or accuracy notes is NOT a reason to reject a tool.\n- Set publishable=false only when the requested FUNCTIONALITY itself inherently requires login, a paid/external API, server upload, external network calls, scraping, personal-data storage, or belongs to a prohibited high-risk category stated above.\n- A Screen PPI / Pixel Density Calculator using width pixels, height pixels and diagonal inches is a normal local math utility and must be publishable when implemented without network/storage.\n'''
+
+
 def ai_json(prompt: str) -> dict | None:
     """Gemini-first JSON generation with bounded model failover and OpenAI backup.
 
@@ -183,6 +197,7 @@ def ai_json(prompt: str) -> dict | None:
     before OpenAI. All attempts are recorded with secret-free diagnostics.
     """
     _reset_status()
+    prompt = _prepare_prompt(prompt)
 
     gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
     configured_gemini = os.getenv("GEMINI_MODEL", "").strip()
