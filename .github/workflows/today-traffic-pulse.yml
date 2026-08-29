@@ -1,0 +1,65 @@
+name: NexusNova Today Traffic Pulse
+
+on:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/today_traffic_pulse.py'
+      - '.github/workflows/today-traffic-pulse.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-today-traffic-pulse
+  cancel-in-progress: true
+
+jobs:
+  traffic-pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install GA4 dependency
+        run: python -m pip install --disable-pip-version-check google-auth requests
+
+      - name: Compile traffic pulse
+        run: python -m py_compile .github/scripts/today_traffic_pulse.py
+
+      - name: Read today's GA4 traffic
+        run: python .github/scripts/today_traffic_pulse.py
+
+      - name: Show traffic pulse in GitHub Summary
+        if: always()
+        run: |
+          if [ -f today-traffic-pulse.md ]; then
+            cat today-traffic-pulse.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## NexusNova Today Traffic Pulse' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Traffic pulse report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload traffic pulse details
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-today-traffic-${{ github.run_id }}
+          path: |
+            today-traffic-pulse.json
+            today-traffic-pulse.txt
+            today-traffic-pulse.md
+          if-no-files-found: ignore
+          retention-days: 7
