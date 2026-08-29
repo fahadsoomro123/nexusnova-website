@@ -1,9 +1,0 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "nexusnova-telegram-bot",
-  "main": "worker-entry.js",
-  "compatibility_date": "2026-08-25",
-  "build": {
-    "command": "node ensure-webhook.mjs"
-  }
-}
