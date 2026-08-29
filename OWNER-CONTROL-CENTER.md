@@ -20,6 +20,7 @@ Useful workflows:
 - **Social Audience Watch** — social connection/audience monitoring.
 - **Repository Housekeeping** — repository cleanup/maintenance.
 - **NexusNova Safe Tool Factory** — creates a tested draft tool PR from a plain-language idea.
+- **NexusNova New Tool Social Launch** — announces a newly published dedicated tool on configured social channels.
 
 For any workflow: tap it, tap the newest run, then open the job/step or Summary. Green means that run passed. Red means inspect the failed step before changing anything.
 
@@ -28,14 +29,37 @@ For any workflow: tap it, tap the newest run, then open the job/step or Summary.
 1. Open **Actions**.
 2. Open **NexusNova Safe Tool Factory**.
 3. Tap **RUN WORKFLOW**.
-4. In `tool_idea`, write the tool in normal language, for example: `Calculate percentage increase or decrease between two values`.
+4. In `tool_idea`, describe the tool in normal language.
 5. Run the workflow.
-6. The factory asks the configured Gemini provider first and uses the configured OpenAI provider only as fallback.
+6. The factory asks Gemini first, automatically tries stable Gemini fallback models when the primary model is overloaded/unavailable, and uses the configured OpenAI provider as the final fallback.
 7. It rejects high-risk tool ideas, restricts generated JavaScript, runs deterministic calculation tests and runs the full site-quality audit.
 8. If successful, it creates an isolated branch and tries to open a Pull Request.
-9. **It never auto-merges.** Review the PR and merge only when checks are green and the examples/results look correct.
+9. **It never auto-merges.** Main stays unchanged until you approve the PR.
 
-Important: this Tool Factory does not depend on a ChatGPT Plus subscription, but AI generation does depend on the API credentials/quota configured in GitHub. If both AI providers are unavailable, the existing website keeps running; only new AI-generated drafts stop until a provider is available again.
+Important: this Tool Factory does not depend on a ChatGPT Plus subscription, but AI generation depends on API credentials/quota configured in GitHub. If all AI providers are unavailable, the existing website keeps running; only new AI-generated drafts stop until a provider becomes available again.
+
+## Android: review a draft tool before publishing
+
+1. In the GitHub app open the repository and tap **Pull requests**.
+2. Open the newest PR whose title starts with **Tool Factory:**.
+3. On the PR, first check **Checks** / status. Do not publish while any required check is red or still running.
+4. Open **Files changed**. A normal Tool Factory PR should mainly contain the new dedicated `.html` tool page. Unexpected unrelated edits are a reason not to merge.
+5. Go back to the Tool Factory Actions run that created the PR. In its artifacts, download `nexusnova-tool-preview-<run id>`. If the GitHub Android app does not expose artifact download, open the same run in Chrome.
+6. Extract the downloaded ZIP with Android Files/File Manager, open its `index.html` in Chrome, and test the draft locally. This copy is offline and is not the public website.
+7. Try normal values, zero/empty values and at least one example you can calculate independently. Confirm the title, explanation, mobile layout and result wording make sense.
+8. If anything looks wrong, **do not merge**. Leave the PR open or close it and create a corrected Tool Factory run.
+
+## Publish an approved draft
+
+1. Return to the Tool Factory PR in **Pull requests**.
+2. Confirm all required checks are green and you are happy with the offline preview.
+3. Tap **Merge pull request**.
+4. Confirm the merge. This is the actual publish action: the new file enters `main` and the site deployment starts.
+5. Open **Actions** and confirm the site/deployment checks complete successfully.
+6. The **NexusNova New Tool Social Launch** workflow should detect the newly added dedicated tool after it reaches `main`, generate a launch card, wait for the public tool/image to become reachable, then announce it on configured social channels. It records announcement history to avoid duplicate posts.
+7. After deployment, open the real NexusNova tool URL once and confirm it works. If a deployment check is red, investigate before promoting the URL manually.
+
+Note: X posting depends on X API credits being available. Other configured channels can still succeed independently when X is unavailable.
 
 ## Safe owner rules
 
