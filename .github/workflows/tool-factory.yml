@@ -1,0 +1,135 @@
+name: NexusNova Safe Tool Factory
+
+on:
+  workflow_dispatch:
+    inputs:
+      tool_idea:
+        description: 'Describe the tool in plain language (example: calculate percentage change between two values)'
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/tool_factory.py'
+      - '.github/workflows/tool-factory.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: nexusnova-safe-tool-factory
+  cancel-in-progress: false
+
+jobs:
+  self-test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile factory
+        run: python -m py_compile .github/scripts/tool_factory.py .github/scripts/ai_provider.py
+      - name: Run deterministic factory self-test
+        run: python .github/scripts/tool_factory.py --self-test
+
+  build-draft-pr:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TOOL_IDEA: ${{ inputs.tool_idea }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile factory
+        run: python -m py_compile .github/scripts/tool_factory.py .github/scripts/ai_provider.py
+
+      - name: Generate safe draft and run calculation tests
+        id: generate
+        run: |
+          python .github/scripts/tool_factory.py
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          d=json.load(open('tool-factory-output.json',encoding='utf-8'))
+          for key in ('name','slug','file','tests'):
+              print(f'{key}={d[key]}')
+          PY
+
+      - name: Full public-site quality audit with generated draft
+        run: |
+          python .github/scripts/site_quality_audit.py
+          grep -q 'Severe findings: 0' site-quality-report.txt
+
+      - name: Create isolated branch
+        run: |
+          BRANCH="tool-factory/${{ steps.generate.outputs.slug }}-${GITHUB_RUN_ID}"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          git config user.name 'nexusnova-tool-factory[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -b "$BRANCH"
+          git add -- "${{ steps.generate.outputs.file }}"
+          git commit -m "tool: draft ${{ steps.generate.outputs.name }}"
+          git push origin "$BRANCH"
+
+      - name: Open review PR (never auto-merge)
+        id: pr
+        continue-on-error: true
+        run: |
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Tool Factory: ${{ steps.generate.outputs.name }}" \
+            --body-file tool-factory-pr-body.md | tee pr-url.txt
+
+      - name: Publish owner summary
+        if: always()
+        run: |
+          echo '## NexusNova Safe Tool Factory' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f tool-factory-output.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          d=json.load(open('tool-factory-output.json',encoding='utf-8'))
+          print(f"**Tool:** {d['name']}")
+          print(f"\n**Draft file:** `{d['file']}`")
+          print(f"\n**Calculation tests passed:** {d['tests']}")
+          print(f"\n**AI provider:** {d.get('ai',{}).get('provider') or 'unavailable'}")
+          print('\n**Auto-merge:** OFF — manual review is required.')
+          PY
+          fi
+          if [ -s pr-url.txt ]; then
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo "**Review PR:** $(cat pr-url.txt)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo "PR creation was not available automatically. The safe draft branch is: \`$BRANCH\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Do not merge if any check is red or the calculation does not match your expected examples.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload factory diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-tool-factory-${{ github.run_id }}
+          path: |
+            tool-factory-output.json
+            tool-factory-pr-body.md
+            site-quality-report.txt
+            pr-url.txt
+          if-no-files-found: ignore
+          retention-days: 14
