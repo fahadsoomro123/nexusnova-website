@@ -18,7 +18,15 @@ on:
   push:
     branches: [main]
     paths:
+      - 'account.html'
+      - 'assets/js/telegram-webapp.js'
+      - 'assets/js/telegram-account-api.js'
+      - 'assets/js/telegram-avatar-refresh.js'
+      - 'assets/js/register.js'
+      - 'assets/js/account-dashboard.js'
       - 'cloudflare/telegram-bot/**'
+      - 'tests/**'
+      - 'package.json'
       - '.github/workflows/telegram-mini-app.yml'
   workflow_dispatch:
 
