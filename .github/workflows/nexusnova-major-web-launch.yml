@@ -155,15 +155,42 @@ jobs:
       - name: Publish once to configured destinations
         run: python .github/scripts/distribute_social_growth.py
 
-      - name: Require at least one verified destination result
+      - name: Verify every configured destination result
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
+
           report=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
           print(json.dumps(report,indent=2))
-          if int(report.get('successful_destinations',0)) < 1:
+          outcomes=report.get('outcomes') if isinstance(report.get('outcomes'),list) else []
+          successful=int(report.get('successful_destinations',0))
+          if successful < 1:
               raise SystemExit('No configured social destination confirmed publication; history will not be marked successful.')
+
+          nonconfigured_reasons={
+              'not configured',
+              'professional account or image unavailable',
+          }
+          real_failures=[]
+          for row in outcomes:
+              if not isinstance(row,dict) or row.get('ok') is True:
+                  continue
+              detail=str(row.get('detail','')).strip().lower()
+              if detail in nonconfigured_reasons:
+                  continue
+              real_failures.append({
+                  'platform':str(row.get('platform','unknown')),
+                  'detail':str(row.get('detail','failed'))[:240],
+              })
+
+          if real_failures:
+              print('Configured destination failures:')
+              for row in real_failures:
+                  print(f" - {row['platform']}: {row['detail']}")
+              raise SystemExit('One or more configured social destinations failed; successful launch history will not be recorded.')
+
+          print(f'Verified {successful} successful configured destination(s); no configured destination failure remains.')
           PY
 
       - name: Record immutable duplicate-protection history
@@ -180,6 +207,7 @@ jobs:
           report=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
           rows.append({
             'published':True,
+            'destination_results_verified':True,
             'published_at':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),
             'campaign':'nexusnova_major_web_launch',
             'commit':'${{ github.sha }}',
