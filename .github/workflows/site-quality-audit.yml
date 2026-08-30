@@ -12,6 +12,7 @@ on:
       - '**/*.xml'
       - '**/*.txt'
       - '.github/scripts/site_quality_audit.py'
+      - '.github/scripts/browser_quality_guard.py'
       - '.github/workflows/site-quality-audit.yml'
   workflow_dispatch:
 
@@ -23,9 +24,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  audit:
+  full-site-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,12 +36,59 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Scan every HTML page
+      - name: Scan full site map, SEO and internal links
         run: python .github/scripts/site_quality_audit.py
 
-      - name: Add report to job summary
+      - name: Require zero severe static findings
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=data.get('severe',[])
+          if severe:
+              print('\n'.join(f'- {item}' for item in severe))
+              raise SystemExit(f'{len(severe)} severe full-site audit finding(s) remain')
+          print('Static site map + SEO audit has zero severe findings.')
+          PY
+
+      - name: Install browser quality dependencies
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Start local website server
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
+          echo $! > /tmp/nexusnova-http.pid
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8000/ >/dev/null
+
+      - name: Verify desktop and mobile browser quality
+        run: python .github/scripts/browser_quality_guard.py
+
+      - name: Add reports to job summary
         if: always()
         run: |
+          echo '## NexusNova Full Site Map + SEO Audit' >> "$GITHUB_STEP_SUMMARY"
           echo '```text' >> "$GITHUB_STEP_SUMMARY"
-          cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"
+          if [ -f site-quality-report.txt ]; then cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"; else echo 'Static audit did not produce a report.' >> "$GITHUB_STEP_SUMMARY"; fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f quality-artifacts/browser-quality-report.json ]; then
+            echo '### Browser quality' >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat quality-artifacts/browser-quality-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload full audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-full-site-audit-${{ github.run_id }}
+          path: |
+            site-quality-report.txt
+            site-quality-report.json
+            quality-artifacts/
+          if-no-files-found: ignore
+          retention-days: 30
