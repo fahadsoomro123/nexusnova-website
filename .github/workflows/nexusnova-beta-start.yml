@@ -50,6 +50,9 @@ jobs:
       - name: Website mining security regression
         run: node --test tests/mining-web-security.test.cjs
 
+      - name: App preview approved-assets regression
+        run: node --test tests/app-preview-assets.test.cjs
+
       - name: Telegram avatar regression
         run: node --test tests/telegram-avatar.test.cjs
 
@@ -157,6 +160,6 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Beta validation runs JS syntax checks, account eligibility + authenticated-header race checks, referral/mining/Telegram regressions, public page smoke checks, live Turnstile + account eligibility + mining Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation runs JS syntax checks, account eligibility + authenticated-header race checks, referral/mining/app-preview/Telegram regressions, public page smoke checks, live Turnstile + account eligibility + mining Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
           echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo 'This is a beta regression gate only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
