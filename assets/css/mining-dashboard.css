@@ -1,19 +1,235 @@
-/* NexusNova website mining — one compact real-state card. No image generation. */
-.nn-mining-card{position:relative;overflow:hidden;margin:0 0 10px;border:1px solid rgba(103,124,255,.30);border-radius:22px;background:radial-gradient(circle at 18% 28%,rgba(81,72,255,.22),transparent 28%),radial-gradient(circle at 83% 75%,rgba(0,207,225,.10),transparent 34%),linear-gradient(145deg,#0a1125 0%,#121633 48%,#080d1d 100%);box-shadow:0 20px 42px rgba(16,27,66,.24),inset 0 1px 0 rgba(255,255,255,.10);color:#fff;isolation:isolate}
-.nn-mining-card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 17%,transparent 78%,rgba(104,88,255,.08));pointer-events:none;z-index:-1}.nn-mining-card:after{content:"";position:absolute;width:240px;height:240px;left:17%;top:54%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(66,225,255,.16),rgba(92,76,255,.10) 42%,transparent 70%);filter:blur(10px);pointer-events:none;z-index:-1}
-.nn-mining-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:15px 16px 0}.nn-mining-kicker{display:block;color:#86caff;font-size:.54rem;font-weight:950;letter-spacing:.14em}.nn-mining-head h3{margin:4px 0 0;color:#fff;font-size:clamp(1rem,2vw,1.3rem);letter-spacing:-.025em}.nn-mining-state{display:inline-flex;align-items:center;justify-content:center;min-height:27px;padding:6px 9px;border:1px solid rgba(150,165,205,.22);border-radius:999px;background:rgba(255,255,255,.055);color:#b9c6dd;font-size:.52rem;font-weight:950;letter-spacing:.07em;white-space:nowrap}
-.nn-mining-card[data-state="active"] .nn-mining-state{border-color:rgba(65,232,196,.30);background:rgba(28,181,146,.10);color:#74efcf;box-shadow:0 0 18px rgba(52,227,192,.08)}.nn-mining-card[data-state="complete"] .nn-mining-state{border-color:rgba(255,207,89,.34);background:rgba(255,181,38,.09);color:#ffd86d}.nn-mining-card[data-state="ready"] .nn-mining-state{border-color:rgba(107,173,255,.28);background:rgba(73,126,255,.09);color:#9ecaff}.nn-mining-card[data-state="blocked"] .nn-mining-state,.nn-mining-card[data-state="error"] .nn-mining-state{border-color:rgba(255,113,130,.26);background:rgba(220,69,90,.08);color:#ffabb6}
-.nn-mining-body{display:grid;grid-template-columns:minmax(190px,.42fr) minmax(0,1fr);gap:8px;align-items:center;padding:8px 16px 16px}.nn-mining-reactor-stage{position:relative;min-height:200px;display:grid;place-items:center;perspective:800px}.nn-mining-glow{position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(80,224,255,.24),rgba(100,78,255,.16) 42%,transparent 72%);filter:blur(7px)}
-.nn-mining-orbit{position:absolute;left:50%;top:50%;border:1px solid rgba(123,153,255,.38);border-radius:50%;transform-style:preserve-3d}.nn-mining-orbit.a{width:168px;height:78px;transform:translate(-50%,-50%) rotateX(68deg) rotateZ(10deg)}.nn-mining-orbit.b{width:132px;height:132px;transform:translate(-50%,-50%) rotateY(68deg) rotateZ(-18deg);border-color:rgba(73,227,255,.31)}.nn-mining-orbit.c{width:108px;height:108px;transform:translate(-50%,-50%) rotateX(70deg) rotateY(20deg);border-color:rgba(174,100,255,.31)}
-.nn-mining-core{position:relative;z-index:2;width:90px;height:90px;display:grid;place-items:center;border-radius:28px;background:linear-gradient(145deg,#7867ff 0%,#5149de 42%,#08afd4 100%);box-shadow:0 20px 38px rgba(70,74,224,.42),0 0 48px rgba(53,215,255,.15),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -13px 22px rgba(2,5,25,.28);transform:rotateX(9deg) rotateY(-11deg) translateZ(22px)}.nn-mining-core:before{content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.24);border-radius:21px;background:linear-gradient(145deg,rgba(255,255,255,.16),transparent 44%)}.nn-mining-core strong{position:relative;font-size:1.4rem;letter-spacing:-.055em;text-shadow:0 3px 13px rgba(0,0,0,.35)}
-.nn-mining-card[data-state="active"] .nn-mining-core{box-shadow:0 20px 38px rgba(70,74,224,.46),0 0 58px rgba(53,235,255,.24),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -13px 22px rgba(2,5,25,.28)}
-.nn-mining-data{min-width:0}.nn-mining-balance-label{color:#8597b8;font-size:.51rem;font-weight:950;letter-spacing:.13em}.nn-mining-balance{margin-top:3px;font:900 clamp(1.65rem,4vw,2.35rem)/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.05em}.nn-mining-balance small{font-size:.28em;color:#90d1ff;letter-spacing:.08em}.nn-mining-note{max-width:720px;margin:6px 0 0;color:#9cabc4;font-size:.63rem;line-height:1.42}
-.nn-mining-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:11px}.nn-mining-metric{min-width:0;padding:8px 9px;border:1px solid rgba(255,255,255,.085);border-radius:12px;background:rgba(255,255,255,.035)}.nn-mining-metric span{display:block;color:#7f90ae;font-size:.45rem;font-weight:900;letter-spacing:.09em}.nn-mining-metric strong{display:block;margin-top:3px;overflow:hidden;color:#eaf2ff;font-size:.67rem;text-overflow:ellipsis;white-space:nowrap}
-.nn-mining-progress-wrap{margin-top:9px}.nn-mining-progress-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#8496b5;font-size:.49rem;font-weight:900;letter-spacing:.07em}.nn-mining-progress-head strong{color:#c8d6eb;font-size:.55rem;letter-spacing:0;text-align:right}.nn-mining-progress-track{height:8px;margin-top:5px;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.045)}.nn-mining-progress-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6758ff,#11badb 58%,#53e9c4);box-shadow:0 0 17px rgba(65,220,239,.25);transition:width .6s linear}
-.nn-mining-halving{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 9px;align-items:center;margin-top:9px;padding:8px 9px;border:1px solid rgba(173,117,255,.13);border-radius:12px;background:rgba(102,64,174,.055)}.nn-mining-halving>span{grid-row:1/3;color:#a68be8;font-size:.48rem;font-weight:950;letter-spacing:.10em}.nn-mining-halving strong{color:#ddd1ff;font-size:.62rem}.nn-mining-halving small{color:#8f9ab2;font-size:.56rem;line-height:1.3}
-.nn-mining-actions{display:flex;align-items:center;gap:9px;margin-top:10px}.nn-mining-action{min-width:155px;min-height:38px;padding:9px 13px;border:1px solid rgba(110,219,255,.30);border-radius:12px;background:linear-gradient(135deg,#6456ff,#3772e9 48%,#09aeca);box-shadow:0 10px 20px rgba(52,72,196,.20),inset 0 1px 0 rgba(255,255,255,.23);color:#fff;font:900 .67rem/1 inherit;letter-spacing:.055em;cursor:pointer}.nn-mining-action:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 13px 23px rgba(52,72,196,.25),inset 0 1px 0 rgba(255,255,255,.25)}.nn-mining-action:disabled{border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.055);box-shadow:none;color:#8493ac;cursor:not-allowed}.nn-mining-message{flex:1;margin:0;color:#97a7c1;font-size:.59rem;line-height:1.38}
-@media(min-width:901px){.nn-mining-card[data-state="active"] .nn-mining-orbit.a{animation:nnMineOrbitA 12s linear infinite}.nn-mining-card[data-state="active"] .nn-mining-orbit.b{animation:nnMineOrbitB 15s linear infinite}.nn-mining-card[data-state="active"] .nn-mining-orbit.c{animation:nnMineOrbitC 18s linear infinite}.nn-mining-card[data-state="active"] .nn-mining-glow{animation:nnMinePulse 2.4s ease-in-out infinite}}
-@keyframes nnMineOrbitA{to{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(370deg)}}@keyframes nnMineOrbitB{to{transform:translate(-50%,-50%) rotateY(68deg) rotateZ(342deg)}}@keyframes nnMineOrbitC{to{transform:translate(-50%,-50%) rotateX(70deg) rotateY(380deg)}}@keyframes nnMinePulse{50%{opacity:.58;transform:scale(1.08)}}
-@media(max-width:760px){.nn-mining-head{padding:13px 13px 0}.nn-mining-body{grid-template-columns:1fr;padding:5px 13px 13px}.nn-mining-reactor-stage{min-height:148px}.nn-mining-core{width:78px;height:78px;border-radius:24px}.nn-mining-orbit.a{width:142px}.nn-mining-orbit.b{width:112px;height:112px}.nn-mining-orbit.c{width:92px;height:92px}.nn-mining-metrics{grid-template-columns:1fr 1fr}.nn-mining-metric:last-child{grid-column:1/-1}.nn-mining-actions{align-items:stretch;flex-direction:column}.nn-mining-action{width:100%}.nn-mining-message{width:100%}}
-@media(max-width:430px){.nn-mining-card{border-radius:17px}.nn-mining-head{gap:8px}.nn-mining-head h3{font-size:.98rem}.nn-mining-state{padding:5px 7px;font-size:.47rem}.nn-mining-reactor-stage{min-height:135px}.nn-mining-balance{font-size:1.75rem}}
-@media(prefers-reduced-motion:reduce){.nn-mining-orbit,.nn-mining-glow{animation:none!important}.nn-mining-progress-track i,.nn-mining-action{transition:none!important}.nn-mining-action:hover:not(:disabled){transform:none}}
+/* NexusNova website mining — tactile hyper-real 3D console using only CSS/HTML. No generated images. */
+.nn-mining-card{
+  --nn-accent:#6b65ff;
+  --nn-accent-2:#17d8e6;
+  --nn-live:#54efc7;
+  --nn-text:#f7fbff;
+  --nn-muted:#9eabc4;
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  margin:2px 0 14px;
+  padding:2px;
+  border:0;
+  border-radius:30px;
+  color:var(--nn-text);
+  background:linear-gradient(145deg,rgba(196,209,255,.62) 0%,rgba(89,105,171,.34) 16%,rgba(35,46,91,.24) 38%,rgba(118,101,255,.38) 64%,rgba(16,225,226,.22) 100%);
+  box-shadow:
+    0 34px 64px rgba(18,28,69,.30),
+    0 13px 22px rgba(21,35,81,.20),
+    0 2px 0 rgba(255,255,255,.68) inset,
+    0 -2px 0 rgba(4,8,26,.55) inset;
+  perspective:1400px;
+  transform-style:preserve-3d;
+}
+.nn-mining-card:before{
+  content:"";
+  position:absolute;
+  inset:2px;
+  z-index:-2;
+  border-radius:28px;
+  background:
+    radial-gradient(ellipse at 16% 8%,rgba(255,255,255,.17),transparent 27%),
+    radial-gradient(circle at 18% 58%,rgba(106,90,255,.26),transparent 25%),
+    radial-gradient(circle at 84% 84%,rgba(22,216,230,.15),transparent 31%),
+    linear-gradient(155deg,#121934 0%,#0b1128 38%,#11173a 68%,#071321 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -28px 50px rgba(2,7,22,.40),
+    inset 24px 0 55px rgba(80,71,205,.08),
+    inset -24px 0 55px rgba(23,185,215,.06);
+}
+.nn-mining-card:after{
+  content:"";
+  position:absolute;
+  left:5%;right:5%;top:3px;height:38%;
+  z-index:-1;
+  border-radius:24px 24px 60% 60%;
+  pointer-events:none;
+  opacity:.75;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.035) 34%,transparent 100%);
+  filter:blur(.2px);
+}
+
+.nn-mining-head{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin:12px 12px 0;
+  padding:14px 16px 13px;
+  border:1px solid rgba(203,216,255,.12);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.070),rgba(255,255,255,.022));
+  box-shadow:
+    0 11px 24px rgba(1,5,18,.18),
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -1px 0 rgba(1,4,14,.50);
+  backdrop-filter:blur(14px) saturate(125%);
+}
+.nn-mining-kicker{display:block;color:#8bdcff;font-size:.56rem;font-weight:950;letter-spacing:.16em;text-shadow:0 0 17px rgba(67,201,255,.28)}
+.nn-mining-head h3{margin:5px 0 0;color:#fff;font-size:clamp(1.08rem,2vw,1.45rem);font-weight:900;letter-spacing:-.035em;text-shadow:0 3px 14px rgba(0,0,0,.34)}
+.nn-mining-state{
+  display:inline-flex;align-items:center;justify-content:center;min-height:31px;padding:7px 11px;
+  border:1px solid rgba(170,185,226,.18);border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
+  box-shadow:0 7px 15px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.15),inset 0 -1px 0 rgba(0,0,0,.28);
+  color:#c4cfe2;font-size:.52rem;font-weight:950;letter-spacing:.08em;white-space:nowrap
+}
+.nn-mining-card[data-state="active"]{--nn-accent:#6d63ff;--nn-accent-2:#16e2d1}.nn-mining-card[data-state="active"] .nn-mining-state{border-color:rgba(84,239,199,.34);background:linear-gradient(180deg,rgba(49,238,197,.15),rgba(25,132,112,.08));color:#87f6da;box-shadow:0 0 0 1px rgba(64,222,190,.06),0 0 24px rgba(52,227,192,.12),inset 0 1px 0 rgba(255,255,255,.18)}
+.nn-mining-card[data-state="complete"]{--nn-accent:#ffba48;--nn-accent-2:#ffe277}.nn-mining-card[data-state="complete"] .nn-mining-state{border-color:rgba(255,218,111,.34);background:linear-gradient(180deg,rgba(255,206,79,.16),rgba(186,119,16,.08));color:#ffe08a}
+.nn-mining-card[data-state="ready"]{--nn-accent:#6b8cff;--nn-accent-2:#38c6ff}.nn-mining-card[data-state="ready"] .nn-mining-state{border-color:rgba(119,176,255,.30);background:linear-gradient(180deg,rgba(92,148,255,.15),rgba(54,92,190,.06));color:#a8d3ff}
+.nn-mining-card[data-state="blocked"],.nn-mining-card[data-state="error"]{--nn-accent:#ff687f;--nn-accent-2:#ff9aac}.nn-mining-card[data-state="blocked"] .nn-mining-state,.nn-mining-card[data-state="error"] .nn-mining-state{border-color:rgba(255,117,137,.28);background:linear-gradient(180deg,rgba(238,83,105,.15),rgba(139,34,53,.07));color:#ffb2bd}
+
+.nn-mining-body{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(260px,.56fr) minmax(0,1fr);
+  gap:18px;
+  align-items:stretch;
+  margin:10px 12px 12px;
+  padding:14px;
+  border:1px solid rgba(182,198,242,.10);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(255,255,255,.050),rgba(255,255,255,.012) 45%,rgba(0,0,0,.075));
+  box-shadow:
+    0 18px 38px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.48);
+  backdrop-filter:blur(12px) saturate(118%);
+}
+.nn-mining-body:before{
+  content:"";position:absolute;left:11px;right:11px;top:10px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);pointer-events:none
+}
+
+.nn-mining-reactor-stage{
+  position:relative;
+  min-height:300px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid rgba(162,180,235,.11);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(77,70,255,.18),transparent 31%),
+    radial-gradient(circle at 50% 58%,rgba(24,218,230,.08),transparent 44%),
+    linear-gradient(155deg,rgba(11,17,42,.94),rgba(7,13,31,.76));
+  box-shadow:
+    0 16px 30px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -26px 44px rgba(0,0,0,.30);
+  perspective:900px;
+  transform-style:preserve-3d;
+}
+.nn-mining-reactor-stage:before{
+  content:"";position:absolute;left:50%;bottom:34px;width:190px;height:58px;transform:translateX(-50%) rotateX(66deg);
+  border-radius:50%;background:radial-gradient(ellipse,rgba(39,223,229,.22),rgba(99,86,255,.13) 44%,transparent 72%);filter:blur(2px);box-shadow:0 0 34px rgba(49,221,231,.12)
+}
+.nn-mining-reactor-stage:after{
+  content:"";position:absolute;left:50%;bottom:29px;width:128px;height:22px;transform:translateX(-50%);border-radius:50%;background:rgba(6,10,25,.72);box-shadow:0 -5px 16px rgba(112,93,255,.14),0 9px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.10)
+}
+.nn-mining-glow{position:absolute;width:205px;height:205px;border-radius:50%;background:radial-gradient(circle,rgba(89,97,255,.28),rgba(30,211,230,.17) 38%,rgba(79,65,210,.08) 55%,transparent 72%);filter:blur(9px);transform:translateZ(-10px)}
+.nn-mining-orbit{position:absolute;left:50%;top:48%;border:1px solid rgba(136,157,255,.40);border-radius:50%;transform-style:preserve-3d;box-shadow:0 0 12px rgba(91,117,255,.08)}
+.nn-mining-orbit.a{width:224px;height:95px;transform:translate(-50%,-50%) rotateX(67deg) rotateZ(9deg)}
+.nn-mining-orbit.b{width:174px;height:174px;transform:translate(-50%,-50%) rotateY(68deg) rotateZ(-17deg);border-color:rgba(72,234,240,.35)}
+.nn-mining-orbit.c{width:138px;height:138px;transform:translate(-50%,-50%) rotateX(70deg) rotateY(20deg);border-color:rgba(191,114,255,.34)}
+.nn-mining-core{
+  position:relative;z-index:3;width:118px;height:118px;display:grid;place-items:center;border-radius:34px;
+  background:
+    radial-gradient(circle at 32% 24%,rgba(255,255,255,.56),transparent 17%),
+    linear-gradient(145deg,#9a91ff 0%,#6257ff 34%,#443cc2 59%,#0db8d4 100%);
+  border:1px solid rgba(224,231,255,.55);
+  box-shadow:
+    0 30px 44px rgba(31,33,108,.46),
+    0 0 65px rgba(62,222,238,.20),
+    inset 0 2px 2px rgba(255,255,255,.68),
+    inset 10px 10px 24px rgba(255,255,255,.12),
+    inset -10px -18px 30px rgba(3,8,38,.38);
+  transform:translateY(-8px) rotateX(10deg) rotateY(-13deg) translateZ(42px);
+  transform-style:preserve-3d;
+}
+.nn-mining-core:before{
+  content:"";position:absolute;inset:9px;border:1px solid rgba(255,255,255,.28);border-radius:26px;
+  background:linear-gradient(145deg,rgba(255,255,255,.18),transparent 38%,rgba(0,0,0,.08));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)
+}
+.nn-mining-core:after{
+  content:"";position:absolute;left:17px;right:17px;top:11px;height:28%;border-radius:999px 999px 45% 45%;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));filter:blur(.3px)
+}
+.nn-mining-core strong{position:relative;z-index:2;font-size:1.8rem;letter-spacing:-.07em;color:#fff;text-shadow:0 3px 17px rgba(0,0,0,.44),0 0 18px rgba(255,255,255,.15);transform:translateZ(20px)}
+.nn-mining-card[data-state="active"] .nn-mining-core{box-shadow:0 31px 45px rgba(31,33,108,.48),0 0 78px rgba(64,234,221,.27),inset 0 2px 2px rgba(255,255,255,.68),inset 10px 10px 24px rgba(255,255,255,.12),inset -10px -18px 30px rgba(3,8,38,.38)}
+
+.nn-mining-data{min-width:0;padding:6px 2px 2px;align-self:center}
+.nn-mining-balance-label{color:#8fa1c1;font-size:.52rem;font-weight:950;letter-spacing:.14em}
+.nn-mining-balance{margin-top:5px;font:900 clamp(2.05rem,4vw,3.05rem)/.95 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.065em;color:#fff;text-shadow:0 5px 17px rgba(0,0,0,.28)}
+.nn-mining-balance small{font-size:.25em;color:#9de6ff;letter-spacing:.11em;text-shadow:0 0 13px rgba(73,218,255,.20)}
+.nn-mining-note{max-width:760px;margin:8px 0 0;color:#a7b4cc;font-size:.65rem;line-height:1.48}
+
+.nn-mining-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:16px}
+.nn-mining-metric{
+  position:relative;min-width:0;padding:11px 12px 12px;border:1px solid rgba(181,198,238,.12);border-radius:15px;
+  background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.020));
+  box-shadow:0 11px 18px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.28)
+}
+.nn-mining-metric:before{content:"";position:absolute;left:9px;right:9px;top:1px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)}
+.nn-mining-metric span{display:block;color:#8193b1;font-size:.46rem;font-weight:900;letter-spacing:.10em}
+.nn-mining-metric strong{display:block;margin-top:5px;overflow:hidden;color:#eef6ff;font-size:.70rem;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 8px rgba(0,0,0,.22)}
+
+.nn-mining-progress-wrap{margin-top:13px;padding:11px 12px 12px;border:1px solid rgba(175,192,236,.10);border-radius:15px;background:rgba(3,8,22,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.055),inset 0 -6px 13px rgba(0,0,0,.13)}
+.nn-mining-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#889ab8;font-size:.49rem;font-weight:900;letter-spacing:.08em}
+.nn-mining-progress-head strong{color:#d5e2f5;font-size:.57rem;letter-spacing:0;text-align:right}
+.nn-mining-progress-track{height:12px;margin-top:8px;padding:2px;overflow:hidden;border:1px solid rgba(185,204,244,.14);border-radius:999px;background:linear-gradient(180deg,rgba(0,0,0,.46),rgba(255,255,255,.035));box-shadow:inset 0 2px 4px rgba(0,0,0,.48),0 1px 0 rgba(255,255,255,.06)}
+.nn-mining-progress-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--nn-accent),#28b9f3 55%,var(--nn-accent-2));box-shadow:0 0 14px rgba(66,220,239,.30),inset 0 1px 0 rgba(255,255,255,.45);transition:width .6s linear}
+
+.nn-mining-halving{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;margin-top:10px;padding:11px 12px;border:1px solid rgba(180,134,255,.15);border-radius:15px;background:linear-gradient(145deg,rgba(108,68,184,.10),rgba(42,25,79,.08));box-shadow:0 9px 16px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.07)}
+.nn-mining-halving>span{grid-row:1/3;color:#b294f4;font-size:.49rem;font-weight:950;letter-spacing:.11em}
+.nn-mining-halving strong{color:#e8ddff;font-size:.64rem}
+.nn-mining-halving small{color:#97a5bd;font-size:.57rem;line-height:1.34}
+
+.nn-mining-actions{display:flex;align-items:center;gap:11px;margin-top:12px}
+.nn-mining-action{
+  position:relative;min-width:174px;min-height:44px;padding:11px 15px;
+  border:1px solid rgba(156,225,255,.42);border-radius:14px;
+  background:linear-gradient(180deg,#7d73ff 0%,#5b51ed 46%,#168ebf 100%);
+  box-shadow:0 12px 0 rgba(18,31,88,.54),0 18px 26px rgba(24,38,111,.28),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(0,0,0,.24);
+  color:#fff;font:950 .68rem/1 inherit;letter-spacing:.06em;text-shadow:0 2px 7px rgba(0,0,0,.35);cursor:pointer;
+  transform:translateY(-3px);transition:transform .16s ease,box-shadow .16s ease,filter .16s ease
+}
+.nn-mining-action:hover:not(:disabled){filter:saturate(1.12) brightness(1.06);transform:translateY(-5px);box-shadow:0 14px 0 rgba(18,31,88,.50),0 22px 30px rgba(24,38,111,.32),inset 0 1px 0 rgba(255,255,255,.50),inset 0 -2px 0 rgba(0,0,0,.22)}
+.nn-mining-action:active:not(:disabled){transform:translateY(4px);box-shadow:0 4px 0 rgba(18,31,88,.54),0 8px 14px rgba(24,38,111,.20),inset 0 1px 0 rgba(255,255,255,.35)}
+.nn-mining-action:disabled{border-color:rgba(185,197,229,.12);background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));box-shadow:0 6px 0 rgba(0,0,0,.20),0 10px 17px rgba(0,0,0,.11),inset 0 1px 0 rgba(255,255,255,.08);color:#8391aa;cursor:not-allowed;transform:translateY(-1px)}
+.nn-mining-message{flex:1;margin:0;color:#a3b1c8;font-size:.60rem;line-height:1.44}
+
+@media(hover:hover) and (pointer:fine) and (min-width:901px){
+  .nn-mining-card:hover{box-shadow:0 40px 74px rgba(18,28,69,.34),0 16px 25px rgba(21,35,81,.22),0 2px 0 rgba(255,255,255,.72) inset,0 -2px 0 rgba(4,8,26,.55) inset}
+  .nn-mining-card:hover .nn-mining-core{transform:translateY(-12px) rotateX(8deg) rotateY(-10deg) translateZ(48px)}
+}
+@media(min-width:901px){
+  .nn-mining-card[data-state="active"] .nn-mining-orbit.a{animation:nnMineOrbitA 13s linear infinite}
+  .nn-mining-card[data-state="active"] .nn-mining-orbit.b{animation:nnMineOrbitB 17s linear infinite}
+  .nn-mining-card[data-state="active"] .nn-mining-orbit.c{animation:nnMineOrbitC 20s linear infinite}
+  .nn-mining-card[data-state="active"] .nn-mining-glow{animation:nnMinePulse 2.8s ease-in-out infinite}
+  .nn-mining-card[data-state="active"] .nn-mining-core{animation:nnMineFloat 3.4s ease-in-out infinite}
+}
+@keyframes nnMineOrbitA{to{transform:translate(-50%,-50%) rotateX(67deg) rotateZ(369deg)}}
+@keyframes nnMineOrbitB{to{transform:translate(-50%,-50%) rotateY(68deg) rotateZ(343deg)}}
+@keyframes nnMineOrbitC{to{transform:translate(-50%,-50%) rotateX(70deg) rotateY(380deg)}}
+@keyframes nnMinePulse{50%{opacity:.62;transform:scale(1.08) translateZ(-10px)}}
+@keyframes nnMineFloat{50%{transform:translateY(-15px) rotateX(7deg) rotateY(-9deg) translateZ(48px)}}
+
+@media(max-width:900px){.nn-mining-body{grid-template-columns:minmax(210px,.45fr) minmax(0,1fr);gap:12px}.nn-mining-reactor-stage{min-height:260px}.nn-mining-metrics{grid-template-columns:1fr 1fr}.nn-mining-metric:last-child{grid-column:1/-1}}
+@media(max-width:760px){
+  .nn-mining-card{border-radius:25px}.nn-mining-card:before{border-radius:23px}
+  .nn-mining-head{margin:9px 9px 0;padding:12px 13px}.nn-mining-body{grid-template-columns:1fr;margin:8px 9px 9px;padding:10px}
+  .nn-mining-reactor-stage{min-height:205px}.nn-mining-core{width:98px;height:98px;border-radius:29px}.nn-mining-core:before{border-radius:22px}.nn-mining-orbit.a{width:184px}.nn-mining-orbit.b{width:145px;height:145px}.nn-mining-orbit.c{width:116px;height:116px}
+  .nn-mining-data{padding:2px}.nn-mining-balance{font-size:2.15rem}.nn-mining-actions{align-items:stretch;flex-direction:column}.nn-mining-action{width:100%}.nn-mining-message{width:100%;text-align:center}
+}
+@media(max-width:430px){
+  .nn-mining-card{border-radius:21px}.nn-mining-card:before{border-radius:19px}.nn-mining-head{gap:8px}.nn-mining-head h3{font-size:1rem}.nn-mining-state{padding:6px 8px;font-size:.47rem}
+  .nn-mining-reactor-stage{min-height:180px}.nn-mining-metrics{grid-template-columns:1fr}.nn-mining-metric:last-child{grid-column:auto}.nn-mining-progress-head{align-items:flex-start;flex-direction:column;gap:4px}.nn-mining-progress-head strong{text-align:left}.nn-mining-balance{font-size:1.95rem}
+}
+@media(prefers-reduced-motion:reduce){.nn-mining-orbit,.nn-mining-glow,.nn-mining-core{animation:none!important}.nn-mining-progress-track i,.nn-mining-action,.nn-mining-core{transition:none!important}.nn-mining-action:hover:not(:disabled),.nn-mining-action:active:not(:disabled),.nn-mining-card:hover .nn-mining-core{transform:none}}
