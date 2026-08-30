@@ -116,8 +116,8 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Dedicated one-time `NexusNova Major Web Launch` workflow exists and was code-verified on 2026-08-30 with explicit owner confirmation and master release-gate checks.
 - [x] Major launch workflow generates platform-appropriate factual X/Facebook/Instagram/Telegram launch copy from real website state and verifies the 57+ claim before publication.
 - [x] Duplicate-post protection is implemented using persistent successful-publication history and blocks a second successful major launch.
-- [ ] Verify each destination result from workflow output/report before claiming success.
-- [ ] Automatic launch should run only after this master website checklist's release-blocking items are genuinely complete.
+- [x] Every configured destination result must now be verified from `social-distribution-report.json` before successful launch history can be recorded. Unconfigured destinations are explicitly nonblocking; any configured destination failure blocks the success record. `destination_results_verified: true` is written only after this gate, and the rule is regression-protected by `tests/major-launch-gate.test.cjs`; Beta Validation run `33326081528` passed on 2026-08-30. This verifies launch safety behavior only; no social launch was executed by this checklist update.
+- [x] Major launch remains manual-only and requires explicit `LAUNCH` confirmation. Its release gate now covers currently applicable website sections 1–8 and 11–13, including Auth, Missions and Referral blockers that were previously omitted; future APK/Play trigger sections remain outside the web-launch gate. The strict gate is regression-protected and Beta Validation run `33326081528` passed on 2026-08-30. No launch/post was executed while verifying this behavior.
 
 ## 13. Non-Negotiable Rules
 - [x] Website repo only for this work.
