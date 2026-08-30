@@ -30,10 +30,16 @@
   }
 
   if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="email"]')){
-    const script=document.createElement('script');
-    script.type='module';
-    script.src=new URL('./account-eligibility-ui.js',document.currentScript?.src||location.href).href;
-    script.dataset.nexusnovaEligibility='1';
-    document.head.appendChild(script);
+    for(const [src,key] of [
+      ['./account-eligibility-ui.js','nexusnovaEligibility'],
+      ['./referral-code-ui.js','nexusnovaReferralCode']
+    ]){
+      if(document.querySelector(`script[data-${key.replace(/[A-Z]/g,m=>`-${m.toLowerCase()}`)}]`))continue;
+      const script=document.createElement('script');
+      script.type='module';
+      script.src=new URL(src,document.currentScript?.src||location.href).href;
+      script.dataset[key]='1';
+      document.head.appendChild(script);
+    }
   }
 })();
