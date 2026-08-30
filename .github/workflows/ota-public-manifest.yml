@@ -1,74 +1,17 @@
 name: OTA Public Manifest
 
+# Public OTA manifests are published atomically by the nexusnova-app
+# NexusNova OTA Web Release workflow. Keep this workflow manual-only so it
+# cannot rewrite a verified app manifest after a public OTA publish.
 on:
-  push:
-    branches:
-      - nexusnova-ota-public
-    paths:
-      - 'ota/files/**'
-      - '.github/workflows/ota-public-manifest.yml'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  manifest:
+  info:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout OTA branch
-        uses: actions/checkout@v4
-        with:
-          ref: nexusnova-ota-public
-          fetch-depth: 0
-
-      - name: Build exact OTA manifest
-        shell: python
-        run: |
-          import hashlib, json, os
-          from pathlib import Path
-
-          base = 'b6eb3d191ee35b58c0ffe14334674ea2c60d3b72'
-          selected = [
-              'assets/styles/premium-mine-reference-locked.css',
-              'assets/styles/premium-mine-component-skin-v1.css',
-              'assets/skins/mine/frame-panel.svg',
-              'assets/skins/mine/frame-header.svg',
-              'assets/skins/mine/ring-bezel.svg',
-              'assets/skins/mine/action-frame.svg',
-              'assets/skins/mine/card-cyan.svg',
-              'assets/skins/mine/card-purple.svg',
-              'assets/skins/mine/sos-button.svg',
-              'assets/skins/mine/status-lamp.svg',
-              'assets/skins/mine/dock-frame.svg',
-              'index.html',
-          ]
-          root = Path('ota/files')
-          rows = []
-          for rel in selected:
-              data = (root / rel).read_bytes()
-              rows.append({
-                  'path': rel,
-                  'sha256': hashlib.sha256(data).hexdigest(),
-                  'size': len(data),
-              })
-          payload = {
-              'base': base,
-              'files': rows,
-              'schema': 2,
-              'version': os.environ['GITHUB_SHA'],
-          }
-          Path('ota/manifest.json').write_text(
-              json.dumps(payload, separators=(',', ':'), sort_keys=False),
-              encoding='utf-8',
-          )
-
-      - name: Commit manifest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+fahadsoomro123@users.noreply.github.com"
-          git add ota/manifest.json
-          if git diff --cached --quiet; then
-            exit 0
-          fi
-          git commit -m "ota: refresh public manifest [skip ci]"
-          git push origin HEAD:nexusnova-ota-public
+      - name: OTA manifest ownership
+        run: echo "Public OTA manifest is owned by the nexusnova-app release workflow."
