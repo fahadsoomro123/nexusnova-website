@@ -30,7 +30,7 @@ test('linked account avatar prefers verified backend image sources and survives 
   const refresh = read('assets/js/telegram-avatar-refresh.js');
   const account = read('account.html');
 
-  assert.match(account, /telegram-avatar-refresh\.js\?v=20260826-3/);
+  assert.match(account, /telegram-avatar-refresh\.js\?v=20260830-1/);
   assert.match(refresh, /telegramSessionCall/);
   assert.match(refresh, /response\?\.data\?\.linked/);
   assert.match(refresh, /serverUser\.avatarDataUrl/);
