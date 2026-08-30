@@ -81,7 +81,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Promote broad utility categories first; mining/NVX stays secondary.
 - [x] Official preview/Coming Soon style without fake download links or install counters.
 - [x] Realistic FOMO/early-access messaging without fake deadlines.
-- [ ] Keep exact feature/category copy synchronized with the real app as the release approaches, without editing the app repo.
+- [x] Website feature/category copy is synchronized against the real app registry using `nova-sol57-pro-v128/fresh-rebuild/src/features/hub/app-registry.js` as a read-only source; the website now uses the registry category names `Core`, `Everyday Tools`, `Live & Local`, `Discover`, `Faith & Reading`, `Personal`, `Money & Commerce`, `Security & System` and `Mining`, while approved compact phone visuals remain unchanged. Exact registry-aligned copy is regression-protected in `tests/app-preview-assets.test.cjs`; Beta Validation run `33327257466` and Pages deployment run `33327256995` both passed on 2026-08-30. The Android app repository was not modified.
 - [x] Approved real NexusNova Nova Hub artwork from `ota/files/assets/icons/nova-hub/` is used in the production app preview and was visually verified on 2026-08-30.
 - [x] Current NexusNova phone screenshots/previews use approved real app artwork only: all app-preview `<img>` sources and mining-preview image candidates are restricted to `ota/files/assets/icons/nova-hub/`, generated/placeholder preview images are rejected by regression, and truthful no-fake-balance/rate/countdown release messaging is locked by `tests/app-preview-assets.test.cjs`. The new App preview approved-assets regression passed Beta Validation run `33325843617` on 2026-08-30.
 
