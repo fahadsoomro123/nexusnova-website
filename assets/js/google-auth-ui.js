@@ -3,9 +3,7 @@ import {
   getAuth,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
   signInWithRedirect,
-  linkWithPopup,
   linkWithRedirect,
   getRedirectResult,
   getAdditionalUserInfo
@@ -39,11 +37,6 @@ const AUTH_MARKER = 'nexusnova_auth_seen_v1';
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const SAFE_AUTH_CODE_RE = /^auth\/[a-z0-9-]+$/;
-const POPUP_FALLBACK_CODES = new Set([
-  'auth/popup-blocked',
-  'auth/popup-closed-by-user',
-  'auth/cancelled-popup-request'
-]);
 const DEFINITIVE_REFERRAL_ERRORS = new Set([
   'invalid-referral',
   'referral-not-found',
@@ -66,18 +59,11 @@ function withAuthCode(message, error) {
   return code ? `${message} [${code}]` : message;
 }
 
-function shouldUseRedirectFallback(error) {
-  return POPUP_FALLBACK_CODES.has(safeAuthCode(error));
-}
-
 function googleErrorMessage(error, linking = false) {
   const code = safeAuthCode(error);
   const known = {
     'auth/operation-not-allowed': 'Google sign-in is not enabled on the Firebase project yet.',
     'auth/unauthorized-domain': 'This website domain is not authorized for Firebase Authentication yet.',
-    'auth/popup-blocked': 'Your browser blocked the Google sign-in popup.',
-    'auth/popup-closed-by-user': 'Google popup closed before Firebase completed.',
-    'auth/cancelled-popup-request': 'Another sign-in window interrupted this Google request.',
     'auth/network-request-failed': 'Google/Firebase could not complete the network request. Check the connection or VPN and retry.',
     'auth/web-storage-unsupported': 'Browser storage required by Firebase Authentication is blocked. Allow site data/cookies for nexusnovatools.com and retry.',
     'auth/account-exists-with-different-credential': 'This email already belongs to a NexusNova account. Sign in with its existing method first, then connect Google from the dashboard.',
@@ -110,11 +96,9 @@ async function ensureProfile(user) {
   const ref = doc(db, 'users', user.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) return { created: false, profile: snap.data() || {} };
-
-  const name = cleanText(user.displayName || user.email?.split('@')[0] || 'NexusNova User', 80);
   const profile = {
     uid: user.uid,
-    name,
+    name: cleanText(user.displayName || user.email?.split('@')[0] || 'NexusNova User', 80),
     email: String(user.email || '').slice(0, 320),
     balance: 0,
     totalMined: 0,
@@ -213,11 +197,9 @@ function paintGoogleError(card, error) {
 async function finishGatewayCredential(result) {
   const info = getAdditionalUserInfo(result);
   const ensured = await ensureProfile(result.user);
-  if (ensured.created || info?.isNewUser === true) {
-    await attachPendingReferralForNewAccount(result.user);
-  }
+  if (ensured.created || info?.isNewUser === true) await attachPendingReferralForNewAccount(result.user);
   try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}
-  window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google' });
+  window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google-redirect' });
   gatewayStatus('Google account verified. Opening your NexusNova dashboard…', 'success');
   setTimeout(() => location.assign('account.html'), 120);
 }
@@ -226,7 +208,6 @@ async function resumeRedirectResult() {
   try {
     const result = await getRedirectResult(auth);
     if (!result?.user) return;
-
     const card = document.querySelector('[data-mission="google"]');
     if (card) {
       await result.user.reload();
@@ -234,10 +215,7 @@ async function resumeRedirectResult() {
       window.gtag?.('event', 'account_link', { provider: 'google', method: 'redirect' });
       return;
     }
-
-    if (document.querySelector('[data-account-form]')) {
-      await finishGatewayCredential(result);
-    }
+    if (document.querySelector('[data-account-form]')) await finishGatewayCredential(result);
   } catch (error) {
     console.warn('[NexusNova Google Redirect]', safeAuthCode(error) || 'google-redirect-failed');
     const card = document.querySelector('[data-mission="google"]');
@@ -250,7 +228,6 @@ function setupGateway() {
   const form = document.querySelector('[data-account-form]');
   if (!form || document.querySelector('[data-google-signin]')) return;
   ensureGoogleStyles();
-
   const wrap = document.createElement('div');
   wrap.className = 'nn-google-auth-wrap';
   wrap.dataset.googleSignin = '1';
@@ -259,40 +236,23 @@ function setupGateway() {
     <button class="account-submit nn-google-auth-button" type="button" data-google-signin-button>
       <span class="nn-google-g" aria-hidden="true">G</span><span>CONTINUE WITH GOOGLE</span>
     </button>
-    <p class="nn-google-auth-note">Google creates or opens the same Firebase-backed NexusNova identity. Mining never auto-starts.</p>
+    <p class="nn-google-auth-note">Google opens as a full-page secure Firebase flow. Mining never auto-starts.</p>
   `;
   form.parentNode?.insertBefore(wrap, form);
-
   const button = wrap.querySelector('[data-google-signin-button]');
   button?.addEventListener('click', async () => {
     if (button.disabled) return;
     button.disabled = true;
-    const original = button.querySelector('span:last-child')?.textContent || 'CONTINUE WITH GOOGLE';
     const label = button.querySelector('span:last-child');
-    if (label) label.textContent = 'CONNECTING GOOGLE…';
-    gatewayStatus('Opening official Google sign-in…');
-
+    if (label) label.textContent = 'OPENING GOOGLE…';
+    gatewayStatus('Opening full-page official Google sign-in…');
     try {
-      const result = await signInWithPopup(auth, provider);
-      await finishGatewayCredential(result);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      if (shouldUseRedirectFallback(error)) {
-        console.warn('[NexusNova Google Auth]', `${safeAuthCode(error)}; switching-to-redirect`);
-        gatewayStatus('Popup could not finish. Switching to full-page Google sign-in…');
-        if (label) label.textContent = 'OPENING GOOGLE…';
-        try {
-          await signInWithRedirect(auth, provider);
-          return;
-        } catch (redirectError) {
-          console.warn('[NexusNova Google Redirect Start]', safeAuthCode(redirectError) || 'redirect-start-failed');
-          gatewayStatus(withAuthCode(googleErrorMessage(redirectError, false), redirectError), 'error');
-        }
-      } else {
-        console.warn('[NexusNova Google Auth]', safeAuthCode(error) || 'google-signin-failed');
-        gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
-      }
+      console.warn('[NexusNova Google Redirect Start]', safeAuthCode(error) || 'redirect-start-failed');
+      gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
       button.disabled = false;
-      if (label) label.textContent = original;
+      if (label) label.textContent = 'CONTINUE WITH GOOGLE';
     }
   });
 }
@@ -301,7 +261,6 @@ function setupDashboard() {
   const grid = document.querySelector('.nn-missions-grid');
   if (!grid || document.querySelector('[data-mission="google"]')) return;
   ensureGoogleStyles();
-
   const card = document.createElement('article');
   card.className = 'nn-mission';
   card.dataset.mission = 'google';
@@ -314,42 +273,22 @@ function setupDashboard() {
   `;
   const xCard = grid.querySelector('[data-mission="x"]');
   grid.insertBefore(card, xCard || null);
-
   const button = card.querySelector('[data-google-link]');
   button?.addEventListener('click', async () => {
     const user = auth.currentUser;
     if (!user || button.disabled) return;
     delete card.dataset.authErrorCode;
     button.disabled = true;
-    button.textContent = 'Connecting…';
+    button.textContent = 'Opening Google…';
     const copy = card.querySelector('[data-mission-copy]');
-    if (copy) copy.textContent = 'Opening official Google account linking…';
-
+    if (copy) copy.textContent = 'Opening full-page official Google account linking…';
     try {
-      await linkWithPopup(user, provider);
-      await user.reload();
-      paintGoogleMission(card, auth.currentUser || user);
-      window.gtag?.('event', 'account_link', { provider: 'google', method: 'popup' });
+      await linkWithRedirect(user, provider);
     } catch (error) {
-      if (shouldUseRedirectFallback(error)) {
-        console.warn('[NexusNova Google Link]', `${safeAuthCode(error)}; switching-to-redirect`);
-        if (copy) copy.textContent = 'Popup could not finish. Switching to full-page Google linking…';
-        button.textContent = 'Opening Google…';
-        try {
-          await linkWithRedirect(user, provider);
-          return;
-        } catch (redirectError) {
-          console.warn('[NexusNova Google Link Redirect]', safeAuthCode(redirectError) || 'redirect-start-failed');
-          paintGoogleError(card, redirectError);
-          return;
-        }
-      }
-
-      console.warn('[NexusNova Google Link]', safeAuthCode(error) || 'google-link-failed');
+      console.warn('[NexusNova Google Link Redirect]', safeAuthCode(error) || 'redirect-start-failed');
       paintGoogleError(card, error);
     }
   });
-
   onAuthStateChanged(auth, user => paintGoogleMission(card, user));
 }
 
