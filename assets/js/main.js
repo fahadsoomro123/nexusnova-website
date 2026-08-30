@@ -20,7 +20,8 @@
     ['scifi',`${base}assets/css/scifi.css`],
     ['motion',`${base}assets/css/motion.css`],
     ['tool-icons',`${base}assets/css/tool-icons.css`],
-    ['polish',`${base}assets/css/polish.css`]
+    ['polish',`${base}assets/css/polish.css`],
+    ['auth-nav',`${base}assets/css/auth-nav.css`]
   ];
   styles.forEach(([key,href])=>{
     if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
@@ -40,7 +41,7 @@
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App'],['register.html','Account']
+      ['index.html','Home'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
@@ -48,6 +49,9 @@
       if(page===file||(file==='gaming.html'&&gamingPages.has(page))||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
       nav.appendChild(link);
     });
+    const authMode=new URLSearchParams(location.search).get('mode')==='signin'?'signin':'register';
+    const signIn=document.createElement('a');signIn.href=`${base}register.html?mode=signin`;signIn.textContent='Sign in';signIn.className='nn-nav-auth nn-nav-signin';if(page==='register.html'&&authMode==='signin')signIn.setAttribute('aria-current','page');nav.appendChild(signIn);
+    const signUp=document.createElement('a');signUp.href=`${base}register.html?mode=register`;signUp.textContent='Sign up';signUp.className='nn-nav-auth nn-nav-signup';if(page==='register.html'&&authMode!=='signin')signUp.setAttribute('aria-current','page');nav.appendChild(signUp);
   }
   if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
