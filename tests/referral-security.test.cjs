@@ -63,3 +63,30 @@ test('personal referral code is server-created, collision-checked and bound to o
   assert.match(ui, /COPY INVITE LINK/);
   assert.doesNotMatch(ui, /firebase-firestore|setDoc|updateDoc|addDoc/);
 });
+
+test('referral reward activation is server-only, fail-closed and idempotent', () => {
+  const activation = read('cloudflare/telegram-bot/referral-activation.js');
+  const mining = read('cloudflare/telegram-bot/mining-api.js');
+  const entry = read('cloudflare/telegram-bot/worker-entry.js');
+
+  assert.match(activation, /ACTIVATION_MILESTONE = ['"]first-mining-complete['"]/);
+  assert.match(activation, /FIRST_MINING_REWARD = 24/);
+  assert.match(activation, /REFERRAL_ACTIVATION_MILESTONE/);
+  assert.match(activation, /REFERRAL_REFERRER_REWARD_NVX/);
+  assert.match(activation, /REFERRAL_REFERRED_REWARD_NVX/);
+  assert.match(activation, /enabled: false, reason: ['"]not-configured['"]/);
+  assert.match(activation, /totalMined < FIRST_MINING_REWARD/);
+  assert.match(activation, /documentName\(['"]referralRewards['"], referredUid\)/);
+  assert.match(activation, /ledgerStatus !== ['"]issued['"]/);
+  assert.match(activation, /status: fsString\(['"]issued['"]\)/);
+  assert.match(activation, /status: fsString\(['"]verified['"]\)/);
+  assert.match(activation, /referrerUid === referredUid/);
+  assert.match(activation, /await commit\(accessToken, writes, transaction\)/);
+
+  assert.match(mining, /processReferralMiningActivation/);
+  assert.match(mining, /await processReferralMiningActivation\(uid, env\)/);
+  assert.match(mining, /Referral activation is server-only and fail-closed/);
+
+  assert.doesNotMatch(entry, /\/api\/referral\/activate/);
+  assert.doesNotMatch(read('assets/js/referral-account-api.js'), /referral\/activate|REFERRAL_REFERRER_REWARD_NVX|REFERRAL_REFERRED_REWARD_NVX/);
+});
