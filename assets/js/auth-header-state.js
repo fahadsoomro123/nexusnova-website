@@ -24,8 +24,15 @@
   }
 
   const AUTH_MARKER='nexusnova_auth_seen_v1';
-  let shouldLoad=true;
-  try{shouldLoad=localStorage.getItem(AUTH_MARKER)==='1';}catch(_){}
+  // account.html is already an authenticated Firebase surface. Always resolve
+  // its header from the real Firebase session so a fresh browser can never lose
+  // the account menu just because account-dashboard.js sets the marker a moment
+  // after this shared header module starts. Public guest pages keep the marker
+  // optimization and therefore avoid loading Firebase unnecessarily.
+  let shouldLoad=page==='account.html';
+  if(!shouldLoad){
+    try{shouldLoad=localStorage.getItem(AUTH_MARKER)==='1';}catch(_){}
+  }
   if(!shouldLoad)return;
 
   const firebaseConfig={
