@@ -260,13 +260,13 @@
   if(!document.querySelector('link[data-home-app-promo]')){
     const style=document.createElement('link');
     style.rel='stylesheet';
-    style.href='assets/css/home-app-promo.css?v=20260830-1';
+    style.href='assets/css/home-app-promo.css?v=20260830-2';
     style.dataset.homeAppPromo='';
     document.head.appendChild(style);
   }
   if(!document.querySelector('script[data-home-app-promo]')){
     const script=document.createElement('script');
-    script.src='assets/js/home-app-promo.js?v=20260830-1';
+    script.src='assets/js/home-app-promo.js?v=20260830-2';
     script.defer=true;
     script.dataset.homeAppPromo='';
     document.head.appendChild(script);
