@@ -35,6 +35,7 @@ provider.setCustomParameters({ prompt: 'select_account' });
 const AUTH_MARKER = 'nexusnova_auth_seen_v1';
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
+const SAFE_AUTH_CODE_RE = /^auth\/[a-z0-9-]+$/;
 const DEFINITIVE_REFERRAL_ERRORS = new Set([
   'invalid-referral',
   'referral-not-found',
@@ -47,18 +48,32 @@ function cleanText(value, max = 120) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
+function safeAuthCode(error) {
+  const code = String(error?.code || '').trim().toLowerCase();
+  return SAFE_AUTH_CODE_RE.test(code) ? code : '';
+}
+
+function withAuthCode(message, error) {
+  const code = safeAuthCode(error);
+  return code ? `${message} [${code}]` : message;
+}
+
 function googleErrorMessage(error, linking = false) {
-  const code = String(error?.code || '');
+  const code = safeAuthCode(error);
   const known = {
     'auth/operation-not-allowed': 'Google sign-in is not enabled on the Firebase project yet.',
-    'auth/popup-blocked': 'Your browser blocked the Google sign-in popup. Allow popups and try again.',
-    'auth/popup-closed-by-user': 'Google sign-in was cancelled before it finished.',
-    'auth/cancelled-popup-request': 'Another sign-in window is already open.',
-    'auth/network-request-failed': 'Network connection failed. Check your internet and try again.',
+    'auth/unauthorized-domain': 'This website domain is not authorized for Firebase Authentication yet.',
+    'auth/popup-blocked': 'Your browser blocked the Google sign-in popup. Allow popups for nexusnovatools.com and retry.',
+    'auth/popup-closed-by-user': 'Google popup closed before Firebase completed. If you did not close it, temporarily disable browser popup/privacy blocking or VPN for nexusnovatools.com and retry.',
+    'auth/cancelled-popup-request': 'Another sign-in window is already open. Close it and retry once.',
+    'auth/network-request-failed': 'Google/Firebase could not complete the network request. Check the connection or VPN and retry.',
+    'auth/web-storage-unsupported': 'Browser storage required by Firebase Authentication is blocked. Allow site data/cookies for nexusnovatools.com and retry.',
     'auth/account-exists-with-different-credential': 'This email already belongs to a NexusNova account. Sign in with its existing method first, then connect Google from the dashboard.',
-    'auth/credential-already-in-use': 'This Google identity is already connected to another NexusNova account.',
+    'auth/credential-already-in-use': 'This Google identity is already connected to another NexusNova account. NexusNova will not auto-merge accounts because balance, mining and referral state must remain safe.',
     'auth/provider-already-linked': 'Google is already connected to this NexusNova account.',
-    'auth/requires-recent-login': 'For security, sign out and sign in again before connecting Google.'
+    'auth/requires-recent-login': 'For security, sign out and sign in again before connecting Google.',
+    'auth/too-many-requests': 'Firebase temporarily limited authentication attempts. Wait briefly and retry.',
+    'auth/user-disabled': 'This Firebase account is disabled and cannot link Google.'
   };
   if (known[code]) return known[code];
   return cleanText(error?.message || (linking ? 'Google account linking failed.' : 'Google sign-in failed.'), 240);
@@ -181,8 +196,8 @@ function setupGateway() {
       gatewayStatus('Google account verified. Opening your NexusNova dashboard…', 'success');
       setTimeout(() => location.assign('account.html'), 120);
     } catch (error) {
-      console.warn('[NexusNova Google Auth]', error?.code || 'google-signin-failed');
-      gatewayStatus(googleErrorMessage(error, false), 'error');
+      console.warn('[NexusNova Google Auth]', safeAuthCode(error) || 'google-signin-failed');
+      gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
       button.disabled = false;
       if (label) label.textContent = original;
     }
@@ -199,6 +214,7 @@ function paintGoogleMission(card, user) {
   const copy = card.querySelector('[data-mission-copy]');
   const button = card.querySelector('[data-google-link]');
   const connected = hasGoogleProvider(user);
+  delete card.dataset.authErrorCode;
   card.dataset.state = connected ? 'complete' : 'ready';
   if (state) state.textContent = connected ? 'CONNECTED' : 'READY';
   if (copy) copy.textContent = connected
@@ -232,6 +248,7 @@ function setupDashboard() {
   button?.addEventListener('click', async () => {
     const user = auth.currentUser;
     if (!user || button.disabled) return;
+    delete card.dataset.authErrorCode;
     button.disabled = true;
     button.textContent = 'Connecting…';
     const copy = card.querySelector('[data-mission-copy]');
@@ -244,11 +261,13 @@ function setupDashboard() {
       button.textContent = 'Connect Google';
       window.gtag?.('event', 'account_link', { provider: 'google' });
     } catch (error) {
-      console.warn('[NexusNova Google Link]', error?.code || 'google-link-failed');
+      const errorCode = safeAuthCode(error);
+      console.warn('[NexusNova Google Link]', errorCode || 'google-link-failed');
       card.dataset.state = 'error';
+      if (errorCode) card.dataset.authErrorCode = errorCode;
       const state = card.querySelector('[data-mission-state]');
       if (state) state.textContent = 'NOT CONNECTED';
-      if (copy) copy.textContent = googleErrorMessage(error, true);
+      if (copy) copy.textContent = withAuthCode(googleErrorMessage(error, true), error);
       button.disabled = false;
       button.textContent = 'Retry Google';
     }
