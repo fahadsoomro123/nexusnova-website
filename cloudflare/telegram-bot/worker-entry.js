@@ -1,12 +1,33 @@
 import worker from './worker.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
+const AUTH_CONFIG_PATH = '/api/auth/security-config';
+const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
+const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
+const ALLOWED_TURNSTILE_HOSTNAME = 'nexusnovatools.com';
+const TURNSTILE_ACTION = 'auth';
+const TURNSTILE_SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const AVATAR_TTL_SECONDS = 5 * 60;
 const MAX_AVATAR_FUTURE_SECONDS = 10 * 60;
+const MAX_AUTH_BODY_BYTES = 4096;
+const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const authApiPath = url.pathname.startsWith('/api/auth/');
+
+    if (authApiPath && request.method === 'OPTIONS') {
+      return authCors(request, new Response(null, { status: 204 }));
+    }
+
+    if (request.method === 'GET' && url.pathname === AUTH_CONFIG_PATH) {
+      return authSecurityConfig(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === TURNSTILE_VERIFY_PATH) {
+      return verifyTurnstile(request, env);
+    }
 
     if (request.method === 'GET' && url.pathname === AVATAR_PATH) {
       return telegramAvatar(request, env);
@@ -20,6 +41,150 @@ export default {
     return response;
   }
 };
+
+function assertAuthOrigin(request) {
+  if (request.headers.get('Origin') !== ALLOWED_ORIGIN) {
+    throw new Error('origin-not-allowed');
+  }
+}
+
+function authCors(request, response) {
+  const headers = new Headers(response.headers);
+  if (request.headers.get('Origin') === ALLOWED_ORIGIN) {
+    headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    headers.set('Access-Control-Max-Age', '600');
+    headers.set('Vary', 'Origin');
+  }
+  headers.set('Cache-Control', 'no-store');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
+function authJson(request, data, status = 200) {
+  return authCors(request, new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8' }
+  }));
+}
+
+function authSecurityConfig(request, env) {
+  try {
+    assertAuthOrigin(request);
+  } catch (_) {
+    return authJson(request, { ok: false, code: 'permission-denied' }, 403);
+  }
+
+  const siteKey = String(env.TURNSTILE_SITE_KEY || '').trim();
+  const secretReady = Boolean(String(env.TURNSTILE_SECRET_KEY || '').trim());
+  const enabled = Boolean(siteKey && secretReady);
+
+  return authJson(request, {
+    ok: true,
+    provider: 'cloudflare-turnstile',
+    enabled,
+    siteKey: enabled ? siteKey : '',
+    action: TURNSTILE_ACTION
+  });
+}
+
+async function readAuthBody(request) {
+  const declaredLength = Number(request.headers.get('Content-Length') || 0);
+  if (declaredLength > MAX_AUTH_BODY_BYTES) throw new Error('request-too-large');
+  const text = await request.text();
+  if (text.length > MAX_AUTH_BODY_BYTES) throw new Error('request-too-large');
+  try {
+    return JSON.parse(text || '{}');
+  } catch (_) {
+    throw new Error('invalid-body');
+  }
+}
+
+async function verifyTurnstile(request, env) {
+  try {
+    assertAuthOrigin(request);
+  } catch (_) {
+    return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);
+  }
+
+  const siteKey = String(env.TURNSTILE_SITE_KEY || '').trim();
+  const secret = String(env.TURNSTILE_SECRET_KEY || '').trim();
+  if (!siteKey || !secret) {
+    return authJson(request, {
+      ok: false,
+      code: 'turnstile-not-configured',
+      error: 'Bot protection is not configured on the server yet.'
+    }, 503);
+  }
+
+  let body;
+  try {
+    body = await readAuthBody(request);
+  } catch (error) {
+    const tooLarge = error?.message === 'request-too-large';
+    return authJson(request, {
+      ok: false,
+      code: tooLarge ? 'request-too-large' : 'invalid-argument',
+      error: tooLarge ? 'Security request is too large.' : 'Security request is invalid.'
+    }, tooLarge ? 413 : 400);
+  }
+
+  const token = String(body?.token || '').trim();
+  const action = String(body?.action || TURNSTILE_ACTION).trim();
+  if (!token || token.length > MAX_TURNSTILE_TOKEN_LENGTH || action !== TURNSTILE_ACTION) {
+    return authJson(request, { ok: false, code: 'invalid-argument', error: 'Complete the security check and try again.' }, 400);
+  }
+
+  const form = new URLSearchParams({
+    secret,
+    response: token
+  });
+  const remoteIp = String(request.headers.get('CF-Connecting-IP') || '').trim();
+  if (remoteIp) form.set('remoteip', remoteIp);
+
+  let result;
+  try {
+    const response = await fetch(TURNSTILE_SITEVERIFY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form
+    });
+    if (!response.ok) throw new Error(`siteverify-${response.status}`);
+    result = await response.json();
+  } catch (error) {
+    console.error('Turnstile Siteverify unavailable:', String(error?.message || error || 'unknown'));
+    return authJson(request, {
+      ok: false,
+      code: 'turnstile-unavailable',
+      error: 'Security verification is temporarily unavailable. Please try again.'
+    }, 503);
+  }
+
+  const valid = result?.success === true &&
+    String(result?.hostname || '') === ALLOWED_TURNSTILE_HOSTNAME &&
+    String(result?.action || '') === TURNSTILE_ACTION;
+
+  if (!valid) {
+    console.warn('Turnstile verification rejected', {
+      success: result?.success === true,
+      hostname: String(result?.hostname || ''),
+      action: String(result?.action || ''),
+      errorCodes: Array.isArray(result?.['error-codes']) ? result['error-codes'].slice(0, 6) : []
+    });
+    return authJson(request, {
+      ok: false,
+      code: 'turnstile-failed',
+      error: 'Security verification failed. Please retry the check.'
+    }, 403);
+  }
+
+  return authJson(request, { ok: true, verified: true, provider: 'cloudflare-turnstile' });
+}
 
 async function decorateAccountResponse(request, response, env) {
   if (!response.ok || !env.TELEGRAM_BOT_TOKEN) return response;
