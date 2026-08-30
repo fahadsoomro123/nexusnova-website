@@ -6,12 +6,12 @@ on:
     paths:
       - '.github/workflows/nexusnova-beta-start.yml'
       - 'WEB-MASTER-CHECKLIST.md'
-      - 'index.html'
-      - 'app.html'
-      - 'account.html'
-      - 'register.html'
-      - 'assets/**'
-      - 'cloudflare/**'
+      - 'package.json'
+      - 'tests/**'
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'cloudflare/**/*.js'
   workflow_dispatch:
 
 permissions:
@@ -23,12 +23,22 @@ concurrency:
 
 jobs:
   beta-smoke:
-    name: Public beta smoke test
+    name: Public beta + regression test
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify JavaScript syntax and security regression tests
+        run: |
+          npm run check
+          npm test
 
       - name: Verify public website surfaces
         shell: bash
@@ -40,12 +50,17 @@ jobs:
             'https://nexusnovatools.com/app.html'
             'https://nexusnovatools.com/register.html'
             'https://nexusnovatools.com/account.html'
+            'https://nexusnovatools.com/privacy.html'
+            'https://nexusnovatools.com/terms.html'
+            'https://nexusnovatools.com/faq.html'
+            'https://nexusnovatools.com/sitemap.xml'
+            'https://nexusnovatools.com/robots.txt'
           )
           for url in "${urls[@]}"; do
             echo "Checking $url"
-            code="$(curl -L --retry 3 --retry-delay 3 --max-time 25 -sS -o /tmp/body.html -w '%{http_code}' "$url")"
+            code="$(curl -L --retry 3 --retry-delay 3 --max-time 25 -sS -o /tmp/body -w '%{http_code}' "$url")"
             test "$code" = '200'
-            test -s /tmp/body.html
+            test -s /tmp/body
           done
 
       - name: Verify Turnstile security config is live
@@ -83,6 +98,6 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Beta validation checks public website pages, Turnstile configuration, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation runs JS syntax checks, security/referral tests, public page smoke checks, live Turnstile config verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
           echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo 'This is a beta smoke test only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is a beta regression gate only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
