@@ -8,20 +8,15 @@ const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-test('Google gateway uses official Firebase auth with popup-to-redirect fallback and truthful errors', () => {
+test('Google gateway uses official Firebase full-page redirect auth with truthful errors', () => {
   const google = read('assets/js/google-auth-ui.js');
   const shell = read('assets/js/account-shell.js');
   const register = read('register.html');
 
   assert.match(google, /GoogleAuthProvider/);
-  assert.match(google, /signInWithPopup\(auth, provider\)/);
   assert.match(google, /signInWithRedirect\(auth, provider\)/);
   assert.match(google, /getRedirectResult\(auth\)/);
-  assert.match(google, /shouldUseRedirectFallback/);
-  assert.match(google, /POPUP_FALLBACK_CODES/);
-  assert.match(google, /auth\/popup-blocked/);
-  assert.match(google, /auth\/popup-closed-by-user/);
-  assert.match(google, /auth\/cancelled-popup-request/);
+  assert.doesNotMatch(google, /signInWithPopup|linkWithPopup|POPUP_FALLBACK_CODES|shouldUseRedirectFallback/);
   assert.match(google, /getAdditionalUserInfo/);
   assert.match(google, /auth\/operation-not-allowed/);
   assert.match(google, /auth\/unauthorized-domain/);
@@ -29,15 +24,14 @@ test('Google gateway uses official Firebase auth with popup-to-redirect fallback
   assert.match(google, /auth\/account-exists-with-different-credential/);
   assert.match(google, /safeAuthCode/);
   assert.match(google, /withAuthCode/);
-  assert.match(shell, /google-auth-ui\.js\?v=20260831-2/);
+  assert.match(shell, /google-auth-ui\.js\?v=20260831-3/);
   assert.match(shell, /\[data-account-form\].*\[data-dashboard\]/s);
   assert.match(register, /account-shell\.js\?v=20260831-2/);
 });
 
-test('Google account linking uses popup with full-page fallback and preserves identity safety', () => {
+test('Google account linking is redirect-only and preserves identity safety', () => {
   const google = read('assets/js/google-auth-ui.js');
 
-  assert.match(google, /linkWithPopup\(user, provider\)/);
   assert.match(google, /linkWithRedirect\(user, provider\)/);
   assert.match(google, /resumeRedirectResult/);
   assert.match(google, /providerData/);
@@ -48,6 +42,7 @@ test('Google account linking uses popup with full-page fallback and preserves id
   assert.match(google, /data-mission=\"google\"/);
   assert.match(google, /dataset\.authErrorCode/);
   assert.match(google, /connected \? ['"]CONNECTED['"] : ['"]READY['"]/);
+  assert.doesNotMatch(google, /popup/i);
 });
 
 test('Google auth does not mint rewards or directly mutate existing value state', () => {
