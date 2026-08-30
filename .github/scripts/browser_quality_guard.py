@@ -33,6 +33,106 @@ VIEWPORTS = {
 }
 
 
+def verify_authenticated_header(browser, report: dict) -> None:
+    """Exercise the deployed header logic with a deterministic Firebase auth mock.
+
+    This does not mint or use a real account credential. It verifies that the real
+    auth-header module is loaded by the page, consumes an authenticated Firebase
+    state, removes guest CTAs and renders the accessible account menu.
+    """
+    context = browser.new_context(viewport={"width": 1280, "height": 900})
+
+    def firebase_app(route):
+        route.fulfill(
+            status=200,
+            content_type="application/javascript",
+            headers={"Access-Control-Allow-Origin": "*"},
+            body=(
+                "export function getApps(){return [{}];}"
+                "export function initializeApp(){return {}; }"
+            ),
+        )
+
+    def firebase_auth(route):
+        route.fulfill(
+            status=200,
+            content_type="application/javascript",
+            headers={"Access-Control-Allow-Origin": "*"},
+            body=(
+                "export function getAuth(){return {}; }"
+                "export function onAuthStateChanged(_auth,cb){"
+                "queueMicrotask(()=>cb({displayName:'Beta User',email:'beta@example.com'}));"
+                "return ()=>{};}"
+                "export async function signOut(){return true;}"
+            ),
+        )
+
+    context.route("**/firebase-app.js", firebase_app)
+    context.route("**/firebase-auth.js", firebase_auth)
+    page = context.new_page()
+    try:
+        response = page.goto(
+            "http://127.0.0.1:8000/index.html",
+            wait_until="domcontentloaded",
+            timeout=30000,
+        )
+        if not response or response.status != 200:
+            report["severe"].append("auth-header/index.html: page did not load")
+            return
+        try:
+            page.wait_for_selector("[data-nn-account-menu]", timeout=8000)
+        except Exception:
+            report["severe"].append(
+                "auth-header/index.html: authenticated account menu did not render"
+            )
+            return
+
+        guest_count = page.locator(".nn-nav-signin,.nn-nav-signup").count()
+        menu_count = page.locator("[data-nn-account-menu]").count()
+        summary = page.locator("[data-nn-account-menu] summary")
+        aria = (summary.get_attribute("aria-label") or "").strip() if summary.count() else ""
+        label = (summary.inner_text() or "").strip() if summary.count() else ""
+        signout = page.locator("[data-nn-signout]")
+
+        if guest_count != 0:
+            report["severe"].append(
+                "auth-header/index.html: guest Sign in/Sign up remain after authenticated state"
+            )
+        if menu_count != 1:
+            report["severe"].append(
+                f"auth-header/index.html: expected one account menu, found {menu_count}"
+            )
+        if not aria:
+            report["severe"].append(
+                "auth-header/index.html: account menu summary missing aria-label"
+            )
+        if "Beta" not in label:
+            report["severe"].append(
+                "auth-header/index.html: authenticated account label did not use Firebase user state"
+            )
+        if signout.count() != 1:
+            report["severe"].append(
+                "auth-header/index.html: account menu Sign out action missing"
+            )
+
+        report["authenticatedHeader"] = {
+            "page": "index.html",
+            "guestActions": guest_count,
+            "accountMenus": menu_count,
+            "summaryAriaLabel": aria,
+            "summaryText": label,
+            "signoutActions": signout.count(),
+        }
+        page.screenshot(path=str(OUT / "authenticated-header.png"), full_page=False)
+    except Exception as exc:
+        report["severe"].append(
+            f"auth-header/index.html: authenticated-state browser check failed: {exc}"
+        )
+    finally:
+        page.close()
+        context.close()
+
+
 def main() -> None:
     report = {"pages": [], "severe": [], "warnings": []}
 
@@ -179,6 +279,7 @@ def main() -> None:
 
             context.close()
 
+        verify_authenticated_header(browser, report)
         browser.close()
 
     (OUT / "browser-quality-report.json").write_text(
@@ -190,6 +291,7 @@ def main() -> None:
                 "pages": len(report["pages"]),
                 "severe": len(report["severe"]),
                 "warnings": len(report["warnings"]),
+                "authenticatedHeader": bool(report.get("authenticatedHeader")),
             },
             indent=2,
         )
