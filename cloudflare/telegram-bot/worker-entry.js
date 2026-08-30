@@ -1,4 +1,5 @@
 import worker from './worker.js';
+import { disposableEmailRisk, enforceAuthThrottle } from './auth-abuse.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
 const AUTH_CONFIG_PATH = '/api/auth/security-config';
@@ -66,11 +67,12 @@ function authCors(request, response) {
   });
 }
 
-function authJson(request, data, status = 200) {
-  return authCors(request, new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' }
-  }));
+function authJson(request, data, status = 200, extraHeaders = null) {
+  const headers = new Headers({ 'Content-Type': 'application/json; charset=utf-8' });
+  if (extraHeaders) {
+    for (const [key, value] of Object.entries(extraHeaders)) headers.set(key, String(value));
+  }
+  return authCors(request, new Response(JSON.stringify(data), { status, headers }));
 }
 
 function authSecurityConfig(request, env) {
@@ -112,6 +114,18 @@ async function verifyTurnstile(request, env) {
     return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);
   }
 
+  const throttle = await enforceAuthThrottle(request).catch(error => {
+    console.warn('Auth throttle degraded:', String(error?.message || error || 'unknown'));
+    return { allowed: true, retryAfter: 0 };
+  });
+  if (!throttle.allowed) {
+    return authJson(request, {
+      ok: false,
+      code: 'too-many-requests',
+      error: 'Too many security attempts. Wait briefly and try again.'
+    }, 429, { 'Retry-After': throttle.retryAfter || 60 });
+  }
+
   const siteKey = String(env.TURNSTILE_SITE_KEY || '').trim();
   const secret = String(env.TURNSTILE_SECRET_KEY || '').trim();
   if (!siteKey || !secret) {
@@ -140,6 +154,7 @@ async function verifyTurnstile(request, env) {
     return authJson(request, { ok: false, code: 'invalid-argument', error: 'Complete the security check and try again.' }, 400);
   }
 
+  const emailRisk = disposableEmailRisk(body?.email);
   const form = new URLSearchParams({
     secret,
     response: token
@@ -183,7 +198,12 @@ async function verifyTurnstile(request, env) {
     }, 403);
   }
 
-  return authJson(request, { ok: true, verified: true, provider: 'cloudflare-turnstile' });
+  return authJson(request, {
+    ok: true,
+    verified: true,
+    provider: 'cloudflare-turnstile',
+    emailRisk
+  });
 }
 
 async function decorateAccountResponse(request, response, env) {
