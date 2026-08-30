@@ -43,6 +43,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Real account state only; no fake balances, counters, countdowns, connected states, or reward completion.
 - [x] Account overview / verification status / connected identities.
 - [x] NVX/rewards area with clear state and truthful eligibility messaging.
+- [ ] Compact-density redesign: reduce oversized hero/cards/padding and unnecessary vertical scrolling on desktop/mobile while preserving readable touch targets. Implementation pushed on 2026-08-30; live visual verification still required.
 - [ ] Manual mining CTA/entry presentation only where the website architecture genuinely supports it; never auto-start mining.
 - [ ] Halving/FOMO presentation must use real stage/rate data only; no fake urgency/countdown. Current web UI deliberately shows unavailable until a trusted source is connected.
 
@@ -62,6 +63,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 
 ## 6. Social / Community Growth
 - [x] Show official NexusNova X, Facebook, Instagram and Telegram destinations in the Web App/community area.
+- [ ] Use recognizable branded visual icons for X, Facebook, Instagram and Telegram in mission/community/release UI instead of plain letter-only placeholders. Implementation pushed on 2026-08-30; live visual verification still required.
 - [x] Keep Follow / Like / Comment / Repost as organic community actions with no direct NVX claim condition.
 - [x] Do not compensate X Likes, Replies, Reposts, Views or Follows.
 - [x] Do not create fake verification for social engagement.
@@ -80,6 +82,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Official preview/Coming Soon style without fake download links or install counters.
 - [x] Realistic FOMO/early-access messaging without fake deadlines.
 - [ ] Keep exact feature/category copy synchronized with the real app as the release approaches, without editing the app repo.
+- [ ] Replace generic/sample tool boxes with approved real NexusNova Nova Hub artwork already mirrored in the website repo at `ota/files/assets/icons/nova-hub/`; first compact real-asset preview implementation pushed on 2026-08-30 and awaits live visual verification.
 - [ ] Add real screenshots/previews only from approved real app assets when available.
 
 ## 9. APK Release Website Flow — Future Trigger
