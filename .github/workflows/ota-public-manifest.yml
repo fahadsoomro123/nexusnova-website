@@ -1,0 +1,63 @@
+name: OTA Public Manifest
+
+on:
+  push:
+    branches:
+      - nexusnova-ota-public
+    paths:
+      - 'ota/files/**'
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Build exact OTA manifest
+        shell: python
+        run: |
+          import hashlib, json, os
+          from pathlib import Path
+
+          base = 'b6eb3d191ee35b58c0ffe14334674ea2c60d3b72'
+          selected = [
+              'assets/styles/premium-mine-reference-locked.css',
+              'index.html',
+          ]
+          root = Path('ota/files')
+          rows = []
+          for rel in selected:
+              data = (root / rel).read_bytes()
+              rows.append({
+                  'path': rel,
+                  'sha256': hashlib.sha256(data).hexdigest(),
+                  'size': len(data),
+              })
+          payload = {
+              'base': base,
+              'files': rows,
+              'schema': 2,
+              'version': os.environ['GITHUB_SHA'],
+          }
+          Path('ota/manifest.json').write_text(
+              json.dumps(payload, separators=(',', ':'), sort_keys=False),
+              encoding='utf-8',
+          )
+
+      - name: Commit manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ota/manifest.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "ota: refresh public manifest [skip ci]"
+          git push origin HEAD:nexusnova-ota-public
