@@ -134,8 +134,10 @@ test('bot worker opens Web Apps privately and keeps group URL fallback', () => {
   assert.match(worker, /if \(!response\.ok \|\| !result\.ok\)/);
 });
 
-test('privacy and deletion pages disclose linked Telegram data', () => {
-  assert.match(read('privacy.html'), /Telegram Mini App/);
-  assert.match(read('privacy.html'), /not trusted as authentication/);
+test('privacy and deletion pages disclose linked Telegram data and server verification', () => {
+  const privacy = read('privacy.html');
+  assert.match(privacy, /Telegram Mini App/);
+  assert.match(privacy, /Server-side verification is required before Telegram identity data is trusted/i);
+  assert.match(privacy, /bot token remains server-side/i);
   assert.match(read('account-deletion.html'), /linked Telegram identity mapping/);
 });
