@@ -134,3 +134,6 @@ The website is not considered fully complete until all currently applicable rele
 2. explicitly deferred by the owner because they depend on a future external event such as APK/Play Store availability.
 
 Future APK/Play Store-triggered items remain tracked here so they are not forgotten.
+
+## Final Deferred Bug Queue
+- [ ] Telegram linked-profile avatar is still unresolved on the real Telegram Desktop/Mini App account card: the UI continues to fall back to the account initial instead of showing the real Telegram profile photo. Keep this item at the end of the work queue and do not mark it fixed until a real Telegram session screenshot confirms the photo is displayed.
