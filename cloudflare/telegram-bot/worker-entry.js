@@ -1,9 +1,11 @@
 import worker from './worker.js';
 import { disposableEmailRisk, enforceAuthThrottle } from './auth-abuse.js';
+import { attachReferralRequest } from './referral-api.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
 const AUTH_CONFIG_PATH = '/api/auth/security-config';
 const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
+const REFERRAL_ATTACH_PATH = '/api/referral/attach';
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
 const ALLOWED_TURNSTILE_HOSTNAME = 'nexusnovatools.com';
 const TURNSTILE_ACTION = 'auth';
@@ -16,9 +18,9 @@ const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const authApiPath = url.pathname.startsWith('/api/auth/');
+    const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/referral/');
 
-    if (authApiPath && request.method === 'OPTIONS') {
+    if (secureApiPath && request.method === 'OPTIONS') {
       return authCors(request, new Response(null, { status: 204 }));
     }
 
@@ -28,6 +30,15 @@ export default {
 
     if (request.method === 'POST' && url.pathname === TURNSTILE_VERIFY_PATH) {
       return verifyTurnstile(request, env);
+    }
+
+    if (request.method === 'POST' && url.pathname === REFERRAL_ATTACH_PATH) {
+      try {
+        assertAuthOrigin(request);
+      } catch (_) {
+        return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);
+      }
+      return authCors(request, await attachReferralRequest(request, env));
     }
 
     if (request.method === 'GET' && url.pathname === AVATAR_PATH) {
@@ -54,7 +65,7 @@ function authCors(request, response) {
   if (request.headers.get('Origin') === ALLOWED_ORIGIN) {
     headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
     headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
     headers.set('Access-Control-Max-Age', '600');
     headers.set('Vary', 'Origin');
   }
@@ -220,9 +231,6 @@ async function decorateAccountResponse(request, response, env) {
   const backendOrigin = new URL(request.url).origin;
   data.user.avatarUrl = `${backendOrigin}${AVATAR_PATH}?id=${encodeURIComponent(id)}&expires=${expires}&sig=${sig}`;
 
-  // Telegram WebViews can occasionally refuse a cross-origin image request even
-  // when the signed proxy is healthy. Embed the smallest current profile photo in
-  // the already authenticated session response as a private, short-lived fallback.
   const inlineAvatar = await telegramAvatarAsset(env.TELEGRAM_BOT_TOKEN, id, true).catch(() => null);
   if (inlineAvatar?.bytes?.byteLength) {
     data.user.avatarDataUrl = `data:${inlineAvatar.contentType};base64,${bytesToBase64(inlineAvatar.bytes)}`;
