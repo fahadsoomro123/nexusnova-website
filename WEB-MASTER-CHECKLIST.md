@@ -8,8 +8,8 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Remove old single `Account` nav item from global website navigation.
 - [x] Add `Sign in` and premium `Sign up` actions in the global header.
 - [x] Support direct sign-in/sign-up modes via account gateway URL state.
-- [ ] Logged-in header state: avatar/profile/account menu instead of guest auth buttons.
-- [x] Verify desktop + mobile navigation accessibility and responsive behavior. GitHub Site Quality Audit run `33313392595` passed on 2026-08-30 with desktop/mobile overflow, broken-image, menu touch-target, keyboard toggle and `aria-expanded` checks.
+- [x] Logged-in header state replaces guest auth buttons with the authenticated avatar/account menu. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with the deterministic Firebase-authenticated header check reporting `authenticatedHeader: true` and zero severe browser findings.
+- [x] Verify desktop + mobile navigation accessibility and responsive behavior. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with desktop/mobile overflow, broken-image, menu touch-target, keyboard toggle and `aria-expanded` checks at zero severe findings.
 
 ## 2. Account / Authentication
 - [x] Preserve email + password registration/sign-in.
@@ -102,11 +102,11 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [ ] If a first-party mobile activation bonus is introduced, reward actual verified in-app/account activation rather than store ratings/reviews.
 
 ## 11. SEO / Trust / AdSense Readiness
-- [x] Maintain crawlability/indexability of public tool/content pages. Full static site-map/SEO/internal-link scan passed with zero severe findings in Site Quality Audit run `33313392595` on 2026-08-30.
+- [x] Maintain crawlability/indexability of public tool/content pages. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with 133 HTML pages scanned, 130 indexable pages and 130/130 sitemap coverage, with zero severe static findings and zero static warnings.
 - [x] Keep account gateway/dashboard noindex where appropriate.
-- [x] Ensure structured data, canonical tags, titles/descriptions and social metadata remain valid after redesigns. Full static SEO metadata gate passed in Site Quality Audit run `33313392595` on 2026-08-30.
-- [ ] Check Core Web Vitals/performance after 3D/glass UI additions.
-- [x] Add responsive and reduced-motion handling to the new Web App UI; representative desktop/mobile browser quality is CI-verified, while a broader accessibility audit can still be expanded later.
+- [x] Ensure structured data, canonical tags, titles/descriptions and social metadata remain valid after redesigns. The public-page social metadata pass plus title/description normalization reduced the static SEO audit from 177 warnings to zero; final Site Quality Audit run `33316649153` passed with zero severe findings and zero static warnings.
+- [x] Check post-redesign performance with the Lighthouse lab regression gate. Final Performance Audit run `33316649199` passed on 2026-08-30: Home 0.99 / LCP 1.870s / CLS 0 / TBT 0ms; Tools 0.99 / LCP 1.826s / CLS 0.0003 / TBT 50ms; App 0.90 / LCP 2.786s / CLS 0.1317 / TBT 67ms. Field Core Web Vitals remain dependent on real-user traffic/device/network conditions.
+- [x] Add responsive and reduced-motion handling to the new Web App UI; final desktop/mobile browser quality passed in Site Quality Audit run `33316649153` with zero severe findings, while broader accessibility coverage can still be expanded later.
 - [x] Keep Privacy / Terms / FAQ aligned with actual authentication, analytics, referral and reward behavior. Trust pages were synchronized to the current beta behavior and the beta regression gate passed on 2026-08-30.
 - [x] No fake company address/location, phone or unsupported claims in the new Web App work.
 - [x] Preserve public website tools without a login wall during AdSense review.
@@ -123,7 +123,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Website repo only for this work.
 - [x] Do not modify `fahadsoomro123/nexusnova-app` unless the owner explicitly reverses this instruction later.
 - [x] Do not generate website-design images unless explicitly requested later.
-- [ ] Do not break existing working website tools/auth/referral/Telegram behavior unnecessarily.
+- [x] Existing website tools/auth/referral/Telegram behavior is regression-protected in the current beta. Final Beta Validation run `33316649161` and Site Quality Audit run `33316649153` both passed on 2026-08-30 after the performance and SEO changes.
 - [x] Do not add fake functionality, fake connected states, fake timers, fake counters or fake progress in the new Web App phase.
 - [x] Do not expose secrets/tokens in client code, commits, logs or chat in the new Web App phase.
 - [ ] Every item marked complete must be verified against current repository/deployed behavior before final launch.
