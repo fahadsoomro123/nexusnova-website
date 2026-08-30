@@ -1,0 +1,88 @@
+name: NexusNova Website Beta Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nexusnova-beta-start.yml'
+      - 'WEB-MASTER-CHECKLIST.md'
+      - 'index.html'
+      - 'app.html'
+      - 'account.html'
+      - 'register.html'
+      - 'assets/**'
+      - 'cloudflare/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-website-beta
+  cancel-in-progress: true
+
+jobs:
+  beta-smoke:
+    name: Public beta smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Verify public website surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            'https://nexusnovatools.com/'
+            'https://nexusnovatools.com/tools.html'
+            'https://nexusnovatools.com/app.html'
+            'https://nexusnovatools.com/register.html'
+            'https://nexusnovatools.com/account.html'
+          )
+          for url in "${urls[@]}"; do
+            echo "Checking $url"
+            code="$(curl -L --retry 3 --retry-delay 3 --max-time 25 -sS -o /tmp/body.html -w '%{http_code}' "$url")"
+            test "$code" = '200'
+            test -s /tmp/body.html
+          done
+
+      - name: Verify Turnstile security config is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl --retry 3 --retry-delay 3 --max-time 25 -sS \
+            -H 'Origin: https://nexusnovatools.com' \
+            -H 'Accept: application/json' \
+            'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/auth/security-config')"
+          echo "$response" | python -c "import json,sys; d=json.load(sys.stdin); assert d.get('ok') is True; assert d.get('provider') == 'cloudflare-turnstile'; assert d.get('enabled') is True; assert bool(d.get('siteKey'))"
+
+      - name: Verify beta truthfulness rules in repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          checklist = Path('WEB-MASTER-CHECKLIST.md').read_text(encoding='utf-8')
+          required = [
+              'Keep website tools public',
+              'Keep mining OFF after signup',
+              'Real account state only',
+              'Do not add fake functionality',
+              'Do not expose secrets/tokens',
+          ]
+          for phrase in required:
+              if phrase not in checklist:
+                  raise SystemExit(f'Missing beta safety rule: {phrase}')
+          print('Beta safety rules present.')
+          PY
+
+      - name: Beta summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation checks public website pages, Turnstile configuration, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is a beta smoke test only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
