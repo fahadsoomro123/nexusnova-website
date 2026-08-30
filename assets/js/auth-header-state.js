@@ -18,8 +18,8 @@ const auth = getAuth(app);
 function initials(user) {
   const source = String(user?.displayName || user?.email || 'N').trim();
   const words = source.split(/\s+/).filter(Boolean);
-  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
-  return source.slice(0, 2).toUpperCase();
+  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 2) || 'N';
+  return source.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 2) || 'N';
 }
 
 function accountLabel(user) {
@@ -27,6 +27,14 @@ function accountLabel(user) {
   if (name) return name.split(/\s+/)[0].slice(0, 16);
   const email = String(user?.email || '').trim();
   return (email.split('@')[0] || 'Account').slice(0, 16);
+}
+
+function appendText(parent, tag, text, className = '') {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  node.textContent = text;
+  parent.appendChild(node);
+  return node;
 }
 
 function renderAccount(user) {
@@ -37,31 +45,41 @@ function renderAccount(user) {
   const menu = document.createElement('details');
   menu.className = 'nn-nav-account-menu';
   menu.dataset.nnAccountMenu = '';
-  menu.innerHTML = `
-    <summary aria-label="Open NexusNova account menu">
-      <span class="nn-nav-avatar" aria-hidden="true">${initials(user)}</span>
-      <span class="nn-nav-account-name">${accountLabel(user)}</span>
-      <span class="nn-nav-chevron" aria-hidden="true">⌄</span>
-    </summary>
-    <div class="nn-nav-account-popover">
-      <div class="nn-nav-account-meta">
-        <strong>${String(user.displayName || 'NexusNova Account')}</strong>
-        <small>${String(user.email || 'Signed in')}</small>
-      </div>
-      <a href="${base}account.html">Account dashboard</a>
-      <a href="${base}account.html#profile">Profile & verification</a>
-      <button type="button" data-nn-signout>Sign out</button>
-    </div>`;
+
+  const summary = document.createElement('summary');
+  summary.setAttribute('aria-label', 'Open NexusNova account menu');
+  appendText(summary, 'span', initials(user), 'nn-nav-avatar').setAttribute('aria-hidden', 'true');
+  appendText(summary, 'span', accountLabel(user), 'nn-nav-account-name');
+  appendText(summary, 'span', '⌄', 'nn-nav-chevron').setAttribute('aria-hidden', 'true');
+  menu.appendChild(summary);
+
+  const popover = document.createElement('div');
+  popover.className = 'nn-nav-account-popover';
+  const meta = document.createElement('div');
+  meta.className = 'nn-nav-account-meta';
+  appendText(meta, 'strong', String(user?.displayName || 'NexusNova Account').slice(0, 80));
+  appendText(meta, 'small', String(user?.email || 'Signed in').slice(0, 160));
+  popover.appendChild(meta);
+
+  const dashboard = appendText(popover, 'a', 'Account dashboard');
+  dashboard.href = `${base}account.html`;
+  const profile = appendText(popover, 'a', 'Profile & verification');
+  profile.href = `${base}account.html#profile`;
+  const signout = appendText(popover, 'button', 'Sign out');
+  signout.type = 'button';
+  signout.dataset.nnSignout = '';
+  menu.appendChild(popover);
   nav.appendChild(menu);
 
-  menu.querySelector('[data-nn-signout]')?.addEventListener('click', async () => {
-    const button = menu.querySelector('[data-nn-signout]');
-    if (button) { button.disabled = true; button.textContent = 'Signing out…'; }
+  signout.addEventListener('click', async () => {
+    signout.disabled = true;
+    signout.textContent = 'Signing out…';
     try {
       await signOut(auth);
       location.href = `${base}index.html`;
     } catch (_) {
-      if (button) { button.disabled = false; button.textContent = 'Sign out'; }
+      signout.disabled = false;
+      signout.textContent = 'Sign out';
     }
   });
 
