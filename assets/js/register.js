@@ -16,6 +16,7 @@ import {
   serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 import { telegramSessionCall, linkTelegramAccountCall } from './telegram-account-api.js';
+import { attachReferralCall } from './referral-account-api.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
@@ -33,6 +34,13 @@ const db = getFirestore(app);
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';
+const DEFINITIVE_REFERRAL_ERRORS = new Set([
+  'invalid-referral',
+  'referral-not-found',
+  'self-referral',
+  'referral-window-expired',
+  'referral-already-attached'
+]);
 
 const form = document.querySelector('[data-account-form]');
 const nameField = document.querySelector('[data-name-field]');
@@ -109,7 +117,6 @@ function telegramErrorMessage(error) {
 async function bootstrapTelegram() {
   const bridge = window.NexusNovaTelegram;
   if (!bridge?.isAvailable) return null;
-
   const detected = bridge.getUser();
   paintTelegram(detected, 'VERIFYING', 'Checking this Telegram launch securely…');
 
@@ -117,11 +124,7 @@ async function bootstrapTelegram() {
     const response = await telegramSessionCall({ initData: bridge.getInitData() });
     const result = response?.data || {};
     if (!result.user?.id) throw new Error('Verified Telegram user is missing.');
-    telegramContext = {
-      initData: bridge.getInitData(),
-      linked: result.linked === true,
-      user: result.user
-    };
+    telegramContext = { initData: bridge.getInitData(), linked: result.linked === true, user: result.user };
     paintTelegram(
       result.user,
       result.linked ? 'VERIFIED + LINKED' : 'VERIFIED',
@@ -253,49 +256,14 @@ async function ensureProfile(user, requestedName = '') {
 async function attachReferral(user) {
   const code = pendingReferral;
   if (!code || !user) return { attached: false, message: '' };
-
-  const ownRef = doc(db, 'referrals', user.uid);
-  const existing = await getDoc(ownRef);
-  if (existing.exists()) {
-    clearReferral();
-    return { attached: false, message: 'This account already has referral attribution.' };
-  }
-
-  const profileSnap = await getDoc(doc(db, 'users', user.uid));
-  if (!profileSnap.exists()) throw new Error('NexusNova profile is not ready yet.');
-
-  const createdAt = profileSnap.data()?.createdAt;
-  const createdMs = createdAt?.toMillis?.() || 0;
-  if (createdMs && Date.now() - createdMs > 24 * 60 * 60 * 1000) {
-    clearReferral();
-    return { attached: false, message: 'Referral window has expired for this existing account.' };
-  }
-
-  const codeSnap = await getDoc(doc(db, 'referralCodes', code));
-  if (!codeSnap.exists()) {
-    clearReferral();
-    return { attached: false, message: 'Referral code is not active.' };
-  }
-
-  const referrerUid = String(codeSnap.data()?.ownerUid || '');
-  if (!referrerUid || referrerUid === user.uid) {
-    clearReferral();
-    return { attached: false, message: 'Self-referrals are not allowed.' };
-  }
-
-  await setDoc(ownRef, {
-    referredUid: user.uid,
-    referrerUid,
-    code,
-    status: 'pending',
-    createdAt: serverTimestamp()
-  });
+  const idToken = await user.getIdToken(true);
+  const result = await attachReferralCall({ code, idToken });
   clearReferral();
-  setReferralState('ATTACHED', true);
-  window.gtag?.('event', 'referral_attached', { source: 'website_signup' });
+  setReferralState(result?.attached ? 'ATTACHED' : 'CHECKED', result?.attached === true);
+  if (result?.attached) window.gtag?.('event', 'referral_attached', { source: 'website_signup' });
   return {
-    attached: true,
-    message: 'Referral attached. It becomes verified after email verification and the first completed 24-hour mining cycle.'
+    attached: result?.attached === true,
+    message: String(result?.message || 'Referral attribution checked securely.')
   };
 }
 
@@ -305,10 +273,15 @@ async function tryAttachReferral(user) {
     return await attachReferral(user);
   } catch (error) {
     console.warn('[NexusNova Referral]', error?.code || 'attach-failed');
+    if (DEFINITIVE_REFERRAL_ERRORS.has(String(error?.code || ''))) {
+      clearReferral();
+      setReferralState('NOT ATTACHED');
+      return { attached: false, message: String(error?.message || 'Referral could not be attached.') };
+    }
     setReferralState('RETRY NEEDED');
     return {
       attached: false,
-      message: 'Your account is ready, but referral attachment could not finish yet. Keep this page open and sign in again to retry the saved invite.'
+      message: 'Your account is ready, but secure referral attribution could not finish yet. Sign in again to retry the saved invite.'
     };
   }
 }
