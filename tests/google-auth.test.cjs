@@ -17,14 +17,19 @@ test('Google gateway uses official Firebase popup auth and truthful provider err
   assert.match(google, /signInWithPopup\(auth, provider\)/);
   assert.match(google, /getAdditionalUserInfo/);
   assert.match(google, /auth\/operation-not-allowed/);
+  assert.match(google, /auth\/unauthorized-domain/);
+  assert.match(google, /auth\/web-storage-unsupported/);
+  assert.match(google, /auth\/popup-closed-by-user/);
   assert.match(google, /auth\/account-exists-with-different-credential/);
   assert.match(google, /Google sign-in is not enabled on the Firebase project yet/);
-  assert.match(shell, /google-auth-ui\.js\?v=20260830-1/);
+  assert.match(google, /safeAuthCode/);
+  assert.match(google, /withAuthCode/);
+  assert.match(shell, /google-auth-ui\.js\?v=20260831-1/);
   assert.match(shell, /\[data-account-form\].*\[data-dashboard\]/s);
   assert.match(register, /account-shell\.js\?v=20260830-2/);
 });
 
-test('Google account linking is bound to real Firebase provider state', () => {
+test('Google account linking is bound to real Firebase provider state and exposes safe failure code', () => {
   const google = read('assets/js/google-auth-ui.js');
 
   assert.match(google, /linkWithPopup\(user, provider\)/);
@@ -34,6 +39,8 @@ test('Google account linking is bound to real Firebase provider state', () => {
   assert.match(google, /auth\/provider-already-linked/);
   assert.match(google, /auth\/requires-recent-login/);
   assert.match(google, /data-mission=\"google\"/);
+  assert.match(google, /dataset\.authErrorCode/);
+  assert.match(google, /\[\$\{code\}\]/);
   assert.match(google, /connected \? ['"]CONNECTED['"] : ['"]READY['"]/);
 });
 
