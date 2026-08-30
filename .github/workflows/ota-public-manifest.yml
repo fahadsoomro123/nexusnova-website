@@ -6,6 +6,7 @@ on:
       - nexusnova-ota-public
     paths:
       - 'ota/files/**'
+      - '.github/workflows/ota-public-manifest.yml'
 
 permissions:
   contents: write
