@@ -255,8 +255,12 @@
 
 // Homepage-only NexusNova Android promotion loader. Kept isolated from Telegram auth behavior.
 (()=>{
-  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(typeof window==='undefined'||!window.location) return;
+  const pathname=String(window.location.pathname||'');
+  if(!pathname) return;
+  const page=(pathname.split('/').pop()||'index.html').toLowerCase();
   if(page!=='index.html') return;
+  if(typeof document?.querySelector!=='function'||typeof document?.createElement!=='function'||!document.head) return;
   if(!document.querySelector('link[data-home-app-promo]')){
     const style=document.createElement('link');
     style.rel='stylesheet';
