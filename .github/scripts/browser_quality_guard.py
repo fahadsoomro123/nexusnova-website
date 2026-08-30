@@ -70,6 +70,7 @@ def verify_authenticated_header(browser, report: dict) -> None:
     context.route("**/firebase-app.js", firebase_app)
     context.route("**/firebase-auth.js", firebase_auth)
     page = context.new_page()
+    page.add_init_script("localStorage.setItem('nexusnova_auth_seen_v1','1')")
     try:
         response = page.goto(
             "http://127.0.0.1:8000/index.html",

@@ -1,16 +1,26 @@
 (()=>{
   const measurementId='G-YLPFKWSS12';
-  if(!document.querySelector('script[data-nexusnova-ga4]')){
-    window.dataLayer=window.dataLayer||[];
-    window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-    window.gtag('js',new Date());
-    window.gtag('config',measurementId,{allow_google_signals:false,allow_ad_personalization_signals:false});
+  if(window.__nexusnovaGa4Scheduled||document.querySelector('script[data-nexusnova-ga4]'))return;
+  window.__nexusnovaGa4Scheduled=true;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  window.gtag('js',new Date());
+  window.gtag('config',measurementId,{allow_google_signals:false,allow_ad_personalization_signals:false});
+  let loaded=false;
+  const load=()=>{
+    if(loaded||document.querySelector('script[data-nexusnova-ga4]'))return;
+    loaded=true;
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
     analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
     analyticsScript.dataset.nexusnovaGa4='';
     document.head.appendChild(analyticsScript);
-  }
+  };
+  ['pointerdown','keydown','touchstart'].forEach(type=>window.addEventListener(type,load,{once:true,passive:true}));
+  window.addEventListener('scroll',load,{once:true,passive:true});
+  const schedule=()=>setTimeout(load,8000);
+  if(document.readyState==='complete')schedule();
+  else window.addEventListener('load',schedule,{once:true});
 })();
 
 (()=>{

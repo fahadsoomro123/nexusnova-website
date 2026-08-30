@@ -34,6 +34,7 @@ const db = getFirestore(app);
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';
+const AUTH_MARKER = 'nexusnova_auth_seen_v1';
 const DEFINITIVE_REFERRAL_ERRORS = new Set([
   'invalid-referral',
   'referral-not-found',
@@ -399,6 +400,7 @@ resend?.addEventListener('click', async () => {
 
 onAuthStateChanged(auth, user => {
   if (!user) return;
+  try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}
   if (mode === 'signin') {
     setStatus(user.emailVerified ? 'You are already signed in.' : 'You are signed in; email verification is still pending.', 'success');
   }

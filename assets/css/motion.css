@@ -13,10 +13,6 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
 .tool-card>h3{padding-right:68px}
 .tool-card>.nn-tool-symbol{position:absolute;top:20px;right:20px;margin:0}
 
-/* Skip paint/layout work for homepage sections that are still below the
-   viewport. The intrinsic fallback reserves space until the section is near. */
-.nn-home .section{content-visibility:auto;contain-intrinsic-size:auto 720px}
-
 @media(max-width:720px){
   #local-clock{min-height:4.75em}
   .tool-card>h3{padding-right:60px}
