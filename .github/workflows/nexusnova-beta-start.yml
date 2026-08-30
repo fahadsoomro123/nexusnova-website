@@ -12,6 +12,7 @@ on:
       - 'assets/**/*.js'
       - 'assets/**/*.css'
       - 'cloudflare/**/*.js'
+      - '.github/workflows/publish-nexusnova-apk-download.yml'
   workflow_dispatch:
 
 permissions:
@@ -55,6 +56,9 @@ jobs:
 
       - name: Major launch release-gate regression
         run: node --test tests/major-launch-gate.test.cjs
+
+      - name: Future APK publish-gate regression
+        run: node --test tests/apk-publish-gate.test.cjs
 
       - name: Telegram avatar regression
         run: node --test tests/telegram-avatar.test.cjs
@@ -163,6 +167,6 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Beta validation runs JS syntax checks, account eligibility + authenticated-header race checks, referral/mining/app-preview/major-launch/Telegram regressions, public page smoke checks, live Turnstile + account eligibility + mining Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation runs JS syntax checks, account eligibility + authenticated-header race checks, referral/mining/app-preview/major-launch/future-APK/Telegram regressions, public page smoke checks, live Turnstile + account eligibility + mining Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
           echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
-          echo 'This is a beta regression gate only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is a beta regression gate only. It does not publish social launch posts, publish an APK, or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
