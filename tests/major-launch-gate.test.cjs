@@ -29,6 +29,17 @@ test('future APK Play triggers remain outside the web-launch gate while post-lau
   assert.match(workflow, /Automatic launch should run only after this master website checklist/);
 });
 
+test('configured destination failures block successful launch history', () => {
+  assert.match(workflow, /Verify every configured destination result/);
+  assert.match(workflow, /successful < 1/);
+  assert.match(workflow, /nonconfigured_reasons=/);
+  assert.match(workflow, /'not configured'/);
+  assert.match(workflow, /'professional account or image unavailable'/);
+  assert.match(workflow, /real_failures\.append/);
+  assert.match(workflow, /One or more configured social destinations failed/);
+  assert.match(workflow, /destination_results_verified':True/);
+});
+
 test('duplicate successful major launch remains blocked', () => {
   assert.match(workflow, /row\.get\('published'\) is True/);
   assert.match(workflow, /duplicate launch blocked/);
