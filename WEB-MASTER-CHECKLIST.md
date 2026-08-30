@@ -9,7 +9,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Add `Sign in` and premium `Sign up` actions in the global header.
 - [x] Support direct sign-in/sign-up modes via account gateway URL state.
 - [ ] Logged-in header state: avatar/profile/account menu instead of guest auth buttons.
-- [ ] Verify desktop + mobile navigation accessibility and responsive behavior.
+- [x] Verify desktop + mobile navigation accessibility and responsive behavior. GitHub Site Quality Audit run `33313392595` passed on 2026-08-30 with desktop/mobile overflow, broken-image, menu touch-target, keyboard toggle and `aria-expanded` checks.
 
 ## 2. Account / Authentication
 - [x] Preserve email + password registration/sign-in.
@@ -102,12 +102,12 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [ ] If a first-party mobile activation bonus is introduced, reward actual verified in-app/account activation rather than store ratings/reviews.
 
 ## 11. SEO / Trust / AdSense Readiness
-- [ ] Maintain crawlability/indexability of public tool/content pages.
+- [x] Maintain crawlability/indexability of public tool/content pages. Full static site-map/SEO/internal-link scan passed with zero severe findings in Site Quality Audit run `33313392595` on 2026-08-30.
 - [x] Keep account gateway/dashboard noindex where appropriate.
-- [ ] Ensure structured data, canonical tags, titles/descriptions and social metadata remain valid after redesigns.
+- [x] Ensure structured data, canonical tags, titles/descriptions and social metadata remain valid after redesigns. Full static SEO metadata gate passed in Site Quality Audit run `33313392595` on 2026-08-30.
 - [ ] Check Core Web Vitals/performance after 3D/glass UI additions.
-- [x] Add responsive and reduced-motion handling to the new Web App UI; full site accessibility audit still pending.
-- [ ] Keep Privacy / Terms / FAQ aligned with actual authentication, analytics, referral and reward behavior.
+- [x] Add responsive and reduced-motion handling to the new Web App UI; representative desktop/mobile browser quality is CI-verified, while a broader accessibility audit can still be expanded later.
+- [x] Keep Privacy / Terms / FAQ aligned with actual authentication, analytics, referral and reward behavior. Trust pages were synchronized to the current beta behavior and the beta regression gate passed on 2026-08-30.
 - [x] No fake company address/location, phone or unsupported claims in the new Web App work.
 - [x] Preserve public website tools without a login wall during AdSense review.
 
