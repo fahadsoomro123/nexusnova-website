@@ -15,7 +15,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Preserve email + password registration/sign-in.
 - [x] Keep website tools public; no login wall for normal browser tools.
 - [x] Keep mining OFF after signup; account creation must never auto-start mining.
-- [ ] Email verification UX and eligibility enforcement fully verified end-to-end.
+- [x] Email verification UX and eligibility enforcement fully verified end-to-end on 2026-08-30 using the live Firebase-verified account state shown in the production dashboard.
 - [ ] Google official sign-in/account-linking.
 - [ ] X official OAuth account-linking.
 - [ ] Apple official sign-in/account-linking where configuration is available.
