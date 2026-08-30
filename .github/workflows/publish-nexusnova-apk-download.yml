@@ -1,39 +1,108 @@
 name: Publish NexusNova APK Download
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/publish-nexusnova-apk-download.yml'
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type PUBLISH_APK only after the APK and checksum are independently verified'
+        required: true
+        type: string
+      version:
+        description: 'Verified release version, for example 1.0.5'
+        required: true
+        type: string
+      expected_sha256:
+        description: 'Expected lowercase/uppercase 64-character SHA-256 of the exact APK'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
+concurrency:
+  group: nexusnova-apk-publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APK_ARTIFACT_URL: ${{ secrets.NEXUSNOVA_APK_ARTIFACT_URL }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Download permanent-signed NexusNova APK artifact
-        env:
-          APK_ARTIFACT_URL: 'https://sdmntprindiasocentral.oaiusercontent.com/files/00000000-c4f4-8211-9e81-43f1489e06ab/raw?se=2026-08-26T07%3A37%3A51Z&sp=r&sv=2026-02-06&sr=b&scid=64d83690-aee2-5897-b815-a6641c2995d0&skoid=a3d7d4f3-706d-48bc-8860-17488c12cb39&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-08-26T02%3A54%3A23Z&ske=2026-08-27T02%3A54%3A23Z&sks=b&skv=2026-02-06&sig=YO3sy4aBUuPanQU1lEOlsJomTHy67SVrlnsdjiyzwNA%3D'
+      - name: Require explicit verified release inputs
+        shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location "$APK_ARTIFACT_URL" -o /tmp/nexusnova-apk-artifact.zip
-          rm -rf /tmp/nexusnova-apk-artifact
-          mkdir -p /tmp/nexusnova-apk-artifact
-          unzip -q /tmp/nexusnova-apk-artifact.zip -d /tmp/nexusnova-apk-artifact
-          APK="$(find /tmp/nexusnova-apk-artifact -type f -name '*.apk' | head -n 1)"
-          test -n "$APK"
-          test -s "$APK"
+          test "${{ inputs.confirm }}" = 'PUBLISH_APK' || { echo 'APK publish blocked: explicit PUBLISH_APK confirmation is required.' >&2; exit 1; }
+          [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9._-]+)?$ ]] || { echo 'APK publish blocked: invalid version format.' >&2; exit 1; }
+          [[ "${{ inputs.expected_sha256 }}" =~ ^[A-Fa-f0-9]{64}$ ]] || { echo 'APK publish blocked: expected_sha256 must be exactly 64 hex characters.' >&2; exit 1; }
+          test -n "$APK_ARTIFACT_URL" || { echo 'APK publish blocked: NEXUSNOVA_APK_ARTIFACT_URL secret is not configured.' >&2; exit 1; }
+
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download and verify exact APK artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION='${{ inputs.version }}'
+          EXPECTED="$(printf '%s' '${{ inputs.expected_sha256 }}' | tr '[:upper:]' '[:lower:]')"
+          RELEASE_APK="downloads/NexusNova-v${VERSION}.apk"
+          RELEASE_SHA="downloads/NexusNova-v${VERSION}.sha256"
+
+          test ! -e "$RELEASE_APK" || { echo "APK publish blocked: $RELEASE_APK already exists." >&2; exit 1; }
+          test ! -e "$RELEASE_SHA" || { echo "APK publish blocked: $RELEASE_SHA already exists." >&2; exit 1; }
+
+          curl --fail --location --retry 3 --retry-delay 2 --max-time 180 "$APK_ARTIFACT_URL" -o /tmp/nexusnova-release-artifact
+          test -s /tmp/nexusnova-release-artifact
+
+          rm -rf /tmp/nexusnova-release-unpacked
+          mkdir -p /tmp/nexusnova-release-unpacked
+          APK=''
+
+          if unzip -Z1 /tmp/nexusnova-release-artifact 2>/dev/null | grep -qx 'AndroidManifest.xml'; then
+            APK='/tmp/nexusnova-release-artifact'
+          else
+            unzip -q /tmp/nexusnova-release-artifact -d /tmp/nexusnova-release-unpacked
+            mapfile -t APKS < <(find /tmp/nexusnova-release-unpacked -type f -name '*.apk' -print)
+            test "${#APKS[@]}" -eq 1 || { echo 'APK publish blocked: artifact must contain exactly one APK.' >&2; exit 1; }
+            APK="${APKS[0]}"
+          fi
+
+          unzip -tq "$APK" >/dev/null
+          unzip -Z1 "$APK" | grep -qx 'AndroidManifest.xml'
+          unzip -Z1 "$APK" | grep -Eq '^classes([0-9]+)?\.dex$'
+
+          ACTUAL="$(sha256sum "$APK" | awk '{print tolower($1)}')"
+          test "$ACTUAL" = "$EXPECTED" || { echo "APK publish blocked: SHA-256 mismatch. expected=$EXPECTED actual=$ACTUAL" >&2; exit 1; }
+
           mkdir -p downloads
-          cp "$APK" downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk
-          sha256sum downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk > downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.sha256
-      - name: Publish APK on nexusnovatools.com
+          cp "$APK" "$RELEASE_APK"
+          printf '%s  %s\n' "$ACTUAL" "$(basename "$RELEASE_APK")" > "$RELEASE_SHA"
+          sha256sum -c "$RELEASE_SHA" --ignore-missing
+
+      - name: Publish verified APK and checksum only
+        shell: bash
         run: |
           set -euo pipefail
+          VERSION='${{ inputs.version }}'
           git config user.name 'NexusNova Download Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.apk downloads/NexusNova-PERMANENT-SIGNED-OTA-v1.0.4.sha256
-          git commit -m 'Publish NexusNova permanent signed OTA v1.0.4 APK'
+          git add "downloads/NexusNova-v${VERSION}.apk" "downloads/NexusNova-v${VERSION}.sha256"
+          git diff --cached --quiet && { echo 'APK publish blocked: no verified release files staged.' >&2; exit 1; }
+          git commit -m "release: publish verified NexusNova v${VERSION} APK"
+          git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Verification summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova APK Publish Gate' >> "$GITHUB_STEP_SUMMARY"
+          echo "Requested version: ${{ inputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Publishing requires manual confirmation, a secret artifact URL, valid APK structure and an exact caller-supplied SHA-256 match.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This workflow does not add or change a public website download button.' >> "$GITHUB_STEP_SUMMARY"
