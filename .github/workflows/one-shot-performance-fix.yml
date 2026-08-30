@@ -1,0 +1,181 @@
+name: NexusNova One-Time Performance Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-performance-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Apply targeted performance fixes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'Expected patch anchor missing in {path}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Revert the offscreen content-visibility experiment: Lighthouse showed
+          # it increased main-thread work on the dynamic homepage sections.
+          replace_once(
+              'assets/css/motion.css',
+              "/* Skip paint/layout work for homepage sections that are still below the\n   viewport. The intrinsic fallback reserves space until the section is near. */\n.nn-home .section{content-visibility:auto;contain-intrinsic-size:auto 720px}\n\n",
+              ''
+          )
+
+          # Tools layout CSS must be present before first paint. main.js already
+          # detects these data attributes and will not inject duplicate links.
+          old_links = '<link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi><link rel="stylesheet" href="assets/css/motion.css" data-nexusnova-motion>'
+          new_links = old_links + '<link rel="stylesheet" href="assets/css/tool-icons.css" data-nexusnova-tool-icons><link rel="stylesheet" href="assets/css/polish.css" data-nexusnova-polish><link rel="stylesheet" href="assets/css/auth-nav.css" data-nexusnova-auth-nav>'
+          replace_once('tools.html', old_links, new_links)
+
+          # Analytics is non-essential to first input. Queue events immediately,
+          # but load the third-party runtime on user interaction or after 8s.
+          old_ga = """(()=>{\n  const measurementId='G-YLPFKWSS12';\n  if(!document.querySelector('script[data-nexusnova-ga4]')){\n    window.dataLayer=window.dataLayer||[];\n    window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};\n    window.gtag('js',new Date());\n    window.gtag('config',measurementId,{allow_google_signals:false,allow_ad_personalization_signals:false});\n    const analyticsScript=document.createElement('script');\n    analyticsScript.async=true;\n    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;\n    analyticsScript.dataset.nexusnovaGa4='';\n    document.head.appendChild(analyticsScript);\n  }\n})();\n"""
+          new_ga = """(()=>{\n  const measurementId='G-YLPFKWSS12';\n  if(window.__nexusnovaGa4Scheduled||document.querySelector('script[data-nexusnova-ga4]'))return;\n  window.__nexusnovaGa4Scheduled=true;\n  window.dataLayer=window.dataLayer||[];\n  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};\n  window.gtag('js',new Date());\n  window.gtag('config',measurementId,{allow_google_signals:false,allow_ad_personalization_signals:false});\n  let loaded=false;\n  const load=()=>{\n    if(loaded||document.querySelector('script[data-nexusnova-ga4]'))return;\n    loaded=true;\n    const analyticsScript=document.createElement('script');\n    analyticsScript.async=true;\n    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;\n    analyticsScript.dataset.nexusnovaGa4='';\n    document.head.appendChild(analyticsScript);\n  };\n  ['pointerdown','keydown','touchstart'].forEach(type=>window.addEventListener(type,load,{once:true,passive:true}));\n  window.addEventListener('scroll',load,{once:true,passive:true});\n  const schedule=()=>setTimeout(load,8000);\n  if(document.readyState==='complete')schedule();\n  else window.addEventListener('load',schedule,{once:true});\n})();\n"""
+          replace_once('assets/js/main.js', old_ga, new_ga)
+
+          # Public guest pages should not download the full Firebase Auth stack.
+          # Auth pages/dashboard set a tiny local marker after a real Firebase
+          # authenticated state. Only then does the public header import Firebase.
+          auth_header = r'''(async()=>{
+            'use strict';
+            const AUTH_MARKER='nexusnova_auth_seen_v1';
+            let shouldLoad=true;
+            try{shouldLoad=localStorage.getItem(AUTH_MARKER)==='1';}catch(_){}
+            if(!shouldLoad)return;
+
+            const firebaseConfig={
+              apiKey:'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
+              authDomain:'nexusnova-6ade2.firebaseapp.com',
+              projectId:'nexusnova-6ade2',
+              storageBucket:'nexusnova-6ade2.firebasestorage.app',
+              messagingSenderId:'49791194817',
+              appId:'1:49791194817:web:07f28326e0f15979536640',
+              measurementId:'G-YLPFKWSS12'
+            };
+            const base=/\/(guides|articles|tech)\//.test(location.pathname)?'../':'';
+
+            function initials(user){
+              const source=String(user?.displayName||user?.email||'N').trim();
+              const words=source.split(/\s+/).filter(Boolean);
+              if(words.length>1)return(words[0][0]+words[1][0]).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2)||'N';
+              return source.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2)||'N';
+            }
+            function accountLabel(user){
+              const name=String(user?.displayName||'').trim();
+              if(name)return name.split(/\s+/)[0].slice(0,16);
+              const email=String(user?.email||'').trim();
+              return(email.split('@')[0]||'Account').slice(0,16);
+            }
+            function appendText(parent,tag,text,className=''){
+              const node=document.createElement(tag);if(className)node.className=className;node.textContent=text;parent.appendChild(node);return node;
+            }
+
+            try{
+              const [appSdk,authSdk]=await Promise.all([
+                import('https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js'),
+                import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js')
+              ]);
+              const app=appSdk.getApps()[0]||appSdk.initializeApp(firebaseConfig);
+              const auth=authSdk.getAuth(app);
+
+              function renderAccount(user){
+                const nav=document.querySelector('[data-nav]');
+                if(!nav||nav.querySelector('[data-nn-account-menu]'))return;
+                nav.querySelectorAll('.nn-nav-signin,.nn-nav-signup').forEach(el=>el.remove());
+                const menu=document.createElement('details');menu.className='nn-nav-account-menu';menu.dataset.nnAccountMenu='';
+                const summary=document.createElement('summary');summary.setAttribute('aria-label','Open NexusNova account menu');
+                appendText(summary,'span',initials(user),'nn-nav-avatar').setAttribute('aria-hidden','true');
+                appendText(summary,'span',accountLabel(user),'nn-nav-account-name');
+                appendText(summary,'span','⌄','nn-nav-chevron').setAttribute('aria-hidden','true');menu.appendChild(summary);
+                const popover=document.createElement('div');popover.className='nn-nav-account-popover';
+                const meta=document.createElement('div');meta.className='nn-nav-account-meta';
+                appendText(meta,'strong',String(user?.displayName||'NexusNova Account').slice(0,80));
+                appendText(meta,'small',String(user?.email||'Signed in').slice(0,160));popover.appendChild(meta);
+                const dashboard=appendText(popover,'a','Account dashboard');dashboard.href=`${base}account.html`;
+                const profile=appendText(popover,'a','Profile & verification');profile.href=`${base}account.html#profile`;
+                const signout=appendText(popover,'button','Sign out');signout.type='button';signout.dataset.nnSignout='';
+                menu.appendChild(popover);nav.appendChild(menu);
+                signout.addEventListener('click',async()=>{signout.disabled=true;signout.textContent='Signing out…';try{await authSdk.signOut(auth);try{localStorage.removeItem(AUTH_MARKER);}catch(_){}location.href=`${base}index.html`;}catch(_){signout.disabled=false;signout.textContent='Sign out';}});
+                document.addEventListener('click',event=>{if(!menu.open||menu.contains(event.target))return;menu.open=false;});
+              }
+
+              authSdk.onAuthStateChanged(auth,user=>{
+                if(user){try{localStorage.setItem(AUTH_MARKER,'1');}catch(_){}renderAccount(user);}
+                else{try{localStorage.removeItem(AUTH_MARKER);}catch(_){} }
+              });
+            }catch(error){console.warn('[NexusNova Auth Header]',error?.message||error);}
+          })();
+          '''
+          Path('assets/js/auth-header-state.js').write_text(auth_header.strip()+'\n',encoding='utf-8')
+
+          # Register/auth gateway records a marker only after Firebase says a user exists.
+          replace_once(
+              'assets/js/register.js',
+              "const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';\n",
+              "const TELEGRAM_SKIP_KEY = 'nexusnova_skip_telegram_autologin_v1';\nconst AUTH_MARKER = 'nexusnova_auth_seen_v1';\n"
+          )
+          replace_once(
+              'assets/js/register.js',
+              "onAuthStateChanged(auth, user => {\n  if (!user) return;\n",
+              "onAuthStateChanged(auth, user => {\n  if (!user) return;\n  try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}\n"
+          )
+
+          # Dashboard maintains/clears the same marker on real auth transitions.
+          replace_once(
+              'assets/js/account-dashboard.js',
+              "const TELEGRAM_SKIP_KEY='nexusnova_skip_telegram_autologin_v1';\n",
+              "const TELEGRAM_SKIP_KEY='nexusnova_skip_telegram_autologin_v1';\nconst AUTH_MARKER='nexusnova_auth_seen_v1';\n"
+          )
+          replace_once(
+              'assets/js/account-dashboard.js',
+              "onAuthStateChanged(auth,user=>{if(!user){resolveSignedOutWithTelegram();return;}try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}loadAccount(user);});",
+              "onAuthStateChanged(auth,user=>{if(!user){try{localStorage.removeItem(AUTH_MARKER);}catch(_){}resolveSignedOutWithTelegram();return;}try{localStorage.setItem(AUTH_MARKER,'1');}catch(_){}try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}loadAccount(user);});"
+          )
+          replace_once(
+              'assets/js/account-dashboard.js',
+              "await signOut(auth);location.replace('register.html?signedout=1');",
+              "await signOut(auth);try{localStorage.removeItem(AUTH_MARKER);}catch(_){}location.replace('register.html?signedout=1');"
+          )
+
+          # Authenticated-header CI explicitly marks the deterministic mock session
+          # as a known authenticated browser before loading the public page.
+          replace_once(
+              '.github/scripts/browser_quality_guard.py',
+              "    page = context.new_page()\n    try:\n        response = page.goto(\n",
+              "    page = context.new_page()\n    page.add_init_script(\"localStorage.setItem('nexusnova_auth_seen_v1','1')\")\n    try:\n        response = page.goto(\n"
+          )
+          PY
+
+      - name: Syntax check patched JavaScript
+        run: |
+          node --check assets/js/main.js
+          node --check assets/js/auth-header-state.js
+          node --check assets/js/register.js
+          node --check assets/js/account-dashboard.js
+
+      - name: Commit targeted patch
+        shell: bash
+        run: |
+          git config user.name 'NexusNova CI'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/css/motion.css tools.html assets/js/main.js assets/js/auth-header-state.js assets/js/register.js assets/js/account-dashboard.js .github/scripts/browser_quality_guard.py
+          git diff --cached --check
+          git commit -m 'perf: defer guest auth analytics and stabilize tools layout'
+          git push origin HEAD:main
