@@ -2,6 +2,14 @@ const REFERRAL_BACKEND = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.
 const REFERRAL_REQUEST_TIMEOUT_MS = 10000;
 
 export async function attachReferralCall({ code, idToken }) {
+  return referralRequest({ code }, idToken);
+}
+
+export async function getReferralCodeCall({ idToken }) {
+  return referralRequest({ action: 'code' }, idToken);
+}
+
+async function referralRequest(body, idToken) {
   if (!idToken) {
     const error = new Error('Sign in to NexusNova first.');
     error.code = 'unauthenticated';
@@ -18,7 +26,7 @@ export async function attachReferralCall({ code, idToken }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`
       },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify(body),
       cache: 'no-store',
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
