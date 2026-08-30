@@ -6,11 +6,12 @@ const read = path => fs.readFileSync(path, 'utf8');
 
 test('account dashboard uses one real-state mining card', () => {
   const html = read('account.html');
+  const shell = read('assets/js/account-shell.js');
   assert.match(html, /data-mining-card/);
   assert.match(html, /data-mining-action/);
   assert.match(html, /data-mining-progress/);
   assert.match(html, /assets\/js\/mining-dashboard\.js/);
-  assert.match(html, /assets\/js\/account-eligibility-ui\.js/);
+  assert.match(shell, /account-eligibility-ui\.js/);
   assert.match(html, /assets\/css\/mining-dashboard\.css/);
   assert.doesNotMatch(html, /class="nn-webapp-overview"/);
   assert.doesNotMatch(html, /class="nn-nvx-console"/);
