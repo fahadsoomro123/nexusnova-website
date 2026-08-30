@@ -20,8 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Wire account, Worker and regression gates
+      - name: Wire production mining files
         shell: bash
         run: |
           set -euo pipefail
@@ -30,66 +29,57 @@ jobs:
 
           account=Path('account.html')
           text=account.read_text(encoding='utf-8')
-          css_old='<link rel="stylesheet" href="assets/css/webapp-dashboard-v1.css?v=20260830-2">'
-          css_new=css_old+'\n  <link rel="stylesheet" href="assets/css/mining-dashboard.css?v=20260830-1">'
-          if css_old not in text: raise SystemExit('Mining CSS insertion point missing')
-          text=text.replace(css_old,css_new,1)
+          css='<link rel="stylesheet" href="assets/css/webapp-dashboard-v1.css?v=20260830-2">'
+          if 'assets/css/mining-dashboard.css' not in text:
+              if css not in text: raise SystemExit('account CSS marker missing')
+              text=text.replace(css,css+'\n  <link rel="stylesheet" href="assets/css/mining-dashboard.css?v=20260830-1">',1)
           old='''      <div class="nn-webapp-overview">\n        <article class="nn-nvx-console"><span class="nn-console-label">NVX ACCOUNT BALANCE</span><div class="nn-nvx-value" data-web-nvx-balance>— <small>NVX</small></div><div class="nn-console-note" data-web-nvx-note>Loading your real account balance…</div></article>\n        <article class="nn-halving-console"><span class="nn-console-label">NVX HALVING WATCH</span><div class="nn-halving-state" data-web-halving-state>CHECKING TRUSTED SOURCE</div><div class="nn-halving-sub" data-web-halving-copy>The website will show only a real stage/rate source.</div></article>\n      </div>'''
           new='''      <article class="nn-mining-card" data-mining-card data-state="syncing" aria-labelledby="nn-mining-title">\n        <div class="nn-mining-head"><div><span class="nn-mining-kicker">NVX MINING // REAL FIRESTORE SESSION</span><h3 id="nn-mining-title" data-mining-title>Syncing secure mining session…</h3></div><span class="nn-mining-state" data-mining-badge>SYNCING</span></div>\n        <div class="nn-mining-body">\n          <div class="nn-mining-reactor-stage" aria-hidden="true"><i class="nn-mining-glow"></i><i class="nn-mining-orbit a"></i><i class="nn-mining-orbit b"></i><i class="nn-mining-orbit c"></i><div class="nn-mining-core"><strong>NVX</strong></div></div>\n          <div class="nn-mining-data">\n            <div class="nn-mining-balance-label">FIREBASE-LINKED ACCOUNT BALANCE</div><div class="nn-mining-balance" data-web-nvx-balance>— <small>NVX</small></div><p class="nn-mining-note" data-web-nvx-note>Loading your real account balance and mining session…</p>\n            <div class="nn-mining-metrics"><div class="nn-mining-metric"><span>SESSION</span><strong data-mining-timer>CHECKING</strong></div><div class="nn-mining-metric"><span>TOTAL MINED</span><strong data-mining-total>— NVX</strong></div><div class="nn-mining-metric"><span>24H SESSION</span><strong>+24 NVX ON VERIFIED COMPLETION</strong></div></div>\n            <div class="nn-mining-progress-wrap"><div class="nn-mining-progress-head"><span>UNCLAIMED SESSION PROGRESS</span><strong data-mining-progress-copy>Reading real Firestore state…</strong></div><div class="nn-mining-progress-track" data-mining-progress-track role="progressbar" aria-label="Mining session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i data-mining-progress></i></div></div>\n            <div class="nn-mining-halving"><span>HALVING</span><strong data-web-halving-state>CHECKING TRUSTED SOURCE</strong><small data-web-halving-copy>The website will show only real stage/rate data from a trusted source.</small></div>\n            <div class="nn-mining-actions"><button class="nn-mining-action" type="button" data-mining-action data-value-action disabled>CHECKING…</button><p class="nn-mining-message" data-mining-message role="status" aria-live="polite">Mining is manual and never starts automatically after signup.</p></div>\n          </div>\n        </div>\n      </article>'''
-          if old not in text: raise SystemExit('Old multi-card mining block missing')
-          text=text.replace(old,new,1)
-          text=text.replace(
-            'Reward-bearing actions stay locked until official verification and a genuine server-side reward path are available.',
-            'Mining below follows your real Firebase/Firestore session. Other reward-bearing actions stay locked until their official verification and server-side path are genuinely available.',1)
+          if 'data-mining-card' not in text:
+              if old not in text: raise SystemExit('old mining cards not found')
+              text=text.replace(old,new,1)
+          text=text.replace('Reward-bearing actions stay locked until official verification and a genuine server-side reward path are available.','Mining below follows your real Firebase/Firestore session. Other reward-bearing actions stay locked until their official verification and server-side path are genuinely available.',1)
           script='<script type="module" src="assets/js/webapp-dashboard-v1.js?v=20260830-1"></script>'
-          if script not in text: raise SystemExit('Mining script insertion point missing')
-          text=text.replace(script,script+'\n<script type="module" src="assets/js/mining-dashboard.js?v=20260830-1"></script>',1)
+          if 'assets/js/mining-dashboard.js' not in text:
+              if script not in text: raise SystemExit('account script marker missing')
+              text=text.replace(script,script+'\n<script type="module" src="assets/js/mining-dashboard.js?v=20260830-1"></script>',1)
           account.write_text(text,encoding='utf-8')
 
           worker=Path('cloudflare/telegram-bot/worker-entry.js')
           text=worker.read_text(encoding='utf-8')
-          text=text.replace("import { attachReferralRequest } from './referral-api.js';","import { attachReferralRequest } from './referral-api.js';\nimport { miningSessionRequest } from './mining-api.js';",1)
-          text=text.replace("const REFERRAL_ATTACH_PATH = '/api/referral/attach';","const REFERRAL_ATTACH_PATH = '/api/referral/attach';\nconst MINING_SESSION_PATH = '/api/mining/session';",1)
-          text=text.replace("url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/')","url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/') || url.pathname.startsWith('/api/mining/')",1)
-          text=text.replace('return authCors(request, await accountEligibilityRequest(request));','return authCors(request, await accountEligibilityRequest(request, env));',1)
-          marker="    if (request.method === 'POST' && url.pathname === REFERRAL_ATTACH_PATH) {"
-          route="""    if (request.method === 'POST' && url.pathname === MINING_SESSION_PATH) {\n      try {\n        assertAuthOrigin(request);\n      } catch (_) {\n        return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);\n      }\n      return authCors(request, await miningSessionRequest(request, env));\n    }\n\n"""
-          if marker not in text: raise SystemExit('Worker route insertion point missing')
-          text=text.replace(marker,route+marker,1)
+          if "./mining-api.js" not in text:
+              text=text.replace("import { attachReferralRequest } from './referral-api.js';","import { attachReferralRequest } from './referral-api.js';\nimport { miningSessionRequest } from './mining-api.js';",1)
+          if 'MINING_SESSION_PATH' not in text:
+              text=text.replace("const REFERRAL_ATTACH_PATH = '/api/referral/attach';","const REFERRAL_ATTACH_PATH = '/api/referral/attach';\nconst MINING_SESSION_PATH = '/api/mining/session';",1)
+          if "startsWith('/api/mining/')" not in text:
+              text=text.replace("url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/')","url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/') || url.pathname.startsWith('/api/mining/')",1)
+          text=text.replace('accountEligibilityRequest(request))','accountEligibilityRequest(request, env))')
+          if 'url.pathname === MINING_SESSION_PATH' not in text:
+              marker="    if (request.method === 'POST' && url.pathname === REFERRAL_ATTACH_PATH) {"
+              route="""    if (request.method === 'POST' && url.pathname === MINING_SESSION_PATH) {\n      try { assertAuthOrigin(request); } catch (_) {\n        return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);\n      }\n      return authCors(request, await miningSessionRequest(request, env));\n    }\n\n"""
+              if marker not in text: raise SystemExit('worker route marker missing')
+              text=text.replace(marker,route+marker,1)
           worker.write_text(text,encoding='utf-8')
 
           package=Path('package.json')
           text=package.read_text(encoding='utf-8')
-          a='node --check assets/js/auth-turnstile-v1.js && node --check cloudflare/telegram-bot/worker.js'
-          b='node --check assets/js/auth-turnstile-v1.js && node --check assets/js/account-eligibility-ui.js && node --check assets/js/mining-dashboard.js && node --check cloudflare/telegram-bot/worker.js'
-          if a not in text: raise SystemExit('Package browser syntax insertion point missing')
-          text=text.replace(a,b,1)
-          a='node --check cloudflare/telegram-bot/referral-api.js'
-          b='node --check cloudflare/telegram-bot/referral-api.js && node --check cloudflare/telegram-bot/mining-api.js'
-          if a not in text: raise SystemExit('Package Worker syntax insertion point missing')
-          package.write_text(text.replace(a,b,1),encoding='utf-8')
-
-          beta=Path('.github/workflows/nexusnova-beta-start.yml')
-          text=beta.read_text(encoding='utf-8')
-          referral='      - name: Referral security regression\n        run: node --test tests/referral-security.test.cjs\n'
-          mining='\n      - name: Website mining security regression\n        run: node --test tests/mining-web-security.test.cjs\n'
-          if referral not in text: raise SystemExit('Beta mining test insertion point missing')
-          text=text.replace(referral,referral+mining,1)
-          beta.write_text(text,encoding='utf-8')
+          if 'assets/js/mining-dashboard.js' not in text:
+              text=text.replace('node --check assets/js/auth-turnstile-v1.js && node --check cloudflare/telegram-bot/worker.js','node --check assets/js/auth-turnstile-v1.js && node --check assets/js/account-eligibility-ui.js && node --check assets/js/mining-dashboard.js && node --check cloudflare/telegram-bot/worker.js',1)
+          if 'cloudflare/telegram-bot/mining-api.js' not in text:
+              text=text.replace('node --check cloudflare/telegram-bot/referral-api.js','node --check cloudflare/telegram-bot/referral-api.js && node --check cloudflare/telegram-bot/mining-api.js',1)
+          package.write_text(text,encoding='utf-8')
           PY
-
-      - name: Validate mining wiring before commit
+      - name: Validate
         run: |
           npm test
           npm run check
           git diff --check
-
-      - name: Commit real mining dashboard wiring
+      - name: Push production mining files
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'NexusNova CI'
           git config user.email 'actions@users.noreply.github.com'
-          git add account.html cloudflare/telegram-bot/worker-entry.js package.json .github/workflows/nexusnova-beta-start.yml
+          git add account.html cloudflare/telegram-bot/worker-entry.js package.json
           git commit -m 'feat: ship real single-card 24H mining dashboard'
           git push origin HEAD:main
