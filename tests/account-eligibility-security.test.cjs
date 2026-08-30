@@ -24,7 +24,7 @@ test('Worker exposes eligibility only through allowed-origin authenticated API r
   const entry = read('cloudflare/telegram-bot/worker-entry.js');
   assert.match(entry, /ACCOUNT_ELIGIBILITY_PATH = ['"]\/api\/account\/eligibility['"]/);
   assert.match(entry, /assertAuthOrigin\(request\)/);
-  assert.match(entry, /accountEligibilityRequest\(request\)/);
+  assert.match(entry, /accountEligibilityRequest\(request, env\)/);
   assert.match(entry, /url\.pathname\.startsWith\(['"]\/api\/account\/['"]\)/);
 });
 
