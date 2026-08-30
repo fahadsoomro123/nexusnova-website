@@ -30,7 +30,16 @@ jobs:
           base = 'b6eb3d191ee35b58c0ffe14334674ea2c60d3b72'
           selected = [
               'assets/styles/premium-mine-reference-locked.css',
-              'assets/styles/premium-mine-hyperreal-tactile-v2.css',
+              'assets/styles/premium-mine-component-skin-v1.css',
+              'assets/skins/mine/frame-panel.svg',
+              'assets/skins/mine/frame-header.svg',
+              'assets/skins/mine/ring-bezel.svg',
+              'assets/skins/mine/action-frame.svg',
+              'assets/skins/mine/card-cyan.svg',
+              'assets/skins/mine/card-purple.svg',
+              'assets/skins/mine/sos-button.svg',
+              'assets/skins/mine/status-lamp.svg',
+              'assets/skins/mine/dock-frame.svg',
               'index.html',
           ]
           root = Path('ota/files')
@@ -56,7 +65,7 @@ jobs:
       - name: Commit manifest
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+fahadsoomro123@users.noreply.github.com"
           git add ota/manifest.json
           if git diff --cached --quiet; then
             exit 0
