@@ -1,0 +1,167 @@
+name: NexusNova One-Time Duplicate Risk Wiring
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-duplicate-risk-wiring.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Wire safe duplicate-risk enforcement and proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p=Path(path)
+              text=p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'Expected patch anchor missing in {path}: {old[:120]!r}')
+              p.write_text(text.replace(old,new,1),encoding='utf-8')
+
+          replace_once(
+              'cloudflare/telegram-bot/worker-entry.js',
+              'return authCors(request, await accountEligibilityRequest(request));',
+              'return authCors(request, await accountEligibilityRequest(request, env));'
+          )
+          replace_once(
+              'cloudflare/telegram-bot/worker-entry.js',
+              "    action: TURNSTILE_ACTION\n  });",
+              "    action: TURNSTILE_ACTION,\n    valueRiskProtection: {\n      duplicateAccountRisk: true,\n      sharedIpHardLock: false\n    }\n  });"
+          )
+
+          replace_once(
+              'assets/js/account-eligibility-ui.js',
+              "  const disposable = result?.emailRisk?.checked === true && result?.emailRisk?.disposable === true;\n  const verified = result.emailVerified === true;",
+              "  const disposable = result?.emailRisk?.checked === true && result?.emailRisk?.disposable === true;\n  const duplicateReview = result?.duplicateRisk?.checked === true && result?.duplicateRisk?.reviewRequired === true;\n  const verified = result.emailVerified === true;"
+          )
+          replace_once(
+              'assets/js/account-eligibility-ui.js',
+              "  } else if (disposable) {\n    paintMission('blocked', 'TEMP EMAIL BLOCKED', 'This verified email is from a known temporary-email domain. Value-bearing reward/mining actions stay unavailable; normal website tools remain public.');\n  } else {",
+              "  } else if (disposable) {\n    paintMission('blocked', 'TEMP EMAIL BLOCKED', 'This verified email is from a known temporary-email domain. Value-bearing reward/mining actions stay unavailable; normal website tools remain public.');\n  } else if (duplicateReview) {\n    paintMission('pending', 'EMAIL VERIFIED • REVIEW', 'Email is verified. An additional server-side account-integrity review is temporarily holding value-bearing actions; sign-in and normal public tools remain available.');\n  } else {"
+          )
+
+          Path('tests/account-eligibility-security.test.cjs').write_text(r'''\'use strict\';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+const root = path.join(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+
+test('account eligibility is derived from authenticated Firebase state plus server-side abuse risk', () => {
+  const eligibility = read('cloudflare/telegram-bot/account-eligibility.js');
+  assert.match(eligibility, /accounts:lookup/);
+  assert.match(eligibility, /Authorization/);
+  assert.match(eligibility, /payload\.aud !== FIREBASE_PROJECT_ID/);
+  assert.match(eligibility, /payload\.iss !== `https:\/\/securetoken\.google\.com\/\$\{FIREBASE_PROJECT_ID\}`/);
+  assert.match(eligibility, /record\.emailVerified === true/);
+  assert.match(eligibility, /disposableEmailRisk\(account\.email\)/);
+  assert.match(eligibility, /duplicateAccountRisk\(request, account, env\)/);
+  assert.match(eligibility, /eligibleForValueActions = emailVerified && !disposable && !duplicateReview/);
+  assert.match(eligibility, /sharedIpOrDeviceAloneNeverBlocks: true/);
+  assert.match(eligibility, /publicToolsRemainAvailable: true/);
+  assert.doesNotMatch(eligibility, /balance\s*:|increment|rewardAmount|rewardValue/i);
+});
+
+test('duplicate-account risk uses short-lived HMAC-hashed server signals and never one-account-per-IP locking', () => {
+  const abuse = read('cloudflare/telegram-bot/auth-abuse.js');
+  assert.match(abuse, /DUPLICATE_WINDOW_SECONDS = 6 \* 60 \* 60/);
+  assert.match(abuse, /DUPLICATE_NEW_ACCOUNT_MS = 24 \* 60 \* 60 \* 1000/);
+  assert.match(abuse, /DUPLICATE_ACCOUNT_REVIEW_THRESHOLD = 5/);
+  assert.match(abuse, /TURNSTILE_SECRET_KEY/);
+  assert.match(abuse, /hmacSha256Hex\(secret, `duplicate-risk-v1\\n\$\{ip\}\\n\$\{ua\}`\)/);
+  assert.match(abuse, /reviewRequired = isNewAccount && accountHashes\.length >= DUPLICATE_ACCOUNT_REVIEW_THRESHOLD/);
+  assert.match(abuse, /accountHashes/);
+  assert.doesNotMatch(abuse, /one-account-per-ip|blockSharedIp|deviceId|fingerprintjs/i);
+});
+
+test('Worker exposes eligibility through allowed-origin API and publishes a non-sensitive live policy flag', () => {
+  const entry = read('cloudflare/telegram-bot/worker-entry.js');
+  assert.match(entry, /ACCOUNT_ELIGIBILITY_PATH = ['"]\/api\/account\/eligibility['"]/);
+  assert.match(entry, /assertAuthOrigin\(request\)/);
+  assert.match(entry, /accountEligibilityRequest\(request, env\)/);
+  assert.match(entry, /duplicateAccountRisk: true/);
+  assert.match(entry, /sharedIpHardLock: false/);
+  assert.match(entry, /url\.pathname\.startsWith\(['"]\/api\/account\/['"]\)/);
+});
+
+test('dashboard guard uses bearer token and keeps public tools available during account-integrity review', () => {
+  const shell = read('assets/js/account-shell.js');
+  const ui = read('assets/js/account-eligibility-ui.js');
+  assert.match(shell, /account-eligibility-ui\.js/);
+  assert.match(ui, /user\.getIdToken\(true\)/);
+  assert.match(ui, /Authorization: `Bearer \$\{idToken\}`/);
+  assert.match(ui, /eligibleForValueActions === true/);
+  assert.match(ui, /duplicateRisk\?\.checked === true/);
+  assert.match(ui, /normal public tools remain available/);
+  assert.match(ui, /\[data-value-action\]/);
+  assert.match(ui, /control\.disabled = !eligible/);
+  assert.doesNotMatch(ui, /localStorage|sessionStorage/);
+});
+'''.replace("\\'use strict\\';", "'use strict';"),encoding='utf-8')
+
+          beta=Path('.github/workflows/nexusnova-beta-start.yml')
+          text=beta.read_text(encoding='utf-8')
+          anchor="      - name: Verify account eligibility route is live on Worker\n"
+          if anchor not in text:
+              raise SystemExit('Beta live eligibility anchor missing')
+          live_step=r'''      - name: Verify duplicate-account value risk policy is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=''
+          for attempt in {1..12}; do
+            response="$(curl --retry 2 --retry-delay 2 --max-time 25 -sS \
+              -H 'Origin: https://nexusnovatools.com' \
+              -H 'Accept: application/json' \
+              'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/auth/security-config' || true)"
+            if echo "$response" | python -c "import json,sys; d=json.load(sys.stdin); p=d.get('valueRiskProtection') or {}; assert p.get('duplicateAccountRisk') is True; assert p.get('sharedIpHardLock') is False" 2>/dev/null; then
+              echo 'Duplicate-account value-risk policy is live.'
+              exit 0
+            fi
+            echo "Waiting for Cloudflare Worker deployment (attempt $attempt/12)..."
+            sleep 10
+          done
+          echo "$response"
+          exit 1
+
+'''
+          beta.write_text(text.replace(anchor,live_step+anchor,1),encoding='utf-8')
+          PY
+
+      - name: Run security regression before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check cloudflare/telegram-bot/auth-abuse.js
+          node --check cloudflare/telegram-bot/account-eligibility.js
+          node --check cloudflare/telegram-bot/worker-entry.js
+          node --check assets/js/account-eligibility-ui.js
+          node --test tests/account-eligibility-security.test.cjs
+          npm run check
+          git diff --check
+
+      - name: Commit verified wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova CI'
+          git config user.email 'actions@users.noreply.github.com'
+          git add cloudflare/telegram-bot/worker-entry.js assets/js/account-eligibility-ui.js tests/account-eligibility-security.test.cjs .github/workflows/nexusnova-beta-start.yml
+          git commit -m 'security: wire duplicate-account value risk review'
+          git push origin HEAD:main
