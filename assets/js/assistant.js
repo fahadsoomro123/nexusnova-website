@@ -63,9 +63,7 @@
         const title=section.querySelector('h2');if(title)title.textContent='All 15 daily tools now have dedicated pages.';
         const intro=section.querySelector('.section-head p');if(intro)intro.textContent='The all-in-one tools below still work; each everyday utility now also has a focused URL that is easier to bookmark, share and find in search.';
         const grid=section.querySelector('.article-grid');
-        if(grid){
-          daily.forEach(item=>{if(!grid.querySelector(`a[href="${item[0]}"]`))grid.insertAdjacentHTML('beforeend',card(item))});
-        }
+        if(grid){daily.forEach(item=>{if(!grid.querySelector(`a[href="${item[0]}"]`))grid.insertAdjacentHTML('beforeend',card(item))})}
         if(!section.querySelector('a[href="daily-tools-directory.html"]')){
           const actions=document.createElement('div');actions.className='hero-actions';actions.style.marginTop='18px';actions.innerHTML='<a class="btn btn-primary" href="daily-tools-directory.html">Browse dedicated Daily Tools →</a>';section.querySelector('.container')?.appendChild(actions);
         }
@@ -110,4 +108,15 @@
   if(!document.querySelector('script[data-nexusnova-live-tech]')){
     const script=document.createElement('script');script.src='assets/js/live-tech-pulse.js';script.defer=true;script.dataset.nexusnovaLiveTech='';document.body.appendChild(script);
   }
+})();
+
+(()=>{
+  if(document.querySelector('script[data-nexusnova-auth-header]'))return;
+  const current=document.currentScript;
+  const src=current?.src||'';
+  const module=document.createElement('script');
+  module.type='module';
+  module.src=src?src.replace(/assistant\.js(?:\?.*)?$/,'auth-header-state.js'):'assets/js/auth-header-state.js';
+  module.dataset.nexusnovaAuthHeader='';
+  document.body.appendChild(module);
 })();
