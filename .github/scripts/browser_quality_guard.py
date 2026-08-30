@@ -257,6 +257,7 @@ def main() -> None:
                             )
 
                     if rel == "index.html":
+                        page.evaluate("window.scrollBy(0, 1)")
                         try:
                             page.wait_for_selector("[data-live-tech-pulse]", timeout=5000)
                         except Exception:

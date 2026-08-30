@@ -69,8 +69,7 @@
     const section=document.createElement('section');
     section.className='section';section.id='dedicated-daily-pages';
     section.innerHTML=`<div class="container"><div class="section-head"><div><span class="kicker">FOCUSED DAILY PAGES</span><h2>Popular daily tools now have dedicated pages.</h2></div><p>The all-in-one tools below still work; these focused URLs are easier to bookmark, share and find in search.</p></div><div class="article-grid">${card('percentage-calculator.html','MATH','Percentage Calculator','Percentage of a number, percent-of and percentage change.')}${card('age-calculator.html','DATES','Age Calculator','Calculate exact calendar age in years, months and days.')}${card('date-difference-calculator.html','DATES','Date Difference','Count days and weeks between two dates.')}${card('unit-converter.html','CONVERT','Unit Converter','Convert common length, weight and temperature units.')}${card('word-counter.html','TEXT','Word & Character Counter','Live words, characters, lines and reading time.')}${card('discount-calculator.html','MONEY','Discount Calculator','Find final sale price, savings and stacked discounts.')}</div></div>`;
-    const hero=document.querySelector('.page-hero');
-    if(hero)hero.after(section);else document.querySelector('main')?.prepend(section);
+    document.querySelector('main')?.appendChild(section);
   }
 
   /* Let homepage search understand the new dedicated pages before main.js fallback handles other queries. */
