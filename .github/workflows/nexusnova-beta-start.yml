@@ -89,6 +89,26 @@ jobs:
             'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/auth/security-config')"
           echo "$response" | python -c "import json,sys; d=json.load(sys.stdin); assert d.get('ok') is True; assert d.get('provider') == 'cloudflare-turnstile'; assert d.get('enabled') is True; assert bool(d.get('siteKey'))"
 
+      - name: Verify account eligibility route is live on Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          body_file="$(mktemp)"
+          code="$(curl --retry 3 --retry-delay 3 --max-time 25 -sS \
+            -H 'Origin: https://nexusnovatools.com' \
+            -H 'Accept: application/json' \
+            -o "$body_file" -w '%{http_code}' \
+            'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/account/eligibility')"
+          test "$code" = '401'
+          python - "$body_file" <<'PY'
+          import json,sys
+          with open(sys.argv[1], encoding='utf-8') as fh:
+              d=json.load(fh)
+          assert d.get('ok') is False
+          assert d.get('code') == 'unauthenticated'
+          assert d.get('eligibleForValueActions') is False
+          PY
+
       - name: Verify beta truthfulness rules in repository
         shell: bash
         run: |
@@ -114,6 +134,6 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Beta validation runs JS syntax checks, server eligibility/referral/Telegram security regressions, public page smoke checks, live Turnstile config verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation runs JS syntax checks, server eligibility/referral/Telegram security regressions, public page smoke checks, live Turnstile + eligibility Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
           echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
           echo 'This is a beta regression gate only. It does not publish social launch posts or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"
