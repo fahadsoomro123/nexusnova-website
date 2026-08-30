@@ -44,7 +44,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Account overview / verification status / connected identities.
 - [x] NVX/rewards area with clear state and truthful eligibility messaging.
 - [x] Compact-density redesign verified visually on production on 2026-08-30: hero/cards/padding reduced and unnecessary scrolling materially reduced while preserving readable controls.
-- [ ] Manual mining CTA/entry presentation only where the website architecture genuinely supports it; never auto-start mining.
+- [x] Manual mining CTA is backed by the authenticated Worker transaction: `start` begins a real 24-hour Firestore session, `restart` is allowed only after verified completion and atomically claims +24 NVX before starting the next session; signup never auto-starts mining. Website mining security regression and live Worker route checks passed Beta Validation run `33324942871` on 2026-08-30.
 - [ ] Halving/FOMO presentation must use real stage/rate data only; no fake urgency/countdown. Current web UI deliberately shows unavailable until a trusted source is connected.
 
 ## 5. Earn NVX / Missions
@@ -70,7 +70,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [ ] Community/weekly missions should use first-party or officially verifiable actions.
 
 ## 7. Referral System
-- [ ] Keep unique NexusNova referral codes / attribution.
+- [x] Unique NexusNova referral codes are server-created with cryptographic randomness, collision-checked transactionally against `referralCodes`, bound to one Firebase UID, reused idempotently for the owner, and exposed with a real share URL. Referral security regression passed Beta Validation run `33324942871` on 2026-08-30.
 - [x] Prevent self-referral and obvious duplicate/fake activation abuse. The authenticated Worker transaction rejects self-referral, blocks switching an existing attribution, enforces a new-account referral window and returns idempotently for the same already-attached code; regression test coverage passed in beta on 2026-08-30.
 - [ ] Reward only after a genuine verified activation milestone.
 - [ ] Referral rewards server-side and idempotent.
