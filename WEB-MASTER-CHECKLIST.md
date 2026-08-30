@@ -83,7 +83,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Realistic FOMO/early-access messaging without fake deadlines.
 - [ ] Keep exact feature/category copy synchronized with the real app as the release approaches, without editing the app repo.
 - [x] Approved real NexusNova Nova Hub artwork from `ota/files/assets/icons/nova-hub/` is used in the production app preview and was visually verified on 2026-08-30.
-- [ ] Add real screenshots/previews only from approved real app assets when available.
+- [x] Current NexusNova phone screenshots/previews use approved real app artwork only: all app-preview `<img>` sources and mining-preview image candidates are restricted to `ota/files/assets/icons/nova-hub/`, generated/placeholder preview images are rejected by regression, and truthful no-fake-balance/rate/countdown release messaging is locked by `tests/app-preview-assets.test.cjs`. The new App preview approved-assets regression passed Beta Validation run `33325843617` on 2026-08-30.
 
 ## 9. APK Release Website Flow — Future Trigger
 - [x] Do not publish a fake APK button before a verified build exists.
