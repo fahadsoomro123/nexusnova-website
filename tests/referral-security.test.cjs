@@ -44,6 +44,7 @@ test('personal referral code is server-created, collision-checked and bound to o
   const referral = read('cloudflare/telegram-bot/referral-api.js');
   const ui = read('assets/js/referral-code-ui.js');
   const shell = read('assets/js/account-shell.js');
+  const account = read('account.html');
 
   assert.match(referral, /action \|\| ['"]['"]\)\.trim\(\)\.toLowerCase\(\) === ['"]code['"]/);
   assert.match(referral, /crypto\.getRandomValues/);
@@ -54,7 +55,9 @@ test('personal referral code is server-created, collision-checked and bound to o
   assert.match(referral, /status: fsString\(['"]active['"]\)/);
   assert.match(referral, /shareUrl: referralShareUrl/);
 
-  assert.match(shell, /referral-code-ui\.js/);
+  assert.match(account, /account-shell\.js\?v=20260830-1/);
+  assert.match(shell, /account-eligibility-ui\.js\?v=20260830-1/);
+  assert.match(shell, /referral-code-ui\.js\?v=20260830-1/);
   assert.match(ui, /user\.getIdToken\(true\)/);
   assert.match(ui, /getReferralCodeCall/);
   assert.match(ui, /COPY INVITE LINK/);
