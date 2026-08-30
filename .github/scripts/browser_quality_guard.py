@@ -67,8 +67,8 @@ def main() -> None:
                             nav: !!document.querySelector('[data-nav]'),
                             menuButton: !!document.querySelector('[data-menu-btn]'),
                             theme: document.documentElement.classList.contains('nexusnova-scifi') || !!document.querySelector('link[data-nexusnova-scifi]'),
-                            signin: !!document.querySelector('.nn-nav-signin'),
-                            signup: !!document.querySelector('.nn-nav-signup'),
+                            signin: !!document.querySelector('.nn-nav-signin, .account-nav-signin, a[href*="register.html?mode=signin"]'),
+                            signup: !!document.querySelector('.nn-nav-signup, .account-nav-signup, a[href*="register.html?mode=register"]'),
                             brokenImages: [...document.images].filter(i => {
                                 const src = (i.getAttribute('src') || '').trim();
                                 if (!src || i.hidden) return false;
