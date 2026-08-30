@@ -40,7 +40,7 @@ export async function referralCodeRequest(request, env) {
         const existingName = documentName('referralCodes', existingCode);
         const existingDocs = await batchGet(accessToken, [existingName], transaction);
         const existingDoc = existingDocs.get(existingName) || null;
-        if (existingDoc && stringField(existingDoc, 'ownerUid') === user.uid) {
+        if (existingDoc && stringField(existingDoc, 'ownerUid') === user.uid && stringField(existingDoc, 'status') === 'active') {
           await rollback(accessToken, transaction);
           transactionOpen = false;
           return response({
@@ -106,6 +106,10 @@ export async function referralCodeRequest(request, env) {
 export async function attachReferralRequest(request, env) {
   try {
     const body = await readBody(request);
+    if (String(body?.action || '').trim().toLowerCase() === 'code') {
+      return referralCodeRequest(request, env);
+    }
+
     const code = String(body?.code || '').trim().toUpperCase();
     if (!REFERRAL_RE.test(code)) {
       throw new ReferralError(400, 'invalid-referral', 'Referral code is invalid.');
@@ -287,14 +291,12 @@ async function googleAccessToken(credentials) {
     iat: now,
     exp: now + 3600
   });
-  const form = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth-type:jwt-bearer', assertion });
-  const correctForm = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
+  const form = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: correctForm.toString()
+    body: form.toString()
   });
-  void form;
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.access_token) {
     throw new ReferralError(502, 'unavailable', 'Referral profile service is unavailable.');
