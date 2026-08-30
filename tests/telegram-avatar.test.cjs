@@ -26,20 +26,25 @@ test('Cloudflare entrypoint securely proxies and inlines the current Telegram pr
   assert.match(entry, /X-Content-Type-Options/);
 });
 
-test('linked account refresh prefers inline avatar and retries transient failures', () => {
+test('linked account avatar prefers verified backend image sources and survives bridge timing races', () => {
   const refresh = read('assets/js/telegram-avatar-refresh.js');
   const account = read('account.html');
 
   assert.match(account, /telegram-avatar-refresh\.js\?v=20260826-3/);
   assert.match(refresh, /telegramSessionCall/);
-  assert.match(refresh, /textContent \|\| ''\)\.trim\(\)\.toUpperCase\(\) !== 'LINKED'/);
-  assert.match(refresh, /String\(serverUser\.id\) !== String\(localUser\.id\)/);
-  assert.match(refresh, /serverUser\?\.avatarDataUrl/);
-  assert.match(refresh, /serverUser\?\.avatarUrl/);
-  assert.match(refresh, /inlineAvatar \|\| proxyAvatar/);
-  assert.match(refresh, /MAX_AVATAR_ATTEMPTS = 3/);
+  assert.match(refresh, /response\?\.data\?\.linked/);
+  assert.match(refresh, /serverUser\.avatarDataUrl/);
+  assert.match(refresh, /serverUser\.avatarUrl/);
+  assert.match(refresh, /serverUser\.photoUrl/);
+  assert.match(refresh, /firstWorkingAvatar/);
+  assert.match(refresh, /source: 'inline'/);
+  assert.match(refresh, /source: 'proxy'/);
+  assert.match(refresh, /source: 'telegram'/);
+  assert.match(refresh, /MAX_AVATAR_ATTEMPTS = 5/);
   assert.match(refresh, /scheduleRetry/);
-  assert.match(refresh, /probeAvatar/);
+  assert.match(refresh, /visibilitychange/);
+  assert.match(refresh, /window\.addEventListener\('load'/);
+  assert.doesNotMatch(refresh, /String\(serverUser\.id\) !== String\(localUser\.id\)/);
   assert.doesNotMatch(refresh, /TELEGRAM_BOT_TOKEN|bot\$\{token\}/);
 });
 
