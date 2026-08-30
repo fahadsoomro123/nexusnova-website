@@ -25,8 +25,10 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Preserve Telegram Mini App/account linking behavior where already supported.
 
 ## 3. Anti-Abuse / Account Protection
-- [ ] Real CAPTCHA / bot protection on sensitive auth flows; no decorative fake CAPTCHA.
-- [ ] Server-verified CAPTCHA secret handling; no private secret in browser JS.
+- [ ] Real Cloudflare Turnstile bot protection on sensitive email/password auth flows. Integration is now wired, but production activation/verification is pending the real Turnstile widget keys in the Worker.
+- [x] Server-side Turnstile verification code is implemented in the Cloudflare Worker; the secret is never present in browser JavaScript or repository source.
+- [x] Client auth guard blocks the existing Firebase handler until a configured Turnstile token is verified server-side; no decorative/fake CAPTCHA state is shown while production keys are absent.
+- [ ] Add production `TURNSTILE_SITE_KEY` and encrypted `TURNSTILE_SECRET_KEY`, deploy, and verify end-to-end on `nexusnovatools.com` before marking CAPTCHA fully complete.
 - [ ] Disposable/temp-email risk checks for reward/mining eligibility.
 - [ ] Signup/sign-in rate limiting and abuse throttling.
 - [ ] Risk-based duplicate-account protection using safe signals; do not hard-lock one account per shared IP/device.
