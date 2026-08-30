@@ -1,0 +1,136 @@
+name: NexusNova Site Performance Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/site-performance-audit.yml'
+      - '**/*.html'
+      - 'assets/**/*.css'
+      - 'assets/**/*.js'
+      - 'assets/**/*.png'
+      - 'assets/**/*.webp'
+      - 'ota/files/assets/icons/nova-hub/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '35 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-site-performance
+  cancel-in-progress: true
+
+jobs:
+  lighthouse-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Lighthouse
+        run: npm install --no-save --ignore-scripts lighthouse@12
+
+      - name: Start local website server
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
+          echo $! > /tmp/nexusnova-http.pid
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:8000/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/nexusnova-http.log
+          exit 1
+
+      - name: Run representative Lighthouse audits
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p performance-artifacts
+          for page in index.html tools.html app.html; do
+            name="${page%.html}"
+            npx lighthouse "http://127.0.0.1:8000/$page" \
+              --quiet \
+              --chrome-flags='--headless --no-sandbox --disable-gpu' \
+              --only-categories=performance \
+              --output=json \
+              --output-path="performance-artifacts/${name}.json"
+          done
+
+      - name: Enforce lab performance budgets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          limits = {
+              'performance_score_min': 0.60,
+              'lcp_ms_max': 4000,
+              'cls_max': 0.25,
+              'tbt_ms_max': 600,
+          }
+          failures = []
+          summary = []
+          for path in sorted(Path('performance-artifacts').glob('*.json')):
+              data = json.loads(path.read_text(encoding='utf-8'))
+              audits = data['audits']
+              score = float(data['categories']['performance']['score'] or 0)
+              lcp = float(audits['largest-contentful-paint']['numericValue'])
+              cls = float(audits['cumulative-layout-shift']['numericValue'])
+              tbt = float(audits['total-blocking-time']['numericValue'])
+              row = {
+                  'page': path.stem,
+                  'performance': round(score, 3),
+                  'lcp_ms': round(lcp),
+                  'cls': round(cls, 4),
+                  'tbt_ms': round(tbt),
+              }
+              summary.append(row)
+              if score < limits['performance_score_min']:
+                  failures.append(f"{path.stem}: performance score {score:.2f} < {limits['performance_score_min']:.2f}")
+              if lcp > limits['lcp_ms_max']:
+                  failures.append(f"{path.stem}: LCP {lcp:.0f}ms > {limits['lcp_ms_max']}ms")
+              if cls > limits['cls_max']:
+                  failures.append(f"{path.stem}: CLS {cls:.3f} > {limits['cls_max']}")
+              if tbt > limits['tbt_ms_max']:
+                  failures.append(f"{path.stem}: TBT {tbt:.0f}ms > {limits['tbt_ms_max']}ms")
+
+          print(json.dumps({'limits': limits, 'results': summary, 'failures': failures}, indent=2))
+          Path('performance-artifacts/summary.json').write_text(
+              json.dumps({'limits': limits, 'results': summary, 'failures': failures}, indent=2) + '\n',
+              encoding='utf-8'
+          )
+          if failures:
+              raise SystemExit(1)
+          PY
+
+      - name: Upload performance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-lighthouse-performance
+          path: performance-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Performance summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Lighthouse Lab Audit' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Representative public pages: Home, Tools, App.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Budgets: Performance >= 0.60, LCP <= 4.0s, CLS <= 0.25, TBT <= 600ms.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is a lab regression gate; field Core Web Vitals still depend on real-user traffic and device/network conditions.' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f performance-artifacts/summary.json ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat performance-artifacts/summary.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
