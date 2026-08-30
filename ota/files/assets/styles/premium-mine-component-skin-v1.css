@@ -35,7 +35,13 @@
   }
   #nx-stage[data-route="mine"] .nx-nebula-core::before{
     border-color:#697b86!important;
-    box-shadow:0 0 0 3px #010304,0 0 0 7px #34434d,inset 0 2px 0 rgba(255,255,255,.28),inset 0 -8px 16px rgba(0,0,0,.62),inset 0 0 26px rgba(0,153,255,.34),0 0 25px rgba(0,143,255,.27)!important;
+    box-shadow:
+      0 0 0 3px #010304,
+      0 0 0 7px #34434d,
+      inset 0 2px 0 rgba(255,255,255,.28),
+      inset 0 -8px 16px rgba(0,0,0,.62),
+      inset 0 0 26px rgba(0,153,255,.34),
+      0 0 25px rgba(0,143,255,.27)!important;
   }
   #nx-stage[data-route="mine"] .nx-nebula-core__aura{
     background:radial-gradient(circle at 42% 30%,#17455d 0%,#081923 45%,#020608 76%,#010304 100%)!important;

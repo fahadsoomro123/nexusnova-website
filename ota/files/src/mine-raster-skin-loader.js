@@ -1,3 +1,4 @@
+// Reference raster v2 package counts verified for OTA release.
 const MINE_SKINS = {
   header: 2,
   miner: 4,
@@ -47,6 +48,8 @@ function activateReferenceSkin() {
 Promise.all(Object.entries(MINE_SKINS).map(([name, count]) => loadSkin(name, count)))
   .then(activateReferenceSkin)
   .catch(error => {
+    // Fail closed: the existing working Mine visuals remain active until every
+    // reference component exists. Never activate a partial/broken raster skin.
     console.warn('[NexusNova Mine] reference skin loader:', error);
     document.documentElement.dataset.mineRasterSkin = 'waiting';
   });
