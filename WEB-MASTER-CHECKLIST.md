@@ -30,7 +30,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Client auth guard blocks the existing Firebase handler until a configured Turnstile token is verified server-side; no decorative/fake CAPTCHA state is shown while production keys are absent.
 - [x] Add production `TURNSTILE_SITE_KEY` and encrypted `TURNSTILE_SECRET_KEY`, deploy, and verify end-to-end on `nexusnovatools.com` before marking CAPTCHA fully complete.
 - [ ] Disposable/temp-email risk checks for reward/mining eligibility.
-- [ ] Signup/sign-in rate limiting and abuse throttling.
+- [x] Signup/sign-in abuse throttling is wired into the production Turnstile verification path using short and long hashed IP/User-Agent windows; Worker code verified on 2026-08-30.
 - [ ] Risk-based duplicate-account protection using safe signals; do not hard-lock one account per shared IP/device.
 - [ ] Firebase/App Check protection where production configuration is available.
 - [ ] Re-authentication/step-up protection for future high-value account actions.
@@ -113,9 +113,9 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 
 ## 12. Social Launch Automation via GitHub
 - [x] Existing website repo has GitHub-based social distribution infrastructure for Telegram, X, Facebook and Instagram when credentials/configuration are valid.
-- [ ] Add/verify a dedicated one-time `NexusNova Major Web Launch` workflow for this website upgrade rather than relying only on new-tool announcements.
-- [ ] Generate platform-appropriate launch copy/card/assets from real website state.
-- [ ] Use duplicate-post protection so the major launch publishes once.
+- [x] Dedicated one-time `NexusNova Major Web Launch` workflow exists and was code-verified on 2026-08-30 with explicit owner confirmation and master release-gate checks.
+- [x] Major launch workflow generates platform-appropriate factual X/Facebook/Instagram/Telegram launch copy from real website state and verifies the 57+ claim before publication.
+- [x] Duplicate-post protection is implemented using persistent successful-publication history and blocks a second successful major launch.
 - [ ] Verify each destination result from workflow output/report before claiming success.
 - [ ] Automatic launch should run only after this master website checklist's release-blocking items are genuinely complete.
 
