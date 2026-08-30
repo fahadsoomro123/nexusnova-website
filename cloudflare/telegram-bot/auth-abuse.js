@@ -5,7 +5,7 @@ const LONG_WINDOW_LIMIT = 50;
 
 const DUPLICATE_WINDOW_SECONDS = 6 * 60 * 60;
 const DUPLICATE_NEW_ACCOUNT_MS = 24 * 60 * 60 * 1000;
-const DUPLICATE_ACCOUNT_REVIEW_THRESHOLD = 5;
+const DUPLICATE_ACCOUNT_OBSERVE_THRESHOLD = 5;
 const DUPLICATE_MAX_TRACKED_ACCOUNTS = 8;
 const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
 
@@ -56,9 +56,14 @@ export async function duplicateAccountRisk(request, account, env) {
   const isNewAccount = Number.isFinite(createdAtMs) && createdAtMs > 0 &&
     accountAgeMs >= -MAX_CLOCK_SKEW_MS && accountAgeMs <= DUPLICATE_NEW_ACCOUNT_MS;
 
-  const networkBrowserHash = await hmacSha256Hex(secret, `duplicate-risk-v1\n${ip}\n${ua}`);
+  // Shared household/public Wi-Fi is normal. IP + User-Agent is therefore only a
+  // short-lived, privacy-preserving observation signal and must never by itself
+  // block mining/rewards or force account review. A future stronger independent
+  // signal (for example App Check / verified installation integrity) may combine
+  // with this observation, but this network/browser pattern alone is non-blocking.
+  const networkBrowserHash = await hmacSha256Hex(secret, `duplicate-risk-v2\n${ip}\n${ua}`);
   const uidHash = await hmacSha256Hex(secret, `duplicate-risk-uid-v1\n${uid}`);
-  const cacheKey = new Request(`https://nexusnova-account-risk.invalid/v1/${networkBrowserHash}`, { method: 'GET' });
+  const cacheKey = new Request(`https://nexusnova-account-risk.invalid/v2/${networkBrowserHash}`, { method: 'GET' });
   const existing = await caches.default.match(cacheKey);
   let accountHashes = [];
   let expiresAt = now + DUPLICATE_WINDOW_SECONDS * 1000;
@@ -84,11 +89,14 @@ export async function duplicateAccountRisk(request, account, env) {
     }
   }));
 
-  const reviewRequired = isNewAccount && accountHashes.length >= DUPLICATE_ACCOUNT_REVIEW_THRESHOLD;
+  const sharedNetworkPatternObserved = isNewAccount && accountHashes.length >= DUPLICATE_ACCOUNT_OBSERVE_THRESHOLD;
   return {
     checked: true,
-    reviewRequired,
-    reason: reviewRequired ? 'account-integrity-review' : 'no-high-confidence-duplicate-pattern'
+    reviewRequired: false,
+    sharedNetworkPatternObserved,
+    reason: sharedNetworkPatternObserved
+      ? 'shared-network-pattern-observed-nonblocking'
+      : 'no-high-confidence-duplicate-pattern'
   };
 }
 
