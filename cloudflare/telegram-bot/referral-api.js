@@ -6,6 +6,9 @@ const FIRESTORE_API = `https://firestore.googleapis.com/v1/${FIRESTORE_DATABASE}
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const REFERRAL_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 2048;
+const REFERRAL_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const REFERRAL_CODE_LENGTH = 10;
+const REFERRAL_CODE_ATTEMPTS = 8;
 let googleTokenCache = null;
 let signingKeyCache = null;
 
@@ -15,6 +18,88 @@ class ReferralError extends Error {
     this.status = status;
     this.code = code;
     this.publicMessage = publicMessage;
+  }
+}
+
+export async function referralCodeRequest(request, env) {
+  try {
+    const user = await verifyFirebaseIdToken(request.headers.get('Authorization'));
+    const credentials = serviceAccount(env);
+    const accessToken = await googleAccessToken(credentials);
+    const transaction = await beginTransaction(accessToken);
+    let transactionOpen = true;
+
+    try {
+      const profileName = documentName('users', user.uid);
+      const profileDocs = await batchGet(accessToken, [profileName], transaction);
+      const profile = profileDocs.get(profileName) || null;
+      if (!profile) throw new ReferralError(404, 'profile-not-found', 'NexusNova profile is not ready yet.');
+
+      const existingCode = stringField(profile, 'ownReferralCode').trim().toUpperCase();
+      if (REFERRAL_RE.test(existingCode)) {
+        const existingName = documentName('referralCodes', existingCode);
+        const existingDocs = await batchGet(accessToken, [existingName], transaction);
+        const existingDoc = existingDocs.get(existingName) || null;
+        if (existingDoc && stringField(existingDoc, 'ownerUid') === user.uid) {
+          await rollback(accessToken, transaction);
+          transactionOpen = false;
+          return response({
+            ok: true,
+            code: existingCode,
+            created: false,
+            shareUrl: referralShareUrl(existingCode)
+          });
+        }
+      }
+
+      const candidates = uniqueReferralCandidates(REFERRAL_CODE_ATTEMPTS);
+      const candidateNames = candidates.map(code => documentName('referralCodes', code));
+      const codeDocs = await batchGet(accessToken, candidateNames, transaction);
+      let selected = '';
+
+      for (const code of candidates) {
+        const codeDoc = codeDocs.get(documentName('referralCodes', code)) || null;
+        if (!codeDoc || stringField(codeDoc, 'ownerUid') === user.uid) {
+          selected = code;
+          break;
+        }
+      }
+
+      if (!selected) {
+        throw new ReferralError(503, 'code-space-busy', 'Referral code service is busy. Please retry.');
+      }
+
+      const now = new Date().toISOString();
+      const codeName = documentName('referralCodes', selected);
+      await commit(accessToken, [
+        updateWrite(codeName, {
+          ownerUid: fsString(user.uid),
+          status: fsString('active'),
+          updatedAt: fsTimestamp(now)
+        }),
+        updateWrite(profileName, {
+          ownReferralCode: fsString(selected),
+          referralCodeUpdatedAt: fsTimestamp(now)
+        })
+      ], transaction);
+      transactionOpen = false;
+
+      return response({
+        ok: true,
+        code: selected,
+        created: true,
+        shareUrl: referralShareUrl(selected)
+      });
+    } catch (error) {
+      if (transactionOpen) await rollback(accessToken, transaction);
+      throw error;
+    }
+  } catch (error) {
+    if (error instanceof ReferralError) {
+      return response({ ok: false, code: error.code, error: error.publicMessage }, error.status);
+    }
+    console.error('Referral code API error:', error instanceof Error ? error.message : 'Unknown error');
+    return response({ ok: false, code: 'internal', error: 'Referral code service is temporarily unavailable.' }, 502);
   }
 }
 
@@ -60,7 +145,9 @@ export async function attachReferralRequest(request, env) {
         throw new ReferralError(409, 'referral-already-attached', 'This account already has referral attribution.');
       }
 
-      if (!codeDoc) throw new ReferralError(404, 'referral-not-found', 'Referral code is not active.');
+      if (!codeDoc || stringField(codeDoc, 'status') !== 'active') {
+        throw new ReferralError(404, 'referral-not-found', 'Referral code is not active.');
+      }
       const referrerUid = stringField(codeDoc, 'ownerUid');
       assertUid(referrerUid);
       if (referrerUid === user.uid) {
@@ -110,6 +197,24 @@ export async function attachReferralRequest(request, env) {
     console.error('Referral API error:', error instanceof Error ? error.message : 'Unknown error');
     return response({ ok: false, code: 'internal', error: 'Referral service is temporarily unavailable.' }, 502);
   }
+}
+
+function uniqueReferralCandidates(count) {
+  const values = new Set();
+  while (values.size < count) values.add(randomReferralCode());
+  return [...values];
+}
+
+function randomReferralCode() {
+  const bytes = new Uint8Array(REFERRAL_CODE_LENGTH);
+  crypto.getRandomValues(bytes);
+  let suffix = '';
+  for (const byte of bytes) suffix += REFERRAL_CODE_ALPHABET[byte % REFERRAL_CODE_ALPHABET.length];
+  return `NVX-${suffix}`;
+}
+
+function referralShareUrl(code) {
+  return `https://nexusnovatools.com/register.html?mode=register&ref=${encodeURIComponent(code)}`;
 }
 
 async function readBody(request) {
@@ -182,12 +287,14 @@ async function googleAccessToken(credentials) {
     iat: now,
     exp: now + 3600
   });
-  const form = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
+  const form = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth-type:jwt-bearer', assertion });
+  const correctForm = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: form.toString()
+    body: correctForm.toString()
   });
+  void form;
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.access_token) {
     throw new ReferralError(502, 'unavailable', 'Referral profile service is unavailable.');
