@@ -21,7 +21,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [ ] Apple official sign-in/account-linking where configuration is available.
 - [ ] Facebook official account-linking where Meta configuration/permissions allow it.
 - [ ] Instagram official account-linking only through supported Meta/Instagram mechanisms; never fake a connected state from a link click.
-- [ ] Proper account-linking rules so one external identity cannot earn/connect to multiple NexusNova accounts.
+- [x] Proper account-linking rule is enforced for every currently active external identity path: Telegram uses transactional `telegramIdentities` + `telegramUserLinks` mappings, rejects a Telegram identity already owned by another NexusNova UID, and rejects attaching a second Telegram ID to the same NexusNova UID. Telegram Worker regression passed Beta Validation run `33324942871` on 2026-08-30. Any future Google/X/Apple/Meta provider must pass the same one-to-one rule before its pending provider item can be enabled.
 - [x] Preserve Telegram Mini App/account linking behavior where already supported.
 
 ## 3. Anti-Abuse / Account Protection
@@ -31,7 +31,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Add production `TURNSTILE_SITE_KEY` and encrypted `TURNSTILE_SECRET_KEY`, deploy, and verify end-to-end on `nexusnovatools.com` before marking CAPTCHA fully complete.
 - [x] Disposable/temp-email risk checks for reward/mining eligibility. A Firebase-token-authenticated Worker route now derives verified-email + known temporary-domain risk server-side, fails value eligibility closed, and the live Worker route passed Beta Validation run `33313849832` on 2026-08-30; signup itself remains allowed and public tools remain unaffected.
 - [x] Signup/sign-in abuse throttling is wired into the production Turnstile verification path using short and long hashed IP/User-Agent windows; Worker code verified on 2026-08-30.
-- [ ] Risk-based duplicate-account protection using safe signals; do not hard-lock one account per shared IP/device.
+- [ ] Risk-based duplicate-account protection using safe signals; shared household/public Wi-Fi and similar User-Agent observations are intentionally non-blocking on their own so families are not falsely locked. The current hashed short-lived shared-network observation is implemented and regression-protected, but this item stays pending until a stronger independent integrity signal can be combined safely.
 - [ ] Firebase/App Check protection where production configuration is available.
 - [ ] Re-authentication/step-up protection for future high-value account actions.
 - [x] No phone OTP requirement for now.
