@@ -6,7 +6,7 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
 /* Never generate page sections or backgrounds from the motion stylesheet. */
 .nn-home main::after{content:none!important;display:none!important;background:none!important}
 
-/* Performance + layout stability. These rules preserve the existing visual
+/* Performance and layout stability. These rules preserve the existing visual
    design while keeping late JavaScript decoration from moving live content. */
 #local-clock{display:block;min-height:3.35em}
 .tool-card{position:relative}
