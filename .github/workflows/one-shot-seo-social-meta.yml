@@ -1,0 +1,141 @@
+name: NexusNova One-Time SEO Social Metadata Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-seo-social-meta.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Add missing Open Graph and Twitter metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import html
+          import re
+
+          SKIP_DIRS={'.git','node_modules','vendor','ota','downloads','nexusnova-dev-ai'}
+          SKIP_HTML={'404.html'}
+          FALLBACK_IMAGE='https://nexusnovatools.com/assets/nexusnova-logo-512.svg'
+
+          def attr_value(text, tag_pattern, attr):
+              m=re.search(tag_pattern, text, re.I|re.S)
+              if not m:
+                  return ''
+              tag=m.group(0)
+              a=re.search(rf'\b{re.escape(attr)}\s*=\s*(["\'])(.*?)\1', tag, re.I|re.S)
+              return html.unescape(a.group(2).strip()) if a else ''
+
+          def title_value(text):
+              m=re.search(r'<title\b[^>]*>(.*?)</title\s*>', text, re.I|re.S)
+              return html.unescape(re.sub(r'\s+',' ',m.group(1)).strip()) if m else ''
+
+          def meta_content(text, key, prop=False):
+              attr='property' if prop else 'name'
+              pat=rf'<meta\b(?=[^>]*\b{attr}\s*=\s*(["\']){re.escape(key)}\1)[^>]*>'
+              return attr_value(text,pat,'content')
+
+          def canonical_value(text):
+              pat=r'<link\b(?=[^>]*\brel\s*=\s*(["\'])canonical\1)[^>]*>'
+              return attr_value(text,pat,'href')
+
+          def has_meta(text,key,prop=False):
+              attr='property' if prop else 'name'
+              return bool(re.search(rf'<meta\b(?=[^>]*\b{attr}\s*=\s*(["\']){re.escape(key)}\1)[^>]*>',text,re.I|re.S))
+
+          def esc(value):
+              return html.escape(value,quote=True)
+
+          changed=[]
+          for path in sorted(Path('.').rglob('*.html')):
+              if path.name in SKIP_HTML or any(part in SKIP_DIRS for part in path.parts):
+                  continue
+              text=path.read_text(encoding='utf-8',errors='replace')
+              robots=meta_content(text,'robots').lower()
+              if 'noindex' in robots:
+                  continue
+              title=title_value(text)
+              desc=meta_content(text,'description')
+              canonical=canonical_value(text)
+              if not title or not desc or not canonical:
+                  continue
+
+              tags=[]
+              if not has_meta(text,'og:type',True):
+                  tags.append('<meta property="og:type" content="website">')
+              if not has_meta(text,'og:site_name',True):
+                  tags.append('<meta property="og:site_name" content="NexusNova Tools">')
+              if not has_meta(text,'og:title',True):
+                  tags.append(f'<meta property="og:title" content="{esc(title)}">')
+              if not has_meta(text,'og:description',True):
+                  tags.append(f'<meta property="og:description" content="{esc(desc)}">')
+              if not has_meta(text,'og:url',True):
+                  tags.append(f'<meta property="og:url" content="{esc(canonical)}">')
+              if not has_meta(text,'og:image',True):
+                  tags.append(f'<meta property="og:image" content="{FALLBACK_IMAGE}">')
+              if not has_meta(text,'twitter:card'):
+                  tags.append('<meta name="twitter:card" content="summary">')
+              if not has_meta(text,'twitter:title'):
+                  tags.append(f'<meta name="twitter:title" content="{esc(title)}">')
+              if not has_meta(text,'twitter:description'):
+                  tags.append(f'<meta name="twitter:description" content="{esc(desc)}">')
+              if not has_meta(text,'twitter:image'):
+                  tags.append(f'<meta name="twitter:image" content="{FALLBACK_IMAGE}">')
+              if not tags:
+                  continue
+
+              block=''.join(tags)
+              if re.search(r'</head\s*>',text,re.I):
+                  text=re.sub(r'</head\s*>',block+'</head>',text,count=1,flags=re.I)
+              else:
+                  raise SystemExit(f'Missing </head> in {path}')
+              path.write_text(text,encoding='utf-8')
+              changed.append(path.as_posix())
+
+          print(f'Normalized social metadata on {len(changed)} indexable pages.')
+          for item in changed:
+              print(item)
+          PY
+
+      - name: Verify static site remains severe-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/site_quality_audit.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=report.get('severe',[])
+          if severe:
+              raise SystemExit('\n'.join(severe))
+          print('SEO severe findings: 0')
+          print('SEO warnings after social metadata pass:',len(report.get('warnings',[])))
+          PY
+          git diff --check
+
+      - name: Commit metadata normalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova CI'
+          git config user.email 'actions@users.noreply.github.com'
+          git add '*.html' articles/*.html guides/*.html tech/*.html
+          if git diff --cached --quiet; then
+            echo 'No metadata changes required.'
+            exit 0
+          fi
+          git commit -m 'seo: complete missing social metadata across public pages'
+          git push origin HEAD:main
