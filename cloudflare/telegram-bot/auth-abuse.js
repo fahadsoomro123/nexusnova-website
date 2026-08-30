@@ -3,6 +3,12 @@ const SHORT_WINDOW_LIMIT = 12;
 const LONG_WINDOW_SECONDS = 10 * 60;
 const LONG_WINDOW_LIMIT = 50;
 
+const DUPLICATE_WINDOW_SECONDS = 6 * 60 * 60;
+const DUPLICATE_NEW_ACCOUNT_MS = 24 * 60 * 60 * 1000;
+const DUPLICATE_ACCOUNT_REVIEW_THRESHOLD = 5;
+const DUPLICATE_MAX_TRACKED_ACCOUNTS = 8;
+const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
 const TEMP_EMAIL_DOMAINS = new Set([
   '10minutemail.com','10minutemail.net','20minutemail.com','dispostable.com',
   'emailondeck.com','fakeinbox.com','getnada.com','guerrillamail.com',
@@ -32,6 +38,58 @@ export async function enforceAuthThrottle(request) {
     return { allowed: false, retryAfter: LONG_WINDOW_SECONDS };
   }
   return { allowed: true, retryAfter: 0 };
+}
+
+export async function duplicateAccountRisk(request, account, env) {
+  const ip = String(request.headers.get('CF-Connecting-IP') || '').trim();
+  const ua = String(request.headers.get('User-Agent') || '').trim().slice(0, 180);
+  const uid = String(account?.uid || '').trim();
+  const createdAtMs = Number(account?.createdAtMs || 0);
+  const secret = String(env?.TURNSTILE_SECRET_KEY || '').trim();
+
+  if (!ip || !ua || !uid || !secret || typeof caches === 'undefined' || !caches.default) {
+    return { checked: false, reviewRequired: false, reason: 'signal-unavailable' };
+  }
+
+  const now = Date.now();
+  const accountAgeMs = now - createdAtMs;
+  const isNewAccount = Number.isFinite(createdAtMs) && createdAtMs > 0 &&
+    accountAgeMs >= -MAX_CLOCK_SKEW_MS && accountAgeMs <= DUPLICATE_NEW_ACCOUNT_MS;
+
+  const networkBrowserHash = await hmacSha256Hex(secret, `duplicate-risk-v1\n${ip}\n${ua}`);
+  const uidHash = await hmacSha256Hex(secret, `duplicate-risk-uid-v1\n${uid}`);
+  const cacheKey = new Request(`https://nexusnova-account-risk.invalid/v1/${networkBrowserHash}`, { method: 'GET' });
+  const existing = await caches.default.match(cacheKey);
+  let accountHashes = [];
+  let expiresAt = now + DUPLICATE_WINDOW_SECONDS * 1000;
+
+  if (existing) {
+    const data = await existing.json().catch(() => null);
+    if (data && Array.isArray(data.accountHashes) && Number(data.expiresAt) > now) {
+      accountHashes = data.accountHashes.filter(value => /^[a-f0-9]{64}$/i.test(String(value || ''))).slice(-DUPLICATE_MAX_TRACKED_ACCOUNTS);
+      expiresAt = Number(data.expiresAt);
+    }
+  }
+
+  if (!accountHashes.includes(uidHash)) {
+    accountHashes.push(uidHash);
+    accountHashes = accountHashes.slice(-DUPLICATE_MAX_TRACKED_ACCOUNTS);
+  }
+
+  const remainingSeconds = Math.max(1, Math.ceil((expiresAt - now) / 1000));
+  await caches.default.put(cacheKey, new Response(JSON.stringify({ accountHashes, expiresAt }), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': `max-age=${remainingSeconds}`
+    }
+  }));
+
+  const reviewRequired = isNewAccount && accountHashes.length >= DUPLICATE_ACCOUNT_REVIEW_THRESHOLD;
+  return {
+    checked: true,
+    reviewRequired,
+    reason: reviewRequired ? 'account-integrity-review' : 'no-high-confidence-duplicate-pattern'
+  };
 }
 
 async function incrementBucket(key, ttlSeconds) {
@@ -77,4 +135,16 @@ async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(value);
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return Array.from(digest, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacSha256Hex(secret, value) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
+  return Array.from(signature, byte => byte.toString(16).padStart(2, '0')).join('');
 }
