@@ -1,5 +1,28 @@
 (async()=>{
   'use strict';
+
+  // Homepage app promo must load in normal browsers too, not only inside Telegram.
+  // main.js loads this module on every page, so keep the promo bootstrap here before
+  // the auth-marker early return. The data attribute guards also prevent duplicates
+  // when the Telegram bridge has already loaded the same resources.
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(page==='index.html'&&typeof document?.querySelector==='function'&&document.head){
+    if(!document.querySelector('link[data-home-app-promo]')){
+      const style=document.createElement('link');
+      style.rel='stylesheet';
+      style.href='assets/css/home-app-promo.css?v=20260830-3';
+      style.dataset.homeAppPromo='';
+      document.head.appendChild(style);
+    }
+    if(!document.querySelector('script[data-home-app-promo]')){
+      const script=document.createElement('script');
+      script.src='assets/js/home-app-promo.js?v=20260830-3';
+      script.defer=true;
+      script.dataset.homeAppPromo='';
+      document.head.appendChild(script);
+    }
+  }
+
   const AUTH_MARKER='nexusnova_auth_seen_v1';
   let shouldLoad=true;
   try{shouldLoad=localStorage.getItem(AUTH_MARKER)==='1';}catch(_){}
