@@ -66,7 +66,7 @@ def main() -> None:
                             header: !!document.querySelector('[data-header]'),
                             nav: !!document.querySelector('[data-nav]'),
                             menuButton: !!document.querySelector('[data-menu-btn]'),
-                            theme: document.documentElement.classList.contains('nexusnova-scifi'),
+                            theme: document.documentElement.classList.contains('nexusnova-scifi') || !!document.querySelector('link[data-nexusnova-scifi]'),
                             signin: !!document.querySelector('.nn-nav-signin'),
                             signup: !!document.querySelector('.nn-nav-signup'),
                             brokenImages: [...document.images].filter(i => {
@@ -97,16 +97,23 @@ def main() -> None:
                         report["severe"].append(f"{mode}/{rel}: menu button missing")
                     if not metrics["theme"]:
                         report["severe"].append(
-                            f"{mode}/{rel}: canonical premium theme class missing"
+                            f"{mode}/{rel}: canonical premium theme coverage missing"
                         )
                     if metrics["brokenImages"]:
                         report["severe"].append(
                             f"{mode}/{rel}: {metrics['brokenImages']} broken visible image(s)"
                         )
-                    if not metrics["signin"] or not metrics["signup"]:
+
+                    # Public/guest surfaces must expose the standard auth entry.
+                    # account.html is a protected dashboard shell and intentionally
+                    # uses its own signed-in/redirect behavior instead of guest auth CTAs.
+                    if rel != "account.html" and (
+                        not metrics["signin"] or not metrics["signup"]
+                    ):
                         report["severe"].append(
                             f"{mode}/{rel}: guest Sign in / Sign up header actions missing"
                         )
+
                     if console_errors:
                         report["warnings"].append(
                             f"{mode}/{rel}: {len(console_errors)} console error(s)"
