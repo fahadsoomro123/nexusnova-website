@@ -1,4 +1,5 @@
 import { accountEligibilityRequest } from './account-eligibility.js';
+import { processReferralMiningActivation } from './referral-activation.js';
 
 const FIREBASE_PROJECT_ID = 'nexusnova-6ade2';
 const FIRESTORE_DATABASE = `projects/${FIREBASE_PROJECT_ID}/databases/(default)`;
@@ -89,6 +90,16 @@ export async function miningSessionRequest(request, env) {
 
       await commit(accessToken, [updateWrite(profileName, fields)], transaction);
       transactionOpen = false;
+
+      // Referral activation is server-only and fail-closed. It does nothing unless
+      // an explicit Worker-side milestone + reward policy is configured. A transient
+      // referral failure never rewinds an already-committed legitimate mining action;
+      // the idempotent activation ledger can be retried on a later secure mining action.
+      try {
+        await processReferralMiningActivation(uid, env);
+      } catch (error) {
+        console.warn('Referral activation deferred:', String(error?.code || error?.message || 'unknown'));
+      }
 
       return Response.json({
         ok: true,
