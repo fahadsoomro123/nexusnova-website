@@ -35,10 +35,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Verify JavaScript syntax and security regression tests
-        run: |
-          npm run check
-          npm test
+      - name: Verify JavaScript syntax
+        run: npm run check
+
+      - name: Run security and referral regression tests
+        run: npm test
 
       - name: Verify public website surfaces
         shell: bash
