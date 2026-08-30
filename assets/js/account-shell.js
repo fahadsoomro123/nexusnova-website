@@ -47,7 +47,7 @@
   }
 
   if(document.querySelector('[data-account-form]')||document.querySelector('[data-dashboard]')){
-    loadModule('./google-auth-ui.js?v=20260831-2','nexusnovaGoogleAuth');
+    loadModule('./google-auth-ui.js?v=20260831-3','nexusnovaGoogleAuth');
     loadModule('./external-auth-ui.js?v=20260830-1','nexusnovaExternalAuth');
   }
 })();
