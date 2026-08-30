@@ -1,7 +1,7 @@
 (()=>{
   'use strict';
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  if(page!=='index.html'||document.querySelector('[data-home-app-promo]')) return;
+  if(page!=='index.html'||document.querySelector('.nn-home-app-promo')) return;
 
   const section=document.createElement('section');
   section.className='nn-home-app-promo';
