@@ -4,7 +4,10 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   linkWithPopup,
+  linkWithRedirect,
+  getRedirectResult,
   getAdditionalUserInfo
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import {
@@ -36,6 +39,11 @@ const AUTH_MARKER = 'nexusnova_auth_seen_v1';
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
 const REFERRAL_RE = /^NVX-[A-Z0-9]{8,16}$/;
 const SAFE_AUTH_CODE_RE = /^auth\/[a-z0-9-]+$/;
+const POPUP_FALLBACK_CODES = new Set([
+  'auth/popup-blocked',
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request'
+]);
 const DEFINITIVE_REFERRAL_ERRORS = new Set([
   'invalid-referral',
   'referral-not-found',
@@ -58,14 +66,18 @@ function withAuthCode(message, error) {
   return code ? `${message} [${code}]` : message;
 }
 
+function shouldUseRedirectFallback(error) {
+  return POPUP_FALLBACK_CODES.has(safeAuthCode(error));
+}
+
 function googleErrorMessage(error, linking = false) {
   const code = safeAuthCode(error);
   const known = {
     'auth/operation-not-allowed': 'Google sign-in is not enabled on the Firebase project yet.',
     'auth/unauthorized-domain': 'This website domain is not authorized for Firebase Authentication yet.',
-    'auth/popup-blocked': 'Your browser blocked the Google sign-in popup. Allow popups for nexusnovatools.com and retry.',
-    'auth/popup-closed-by-user': 'Google popup closed before Firebase completed. If you did not close it, temporarily disable browser popup/privacy blocking or VPN for nexusnovatools.com and retry.',
-    'auth/cancelled-popup-request': 'Another sign-in window is already open. Close it and retry once.',
+    'auth/popup-blocked': 'Your browser blocked the Google sign-in popup.',
+    'auth/popup-closed-by-user': 'Google popup closed before Firebase completed.',
+    'auth/cancelled-popup-request': 'Another sign-in window interrupted this Google request.',
     'auth/network-request-failed': 'Google/Firebase could not complete the network request. Check the connection or VPN and retry.',
     'auth/web-storage-unsupported': 'Browser storage required by Firebase Authentication is blocked. Allow site data/cookies for nexusnovatools.com and retry.',
     'auth/account-exists-with-different-credential': 'This email already belongs to a NexusNova account. Sign in with its existing method first, then connect Google from the dashboard.',
@@ -158,6 +170,82 @@ function gatewayStatus(message, kind = '') {
   else delete status.dataset.kind;
 }
 
+function hasGoogleProvider(user) {
+  return Array.isArray(user?.providerData) && user.providerData.some(item => item?.providerId === 'google.com');
+}
+
+function paintGoogleMission(card, user) {
+  if (!card) return;
+  const state = card.querySelector('[data-mission-state]');
+  const copy = card.querySelector('[data-mission-copy]');
+  const button = card.querySelector('[data-google-link]');
+  const connected = hasGoogleProvider(user);
+  delete card.dataset.authErrorCode;
+  card.dataset.state = connected ? 'complete' : 'ready';
+  if (state) state.textContent = connected ? 'CONNECTED' : 'READY';
+  if (copy) copy.textContent = connected
+    ? 'Official Google identity is linked to this Firebase account.'
+    : 'Connect your official Google identity to this existing NexusNova account.';
+  if (button) {
+    button.hidden = connected;
+    button.disabled = !user || connected;
+    button.textContent = 'Connect Google';
+  }
+}
+
+function paintGoogleError(card, error) {
+  if (!card) return;
+  const code = safeAuthCode(error);
+  const state = card.querySelector('[data-mission-state]');
+  const copy = card.querySelector('[data-mission-copy]');
+  const button = card.querySelector('[data-google-link]');
+  card.dataset.state = 'error';
+  if (code) card.dataset.authErrorCode = code;
+  if (state) state.textContent = 'NOT CONNECTED';
+  if (copy) copy.textContent = withAuthCode(googleErrorMessage(error, true), error);
+  if (button) {
+    button.hidden = false;
+    button.disabled = false;
+    button.textContent = 'Retry Google';
+  }
+}
+
+async function finishGatewayCredential(result) {
+  const info = getAdditionalUserInfo(result);
+  const ensured = await ensureProfile(result.user);
+  if (ensured.created || info?.isNewUser === true) {
+    await attachPendingReferralForNewAccount(result.user);
+  }
+  try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}
+  window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google' });
+  gatewayStatus('Google account verified. Opening your NexusNova dashboard…', 'success');
+  setTimeout(() => location.assign('account.html'), 120);
+}
+
+async function resumeRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result?.user) return;
+
+    const card = document.querySelector('[data-mission="google"]');
+    if (card) {
+      await result.user.reload();
+      paintGoogleMission(card, auth.currentUser || result.user);
+      window.gtag?.('event', 'account_link', { provider: 'google', method: 'redirect' });
+      return;
+    }
+
+    if (document.querySelector('[data-account-form]')) {
+      await finishGatewayCredential(result);
+    }
+  } catch (error) {
+    console.warn('[NexusNova Google Redirect]', safeAuthCode(error) || 'google-redirect-failed');
+    const card = document.querySelector('[data-mission="google"]');
+    if (card) paintGoogleError(card, error);
+    else gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
+  }
+}
+
 function setupGateway() {
   const form = document.querySelector('[data-account-form]');
   if (!form || document.querySelector('[data-google-signin]')) return;
@@ -186,44 +274,27 @@ function setupGateway() {
 
     try {
       const result = await signInWithPopup(auth, provider);
-      const info = getAdditionalUserInfo(result);
-      const ensured = await ensureProfile(result.user);
-      if (ensured.created || info?.isNewUser === true) {
-        await attachPendingReferralForNewAccount(result.user);
-      }
-      try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}
-      window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google' });
-      gatewayStatus('Google account verified. Opening your NexusNova dashboard…', 'success');
-      setTimeout(() => location.assign('account.html'), 120);
+      await finishGatewayCredential(result);
     } catch (error) {
-      console.warn('[NexusNova Google Auth]', safeAuthCode(error) || 'google-signin-failed');
-      gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
+      if (shouldUseRedirectFallback(error)) {
+        console.warn('[NexusNova Google Auth]', `${safeAuthCode(error)}; switching-to-redirect`);
+        gatewayStatus('Popup could not finish. Switching to full-page Google sign-in…');
+        if (label) label.textContent = 'OPENING GOOGLE…';
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectError) {
+          console.warn('[NexusNova Google Redirect Start]', safeAuthCode(redirectError) || 'redirect-start-failed');
+          gatewayStatus(withAuthCode(googleErrorMessage(redirectError, false), redirectError), 'error');
+        }
+      } else {
+        console.warn('[NexusNova Google Auth]', safeAuthCode(error) || 'google-signin-failed');
+        gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
+      }
       button.disabled = false;
       if (label) label.textContent = original;
     }
   });
-}
-
-function hasGoogleProvider(user) {
-  return Array.isArray(user?.providerData) && user.providerData.some(item => item?.providerId === 'google.com');
-}
-
-function paintGoogleMission(card, user) {
-  if (!card) return;
-  const state = card.querySelector('[data-mission-state]');
-  const copy = card.querySelector('[data-mission-copy]');
-  const button = card.querySelector('[data-google-link]');
-  const connected = hasGoogleProvider(user);
-  delete card.dataset.authErrorCode;
-  card.dataset.state = connected ? 'complete' : 'ready';
-  if (state) state.textContent = connected ? 'CONNECTED' : 'READY';
-  if (copy) copy.textContent = connected
-    ? 'Official Google identity is linked to this Firebase account.'
-    : 'Connect your official Google identity to this existing NexusNova account.';
-  if (button) {
-    button.hidden = connected;
-    button.disabled = !user || connected;
-  }
 }
 
 function setupDashboard() {
@@ -258,18 +329,24 @@ function setupDashboard() {
       await linkWithPopup(user, provider);
       await user.reload();
       paintGoogleMission(card, auth.currentUser || user);
-      button.textContent = 'Connect Google';
-      window.gtag?.('event', 'account_link', { provider: 'google' });
+      window.gtag?.('event', 'account_link', { provider: 'google', method: 'popup' });
     } catch (error) {
-      const errorCode = safeAuthCode(error);
-      console.warn('[NexusNova Google Link]', errorCode || 'google-link-failed');
-      card.dataset.state = 'error';
-      if (errorCode) card.dataset.authErrorCode = errorCode;
-      const state = card.querySelector('[data-mission-state]');
-      if (state) state.textContent = 'NOT CONNECTED';
-      if (copy) copy.textContent = withAuthCode(googleErrorMessage(error, true), error);
-      button.disabled = false;
-      button.textContent = 'Retry Google';
+      if (shouldUseRedirectFallback(error)) {
+        console.warn('[NexusNova Google Link]', `${safeAuthCode(error)}; switching-to-redirect`);
+        if (copy) copy.textContent = 'Popup could not finish. Switching to full-page Google linking…';
+        button.textContent = 'Opening Google…';
+        try {
+          await linkWithRedirect(user, provider);
+          return;
+        } catch (redirectError) {
+          console.warn('[NexusNova Google Link Redirect]', safeAuthCode(redirectError) || 'redirect-start-failed');
+          paintGoogleError(card, redirectError);
+          return;
+        }
+      }
+
+      console.warn('[NexusNova Google Link]', safeAuthCode(error) || 'google-link-failed');
+      paintGoogleError(card, error);
     }
   });
 
@@ -278,3 +355,4 @@ function setupDashboard() {
 
 setupGateway();
 setupDashboard();
+resumeRedirectResult();
