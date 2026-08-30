@@ -28,4 +28,12 @@
       if(window.innerWidth>720)close();
     });
   }
+
+  if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="email"]')){
+    const script=document.createElement('script');
+    script.type='module';
+    script.src=new URL('./account-eligibility-ui.js',document.currentScript?.src||location.href).href;
+    script.dataset.nexusnovaEligibility='1';
+    document.head.appendChild(script);
+  }
 })();
