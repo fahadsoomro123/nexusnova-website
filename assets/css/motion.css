@@ -8,7 +8,7 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
 
 /* Performance and layout stability. These rules preserve the existing visual
    design while keeping late JavaScript decoration from moving live content.
-   Verification bump: root performance/CLS fixes are exercised by CI. */
+   Verification bump: final SEO + browser-quality regression pass. */
 #local-clock{display:block;min-height:3.35em}
 .tool-card{position:relative}
 .tool-card>h3{padding-right:68px}
