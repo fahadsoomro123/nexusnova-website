@@ -153,13 +153,14 @@
   }
 
   async function verifyToken(config) {
+    const email = String(form.elements?.email?.value || '').trim().toLowerCase().slice(0, 320);
     const response = await fetchWithTimeout(VERIFY_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
       },
-      body: JSON.stringify({ token, action: config.action })
+      body: JSON.stringify({ token, action: config.action, email })
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result?.ok !== true || result?.verified !== true) {
@@ -167,7 +168,11 @@
       error.code = result?.code || `http-${response.status}`;
       throw error;
     }
-    return true;
+
+    const disposable = result?.emailRisk?.checked === true && result?.emailRisk?.disposable === true;
+    form.dataset.emailRisk = disposable ? 'disposable' : 'clear';
+    form.dataset.emailRiskReason = String(result?.emailRisk?.reason || '').slice(0, 80);
+    return result;
   }
 
   const configurationPromise = loadConfiguration()
@@ -189,9 +194,6 @@
       return;
     }
 
-    // Always intercept the first submit while the security configuration is
-    // resolving. This prevents an outage or delayed config response from silently
-    // bypassing a protection that may be enabled in production.
     event.preventDefault();
     event.stopImmediatePropagation();
     if (guardBusy) return;
@@ -203,9 +205,6 @@
         throw configurationError || new Error('Security service is unavailable.');
       }
 
-      // Until the production Turnstile keys are installed on the Worker, preserve
-      // the existing account flow. The UI stays hidden so we never pretend that a
-      // CAPTCHA check occurred when it did not.
       if (!config.enabled) {
         passThroughOnce = true;
         guardBusy = false;
@@ -226,9 +225,6 @@
       panel.dataset.state = 'verified';
       setNote('Security check verified.', 'good');
 
-      // Allow exactly one re-dispatched submit event to reach the existing
-      // Firebase auth handler. Turnstile tokens are single-use, so reset for any
-      // later retry after that handler begins.
       passThroughOnce = true;
       guardBusy = false;
       form.requestSubmit();
@@ -237,7 +233,9 @@
       resetWidget();
       panel.dataset.state = 'error';
       setNote(error?.message || 'Security verification failed. Please retry.', 'error');
-      setStatus('Security verification failed. Please complete the check again.', 'error');
+      setStatus(error?.code === 'too-many-requests'
+        ? 'Too many attempts. Wait briefly and try again.'
+        : 'Security verification failed. Please complete the check again.', 'error');
     } finally {
       guardBusy = false;
     }
