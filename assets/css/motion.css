@@ -5,4 +5,21 @@ html{scroll-behavior:smooth}
 img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;object-fit:cover;aspect-ratio:1;border-radius:50%}
 /* Never generate page sections or backgrounds from the motion stylesheet. */
 .nn-home main::after{content:none!important;display:none!important;background:none!important}
+
+/* Performance + layout stability. These rules preserve the existing visual
+   design while keeping late JavaScript decoration from moving live content. */
+#local-clock{display:block;min-height:3.35em}
+.tool-card{position:relative}
+.tool-card>h3{padding-right:68px}
+.tool-card>.nn-tool-symbol{position:absolute;top:20px;right:20px;margin:0}
+
+/* Skip paint/layout work for homepage sections that are still below the
+   viewport. The intrinsic fallback reserves space until the section is near. */
+.nn-home .section{content-visibility:auto;contain-intrinsic-size:auto 720px}
+
+@media(max-width:720px){
+  #local-clock{min-height:4.75em}
+  .tool-card>h3{padding-right:60px}
+  .tool-card>.nn-tool-symbol{top:16px;right:16px}
+}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nn-reveal,.nn-reveal.nn-visible{opacity:1;transform:none;transition:none}}
