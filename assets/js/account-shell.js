@@ -31,8 +31,8 @@
 
   if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="email"]')){
     for(const [src,key] of [
-      ['./account-eligibility-ui.js','nexusnovaEligibility'],
-      ['./referral-code-ui.js','nexusnovaReferralCode']
+      ['./account-eligibility-ui.js?v=20260830-1','nexusnovaEligibility'],
+      ['./referral-code-ui.js?v=20260830-1','nexusnovaReferralCode']
     ]){
       if(document.querySelector(`script[data-${key.replace(/[A-Z]/g,m=>`-${m.toLowerCase()}`)}]`))continue;
       const script=document.createElement('script');
