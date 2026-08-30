@@ -29,7 +29,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Server-side Turnstile verification code is implemented in the Cloudflare Worker; the secret is never present in browser JavaScript or repository source.
 - [x] Client auth guard blocks the existing Firebase handler until a configured Turnstile token is verified server-side; no decorative/fake CAPTCHA state is shown while production keys are absent.
 - [x] Add production `TURNSTILE_SITE_KEY` and encrypted `TURNSTILE_SECRET_KEY`, deploy, and verify end-to-end on `nexusnovatools.com` before marking CAPTCHA fully complete.
-- [ ] Disposable/temp-email risk checks for reward/mining eligibility.
+- [x] Disposable/temp-email risk checks for reward/mining eligibility. A Firebase-token-authenticated Worker route now derives verified-email + known temporary-domain risk server-side, fails value eligibility closed, and the live Worker route passed Beta Validation run `33313849832` on 2026-08-30; signup itself remains allowed and public tools remain unaffected.
 - [x] Signup/sign-in abuse throttling is wired into the production Turnstile verification path using short and long hashed IP/User-Agent windows; Worker code verified on 2026-08-30.
 - [ ] Risk-based duplicate-account protection using safe signals; do not hard-lock one account per shared IP/device.
 - [ ] Firebase/App Check protection where production configuration is available.
@@ -71,7 +71,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 
 ## 7. Referral System
 - [ ] Keep unique NexusNova referral codes / attribution.
-- [ ] Prevent self-referral and obvious duplicate/fake activation abuse.
+- [x] Prevent self-referral and obvious duplicate/fake activation abuse. The authenticated Worker transaction rejects self-referral, blocks switching an existing attribution, enforces a new-account referral window and returns idempotently for the same already-attached code; regression test coverage passed in beta on 2026-08-30.
 - [ ] Reward only after a genuine verified activation milestone.
 - [ ] Referral rewards server-side and idempotent.
 - [x] Clear pending / verified / direct UI states are preserved in the account dashboard.
