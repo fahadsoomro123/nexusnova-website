@@ -29,6 +29,7 @@
   // the account menu just because account-dashboard.js sets the marker a moment
   // after this shared header module starts. Public guest pages keep the marker
   // optimization and therefore avoid loading Firebase unnecessarily.
+  // Keep this account-page bypass covered by tests/auth-header-account-race.test.cjs.
   let shouldLoad=page==='account.html';
   if(!shouldLoad){
     try{shouldLoad=localStorage.getItem(AUTH_MARKER)==='1';}catch(_){}
