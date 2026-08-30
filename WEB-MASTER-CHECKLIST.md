@@ -1,6 +1,6 @@
 # NexusNova Website — Master Completion Checklist
 
-Last established direction: website work only. Do not modify `fahadsoomro123/nexusnova-app`; app development is handled separately.
+Current direction: finish and verify website/web-app work first. The owner has explicitly authorized a later final Android-app parity phase for referral-code entry and official Google/X/Apple/Meta account authentication/linking; do not modify `fahadsoomro123/nexusnova-app` until that final app phase is explicitly started.
 
 This file is the source-of-truth checklist for the website/web-app work discussed with the owner. Nothing below should be treated as complete until it is genuinely implemented and verified.
 
@@ -16,7 +16,7 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Keep website tools public; no login wall for normal browser tools.
 - [x] Keep mining OFF after signup; account creation must never auto-start mining.
 - [x] Email verification UX and eligibility enforcement fully verified end-to-end on 2026-08-30 using the live Firebase-verified account state shown in the production dashboard.
-- [ ] Google official sign-in/account-linking.
+- [ ] Google official sign-in/account-linking. Website code wiring now uses Firebase `GoogleAuthProvider`, official popup sign-in, provider-based account linking, duplicate-credential protection and truthful provider-disabled errors; Beta Validation run `33329766176` passed on 2026-08-30. Keep this item pending until Google is enabled/configured in the Firebase project and a real production Google sign-in plus existing-account link are verified end-to-end.
 - [ ] X official OAuth account-linking.
 - [ ] Apple official sign-in/account-linking where configuration is available.
 - [ ] Facebook official account-linking where Meta configuration/permissions allow it.
@@ -120,8 +120,8 @@ This file is the source-of-truth checklist for the website/web-app work discusse
 - [x] Major launch remains manual-only and requires explicit `LAUNCH` confirmation. Its release gate now covers currently applicable website sections 1–8 and 11–13, including Auth, Missions and Referral blockers that were previously omitted; future APK/Play trigger sections remain outside the web-launch gate. The strict gate is regression-protected and Beta Validation run `33326081528` passed on 2026-08-30. No launch/post was executed while verifying this behavior.
 
 ## 13. Non-Negotiable Rules
-- [x] Website repo only for this work.
-- [x] Do not modify `fahadsoomro123/nexusnova-app` unless the owner explicitly reverses this instruction later.
+- [x] Website repo only during the current website completion phase; final Android-app parity work is explicitly deferred until the owner starts that phase.
+- [x] Do not modify `fahadsoomro123/nexusnova-app` during the website phase. The owner has explicitly authorized only the later final app parity work tracked at the end of this checklist.
 - [x] Do not generate website-design images unless explicitly requested later.
 - [x] Existing website tools/auth/referral/Telegram behavior is regression-protected in the current beta. Final Beta Validation run `33316649161` and Site Quality Audit run `33316649153` both passed on 2026-08-30 after the performance and SEO changes.
 - [x] Do not add fake functionality, fake connected states, fake timers, fake counters or fake progress in the new Web App phase.
@@ -138,4 +138,5 @@ Future APK/Play Store-triggered items remain tracked here so they are not forgot
 ## Final Deferred Bug Queue
 - [ ] Telegram linked-profile avatar is still unresolved on the real Telegram Desktop/Mini App account card: the UI continues to fall back to the account initial instead of showing the real Telegram profile photo. Keep this item at the end of the work queue and do not mark it fixed until a real Telegram session screenshot confirms the photo is displayed.
 - [ ] Add a clear manual referral-code entry/apply field to the website/Web App so a user can enter a valid NexusNova referral code and attach it through the existing authenticated secure Worker flow; preserve self-referral, one-attribution, new-account-window and no-signup-reward protections.
-- [ ] LAST APP TASK: add the same secure referral-code entry/apply capability inside the NexusNova Android app, reusing the real NexusNova account/referral backend rules. Do not modify `fahadsoomro123/nexusnova-app` now; perform this only in the final app phase when the owner explicitly starts that phase.
+- [ ] FINAL APP PHASE: add the same secure referral-code entry/apply capability inside the NexusNova Android app, reusing the real NexusNova account/referral backend rules. Do not modify the app repo until the owner explicitly starts the final app phase.
+- [ ] FINAL APP PHASE — OFFICIAL PROVIDER PARITY: add Google, X, Apple, Facebook and Instagram sign-in/account-linking to the NexusNova Android app where each provider officially supports it. Use native/system/provider-supported auth flows rather than fake WebView link clicks, preserve the same Firebase-backed NexusNova identity, enforce one external identity to one NexusNova account, and keep connected/reward state truthful. This remains the last app-provider task after website provider flows are configured and verified.
