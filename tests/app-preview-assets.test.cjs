@@ -40,3 +40,33 @@ test('Android app preview keeps truthful release and mining presentation', () =>
   assert.match(duo, /24H manual/);
   assert.match(duo, /START MINING • MANUAL/);
 });
+
+test('Android app preview category copy follows the real Nova Hub registry', () => {
+  const app = read('app.html');
+  const categories = [
+    'Core',
+    'Everyday Tools',
+    'Live & Local',
+    'Discover',
+    'Faith & Reading',
+    'Personal',
+    'Money & Commerce',
+    'Security & System',
+    'Mining'
+  ];
+
+  for (const category of categories) {
+    assert.match(app, new RegExp(`<span class="app-strip-chip">${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</span>`));
+  }
+
+  assert.match(app, /NexusNova Unit Converter icon/);
+  assert.match(app, /NexusNova Focus Timer icon/);
+  assert.match(app, /NexusNova Tip Calculator icon/);
+  assert.match(app, /NexusNova World Clock icon/);
+  assert.match(app, /NexusNova QR Tools icon/);
+
+  assert.doesNotMatch(app, /<span class="app-strip-chip">AI & Smart<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">Productivity<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">Islamic Tools<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">NVX Rewards<\/span>/);
+});
