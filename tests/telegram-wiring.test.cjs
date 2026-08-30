@@ -83,7 +83,7 @@ test('Telegram avatar is fallback-first and never guesses a username image URL',
   assert.match(dashboard, /probe\.src=photoUrl/);
   assert.match(dashboard, /probe\.naturalWidth>0&&probe\.naturalHeight>0/);
   assert.doesNotMatch(dashboard, /telegramPublicAvatarUrl|t\.me\/i\/userpic\/320\/\$\{/);
-  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-5/);
+  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-6/);
 });
 
 test('Telegram backend requests cannot hang the account page indefinitely', () => {
