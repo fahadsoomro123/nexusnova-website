@@ -1,10 +1,12 @@
 import worker from './worker.js';
 import { disposableEmailRisk, enforceAuthThrottle } from './auth-abuse.js';
+import { accountEligibilityRequest } from './account-eligibility.js';
 import { attachReferralRequest } from './referral-api.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
 const AUTH_CONFIG_PATH = '/api/auth/security-config';
 const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
+const ACCOUNT_ELIGIBILITY_PATH = '/api/account/eligibility';
 const REFERRAL_ATTACH_PATH = '/api/referral/attach';
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
 const ALLOWED_TURNSTILE_HOSTNAME = 'nexusnovatools.com';
@@ -18,7 +20,7 @@ const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/referral/');
+    const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/');
 
     if (secureApiPath && request.method === 'OPTIONS') {
       return authCors(request, new Response(null, { status: 204 }));
@@ -30,6 +32,15 @@ export default {
 
     if (request.method === 'POST' && url.pathname === TURNSTILE_VERIFY_PATH) {
       return verifyTurnstile(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === ACCOUNT_ELIGIBILITY_PATH) {
+      try {
+        assertAuthOrigin(request);
+      } catch (_) {
+        return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.', eligibleForValueActions: false }, 403);
+      }
+      return authCors(request, await accountEligibilityRequest(request));
     }
 
     if (request.method === 'POST' && url.pathname === REFERRAL_ATTACH_PATH) {
