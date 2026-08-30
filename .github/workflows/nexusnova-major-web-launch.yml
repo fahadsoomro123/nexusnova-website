@@ -1,0 +1,215 @@
+name: NexusNova Major Web Launch
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type LAUNCH only after the master checklist release gate is genuinely clear'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-major-web-launch
+  cancel-in-progress: false
+
+jobs:
+  gated-major-launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
+    steps:
+      - name: Require explicit launch confirmation
+        run: |
+          if [ "${{ inputs.confirm }}" != "LAUNCH" ]; then
+            echo 'Launch blocked: explicit LAUNCH confirmation was not supplied.'
+            exit 1
+          fi
+
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Enforce master release gate and one-time protection
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+
+          checklist=Path('WEB-MASTER-CHECKLIST.md').read_text(encoding='utf-8')
+          history_path=Path('assets/data/major-web-launch-history.json')
+          history=[]
+          if history_path.exists():
+              try: history=json.loads(history_path.read_text(encoding='utf-8'))
+              except Exception: history=[]
+          if any(isinstance(row,dict) and row.get('published') is True for row in history):
+              raise SystemExit('Major launch already has a successful publication record; duplicate launch blocked.')
+
+          release_sections={1,3,4,6,8,11,12,13}
+          section=None
+          blockers=[]
+          for raw in checklist.splitlines():
+              match=re.match(r'^##\s+(\d+)\.',raw)
+              if match:
+                  section=int(match.group(1)); continue
+              if section not in release_sections: continue
+              if raw.startswith('- [ ] '):
+                  text=raw[6:].strip()
+                  if text.startswith('Manual mining CTA/') or text.startswith('Halving/FOMO presentation'):
+                      continue
+                  if text.startswith('Add real screenshots/previews'):
+                      continue
+                  if text.startswith('Community/weekly missions'):
+                      continue
+                  blockers.append(f'Section {section}: {text}')
+
+          if blockers:
+              print('Major launch blocked by unresolved release items:')
+              for item in blockers: print(' -',item)
+              raise SystemExit(2)
+          print('Master release gate passed for the major website launch workflow.')
+          PY
+
+      - name: Verify public launch destinations
+        run: |
+          python - <<'PY'
+          import urllib.request,time
+          urls=[
+            'https://nexusnovatools.com/',
+            'https://nexusnovatools.com/app.html',
+            'https://nexusnovatools.com/assets/generated/social-growth-feed.jpg',
+          ]
+          for url in urls:
+              ok=False
+              for attempt in range(8):
+                  try:
+                      req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaMajorLaunch/1.0'})
+                      with urllib.request.urlopen(req,timeout=15) as response:
+                          if 200 <= response.status < 300:
+                              print('Verified public:',url,response.status)
+                              ok=True; break
+                  except Exception as exc:
+                      print('Retrying:',url,exc)
+                  time.sleep(5)
+              if not ok: raise SystemExit(f'Launch destination is not public: {url}')
+          PY
+
+      - name: Prepare factual platform-specific launch payload
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          html=Path('app.html').read_text(encoding='utf-8',errors='ignore')
+          if '57+' not in html:
+              raise SystemExit('App page no longer supports the 57+ tools launch claim; launch blocked.')
+          payload={
+            'campaign':'nexusnova_major_web_launch',
+            'format':'major_web_launch',
+            'url':'https://nexusnovatools.com/',
+            'instagram_image':'https://nexusnovatools.com/assets/generated/social-growth-feed.jpg',
+            'title':'NexusNova Web App is ready: 57+ smart tools in one connected experience',
+            'hook':'NexusNova now brings the Web App, 57+ smart-tool preview and secure account experience together.',
+            'summary':'Explore public browser tools, the real Nova Hub preview, secure Firebase account states and the NexusNova ecosystem. No fake install counters, no fake mining countdowns.',
+            'hashtags':['NexusNova','OnlineTools','Productivity','WebApp'],
+            'platform_copy':{
+              'x':'NexusNova Web App update 🚀 57+ smart tools, a real Nova Hub preview, secure account states and public browser utilities — all from the official website.',
+              'facebook':'The NexusNova website upgrade is ready: public browser tools, a 57+ smart-tool app preview, secure account states and a clearer connected NexusNova experience.',
+              'instagram':'NexusNova Web App • 57+ smart tools • real Nova Hub artwork • secure account experience',
+              'telegram':'🚀 NexusNova website upgrade\n\n57+ smart tools, public browser utilities, real Nova Hub artwork and a secure connected account experience are now together on the official site.'
+            }
+          }
+          Path('social-growth-publish.json').write_text(json.dumps(payload,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          print(json.dumps(payload,indent=2,ensure_ascii=False))
+          PY
+
+      - name: Compile distribution code
+        run: |
+          python -m py_compile .github/scripts/distribute_update.py
+          python -m py_compile .github/scripts/distribute_social_growth.py
+
+      - name: Publish once to configured destinations
+        run: python .github/scripts/distribute_social_growth.py
+
+      - name: Require at least one verified destination result
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
+          print(json.dumps(report,indent=2))
+          if int(report.get('successful_destinations',0)) < 1:
+              raise SystemExit('No configured social destination confirmed publication; history will not be marked successful.')
+          PY
+
+      - name: Record immutable duplicate-protection history
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime,timezone
+          from pathlib import Path
+          hp=Path('assets/data/major-web-launch-history.json')
+          rows=[]
+          if hp.exists():
+              try: rows=json.loads(hp.read_text(encoding='utf-8'))
+              except Exception: rows=[]
+          report=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
+          rows.append({
+            'published':True,
+            'published_at':datetime.now(timezone.utc).isoformat().replace('+00:00','Z'),
+            'campaign':'nexusnova_major_web_launch',
+            'commit':'${{ github.sha }}',
+            'run_id':'${{ github.run_id }}',
+            'successful_destinations':report.get('successful_destinations',0),
+            'outcomes':report.get('outcomes',[])
+          })
+          hp.parent.mkdir(parents=True,exist_ok=True)
+          hp.write_text(json.dumps(rows,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          PY
+          git config user.name 'nexusnova-social[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/data/major-web-launch-history.json
+          git commit -m "automation: record NexusNova major web launch ${{ github.run_id }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Publish launch verification summary
+        if: always()
+        run: |
+          echo '## NexusNova Major Web Launch' >> "$GITHUB_STEP_SUMMARY"
+          echo "Source commit: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f social-distribution-report.json ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat social-distribution-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No distribution report was produced; launch did not complete.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload launch diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-major-web-launch-${{ github.run_id }}
+          path: |
+            social-growth-publish.json
+            social-distribution-report.json
+          if-no-files-found: ignore
+          retention-days: 30
