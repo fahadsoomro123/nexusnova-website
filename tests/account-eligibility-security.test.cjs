@@ -28,6 +28,15 @@ test('Worker exposes eligibility only through allowed-origin authenticated API r
   assert.match(entry, /url\.pathname\.startsWith\(['"]\/api\/account\/['"]\)/);
 });
 
+test('shared household Wi-Fi observation alone never blocks value eligibility', () => {
+  const abuse = read('cloudflare/telegram-bot/auth-abuse.js');
+  assert.match(abuse, /Shared household\/public Wi-Fi is normal/);
+  assert.match(abuse, /reviewRequired:\s*false/);
+  assert.match(abuse, /sharedNetworkPatternObserved/);
+  assert.match(abuse, /shared-network-pattern-observed-nonblocking/);
+  assert.doesNotMatch(abuse, /reviewRequired\s*=\s*isNewAccount\s*&&\s*accountHashes\.length/);
+});
+
 test('dashboard guard uses bearer token and blocks value actions when eligibility is not verified', () => {
   const shell = read('assets/js/account-shell.js');
   const ui = read('assets/js/account-eligibility-ui.js');
