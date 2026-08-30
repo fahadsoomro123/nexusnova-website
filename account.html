@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
   <link rel="stylesheet" href="assets/css/account-dashboard.css?v=20260830-2">
   <link rel="stylesheet" href="assets/css/webapp-dashboard-v1.css?v=20260830-2">
+  <link rel="stylesheet" href="assets/css/mining-dashboard.css?v=20260830-1">
 </head>
 <body class="nn-account-dashboard">
 <header class="site-header" data-header>
@@ -29,11 +30,20 @@
     <section class="dashboard-hero"><div><span class="kicker">NEXUSNOVA WEB APP // ONLINE</span><h1>Your NexusNova control room.</h1><p>Secure Firebase identity, verification, connected accounts, referrals and truthful NVX mission state — in one compact dashboard.</p></div><div class="live-chip"><i></i><span data-live-state>SECURE SESSION</span></div></section>
 
     <section class="nn-webapp-panel" aria-labelledby="earn-nvx-title">
-      <div class="nn-webapp-head"><div><span class="nn-webapp-kicker">WEB APP // EARN NVX</span><h2 id="earn-nvx-title">Real account state. Premium mission control.</h2><p>Reward-bearing actions stay locked until official verification and a genuine server-side reward path are available.</p></div><div class="nn-webapp-live"><i></i> FIREBASE LINKED</div></div>
-      <div class="nn-webapp-overview">
-        <article class="nn-nvx-console"><span class="nn-console-label">NVX ACCOUNT BALANCE</span><div class="nn-nvx-value" data-web-nvx-balance>— <small>NVX</small></div><div class="nn-console-note" data-web-nvx-note>Loading your real account balance…</div></article>
-        <article class="nn-halving-console"><span class="nn-console-label">NVX HALVING WATCH</span><div class="nn-halving-state" data-web-halving-state>CHECKING TRUSTED SOURCE</div><div class="nn-halving-sub" data-web-halving-copy>The website will show only a real stage/rate source.</div></article>
-      </div>
+      <div class="nn-webapp-head"><div><span class="nn-webapp-kicker">WEB APP // EARN NVX</span><h2 id="earn-nvx-title">Real account state. Premium mission control.</h2><p>Mining below follows your real Firebase/Firestore session. Other reward-bearing actions stay locked until their official verification and server-side path are genuinely available.</p></div><div class="nn-webapp-live"><i></i> FIREBASE LINKED</div></div>
+      <article class="nn-mining-card" data-mining-card data-state="syncing" aria-labelledby="nn-mining-title">
+        <div class="nn-mining-head"><div><span class="nn-mining-kicker">NVX MINING // REAL FIRESTORE SESSION</span><h3 id="nn-mining-title" data-mining-title>Syncing secure mining session…</h3></div><span class="nn-mining-state" data-mining-badge>SYNCING</span></div>
+        <div class="nn-mining-body">
+          <div class="nn-mining-reactor-stage" aria-hidden="true"><i class="nn-mining-glow"></i><i class="nn-mining-orbit a"></i><i class="nn-mining-orbit b"></i><i class="nn-mining-orbit c"></i><div class="nn-mining-core"><strong>NVX</strong></div></div>
+          <div class="nn-mining-data">
+            <div class="nn-mining-balance-label">FIREBASE-LINKED ACCOUNT BALANCE</div><div class="nn-mining-balance" data-web-nvx-balance>— <small>NVX</small></div><p class="nn-mining-note" data-web-nvx-note>Loading your real account balance and mining session…</p>
+            <div class="nn-mining-metrics"><div class="nn-mining-metric"><span>SESSION</span><strong data-mining-timer>CHECKING</strong></div><div class="nn-mining-metric"><span>TOTAL MINED</span><strong data-mining-total>— NVX</strong></div><div class="nn-mining-metric"><span>24H SESSION</span><strong>+24 NVX ON VERIFIED COMPLETION</strong></div></div>
+            <div class="nn-mining-progress-wrap"><div class="nn-mining-progress-head"><span>UNCLAIMED SESSION PROGRESS</span><strong data-mining-progress-copy>Reading real Firestore state…</strong></div><div class="nn-mining-progress-track" data-mining-progress-track role="progressbar" aria-label="Mining session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i data-mining-progress></i></div></div>
+            <div class="nn-mining-halving"><span>HALVING</span><strong data-web-halving-state>CHECKING TRUSTED SOURCE</strong><small data-web-halving-copy>The website will show only real stage/rate data from a trusted source.</small></div>
+            <div class="nn-mining-actions"><button class="nn-mining-action" type="button" data-mining-action data-value-action disabled>CHECKING…</button><p class="nn-mining-message" data-mining-message role="status" aria-live="polite">Mining is manual and never starts automatically after signup.</p></div>
+          </div>
+        </div>
+      </article>
 
       <div class="nn-mission-title"><h3>Earn NVX / Missions</h3><span>Verified first-party actions only</span></div>
       <div class="nn-missions-grid">
@@ -69,6 +79,7 @@
 <script src="assets/js/account-shell.js?v=20260826-1" defer></script>
 <script type="module" src="assets/js/account-dashboard.js?v=20260826-6"></script>
 <script type="module" src="assets/js/webapp-dashboard-v1.js?v=20260830-1"></script>
+<script type="module" src="assets/js/mining-dashboard.js?v=20260830-1"></script>
 <script type="module" src="assets/js/telegram-avatar-refresh.js?v=20260826-3"></script>
 </body>
 </html>

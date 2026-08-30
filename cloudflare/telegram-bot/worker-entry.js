@@ -2,12 +2,14 @@ import worker from './worker.js';
 import { disposableEmailRisk, enforceAuthThrottle } from './auth-abuse.js';
 import { accountEligibilityRequest } from './account-eligibility.js';
 import { attachReferralRequest } from './referral-api.js';
+import { miningSessionRequest } from './mining-api.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
 const AUTH_CONFIG_PATH = '/api/auth/security-config';
 const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
 const ACCOUNT_ELIGIBILITY_PATH = '/api/account/eligibility';
 const REFERRAL_ATTACH_PATH = '/api/referral/attach';
+const MINING_SESSION_PATH = '/api/mining/session';
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
 const ALLOWED_TURNSTILE_HOSTNAME = 'nexusnovatools.com';
 const TURNSTILE_ACTION = 'auth';
@@ -20,7 +22,7 @@ const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/');
+    const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/') || url.pathname.startsWith('/api/mining/');
 
     if (secureApiPath && request.method === 'OPTIONS') {
       return authCors(request, new Response(null, { status: 204 }));
@@ -40,7 +42,14 @@ export default {
       } catch (_) {
         return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.', eligibleForValueActions: false }, 403);
       }
-      return authCors(request, await accountEligibilityRequest(request));
+      return authCors(request, await accountEligibilityRequest(request, env));
+    }
+
+    if (request.method === 'POST' && url.pathname === MINING_SESSION_PATH) {
+      try { assertAuthOrigin(request); } catch (_) {
+        return authJson(request, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);
+      }
+      return authCors(request, await miningSessionRequest(request, env));
     }
 
     if (request.method === 'POST' && url.pathname === REFERRAL_ATTACH_PATH) {
