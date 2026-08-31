@@ -23,7 +23,7 @@ test('Google gateway uses official Firebase popup auth with truthful errors', ()
   assert.match(google, /auth\/account-exists-with-different-credential/);
   assert.match(google, /safeAuthCode/);
   assert.match(google, /withAuthCode/);
-  assert.match(shell, /google-auth-ui\.js\?v=20260831-5/);
+  assert.match(shell, /google-auth-ui\.js\?v=20260831-6/);
   assert.doesNotMatch(shell, /google-auth-return-recovery/);
   assert.match(shell, /\[data-account-form\].*\[data-dashboard\]/s);
 });
