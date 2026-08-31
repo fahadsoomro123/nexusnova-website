@@ -48,6 +48,7 @@
 
   if(document.querySelector('[data-account-form]')||document.querySelector('[data-dashboard]')){
     loadModule('./google-auth-ui.js?v=20260831-4','nexusnovaGoogleAuth');
+    loadModule('./google-auth-return-recovery.js?v=20260831-1','nexusnovaGoogleRecovery');
     loadModule('./external-auth-ui.js?v=20260830-1','nexusnovaExternalAuth');
   }
 })();
