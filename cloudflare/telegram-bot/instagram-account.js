@@ -24,8 +24,8 @@ class InstagramApiError extends Error {
 
 export async function instagramAccountRequest(request, env = {}) {
   try {
-    if (request.method === 'GET') return instagramStatus(request, env);
-    if (request.method === 'POST') return linkInstagramAccount(request, env);
+    if (request.method === 'GET') return await instagramStatus(request, env);
+    if (request.method === 'POST') return await linkInstagramAccount(request, env);
     return json({ ok: false, code: 'method-not-allowed', error: 'Method not allowed.' }, 405);
   } catch (error) {
     if (error instanceof InstagramApiError) {
@@ -291,7 +291,7 @@ async function googleAccessToken(credentials) {
     exp: now + 3600
   });
   const form = new URLSearchParams({
-    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    grant_type: 'urn:ietf:params:grant-type:jwt-bearer',
     assertion
   });
   const response = await fetch('https://oauth2.googleapis.com/token', {
