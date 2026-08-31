@@ -51,13 +51,15 @@ This checklist is the source of truth for website readiness, production verifica
 - [x] Existing NexusNova account links a real Facebook identity
 - [x] Dashboard shows `CONNECTED` only after Firebase provider data confirms `facebook.com`
 - [x] Production linking verified on 2026-08-31
+- [x] Connected-state UI cleanup committed so stale `Connecting…` text is hidden after provider confirmation
 
 ### Apple
 
-- [ ] Apple provider production setup pending
-- [ ] Apple Developer configuration / Services ID pending
-- [ ] Firebase Apple provider configuration pending
-- [ ] Production linking not yet verified
+- [ ] Apple provider production setup intentionally deferred on 2026-08-31
+- [ ] Apple Developer configuration / Services ID not started
+- [ ] Firebase Apple provider configuration not started
+- [ ] Production linking not verified
+- [x] Dashboard must keep Apple non-connected while provider setup is deferred
 
 ### Instagram
 
@@ -134,16 +136,16 @@ This checklist is the source of truth for website readiness, production verifica
 | Google | Yes | Yes | Yes | VERIFIED |
 | X | Yes | Yes | Yes | VERIFIED |
 | Facebook | Yes | Yes | Yes | VERIFIED |
-| Apple | Pending | Pending | Pending | PENDING |
+| Apple | Deferred | Not run | No | DEFERRED |
 | Instagram | Supported mechanism pending | Pending | Pending | CONFIG REQUIRED |
 | Telegram | Yes | Yes | Yes | CONNECTED |
 
 ## 12. Immediate next work
 
-1. Confirm the deployed Facebook connected-button cleanup removes stale `Connecting…` text after linking.
-2. Decide whether Apple Sign in is worth enabling now; it requires Apple Developer configuration and does not require an iPhone just to build the web integration.
-3. If Apple is deferred, keep it clearly marked pending rather than showing a fake connected state.
-4. Continue Instagram only through a supported Meta/Instagram identity mechanism.
+1. After the current Pages deploy, do one visual refresh of `account.html` to confirm Facebook no longer leaves stale `Connecting…` text under the verified card.
+2. Keep Apple deferred and non-connected unless the owner later chooses to activate the required Apple developer setup.
+3. Continue Instagram only through a supported Meta/Instagram identity mechanism; no fake provider linking.
+4. Move on to the next website production/readiness task after the auth dashboard visual verification.
 
 ## 13. Non-negotiable rules
 
