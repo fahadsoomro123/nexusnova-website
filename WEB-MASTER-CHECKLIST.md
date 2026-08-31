@@ -51,7 +51,7 @@ This checklist is the source of truth for website readiness, production verifica
 - [x] Existing NexusNova account links a real Facebook identity
 - [x] Dashboard shows `CONNECTED` only after Firebase provider data confirms `facebook.com`
 - [x] Production linking verified on 2026-08-31
-- [x] Connected-state UI cleanup committed so stale `Connecting…` text is hidden after provider confirmation
+- [x] Connected-state UI cleanup committed so stale `Connecting…` text is removed after provider confirmation
 
 ### Apple
 
@@ -63,8 +63,17 @@ This checklist is the source of truth for website readiness, production verifica
 
 ### Instagram
 
-- [ ] Keep Instagram mission non-fake until a supported Meta/Instagram identity mechanism is wired
-- [ ] Do not award or display a connected state without server/provider verification
+- [x] Separate Meta app and Instagram API use case configured
+- [x] Professional Instagram account added as an Instagram Tester and accepted
+- [x] Business Login redirect configured: `https://nexusnovatools.com/instagram-callback.html`
+- [x] Public Instagram App ID wired into the website OAuth client
+- [x] Browser OAuth state validation and callback handoff implemented
+- [x] Authorization-code exchange and Instagram identity lookup implemented server-side only
+- [x] One-to-one Firebase/Firestore Instagram identity mapping implemented without storing the raw Instagram access token
+- [ ] Cloudflare Worker secret `INSTAGRAM_APP_SECRET` still needs to be configured outside the repo/chat
+- [ ] Updated Worker source still needs production deployment after the secret is configured
+- [ ] Production account linking and dashboard `CONNECTED` state not yet verified
+- [x] No Instagram reward/mining state is created by provider linking
 
 ## 3. Telegram identity
 
@@ -125,8 +134,10 @@ This checklist is the source of truth for website readiness, production verifica
 - [x] Required legal/policy pages exist
 - [x] `ads.txt` is present
 - [x] Website has original tools/content structure
-- [ ] Final AdSense readiness review remains a separate production gate
-- [ ] Apply only when content, UX, indexing and policy readiness are confirmed
+- [x] AdSense site ownership verified
+- [x] AdSense review requested
+- [x] Google CMP consent message configured
+- [ ] AdSense review decision pending
 
 ## 11. Production auth verification status
 
@@ -137,18 +148,23 @@ This checklist is the source of truth for website readiness, production verifica
 | X | Yes | Yes | Yes | VERIFIED |
 | Facebook | Yes | Yes | Yes | VERIFIED |
 | Apple | Deferred | Not run | No | DEFERRED |
-| Instagram | Supported mechanism pending | Pending | Pending | CONFIG REQUIRED |
+| Instagram | Code wired; Worker secret/deploy pending | Pending | Pending | CONFIG REQUIRED |
 | Telegram | Yes | Yes | Yes | CONNECTED |
 
 ## 12. Immediate next work
 
-1. After the current Pages deploy, do one visual refresh of `account.html` to confirm Facebook no longer leaves stale `Connecting…` text under the verified card.
-2. Keep Apple deferred and non-connected unless the owner later chooses to activate the required Apple developer setup.
-3. Continue Instagram only through a supported Meta/Instagram identity mechanism; no fake provider linking.
-4. Move on to the next website production/readiness task after the auth dashboard visual verification.
+1. Add `INSTAGRAM_APP_SECRET` to the production Cloudflare Worker as an encrypted secret; never place it in chat, source code, logs, or screenshots.
+2. Deploy the updated `nexusnova-telegram-bot` Worker and verify `/api/instagram/status` and `/api/instagram/link` are live.
+3. Retest `Connect Instagram` from `account.html`; mark Instagram complete only after the server-verified dashboard state says `CONNECTED`.
+4. Keep Apple deferred and non-connected unless the owner later chooses to activate the required Apple developer setup.
 
 ## 13. Non-negotiable rules
 
+- Keep website tools public.
+- Keep mining OFF after signup.
+- Real account state only.
+- Do not add fake functionality.
+- Do not expose secrets/tokens.
 - Never expose secrets in chat, commits, logs, screenshots, or public documentation.
 - Never fake connected provider states.
 - Never fake reward states.
