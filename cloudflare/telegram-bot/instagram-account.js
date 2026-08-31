@@ -291,7 +291,7 @@ async function googleAccessToken(credentials) {
     exp: now + 3600
   });
   const form = new URLSearchParams({
-    grant_type: 'urn:ietf:params:grant-type:jwt-bearer',
+    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
     assertion
   });
   const response = await fetch('https://oauth2.googleapis.com/token', {
