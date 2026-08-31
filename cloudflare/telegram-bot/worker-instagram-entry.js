@@ -30,7 +30,22 @@ export default {
       return instagramJson(request, { ok: false, code: 'not-found', error: 'Instagram API route not found.' }, 404);
     }
 
-    return instagramCors(request, await instagramAccountRequest(request, env));
+    try {
+      return instagramCors(request, await instagramAccountRequest(request, env));
+    } catch (error) {
+      const status = Number(error?.status || 0);
+      const code = String(error?.code || '').trim();
+      const publicMessage = String(error?.publicMessage || '').trim();
+      if (status >= 400 && status <= 599 && code && publicMessage) {
+        return instagramJson(request, { ok: false, code, error: publicMessage }, status);
+      }
+      console.error('Unhandled Instagram route error:', error instanceof Error ? error.message : 'Unknown error');
+      return instagramJson(request, {
+        ok: false,
+        code: 'internal',
+        error: 'Instagram account linking is temporarily unavailable.'
+      }, 502);
+    }
   }
 };
 
@@ -53,5 +68,6 @@ function instagramCors(request, response) {
 }
 
 function instagramJson(request, body, status = 200) {
-  return instagramCors(request, Response.json(body, { status }));
+  const headers = new Headers({ 'Content-Type': 'application/json; charset=utf-8' });
+  return instagramCors(request, new Response(JSON.stringify(body), { status, headers }));
 }
