@@ -280,10 +280,14 @@ function paintMission(config, card, user) {
     : `Connect your official ${config.label} identity to this existing NexusNova account.`;
   if (button) {
     button.hidden = connected;
-    if (connected) button.style.setProperty('display', 'none', 'important');
-    else button.style.removeProperty('display');
+    if (connected) {
+      button.style.setProperty('display', 'none', 'important');
+      button.textContent = `Connect ${config.label}`;
+    } else {
+      button.style.removeProperty('display');
+      button.textContent = `Connect ${config.label}`;
+    }
     button.disabled = !user || connected;
-    if (!connected) button.textContent = `Connect ${config.label}`;
   }
 }
 
