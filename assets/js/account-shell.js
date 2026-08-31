@@ -50,4 +50,8 @@
     loadModule('./google-auth-ui.js?v=20260831-6','nexusnovaGoogleAuth');
     loadModule('./external-auth-ui.js?v=20260831-5','nexusnovaExternalAuth');
   }
+
+  if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="instagram"]')){
+    loadModule('./instagram-auth-ui.js?v=20260901-1','nexusnovaInstagramAuth');
+  }
 })();
