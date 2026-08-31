@@ -20,7 +20,7 @@ test('X Apple and Facebook use official Firebase provider classes', () => {
   assert.match(code, /providerId: ['"]apple\.com['"]/);
   assert.match(code, /signInWithPopup\(auth, config\.provider\)/);
   assert.match(code, /linkWithPopup\(user, config\.provider\)/);
-  assert.match(shell, /external-auth-ui\.js\?v=20260831-1/);
+  assert.match(shell, /external-auth-ui\.js\?v=20260831-5/);
 });
 
 test('Facebook auth does not force an unavailable email scope', () => {
