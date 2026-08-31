@@ -18,8 +18,9 @@ test('provider activation doc stays aligned with live Firebase auth domain and p
   assert.match(doc, /https:\/\/nexusnova-6ade2\.firebaseapp\.com\/__\/auth\/handler/);
   assert.match(doc, /`nexusnovatools\.com`/);
 
-  assert.match(google, /GoogleAuthProvider\.credential/);
-  assert.match(google, /accounts\.oauth2\.initTokenClient/);
+  assert.match(google, /new GoogleAuthProvider\(\)/);
+  assert.match(google, /signInWithPopup\(auth, provider\)/);
+  assert.match(google, /linkWithPopup\(user, provider\)/);
   assert.match(external, /new TwitterAuthProvider\(\)/);
   assert.match(external, /new FacebookAuthProvider\(\)/);
   assert.match(external, /new OAuthProvider\(['"]apple\.com['"]\)/);
