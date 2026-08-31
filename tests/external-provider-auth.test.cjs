@@ -20,7 +20,12 @@ test('X Apple and Facebook use official Firebase provider classes', () => {
   assert.match(code, /providerId: ['"]apple\.com['"]/);
   assert.match(code, /signInWithPopup\(auth, config\.provider\)/);
   assert.match(code, /linkWithPopup\(user, config\.provider\)/);
-  assert.match(shell, /external-auth-ui\.js\?v=20260830-1/);
+  assert.match(shell, /external-auth-ui\.js\?v=20260831-1/);
+});
+
+test('Facebook auth does not force an unavailable email scope', () => {
+  const code = read('assets/js/external-auth-ui.js');
+  assert.doesNotMatch(code, /facebook\.addScope\(['"]email['"]\)/);
 });
 
 test('external providers remain truthful when configuration is unavailable or identity is already used', () => {
