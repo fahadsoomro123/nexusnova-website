@@ -8,30 +8,30 @@ const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-test('Google gateway uses official Google OAuth credential with Firebase auth', () => {
+test('Google gateway uses official Firebase popup auth with truthful errors', () => {
   const google = read('assets/js/google-auth-ui.js');
   const shell = read('assets/js/account-shell.js');
 
   assert.match(google, /GoogleAuthProvider/);
-  assert.match(google, /accounts\.oauth2\.initTokenClient/);
-  assert.match(google, /requestAccessToken/);
-  assert.match(google, /GoogleAuthProvider\.credential\(null, accessToken\)/);
-  assert.match(google, /signInWithCredential\(auth, credential\)/);
-  assert.doesNotMatch(google, /signInWithRedirect|linkWithRedirect|getRedirectResult|signInWithPopup|linkWithPopup/);
+  assert.match(google, /signInWithPopup\(auth, provider\)/);
+  assert.doesNotMatch(google, /signInWithRedirect|linkWithRedirect|getRedirectResult|initTokenClient|requestAccessToken|signInWithCredential|linkWithCredential/);
   assert.match(google, /auth\/operation-not-allowed/);
   assert.match(google, /auth\/unauthorized-domain/);
   assert.match(google, /auth\/web-storage-unsupported/);
+  assert.match(google, /auth\/popup-blocked/);
+  assert.match(google, /auth\/popup-closed-by-user/);
   assert.match(google, /auth\/account-exists-with-different-credential/);
   assert.match(google, /safeAuthCode/);
   assert.match(google, /withAuthCode/);
-  assert.match(shell, /google-auth-ui\.js\?v=20260831-4/);
+  assert.match(shell, /google-auth-ui\.js\?v=20260831-5/);
+  assert.doesNotMatch(shell, /google-auth-return-recovery/);
   assert.match(shell, /\[data-account-form\].*\[data-dashboard\]/s);
 });
 
-test('Google account linking uses direct Firebase credential and preserves identity safety', () => {
+test('Google account linking uses Firebase popup and preserves identity safety', () => {
   const google = read('assets/js/google-auth-ui.js');
 
-  assert.match(google, /linkWithCredential\(user, credential\)/);
+  assert.match(google, /linkWithPopup\(user, provider\)/);
   assert.match(google, /providerData/);
   assert.match(google, /providerId === ['"]google\.com['"]/);
   assert.match(google, /auth\/credential-already-in-use/);
