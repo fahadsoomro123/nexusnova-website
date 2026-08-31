@@ -3,9 +3,8 @@ import {
   getAuth,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
-  linkWithRedirect,
-  getRedirectResult,
+  signInWithCredential,
+  linkWithCredential,
   getAdditionalUserInfo
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import {
@@ -27,11 +26,11 @@ const firebaseConfig = {
   measurementId: 'G-YLPFKWSS12'
 };
 
+const GOOGLE_WEB_CLIENT_ID = '49791194817-3tpeqjej5auqstc8m2ci333v6ulboe34.apps.googleusercontent.com';
+const GOOGLE_GSI_SRC = 'https://accounts.google.com/gsi/client';
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
 
 const AUTH_MARKER = 'nexusnova_auth_seen_v1';
 const REFERRAL_KEY = 'nexusnova_pending_referral_v1';
@@ -44,6 +43,7 @@ const DEFINITIVE_REFERRAL_ERRORS = new Set([
   'referral-window-expired',
   'referral-already-attached'
 ]);
+let googleScriptPromise = null;
 
 function cleanText(value, max = 120) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -130,6 +130,53 @@ async function attachPendingReferralForNewAccount(user) {
   }
 }
 
+function loadGoogleIdentityServices() {
+  if (window.google?.accounts?.oauth2) return Promise.resolve(window.google);
+  if (googleScriptPromise) return googleScriptPromise;
+  googleScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${GOOGLE_GSI_SRC}"]`);
+    const done = () => window.google?.accounts?.oauth2 ? resolve(window.google) : reject(new Error('Google Identity Services did not initialize.'));
+    if (existing) {
+      if (window.google?.accounts?.oauth2) return resolve(window.google);
+      existing.addEventListener('load', done, { once: true });
+      existing.addEventListener('error', () => reject(new Error('Google Identity Services failed to load.')), { once: true });
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = GOOGLE_GSI_SRC;
+    script.async = true;
+    script.defer = true;
+    script.addEventListener('load', done, { once: true });
+    script.addEventListener('error', () => reject(new Error('Google Identity Services failed to load.')), { once: true });
+    document.head.appendChild(script);
+  });
+  return googleScriptPromise;
+}
+
+async function requestGoogleAccessToken() {
+  const google = await loadGoogleIdentityServices();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finishReject = message => {
+      if (settled) return;
+      settled = true;
+      reject(new Error(message));
+    };
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_WEB_CLIENT_ID,
+      scope: 'openid email profile',
+      callback: response => {
+        if (settled) return;
+        if (!response?.access_token) return finishReject(cleanText(response?.error_description || response?.error || 'Google did not return an access token.', 200));
+        settled = true;
+        resolve(response.access_token);
+      },
+      error_callback: error => finishReject(cleanText(error?.message || error?.type || 'Google sign-in window did not complete.', 200))
+    });
+    client.requestAccessToken({ prompt: 'select_account' });
+  });
+}
+
 function ensureGoogleStyles() {
   if (document.querySelector('style[data-nn-google-auth-style]')) return;
   const style = document.createElement('style');
@@ -199,29 +246,9 @@ async function finishGatewayCredential(result) {
   const ensured = await ensureProfile(result.user);
   if (ensured.created || info?.isNewUser === true) await attachPendingReferralForNewAccount(result.user);
   try { localStorage.setItem(AUTH_MARKER, '1'); } catch (_) {}
-  window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google-redirect' });
+  window.gtag?.('event', info?.isNewUser ? 'sign_up' : 'login', { method: 'google-credential' });
   gatewayStatus('Google account verified. Opening your NexusNova dashboard…', 'success');
   setTimeout(() => location.assign('account.html'), 120);
-}
-
-async function resumeRedirectResult() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (!result?.user) return;
-    const card = document.querySelector('[data-mission="google"]');
-    if (card) {
-      await result.user.reload();
-      paintGoogleMission(card, auth.currentUser || result.user);
-      window.gtag?.('event', 'account_link', { provider: 'google', method: 'redirect' });
-      return;
-    }
-    if (document.querySelector('[data-account-form]')) await finishGatewayCredential(result);
-  } catch (error) {
-    console.warn('[NexusNova Google Redirect]', safeAuthCode(error) || 'google-redirect-failed');
-    const card = document.querySelector('[data-mission="google"]');
-    if (card) paintGoogleError(card, error);
-    else gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
-  }
 }
 
 function setupGateway() {
@@ -236,7 +263,7 @@ function setupGateway() {
     <button class="account-submit nn-google-auth-button" type="button" data-google-signin-button>
       <span class="nn-google-g" aria-hidden="true">G</span><span>CONTINUE WITH GOOGLE</span>
     </button>
-    <p class="nn-google-auth-note">Google opens as a full-page secure Firebase flow. Mining never auto-starts.</p>
+    <p class="nn-google-auth-note">Google uses an official OAuth credential and Firebase identity. Mining never auto-starts.</p>
   `;
   form.parentNode?.insertBefore(wrap, form);
   const button = wrap.querySelector('[data-google-signin-button]');
@@ -244,12 +271,15 @@ function setupGateway() {
     if (button.disabled) return;
     button.disabled = true;
     const label = button.querySelector('span:last-child');
-    if (label) label.textContent = 'OPENING GOOGLE…';
-    gatewayStatus('Opening full-page official Google sign-in…');
+    if (label) label.textContent = 'CONNECTING GOOGLE…';
+    gatewayStatus('Opening official Google sign-in…');
     try {
-      await signInWithRedirect(auth, provider);
+      const accessToken = await requestGoogleAccessToken();
+      const credential = GoogleAuthProvider.credential(null, accessToken);
+      const result = await signInWithCredential(auth, credential);
+      await finishGatewayCredential(result);
     } catch (error) {
-      console.warn('[NexusNova Google Redirect Start]', safeAuthCode(error) || 'redirect-start-failed');
+      console.warn('[NexusNova Google Credential]', safeAuthCode(error) || 'google-credential-failed');
       gatewayStatus(withAuthCode(googleErrorMessage(error, false), error), 'error');
       button.disabled = false;
       if (label) label.textContent = 'CONTINUE WITH GOOGLE';
@@ -279,19 +309,28 @@ function setupDashboard() {
     if (!user || button.disabled) return;
     delete card.dataset.authErrorCode;
     button.disabled = true;
-    button.textContent = 'Opening Google…';
+    button.textContent = 'Connecting…';
     const copy = card.querySelector('[data-mission-copy]');
-    if (copy) copy.textContent = 'Opening full-page official Google account linking…';
+    if (copy) copy.textContent = 'Opening official Google account linking…';
     try {
-      await linkWithRedirect(user, provider);
+      const accessToken = await requestGoogleAccessToken();
+      const credential = GoogleAuthProvider.credential(null, accessToken);
+      await linkWithCredential(user, credential);
+      await user.reload();
+      paintGoogleMission(card, auth.currentUser || user);
+      window.gtag?.('event', 'account_link', { provider: 'google', method: 'credential' });
     } catch (error) {
-      console.warn('[NexusNova Google Link Redirect]', safeAuthCode(error) || 'redirect-start-failed');
+      console.warn('[NexusNova Google Link Credential]', safeAuthCode(error) || 'google-link-credential-failed');
       paintGoogleError(card, error);
     }
   });
-  onAuthStateChanged(auth, user => paintGoogleMission(card, user));
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      try { await user.reload(); } catch (_) {}
+    }
+    paintGoogleMission(card, auth.currentUser || user);
+  });
 }
 
 setupGateway();
 setupDashboard();
-resumeRedirectResult();
