@@ -173,9 +173,9 @@ function paintGoogleMission(card, user) {
     ? 'Official Google identity is linked to this Firebase account.'
     : 'Connect your official Google identity to this existing NexusNova account.';
   if (button) {
-    button.hidden = connected;
+    button.hidden = false;
     button.disabled = !user || connected;
-    button.textContent = 'Connect Google';
+    button.textContent = connected ? 'Connected Google' : 'Connect Google';
   }
 }
 
