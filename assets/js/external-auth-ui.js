@@ -44,7 +44,6 @@ const DEFINITIVE_REFERRAL_ERRORS = new Set([
 
 const twitter = new TwitterAuthProvider();
 const facebook = new FacebookAuthProvider();
-facebook.addScope('email');
 const apple = new OAuthProvider('apple.com');
 apple.addScope('email');
 apple.addScope('name');
