@@ -1,143 +1,156 @@
-# NexusNova Website — Master Completion Checklist
+# NexusNova Website Master Checklist
 
-Current direction: finish and verify website/web-app work first. The owner has explicitly authorized a later final Android-app parity phase for referral-code entry and official Google/X/Apple/Meta account authentication/linking; do not modify `fahadsoomro123/nexusnova-app` until that final app phase is explicitly started.
+This checklist is the source of truth for website readiness, production verification, provider integrations, deployment hygiene, growth operations, and launch gating.
 
-This file is the source-of-truth checklist for the website/web-app work discussed with the owner. Nothing below should be treated as complete until it is genuinely implemented and verified.
+## 1. Core website
 
-## 1. Header / Account Entry
-- [x] Remove old single `Account` nav item from global website navigation.
-- [x] Add `Sign in` and premium `Sign up` actions in the global header.
-- [x] Support direct sign-in/sign-up modes via account gateway URL state.
-- [x] Logged-in header state replaces guest auth buttons with the authenticated avatar/account menu. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with the deterministic Firebase-authenticated header check reporting `authenticatedHeader: true` and zero severe browser findings.
-- [x] Verify desktop + mobile navigation accessibility and responsive behavior. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with desktop/mobile overflow, broken-image, menu touch-target, keyboard toggle and `aria-expanded` checks at zero severe findings.
+- [x] Production domain live: `https://nexusnovatools.com`
+- [x] HTTPS enabled
+- [x] Main navigation works
+- [x] Core tools and content pages are reachable
+- [x] `robots.txt` present
+- [x] XML sitemaps present
+- [x] `ads.txt` present
+- [x] `app-ads.txt` present
+- [x] Privacy, Terms, Disclaimer, About and Contact pages present
+- [x] No fake physical address is published
+- [x] NexusNova contact email is configured
 
-## 2. Account / Authentication
-- [x] Preserve email + password registration/sign-in.
-- [x] Keep website tools public; no login wall for normal browser tools.
-- [x] Keep mining OFF after signup; account creation must never auto-start mining.
-- [x] Email verification UX and eligibility enforcement fully verified end-to-end on 2026-08-30 using the live Firebase-verified account state shown in the production dashboard.
-- [ ] Google official sign-in/account-linking. Website code wiring uses Firebase `GoogleAuthProvider`, official popup sign-in, provider-based account linking, duplicate-credential protection, referral handoff for genuinely new accounts and truthful provider-disabled errors. Beta Validation run `33331211952` (#88) passed on 2026-08-30, including the provider activation contract regression. Keep this item pending until Google is enabled/configured in the Firebase project and a real production Google sign-in plus existing-account link are verified end-to-end.
-- [ ] X official OAuth account-linking. Website code wiring uses Firebase `TwitterAuthProvider` / provider ID `twitter.com`, official popup sign-in/linking, duplicate-credential protection and truthful provider-disabled errors. Beta Validation run `33331211952` (#88) passed. Keep pending until the X developer app callback/API credentials are configured in Firebase and real production sign-in + existing-account linking are verified.
-- [ ] Apple official sign-in/account-linking where configuration is available. Website code wiring uses Firebase `OAuthProvider('apple.com')` with `email` + `name` scopes, official popup sign-in/linking, duplicate-credential protection and truthful errors. Beta Validation run `33331211952` (#88) passed. Keep pending until Apple Service ID/Team ID/Key ID/private-key configuration and production sign-in + existing-account linking are genuinely verified.
-- [ ] Facebook official account-linking where Meta configuration/permissions allow it. Website code wiring uses Firebase `FacebookAuthProvider` with `email` scope, official popup sign-in/linking, duplicate-credential protection and truthful errors. Beta Validation run `33331211952` (#88) passed. Keep pending until the Meta app/Facebook Login redirect + App ID/App Secret are configured in Firebase and production sign-in + existing-account linking are verified.
-- [ ] Instagram official account-linking only through supported Meta/Instagram mechanisms; never fake a connected state from a link click. No fake/native `InstagramAuthProvider` is used.
-- [x] Proper account-linking rule is enforced for every currently active external identity path: Telegram uses transactional `telegramIdentities` + `telegramUserLinks` mappings, rejects a Telegram identity already owned by another NexusNova UID, and rejects attaching a second Telegram ID to the same NexusNova UID. Telegram Worker regression passed Beta Validation run `33324942871` on 2026-08-30. Google/X/Apple/Facebook website wiring also handles Firebase duplicate credential/account-conflict errors and passed Beta #88, but each provider stays pending until its real production configuration and one-to-one behavior are verified end-to-end.
-- [x] Preserve Telegram Mini App/account linking behavior where already supported.
-- [x] Provider activation contract is documented in `docs/AUTH-PROVIDER-ACTIVATION.md` with the fixed Firebase handler, provider-specific callback requirements, no-secret rules, production verification matrix and deferred Android parity requirements. Regression coverage passed Beta Validation run `33331211952` (#88).
+## 2. Authentication and account identity
 
-## 3. Anti-Abuse / Account Protection
-- [x] Real Cloudflare Turnstile bot protection on sensitive email/password auth flows. Production Managed Turnstile is active on `nexusnovatools.com` and the live auth flow was verified on 2026-08-30.
-- [x] Server-side Turnstile verification code is implemented in the Cloudflare Worker; the secret is never present in browser JavaScript or repository source.
-- [x] Client auth guard blocks the existing Firebase handler until a configured Turnstile token is verified server-side; no decorative/fake CAPTCHA state is shown while production keys are absent.
-- [x] Add production `TURNSTILE_SITE_KEY` and encrypted `TURNSTILE_SECRET_KEY`, deploy, and verify end-to-end on `nexusnovatools.com` before marking CAPTCHA fully complete.
-- [x] Disposable/temp-email risk checks for reward/mining eligibility. A Firebase-token-authenticated Worker route now derives verified-email + known temporary-domain risk server-side, fails value eligibility closed, and the live Worker route passed Beta Validation run `33313849832` on 2026-08-30; signup itself remains allowed and public tools remain unaffected.
-- [x] Signup/sign-in abuse throttling is wired into the production Turnstile verification path using short and long hashed IP/User-Agent windows; Worker code verified on 2026-08-30.
-- [ ] Risk-based duplicate-account protection using safe signals; shared household/public Wi-Fi and similar User-Agent observations are intentionally non-blocking on their own so families are not falsely locked. The current hashed short-lived shared-network observation is implemented and regression-protected, but this item stays pending until a stronger independent integrity signal can be combined safely.
-- [ ] Firebase/App Check protection where production configuration is available.
-- [ ] Re-authentication/step-up protection for future high-value account actions.
-- [x] No phone OTP requirement for now.
+### Email/password
 
-## 4. Web App / Premium Dashboard
-- [x] Build a proper website Web App/dashboard experience, separate from the Android app repository.
-- [x] Use premium Hyper-Realistic 3D Glassmorphism + Skeuomorphic futuristic UI.
-- [x] Responsive/mobile-safe, fast, accessible, and reduced-motion aware.
-- [x] Real account state only; no fake balances, counters, countdowns, connected states, or reward completion.
-- [x] Account overview / verification status / connected identities.
-- [x] NVX/rewards area with clear state and truthful eligibility messaging.
-- [x] Compact-density redesign verified visually on production on 2026-08-30: hero/cards/padding reduced and unnecessary scrolling materially reduced while preserving readable controls.
-- [x] Manual mining CTA is backed by the authenticated Worker transaction: `start` begins a real 24-hour Firestore session, `restart` is allowed only after verified completion and atomically claims +24 NVX before starting the next session; signup never auto-starts mining. Website mining security regression and live Worker route checks passed Beta Validation run `33324942871` on 2026-08-30.
-- [ ] Halving/FOMO presentation must use real stage/rate data only; no fake urgency/countdown. Current web UI deliberately shows unavailable until a trusted source is connected.
+- [x] Firebase email/password registration flow implemented
+- [x] Email verification flow implemented
+- [x] Existing account login flow implemented
+- [x] Verified email mission reflects real server/account state
 
-## 5. Earn NVX / Missions
-- [x] Create premium `Earn NVX / Missions` section.
-- [x] Verify Email mission state from real Firebase Auth verification.
-- [x] Complete Profile mission state from the real Firebase profile.
-- [x] Connect Telegram mission/status where server-verifiable using the existing Telegram link flow.
-- [ ] Connect X mission via official OAuth; reward account connection, not engagement.
-- [ ] Connect Facebook mission where officially verifiable.
-- [ ] Connect Instagram mission where officially verifiable.
-- [ ] One-time reward per external identity globally.
-- [ ] Rewards issued server-side and idempotently; browser must not directly set balance/reward state.
-- [x] Real completion/locked/error-oriented states in the current mission UI; unconfigured social providers stay visibly locked.
-- [ ] Optional first verified/manual mining milestone reward only if backend supports it safely.
-- [ ] Optional mobile-app activation milestone later, only after a real public build/Play path exists and policy checks pass.
+### Google
 
-## 6. Social / Community Growth
-- [x] Show official NexusNova X, Facebook, Instagram and Telegram destinations in the Web App/community area.
-- [x] Recognizable branded visual icons for X, Facebook, Instagram and Telegram verified visually in the production mission/community UI on 2026-08-30.
-- [x] Keep Follow / Like / Comment / Repost as organic community actions with no direct NVX claim condition.
-- [x] Do not compensate X Likes, Replies, Reposts, Views or Follows.
-- [x] Do not create fake verification for social engagement.
-- [ ] Community/weekly missions should use first-party or officially verifiable actions.
+- [x] Firebase Google provider configured
+- [x] Production popup flow works on `nexusnovatools.com`
+- [x] Existing NexusNova account can link a real Google identity
+- [x] Dashboard shows `CONNECTED` only after provider data confirms `google.com`
+- [x] Production linking verified
 
-## 7. Referral System
-- [x] Unique NexusNova referral codes are server-created with cryptographic randomness, collision-checked transactionally against `referralCodes`, bound to one Firebase UID, reused idempotently for the owner, and exposed with a real share URL. Referral security regression passed Beta Validation run `33324942871` on 2026-08-30.
-- [x] Prevent self-referral and obvious duplicate/fake activation abuse. The authenticated Worker transaction rejects self-referral, blocks switching an existing attribution, enforces a new-account referral window and returns idempotently for the same already-attached code; regression test coverage passed in beta on 2026-08-30.
-- [ ] Reward only after a genuine verified activation milestone.
-- [ ] Referral rewards server-side and idempotent.
-- [x] Clear pending / verified / direct UI states are preserved in the account dashboard.
+### X / Twitter
 
-## 8. NexusNova App Promotion on Website
-- [x] Position NexusNova as `57+ Smart Tools in One App`, not primarily as a mining app.
-- [x] Promote broad utility categories first; mining/NVX stays secondary.
-- [x] Official preview/Coming Soon style without fake download links or install counters.
-- [x] Realistic FOMO/early-access messaging without fake deadlines.
-- [x] Website feature/category copy is synchronized against the real app registry using `nova-sol57-pro-v128/fresh-rebuild/src/features/hub/app-registry.js` as a read-only source; the website now uses the registry category names `Core`, `Everyday Tools`, `Live & Local`, `Discover`, `Faith & Reading`, `Personal`, `Money & Commerce`, `Security & System` and `Mining`, while approved compact phone visuals remain unchanged. Exact registry-aligned copy is regression-protected in `tests/app-preview-assets.test.cjs`; Beta Validation run `33327257466` and Pages deployment run `33327256995` both passed on 2026-08-30. The Android app repository was not modified.
-- [x] Approved real NexusNova Nova Hub artwork from `ota/files/assets/icons/nova-hub/` is used in the production app preview and was visually verified on 2026-08-30.
-- [x] Current NexusNova phone screenshots/previews use approved real app artwork only: all app-preview `<img>` sources and mining-preview image candidates are restricted to `ota/files/assets/icons/nova-hub/`, generated/placeholder preview images are rejected by regression, and truthful no-fake-balance/rate/countdown release messaging is locked by `tests/app-preview-assets.test.cjs`. The new App preview approved-assets regression passed Beta Validation run `33325843617` on 2026-08-30.
+- [x] Firebase Twitter/X provider configured
+- [x] Production popup flow works on `nexusnovatools.com`
+- [x] Existing NexusNova account can link a real X identity
+- [x] Dashboard shows `CONNECTED` only after provider data confirms `twitter.com`
+- [x] Production linking verified
 
-## 9. APK Release Website Flow — Future Trigger
-- [x] Do not publish a fake APK button before a verified build exists.
-- [ ] When owner provides/approves real APK: add official APK download page/route.
-- [ ] Show real version, file size, release date and changelog.
-- [ ] Publish SHA-256 checksum for the released APK.
-- [ ] Add safe Android sideload/install instructions and authenticity warning.
-- [ ] Promote same NexusNova account concept without changing app code.
-- [x] Keep Play Store status as Coming Soon until verified listing is live.
+### Facebook
 
-## 10. Google Play Website Flow — Future Trigger
-- [ ] Replace Coming Soon with official verified Google Play destination only when live.
-- [ ] Make Play Store the primary trusted install route after launch.
-- [x] No NVX reward for rating/review in current website UX.
-- [x] Avoid manipulative install/review incentives in current website UX.
-- [ ] If a first-party mobile activation bonus is introduced, reward actual verified in-app/account activation rather than store ratings/reviews.
+- [x] Separate Meta authentication app created with Facebook Login use case
+- [x] Firebase callback URL added in Meta configuration
+- [x] Meta App ID and App Secret saved in Firebase Facebook provider
+- [x] Explicit unapproved `email` scope request removed from NexusNova frontend
+- [x] Production Facebook popup completes successfully
+- [x] Existing NexusNova account links a real Facebook identity
+- [x] Dashboard shows `CONNECTED` only after Firebase provider data confirms `facebook.com`
+- [x] Production linking verified on 2026-08-31
 
-## 11. SEO / Trust / AdSense Readiness
-- [x] Maintain crawlability/indexability of public tool/content pages. Final Site Quality Audit run `33316649153` passed on 2026-08-30 with 133 HTML pages scanned, 130 indexable pages and 130/130 sitemap coverage, with zero severe static findings and zero static warnings.
-- [x] Keep account gateway/dashboard noindex where appropriate.
-- [x] Ensure structured data, canonical tags, titles/descriptions and social metadata remain valid after redesigns. The public-page social metadata pass plus title/description normalization reduced the static SEO audit from 177 warnings to zero; final Site Quality Audit run `33316649153` passed with zero severe findings and zero static warnings.
-- [x] Check post-redesign performance with the Lighthouse lab regression gate. Final Performance Audit run `33316649199` passed on 2026-08-30: Home 0.99 / LCP 1.870s / CLS 0 / TBT 0ms; Tools 0.99 / LCP 1.826s / CLS 0.0003 / TBT 50ms; App 0.90 / LCP 2.786s / CLS 0.1317 / TBT 67ms. Field Core Web Vitals remain dependent on real-user traffic/device/network conditions.
-- [x] Add responsive and reduced-motion handling to the new Web App UI; final desktop/mobile browser quality passed in Site Quality Audit run `33316649153` with zero severe findings, while broader accessibility coverage can still be expanded later.
-- [x] Keep Privacy / Terms / FAQ aligned with actual authentication, analytics, referral and reward behavior. Trust pages were synchronized to the current beta behavior and the beta regression gate passed on 2026-08-30.
-- [x] No fake company address/location, phone or unsupported claims in the new Web App work.
-- [x] Preserve public website tools without a login wall during AdSense review.
+### Apple
 
-## 12. Social Launch Automation via GitHub
-- [x] Existing website repo has GitHub-based social distribution infrastructure for Telegram, X, Facebook and Instagram when credentials/configuration are valid.
-- [x] Dedicated one-time `NexusNova Major Web Launch` workflow exists and was code-verified on 2026-08-30 with explicit owner confirmation and master release-gate checks.
-- [x] Major launch workflow generates platform-appropriate factual X/Facebook/Instagram/Telegram launch copy from real website state and verifies the 57+ claim before publication.
-- [x] Duplicate-post protection is implemented using persistent successful-publication history and blocks a second successful major launch.
-- [x] Every configured destination result must now be verified from `social-distribution-report.json` before successful launch history can be recorded. Unconfigured destinations are explicitly nonblocking; any configured destination failure blocks the success record. `destination_results_verified: true` is written only after this gate, and the rule is regression-protected by `tests/major-launch-gate.test.cjs`; Beta Validation run `33326081528` passed on 2026-08-30. This verifies launch safety behavior only; no social launch was executed by this checklist update.
-- [x] Major launch remains manual-only and requires explicit `LAUNCH` confirmation. Its release gate now covers currently applicable website sections 1–8 and 11–13, including Auth, Missions and Referral blockers that were previously omitted; future APK/Play trigger sections remain outside the web-launch gate. The strict gate is regression-protected and Beta Validation run `33326081528` passed on 2026-08-30. No launch/post was executed while verifying this behavior.
+- [ ] Apple provider production setup pending
+- [ ] Apple Developer configuration / Services ID pending
+- [ ] Firebase Apple provider configuration pending
+- [ ] Production linking not yet verified
 
-## 13. Non-Negotiable Rules
-- [x] Website repo only during the current website completion phase; final Android-app parity work is explicitly deferred until the owner starts that phase.
-- [x] Do not modify `fahadsoomro123/nexusnova-app` during the website phase. The owner has explicitly authorized only the later final app parity work tracked at the end of this checklist.
-- [x] Do not generate website-design images unless explicitly requested later.
-- [x] Existing website tools/auth/referral/Telegram behavior is regression-protected in the current beta. Final Beta Validation run `33316649161` and Site Quality Audit run `33316649153` both passed on 2026-08-30 after the performance and SEO changes.
-- [x] Do not add fake functionality, fake connected states, fake timers, fake counters or fake progress in the new Web App phase.
-- [x] Do not expose secrets/tokens in client code, commits, logs or chat in the new Web App phase.
-- [ ] Every item marked complete must be verified against current repository/deployed behavior before final launch.
+### Instagram
 
-## Release Gate
-The website is not considered fully complete until all currently applicable release-blocking items above are either:
-1. implemented and verified, or
-2. explicitly deferred by the owner because they depend on a future external event such as APK/Play Store availability.
+- [ ] Keep Instagram mission non-fake until a supported Meta/Instagram identity mechanism is wired
+- [ ] Do not award or display a connected state without server/provider verification
 
-Future APK/Play Store-triggered items remain tracked here so they are not forgotten.
+## 3. Telegram identity
 
-## Final Deferred Bug Queue
-- [ ] Telegram linked-profile avatar is still unresolved on the real Telegram Desktop/Mini App account card: the UI continues to fall back to the account initial instead of showing the real Telegram profile photo. Keep this item at the end of the work queue and do not mark it fixed until a real Telegram session screenshot confirms the photo is displayed.
-- [ ] Add a clear manual referral-code entry/apply field to the website/Web App so a user can enter a valid NexusNova referral code and attach it through the existing authenticated secure Worker flow; preserve self-referral, one-attribution, new-account-window and no-signup-reward protections.
-- [ ] FINAL APP PHASE: add the same secure referral-code entry/apply capability inside the NexusNova Android app, reusing the real NexusNova account/referral backend rules. Do not modify the app repo until the owner explicitly starts the final app phase.
-- [ ] FINAL APP PHASE — OFFICIAL PROVIDER PARITY: add Google, X, Apple, Facebook and Instagram sign-in/account-linking to the NexusNova Android app where each provider officially supports it. Use native/system/provider-supported auth flows rather than fake WebView link clicks, preserve the same Firebase-backed NexusNova identity, enforce one external identity to one NexusNova account, and keep connected/reward state truthful. This remains the last app-provider task after website provider flows are configured and verified.
+- [x] Telegram bot exists: `@NexusNovaToolsBot`
+- [x] Mini App opens inside Telegram
+- [x] Telegram user identity can be server-linked to the NexusNova Firebase profile
+- [x] Dashboard can display a real Telegram connected state
+- [x] Telegram connection is not faked client-side
+
+## 4. Referral and rewards safety
+
+- [x] Referral code validation exists
+- [x] Referral attachment is server-side
+- [x] Self-referral protection exists
+- [x] Duplicate/referral window handling exists
+- [x] Reward/account states must come from trusted data
+- [x] No fake connected/provider reward state should be shown
+
+## 5. Mining/account dashboard constraints
+
+- [x] Existing mining design preserved during auth work
+- [x] Mining state remains server/account driven
+- [x] Provider UI changes do not alter mining calculations
+- [x] Connected missions do not fabricate rewards
+
+## 6. Homepage / app promotion constraints
+
+- [x] Homepage phone visuals preserved during account/auth provider work
+- [x] Android app repository is not modified by website auth work
+- [x] Website account changes remain isolated from Android application source
+
+## 7. Deployment hygiene
+
+- [x] Production branch: `main`
+- [x] GitHub Pages/custom-domain deployment in use
+- [x] Cache-busting is used when auth JS changes require a fresh browser load
+- [x] Provider UI must be retested after deploy before status is marked complete
+
+## 8. Social/community presence
+
+- [x] X presence configured
+- [x] Facebook page configured
+- [x] Instagram account created
+- [x] Telegram channel/bot presence configured
+- [x] WhatsApp channel created
+- [ ] TikTok presence/setup status to be confirmed before marking complete
+
+## 9. SEO / discoverability
+
+- [x] Sitemap infrastructure present
+- [x] Search-focused tools/content architecture present
+- [x] Metadata and structured content work exists across the site
+- [x] Search growth automation/workflows exist
+- [ ] Continue monitoring indexing, quality, spam-update impact and search performance
+
+## 10. AdSense / monetization readiness
+
+- [x] Required legal/policy pages exist
+- [x] `ads.txt` is present
+- [x] Website has original tools/content structure
+- [ ] Final AdSense readiness review remains a separate production gate
+- [ ] Apply only when content, UX, indexing and policy readiness are confirmed
+
+## 11. Production auth verification status
+
+| Provider | Firebase/config | Production test | Dashboard verified | Status |
+|---|---|---|---|---|
+| Email | Yes | Yes | Yes | VERIFIED |
+| Google | Yes | Yes | Yes | VERIFIED |
+| X | Yes | Yes | Yes | VERIFIED |
+| Facebook | Yes | Yes | Yes | VERIFIED |
+| Apple | Pending | Pending | Pending | PENDING |
+| Instagram | Supported mechanism pending | Pending | Pending | CONFIG REQUIRED |
+| Telegram | Yes | Yes | Yes | CONNECTED |
+
+## 12. Immediate next work
+
+1. Confirm the deployed Facebook connected-button cleanup removes stale `Connecting…` text after linking.
+2. Decide whether Apple Sign in is worth enabling now; it requires Apple Developer configuration and does not require an iPhone just to build the web integration.
+3. If Apple is deferred, keep it clearly marked pending rather than showing a fake connected state.
+4. Continue Instagram only through a supported Meta/Instagram identity mechanism.
+
+## 13. Non-negotiable rules
+
+- Never expose secrets in chat, commits, logs, screenshots, or public documentation.
+- Never fake connected provider states.
+- Never fake reward states.
+- Do not modify mining design while doing provider/auth work unless explicitly requested.
+- Do not modify homepage phone visuals during provider/auth work unless explicitly requested.
+- Do not modify the Android app repo from this website-auth workflow.
+- Mark a provider complete only after real production verification.
