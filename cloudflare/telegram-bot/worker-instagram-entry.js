@@ -1,7 +1,9 @@
 import workerEntry from './worker-entry.js';
 import { instagramAccountRequest } from './instagram-account-v2.js';
+import { createInstagramAuthorization, validateInstagramLinkRequest } from './instagram-oauth-state.js';
 
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
+const INSTAGRAM_START_PATH = '/api/instagram/start';
 const INSTAGRAM_STATUS_PATH = '/api/instagram/status';
 const INSTAGRAM_LINK_PATH = '/api/instagram/link';
 
@@ -24,6 +26,7 @@ export default {
     }
 
     const supported =
+      (request.method === 'POST' && url.pathname === INSTAGRAM_START_PATH) ||
       (request.method === 'GET' && url.pathname === INSTAGRAM_STATUS_PATH) ||
       (request.method === 'POST' && url.pathname === INSTAGRAM_LINK_PATH);
     if (!supported) {
@@ -31,7 +34,15 @@ export default {
     }
 
     try {
-      return instagramCors(request, await instagramAccountRequest(request, env));
+      if (request.method === 'POST' && url.pathname === INSTAGRAM_START_PATH) {
+        return instagramJson(request, await createInstagramAuthorization(request, env));
+      }
+
+      let verifiedRequest = request;
+      if (request.method === 'POST' && url.pathname === INSTAGRAM_LINK_PATH) {
+        verifiedRequest = await validateInstagramLinkRequest(request, env);
+      }
+      return instagramCors(request, await instagramAccountRequest(verifiedRequest, env));
     } catch (error) {
       const status = Number(error?.status || 0);
       const code = String(error?.code || '').trim();
