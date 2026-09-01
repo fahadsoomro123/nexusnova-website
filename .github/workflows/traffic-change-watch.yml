@@ -1,0 +1,48 @@
+name: NexusNova Meaningful Traffic Watch
+
+on:
+  schedule:
+    - cron: '43 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/traffic_change_watch.py'
+      - '.github/workflows/traffic-change-watch.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-meaningful-traffic-watch
+  cancel-in-progress: true
+
+jobs:
+  traffic-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      TRAFFIC_ALERT_TO: fahadsoomro123@gmail.com
+      TRAFFIC_ALERT_FROM: NexusNova Traffic <traffic@nexusnovatools.com>
+      TRAFFIC_ALERT_REPLY_TO: fahadsoomro123@gmail.com
+      TRAFFIC_TIME_ZONE: Asia/Karachi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install GA4 dependency
+        run: python -m pip install --disable-pip-version-check google-auth requests
+
+      - name: Compile watcher
+        run: python -m py_compile .github/scripts/traffic_change_watch.py
+
+      - name: Check previous completed hour
+        run: python .github/scripts/traffic_change_watch.py
