@@ -17,11 +17,23 @@ test('Instagram Business Login uses the approved app, redirect and minimal ident
   assert.match(ui, /https:\/\/www\.instagram\.com\/oauth\/authorize/);
   assert.match(ui, /instagram_business_basic/);
   assert.match(ui, /https:\/\/nexusnovatools\.com\/instagram-callback\.html/);
-  assert.match(ui, /sessionStorage\.setItem\(STATE_KEY/);
+  assert.match(ui, /saveOAuthState\(oauthState\)/);
   assert.match(ui, /payload\.state !== expectedState/);
   assert.match(callback, /nexusnova-instagram-oauth/);
   assert.match(callback, /window\.opener\.postMessage\(payload, location\.origin\)/);
-  assert.match(shell, /instagram-auth-ui\.js\?v=20260901-1/);
+  assert.match(shell, /instagram-auth-ui\.js\?v=20260901-2/);
+});
+
+test('Instagram OAuth survives mobile browsers that lose window.opener', () => {
+  const ui = read('assets/js/instagram-auth-ui.js');
+  const callback = read('instagram-callback.html');
+
+  assert.match(ui, /STATE_BACKUP_KEY/);
+  assert.match(ui, /localStorage\.setItem\(STATE_BACKUP_KEY/);
+  assert.match(ui, /consumeRedirectedOAuthResult/);
+  assert.match(ui, /instagram_oauth/);
+  assert.match(callback, /sessionStorage\.setItem\(RESULT_KEY/);
+  assert.match(callback, /location\.replace\('account\.html\?instagram_oauth=1'\)/);
 });
 
 test('Instagram authorization code is exchanged only by the Worker and no secret is exposed to browser code', () => {
