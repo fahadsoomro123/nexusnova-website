@@ -10,7 +10,7 @@
     if(!document.querySelector('link[data-home-app-promo]')){
       const style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='assets/css/home-app-promo.css?v=20260830-3';
+      style.href='assets/css/home-app-promo.css?v=20260902-1';
       style.dataset.homeAppPromo='';
       document.head.appendChild(style);
     }

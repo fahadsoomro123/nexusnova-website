@@ -3,17 +3,43 @@
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(page!=='index.html'||document.querySelector('.nn-home-app-promo')) return;
 
+  const miningShot='assets/images/nvx-mining-real-640.webp';
   const section=document.createElement('section');
   section.className='nn-home-app-promo';
   section.dataset.homeAppPromo='';
-  section.setAttribute('aria-label','NexusNova Android app and web NVX mining preview');
+  section.setAttribute('aria-label','NexusNova Web Mining feature');
   section.innerHTML=`
     <div class="container">
+      <div class="nn-home-mining-showcase">
+        <div class="nn-home-mining-copy">
+          <span class="nn-home-mining-kicker">NEXUSNOVA FEATURE // WEB MINING</span>
+          <h2>NVX mining.<span>Live on the web.</span></h2>
+          <p>Run your real 24-hour NexusNova mining session from the secure Web App. Your Firebase-linked account, balance and mining session stay connected across NexusNova.</p>
+          <div class="nn-home-mining-trust" aria-label="Mining trust details">
+            <span>FIREBASE-LINKED</span><span>SERVER-SYNCED</span><span>MANUAL 24H SESSION</span>
+          </div>
+          <div class="nn-home-mining-actions">
+            <a class="primary" href="account.html">OPEN WEB MINING →</a>
+            <a href="account.html#earn-nvx-title">How NVX Mining Works</a>
+          </div>
+          <p class="nn-home-mining-disclosure">Real NexusNova mining screen. Balance, rate and session values vary by account and live session. Mining starts only when the signed-in user starts or continues a session.</p>
+        </div>
+        <div class="nn-home-mining-visual" aria-label="Real NexusNova NVX mining screen">
+          <div class="nn-tactical-device">
+            <i class="nn-tactical-bolt b1"></i><i class="nn-tactical-bolt b2"></i><i class="nn-tactical-bolt b3"></i><i class="nn-tactical-bolt b4"></i>
+            <div class="nn-tactical-screen">
+              <img src="${miningShot}" width="640" height="1317" loading="lazy" decoding="async" alt="Real NexusNova NVX mining screen showing a live 24-hour server-synced mining session">
+            </div>
+            <span class="nn-tactical-live"><i></i> SERVER SYNCED</span>
+          </div>
+        </div>
+      </div>
+
       <div class="nn-home-app-shell">
         <div class="nn-home-app-copy">
           <span class="nn-home-app-kicker">NEXUSNOVA APP + WEB MINING</span>
-          <h2>57+ smart tools.<span>NVX mining on the web too.</span></h2>
-          <p>The NexusNova Android app and secure website Web App use the same Firebase-linked account. NVX mining is available on the website too: sign in, open the Web App, and manually start or continue your 24-hour session. No browser or device crypto mining runs silently in the background.</p>
+          <h2>57+ smart tools.<span>One connected NexusNova account.</span></h2>
+          <p>Use the NexusNova Android app or secure website Web App with the same Firebase-linked identity. NVX mining is available on the website too, with manual 24-hour sessions and real account state.</p>
           <div class="nn-home-app-points">
             <div class="nn-home-app-point"><strong>57+</strong><small>TOOLS & UTILITIES</small></div>
             <div class="nn-home-app-point"><strong>WEB</strong><small>FIREBASE-LINKED MINING</small></div>
@@ -52,44 +78,18 @@
             </div>
           </div>
 
-          <div class="nn-home-phone mining" aria-label="NVX mining preview">
-            <div class="nn-home-phone-screen">
-              <div class="nn-home-phone-top"><div><small>NEXUSNOVA OS</small><strong>NVX Mining</strong></div><span class="nn-home-phone-online">● SECURE</span></div>
-              <div class="nn-mining-hero">
-                <div class="nn-mining-icon-wrap"><img data-nvx-mining-icon src="ota/files/assets/icons/nova-hub/growth.webp" alt="NexusNova NVX mining"></div>
-                <small>NVX MINING SESSION</small><strong>Ready when you are.</strong>
-              </div>
-              <div class="nn-mining-state"><div><small>SESSION</small><b>Not started</b></div><div><small>DURATION</small><b>24H manual</b></div></div>
-              <div class="nn-mining-start">START MINING • MANUAL</div>
-              <p class="nn-mining-note">Preview only. No fake balance, rate or countdown. Real mining state is shown only when available from the app/backend.</p>
-              <div class="nn-home-phone-dock"><span>Hub</span><span>Earn</span><span class="active">Mining</span><span>Profile</span></div>
+          <div class="nn-home-phone mining real-mining" aria-label="Real NexusNova NVX mining preview">
+            <div class="nn-home-phone-screen nn-real-mining-screen">
+              <img src="${miningShot}" width="640" height="1317" loading="lazy" decoding="async" alt="Real NexusNova mining screen in the mobile preview">
             </div>
           </div>
         </div>
       </div>
     </div>`;
 
-  const anchor=document.querySelector('.command-dock-wrap')||document.querySelector('.nn-command-hero');
-  if(anchor) anchor.insertAdjacentElement('afterend',section);
+  const hero=document.querySelector('.nn-command-hero');
+  const quickAccess=document.querySelector('.command-dock-wrap');
+  if(hero) hero.insertAdjacentElement('afterend',section);
+  else if(quickAccess) quickAccess.insertAdjacentElement('beforebegin',section);
   else document.querySelector('main')?.prepend(section);
-
-  const miningIcon=section.querySelector('[data-nvx-mining-icon]');
-  if(miningIcon){
-    const candidates=[
-      'ota/files/assets/icons/nova-hub/mining.webp',
-      'ota/files/assets/icons/nova-hub/nvx-mining.webp',
-      'ota/files/assets/icons/nova-hub/mining-boost.webp',
-      'ota/files/assets/icons/nova-hub/growth.webp'
-    ];
-    let index=0;
-    const tryNext=()=>{
-      if(index>=candidates.length) return;
-      const src=candidates[index++];
-      const probe=new Image();
-      probe.onload=()=>{miningIcon.src=src};
-      probe.onerror=tryNext;
-      probe.src=src;
-    };
-    tryNext();
-  }
 })();
