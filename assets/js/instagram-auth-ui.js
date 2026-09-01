@@ -11,14 +11,7 @@ const firebaseConfig = {
   measurementId: 'G-YLPFKWSS12'
 };
 
-const INSTAGRAM_APP_ID = '1564402658290447';
-const REDIRECT_URI = 'https://nexusnovatools.com/instagram-callback.html';
-const AUTH_URL = 'https://www.instagram.com/oauth/authorize';
 const API_BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev';
-const STATE_KEY = 'nexusnova_instagram_oauth_state_v1';
-const STATE_BACKUP_KEY = 'nexusnova_instagram_oauth_state_backup_v1';
-const STATE_COOKIE = 'nexusnova_ig_oauth_state';
-const FLOW_MAX_AGE_MS = 10 * 60 * 1000;
 
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -37,23 +30,27 @@ function setupInstagramMission() {
   button.disabled = true;
   button.textContent = 'Checking Instagram…';
 
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const user = auth.currentUser;
     if (!user || button.disabled) return;
 
-    const oauthState = randomState();
-    saveOAuthState(oauthState);
-
     card.dataset.state = 'pending';
     if (state) state.textContent = 'CONNECTING';
-    if (copy) copy.textContent = 'Opening official Instagram Business Login…';
+    if (copy) copy.textContent = 'Preparing secure Instagram Business Login…';
     button.disabled = true;
     button.textContent = 'Connecting…';
 
-    // Same-tab OAuth is deliberate. Android Chrome can isolate popup/tab storage,
-    // which breaks OAuth state recovery. A normal top-level navigation preserves
-    // this tab's sessionStorage and returns to the same secure callback page.
-    location.assign(buildInstagramAuthUrl(oauthState));
+    try {
+      const idToken = await user.getIdToken(true);
+      const start = await callInstagramApi('/api/instagram/start', { method: 'POST', idToken });
+      const authUrl = String(start?.authUrl || '');
+      if (!/^https:\/\/www\.instagram\.com\/oauth\/authorize(?:\/|\?|$)/.test(authUrl)) {
+        throw new Error('Instagram sign-in URL could not be prepared securely.');
+      }
+      location.assign(authUrl);
+    } catch (error) {
+      paintError(publicMessage(error));
+    }
   });
 
   onAuthStateChanged(auth, async user => {
@@ -69,12 +66,8 @@ async function refreshStatus(user) {
   try {
     const idToken = await user.getIdToken();
     const result = await callInstagramApi('/api/instagram/status', { idToken });
-    if (result?.linked === true) {
-      clearOAuthFlow();
-      paintConnected(result.user || {});
-    } else {
-      paintReady();
-    }
+    if (result?.linked === true) paintConnected(result.user || {});
+    else paintReady();
   } catch (error) {
     const code = String(error?.code || '');
     if (code === 'instagram-not-configured' || code === 'failed-precondition' || code === 'firebase-admin-not-configured') {
@@ -158,35 +151,6 @@ function paintError(message) {
   }
 }
 
-function buildInstagramAuthUrl(state) {
-  const url = new URL(AUTH_URL);
-  url.searchParams.set('client_id', INSTAGRAM_APP_ID);
-  url.searchParams.set('redirect_uri', REDIRECT_URI);
-  url.searchParams.set('response_type', 'code');
-  url.searchParams.set('scope', 'instagram_business_basic');
-  url.searchParams.set('state', state);
-  url.searchParams.set('force_reauth', 'true');
-  return url.toString();
-}
-
-function saveOAuthState(state) {
-  const createdAt = Date.now();
-  sessionStorage.setItem(STATE_KEY, state);
-  try {
-    localStorage.setItem(STATE_BACKUP_KEY, JSON.stringify({ state, createdAt }));
-  } catch (_) {}
-  try {
-    const value = encodeURIComponent(JSON.stringify({ state, createdAt }));
-    document.cookie = `${STATE_COOKIE}=${value}; Max-Age=600; Path=/; Secure; SameSite=Lax`;
-  } catch (_) {}
-}
-
-function clearOAuthFlow() {
-  sessionStorage.removeItem(STATE_KEY);
-  try { localStorage.removeItem(STATE_BACKUP_KEY); } catch (_) {}
-  try { document.cookie = `${STATE_COOKIE}=; Max-Age=0; Path=/; Secure; SameSite=Lax`; } catch (_) {}
-}
-
 async function callInstagramApi(path, { method = 'GET', idToken, body = null } = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
     method,
@@ -209,13 +173,6 @@ async function callInstagramApi(path, { method = 'GET', idToken, body = null } =
   return result;
 }
 
-function randomState() {
-  const bytes = crypto.getRandomValues(new Uint8Array(24));
-  let binary = '';
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
 function cleanUsername(value) {
   const username = String(value || '').trim();
   return /^[A-Za-z0-9._]{1,64}$/.test(username) ? username : '';
@@ -229,6 +186,8 @@ function publicMessage(error) {
     'instagram-not-configured': 'Instagram server verification is not configured yet.',
     'firebase-admin-not-configured': 'Firebase server verification is not configured correctly.',
     'firebase-private-key-invalid': 'Firebase server verification key needs attention.',
+    'oauth-state-invalid': 'Instagram security check was invalid. Please retry once.',
+    'oauth-state-expired': 'Instagram connection session expired. Please retry once.',
     'instagram-authorization-failed': 'Instagram authorization could not be verified. Please connect again.',
     'instagram-identity-failed': 'Instagram account identity could not be verified.',
     'instagram-unavailable': 'Instagram verification is temporarily unavailable. Please try again.'
