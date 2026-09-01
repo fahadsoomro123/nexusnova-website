@@ -1,8 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
-  <script src="assets/js/telegram-webapp.js?v=20260826-5"></script>
+  <script>
+    (() => {
+      const signal = `${location.hash} ${location.search}`;
+      const inTelegram = /tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal) || !!window.TelegramWebviewProxy || !!window.TelegramWebview;
+      if (!inTelegram) return;
+      document.write('<script src="https://telegram.org/js/telegram-web-app.js?63"><\/script>');
+      document.write('<script src="assets/js/telegram-webapp.js?v=20260826-5"><\/script>');
+    })();
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NexusNova Web App Dashboard — Account & Earn NVX</title>
@@ -11,6 +18,9 @@
   <meta name="theme-color" content="#f5f7fb">
   <link rel="canonical" href="https://nexusnovatools.com/account.html">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
   <link rel="stylesheet" href="assets/css/site.css">
   <link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
   <link rel="stylesheet" href="assets/css/account-dashboard.css?v=20260830-2">
