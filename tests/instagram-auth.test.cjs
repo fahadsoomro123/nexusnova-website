@@ -8,41 +8,50 @@ const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
-test('Instagram Business Login uses the approved app, redirect and minimal identity scope', () => {
+test('Instagram Business Login starts from a server-issued authorization URL', () => {
   const ui = read('assets/js/instagram-auth-ui.js');
   const callback = read('instagram-callback.html');
+  const wrapper = read('cloudflare/telegram-bot/worker-instagram-entry.js');
+  const oauth = read('cloudflare/telegram-bot/instagram-oauth-state.js');
   const shell = read('assets/js/account-shell.js');
 
-  assert.match(ui, /INSTAGRAM_APP_ID = ['"]1564402658290447['"]/);
-  assert.match(ui, /https:\/\/www\.instagram\.com\/oauth\/authorize/);
-  assert.match(ui, /instagram_business_basic/);
-  assert.match(ui, /https:\/\/nexusnovatools\.com\/instagram-callback\.html/);
-  assert.match(ui, /saveOAuthState\(oauthState\)/);
-  assert.match(ui, /payload\.state !== expectedState/);
-  assert.match(callback, /nexusnova-instagram-oauth/);
-  assert.match(callback, /window\.opener\.postMessage\(payload, location\.origin\)/);
-  assert.match(shell, /instagram-auth-ui\.js\?v=20260901-2/);
+  assert.match(ui, /\/api\/instagram\/start/);
+  assert.match(ui, /location\.assign\(authUrl\)/);
+  assert.match(wrapper, /\/api\/instagram\/start/);
+  assert.match(oauth, /INSTAGRAM_APP_ID = ['"]1564402658290447['"]/);
+  assert.match(oauth, /https:\/\/www\.instagram\.com\/oauth\/authorize/);
+  assert.match(oauth, /instagram_business_basic/);
+  assert.match(oauth, /https:\/\/nexusnovatools\.com\/instagram-callback\.html/);
+  assert.match(callback, /body: JSON\.stringify\(\{ code, state, redirectUri: REDIRECT_URI \}\)/);
+  assert.match(shell, /instagram-auth-ui\.js\?v=20260901-4/);
 });
 
-test('Instagram OAuth survives mobile browsers that lose window.opener', () => {
+test('Instagram OAuth state is HMAC signed and verified server-side instead of browser storage', () => {
   const ui = read('assets/js/instagram-auth-ui.js');
   const callback = read('instagram-callback.html');
+  const oauth = read('cloudflare/telegram-bot/instagram-oauth-state.js');
 
-  assert.match(ui, /STATE_BACKUP_KEY/);
-  assert.match(ui, /localStorage\.setItem\(STATE_BACKUP_KEY/);
-  assert.match(ui, /consumeRedirectedOAuthResult/);
-  assert.match(ui, /instagram_oauth/);
-  assert.match(callback, /sessionStorage\.setItem\(RESULT_KEY/);
-  assert.match(callback, /location\.replace\('account\.html\?instagram_oauth=1'\)/);
+  assert.match(oauth, /crypto\.subtle\.sign\('HMAC'/);
+  assert.match(oauth, /crypto\.subtle\.verify/);
+  assert.match(oauth, /payload\.uid !== uid/);
+  assert.match(oauth, /STATE_TTL_SECONDS/);
+  assert.match(oauth, /oauth-state-expired/);
+  assert.doesNotMatch(ui, /sessionStorage|localStorage|STATE_COOKIE|window\.opener/);
+  assert.doesNotMatch(callback, /sessionStorage|localStorage|STATE_COOKIE|window\.opener/);
 });
 
 test('Instagram authorization code is exchanged only by the Worker and no secret is exposed to browser code', () => {
   const ui = read('assets/js/instagram-auth-ui.js');
+  const callback = read('instagram-callback.html');
   const backend = read('cloudflare/telegram-bot/instagram-account-v2.js');
+  const oauth = read('cloudflare/telegram-bot/instagram-oauth-state.js');
   const wrapper = read('cloudflare/telegram-bot/worker-instagram-entry.js');
 
   assert.doesNotMatch(ui, /INSTAGRAM_APP_SECRET|client_secret|oauth\/access_token/);
+  assert.doesNotMatch(callback, /INSTAGRAM_APP_SECRET|client_secret|oauth\/access_token/);
   assert.match(wrapper, /instagram-account-v2\.js/);
+  assert.match(wrapper, /instagram-oauth-state\.js/);
+  assert.match(oauth, /env\.INSTAGRAM_APP_SECRET/);
   assert.match(backend, /env\.INSTAGRAM_APP_SECRET/);
   assert.match(backend, /https:\/\/api\.instagram\.com\/oauth\/access_token/);
   assert.match(backend, /client_secret/);
