@@ -22,56 +22,133 @@
   <main class="card" role="status" aria-live="polite">
     <div class="brand">NexusNova secure connection</div>
     <h1>Finishing Instagram connection…</h1>
-    <p>This page only receives the authorization response. NexusNova never places the Instagram app secret in browser code.</p>
+    <p>NexusNova is securely verifying the Instagram authorization with the server. The Instagram app secret never enters browser code.</p>
     <div class="status" id="status">Checking authorization response…</div>
     <a href="account.html" id="back">Return to account dashboard</a>
   </main>
-  <script>
-    (() => {
-      'use strict';
-      const RESULT_KEY = 'nexusnova_instagram_oauth_result_v1';
-      const status = document.getElementById('status');
-      const params = new URLSearchParams(location.search);
-      const code = params.get('code') || '';
-      const state = params.get('state') || '';
-      const error = params.get('error') || '';
-      const errorDescription = params.get('error_description') || '';
+  <script type="module">
+    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 
-      if (error) {
-        status.textContent = errorDescription ? `Instagram authorization was not completed: ${errorDescription}` : 'Instagram authorization was not completed.';
-      } else if (code) {
-        status.textContent = 'Instagram authorization received. Returning to NexusNova…';
-      } else {
-        status.textContent = 'No Instagram authorization response was received.';
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
+      authDomain: 'nexusnova-6ade2.firebaseapp.com',
+      projectId: 'nexusnova-6ade2',
+      storageBucket: 'nexusnova-6ade2.firebasestorage.app',
+      messagingSenderId: '49791194817',
+      appId: '1:49791194817:web:07f28326e0f15979536640',
+      measurementId: 'G-YLPFKWSS12'
+    };
+
+    const API_BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev';
+    const REDIRECT_URI = 'https://nexusnovatools.com/instagram-callback.html';
+    const STATE_KEY = 'nexusnova_instagram_oauth_state_v1';
+    const STATE_BACKUP_KEY = 'nexusnova_instagram_oauth_state_backup_v1';
+    const RESULT_KEY = 'nexusnova_instagram_oauth_result_v1';
+    const FLOW_MAX_AGE_MS = 10 * 60 * 1000;
+    const status = document.getElementById('status');
+
+    const params = new URLSearchParams(location.search);
+    const code = cleanCode(params.get('code'));
+    const returnedState = String(params.get('state') || '');
+    const oauthError = String(params.get('error') || '');
+    const oauthErrorDescription = String(params.get('error_description') || '');
+
+    run().catch(error => fail(publicMessage(error)));
+
+    async function run() {
+      if (oauthError) throw new Error(oauthErrorDescription || 'Instagram authorization was cancelled or denied.');
+      if (!code) throw new Error('Instagram did not return an authorization code. Please try again.');
+
+      const flow = readExpectedFlow();
+      if (!flow.state) throw new Error('Instagram connection session expired. Please return and try again.');
+      if (returnedState && returnedState !== flow.state) throw new Error('Instagram security check did not match. Please try again.');
+      if (!returnedState && !flow.allowMissingReturnedState) throw new Error('Instagram security response was incomplete. Please try again.');
+
+      status.textContent = 'Authorization received. Verifying your NexusNova account…';
+      const app = getApps()[0] || initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+      const user = auth.currentUser;
+      if (!user) throw new Error('Your NexusNova sign-in session expired. Sign in again and retry Instagram.');
+
+      const idToken = await user.getIdToken(true);
+      status.textContent = 'Verifying Instagram identity with NexusNova server…';
+      const response = await fetch(`${API_BASE}/api/instagram/link`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code, redirectUri: REDIRECT_URI }),
+        cache: 'no-store',
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer'
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result?.ok !== true || result?.linked !== true) {
+        const error = new Error(String(result?.error || `Instagram verification failed (${response.status}).`));
+        error.code = String(result?.code || `http-${response.status}`);
+        throw error;
       }
 
-      const payload = {
-        type: 'nexusnova-instagram-oauth',
-        ok: Boolean(code) && !error,
-        code,
-        state,
-        error,
-        errorDescription
-      };
-
-      try {
-        sessionStorage.setItem(RESULT_KEY, JSON.stringify(payload));
-      } catch (_) {}
-
+      clearFlow();
+      status.textContent = 'Instagram connected successfully. Returning to your dashboard…';
+      const destination = `account.html?instagram_linked=1&v=${Date.now()}`;
       if (window.opener && window.opener !== window) {
         try {
-          window.opener.postMessage(payload, location.origin);
-          if (payload.ok || error) setTimeout(() => window.close(), 350);
+          window.opener.location.replace(destination);
+          setTimeout(() => window.close(), 700);
           return;
         } catch (_) {}
       }
+      setTimeout(() => location.replace(destination), 250);
+    }
 
-      if (payload.ok || error) {
-        setTimeout(() => {
-          location.replace('account.html?instagram_oauth=1');
-        }, 250);
+    function readExpectedFlow() {
+      const sessionState = String(sessionStorage.getItem(STATE_KEY) || '');
+      if (sessionState) {
+        return { state: sessionState, allowMissingReturnedState: Boolean(window.opener && window.opener !== window) };
       }
-    })();
+      try {
+        const stored = JSON.parse(localStorage.getItem(STATE_BACKUP_KEY) || '{}');
+        const createdAt = Number(stored?.createdAt || 0);
+        const fresh = createdAt > 0 && Date.now() - createdAt <= FLOW_MAX_AGE_MS;
+        if (fresh && stored?.state) return { state: String(stored.state), allowMissingReturnedState: true };
+      } catch (_) {}
+      return { state: '', allowMissingReturnedState: false };
+    }
+
+    function clearFlow() {
+      sessionStorage.removeItem(STATE_KEY);
+      sessionStorage.removeItem(RESULT_KEY);
+      try { localStorage.removeItem(STATE_BACKUP_KEY); } catch (_) {}
+    }
+
+    function cleanCode(value) {
+      const text = String(value || '').split('#')[0].trim();
+      return text && text.length <= 6000 && !/\s/.test(text) ? text : '';
+    }
+
+    function publicMessage(error) {
+      const code = String(error?.code || '');
+      const known = {
+        'unauthenticated': 'Sign in to NexusNova again before connecting Instagram.',
+        'already-exists': 'This Instagram identity is already linked to another NexusNova account.',
+        'instagram-not-configured': 'Instagram server verification is not configured yet.',
+        'firebase-admin-not-configured': 'Firebase server verification is not configured correctly.',
+        'firebase-private-key-invalid': 'Firebase server verification key needs attention.',
+        'instagram-authorization-failed': 'Instagram rejected the authorization-code exchange. Please retry once with a fresh Allow.',
+        'instagram-identity-failed': 'Instagram authorized the login, but the profile identity check failed.',
+        'instagram-unavailable': 'Instagram verification is temporarily unavailable. Please try again.'
+      };
+      return known[code] || String(error?.message || 'Instagram connection failed.').replace(/\s+/g, ' ').trim().slice(0, 280);
+    }
+
+    function fail(message) {
+      status.textContent = message;
+    }
   </script>
 </body>
 </html>
