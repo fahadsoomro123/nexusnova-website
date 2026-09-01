@@ -29,6 +29,7 @@
   <script>
     (() => {
       'use strict';
+      const RESULT_KEY = 'nexusnova_instagram_oauth_result_v1';
       const status = document.getElementById('status');
       const params = new URLSearchParams(location.search);
       const code = params.get('code') || '';
@@ -53,11 +54,22 @@
         errorDescription
       };
 
+      try {
+        sessionStorage.setItem(RESULT_KEY, JSON.stringify(payload));
+      } catch (_) {}
+
       if (window.opener && window.opener !== window) {
         try {
           window.opener.postMessage(payload, location.origin);
           if (payload.ok || error) setTimeout(() => window.close(), 350);
+          return;
         } catch (_) {}
+      }
+
+      if (payload.ok || error) {
+        setTimeout(() => {
+          location.replace('account.html?instagram_oauth=1');
+        }, 250);
       }
     })();
   </script>
