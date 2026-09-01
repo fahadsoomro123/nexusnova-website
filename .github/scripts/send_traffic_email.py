@@ -6,6 +6,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +36,16 @@ def rate(value: float | int | None) -> str:
     return f"{float(value or 0) * 100:.1f}%"
 
 
+def short_date(value: str) -> str:
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime("%b %-d")
+    except (ValueError, OSError):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").strftime("%b %d").replace(" 0", " ")
+        except ValueError:
+            return value
+
+
 def load_report() -> dict:
     if not JSON_REPORT.exists():
         return {"status": "error", "error": "Traffic pulse report was not generated."}
@@ -56,6 +67,47 @@ def html_for(items: list[dict], name_key: str, value_key: str, unit: str) -> str
         f"<li><code>{html.escape(str(item.get(name_key) or '(not set)'))}</code> — {html.escape(fmt(item.get(value_key)))} {html.escape(unit)}</li>"
         for item in items[:5]
     ) or "<li>No data yet</li>"
+
+
+def trend_text(items: list[dict]) -> list[str]:
+    if not items:
+        return ["- No 7-day trend data yet"]
+    return [
+        f"- {short_date(str(item.get('date') or ''))}: {fmt(item.get('active_users'))} active users"
+        for item in items
+    ]
+
+
+def trend_chart_html(items: list[dict]) -> str:
+    if not items:
+        return "<p>No 7-day trend data yet.</p>"
+
+    values = [float(item.get("active_users") or 0) for item in items]
+    peak = max(values) if values else 0.0
+    rows: list[str] = []
+    for item, value in zip(items, values):
+        width = 0 if peak <= 0 else max(4, round((value / peak) * 100))
+        label = html.escape(short_date(str(item.get("date") or "")))
+        value_text = html.escape(fmt(value))
+        rows.append(
+            "<tr>"
+            f"<td style=\"padding:5px 8px 5px 0;width:58px;white-space:nowrap;color:#4b5563;font-size:12px\">{label}</td>"
+            "<td style=\"padding:5px 8px;width:100%\">"
+            "<div style=\"background:#eef2f7;border-radius:6px;overflow:hidden;height:14px\">"
+            f"<div style=\"width:{width}%;height:14px;background:#2563eb;border-radius:6px\"></div>"
+            "</div>"
+            "</td>"
+            f"<td style=\"padding:5px 0 5px 8px;width:52px;text-align:right;white-space:nowrap;font-weight:700\">{value_text}</td>"
+            "</tr>"
+        )
+    return (
+        "<div style=\"margin:18px 0 22px\">"
+        "<h3 style=\"margin-bottom:6px\">7-day active-user graph</h3>"
+        "<p style=\"margin-top:0;color:#6b7280;font-size:13px\">Longer bar = more active users that day.</p>"
+        "<table role=\"presentation\" style=\"border-collapse:collapse;width:100%\">"
+        + "".join(rows)
+        + "</table></div>"
+    )
 
 
 def build_message(report: dict) -> tuple[str, str, str]:
@@ -80,6 +132,7 @@ def build_message(report: dict) -> tuple[str, str, str]:
     today = report.get("today") or {}
     changes = report.get("change_vs_yesterday_percent") or {}
     realtime = report.get("realtime_last_30_minutes") or {}
+    daily_trend = report.get("daily_active_users_7d") or []
     channels = report.get("top_channels_today") or []
     sources = report.get("top_sources_today") or []
     pages = report.get("top_pages_today") or []
@@ -104,6 +157,7 @@ def build_message(report: dict) -> tuple[str, str, str]:
     page_lines = lines_for(pages, "page", "views", "views")
     city_lines = lines_for(cities, "city", "active_users", "active users")
     device_lines = lines_for(devices, "device", "active_users", "active users")
+    trend_lines = trend_text(daily_trend)
 
     text = "\n".join(
         [
@@ -118,6 +172,9 @@ def build_message(report: dict) -> tuple[str, str, str]:
                 f"users {pct(changes.get('activeUsers'))}, sessions {pct(changes.get('sessions'))}, "
                 f"views {pct(changes.get('screenPageViews'))}, events {pct(changes.get('eventCount'))}"
             ),
+            "",
+            "7-day active-user trend:",
+            *trend_lines,
             "",
             "Traffic channels:",
             *(channel_lines or ["- No channel data yet"]),
@@ -144,6 +201,7 @@ def build_message(report: dict) -> tuple[str, str, str]:
     page_html = html_for(pages, "page", "views", "views")
     city_html = html_for(cities, "city", "active_users", "active users")
     device_html = html_for(devices, "device", "active_users", "active users")
+    graph_html = trend_chart_html(daily_trend)
 
     body = f"""
     <div style="font-family:Arial,sans-serif;max-width:720px;margin:auto;color:#111827;line-height:1.5">
@@ -161,6 +219,7 @@ def build_message(report: dict) -> tuple[str, str, str]:
         <tr><td style="padding:8px">Realtime (30m)</td><td style="padding:8px;text-align:right"><strong>{html.escape(realtime_users)} users · {html.escape(realtime_views)} views · {html.escape(realtime_events)} events</strong></td></tr>
       </table>
       <p><strong>Vs yesterday:</strong> users {html.escape(pct(changes.get('activeUsers')))} · sessions {html.escape(pct(changes.get('sessions')))} · views {html.escape(pct(changes.get('screenPageViews')))} · events {html.escape(pct(changes.get('eventCount')))}</p>
+      {graph_html}
       <h3>Traffic channels</h3><ul>{channel_html}</ul>
       <h3>Source / medium</h3><ul>{source_html}</ul>
       <h3>Top pages</h3><ul>{page_html}</ul>
@@ -193,7 +252,7 @@ def send_email(subject: str, text: str, body: str) -> dict:
         headers={
             "Authorization": f"Bearer {RESEND_API_KEY}",
             "Content-Type": "application/json",
-            "User-Agent": "NexusNovaTrafficMailer/1.1",
+            "User-Agent": "NexusNovaTrafficMailer/1.2",
         },
         method="POST",
     )
