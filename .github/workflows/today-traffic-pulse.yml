@@ -63,17 +63,3 @@ jobs:
             today-traffic-pulse.md
           if-no-files-found: ignore
           retention-days: 7
-
-      - name: Send forced sample traffic email
-        if: github.event_name == 'push'
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.TRAFFIC_EMAIL_USERNAME }}
-          password: ${{ secrets.TRAFFIC_EMAIL_APP_PASSWORD }}
-          subject: '[NexusNova Traffic] GitHub sample'
-          to: fahadsoomro123@gmail.com
-          from: NexusNova GitHub Traffic <${{ secrets.TRAFFIC_EMAIL_USERNAME }}>
-          body: file://today-traffic-pulse.txt
