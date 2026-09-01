@@ -16,7 +16,7 @@
     }
     if(!document.querySelector('script[data-home-app-promo]')){
       const script=document.createElement('script');
-      script.src='assets/js/home-app-promo.js?v=20260830-3';
+      script.src='assets/js/home-app-promo.js?v=20260902-1';
       script.defer=true;
       script.dataset.homeAppPromo='';
       document.head.appendChild(script);
