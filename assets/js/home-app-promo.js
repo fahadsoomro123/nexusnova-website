@@ -3,7 +3,7 @@
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(page!=='index.html'||document.querySelector('.nn-home-app-promo')) return;
 
-  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-2';
+  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-3';
   const section=document.createElement('section');
   section.className='nn-home-app-promo';
   section.dataset.homeAppPromo='';
