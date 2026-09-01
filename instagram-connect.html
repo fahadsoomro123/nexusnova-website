@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Connect Instagram | NexusNova</title>
+  <style>
+    :root{color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#07111f;color:#eef6ff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .card{width:min(520px,100%);padding:28px;border:1px solid rgba(129,174,255,.25);border-radius:22px;background:rgba(12,26,46,.92);box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .brand{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#9db8ff}
+    h1{margin:10px 0 8px;font-size:26px;line-height:1.15}
+    p{margin:0;color:#aebfd3;line-height:1.55}
+    .status{margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.055);font-weight:800;color:#dcecff}
+    a{display:inline-flex;margin-top:18px;color:#9fdcff;font-weight:800;text-decoration:none}
+  </style>
+</head>
+<body>
+  <main class="card" role="status" aria-live="polite">
+    <div class="brand">NexusNova secure connection</div>
+    <h1>Connecting Instagram…</h1>
+    <p>This page starts a fresh server-verified Instagram Business Login for your signed-in NexusNova account.</p>
+    <div class="status" id="status">Preparing secure Instagram authorization…</div>
+    <a href="account.html">Return to account dashboard</a>
+  </main>
+  <script type="module">
+    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyBU75WYp5ioaMD1LrNcDyAvROFW2wrTil0',
+      authDomain: 'nexusnova-6ade2.firebaseapp.com',
+      projectId: 'nexusnova-6ade2',
+      storageBucket: 'nexusnova-6ade2.firebasestorage.app',
+      messagingSenderId: '49791194817',
+      appId: '1:49791194817:web:07f28326e0f15979536640',
+      measurementId: 'G-YLPFKWSS12'
+    };
+    const API_BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev';
+    const status = document.getElementById('status');
+
+    run().catch(error => {
+      status.textContent = String(error?.message || 'Instagram connection could not start.').replace(/\s+/g, ' ').trim().slice(0, 280);
+    });
+
+    async function run() {
+      const app = getApps()[0] || initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+      const user = auth.currentUser;
+      if (!user) throw new Error('Sign in to NexusNova first, then open this page again.');
+
+      const idToken = await user.getIdToken(true);
+      const response = await fetch(`${API_BASE}/api/instagram/start`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}`, Accept: 'application/json' },
+        cache: 'no-store',
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer'
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result?.ok !== true) {
+        throw new Error(String(result?.error || `Instagram connection could not start (${response.status}).`));
+      }
+      const authUrl = String(result?.authUrl || '');
+      if (!/^https:\/\/www\.instagram\.com\/oauth\/authorize(?:\/|\?|$)/.test(authUrl)) {
+        throw new Error('Instagram sign-in URL could not be prepared securely.');
+      }
+      status.textContent = 'Opening Instagram…';
+      location.replace(authUrl);
+    }
+  </script>
+</body>
+</html>
