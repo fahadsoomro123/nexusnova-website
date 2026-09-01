@@ -15,6 +15,9 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
 .tool-card>.nn-tool-symbol{position:absolute;top:20px;right:20px;margin:0}
 
 @media(max-width:720px){
+  /* The hero glow is decorative. Removing it on small screens prevents the
+     absolute pseudo-element from registering as a layout shift in Lighthouse. */
+  .nn-home .nn-command-hero::before{content:none!important;display:none!important}
   #local-clock{min-height:4.75em}
   .tool-card>h3{padding-right:60px}
   .tool-card>.nn-tool-symbol{top:16px;right:16px}
