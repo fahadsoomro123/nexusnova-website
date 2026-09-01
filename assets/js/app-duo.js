@@ -6,7 +6,7 @@
   const visual=document.querySelector('.app-visual');
   if(!visual||visual.querySelector('.app-device-mining')) return;
 
-  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-2';
+  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-3';
   visual.classList.add('app-visual-duo');
   visual.setAttribute('aria-label','Two premium NexusNova mobile previews: Nova Hub and NVX Mining');
 
