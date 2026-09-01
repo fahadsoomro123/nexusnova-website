@@ -42,16 +42,10 @@
 
     const API_BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev';
     const REDIRECT_URI = 'https://nexusnovatools.com/instagram-callback.html';
-    const STATE_KEY = 'nexusnova_instagram_oauth_state_v1';
-    const STATE_BACKUP_KEY = 'nexusnova_instagram_oauth_state_backup_v1';
-    const STATE_COOKIE = 'nexusnova_ig_oauth_state';
-    const RESULT_KEY = 'nexusnova_instagram_oauth_result_v1';
-    const FLOW_MAX_AGE_MS = 10 * 60 * 1000;
     const status = document.getElementById('status');
-
     const params = new URLSearchParams(location.search);
     const code = cleanCode(params.get('code'));
-    const returnedState = String(params.get('state') || '');
+    const state = String(params.get('state') || '').trim();
     const oauthError = String(params.get('error') || '');
     const oauthErrorDescription = String(params.get('error_description') || '');
 
@@ -59,11 +53,7 @@
 
     async function run() {
       if (oauthError) throw new Error(oauthErrorDescription || 'Instagram authorization was cancelled or denied.');
-      if (!code) throw new Error('Instagram did not return an authorization code. Please try again.');
-
-      const flow = readExpectedFlow();
-      if (!flow.state) throw new Error('Instagram connection session expired. Please return and try again.');
-      if (returnedState !== flow.state) throw new Error('Instagram security check did not match. Please try again.');
+      if (!code || !state) throw new Error('Instagram did not return a complete authorization response. Please try again.');
 
       status.textContent = 'Authorization received. Verifying your NexusNova account…';
       const app = getApps()[0] || initializeApp(firebaseConfig);
@@ -81,7 +71,7 @@
           Accept: 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ code, redirectUri: REDIRECT_URI }),
+        body: JSON.stringify({ code, state, redirectUri: REDIRECT_URI }),
         cache: 'no-store',
         credentials: 'omit',
         referrerPolicy: 'no-referrer'
@@ -93,42 +83,8 @@
         throw error;
       }
 
-      clearFlow();
       status.textContent = 'Instagram connected successfully. Returning to your dashboard…';
       setTimeout(() => location.replace(`account.html?instagram_linked=1&v=${Date.now()}`), 250);
-    }
-
-    function readExpectedFlow() {
-      const sessionState = String(sessionStorage.getItem(STATE_KEY) || '');
-      if (sessionState) return { state: sessionState };
-
-      try {
-        const stored = JSON.parse(localStorage.getItem(STATE_BACKUP_KEY) || '{}');
-        const createdAt = Number(stored?.createdAt || 0);
-        if (fresh(createdAt) && stored?.state) return { state: String(stored.state) };
-      } catch (_) {}
-
-      try {
-        const raw = document.cookie.split(';').map(part => part.trim()).find(part => part.startsWith(`${STATE_COOKIE}=`));
-        if (raw) {
-          const stored = JSON.parse(decodeURIComponent(raw.slice(STATE_COOKIE.length + 1)));
-          const createdAt = Number(stored?.createdAt || 0);
-          if (fresh(createdAt) && stored?.state) return { state: String(stored.state) };
-        }
-      } catch (_) {}
-
-      return { state: '' };
-    }
-
-    function fresh(createdAt) {
-      return createdAt > 0 && Date.now() - createdAt <= FLOW_MAX_AGE_MS;
-    }
-
-    function clearFlow() {
-      sessionStorage.removeItem(STATE_KEY);
-      sessionStorage.removeItem(RESULT_KEY);
-      try { localStorage.removeItem(STATE_BACKUP_KEY); } catch (_) {}
-      try { document.cookie = `${STATE_COOKIE}=; Max-Age=0; Path=/; Secure; SameSite=Lax`; } catch (_) {}
     }
 
     function cleanCode(value) {
@@ -144,6 +100,9 @@
         'instagram-not-configured': 'Instagram server verification is not configured yet.',
         'firebase-admin-not-configured': 'Firebase server verification is not configured correctly.',
         'firebase-private-key-invalid': 'Firebase server verification key needs attention.',
+        'oauth-state-invalid': 'Instagram security check was invalid. Please retry once.',
+        'oauth-state-expired': 'Instagram connection session expired. Please retry once.',
+        'permission-denied': 'Instagram security check does not match this NexusNova account.',
         'instagram-authorization-failed': 'Instagram rejected the authorization-code exchange. Please retry once with a fresh Allow.',
         'instagram-identity-failed': 'Instagram authorized the login, but the profile identity check failed.',
         'instagram-unavailable': 'Instagram verification is temporarily unavailable. Please try again.'
