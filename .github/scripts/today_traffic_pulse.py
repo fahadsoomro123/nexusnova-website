@@ -22,7 +22,7 @@ def post_json(url: str, payload: dict, token: str) -> dict:
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "User-Agent": "NexusNovaTodayTrafficPulse/1.1 (+https://nexusnovatools.com/)",
+            "User-Agent": "NexusNovaTodayTrafficPulse/1.2 (+https://nexusnovatools.com/)",
         },
     )
     with urllib.request.urlopen(req, timeout=30) as response:
@@ -71,6 +71,18 @@ def run_report(
     return post_json(endpoint, payload, token)
 
 
+def run_daily_trend(token: str) -> dict:
+    endpoint = f"https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:runReport"
+    payload = {
+        "dateRanges": [{"startDate": "6daysAgo", "endDate": "today"}],
+        "dimensions": [{"name": "date"}],
+        "metrics": [{"name": "activeUsers"}],
+        "orderBys": [{"dimension": {"dimensionName": "date", "orderType": "ALPHANUMERIC"}}],
+        "limit": 7,
+    }
+    return post_json(endpoint, payload, token)
+
+
 def realtime_report(token: str) -> dict:
     endpoint = f"https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:runRealtimeReport"
     payload = {
@@ -104,6 +116,20 @@ def dimension_rows(data: dict, dimension_name: str, metric_name: str) -> list[di
                 metric_name: round(float(metrics[0].get("value", "0")), 3) if metrics else 0.0,
             }
         )
+    return result
+
+
+def daily_trend_rows(data: dict) -> list[dict]:
+    result: list[dict] = []
+    for row in data.get("rows") or []:
+        dims = row.get("dimensionValues") or []
+        metrics = row.get("metricValues") or []
+        raw_date = dims[0].get("value", "") if dims else ""
+        label = raw_date
+        if len(raw_date) == 8 and raw_date.isdigit():
+            label = f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:]}"
+        active_users = round(float(metrics[0].get("value", "0")), 3) if metrics else 0.0
+        result.append({"date": label, "active_users": active_users})
     return result
 
 
@@ -181,6 +207,7 @@ def main() -> None:
             "device",
             "active_users",
         )
+        daily_active_users = daily_trend_rows(run_daily_trend(token))
 
         traffic_seen = bool(today["activeUsers"] > 0 or today["sessions"] > 0 or today["screenPageViews"] > 0)
         changes = {key: pct_change(today[key], yesterday[key]) for key in metric_names}
@@ -194,6 +221,7 @@ def main() -> None:
             "yesterday": yesterday,
             "change_vs_yesterday_percent": changes,
             "realtime_last_30_minutes": realtime,
+            "daily_active_users_7d": daily_active_users,
             "top_channels_today": channels,
             "top_sources_today": sources,
             "top_pages_today": pages,
@@ -256,6 +284,11 @@ def main() -> None:
             "### Realtime — last 30 minutes",
             f"**{fmt_number(realtime['activeUsers'])} active users** · {fmt_number(realtime['screenPageViews'])} page views · {fmt_number(realtime['eventCount'])} events",
         ]
+
+        if daily_active_users:
+            md += ["", "### 7-day active-user trend"]
+            for item in daily_active_users:
+                md.append(f"- `{item['date']}` — {fmt_number(item['active_users'])} active users")
 
         if channels:
             md += ["", "### Traffic channels today"]
