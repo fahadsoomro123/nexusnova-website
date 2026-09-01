@@ -16,7 +16,10 @@ const REDIRECT_URI = 'https://nexusnovatools.com/instagram-callback.html';
 const AUTH_URL = 'https://www.instagram.com/oauth/authorize';
 const API_BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev';
 const STATE_KEY = 'nexusnova_instagram_oauth_state_v1';
+const STATE_BACKUP_KEY = 'nexusnova_instagram_oauth_state_backup_v1';
+const RESULT_KEY = 'nexusnova_instagram_oauth_result_v1';
 const POPUP_TIMEOUT_MS = 5 * 60 * 1000;
+const FLOW_MAX_AGE_MS = 10 * 60 * 1000;
 
 const app = getApps()[0] || initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -46,25 +49,11 @@ function setupInstagramMission() {
 
     try {
       const oauthState = randomState();
-      sessionStorage.setItem(STATE_KEY, oauthState);
+      saveOAuthState(oauthState);
       const payload = await openInstagramOAuth(oauthState);
-      const expectedState = sessionStorage.getItem(STATE_KEY) || '';
-      sessionStorage.removeItem(STATE_KEY);
-      if (!payload?.ok || !expectedState || payload.state !== expectedState) {
-        throw new Error(payload?.errorDescription || 'Instagram authorization could not be verified.');
-      }
-
-      const idToken = await user.getIdToken(true);
-      const result = await callInstagramApi('/api/instagram/link', {
-        method: 'POST',
-        idToken,
-        body: { code: payload.code, redirectUri: REDIRECT_URI }
-      });
-      if (result?.linked !== true) throw new Error('Instagram connection was not confirmed by the server.');
-      paintConnected(result.user || {});
-      window.gtag?.('event', 'account_link', { provider: 'instagram', method: 'business-login' });
+      await finishInstagramOAuth(user, payload);
     } catch (error) {
-      sessionStorage.removeItem(STATE_KEY);
+      clearOAuthFlow();
       paintError(publicMessage(error));
     }
   });
@@ -74,8 +63,47 @@ function setupInstagramMission() {
       paintSignedOut();
       return;
     }
+
+    const redirectedPayload = consumeRedirectedOAuthResult();
+    if (redirectedPayload) {
+      card.dataset.state = 'pending';
+      if (state) state.textContent = 'CONNECTING';
+      if (copy) copy.textContent = 'Verifying the Instagram account with NexusNova…';
+      button.disabled = true;
+      button.textContent = 'Connecting…';
+      try {
+        await finishInstagramOAuth(user, redirectedPayload);
+        return;
+      } catch (error) {
+        clearOAuthFlow();
+        paintError(publicMessage(error));
+        return;
+      }
+    }
+
     await refreshStatus(user);
   });
+}
+
+async function finishInstagramOAuth(user, payload) {
+  const expectedState = readOAuthState();
+  if (!payload?.ok || !expectedState || payload.state !== expectedState) {
+    throw new Error(payload?.errorDescription || 'Instagram authorization could not be verified.');
+  }
+  if (!payload.code) throw new Error('Instagram did not return an authorization code.');
+
+  const idToken = await user.getIdToken(true);
+  const result = await callInstagramApi('/api/instagram/link', {
+    method: 'POST',
+    idToken,
+    body: { code: payload.code, redirectUri: REDIRECT_URI }
+  });
+  if (result?.linked !== true) throw new Error('Instagram connection was not confirmed by the server.');
+
+  clearOAuthFlow();
+  paintConnected(result.user || {});
+  removeOAuthMarkerFromUrl();
+  window.gtag?.('event', 'account_link', { provider: 'instagram', method: 'business-login' });
 }
 
 async function refreshStatus(user) {
@@ -218,6 +246,53 @@ function openInstagramOAuth(state) {
       reject(new Error('Instagram sign-in timed out. Please try again.'));
     }, POPUP_TIMEOUT_MS);
   });
+}
+
+function saveOAuthState(state) {
+  sessionStorage.setItem(STATE_KEY, state);
+  try {
+    localStorage.setItem(STATE_BACKUP_KEY, JSON.stringify({ state, createdAt: Date.now() }));
+  } catch (_) {}
+}
+
+function readOAuthState() {
+  const sessionState = sessionStorage.getItem(STATE_KEY) || '';
+  if (sessionState) return sessionState;
+  try {
+    const stored = JSON.parse(localStorage.getItem(STATE_BACKUP_KEY) || '{}');
+    const createdAt = Number(stored?.createdAt || 0);
+    if (stored?.state && createdAt > 0 && Date.now() - createdAt <= FLOW_MAX_AGE_MS) {
+      return String(stored.state);
+    }
+  } catch (_) {}
+  return '';
+}
+
+function consumeRedirectedOAuthResult() {
+  const marker = new URL(location.href).searchParams.get('instagram_oauth');
+  if (marker !== '1') return null;
+  try {
+    const raw = sessionStorage.getItem(RESULT_KEY) || '';
+    sessionStorage.removeItem(RESULT_KEY);
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    return payload?.type === 'nexusnova-instagram-oauth' ? payload : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function clearOAuthFlow() {
+  sessionStorage.removeItem(STATE_KEY);
+  sessionStorage.removeItem(RESULT_KEY);
+  try { localStorage.removeItem(STATE_BACKUP_KEY); } catch (_) {}
+}
+
+function removeOAuthMarkerFromUrl() {
+  const url = new URL(location.href);
+  if (!url.searchParams.has('instagram_oauth')) return;
+  url.searchParams.delete('instagram_oauth');
+  history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
 async function callInstagramApi(path, { method = 'GET', idToken, body = null } = {}) {
