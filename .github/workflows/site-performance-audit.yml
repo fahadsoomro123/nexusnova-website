@@ -38,6 +38,22 @@ jobs:
       - name: Install Lighthouse
         run: npm install --no-save --ignore-scripts lighthouse@12
 
+      - name: Disable GA4 in local audit copy
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/js/main.js')
+          text = path.read_text(encoding='utf-8')
+          needle = "(()=>{\n  const measurementId='G-YLPFKWSS12';"
+          replacement = "(()=>{\n  if(['127.0.0.1','localhost'].includes(location.hostname))return;\n  const measurementId='G-YLPFKWSS12';"
+          if needle not in text:
+              raise SystemExit('GA4 bootstrap signature not found; refusing to run an unfiltered local audit.')
+          path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
+          print('Local Lighthouse copy will not send GA4 traffic.')
+          PY
+
       - name: Start local website server
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
