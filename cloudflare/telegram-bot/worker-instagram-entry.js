@@ -1,5 +1,5 @@
 import workerEntry from './worker-entry.js';
-import { instagramAccountRequest } from './instagram-account.js';
+import { instagramAccountRequest } from './instagram-account-v2.js';
 
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
 const INSTAGRAM_STATUS_PATH = '/api/instagram/status';
