@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import mimetypes
 import os
 import secrets
 import time
@@ -15,11 +16,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 ARTICLE_PUBLISH = ROOT / 'autopilot-publish.json'
 SOCIAL_PUBLISH = ROOT / 'social-publish.json'
+USER_AGENT = 'NexusNovaTrafficAutopilot/1.2'
+MAX_X_IMAGE_BYTES = 5 * 1024 * 1024
 
 
 def post_json(url: str, payload: dict, headers: dict[str, str] | None = None) -> dict:
     body = json.dumps(payload).encode()
-    req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json', 'User-Agent': 'NexusNovaTrafficAutopilot/1.1', **(headers or {})})
+    req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json', 'User-Agent': USER_AGENT, **(headers or {})})
     try:
         with urllib.request.urlopen(req, timeout=25) as response:
             raw = response.read().decode('utf-8', errors='ignore')
@@ -32,7 +35,7 @@ def post_json(url: str, payload: dict, headers: dict[str, str] | None = None) ->
 
 def post_form(url: str, payload: dict) -> dict:
     body = urllib.parse.urlencode(payload).encode()
-    req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'NexusNovaTrafficAutopilot/1.1'})
+    req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=25) as response:
             raw = response.read().decode('utf-8', errors='ignore')
@@ -43,8 +46,51 @@ def post_form(url: str, payload: dict) -> dict:
         raise RuntimeError(f'HTTP {exc.code}: {detail or exc.reason}') from exc
 
 
+def post_multipart(
+    url: str,
+    fields: dict[str, str],
+    file_field: str,
+    filename: str,
+    content_type: str,
+    file_bytes: bytes,
+    headers: dict[str, str] | None = None,
+) -> dict:
+    boundary = f'----NexusNova{secrets.token_hex(16)}'
+    chunks: list[bytes] = []
+    for key, value in fields.items():
+        chunks.extend([
+            f'--{boundary}\r\n'.encode(),
+            f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode(),
+            str(value).encode(),
+            b'\r\n',
+        ])
+    chunks.extend([
+        f'--{boundary}\r\n'.encode(),
+        f'Content-Disposition: form-data; name="{file_field}"; filename="{filename}"\r\n'.encode(),
+        f'Content-Type: {content_type}\r\n\r\n'.encode(),
+        file_bytes,
+        b'\r\n',
+        f'--{boundary}--\r\n'.encode(),
+    ])
+    body = b''.join(chunks)
+    request_headers = {
+        'Content-Type': f'multipart/form-data; boundary={boundary}',
+        'User-Agent': USER_AGENT,
+        **(headers or {}),
+    }
+    req = urllib.request.Request(url, data=body, headers=request_headers)
+    try:
+        with urllib.request.urlopen(req, timeout=40) as response:
+            raw = response.read().decode('utf-8', errors='ignore')
+            print(url.split('?')[0], response.status)
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode('utf-8', errors='ignore')[:500]
+        raise RuntimeError(f'HTTP {exc.code}: {detail or exc.reason}') from exc
+
+
 def get_json(url: str) -> dict:
-    req = urllib.request.Request(url, headers={'User-Agent': 'NexusNovaTrafficAutopilot/1.1'})
+    req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
     with urllib.request.urlopen(req, timeout=25) as response:
         data = json.loads(response.read().decode('utf-8'))
         print(url.split('?')[0], response.status)
@@ -63,6 +109,52 @@ def tracked_url(url: str, source: str, kind: str) -> str:
         'utm_campaign': 'article_launch' if kind == 'article' else 'daily_tool',
     })
     return urllib.parse.urlunsplit((parts.scheme, parts.netloc, parts.path, urllib.parse.urlencode(query), parts.fragment))
+
+
+def social_image_url(item: dict) -> str:
+    for key in ('social_image', 'instagram_image', 'image', 'vertical_image'):
+        value = str(item.get(key, '')).strip()
+        if value.startswith('https://'):
+            return value
+    return ''
+
+
+def wait_for_public_image(url: str, attempts: int = 12, delay: int = 10) -> bool:
+    if not url:
+        return False
+    for attempt in range(1, attempts + 1):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+            with urllib.request.urlopen(req, timeout=20) as response:
+                content_type = str(response.headers.get('Content-Type', '')).lower()
+                if 200 <= response.status < 300 and ('image/' in content_type or not content_type):
+                    print(f'Social image reachable on attempt {attempt}.')
+                    return True
+        except Exception as exc:
+            print(f'Social image not live yet ({attempt}/{attempts}): {exc}')
+        if attempt < attempts:
+            time.sleep(delay)
+    return False
+
+
+def fetch_image_bytes(url: str) -> tuple[bytes, str, str]:
+    if not url.startswith('https://'):
+        raise RuntimeError('Social image URL must use HTTPS')
+    req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as response:
+        content_type = str(response.headers.get('Content-Type', '')).split(';', 1)[0].strip().lower()
+        data = response.read(MAX_X_IMAGE_BYTES + 1)
+    if len(data) > MAX_X_IMAGE_BYTES:
+        raise RuntimeError('Social image exceeds the X 5 MB image limit')
+    if not data:
+        raise RuntimeError('Social image download returned no data')
+    if not content_type.startswith('image/'):
+        guessed = mimetypes.guess_type(urllib.parse.urlsplit(url).path)[0] or ''
+        content_type = guessed if guessed.startswith('image/') else 'image/jpeg'
+    extension = mimetypes.guess_extension(content_type) or '.jpg'
+    if extension == '.jpe':
+        extension = '.jpg'
+    return data, content_type, f'nexusnova-social{extension}'
 
 
 def oauth1_header(method: str, url: str, api_key: str, api_secret: str, access_token: str, access_secret: str) -> str:
@@ -85,13 +177,41 @@ def oauth1_header(method: str, url: str, api_key: str, api_secret: str, access_t
     return 'OAuth ' + ', '.join(f'{enc(key)}="{enc(value)}"' for key, value in sorted(oauth.items()))
 
 
-def post_x(title: str, url: str, hashtags: list[str] | None = None) -> None:
+def upload_x_image(image_url: str, api_key: str, api_secret: str, access_token: str, access_secret: str) -> str:
+    image_bytes, content_type, filename = fetch_image_bytes(image_url)
+    last_error: Exception | None = None
+    for endpoint in (
+        'https://upload.x.com/1.1/media/upload.json',
+        'https://upload.twitter.com/1.1/media/upload.json',
+    ):
+        try:
+            auth = oauth1_header('POST', endpoint, api_key, api_secret, access_token, access_secret)
+            result = post_multipart(
+                endpoint,
+                {'media_category': 'tweet_image'},
+                'media',
+                filename,
+                content_type,
+                image_bytes,
+                {'Authorization': auth},
+            )
+            media_id = str(result.get('media_id_string') or result.get('media_id') or '').strip()
+            if not media_id:
+                raise RuntimeError('X media upload returned no media ID')
+            return media_id
+        except Exception as exc:
+            last_error = exc
+            print(f'X media upload warning via {urllib.parse.urlsplit(endpoint).netloc}: {exc}')
+    raise RuntimeError(f'X media upload failed: {last_error}')
+
+
+def post_x(title: str, url: str, hashtags: list[str] | None = None, image_url: str = '') -> dict:
     api_key = os.getenv('X_API_KEY', '').strip()
     api_secret = os.getenv('X_API_KEY_SECRET', '').strip()
     access_token = os.getenv('X_ACCESS_TOKEN', '').strip()
     access_secret = os.getenv('X_ACCESS_TOKEN_SECRET', '').strip()
     if not all((api_key, api_secret, access_token, access_secret)):
-        return
+        return {'posted': False, 'image_attached': False}
 
     endpoint = 'https://api.x.com/2/tweets'
     tag_text = ' '.join(f'#{tag.lstrip("#")}' for tag in (hashtags or [])[:3])
@@ -100,8 +220,41 @@ def post_x(title: str, url: str, hashtags: list[str] | None = None) -> None:
         suffix += f'\n{tag_text}'
     available_title = max(0, 275 - len(suffix))
     text = f'{title[:available_title]}{suffix}'[:280]
+    payload: dict = {'text': text}
+    image_attached = False
+    if image_url:
+        try:
+            media_id = upload_x_image(image_url, api_key, api_secret, access_token, access_secret)
+            payload['media'] = {'media_ids': [media_id]}
+            image_attached = True
+        except Exception as exc:
+            print('X image warning; posting text fallback:', exc)
+
     auth = oauth1_header('POST', endpoint, api_key, api_secret, access_token, access_secret)
-    post_json(endpoint, {'text': text}, {'Authorization': auth})
+    result = post_json(endpoint, payload, {'Authorization': auth})
+    return {'posted': True, 'image_attached': image_attached, 'response': result}
+
+
+def post_telegram(token: str, chat_id: str, message: str, image_url: str = '') -> dict:
+    if image_url:
+        try:
+            result = post_json(
+                f'https://api.telegram.org/bot{token}/sendPhoto',
+                {
+                    'chat_id': chat_id,
+                    'photo': image_url,
+                    'caption': message[:1024],
+                    'show_caption_above_media': False,
+                },
+            )
+            return {'posted': True, 'image_attached': True, 'response': result}
+        except Exception as exc:
+            print('Telegram image warning; posting text fallback:', exc)
+    result = post_json(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        {'chat_id': chat_id, 'text': message[:4096], 'disable_web_page_preview': False},
+    )
+    return {'posted': True, 'image_attached': False, 'response': result}
 
 
 def resolve_meta_assets(token: str, preferred_page_id: str = '') -> dict:
@@ -131,19 +284,37 @@ def resolve_meta_assets(token: str, preferred_page_id: str = '') -> dict:
     }
 
 
-def wait_for_public_image(url: str, attempts: int = 12, delay: int = 10) -> bool:
-    for attempt in range(1, attempts + 1):
+def post_facebook(assets: dict, message: str, link_url: str, image_url: str = '') -> dict:
+    page_id = urllib.parse.quote(str(assets.get('page_id', '')).strip())
+    token = str(assets.get('page_token', '')).strip()
+    if not page_id or not token:
+        raise RuntimeError('Facebook Page asset is incomplete')
+
+    if image_url:
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'NexusNovaTrafficAutopilot/1.1'})
-            with urllib.request.urlopen(req, timeout=20) as response:
-                if 200 <= response.status < 300:
-                    print(f'Instagram image reachable on attempt {attempt}.')
-                    return True
+            caption = f'{message}\n\n{link_url}'.strip()
+            result = post_form(
+                f'https://graph.facebook.com/v26.0/{page_id}/photos',
+                {
+                    'url': image_url,
+                    'caption': caption,
+                    'published': 'true',
+                    'access_token': token,
+                },
+            )
+            return {'posted': True, 'image_attached': True, 'response': result}
         except Exception as exc:
-            print(f'Instagram image not live yet ({attempt}/{attempts}): {exc}')
-        if attempt < attempts:
-            time.sleep(delay)
-    return False
+            print('Facebook image warning; posting link fallback:', exc)
+
+    result = post_form(
+        f'https://graph.facebook.com/v26.0/{page_id}/feed',
+        {
+            'message': message,
+            'link': link_url,
+            'access_token': token,
+        },
+    )
+    return {'posted': True, 'image_attached': False, 'response': result}
 
 
 def post_instagram(item: dict, assets: dict, tracked_article_url: str) -> None:
@@ -151,7 +322,7 @@ def post_instagram(item: dict, assets: dict, tracked_article_url: str) -> None:
     if not ig_id:
         raise RuntimeError('No connected Instagram professional account found')
 
-    image_url = str(item.get('instagram_image', '')).strip()
+    image_url = social_image_url(item)
     if not image_url:
         raise RuntimeError('No Instagram-safe image was prepared')
     if not wait_for_public_image(image_url):
@@ -216,6 +387,10 @@ def main() -> None:
     url = str(item.get('url', '')).strip()
     kind = str(item.get('kind', 'article')).strip() or 'article'
     hashtags = list(item.get('hashtags') or ['NexusNova', 'OnlineTools', 'Productivity'])
+    image_url = social_image_url(item)
+    if image_url and not wait_for_public_image(image_url, attempts=18, delay=10):
+        print('Social image was not public in time; text/link fallbacks remain enabled.')
+        image_url = ''
 
     sent = 0
     tg_token = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
@@ -224,14 +399,16 @@ def main() -> None:
         try:
             tg_url = tracked_url(url, 'telegram', kind)
             message = f'{title}\n\n{summary}\n\n{tg_url}'.strip()
-            post_json(f'https://api.telegram.org/bot{tg_token}/sendMessage', {'chat_id': tg_chat, 'text': message, 'disable_web_page_preview': False})
+            result = post_telegram(tg_token, tg_chat, message, image_url)
+            print('Telegram media:', 'HD image' if result.get('image_attached') else 'text/link fallback')
             sent += 1
         except Exception as exc:
             print('Telegram warning:', exc)
 
     if all(os.getenv(name, '').strip() for name in ('X_API_KEY', 'X_API_KEY_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_TOKEN_SECRET')):
         try:
-            post_x(title, tracked_url(url, 'x', kind), hashtags)
+            result = post_x(title, tracked_url(url, 'x', kind), hashtags, image_url=image_url)
+            print('X media:', 'HD image' if result.get('image_attached') else 'text fallback')
             sent += 1
         except Exception as exc:
             print('X warning:', exc)
@@ -249,19 +426,14 @@ def main() -> None:
         try:
             fb_url = tracked_url(url, 'facebook', kind)
             fb_tags = ' '.join(f'#{tag.lstrip("#")}' for tag in hashtags[:3])
-            post_form(
-                f"https://graph.facebook.com/v26.0/{urllib.parse.quote(assets['page_id'])}/feed",
-                {
-                    'message': f'{title}\n\n{summary}\n\n{fb_tags}'.strip(),
-                    'link': fb_url,
-                    'access_token': assets['page_token'],
-                },
-            )
+            fb_message = f'{title}\n\n{summary}\n\n{fb_tags}'.strip()
+            result = post_facebook(assets, fb_message, fb_url, image_url)
+            print('Facebook media:', 'HD image' if result.get('image_attached') else 'link fallback')
             sent += 1
         except Exception as exc:
             print('Facebook warning:', exc)
 
-        if assets.get('instagram_id') and item.get('instagram_image'):
+        if assets.get('instagram_id') and social_image_url(item):
             try:
                 post_instagram(item, assets, tracked_url(url, 'instagram', kind))
                 sent += 1
@@ -276,7 +448,7 @@ def main() -> None:
         except Exception as exc:
             print('Social webhook warning:', exc)
 
-    print(f'Social destinations posted: {sent}. Unconfigured or unavailable destinations are safely skipped.')
+    print(f'Social destinations posted: {sent}. HD media is preferred; safe text/link fallbacks remain enabled.')
 
 
 if __name__ == '__main__':
