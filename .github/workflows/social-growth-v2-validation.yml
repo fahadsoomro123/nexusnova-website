@@ -7,6 +7,7 @@ on:
       - '.github/scripts/social_growth_metrics.py'
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/distribute_social_growth.py'
+      - '.github/scripts/distribute_update.py'
       - '.github/scripts/social_audience_metrics.py'
       - '.github/workflows/traffic-autopilot.yml'
       - '.github/workflows/social-audience-watch.yml'
@@ -54,6 +55,15 @@ jobs:
           TELEGRAM_CHANNEL_ID: ''
           NEXUSNOVA_RECORD_AUDIENCE: '0'
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          history=Path('assets/data/social-audience-history.json')
+          backup=Path('/tmp/nexusnova-social-audience-history.bin')
+          if history.exists():
+              backup.write_bytes(history.read_bytes())
+          elif backup.exists():
+              backup.unlink()
+          PY
           python .github/scripts/social_audience_metrics.py
           python - <<'PY'
           import json
@@ -62,9 +72,24 @@ jobs:
           for platform in ('facebook','instagram','telegram'):
               if (data.get(platform) or {}).get('configured') is not False:
                   raise SystemExit(f'{platform} should be safely unconfigured in credential-free smoke test')
-          if Path('assets/data/social-audience-history.json').exists():
-              raise SystemExit('Credential-free non-recording smoke test must not create audience history')
+          history=Path('assets/data/social-audience-history.json')
+          backup=Path('/tmp/nexusnova-social-audience-history.bin')
+          if backup.exists():
+              if not history.exists() or history.read_bytes() != backup.read_bytes():
+                  raise SystemExit('Credential-free non-recording smoke test modified existing audience history')
+          elif history.exists():
+              raise SystemExit('Credential-free non-recording smoke test created audience history')
           print('Audience watchdog credential-free smoke test passed.')
+          PY
+
+      - name: Prepare clean social history fixture
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          history=Path('assets/data/social-growth-history.json')
+          history.parent.mkdir(parents=True,exist_ok=True)
+          history.write_text(json.dumps({'version':2,'posts':[]},indent=2)+'\n',encoding='utf-8')
           PY
 
       - name: Generate adaptive social package
@@ -73,6 +98,7 @@ jobs:
       - name: Validate generated package and creatives
         run: |
           python - <<'PY'
+          import importlib.util
           import json
           from pathlib import Path
           from urllib.parse import urlsplit
@@ -103,14 +129,25 @@ jobs:
                   if image.size != size or image.mode != 'RGB':
                       raise SystemExit(f'Invalid creative {name}: {image.size} {image.mode}')
                   image.verify()
+
+          spec=importlib.util.spec_from_file_location('distribute_update',Path('.github/scripts/distribute_update.py'))
+          module=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          chosen=module.social_image_url(item)
+          if chosen != item.get('instagram_image'):
+              raise SystemExit('Social distributor did not select the HD feed creative')
+          if not all(callable(getattr(module,name,None)) for name in ('post_telegram','post_x','post_facebook','post_instagram')):
+              raise SystemExit('One or more social media posting helpers are missing')
+
           history=json.loads(Path('assets/data/social-growth-history.json').read_text(encoding='utf-8'))
           if len(history.get('posts',[])) != 1:
-              raise SystemExit('Smoke test should create exactly one history row from an empty history')
+              raise SystemExit('Clean-history smoke test should create exactly one history row')
           print(json.dumps({
               'selected': item.get('title'),
               'format': item.get('format'),
               'campaign': item.get('campaign'),
               'score': item.get('selection_score'),
+              'hd_image': chosen,
           }, indent=2))
           PY
 
