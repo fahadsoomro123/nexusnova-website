@@ -2,7 +2,8 @@ name: NexusNova Today Traffic Pulse
 
 on:
   schedule:
-    - cron: '17 */2 * * *'
+    # 08:17 Pakistan time (UTC+5). One full report each morning.
+    - cron: '17 3 * * *'
   workflow_dispatch:
   push:
     branches: [main]
