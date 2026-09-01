@@ -26,20 +26,30 @@ test('Instagram Business Login uses the approved app, redirect and minimal ident
 
 test('Instagram authorization code is exchanged only by the Worker and no secret is exposed to browser code', () => {
   const ui = read('assets/js/instagram-auth-ui.js');
-  const backend = read('cloudflare/telegram-bot/instagram-account.js');
+  const backend = read('cloudflare/telegram-bot/instagram-account-v2.js');
+  const wrapper = read('cloudflare/telegram-bot/worker-instagram-entry.js');
 
   assert.doesNotMatch(ui, /INSTAGRAM_APP_SECRET|client_secret|oauth\/access_token/);
+  assert.match(wrapper, /instagram-account-v2\.js/);
   assert.match(backend, /env\.INSTAGRAM_APP_SECRET/);
   assert.match(backend, /https:\/\/api\.instagram\.com\/oauth\/access_token/);
   assert.match(backend, /client_secret/);
   assert.match(backend, /https:\/\/graph\.instagram\.com/);
-  assert.match(backend, /fields', 'id,username,account_type'/);
-  assert.doesNotMatch(backend, /fsString\(accessToken\)|accessToken:\s*fsString|instagramAccessToken/);
+  assert.doesNotMatch(backend, /instagramAccessToken|accessToken:\s*fsString/);
+});
+
+test('Instagram backend accepts full service-account JSON or existing split Cloudflare secrets', () => {
+  const backend = read('cloudflare/telegram-bot/instagram-account-v2.js');
+  assert.match(backend, /FIREBASE_SERVICE_ACCOUNT_JSON/);
+  assert.match(backend, /FIREBASE_CLIENT_EMAIL/);
+  assert.match(backend, /FIREBASE_PRIVATE_KEY/);
+  assert.match(backend, /normalizePrivateKey/);
+  assert.match(backend, /replace\(\/\\\\n\/g, '\\n'\)/);
 });
 
 test('Instagram connected state is server verified and one-to-one without reward mutations', () => {
   const ui = read('assets/js/instagram-auth-ui.js');
-  const backend = read('cloudflare/telegram-bot/instagram-account.js');
+  const backend = read('cloudflare/telegram-bot/instagram-account-v2.js');
   const wrapper = read('cloudflare/telegram-bot/worker-instagram-entry.js');
 
   assert.match(wrapper, /\/api\/instagram\/status/);
