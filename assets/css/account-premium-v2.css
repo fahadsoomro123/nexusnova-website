@@ -6,4 +6,90 @@
 .account-flow-note{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:1px;padding:10px 11px;border:1px solid rgba(82,92,130,.09);border-radius:13px;background:linear-gradient(145deg,#fbfcff,#f5f7fc);color:#7a8598;font-size:8px;font-weight:900;letter-spacing:.07em}.account-flow-note i{font-style:normal;color:#a1a8b6}.account-flow-note strong{color:#5549df}
 .account-tabs{box-shadow:inset 0 1px 2px rgba(48,58,90,.04)}.account-tabs button.active{background:radial-gradient(circle at 18% 0%,rgba(255,255,255,.18),transparent 35%),linear-gradient(135deg,#151c31,#3a327c 58%,#564be7);box-shadow:0 10px 24px rgba(34,42,77,.18),inset 0 1px 0 rgba(255,255,255,.15)}
 .account-submit{position:relative;overflow:hidden;box-shadow:0 18px 38px rgba(71,61,182,.25),inset 0 1px 0 rgba(255,255,255,.24)}.account-submit:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.18) 45%,transparent 70%);transform:translateX(-120%);transition:transform .5s ease}.account-submit:hover:before{transform:translateX(120%)}
+
+/* Clean provider branding: visual-only. Firebase/auth flows remain untouched. */
+.nn-account .account-submit,
+.nn-account .nn-external-auth-btn{
+  min-height:50px;
+  border:1px solid #dadce0;
+  border-radius:12px;
+  background:#fff;
+  color:#202124;
+  box-shadow:0 1px 2px rgba(60,64,67,.10);
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:0;
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.nn-account .account-submit:before{display:none}
+.nn-account .account-submit:hover,
+.nn-account .nn-external-auth-btn:hover{
+  background:#f8f9fa;
+  border-color:#c7ccd4;
+  box-shadow:0 2px 5px rgba(60,64,67,.14);
+  transform:none;
+}
+.nn-account .account-submit:focus-visible,
+.nn-account .nn-external-auth-btn:focus-visible{
+  outline:3px solid rgba(66,133,244,.22);
+  outline-offset:2px;
+}
+.nn-account .account-submit:disabled,
+.nn-account .nn-external-auth-btn:disabled{
+  opacity:.56;
+  cursor:wait;
+  transform:none;
+}
+.nn-account .nn-google-auth-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+}
+.nn-account .nn-google-auth-button .nn-google-g{
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+  border-radius:0;
+  background-color:transparent;
+  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MzMuNSA1NDQuMyI+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTUzMy41IDI3OC40YzAtMTguNS0xLjUtMzcuMS00LjctNTUuM0gyNzIuMXYxMDQuOGgxNDdjLTYuMSAzMy44LTI1LjYgNjMuNy01NC43IDgyLjh2NjhoODcuNGM1MS4yLTQ3LjEgODEuNy0xMTYuNSA4MS43LTIwMC4zeiIvPjxwYXRoIGZpbGw9IiMzNEE4NTMiIGQ9Ik0yNzIuMSA1NDQuM2M3My40IDAgMTM1LjMtMjQuMSAxODAuNC02NS43bC04Ny40LTY4Yy0yNC40IDE2LjMtNTUuNSAyNS45LTkzIDI1LjktNzAuOSAwLTEzMS00Ny45LTE1Mi41LTExMi4zSDI5LjR2NzAuMWM0Ni4yIDkxLjkgMTQwLjcgMTUwIDI0Mi43IDE1MHoiLz48cGF0aCBmaWxsPSIjRkJCQzA0IiBkPSJNMTE5LjYgMzI0LjJjLTEwLjktMzIuNy0xMC45LTY3LjYgMC0xMDAuM3YtNzAuMUgyOS40Yy0zOC40IDc2LjUtMzguNCAxNjYuOSAwIDI0My40bDkwLjItNzN6Ii8+PHBhdGggZmlsbD0iI0VBNDMzNSIgZD0iTTI3Mi4xIDEwNy43YzM4LjgtLjYgNzYuMyAxNCAxMDQuOCA0MC44bDc4LjMtNzguM0M0MDUuNiAyNC44IDM0MC44LS4xIDI3Mi4xIDAgMTcwLjEgMCA3NS42IDU4LjEgMjkuNCAxNTBsOTAuMiA3MC4xYzIxLjUtNjQuNSA4MS42LTExMi40IDE1Mi41LTExMi40eiIvPjwvc3ZnPg==");
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+  color:transparent;
+  font-size:0;
+  box-shadow:none;
+}
+.nn-account .nn-external-auth-grid{
+  grid-template-columns:1fr;
+  gap:10px;
+}
+.nn-account .nn-external-auth-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  width:100%;
+}
+.nn-account .nn-external-auth-btn::before{
+  content:"";
+  width:20px;
+  height:20px;
+  flex:0 0 20px;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+}
+.nn-account .nn-external-auth-btn[data-provider-signin="x"]::before{
+  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzBGMTQxOSIgZD0iTTE4LjkgMkgyMmwtNi43NyA3Ljc0TDIzLjIgMjJoLTYuMjRsLTQuODktNi4zOUw2LjQ4IDIySDMuMzZsNy4yNS04LjI5TDIuOTYgMmg2LjRsNC40MiA1Ljg0TDE4LjkgMlptLTEuMSAxOGgxLjczTDguNDIgMy45SDYuNTZMMTcuOCAyMFoiLz48L3N2Zz4=");
+}
+.nn-account .nn-external-auth-btn[data-provider-signin="apple"]::before{
+  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTEyLjE1MiA2Ljg5NmMtLjk0OCAwLTIuNDE1LTEuMDc4LTMuOTYtMS4wNC0yLjA0LjAyNy0zLjkxIDEuMTgzLTQuOTYxIDMuMDE0LTIuMTE3IDMuNjc1LS41NDYgOS4xMDMgMS41MTkgMTIuMDkgMS4wMTMgMS40NTQgMi4yMDggMy4wOSAzLjc5MiAzLjAzOSAxLjUxOS0uMDY1IDIuMDkxLS45NzQgMy45MzUtLjk3NCAxLjgzMSAwIDIuMzM4Ljk3NCAzLjk0NS45MzUgMS42Ni0uMDI2IDIuNzE0LTEuNDggMy43MjctMi45NDggMS4xNjktMS43MDEgMS42NDktMy4zNSAxLjY3NS0zLjQ0MS0uMDM5LS4wMTMtMy4yMjEtMS4yMzQtMy4yNi00LjkxLS4wMjYtMy4wNzggMi41Mi00LjU1OCAyLjYzNy00LjYyMy0xLjQ1NS0yLjExNy0zLjY4OS0yLjM1MS00LjQ4LTIuNDAzLTIuMDM5LS4xNTYtMy43NDEgMS4yNjEtNC41NTkgMS4yNjF6bTMuMjk4LTMuMjczQzE2LjI5NCAyLjYxIDE2Ljg3IDEuMTk1IDE2Ljc0IDBjLTEuMjA4LjA1Mi0yLjY2Mi44MDUtMy41MzIgMS44MTgtLjc4Ljg5Ni0xLjQ1NSAyLjMzOC0xLjI5OSAzLjUwNiAxLjMzOC4xMDQgMi43MDEtLjY4OCAzLjU0LTEuNzAxIi8+PC9zdmc+");
+}
+.nn-account .nn-external-auth-btn[data-provider-signin="facebook"]::before{
+  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9IiMxODc3RjIiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMTMuNSAyMnYtOGgyLjhsLjQtM2gtMy4yVjkuMWMwLS45LjMtMS42IDEuNi0xLjZoMS44VjQuOGMtLjMgMC0xLjQtLjEtMi42LS4xLTIuNiAwLTQuMyAxLjYtNC4zIDQuNVYxMUg3djNoM3Y4aDMuNVoiLz48L3N2Zz4=");
+}
+
 @media(max-width:720px){.account-nav .account-nav-signin,.account-nav .account-nav-signup{width:100%;text-align:center}.account-security-strip{align-items:flex-start;flex-direction:column}.account-intro:after{width:110px;height:110px;right:-25px;top:12%}}
