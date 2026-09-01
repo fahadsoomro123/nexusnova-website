@@ -6,20 +6,20 @@
   const section=document.createElement('section');
   section.className='nn-home-app-promo';
   section.dataset.homeAppPromo='';
-  section.setAttribute('aria-label','NexusNova Android app preview');
+  section.setAttribute('aria-label','NexusNova Android app and web NVX mining preview');
   section.innerHTML=`
     <div class="container">
       <div class="nn-home-app-shell">
         <div class="nn-home-app-copy">
-          <span class="nn-home-app-kicker">NEXUSNOVA ANDROID</span>
-          <h2>57+ smart tools.<span>One connected app.</span></h2>
-          <p>Meet the NexusNova Android experience: real Nova Hub artwork, daily utilities, AI, finance, Islamic tools, security and NVX mining in one premium mobile hub. Mining remains manual — account creation never auto-starts a session.</p>
+          <span class="nn-home-app-kicker">NEXUSNOVA APP + WEB MINING</span>
+          <h2>57+ smart tools.<span>NVX mining on the web too.</span></h2>
+          <p>The NexusNova Android app and secure website Web App use the same Firebase-linked account. NVX mining is available on the website too: sign in, open the Web App, and manually start or continue your 24-hour session. No browser or device crypto mining runs silently in the background.</p>
           <div class="nn-home-app-points">
             <div class="nn-home-app-point"><strong>57+</strong><small>TOOLS & UTILITIES</small></div>
-            <div class="nn-home-app-point"><strong>REAL</strong><small>NOVA HUB ARTWORK</small></div>
+            <div class="nn-home-app-point"><strong>WEB</strong><small>FIREBASE-LINKED MINING</small></div>
             <div class="nn-home-app-point"><strong>24H</strong><small>MANUAL MINING SESSION</small></div>
           </div>
-          <div class="nn-home-app-actions"><a href="app.html">Explore NexusNova App →</a><a href="register.html?mode=register">Create account</a></div>
+          <div class="nn-home-app-actions"><a href="account.html">Open Web App + NVX Mining →</a><a href="app.html">Explore Android App</a><a href="register.html?mode=register">Create account</a></div>
           <div class="nn-home-app-socials" aria-label="Official NexusNova social profiles">
             <a class="x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on X"><svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"/></svg></a>
             <a class="fb" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on Facebook"><svg viewBox="0 0 24 24"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"/></svg></a>
