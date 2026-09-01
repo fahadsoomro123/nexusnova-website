@@ -3,7 +3,7 @@
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(page!=='index.html'||document.querySelector('.nn-home-app-promo')) return;
 
-  const miningShot='assets/images/nvx-mining-real-640.webp';
+  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-2';
   const section=document.createElement('section');
   section.className='nn-home-app-promo';
   section.dataset.homeAppPromo='';
@@ -14,7 +14,7 @@
         <div class="nn-home-mining-copy">
           <span class="nn-home-mining-kicker">NEXUSNOVA FEATURE // WEB MINING</span>
           <h2>NVX mining.<span>Live on the web.</span></h2>
-          <p>Run your real 24-hour NexusNova mining session from the secure Web App. Your Firebase-linked account, balance and mining session stay connected across NexusNova.</p>
+          <p>Open your real 24-hour NVX mining session in the secure NexusNova Web App. Firebase-linked, server-synced and manual.</p>
           <div class="nn-home-mining-trust" aria-label="Mining trust details">
             <span>FIREBASE-LINKED</span><span>SERVER-SYNCED</span><span>MANUAL 24H SESSION</span>
           </div>
@@ -22,13 +22,13 @@
             <a class="primary" href="account.html">OPEN WEB MINING →</a>
             <a href="account.html#earn-nvx-title">How NVX Mining Works</a>
           </div>
-          <p class="nn-home-mining-disclosure">Real NexusNova mining screen. Balance, rate and session values vary by account and live session. Mining starts only when the signed-in user starts or continues a session.</p>
+          <p class="nn-home-mining-disclosure">Real NexusNova mining session screenshot. Balance, rate and session values shown belong to that live session and vary by account and session.</p>
         </div>
         <div class="nn-home-mining-visual" aria-label="Real NexusNova NVX mining screen">
           <div class="nn-tactical-device">
             <i class="nn-tactical-bolt b1"></i><i class="nn-tactical-bolt b2"></i><i class="nn-tactical-bolt b3"></i><i class="nn-tactical-bolt b4"></i>
             <div class="nn-tactical-screen">
-              <img src="${miningShot}" width="640" height="1317" loading="lazy" decoding="async" alt="Real NexusNova NVX mining screen showing a live 24-hour server-synced mining session">
+              <img src="${miningShot}" width="420" height="864" loading="eager" fetchpriority="high" decoding="async" alt="Real NexusNova NVX mining screen showing a live manual 24-hour server-synced mining session">
             </div>
             <span class="nn-tactical-live"><i></i> SERVER SYNCED</span>
           </div>
@@ -80,7 +80,7 @@
 
           <div class="nn-home-phone mining real-mining" aria-label="Real NexusNova NVX mining preview">
             <div class="nn-home-phone-screen nn-real-mining-screen">
-              <img src="${miningShot}" width="640" height="1317" loading="lazy" decoding="async" alt="Real NexusNova mining screen in the mobile preview">
+              <img src="${miningShot}" width="420" height="864" loading="lazy" decoding="async" alt="Real NexusNova mining session screen in the mobile preview">
             </div>
           </div>
         </div>
