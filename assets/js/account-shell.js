@@ -52,6 +52,6 @@
   }
 
   if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="instagram"]')){
-    loadModule('./instagram-auth-ui.js?v=20260901-3','nexusnovaInstagramAuth');
+    loadModule('./instagram-auth-ui.js?v=20260901-4','nexusnovaInstagramAuth');
   }
 })();
