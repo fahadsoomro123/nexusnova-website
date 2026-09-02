@@ -1,13 +1,22 @@
 {
   "schema_version": 1,
-  "status": "pending",
-  "generated_at": null,
-  "effective_date": null,
+  "status": "ok",
+  "generated_at": "2026-09-02T07:39:12.469Z",
+  "effective_date": "2026-09-02",
   "source": {
     "name": "Pakistan State Oil (PSO)",
     "url": "https://psopk.com/index.php/en/fuels/fuel-prices",
-    "method": "Official PSO published POL retail reference rates"
+    "method": "Official PSO published POL retail reference rates; NexusNova validates the effective date plus Premier Euro 5 and Hi-Cetane Diesel Euro 5 in the same source block"
   },
-  "prices": null,
-  "notice": "Final retail outlet prices can reflect applicable freight charges as described by PSO."
+  "prices": {
+    "petrol": {
+      "product_name": "PREMIER EURO 5",
+      "pkr_per_litre": 343.87
+    },
+    "diesel": {
+      "product_name": "HI-CETANE DIESEL EURO 5",
+      "pkr_per_litre": 370.92
+    }
+  },
+  "notice": "PSO states that applicable freight charges can affect final selling prices at retail outlets. These are published reference rates, not a promise of an identical pump price at every location."
 }
