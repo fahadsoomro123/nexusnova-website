@@ -1,14 +1,31 @@
 {
   "schema_version": 1,
-  "status": "pending",
-  "generated_at": null,
-  "data_date": null,
+  "status": "ok",
+  "generated_at": "2026-09-02T08:45:47.527Z",
+  "data_date": "2026-08-31",
   "country": "US",
   "source": {
     "name": "U.S. Energy Information Administration (EIA)",
     "url": "https://www.eia.gov/petroleum/gasdiesel/",
+    "gasoline_url": "https://www.eia.gov/dnav/pet/pet_pri_gnd_a_epmr_pte_dpgal_w.htm",
+    "diesel_url": "https://www.eia.gov/dnav/pet/PET_PRI_GND_A_EPD2D_PTE_DPGAL_W.htm",
     "method": "Official weekly U.S. national retail averages in dollars per gallon including taxes"
   },
-  "prices": null,
-  "notice": "Waiting for the verified EIA publisher to populate the weekly U.S. fuel dataset. NexusNova does not publish guessed values."
+  "prices": {
+    "regular_gasoline": {
+      "product_name": "Regular Gasoline",
+      "data_date": "2026-08-31",
+      "usd_per_gallon": 4.071,
+      "previous_usd_per_gallon": 4.085,
+      "change_usd_per_gallon": -0.014
+    },
+    "on_highway_diesel": {
+      "product_name": "On-Highway Diesel — All Types",
+      "data_date": "2026-08-31",
+      "usd_per_gallon": 5.599,
+      "previous_usd_per_gallon": 5.652,
+      "change_usd_per_gallon": -0.053
+    }
+  },
+  "notice": "Weekly U.S. national averages including taxes. These are not pump quotes for a specific state, city or station."
 }
