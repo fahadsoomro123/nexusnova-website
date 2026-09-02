@@ -41,3 +41,12 @@ test('gold updater fetches no-key XAU and keeps local Sarafa unpublished until v
   assert.match(updater,/deriveGoldPkr/);
   assert.equal(seed.local_sarafa.status,'not_published');
 });
+
+test('shared navigation exposes NexusNova LIVE and gold is indexed in the LIVE sitemap',()=>{
+  const main=read('assets/js/main.js');
+  const sitemap=read('sitemap-live.xml');
+  const hub=read('live.html');
+  assert.match(main,/\['live\.html','LIVE'\]/);
+  assert.match(sitemap,/https:\/\/nexusnovatools\.com\/gold-rates\.html/);
+  assert.match(hub,/href="gold-rates\.html"/);
+});
