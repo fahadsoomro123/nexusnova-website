@@ -1,14 +1,50 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "ok",
-  "generated_at": "2026-09-02T07:05:12.797Z",
+  "generated_at": "2026-09-02T08:27:25.587Z",
   "data_date": "2026-09-02",
   "quote_currency": "PKR",
+  "featured_codes": [
+    "USD",
+    "GBP",
+    "EUR",
+    "AED",
+    "SAR"
+  ],
+  "supported_codes": [
+    "USD",
+    "GBP",
+    "EUR",
+    "AED",
+    "SAR",
+    "CAD",
+    "AUD",
+    "NZD",
+    "JPY",
+    "CNY",
+    "INR",
+    "TRY",
+    "CHF",
+    "SEK",
+    "NOK",
+    "DKK",
+    "SGD",
+    "HKD",
+    "KRW",
+    "THB",
+    "MYR",
+    "IDR",
+    "ZAR",
+    "QAR",
+    "KWD",
+    "BHD",
+    "OMR"
+  ],
   "source": {
     "name": "Frankfurter",
     "url": "https://frankfurter.dev/",
-    "api_url": "https://api.frankfurter.dev/v2/rates?base=PKR&quotes=USD,GBP,EUR,AED,SAR",
-    "method": "Daily reference exchange rates aggregated from central banks and official sources"
+    "api_url": "https://api.frankfurter.dev/v2/rates?base=PKR",
+    "method": "Daily reference exchange rates aggregated from central banks and official sources; Pakistan-featured currencies are required and additional supported currencies are cached when available"
   },
   "rates": [
     {
@@ -42,6 +78,160 @@
     {
       "code": "SAR",
       "rate": 74.183976,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "CAD",
+      "rate": 200.400802,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "AUD",
+      "rate": 198.807157,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "NZD",
+      "rate": 164.203612,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "JPY",
+      "rate": 1.738919,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "CNY",
+      "rate": 41.425021,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "INR",
+      "rate": 2.926886,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "TRY",
+      "rate": 5.76535,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "CHF",
+      "rate": 343.642612,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "SEK",
+      "rate": 29.036005,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "NOK",
+      "rate": 29.806259,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "DKK",
+      "rate": 43.196544,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "SGD",
+      "rate": 218.818381,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "HKD",
+      "rate": 35.460993,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "KRW",
+      "rate": 0.202852,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "THB",
+      "rate": 8.37942,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "MYR",
+      "rate": 68.965517,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "IDR",
+      "rate": 0.015702,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "ZAR",
+      "rate": 17.262213,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "QAR",
+      "rate": 76.452599,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "KWD",
+      "rate": 900.900901,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "BHD",
+      "rate": 740.740741,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "OMR",
+      "rate": 724.637681,
       "data_date": "2026-09-02",
       "previous_rate": null,
       "change_pct": null
