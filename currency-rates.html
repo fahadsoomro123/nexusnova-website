@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>USD to PKR & Currency Rates — Daily Reference Converter | NexusNova</title>
+  <meta name="description" content="Check daily USD, GBP, EUR, AED and SAR to PKR reference rates and convert amounts with source dates, update timestamps and clear limitations.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#f5f7fb">
+  <link rel="canonical" href="https://nexusnovatools.com/currency-rates.html">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/live.css">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NexusNova Tools">
+  <meta property="og:title" content="USD to PKR & Currency Rates — NexusNova">
+  <meta property="og:description" content="Daily Pakistan-focused currency reference rates with an interactive converter, source date and transparent freshness label.">
+  <meta property="og:url" content="https://nexusnovatools.com/currency-rates.html">
+  <meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="USD to PKR & Currency Rates — NexusNova">
+  <meta name="twitter:description" content="Daily Pakistan-focused currency reference rates and converter.">
+  <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"NexusNova Currency Rates & Converter","url":"https://nexusnovatools.com/currency-rates.html","applicationCategory":"FinanceApplication","operatingSystem":"Any","isAccessibleForFree":true,"description":"Daily reference exchange rates for USD, GBP, EUR, AED and SAR against PKR with an interactive converter."}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},{"@type":"ListItem","position":2,"name":"NexusNova LIVE","item":"https://nexusnovatools.com/live.html"},{"@type":"ListItem","position":3,"name":"Currency Rates","item":"https://nexusnovatools.com/currency-rates.html"}]}</script>
+</head>
+<body class="nn-live-page">
+<header class="site-header" data-header>
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a>
+    <button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button>
+    <nav class="nav" data-nav aria-label="Primary navigation"></nav>
+  </div>
+</header>
+<main>
+  <section class="page-hero nn-live-hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a> <span aria-hidden="true">›</span> <a href="live.html">NexusNova LIVE</a> <span aria-hidden="true">›</span> <span aria-current="page">Currency</span></nav>
+      <span class="kicker">NEXUSNOVA LIVE // CURRENCY</span>
+      <h1>Daily currency rates to <span class="gradient-text">Pakistani Rupee (PKR).</span></h1>
+      <p>Compare five Pakistan-relevant currencies using daily reference data. This page does not claim second-by-second forex pricing.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rates-title">
+    <div class="container">
+      <div class="section-head">
+        <div><span class="kicker">REFERENCE RATES</span><h2 id="rates-title">USD, GBP, EUR, AED & SAR → PKR</h2></div>
+        <p>Each card means “1 unit of the shown currency equals approximately this many PKR” for the source date.</p>
+      </div>
+      <div class="live-status" data-live-status role="status" aria-live="polite">Loading daily reference rates…</div>
+      <div class="live-rate-grid" data-live-rate-grid aria-label="Currency reference rates to Pakistani Rupee"></div>
+      <div class="live-meta">
+        <span><strong>Freshness:</strong> Daily reference data</span>
+        <span><strong>Source:</strong> <a data-live-source href="https://frankfurter.dev/" rel="noopener noreferrer">Frankfurter</a></span>
+        <span><strong>Data date:</strong> <time data-live-data-date>—</time></span>
+        <span><strong>Site refresh:</strong> <time data-live-generated>—</time></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="converter-title">
+    <div class="container">
+      <div class="tool-card live-converter">
+        <span class="kicker">CONVERTER</span>
+        <h2 id="converter-title">Convert an amount to PKR</h2>
+        <p>Uses the same daily reference rate shown above. No transaction or service fee is added.</p>
+        <div class="form-row">
+          <div class="field">
+            <label for="live-amount">Amount</label>
+            <input id="live-amount" data-live-amount type="number" min="0" step="any" inputmode="decimal" value="1">
+          </div>
+          <div class="field">
+            <label for="live-currency">From currency</label>
+            <select id="live-currency" data-live-currency>
+              <option value="USD">USD — US Dollar</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="AED">AED — UAE Dirham</option>
+              <option value="SAR">SAR — Saudi Riyal</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button" data-live-convert>Convert to PKR</button>
+        <div class="result live-convert-result" data-live-convert-result aria-live="polite">Load the daily rates to calculate.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container article live-explainer">
+      <h2>What kind of exchange rate is this?</h2>
+      <p>NexusNova uses daily reference exchange-rate data aggregated by Frankfurter from central banks and official sources. It is designed for estimates, comparisons and informational conversion—not as an executable trading quote or a promise of the cash rate available in Pakistan.</p>
+      <h2>Why can a bank or exchange company show a different USD/PKR rate?</h2>
+      <p>Retail providers can add a spread or fee, update at a different time, or use a different underlying market. Cash, card, remittance and interbank rates can therefore differ from a daily reference rate.</p>
+      <h2>How the PKR values are calculated</h2>
+      <p>The publishing workflow requests PKR-based reference quotes for USD, GBP, EUR, AED and SAR. Because that response expresses how much foreign currency one PKR buys, NexusNova inverts each positive quote to display how many PKR equal one unit of the foreign currency. The automated updater rejects missing, zero or non-numeric values instead of publishing a guessed number.</p>
+      <h2>Update policy</h2>
+      <p>The source is daily, so NexusNova refreshes the dataset on a daily schedule. The page separately shows the source data date and the time NexusNova last refreshed its cached file. A newer website refresh does not mean the underlying reference rate changed.</p>
+      <h2>Limitations</h2>
+      <p>Use these figures as informational estimates only. For a purchase, transfer, accounting entry, tax filing or trading decision, verify the rate and fees with the institution or official source relevant to that transaction.</p>
+      <p><a href="live.html">← Back to NexusNova LIVE</a></p>
+    </div>
+  </section>
+</main>
+<footer class="site-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span></div></footer>
+<script src="assets/js/main.js" defer></script>
+<script src="assets/js/live-currency.js" defer></script>
+</body>
+</html>
