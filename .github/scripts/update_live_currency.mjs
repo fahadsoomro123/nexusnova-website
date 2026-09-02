@@ -2,8 +2,10 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import path from 'node:path';
 
-export const CODES=['USD','GBP','EUR','AED','SAR'];
-export const ENDPOINT='https://api.frankfurter.dev/v2/rates?base=PKR&quotes=USD,GBP,EUR,AED,SAR';
+export const FEATURED_CODES=['USD','GBP','EUR','AED','SAR'];
+export const WORLD_CODES=['CAD','AUD','NZD','JPY','CNY','INR','TRY','CHF','SEK','NOK','DKK','SGD','HKD','KRW','THB','MYR','IDR','ZAR','QAR','KWD','BHD','OMR'];
+export const CODES=[...FEATURED_CODES,...WORLD_CODES];
+export const ENDPOINT='https://api.frankfurter.dev/v2/rates?base=PKR';
 
 export function invertPkrQuotes(rows, previous={rates:[]}){
   if(!Array.isArray(rows))throw new Error('Frankfurter response must be an array.');
@@ -15,9 +17,9 @@ export function invertPkrQuotes(rows, previous={rates:[]}){
     if(!Number.isFinite(quote)||quote<=0)throw new Error(`Invalid PKR/${row.quote} quote.`);
     seen.set(row.quote,{date:row.date,rate:1/quote});
   }
-  for(const code of CODES)if(!seen.has(code))throw new Error(`Missing PKR/${code} quote.`);
+  for(const code of FEATURED_CODES)if(!seen.has(code))throw new Error(`Missing PKR/${code} quote.`);
 
-  return CODES.map(code=>{
+  return CODES.filter(code=>seen.has(code)).map(code=>{
     const current=seen.get(code);
     const old=previousByCode.get(code);
     let previousRate=null;
@@ -44,16 +46,18 @@ export function buildPayload(rows, previous={}){
   const dates=[...new Set(rates.map(item=>item.data_date).filter(Boolean))].sort();
   if(!dates.length)throw new Error('No source date supplied by Frankfurter.');
   return {
-    schema_version:1,
+    schema_version:2,
     status:'ok',
     generated_at:new Date().toISOString(),
     data_date:dates.at(-1),
     quote_currency:'PKR',
+    featured_codes:FEATURED_CODES,
+    supported_codes:rates.map(item=>item.code),
     source:{
       name:'Frankfurter',
       url:'https://frankfurter.dev/',
       api_url:ENDPOINT,
-      method:'Daily reference exchange rates aggregated from central banks and official sources'
+      method:'Daily reference exchange rates aggregated from central banks and official sources; Pakistan-featured currencies are required and additional supported currencies are cached when available'
     },
     rates
   };
