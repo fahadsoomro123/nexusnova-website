@@ -1,0 +1,50 @@
+name: NexusNova LIVE Currency Refresh
+
+on:
+  schedule:
+    - cron: '20 1 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/update_live_currency.mjs'
+      - '.github/workflows/update-live-currency.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-live-currency-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Refresh daily PKR reference rates
+        run: node .github/scripts/update_live_currency.mjs
+
+      - name: Validate live currency feature
+        run: node --test tests/live-currency.test.cjs
+
+      - name: Commit refreshed data when changed
+        shell: bash
+        run: |
+          if git diff --quiet -- assets/data/live-currency.json; then
+            echo "Currency dataset already matches the latest source response."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/live-currency.json
+          git commit -m "data: refresh NexusNova LIVE currency [skip ci]"
+          git push
