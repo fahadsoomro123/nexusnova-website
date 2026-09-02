@@ -17,6 +17,7 @@ on:
       - '.github/workflows/update-live-gold.yml'
       - 'assets/js/live-gold.js'
       - 'assets/data/live-gold.json'
+      - 'assets/data/live-gold-history.json'
       - 'assets/css/live.css'
       - 'gold-rates.html'
       - 'live.html'
@@ -40,24 +41,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
       - name: Refresh XAU and calculated PKR gold references
         run: node .github/scripts/update_live_gold.mjs
-
       - name: Validate repository syntax
         run: npm run check
-
       - name: Run repository tests
         run: npm test
-
       - name: Run full static SEO and internal-link audit
         run: python3 .github/scripts/site_quality_audit.py
-
       - name: Require zero severe static findings
         run: |
           python3 - <<'PY'
@@ -70,21 +65,18 @@ jobs:
               raise SystemExit(f'{len(severe)} severe static finding(s) remain')
           print('Static site map + SEO audit has zero severe findings.')
           PY
-
       - name: Commit refreshed data when changed
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
-          if git diff --quiet -- assets/data/live-gold.json; then
-            echo "Gold dataset already matches the latest source response."
+          if git diff --quiet -- assets/data/live-gold.json assets/data/live-gold-history.json; then
+            echo "Gold datasets already match the latest source response."
             exit 0
           fi
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/data/live-gold.json
+          git add assets/data/live-gold.json assets/data/live-gold-history.json
           git commit -m "data: refresh NexusNova LIVE gold [skip ci]"
-
           git reset --hard HEAD
           for attempt in 1 2 3 4 5; do
             if git push origin HEAD:main; then
@@ -96,6 +88,5 @@ jobs:
             git rebase origin/main
             sleep $((attempt * 2))
           done
-
           echo "Unable to publish refreshed gold data after 5 safe retries."
           exit 1
