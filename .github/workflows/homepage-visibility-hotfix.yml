@@ -1,0 +1,99 @@
+name: NexusNova Homepage Visibility Hotfix
+
+on:
+  push:
+    paths:
+      - '.github/workflows/homepage-visibility-hotfix.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-homepage-visibility-hotfix
+  cancel-in-progress: false
+
+jobs:
+  hotfix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Patch homepage visibility
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          if 'data-nexusnova-live-launch' not in html:
+              nav_old = '<a href="index.html" aria-current="page">Home</a><a href="tools.html">Tools</a>'
+              nav_new = '<a href="index.html" aria-current="page">Home</a><a href="live.html">LIVE</a><a href="tools.html">Tools</a>'
+              if nav_old not in html:
+                  raise SystemExit('Homepage static navigation marker not found')
+              html = html.replace(nav_old, nav_new, 1)
+
+              hero_old = '<div class="hero-actions" style="margin-top:14px"><a class="btn btn-primary" href="new-tools.html">New tools</a>'
+              hero_new = '<div class="hero-actions" style="margin-top:14px"><a class="btn btn-primary" href="live.html">NexusNova LIVE</a><a class="btn" href="new-tools.html">New tools</a>'
+              if hero_old not in html:
+                  raise SystemExit('Homepage hero actions marker not found')
+              html = html.replace(hero_old, hero_new, 1)
+
+              marker = '<section class="command-dock-wrap">'
+              if marker not in html:
+                  raise SystemExit('Homepage command dock marker not found')
+
+              launch = '''<section class="section" data-nexusnova-live-launch><div class="container"><div class="section-rail"><span>LIVE</span><i></i><small>PAKISTAN + WORLD</small></div><div class="section-head"><div><span class="kicker">NEW ON NEXUSNOVA</span><h2>Live data and Pakistan tools are now here.</h2></div><p>Open the new dashboards and calculators directly from the homepage. Sources, update times, methods and limitations are shown on each data page.</p></div><div class="home-tools"><a class="home-tool" data-home-tool href="live.html"><b>Pakistan Today Dashboard</b><span>USD/PKR, gold, petrol, diesel and Pakistan city weather in one place.</span></a><a class="home-tool" data-home-tool href="currency-rates.html"><b>Currency Rates</b><span>Pakistan-first reference rates plus a worldwide currency converter.</span></a><a class="home-tool" data-home-tool href="gold-rates.html"><b>Gold Rates</b><span>International XAU/USD with transparent PKR 24K reference calculations.</span></a><a class="home-tool" data-home-tool href="fuel-rates.html"><b>Fuel Rates</b><span>Pakistan PSO plus official U.S. EIA and EU weekly fuel references.</span></a><a class="home-tool" data-home-tool href="weather-live.html"><b>Pakistan Weather</b><span>Forecasts for Karachi, Lahore, Islamabad, Peshawar, Quetta and Multan.</span></a><a class="home-tool" data-home-tool href="earthquakes-live.html"><b>Recent Earthquakes</b><span>Recent USGS M2.5+ events worldwide with a Pakistan-region view.</span></a><a class="home-tool" data-home-tool href="salary-tax-calculator-pakistan.html"><b>Pakistan Salary Tax</b><span>Tax Year 2027 salaried-person estimate using the Finance Act 2026 structure.</span></a><a class="home-tool" data-home-tool href="electricity-bill-calculator-pakistan.html"><b>Pakistan Electricity Bill</b><span>Residential energy and fixed-charge estimate with protected, lifeline and ToU support.</span></a><a class="home-tool" data-home-tool href="zakat-calculator-pakistan.html"><b>Pakistan Zakat Calculator</b><span>Private 2.5% estimate with editable nisab and the 2026 bank-threshold reference kept separate.</span></a></div><div class="hero-actions" style="margin-top:18px"><a class="btn btn-primary" href="live.html">Open NexusNova LIVE →</a><a class="btn" href="new-tools.html">Open Pakistan tools →</a></div></div></section>'''
+              html = html.replace(marker, launch + marker, 1)
+
+          required = [
+              'data-nexusnova-live-launch',
+              'href="live.html">NexusNova LIVE</a>',
+              'href="salary-tax-calculator-pakistan.html"',
+              'href="electricity-bill-calculator-pakistan.html"',
+              'href="zakat-calculator-pakistan.html"',
+              'href="currency-rates.html"',
+              'href="gold-rates.html"',
+              'href="fuel-rates.html"',
+              'href="weather-live.html"',
+              'href="earthquakes-live.html"',
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit(f'Missing homepage visibility markers: {missing}')
+
+          path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Validate syntax and tests
+        run: |
+          npm run check
+          npm test
+
+      - name: Commit homepage visibility fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/homepage-visibility-hotfix.yml
+          git add index.html
+          git commit -m "feat: surface LIVE and Pakistan tools on homepage [skip ci]"
+
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+
+          echo "Homepage visibility push failed after retries" >&2
+          exit 1
