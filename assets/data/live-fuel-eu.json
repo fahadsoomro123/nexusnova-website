@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "status": "pending",
-  "generated_at": null,
-  "data_date": null,
+  "status": "ok",
+  "generated_at": "2026-09-02T10:12:17.120Z",
+  "data_date": "2026-08-31",
   "region": "EU27",
   "currency": "EUR",
   "unit": "EUR per litre",
@@ -10,9 +10,282 @@
   "source": {
     "name": "European Commission Weekly Oil Bulletin",
     "url": "https://energy.ec.europa.eu/data-and-analysis/weekly-oil-bulletin_en",
+    "download_url": "https://energy.ec.europa.eu/document/download/264c2d0f-f161-4ea3-a777-78faae59bea0_en?filename=Weekly%20Oil%20Bulletin%20Weekly%20prices%20with%20Taxes%20-%202024-02-19.xlsx",
     "legal_notice_url": "https://commission.europa.eu/legal-notice_en",
-    "license": "European Commission-owned website content is generally reusable under CC BY 4.0 unless otherwise indicated"
+    "license": "European Commission-owned website content is generally reusable under CC BY 4.0 unless otherwise indicated",
+    "method": "Weekly consumer prices with taxes; source values in EUR per 1000 litres are divided by 1000 for NexusNova EUR/litre display"
   },
-  "countries": [],
-  "notice": "Waiting for the verified European Commission publisher. NexusNova does not publish guessed EU fuel values."
+  "countries": [
+    {
+      "country_code": "AT",
+      "country": "Austria",
+      "gasoline_eur_per_litre": 1.784,
+      "diesel_eur_per_litre": 1.993,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "BE",
+      "country": "Belgium",
+      "gasoline_eur_per_litre": 1.8848,
+      "diesel_eur_per_litre": 2.2078,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "BG",
+      "country": "Bulgaria",
+      "gasoline_eur_per_litre": 1.5712,
+      "diesel_eur_per_litre": 1.8129,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "HR",
+      "country": "Croatia",
+      "gasoline_eur_per_litre": 1.723,
+      "diesel_eur_per_litre": 1.989,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "CY",
+      "country": "Cyprus",
+      "gasoline_eur_per_litre": 1.6018,
+      "diesel_eur_per_litre": 1.8569,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "CZ",
+      "country": "Czechia",
+      "gasoline_eur_per_litre": 1.7421,
+      "diesel_eur_per_litre": 1.9034,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "DK",
+      "country": "Denmark",
+      "gasoline_eur_per_litre": 2.5244,
+      "diesel_eur_per_litre": 2.2742,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "EE",
+      "country": "Estonia",
+      "gasoline_eur_per_litre": 1.812,
+      "diesel_eur_per_litre": 1.922,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "FI",
+      "country": "Finland",
+      "gasoline_eur_per_litre": 2.2033,
+      "diesel_eur_per_litre": 2.3336,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "FR",
+      "country": "France",
+      "gasoline_eur_per_litre": 2.0732,
+      "diesel_eur_per_litre": 2.2086,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "DE",
+      "country": "Germany",
+      "gasoline_eur_per_litre": 2.236,
+      "diesel_eur_per_litre": 2.232,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "GR",
+      "country": "Greece",
+      "gasoline_eur_per_litre": 2.046,
+      "diesel_eur_per_litre": 2.023,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "HU",
+      "country": "Hungary",
+      "gasoline_eur_per_litre": 1.6384,
+      "diesel_eur_per_litre": 1.8585,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "IE",
+      "country": "Ireland",
+      "gasoline_eur_per_litre": 1.8367,
+      "diesel_eur_per_litre": 1.9306,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "IT",
+      "country": "Italy",
+      "gasoline_eur_per_litre": 2.0167,
+      "diesel_eur_per_litre": 2.1235,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "LV",
+      "country": "Latvia",
+      "gasoline_eur_per_litre": 1.8412,
+      "diesel_eur_per_litre": 1.9517,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "LT",
+      "country": "Lithuania",
+      "gasoline_eur_per_litre": 1.79,
+      "diesel_eur_per_litre": 2.0433,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "LU",
+      "country": "Luxembourg",
+      "gasoline_eur_per_litre": 1.748,
+      "diesel_eur_per_litre": 1.865,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "MT",
+      "country": "Malta",
+      "gasoline_eur_per_litre": 1.34,
+      "diesel_eur_per_litre": 1.21,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "NL",
+      "country": "Netherlands",
+      "gasoline_eur_per_litre": 2.3499,
+      "diesel_eur_per_litre": 2.3259,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "PL",
+      "country": "Poland",
+      "gasoline_eur_per_litre": 1.5247,
+      "diesel_eur_per_litre": 1.6694,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "PT",
+      "country": "Portugal",
+      "gasoline_eur_per_litre": 2.013,
+      "diesel_eur_per_litre": 2.029,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "RO",
+      "country": "Romania",
+      "gasoline_eur_per_litre": 1.8127,
+      "diesel_eur_per_litre": 1.9379,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "SK",
+      "country": "Slovakia",
+      "gasoline_eur_per_litre": 1.753,
+      "diesel_eur_per_litre": 1.883,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "SI",
+      "country": "Slovenia",
+      "gasoline_eur_per_litre": 1.6147,
+      "diesel_eur_per_litre": 1.9002,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "ES",
+      "country": "Spain",
+      "gasoline_eur_per_litre": 1.7325,
+      "diesel_eur_per_litre": 1.8654,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    },
+    {
+      "country_code": "SE",
+      "country": "Sweden",
+      "gasoline_eur_per_litre": 1.471,
+      "diesel_eur_per_litre": 1.7303,
+      "previous_gasoline_eur_per_litre": null,
+      "gasoline_change_eur_per_litre": null,
+      "previous_diesel_eur_per_litre": null,
+      "diesel_change_eur_per_litre": null
+    }
+  ],
+  "notice": "Weekly national consumer-price references including taxes for EU countries. Values are converted from EUR per 1000 litres to EUR per litre and are not real-time station quotes."
 }
