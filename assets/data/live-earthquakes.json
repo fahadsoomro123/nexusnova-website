@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-02T08:12:42.812Z",
+  "generated_at": "2026-09-02T08:45:50.572Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-02T08:12:14.000Z",
+  "feed_generated_at": "2026-09-02T08:44:56.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 59,
+  "source_count": 58,
   "pakistan_region_events": [
     {
       "id": "us7000tdf1",
@@ -42,11 +42,49 @@
   ],
   "worldwide_events": [
     {
+      "id": "nc75428637",
+      "magnitude": 2.96,
+      "place": "4 km WSW of Hamilton City, CA",
+      "time": "2026-09-02T08:18:27.530Z",
+      "updated": "2026-09-02T08:42:21.558Z",
+      "depth_km": 25.6,
+      "coordinates": {
+        "lat": 39.7343,
+        "lon": -122.0632
+      },
+      "significance": 135,
+      "felt": 1,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75428637",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026rjfvgz",
+      "magnitude": 3.8,
+      "place": "100 km SSW of Nikolski, Alaska",
+      "time": "2026-09-02T07:15:05.863Z",
+      "updated": "2026-09-02T08:19:15.559Z",
+      "depth_km": 13.5,
+      "coordinates": {
+        "lat": 52.072,
+        "lon": -169.258
+      },
+      "significance": 222,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rjfvgz",
+      "pakistan_region": false
+    },
+    {
       "id": "aka2026rjfttp",
       "magnitude": 4.1,
       "place": "93 km SSW of Nikolski, Alaska",
       "time": "2026-09-02T07:12:41.990Z",
-      "updated": "2026-09-02T08:11:40.373Z",
+      "updated": "2026-09-02T08:13:40.516Z",
       "depth_km": 14.2,
       "coordinates": {
         "lat": 52.155,
@@ -141,14 +179,14 @@
       "magnitude": 5.3,
       "place": "66 km NNW of Arthurs Point, New Zealand",
       "time": "2026-09-02T06:13:33.779Z",
-      "updated": "2026-09-02T07:13:00.001Z",
+      "updated": "2026-09-02T08:35:36.027Z",
       "depth_km": 10,
       "coordinates": {
         "lat": -44.4431,
         "lon": 168.3029
       },
-      "significance": 441,
-      "felt": 21,
+      "significance": 442,
+      "felt": 23,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -236,7 +274,7 @@
       "magnitude": 3.4,
       "place": "79 km S of Kaktovik, Alaska",
       "time": "2026-09-02T05:40:40.688Z",
-      "updated": "2026-09-02T07:01:30.762Z",
+      "updated": "2026-09-02T08:30:16.040Z",
       "depth_km": 4.3,
       "coordinates": {
         "lat": 69.421,
@@ -324,6 +362,25 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdim",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tdk1",
+      "magnitude": 4.5,
+      "place": "Kuril Islands",
+      "time": "2026-09-02T05:08:38.690Z",
+      "updated": "2026-09-02T08:18:24.040Z",
+      "depth_km": 144.1,
+      "coordinates": {
+        "lat": 48.1337,
+        "lon": 152.4883
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdk1",
       "pakistan_region": false
     },
     {
@@ -1084,82 +1141,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rhnkpm",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026rhmqfq",
-      "magnitude": 3.1,
-      "place": "99 km SSW of Nikolski, Alaska",
-      "time": "2026-09-01T08:39:12.127Z",
-      "updated": "2026-09-01T20:47:52.537Z",
-      "depth_km": 13.9,
-      "coordinates": {
-        "lat": 52.091,
-        "lon": -169.342
-      },
-      "significance": 148,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rhmqfq",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026rhmmqm",
-      "magnitude": 3.4,
-      "place": "92 km SSW of Nikolski, Alaska",
-      "time": "2026-09-01T08:35:06.613Z",
-      "updated": "2026-09-01T17:20:07.435Z",
-      "depth_km": 12.4,
-      "coordinates": {
-        "lat": 52.16,
-        "lon": -169.325
-      },
-      "significance": 178,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rhmmqm",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tdav",
-      "magnitude": 5.6,
-      "place": "82 km SE of Maba, Indonesia",
-      "time": "2026-09-01T08:22:20.813Z",
-      "updated": "2026-09-01T10:32:03.458Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 0.1685,
-        "lon": 128.8054
-      },
-      "significance": 482,
-      "felt": 0,
-      "alert": "green",
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdav",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026rhlymu",
-      "magnitude": 4.2,
-      "place": "99 km SSW of Nikolski, Alaska",
-      "time": "2026-09-01T08:18:45.288Z",
-      "updated": "2026-09-01T17:17:50.314Z",
-      "depth_km": 8.1,
-      "coordinates": {
-        "lat": 52.071,
-        "lon": -169.221
-      },
-      "significance": 271,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026rhlymu",
       "pakistan_region": false
     }
   ]
