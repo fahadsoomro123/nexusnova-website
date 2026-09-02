@@ -1,11 +1,9 @@
 import fs from 'node:fs/promises';
+import {deriveGoldPkr} from './live_gold_math.mjs';
 
 const OUT='assets/data/live-gold.json';
 const FX='assets/data/live-currency.json';
 const GOLD_URL='https://api.gold-api.com/price/XAU';
-const TROY_OUNCE_GRAMS=31.1034768;
-const TOLA_GRAMS=11.6638038;
-
 const round=(value,digits=6)=>Number(value.toFixed(digits));
 
 async function fetchJson(url){
@@ -30,9 +28,7 @@ if(gold?.symbol!=='XAU'||!Number.isFinite(xauUsd)||xauUsd<=0)throw new Error('Go
 const upstreamUpdatedAt=gold?.updatedAt;
 if(!upstreamUpdatedAt||Number.isNaN(new Date(upstreamUpdatedAt).getTime()))throw new Error('Gold API returned an invalid updatedAt timestamp');
 
-const pkrPerGram=(xauUsd*usdPkr)/TROY_OUNCE_GRAMS;
-const pkrPerTola=pkrPerGram*TOLA_GRAMS;
-const pkrPer10g=pkrPerGram*10;
+const derived=deriveGoldPkr(xauUsd,usdPkr);
 const payload={
   schema_version:1,
   status:'ok',
@@ -57,12 +53,7 @@ const payload={
   },
   international_derived_pkr:{
     basis:'International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote',
-    per_tola_24k:round(pkrPerTola,2),
-    per_10g_24k:round(pkrPer10g,2),
-    per_gram_24k:round(pkrPerGram,2),
-    per_tola_22k:round(pkrPerTola*(22/24),2),
-    tola_grams:TOLA_GRAMS,
-    troy_ounce_grams:TROY_OUNCE_GRAMS
+    ...derived
   },
   local_sarafa:{
     status:'not_published',
