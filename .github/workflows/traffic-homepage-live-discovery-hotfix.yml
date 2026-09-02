@@ -52,6 +52,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html .github/workflows/traffic-homepage-live-discovery-hotfix.yml
+          git add -A
           git commit -m "feat: surface LIVE alerts and worldwide weather on homepage"
           git push origin HEAD:traffic-homepage-live-discovery-20260902
