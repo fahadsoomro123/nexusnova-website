@@ -1,11 +1,17 @@
 (()=>{
   const DATA_URL='assets/data/live-currency.json';
-  const NAMES={USD:'US Dollar',GBP:'British Pound',EUR:'Euro',AED:'UAE Dirham',SAR:'Saudi Riyal'};
-  const ORDER=['USD','GBP','EUR','AED','SAR'];
+  const NAMES={
+    PKR:'Pakistani Rupee',USD:'US Dollar',GBP:'British Pound',EUR:'Euro',AED:'UAE Dirham',SAR:'Saudi Riyal',
+    CAD:'Canadian Dollar',AUD:'Australian Dollar',NZD:'New Zealand Dollar',JPY:'Japanese Yen',CNY:'Chinese Yuan',INR:'Indian Rupee',
+    TRY:'Turkish Lira',CHF:'Swiss Franc',SEK:'Swedish Krona',NOK:'Norwegian Krone',DKK:'Danish Krone',SGD:'Singapore Dollar',
+    HKD:'Hong Kong Dollar',KRW:'South Korean Won',THB:'Thai Baht',MYR:'Malaysian Ringgit',IDR:'Indonesian Rupiah',ZAR:'South African Rand',
+    QAR:'Qatari Riyal',KWD:'Kuwaiti Dinar',BHD:'Bahraini Dinar',OMR:'Omani Rial'
+  };
+  const FEATURED=['USD','GBP','EUR','AED','SAR'];
   let rates=new Map();
 
   const formatRate=value=>new Intl.NumberFormat('en-PK',{minimumFractionDigits:2,maximumFractionDigits:4}).format(value);
-  const formatMoney=value=>new Intl.NumberFormat('en-PK',{style:'currency',currency:'PKR',maximumFractionDigits:2}).format(value);
+  const formatAmount=value=>new Intl.NumberFormat('en-PK',{maximumFractionDigits:6}).format(value);
   const formatDate=value=>{
     if(!value)return 'Unavailable';
     const parsed=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(`${value}T00:00:00Z`):new Date(value);
@@ -39,7 +45,7 @@
     const byCode=new Map((data.rates||[]).map(item=>[item.code,item]));
     document.querySelectorAll('[data-live-rate-grid]').forEach(grid=>{
       grid.replaceChildren();
-      ORDER.forEach(code=>{
+      FEATURED.forEach(code=>{
         const item=byCode.get(code);
         if(!item)return;
         const card=document.createElement('article');
@@ -63,16 +69,41 @@
     });
   };
 
+  const populateSelect=(select,codes,preferred)=>{
+    if(!select)return;
+    const current=select.value||preferred;
+    select.replaceChildren();
+    codes.forEach(code=>{
+      const option=document.createElement('option');
+      option.value=code;
+      option.textContent=`${code} — ${NAMES[code]||code}`;
+      select.append(option);
+    });
+    select.value=codes.includes(current)?current:preferred;
+  };
+
+  const populateConverter=valid=>{
+    const available=valid.map(item=>item.code);
+    const extra=available.filter(code=>!FEATURED.includes(code)).sort((a,b)=>a.localeCompare(b));
+    const fromCodes=[...FEATURED.filter(code=>available.includes(code)),...extra,'PKR'];
+    const toCodes=['PKR',...FEATURED.filter(code=>available.includes(code)),...extra];
+    populateSelect(document.querySelector('[data-live-from-currency]'),fromCodes,'USD');
+    populateSelect(document.querySelector('[data-live-to-currency]'),toCodes,'PKR');
+  };
+
   const convert=()=>{
     const amountEl=document.querySelector('[data-live-amount]');
-    const currencyEl=document.querySelector('[data-live-currency]');
+    const fromEl=document.querySelector('[data-live-from-currency]');
+    const toEl=document.querySelector('[data-live-to-currency]');
     const result=document.querySelector('[data-live-convert-result]');
-    if(!amountEl||!currencyEl||!result)return;
+    if(!amountEl||!fromEl||!toEl||!result)return;
     const amount=Number(amountEl.value);
-    const rate=rates.get(currencyEl.value);
+    const fromRate=rates.get(fromEl.value);
+    const toRate=rates.get(toEl.value);
     if(!Number.isFinite(amount)||amount<0){result.textContent='Enter a valid amount of zero or more.';return}
-    if(!Number.isFinite(rate)){result.textContent='The selected daily rate is not available yet.';return}
-    result.textContent=`${new Intl.NumberFormat('en-PK',{maximumFractionDigits:2}).format(amount)} ${currencyEl.value} ≈ ${formatMoney(amount*rate)} using the displayed daily reference rate.`;
+    if(!Number.isFinite(fromRate)||!Number.isFinite(toRate)){result.textContent='One of the selected daily rates is not available yet.';return}
+    const converted=(amount*fromRate)/toRate;
+    result.textContent=`${formatAmount(amount)} ${fromEl.value} ≈ ${formatAmount(converted)} ${toEl.value} using the displayed daily reference rates.`;
   };
 
   const bindConverter=()=>{
@@ -80,7 +111,8 @@
     if(!button)return;
     button.addEventListener('click',convert);
     document.querySelector('[data-live-amount]')?.addEventListener('keydown',event=>{if(event.key==='Enter')convert()});
-    document.querySelector('[data-live-currency]')?.addEventListener('change',convert);
+    document.querySelector('[data-live-from-currency]')?.addEventListener('change',convert);
+    document.querySelector('[data-live-to-currency]')?.addEventListener('change',convert);
   };
 
   const addLiveNav=()=>{
@@ -101,12 +133,15 @@
       const response=await fetch(DATA_URL,{cache:'no-cache',headers:{Accept:'application/json'}});
       if(!response.ok)throw new Error(`HTTP ${response.status}`);
       const data=await response.json();
-      const valid=(data.rates||[]).filter(item=>ORDER.includes(item.code)&&Number.isFinite(item.rate)&&item.rate>0);
-      if(data.status!=='ok'||valid.length!==ORDER.length)throw new Error('Daily rate file is not populated yet.');
+      const valid=(data.rates||[]).filter(item=>typeof item.code==='string'&&Number.isFinite(item.rate)&&item.rate>0);
+      const byCode=new Map(valid.map(item=>[item.code,item]));
+      if(data.status!=='ok'||FEATURED.some(code=>!byCode.has(code)))throw new Error('Daily rate file is not populated yet.');
       rates=new Map(valid.map(item=>[item.code,item.rate]));
+      rates.set('PKR',1);
       renderCards({...data,rates:valid});
+      populateConverter(valid);
       updateMeta(data);
-      setStatus(`Daily reference rates loaded for ${formatDate(data.data_date)}. This is not second-by-second forex data.`);
+      setStatus(`Daily reference rates loaded for ${formatDate(data.data_date)}. ${valid.length} foreign currencies are cached; this is not second-by-second forex data.`);
       convert();
     }catch(error){
       setStatus('Daily currency data is temporarily unavailable. NexusNova is not showing guessed or stale substitute values.',true);
