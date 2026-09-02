@@ -29,10 +29,12 @@ jobs:
           for name in files:
               p=Path(name)
               text=p.read_text(encoding='utf-8')
-              if text.count(old) != 1:
-                  raise SystemExit(f'{name}: expected exactly one Developer breadcrumb anchor')
-              p.write_text(text.replace(old,new,1),encoding='utf-8')
-              print('updated',name)
+              pos=text.find(old)
+              if pos < 0:
+                  raise SystemExit(f'{name}: Developer breadcrumb anchor not found')
+              text=text[:pos]+new+text[pos+len(old):]
+              p.write_text(text,encoding='utf-8')
+              print('updated breadcrumb',name)
           PY
 
       - name: Verify network hierarchy
@@ -43,9 +45,10 @@ jobs:
           files=['dns-lookup.html','ip-cidr-calculator.html','website-reachability-checker.html','public-ip-checker.html','ssl-certificate-checker.html']
           for name in files:
               text=Path(name).read_text(encoding='utf-8')
-              if 'href="network-tools.html"' not in text:
-                  raise SystemExit(f'{name}: Network Tools link missing')
-          print('All five network tool pages link to Network Tools')
+              head=text.split('</nav>',1)[0]
+              if 'href="network-tools.html"' not in head:
+                  raise SystemExit(f'{name}: Network Tools breadcrumb link missing')
+          print('All five network tool breadcrumbs link to Network Tools')
           PY
 
       - name: Commit targeted breadcrumb fix
