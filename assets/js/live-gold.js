@@ -24,6 +24,15 @@
     set('[data-gold-xau]',`$${money(xau,2)}`);set('[data-gold-tola]',pkr(Number(derived.per_tola_24k)));set('[data-gold-10g]',pkr(Number(derived.per_10g_24k)));set('[data-gold-gram]',pkr(Number(derived.per_gram_24k)));set('[data-gold-22k-tola]',pkr(Number(derived.per_tola_22k)));set('[data-gold-upstream-updated]',time(data.xau.updated_at));set('[data-gold-generated]',time(data.generated_at));set('[data-gold-fx-date]',data.fx.data_date||'—');set('[data-gold-usdpkr]',`1 USD = ${money(Number(data.fx.usd_pkr),4)} PKR`);
     const source=document.querySelector('[data-gold-source]');if(source&&data.source?.url){source.href=data.source.url;source.textContent=data.source.name||'Gold API'}
     statusEl.textContent='International gold reference loaded. PKR values are calculated from XAU/USD and the published USD/PKR reference rate; they are not Pakistan Sarafa board quotes.';
-    const local=document.querySelector('[data-gold-local-status]');if(local)local.textContent=data.local_sarafa?.message||'Local Sarafa rate not published.';renderHistory(history);
+    const local=document.querySelector('[data-gold-local-status]');
+    if(local){
+      local.replaceChildren(document.createTextNode(data.local_sarafa?.message||'Local Sarafa rate not published.'));
+      const localSource=data.local_sarafa?.source;
+      if(localSource?.url){
+        local.append(document.createTextNode(' Source: '));
+        const link=document.createElement('a');link.href=localSource.url;link.rel='noopener noreferrer';link.target='_blank';link.textContent=localSource.name||'local market API';local.appendChild(link);
+      }
+    }
+    renderHistory(history);
   }).catch(()=>{statusEl.textContent='Gold reference data is temporarily unavailable. No estimated or stale replacement has been invented.';statusEl.classList.add('is-error')});
 })();
