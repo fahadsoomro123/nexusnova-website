@@ -43,7 +43,17 @@ const payload={
   xau:{symbol:'XAU',quote_currency:'USD',usd_per_troy_ounce:round(xauUsd,6),updated_at:upstreamUpdatedAt},
   fx:{pair:'USD/PKR',usd_pkr:round(usdPkr,6),data_date:fxData.data_date||usd?.data_date||null,source:fxData.source?.name||'Frankfurter'},
   international_derived_pkr:{basis:'International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote',...derived},
-  local_sarafa:{status:'not_published',message:'Pakistan local Sarafa board rates are intentionally not inferred from international spot data. A verified local source is still under review.'}
+  local_sarafa:{
+    status:'source_ready_key_required',
+    source:{
+      name:'Sarafa.pk Developer API',
+      url:'https://sarafa.pk/en/developers/',
+      api_base:'https://api.sarafa.pk',
+      endpoint:'GET /api/v1/public-rates/gold/cities/{location_slug}',
+      auth:'Server-side X-API-Key required'
+    },
+    message:'A dedicated Pakistan city-wise Sarafa market API source has been selected. NexusNova is not publishing its local quote until a server-side Sarafa.pk API key is configured and the first source response is validated.'
+  }
 };
 await fs.writeFile(OUT,`${JSON.stringify(payload,null,2)}\n`,'utf8');
 
