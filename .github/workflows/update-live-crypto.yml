@@ -1,0 +1,97 @@
+name: NexusNova LIVE Crypto Refresh
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/live_crypto_core.mjs'
+      - '.github/scripts/update_live_crypto.mjs'
+      - '.github/workflows/update-live-crypto.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/live_crypto_core.mjs'
+      - '.github/scripts/update_live_crypto.mjs'
+      - '.github/workflows/update-live-crypto.yml'
+      - 'assets/data/live-crypto.json'
+      - 'assets/js/live-crypto.js'
+      - 'crypto-live.html'
+      - 'tests/live-crypto.test.cjs'
+      - 'live.html'
+      - 'sitemap-live.xml'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-live-crypto-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      COINRANKING_API_KEY: ${{ secrets.COINRANKING_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate crypto scripts
+        run: |
+          node --check .github/scripts/live_crypto_core.mjs
+          node --check .github/scripts/update_live_crypto.mjs
+          node --check assets/js/live-crypto.js
+      - name: Run repository tests
+        run: npm test
+      - name: Run full static SEO and internal-link audit
+        run: python3 .github/scripts/site_quality_audit.py
+      - name: Require zero severe static findings
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=report.get('severe',[])
+          if severe:
+              print('\n'.join(f'- {item}' for item in severe))
+              raise SystemExit(f'{len(severe)} severe static finding(s) remain')
+          print('Static site map + SEO audit has zero severe findings.')
+          PY
+      - name: Refresh crypto data when key is configured
+        if: github.event_name != 'pull_request' && env.COINRANKING_API_KEY != ''
+        run: node .github/scripts/update_live_crypto.mjs
+      - name: Explain pending source activation
+        if: github.event_name != 'pull_request' && env.COINRANKING_API_KEY == ''
+        run: echo 'COINRANKING_API_KEY is not configured; keeping the fail-closed pending crypto dataset.'
+      - name: Commit refreshed crypto data when changed
+        if: github.event_name != 'pull_request' && env.COINRANKING_API_KEY != ''
+        shell: bash
+        run: |
+          if git diff --quiet -- assets/data/live-crypto.json; then
+            echo "Crypto dataset already matches the latest validated source response."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/live-crypto.json
+          git commit -m "data: refresh NexusNova LIVE crypto [skip ci]"
+          git reset --hard HEAD
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Published refreshed crypto data on attempt ${attempt}."
+              exit 0
+            fi
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish refreshed crypto data after 5 safe retries."
+          exit 1
