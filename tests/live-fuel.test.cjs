@@ -38,8 +38,15 @@ test('fuel page shows source freshness and avoids fake real-time claims',()=>{
   assert.match(page,/applicable freight charges/i);
 });
 
-test('fuel seed data remains unavailable until the verified publisher runs',()=>{
-  const seed=JSON.parse(read('assets/data/live-fuel.json'));
-  assert.equal(seed.status,'pending');
-  assert.equal(seed.prices,null);
+test('fuel data contract is explicit before and after the verified publisher runs',()=>{
+  const data=JSON.parse(read('assets/data/live-fuel.json'));
+  assert.equal(data.source.name,'Pakistan State Oil (PSO)');
+  assert.ok(['pending','ok'].includes(data.status));
+  if(data.status==='pending'){
+    assert.equal(data.prices,null);
+  }else{
+    assert.ok(Number(data.prices?.petrol?.pkr_per_litre)>0);
+    assert.ok(Number(data.prices?.diesel?.pkr_per_litre)>0);
+    assert.match(data.effective_date,/^\d{4}-\d{2}-\d{2}$/);
+  }
 });
