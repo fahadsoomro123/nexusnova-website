@@ -9,16 +9,24 @@ on:
       - '.github/scripts/live_earthquakes_core.mjs'
       - '.github/scripts/update_live_earthquakes.mjs'
       - '.github/workflows/update-live-earthquakes.yml'
+      - 'assets/data/live-earthquakes.json'
       - 'assets/js/live-earthquakes.js'
       - 'earthquakes-live.html'
+      - 'live.html'
+      - 'sitemap-live.xml'
+      - 'package.json'
       - 'tests/live-earthquakes.test.cjs'
   pull_request:
     paths:
       - '.github/scripts/live_earthquakes_core.mjs'
       - '.github/scripts/update_live_earthquakes.mjs'
       - '.github/workflows/update-live-earthquakes.yml'
+      - 'assets/data/live-earthquakes.json'
       - 'assets/js/live-earthquakes.js'
       - 'earthquakes-live.html'
+      - 'live.html'
+      - 'sitemap-live.xml'
+      - 'package.json'
       - 'tests/live-earthquakes.test.cjs'
 permissions:
   contents: write
