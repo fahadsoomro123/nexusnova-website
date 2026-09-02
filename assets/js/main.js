@@ -16,11 +16,8 @@
     analyticsScript.dataset.nexusnovaGa4='';
     document.head.appendChild(analyticsScript);
   };
-  ['pointerdown','keydown','touchstart'].forEach(type=>window.addEventListener(type,load,{once:true,passive:true}));
-  window.addEventListener('scroll',load,{once:true,passive:true});
-  const schedule=()=>setTimeout(load,8000);
-  if(document.readyState==='complete')schedule();
-  else window.addEventListener('load',schedule,{once:true});
+  load();
+
 })();
 
 (()=>{
