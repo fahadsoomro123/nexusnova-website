@@ -1,0 +1,87 @@
+name: NexusNova One-Time New Tools JSON-LD Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-new-tools-jsonld-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Sync New Tools ItemList JSON-LD
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          p=Path('new-tools.html')
+          text=p.read_text(encoding='utf-8')
+          pattern=re.compile(r'(<script type="application/ld\+json">)(\{.*?\})(</script>)',re.S)
+          match=pattern.search(text)
+          if not match:
+              raise SystemExit('New Tools JSON-LD block not found')
+          data=json.loads(match.group(2))
+          graph=data.get('@graph',[])
+          itemlist=next((item for item in graph if item.get('@type')=='ItemList'),None)
+          if itemlist is None:
+              raise SystemExit('ItemList JSON-LD node not found')
+          cards=[
+              ('Pakistan Salary Tax Calculator','https://nexusnovatools.com/salary-tax-calculator-pakistan.html'),
+              ('Pakistan Electricity Bill Calculator','https://nexusnovatools.com/electricity-bill-calculator-pakistan.html'),
+              ('Pakistan Zakat Calculator','https://nexusnovatools.com/zakat-calculator-pakistan.html'),
+              ('Prayer Times & Qibla','https://nexusnovatools.com/prayer-times-qibla-pakistan.html'),
+              ('Pakistan Public Holidays','https://nexusnovatools.com/pakistan-public-holidays-2026.html'),
+              ('DNS Lookup','https://nexusnovatools.com/dns-lookup.html'),
+              ('IPv4 CIDR Calculator','https://nexusnovatools.com/ip-cidr-calculator.html'),
+              ('Website Reachability Checker','https://nexusnovatools.com/website-reachability-checker.html'),
+              ('Weighted Decision Matrix Calculator','https://nexusnovatools.com/decision-matrix-calculator.html'),
+              ('Paper Size in Pixels Calculator','https://nexusnovatools.com/paper-size-in-pixels.html'),
+              ('Global Meeting Planner','https://nexusnovatools.com/timezone-meeting-planner.html'),
+              ('QR Code Scanner','https://nexusnovatools.com/qr-code-scanner.html'),
+              ('AI Token Calculator','https://nexusnovatools.com/ai-token-calculator.html'),
+              ('Free Invoice Maker','https://nexusnovatools.com/invoice-maker.html'),
+          ]
+          itemlist['numberOfItems']=len(cards)
+          itemlist['itemListElement']=[{'@type':'ListItem','position':i,'name':name,'url':url} for i,(name,url) in enumerate(cards,1)]
+          encoded=json.dumps(data,separators=(',',':'),ensure_ascii=False)
+          p.write_text(text[:match.start(2)]+encoded+text[match.end(2):],encoding='utf-8')
+          PY
+
+      - name: Verify structured data
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          text=Path('new-tools.html').read_text(encoding='utf-8')
+          match=re.search(r'<script type="application/ld\+json">(\{.*?\})</script>',text,re.S)
+          data=json.loads(match.group(1))
+          itemlist=next(item for item in data['@graph'] if item.get('@type')=='ItemList')
+          rows=itemlist['itemListElement']
+          assert itemlist['numberOfItems']==14
+          assert len(rows)==14
+          assert [row['position'] for row in rows]==list(range(1,15))
+          required={'https://nexusnovatools.com/prayer-times-qibla-pakistan.html','https://nexusnovatools.com/pakistan-public-holidays-2026.html','https://nexusnovatools.com/dns-lookup.html','https://nexusnovatools.com/ip-cidr-calculator.html','https://nexusnovatools.com/website-reachability-checker.html'}
+          assert required.issubset({row['url'] for row in rows})
+          print('New Tools JSON-LD ItemList verified: 14/14 entries')
+          PY
+
+      - name: Commit targeted fix
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-fix[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add new-tools.html
+          git commit -m 'seo: sync new tools structured data'
+          git pull --rebase origin main
+          git push origin HEAD:main
