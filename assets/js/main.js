@@ -51,7 +51,7 @@
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App']
+      ['index.html','Home'],['live.html','LIVE'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
@@ -149,10 +149,12 @@ if(page==='index.html'){
   decorateDock();
 }
   const pageFile=(location.pathname.split('/').pop()||'').toLowerCase();
-  const hubFiles=new Set(['','index.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
+  const hubFiles=new Set(['','index.html','live.html','currency-rates.html','gold-rates.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
   if(pageFile&&!hubFiles.has(pageFile)){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
 
   const searchIndex=[
+    ['gold-rates.html','Gold Rates','gold xau pakistan pkr tola 24k 22k sarafa'],
+    ['currency-rates.html','Currency Rates & Converter','currency usd pkr gbp eur aed sar pakistan exchange'],
     ['photo-cctv-enhancer.html','Photo & CCTV Image Enhancer','photo old restore sharpen cctv clarity upscale'],
     ['image-metadata-remover.html','EXIF & GPS Metadata Remover','image photo privacy metadata exif gps remove'],
     ['image-to-text-ocr.html','Image to Text OCR','ocr screenshot scan image text extract copy'],
