@@ -34,12 +34,23 @@ test('gold page clearly separates international conversion from Pakistan Sarafa 
   assert.match(page,/upstream gold timestamp/i);
 });
 
-test('gold updater fetches no-key XAU and keeps local Sarafa unpublished until verified',()=>{
+test('gold updater selects a dedicated Sarafa API but keeps local quote fail-closed until server key and response validation',()=>{
   const updater=read('.github/scripts/update_live_gold.mjs');
   const seed=JSON.parse(read('assets/data/live-gold.json'));
   assert.match(updater,/https:\/\/api\.gold-api\.com\/price\/XAU/);
   assert.match(updater,/deriveGoldPkr/);
-  assert.equal(seed.local_sarafa.status,'not_published');
+  assert.match(updater,/Sarafa\.pk Developer API/);
+  assert.match(updater,/https:\/\/api\.sarafa\.pk/);
+  assert.equal(seed.local_sarafa.status,'source_ready_key_required');
+  assert.equal(seed.local_sarafa.source.name,'Sarafa.pk Developer API');
+  assert.match(seed.local_sarafa.message,/server-side Sarafa\.pk API key/i);
+  assert.equal(seed.local_sarafa.per_tola_24k,undefined);
+});
+
+test('browser exposes selected Sarafa source without publishing an invented local quote',()=>{
+  const client=read('assets/js/live-gold.js');
+  assert.match(client,/data\.local_sarafa\?\.source/);
+  assert.match(client,/localSource\.url/);
 });
 
 test('shared navigation exposes NexusNova LIVE and gold is indexed in the LIVE sitemap',()=>{
