@@ -1,16 +1,34 @@
 {
   "schema_version": 1,
-  "status": "pending",
-  "generated_at": null,
+  "status": "ok",
+  "generated_at": "2026-09-02T07:31:18.214Z",
   "source": {
     "name": "Gold API",
     "url": "https://gold-api.com/",
     "api_url": "https://api.gold-api.com/price/XAU",
-    "method": "Current XAU/USD reference price fetched by the NexusNova publishing workflow"
+    "method": "Current XAU/USD reference price fetched by the NexusNova publishing workflow; PKR values are calculated using the published NexusNova USD/PKR daily reference rate"
   },
-  "xau": null,
-  "fx": null,
-  "international_derived_pkr": null,
+  "xau": {
+    "symbol": "XAU",
+    "quote_currency": "USD",
+    "usd_per_troy_ounce": 4328.100098,
+    "updated_at": "2026-09-02T07:30:51Z"
+  },
+  "fx": {
+    "pair": "USD/PKR",
+    "usd_pkr": 278.551532,
+    "data_date": "2026-09-02",
+    "source": "Frankfurter"
+  },
+  "international_derived_pkr": {
+    "basis": "International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote",
+    "per_tola_24k": 452099.59,
+    "per_10g_24k": 387609.05,
+    "per_gram_24k": 38760.91,
+    "per_tola_22k": 414424.63,
+    "tola_grams": 11.6638038,
+    "troy_ounce_grams": 31.1034768
+  },
   "local_sarafa": {
     "status": "not_published",
     "message": "Pakistan local Sarafa board rates are intentionally not inferred from international spot data. A verified local source is still under review."
