@@ -25,7 +25,7 @@ export function parseEiaWeeklyUsRow(html){
   const showIndex=text.search(/Show Data By:/i);
   if(showIndex<0)throw new Error('EIA Show Data By marker not found');
   const tableText=text.slice(showIndex);
-  const usMatch=/\bU\.S\.\b/i.exec(tableText);
+  const usMatch=/(?:^|\s)U\.S\.(?=\s)/i.exec(tableText);
   if(!usMatch)throw new Error('EIA U.S. national row not found');
 
   const header=tableText.slice(0,usMatch.index);
