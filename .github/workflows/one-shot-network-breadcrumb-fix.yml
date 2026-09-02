@@ -1,0 +1,59 @@
+name: NexusNova One-Time Network Breadcrumb Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-network-breadcrumb-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Align network breadcrumbs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files=['dns-lookup.html','ip-cidr-calculator.html','website-reachability-checker.html']
+          old='<a href="developer-tools.html">Developer</a>'
+          new='<a href="network-tools.html">Network Tools</a>'
+          for name in files:
+              p=Path(name)
+              text=p.read_text(encoding='utf-8')
+              if text.count(old) != 1:
+                  raise SystemExit(f'{name}: expected exactly one Developer breadcrumb anchor')
+              p.write_text(text.replace(old,new,1),encoding='utf-8')
+              print('updated',name)
+          PY
+
+      - name: Verify network hierarchy
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files=['dns-lookup.html','ip-cidr-calculator.html','website-reachability-checker.html','public-ip-checker.html','ssl-certificate-checker.html']
+          for name in files:
+              text=Path(name).read_text(encoding='utf-8')
+              if 'href="network-tools.html"' not in text:
+                  raise SystemExit(f'{name}: Network Tools link missing')
+          print('All five network tool pages link to Network Tools')
+          PY
+
+      - name: Commit targeted breadcrumb fix
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-fix[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dns-lookup.html ip-cidr-calculator.html website-reachability-checker.html
+          git commit -m 'seo: align network tool breadcrumbs'
+          git pull --rebase origin main
+          git push origin HEAD:main
