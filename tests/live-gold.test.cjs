@@ -28,7 +28,7 @@ test('browser gold renderer reads only the cached local dataset',()=>{
 
 test('gold page clearly separates international conversion from Pakistan Sarafa board rates',()=>{
   const page=read('gold-rates.html');
-  assert.match(page,/not Pakistan Sarafa board quotes/i);
+  assert.match(page,/kept separate from local Sarafa board rates/i);
   assert.match(page,/Pakistan Sarafa board rate/i);
   assert.match(page,/does not label an international conversion as the Pakistan Sarafa Bazaar rate/i);
   assert.match(page,/upstream gold timestamp/i);
