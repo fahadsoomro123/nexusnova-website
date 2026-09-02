@@ -10,11 +10,37 @@ export const PAKISTAN_CITIES=[
 const finite=value=>Number.isFinite(Number(value))?Number(value):null;
 const round=(value,digits=1)=>Number(Number(value).toFixed(digits));
 
+const CONDITION_LABELS={
+  clearsky:'Clear Sky',
+  fair:'Fair',
+  partlycloudy:'Partly Cloudy',
+  cloudy:'Cloudy',
+  fog:'Fog',
+  lightrain:'Light Rain',
+  rain:'Rain',
+  heavyrain:'Heavy Rain',
+  lightrainshowers:'Light Rain Showers',
+  rainshowers:'Rain Showers',
+  heavyrainshowers:'Heavy Rain Showers',
+  lightsleet:'Light Sleet',
+  sleet:'Sleet',
+  heavysleet:'Heavy Sleet',
+  lightsnow:'Light Snow',
+  snow:'Snow',
+  heavysnow:'Heavy Snow',
+  lightsnowshowers:'Light Snow Showers',
+  snowshowers:'Snow Showers',
+  heavysnowshowers:'Heavy Snow Showers',
+  rainandthunder:'Rain and Thunder',
+  heavyrainandthunder:'Heavy Rain and Thunder',
+  rainshowersandthunder:'Rain Showers and Thunder',
+  heavyrainshowersandthunder:'Heavy Rain Showers and Thunder'
+};
+
 export function humanizeSymbol(code=''){
-  return String(code)
-    .replace(/_(day|night|polartwilight)$/,'')
-    .replace(/_/g,' ')
-    .replace(/\b\w/g,char=>char.toUpperCase())||'Forecast';
+  const normalized=String(code).replace(/_(day|night|polartwilight)$/,'');
+  if(CONDITION_LABELS[normalized])return CONDITION_LABELS[normalized];
+  return normalized.replace(/_/g,' ').replace(/\b\w/g,char=>char.toUpperCase())||'Forecast';
 }
 
 export function parseLocationForecast(payload,now=new Date()){
