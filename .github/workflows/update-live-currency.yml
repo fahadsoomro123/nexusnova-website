@@ -18,6 +18,8 @@ on:
       - 'assets/data/live-currency.json'
       - 'live.html'
       - 'currency-rates.html'
+      - 'sitemap-live.xml'
+      - 'robots.txt'
       - 'tests/live-currency.test.cjs'
       - 'package.json'
   workflow_dispatch:
@@ -32,7 +34,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,8 +50,24 @@ jobs:
       - name: Validate repository syntax
         run: npm run check
 
-      - name: Validate live currency feature
-        run: node --test tests/live-currency.test.cjs
+      - name: Run repository tests
+        run: npm test
+
+      - name: Run full static SEO and internal-link audit
+        run: python3 .github/scripts/site_quality_audit.py
+
+      - name: Require zero severe static findings
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=report.get('severe',[])
+          if severe:
+              print('\n'.join(f'- {item}' for item in severe))
+              raise SystemExit(f'{len(severe)} severe static finding(s) remain')
+          print('Static site map + SEO audit has zero severe findings.')
+          PY
 
       - name: Commit refreshed data when changed
         if: github.event_name != 'pull_request'
