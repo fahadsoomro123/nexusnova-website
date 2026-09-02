@@ -8,14 +8,26 @@ on:
     paths:
       - '.github/scripts/update_live_currency.mjs'
       - '.github/workflows/update-live-currency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/update_live_currency.mjs'
+      - '.github/workflows/update-live-currency.yml'
+      - 'assets/js/live-currency.js'
+      - 'assets/css/live.css'
+      - 'assets/data/live-currency.json'
+      - 'live.html'
+      - 'currency-rates.html'
+      - 'tests/live-currency.test.cjs'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: nexusnova-live-currency-refresh
-  cancel-in-progress: false
+  group: nexusnova-live-currency-refresh-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   refresh:
@@ -33,10 +45,14 @@ jobs:
       - name: Refresh daily PKR reference rates
         run: node .github/scripts/update_live_currency.mjs
 
+      - name: Validate repository syntax
+        run: npm run check
+
       - name: Validate live currency feature
         run: node --test tests/live-currency.test.cjs
 
       - name: Commit refreshed data when changed
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           if git diff --quiet -- assets/data/live-currency.json; then
