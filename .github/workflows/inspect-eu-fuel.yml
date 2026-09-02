@@ -1,0 +1,22 @@
+name: NexusNova EU Fuel Source Inspection
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/inspect_eu_fuel_xlsx.py'
+      - '.github/workflows/inspect-eu-fuel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Inspect current European Commission Weekly Oil Bulletin XLSX
+        run: python3 .github/scripts/inspect_eu_fuel_xlsx.py
