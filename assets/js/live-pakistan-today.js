@@ -5,6 +5,10 @@
     fuel:'assets/data/live-fuel.json',
     weather:'assets/data/live-weather.json'
   };
+  const OPTIONAL_MODULES=[
+    {page:'aqi-live.html',data:'assets/data/live-aqi.json',ready:'Open AQI →',pending:'AQI source activation pending →'},
+    {page:'crypto-live.html',data:'assets/data/live-crypto.json',ready:'Open Crypto →',pending:'Crypto source activation pending →'}
+  ];
   const root=document.querySelector('[data-pakistan-today-dashboard]');
   const status=document.querySelector('[data-pakistan-today-status]');
   const grid=document.querySelector('[data-pakistan-today-grid]');
@@ -32,6 +36,28 @@
     const data=await response.json();
     if(data?.status!=='ok')throw new Error(`${url} is not published`);
     return data;
+  };
+  const syncOptionalModuleState=async()=>{
+    await Promise.all(OPTIONAL_MODULES.map(async module=>{
+      const link=document.querySelector(`.live-category-card a[href="${module.page}"]`);
+      const article=link?.closest('.live-category-card');
+      if(!link||!article)return;
+      let ready=false;
+      try{
+        const response=await fetch(module.data,{cache:'no-store',headers:{Accept:'application/json'}});
+        if(response.ok){
+          const data=await response.json();
+          ready=data?.status==='ok';
+        }
+      }catch{
+        ready=false;
+      }
+      article.classList.toggle('is-active',ready);
+      article.classList.toggle('is-pending',!ready);
+      link.textContent=ready?module.ready:module.pending;
+      if(!ready)link.setAttribute('aria-label',`${link.closest('article')?.querySelector('h3')?.textContent||'LIVE module'} source activation pending`);
+      else link.removeAttribute('aria-label');
+    }));
   };
   const card=(icon,title,value,unit,note,href)=>{
     const article=document.createElement('article');article.className='live-summary-card';
@@ -90,5 +116,6 @@
       console.warn('NexusNova Pakistan Today dashboard unavailable:',error);
     }
   };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+  const start=()=>{syncOptionalModuleState();load()};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
