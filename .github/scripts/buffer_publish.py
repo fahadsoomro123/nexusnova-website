@@ -6,7 +6,7 @@ import urllib.error
 import urllib.request
 
 BUFFER_ENDPOINT = "https://api.buffer.com"
-USER_AGENT = "NexusNovaBufferPublisher/1.0"
+USER_AGENT = "NexusNovaBufferPublisher/1.1"
 
 
 def _graphql_request(api_key: str, query: str) -> dict:
@@ -34,7 +34,18 @@ def _graphql_request(api_key: str, query: str) -> dict:
     return payload
 
 
-def _create_post(api_key: str, channel_id: str, text: str, image_url: str = "") -> dict:
+def _create_post(
+    api_key: str,
+    channel_id: str,
+    text: str,
+    image_url: str = "",
+    *,
+    mode: str = "addToQueue",
+    ai_assisted: bool = False,
+) -> dict:
+    if mode not in {"addToQueue", "shareNow"}:
+        raise ValueError(f"Unsupported Buffer share mode: {mode}")
+
     asset_fragment = ""
     if image_url:
         asset_fragment = f"assets: [{{ image: {{ url: {json.dumps(image_url)} }} }}]"
@@ -45,7 +56,8 @@ def _create_post(api_key: str, channel_id: str, text: str, image_url: str = "") 
         text: {json.dumps(text, ensure_ascii=False)}
         channelId: {json.dumps(channel_id)}
         schedulingType: automatic
-        mode: addToQueue
+        mode: {mode}
+        aiAssisted: {str(bool(ai_assisted)).lower()}
         {asset_fragment}
       }}) {{
         ... on PostActionSuccess {{
@@ -65,37 +77,90 @@ def _create_post(api_key: str, channel_id: str, text: str, image_url: str = "") 
     return post
 
 
-def post_buffer_x(title: str, url: str, hashtags: list[str] | None = None, image_url: str = "") -> dict:
-    api_key = os.getenv("BUFFER_API_KEY", "").strip()
-    channel_id = os.getenv("BUFFER_X_CHANNEL_ID", "").strip()
-    if not api_key or not channel_id:
-        return {"posted": False, "image_attached": False, "provider": "buffer"}
-
+def _build_text(title: str, url: str, hashtags: list[str] | None = None) -> str:
     tag_text = " ".join(f"#{tag.lstrip('#')}" for tag in (hashtags or [])[:3])
     suffix = f"\n\n{url}" if url else ""
     if tag_text:
         suffix += f"\n{tag_text}"
     available_title = max(0, 275 - len(suffix))
-    text = f"{title[:available_title]}{suffix}"[:280]
+    return f"{title[:available_title]}{suffix}"[:280]
 
-    image_attached = False
+
+def _post_buffer_x(
+    title: str,
+    url: str,
+    hashtags: list[str] | None,
+    image_url: str,
+    *,
+    mode: str,
+    ai_assisted: bool,
+) -> dict:
+    api_key = os.getenv("BUFFER_API_KEY", "").strip()
+    channel_id = os.getenv("BUFFER_X_CHANNEL_ID", "").strip()
+    if not api_key or not channel_id:
+        return {"posted": False, "image_attached": False, "provider": "buffer"}
+
+    text = _build_text(title, url, hashtags)
     if image_url:
         try:
-            post = _create_post(api_key, channel_id, text, image_url)
-            image_attached = bool(post.get("assets"))
+            post = _create_post(
+                api_key,
+                channel_id,
+                text,
+                image_url,
+                mode=mode,
+                ai_assisted=ai_assisted,
+            )
             return {
                 "posted": True,
-                "image_attached": image_attached,
+                "image_attached": bool(post.get("assets")),
                 "provider": "buffer",
                 "response": post,
             }
         except Exception as exc:
-            print("Buffer image warning; queueing text/link fallback:", exc)
+            print("Buffer image warning; publishing text/link fallback:", exc)
 
-    post = _create_post(api_key, channel_id, text)
+    post = _create_post(
+        api_key,
+        channel_id,
+        text,
+        mode=mode,
+        ai_assisted=ai_assisted,
+    )
     return {
         "posted": True,
         "image_attached": False,
         "provider": "buffer",
         "response": post,
     }
+
+
+def post_buffer_x(title: str, url: str, hashtags: list[str] | None = None, image_url: str = "") -> dict:
+    """Add an X post to the normal Buffer queue."""
+    return _post_buffer_x(
+        title,
+        url,
+        hashtags,
+        image_url,
+        mode="addToQueue",
+        ai_assisted=False,
+    )
+
+
+def post_buffer_x_now(
+    title: str,
+    url: str,
+    hashtags: list[str] | None = None,
+    image_url: str = "",
+    *,
+    ai_assisted: bool = True,
+) -> dict:
+    """Publish immediately through Buffer so frequent posts do not fill the free-plan queue."""
+    return _post_buffer_x(
+        title,
+        url,
+        hashtags,
+        image_url,
+        mode="shareNow",
+        ai_assisted=ai_assisted,
+    )
