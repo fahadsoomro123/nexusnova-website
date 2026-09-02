@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import {deriveGoldPkr} from './live_gold_math.mjs';
 
 const OUT='assets/data/live-gold.json';
+const HIST='assets/data/live-gold-history.json';
 const FX='assets/data/live-currency.json';
 const GOLD_URL='https://api.gold-api.com/price/XAU';
 const round=(value,digits=6)=>Number(value.toFixed(digits));
@@ -39,26 +40,18 @@ const payload={
     api_url:GOLD_URL,
     method:'Current XAU/USD reference price fetched by the NexusNova publishing workflow; PKR values are calculated using the published NexusNova USD/PKR daily reference rate'
   },
-  xau:{
-    symbol:'XAU',
-    quote_currency:'USD',
-    usd_per_troy_ounce:round(xauUsd,6),
-    updated_at:upstreamUpdatedAt
-  },
-  fx:{
-    pair:'USD/PKR',
-    usd_pkr:round(usdPkr,6),
-    data_date:fxData.data_date||usd?.data_date||null,
-    source:fxData.source?.name||'Frankfurter'
-  },
-  international_derived_pkr:{
-    basis:'International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote',
-    ...derived
-  },
-  local_sarafa:{
-    status:'not_published',
-    message:'Pakistan local Sarafa board rates are intentionally not inferred from international spot data. A verified local source is still under review.'
-  }
+  xau:{symbol:'XAU',quote_currency:'USD',usd_per_troy_ounce:round(xauUsd,6),updated_at:upstreamUpdatedAt},
+  fx:{pair:'USD/PKR',usd_pkr:round(usdPkr,6),data_date:fxData.data_date||usd?.data_date||null,source:fxData.source?.name||'Frankfurter'},
+  international_derived_pkr:{basis:'International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote',...derived},
+  local_sarafa:{status:'not_published',message:'Pakistan local Sarafa board rates are intentionally not inferred from international spot data. A verified local source is still under review.'}
 };
 await fs.writeFile(OUT,`${JSON.stringify(payload,null,2)}\n`,'utf8');
-console.log(`Wrote XAU/USD ${payload.xau.usd_per_troy_ounce} with international-derived PKR references.`);
+
+let history={schema_version:1,status:'ok',method:'NexusNova-owned daily snapshots captured by the scheduled current-price publisher; not an upstream historical-market API',points:[]};
+try{const existing=JSON.parse(await fs.readFile(HIST,'utf8'));if(Array.isArray(existing?.points))history={...history,...existing,points:existing.points}}catch(err){if(err?.code!=='ENOENT')throw err}
+const date=String(payload.generated_at).slice(0,10);
+const point={date,xau_usd:payload.xau.usd_per_troy_ounce,usd_pkr:payload.fx.usd_pkr,pkr_per_tola_24k:payload.international_derived_pkr.per_tola_24k,source_updated_at:payload.xau.updated_at};
+const points=history.points.filter(item=>item?.date!==date).concat(point).filter(item=>/^\d{4}-\d{2}-\d{2}$/.test(item?.date||'')).sort((a,b)=>a.date.localeCompare(b.date)).slice(-90);
+history={schema_version:1,status:'ok',method:'NexusNova-owned daily snapshots captured by the scheduled current-price publisher; not an upstream historical-market API',points};
+await fs.writeFile(HIST,`${JSON.stringify(history,null,2)}\n`,'utf8');
+console.log(`Wrote XAU/USD ${payload.xau.usd_per_troy_ounce} with international-derived PKR references and ${points.length} daily snapshot(s).`);
