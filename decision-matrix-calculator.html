@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Weighted Decision Matrix Calculator — Compare Options | NexusNova</title>
+  <meta name="description" content="Compare options with a weighted decision matrix. Add criteria, set importance weights, score each option from 1 to 10 and rank results locally in your browser.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#f5f7fb">
+  <link rel="canonical" href="https://nexusnovatools.com/decision-matrix-calculator.html">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NexusNova Tools">
+  <meta property="og:title" content="Weighted Decision Matrix Calculator — NexusNova Tools">
+  <meta property="og:description" content="Compare choices using weighted criteria and a transparent 1–10 scoring model. Runs locally in your browser.">
+  <meta property="og:url" content="https://nexusnovatools.com/decision-matrix-calculator.html">
+  <meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Weighted Decision Matrix Calculator | NexusNova">
+  <meta name="twitter:description" content="Add options, weight your criteria and rank choices with a transparent browser-local decision matrix.">
+  <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <style>
+    .matrix-wrap{overflow-x:auto;margin-top:14px}.matrix-table{width:100%;min-width:680px;border-collapse:collapse}.matrix-table th,.matrix-table td{padding:9px 7px;border-bottom:1px solid rgba(127,127,127,.22);vertical-align:middle}.matrix-table th{text-align:left;font-size:.82rem;letter-spacing:.03em}.matrix-table input{min-width:90px}.matrix-table input[type=number]{min-width:78px}.matrix-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:12px}.rank-card{border:1px solid rgba(127,127,127,.24);border-radius:14px;padding:14px}.rank-card strong{display:block;font-size:1.1rem}.rank-score{font-size:1.7rem;font-weight:800;letter-spacing:-.03em}.matrix-status{margin-top:10px}.small-button{padding:6px 9px;font-size:.84rem}.matrix-help{margin-top:10px}.score-key{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.score-key span{border:1px solid rgba(127,127,127,.22);border-radius:999px;padding:5px 9px;font-size:.82rem}
+  </style>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Weighted Decision Matrix Calculator","url":"https://nexusnovatools.com/decision-matrix-calculator.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","isAccessibleForFree":true,"description":"Compare multiple options by assigning weights to criteria and scoring each option on a 1 to 10 scale."},{"@type":"WebPage","name":"Weighted Decision Matrix Calculator","url":"https://nexusnovatools.com/decision-matrix-calculator.html","datePublished":"2026-09-02","dateModified":"2026-09-02","isPartOf":{"@type":"WebSite","name":"NexusNova Tools","url":"https://nexusnovatools.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},{"@type":"ListItem","position":2,"name":"New Tools","item":"https://nexusnovatools.com/new-tools.html"},{"@type":"ListItem","position":3,"name":"Decision Matrix Calculator","item":"https://nexusnovatools.com/decision-matrix-calculator.html"}]}]}</script>
+</head>
+<body>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"></nav></div></header>
+<main>
+  <section class="page-hero"><div class="container"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span>›</span><a href="new-tools.html">New Tools</a><span>›</span><span aria-current="page">Decision Matrix</span></nav><span class="kicker">PLANNING & DECISION TOOL</span><h1>Weighted Decision Matrix <span class="gradient-text">Calculator.</span></h1><p>Compare choices with the same criteria instead of relying on a vague pros-and-cons list. Set importance weights, score each option from 1 to 10, then see the weighted ranking.</p><span class="privacy-badge">✓ Runs locally in your browser</span></div></section>
+
+  <section class="section"><div class="container"><div class="tool-card">
+    <div class="section-head"><div><span class="kicker">BUILD YOUR MATRIX</span><h2>Compare options with weighted criteria</h2></div><p>Your entries stay in this browser tab. Nothing is uploaded by this calculator.</p></div>
+    <div class="score-key" aria-label="Score scale"><span>1 = poor fit</span><span>5 = average fit</span><span>10 = excellent fit</span></div>
+    <div class="matrix-actions"><button class="btn" id="add-option" type="button">+ Add option</button><button class="btn" id="add-criterion" type="button">+ Add criterion</button><button class="btn" id="load-example" type="button">Load example</button><button class="btn" id="clear-matrix" type="button">Reset</button></div>
+    <div class="matrix-wrap"><table class="matrix-table"><thead id="matrix-head"></thead><tbody id="matrix-body"></tbody></table></div>
+    <div class="matrix-actions"><button class="btn btn-primary" id="calculate-matrix" type="button">Calculate ranking</button><button class="btn" id="copy-ranking" type="button">Copy result</button></div>
+    <div class="result matrix-status" id="matrix-status" aria-live="polite">Add or edit your options and criteria, then calculate.</div>
+    <div class="rank-grid" id="rank-output" aria-live="polite"></div>
+    <p class="tool-note matrix-help">Weights do not have to add to exactly 100. If they total another positive number, the calculator normalizes them proportionally. A criterion with weight 40 therefore counts twice as much as one with weight 20.</p>
+  </div></div></section>
+
+  <section class="section"><div class="container article">
+    <h2>What is a weighted decision matrix?</h2>
+    <p>A weighted decision matrix is a structured way to compare several options against the same set of criteria. You first decide what matters, assign an importance weight to each criterion, then score every option using the same scale. The calculator multiplies each score by the criterion's share of the total weight and adds the results.</p>
+    <h2>Decision matrix formula</h2>
+    <p>For each option, the weighted score is the sum of <strong>criterion score × normalized criterion weight</strong>. With a 1–10 scoring scale, the final result also stays on a 1–10 scale. For example, if price has a weight of 40 and support has a weight of 20, price influences the result twice as strongly as support.</p>
+    <h2>How to use the calculator</h2>
+    <ol><li>Name at least two options you are genuinely considering.</li><li>Add criteria that matter to the decision, such as cost, reliability, features, travel time or ease of use.</li><li>Give each criterion a weight greater than zero. Use larger numbers for more important criteria.</li><li>Score every option from 1 to 10 using the same meaning for every row.</li><li>Calculate the ranking, then inspect why the winner scored well instead of treating the top number as an automatic answer.</li></ol>
+    <h2>Handle costs and other “lower is better” criteria carefully</h2>
+    <p>The calculator assumes a higher score always means a better fit. For a cost criterion, convert the raw price into a preference score first: the most affordable acceptable option might receive 9 or 10, while an expensive option might receive a lower score. Do the same for travel time, risk, energy use or any other measure where a smaller raw number is preferable.</p>
+    <h2>Avoid false precision</h2>
+    <p>A matrix makes your assumptions visible; it does not make subjective judgments objectively true. If two options finish very close together, try changing uncertain weights or scores by one point. If the winner changes easily, the decision is sensitive and you should gather better information before relying on the ranking.</p>
+    <h2>Good uses for a decision matrix</h2>
+    <ul><li>Comparing software plans, vendors or devices with the same requirements.</li><li>Shortlisting project ideas, features or content topics.</li><li>Choosing between travel, study or work options when several trade-offs matter.</li><li>Making a team discussion more transparent by writing down criteria before debating the winner.</li></ul>
+    <h2>When not to rely on the score alone</h2>
+    <p>Do not use a simple weighted matrix as the sole basis for medical, legal, safety-critical, investment or other high-stakes decisions. Important constraints can be binary rather than gradual: an option that fails a mandatory requirement may need to be excluded even if its weighted score is high.</p>
+    <div class="notice"><strong>Want the method in more detail?</strong> Read the <a href="guides/weighted-decision-matrix.html">Weighted Decision Matrix Guide</a>, including a worked example, sensitivity check and practical scoring rules.</div>
+    <p class="mini-note">Tool added 2 September 2026. NexusNova does not store the matrix entries or ranking generated on this page.</p>
+  </div></section>
+
+  <section class="section"><div class="container"><div class="article-grid"><a class="article-card" href="guides/weighted-decision-matrix.html"><span class="tag">GUIDE</span><h3>Weighted Decision Matrix Guide</h3><p>Learn how to choose criteria, set weights and test a close result.</p><span class="card-link">Read guide →</span></a><a class="article-card" href="timezone-meeting-planner.html"><span class="tag">PLANNING</span><h3>Global Meeting Planner</h3><p>Compare time zones when scheduling across locations.</p><span class="card-link">Plan a meeting →</span></a><a class="article-card" href="ai-prompt-builder.html"><span class="tag">AI</span><h3>AI Prompt Builder</h3><p>Structure a clear task, context, constraints and output format.</p><span class="card-link">Build a prompt →</span></a><a class="article-card" href="tool-methodology.html"><span class="tag">TRUST</span><h3>Tool Methodology</h3><p>See how NexusNova explains browser processing, formulas and limits.</p><span class="card-link">Read methodology →</span></a></div></div></section>
+</main>
+<footer class="site-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><a href="tool-methodology.html">Tool Methodology</a><a href="editorial-policy.html">Editorial Policy</a><a href="privacy.html">Privacy</a></div></footer>
+<script src="assets/js/main.js" defer></script>
+<script>
+(function(){
+  const MAX_OPTIONS=6,MAX_CRITERIA=8;
+  let options=['Option A','Option B','Option C'];
+  let criteria=[
+    {name:'Cost / value',weight:30,scores:[8,6,9]},
+    {name:'Features',weight:30,scores:[6,9,7]},
+    {name:'Ease of use',weight:20,scores:[9,7,8]},
+    {name:'Support / reliability',weight:20,scores:[7,9,6]}
+  ];
+  const head=document.getElementById('matrix-head'),body=document.getElementById('matrix-body'),status=document.getElementById('matrix-status'),output=document.getElementById('rank-output');
+  let lastText='';
+  function clampScore(v){const n=Number(v);return Number.isFinite(n)?Math.min(10,Math.max(1,n)):5}
+  function clampWeight(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,n):0}
+  function make(tag,attrs,text){const el=document.createElement(tag);Object.entries(attrs||{}).forEach(([k,v])=>{if(k==='class')el.className=v;else el.setAttribute(k,v)});if(text!==undefined)el.textContent=text;return el}
+  function render(){
+    head.textContent='';body.textContent='';output.textContent='';lastText='';
+    const tr=make('tr');tr.append(make('th',{},'Criterion'),make('th',{},'Weight'));
+    options.forEach((name,oi)=>{const th=make('th');const input=make('input',{type:'text','aria-label':'Option '+(oi+1)+' name',maxlength:'48',value:name});input.value=name;input.addEventListener('input',()=>options[oi]=input.value);th.appendChild(input);if(options.length>2){const rm=make('button',{type:'button',class:'btn small-button','aria-label':'Remove option '+(oi+1)},'Remove');rm.addEventListener('click',()=>removeOption(oi));th.appendChild(rm)}tr.appendChild(th)});head.appendChild(tr);
+    criteria.forEach((c,ci)=>{const row=make('tr');const nameCell=make('td');const nameInput=make('input',{type:'text','aria-label':'Criterion '+(ci+1)+' name',maxlength:'56'});nameInput.value=c.name;nameInput.addEventListener('input',()=>c.name=nameInput.value);nameCell.appendChild(nameInput);if(criteria.length>1){const rm=make('button',{type:'button',class:'btn small-button','aria-label':'Remove criterion '+(ci+1)},'Remove');rm.addEventListener('click',()=>removeCriterion(ci));nameCell.appendChild(rm)}row.appendChild(nameCell);
+      const weightCell=make('td');const wi=make('input',{type:'number',min:'0',max:'1000',step:'1',inputmode:'decimal','aria-label':'Weight for criterion '+(ci+1)});wi.value=String(c.weight);wi.addEventListener('input',()=>c.weight=clampWeight(wi.value));weightCell.appendChild(wi);row.appendChild(weightCell);
+      options.forEach((_,oi)=>{const td=make('td');const si=make('input',{type:'number',min:'1',max:'10',step:'1',inputmode:'decimal','aria-label':'Score option '+(oi+1)+' for criterion '+(ci+1)});si.value=String(c.scores[oi]??5);si.addEventListener('input',()=>c.scores[oi]=clampScore(si.value));td.appendChild(si);row.appendChild(td)});body.appendChild(row)});
+    status.textContent='Weights currently total '+criteria.reduce((s,c)=>s+clampWeight(c.weight),0).toFixed(0)+'. Calculate when ready.';
+  }
+  function addOption(){if(options.length>=MAX_OPTIONS){status.textContent='Maximum '+MAX_OPTIONS+' options.';return}options.push('Option '+String.fromCharCode(65+options.length));criteria.forEach(c=>c.scores.push(5));render()}
+  function removeOption(i){if(options.length<=2)return;options.splice(i,1);criteria.forEach(c=>c.scores.splice(i,1));render()}
+  function addCriterion(){if(criteria.length>=MAX_CRITERIA){status.textContent='Maximum '+MAX_CRITERIA+' criteria.';return}criteria.push({name:'New criterion',weight:10,scores:options.map(()=>5)});render()}
+  function removeCriterion(i){if(criteria.length<=1)return;criteria.splice(i,1);render()}
+  function calculate(){
+    const totalWeight=criteria.reduce((s,c)=>s+clampWeight(c.weight),0);output.textContent='';
+    if(totalWeight<=0){status.textContent='Enter at least one criterion weight greater than zero.';return}
+    const results=options.map((name,oi)=>({name:(name||('Option '+(oi+1))).trim()||('Option '+(oi+1)),score:criteria.reduce((sum,c)=>sum+clampScore(c.scores[oi])*(clampWeight(c.weight)/totalWeight),0)})).sort((a,b)=>b.score-a.score);
+    results.forEach((r,i)=>{const card=make('div',{class:'rank-card'});card.append(make('span',{class:'tag'},i===0?'TOP SCORE':'RANK '+(i+1)),make('strong',{},r.name),make('div',{class:'rank-score'},r.score.toFixed(2)+' / 10'));output.appendChild(card)});
+    const normalized=Math.abs(totalWeight-100)>.001?' Weights total '+totalWeight.toFixed(1)+', so they were normalized proportionally.':'';
+    const margin=results.length>1?results[0].score-results[1].score:0;
+    const sensitivity=margin<0.35?' The top two scores are close; test uncertain weights or scores before deciding.':'';
+    status.textContent='Ranking calculated.'+normalized+sensitivity;
+    lastText='Weighted decision matrix ranking\n'+results.map((r,i)=>(i+1)+'. '+r.name+' — '+r.score.toFixed(2)+'/10').join('\n')+'\n'+status.textContent;
+  }
+  function loadExample(){options=['Basic Plan','Pro Plan','Premium Plan'];criteria=[{name:'Cost / value',weight:30,scores:[9,7,5]},{name:'Features',weight:30,scores:[5,9,10]},{name:'Ease of use',weight:20,scores:[9,8,7]},{name:'Support / reliability',weight:20,scores:[6,9,10]}];render();status.textContent='Example loaded. Adjust the assumptions, then calculate.'}
+  function reset(){options=['Option A','Option B','Option C'];criteria=[{name:'Criterion 1',weight:40,scores:[5,5,5]},{name:'Criterion 2',weight:35,scores:[5,5,5]},{name:'Criterion 3',weight:25,scores:[5,5,5]}];render()}
+  document.getElementById('add-option').addEventListener('click',addOption);document.getElementById('add-criterion').addEventListener('click',addCriterion);document.getElementById('calculate-matrix').addEventListener('click',calculate);document.getElementById('load-example').addEventListener('click',loadExample);document.getElementById('clear-matrix').addEventListener('click',reset);document.getElementById('copy-ranking').addEventListener('click',async()=>{if(!lastText){calculate();if(!lastText)return}try{await navigator.clipboard.writeText(lastText);status.textContent='Ranking copied to clipboard.'}catch(e){status.textContent='Copy was blocked by the browser. Select the ranking manually.'}});render();
+})();
+</script>
+</body></html>
