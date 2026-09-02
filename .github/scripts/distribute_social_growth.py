@@ -12,6 +12,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import distribute_update as base  # noqa: E402
+from buffer_publish import post_buffer_x  # noqa: E402
 
 PUBLISH = ROOT / "social-growth-publish.json"
 REPORT = ROOT / "social-distribution-report.json"
@@ -82,12 +83,20 @@ def main() -> None:
     else:
         record("telegram", False, "not configured")
 
+    x_copy = str(platform_copy.get("x") or hook).strip()
+    buffer_ready = bool(os.getenv("BUFFER_API_KEY", "").strip() and os.getenv("BUFFER_X_CHANNEL_ID", "").strip())
     x_names = ("X_API_KEY", "X_API_KEY_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET")
-    if all(os.getenv(name, "").strip() for name in x_names):
+    direct_x_ready = all(os.getenv(name, "").strip() for name in x_names)
+    if buffer_ready:
         try:
-            x_copy = str(platform_copy.get("x") or hook).strip()
+            result = post_buffer_x(x_copy, tracked_url(item, "x"), hashtags, image_url=image_url)
+            record("x", True, f"Buffer queue · {media_detail(result)}")
+        except Exception as exc:
+            record("x", False, safe_error(exc))
+    elif direct_x_ready:
+        try:
             result = base.post_x(x_copy, tracked_url(item, "x"), hashtags, image_url=image_url)
-            record("x", True, media_detail(result))
+            record("x", True, f"direct X fallback · {media_detail(result)}")
         except Exception as exc:
             record("x", False, safe_error(exc))
     else:
