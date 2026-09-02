@@ -1,0 +1,7 @@
+(()=>{
+  const list=[['Kashmir Day','2026-02-05'],['Eid-ul-Fitr','2026-03-20'],['Eid-ul-Fitr','2026-03-21'],['Pakistan Day','2026-03-23'],['Labour Day','2026-05-01'],['Eid-ul-Azha','2026-05-26'],['Eid-ul-Azha','2026-05-27'],['Eid-ul-Azha / Youm-e-Takbeer','2026-05-28'],['Ashura','2026-06-25'],['Ashura','2026-06-26'],['Independence Day','2026-08-14'],['Eid Milad-un-Nabi','2026-08-26'],['Allama Iqbal Day','2026-11-09'],['Quaid-e-Azam Day / Christmas','2026-12-25'],['Day after Christmas (Christians only)','2026-12-26']];
+  const nextEl=document.querySelector('[data-next-holiday]');if(!nextEl)return;
+  const nowParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).reduce((a,p)=>(a[p.type]=p.value,a),{});const today=`${nowParts.year}-${nowParts.month}-${nowParts.day}`;
+  const next=list.find(([,d])=>d>=today);if(!next){nextEl.textContent='No remaining listed 2026 federal public holiday. Check Cabinet Division for newer notifications.';return}
+  const [name,date]=next;const days=Math.max(0,Math.ceil((Date.parse(`${date}T00:00:00+05:00`)-Date.parse(`${today}T00:00:00+05:00`))/86400000));nextEl.textContent=days===0?`${name} is listed for today.`:`Next listed holiday: ${name} on ${new Date(`${date}T00:00:00+05:00`).toLocaleDateString('en-PK',{timeZone:'Asia/Karachi',dateStyle:'long'})} · ${days} day${days===1?'':'s'} away.`;
+})();
