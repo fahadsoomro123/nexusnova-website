@@ -24,21 +24,54 @@ test('PSO parser fails closed when petrol and diesel are not validated together'
   assert.throws(()=>parsePsoFuelPrices('<div>Effective From: September 01, 2026</div><p>PREMIER EURO 5 Rs.342.79/Ltr</p>'),/No validated PSO POL block/i);
 });
 
-test('fuel browser code reads cached local JSON and never scrapes PSO from the visitor browser',()=>{
-  const client=read('assets/js/live-fuel.js');
-  assert.match(client,/assets\/data\/live-fuel\.json/);
-  assert.doesNotMatch(client,/psopk\.com/);
+test('EIA parser reads latest U.S. weekly national row and previous-week change',async()=>{
+  const moduleUrl=pathToFileURL(path.join(root,'.github/scripts/live_fuel_us_parser.mjs')).href;
+  const {parseEiaWeeklyUsRow}=await import(moduleUrl);
+  const html=`
+    <h1>Weekly Retail Gasoline and Diesel Prices</h1>
+    <div>Show Data By:</div>
+    <table>
+      <tr><th>08/17/26</th><th>08/24/26</th><th>08/31/26</th><th>View History</th></tr>
+      <tr><td>U.S.</td><td>4.049</td><td>4.085</td><td>4.071</td><td>1990-2026</td></tr>
+      <tr><td>East Coast (PADD1)</td><td>3.900</td><td>3.950</td><td>3.940</td></tr>
+    </table>`;
+  assert.deepEqual(parseEiaWeeklyUsRow(html),{
+    data_date:'2026-08-31',
+    usd_per_gallon:4.071,
+    previous_usd_per_gallon:4.085,
+    change_usd_per_gallon:-0.014
+  });
 });
 
-test('fuel page shows source freshness and avoids fake real-time claims',()=>{
+test('EIA parser fails closed when the national row is missing or incomplete',async()=>{
+  const moduleUrl=pathToFileURL(path.join(root,'.github/scripts/live_fuel_us_parser.mjs')).href;
+  const {parseEiaWeeklyUsRow}=await import(moduleUrl);
+  const malformed='<h1>Weekly Retail Gasoline and Diesel Prices</h1><div>Show Data By:</div><span>08/24/26 08/31/26</span><div>East Coast 4.000 4.100</div>';
+  assert.throws(()=>parseEiaWeeklyUsRow(malformed),/U\.S\. national row/i);
+});
+
+test('fuel browser code reads cached local JSON files and never contacts upstream fuel sources',()=>{
+  const client=read('assets/js/live-fuel.js');
+  assert.match(client,/assets\/data\/live-fuel\.json/);
+  assert.match(client,/assets\/data\/live-fuel-us\.json/);
+  assert.doesNotMatch(client,/psopk\.com/);
+  assert.doesNotMatch(client,/eia\.gov/);
+});
+
+test('fuel page shows Pakistan and U.S. source freshness without fake real-time claims',()=>{
   const page=read('fuel-rates.html');
   assert.match(page,/Pakistan State Oil \(PSO\)/i);
   assert.match(page,/Effective from:/i);
-  assert.match(page,/not a second-by-second/i);
+  assert.match(page,/U\.S\. Energy Information Administration \(EIA\)/i);
+  assert.match(page,/weekly national averages/i);
+  assert.match(page,/USD per gallon/i);
+  assert.match(page,/including taxes/i);
+  assert.match(page,/not a local station quote/i);
+  assert.match(page,/second-by-second/i);
   assert.match(page,/applicable freight charges/i);
 });
 
-test('fuel data contract is explicit before and after the verified publisher runs',()=>{
+test('Pakistan fuel data contract is explicit before and after the verified publisher runs',()=>{
   const data=JSON.parse(read('assets/data/live-fuel.json'));
   assert.equal(data.source.name,'Pakistan State Oil (PSO)');
   assert.ok(['pending','ok'].includes(data.status));
@@ -48,5 +81,19 @@ test('fuel data contract is explicit before and after the verified publisher run
     assert.ok(Number(data.prices?.petrol?.pkr_per_litre)>0);
     assert.ok(Number(data.prices?.diesel?.pkr_per_litre)>0);
     assert.match(data.effective_date,/^\d{4}-\d{2}-\d{2}$/);
+  }
+});
+
+test('U.S. fuel data contract stays weekly, sourced and fail-closed',()=>{
+  const data=JSON.parse(read('assets/data/live-fuel-us.json'));
+  assert.equal(data.source.name,'U.S. Energy Information Administration (EIA)');
+  assert.equal(data.country,'US');
+  assert.ok(['pending','ok'].includes(data.status));
+  if(data.status==='pending'){
+    assert.equal(data.prices,null);
+  }else{
+    assert.match(data.data_date,/^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(Number(data.prices?.regular_gasoline?.usd_per_gallon)>0);
+    assert.ok(Number(data.prices?.on_highway_diesel?.usd_per_gallon)>0);
   }
 });
