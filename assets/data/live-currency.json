@@ -1,13 +1,50 @@
 {
   "schema_version": 1,
-  "status": "bootstrap",
-  "generated_at": null,
-  "data_date": null,
+  "status": "ok",
+  "generated_at": "2026-09-02T07:05:12.797Z",
+  "data_date": "2026-09-02",
   "quote_currency": "PKR",
   "source": {
     "name": "Frankfurter",
     "url": "https://frankfurter.dev/",
+    "api_url": "https://api.frankfurter.dev/v2/rates?base=PKR&quotes=USD,GBP,EUR,AED,SAR",
     "method": "Daily reference exchange rates aggregated from central banks and official sources"
   },
-  "rates": []
+  "rates": [
+    {
+      "code": "USD",
+      "rate": 278.551532,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "GBP",
+      "rate": 377.358491,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "EUR",
+      "rate": 322.580645,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "AED",
+      "rate": 75.757576,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    },
+    {
+      "code": "SAR",
+      "rate": 74.183976,
+      "data_date": "2026-09-02",
+      "previous_rate": null,
+      "change_pct": null
+    }
+  ]
 }
