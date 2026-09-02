@@ -2,6 +2,8 @@
   const set=(selector,value)=>{const el=document.querySelector(selector);if(el)el.textContent=value};
   const pkr=value=>`Rs ${new Intl.NumberFormat('en-PK',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)}`;
   const usd=value=>`$${new Intl.NumberFormat('en-US',{minimumFractionDigits:3,maximumFractionDigits:3}).format(value)}`;
+  const eur=value=>`€${new Intl.NumberFormat('en-US',{minimumFractionDigits:3,maximumFractionDigits:3}).format(value)}`;
+  const optionalNumber=value=>value===null||value===undefined||value===''?NaN:Number(value);
   const time=(value,zone='Asia/Karachi')=>{
     if(!value)return '—';
     const date=new Date(value);
@@ -12,10 +14,15 @@
     const parsed=/^\d{4}-\d{2}-\d{2}$/.test(value)?new Date(`${value}T00:00:00Z`):new Date(value);
     return Number.isNaN(parsed.getTime())?'—':parsed.toLocaleDateString('en-US',{dateStyle:'medium',timeZone:'UTC'});
   };
-  const change=value=>{
+  const usChange=value=>{
     if(!Number.isFinite(value))return 'Previous-week comparison unavailable';
     if(value===0)return 'No change vs previous week';
     return `${value>0?'+':''}${value.toFixed(3)} USD/gal vs previous week`;
+  };
+  const euChange=value=>{
+    if(!Number.isFinite(value))return 'Previous published-week comparison unavailable';
+    if(value===0)return 'No change vs previous published week';
+    return `${value>0?'+':''}${value.toFixed(4)} EUR/L vs previous published week`;
   };
 
   const pakistanStatus=document.querySelector('[data-fuel-status]');
@@ -51,8 +58,8 @@
         if(data?.status!=='ok'||!Number.isFinite(gasoline)||gasoline<=0||!Number.isFinite(diesel)||diesel<=0)throw new Error('U.S. weekly fuel data is not ready');
         set('[data-fuel-us-gasoline]',usd(gasoline));
         set('[data-fuel-us-diesel]',usd(diesel));
-        set('[data-fuel-us-gasoline-change]',change(Number(data?.prices?.regular_gasoline?.change_usd_per_gallon)));
-        set('[data-fuel-us-diesel-change]',change(Number(data?.prices?.on_highway_diesel?.change_usd_per_gallon)));
+        set('[data-fuel-us-gasoline-change]',usChange(optionalNumber(data?.prices?.regular_gasoline?.change_usd_per_gallon)));
+        set('[data-fuel-us-diesel-change]',usChange(optionalNumber(data?.prices?.on_highway_diesel?.change_usd_per_gallon)));
         set('[data-fuel-us-date]',dateOnly(data.data_date));
         set('[data-fuel-us-generated]',time(data.generated_at,'America/New_York')+' ET');
         set('[data-fuel-us-notice]',data.notice||'Official EIA weekly U.S. national averages.');
@@ -63,6 +70,50 @@
       .catch(()=>{
         usStatus.textContent='U.S. weekly fuel data is temporarily unavailable. NexusNova will not substitute an unverified or guessed value.';
         usStatus.classList.add('is-error');
+      });
+  }
+
+  const euStatus=document.querySelector('[data-fuel-eu-status]');
+  if(euStatus){
+    fetch('assets/data/live-fuel-eu.json',{cache:'no-store'})
+      .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})
+      .then(data=>{
+        const countries=Array.isArray(data?.countries)?data.countries:[];
+        if(data?.status!=='ok'||countries.length!==27)throw new Error('EU27 weekly fuel data is not ready');
+        const valid=countries.filter(item=>item?.country_code&&item?.country&&Number(item.gasoline_eur_per_litre)>0&&Number(item.diesel_eur_per_litre)>0);
+        if(valid.length!==27)throw new Error('EU27 weekly fuel rows failed validation');
+        const selector=document.querySelector('[data-fuel-eu-country]');
+        if(!selector)throw new Error('EU country selector is missing');
+        selector.replaceChildren();
+        valid.forEach(item=>{
+          const option=document.createElement('option');
+          option.value=item.country_code;
+          option.textContent=`${item.country} (${item.country_code})`;
+          selector.append(option);
+        });
+        const byCode=new Map(valid.map(item=>[item.country_code,item]));
+        const render=()=>{
+          const item=byCode.get(selector.value)||valid[0];
+          if(!item)return;
+          set('[data-fuel-eu-selected]',item.country);
+          set('[data-fuel-eu-gasoline]',eur(Number(item.gasoline_eur_per_litre)));
+          set('[data-fuel-eu-diesel]',eur(Number(item.diesel_eur_per_litre)));
+          set('[data-fuel-eu-gasoline-change]',euChange(optionalNumber(item.gasoline_change_eur_per_litre)));
+          set('[data-fuel-eu-diesel-change]',euChange(optionalNumber(item.diesel_change_eur_per_litre)));
+        };
+        selector.value=byCode.has('DE')?'DE':valid[0].country_code;
+        selector.addEventListener('change',render);
+        render();
+        set('[data-fuel-eu-date]',dateOnly(data.data_date));
+        set('[data-fuel-eu-generated]',time(data.generated_at,'Europe/Brussels')+' Brussels time');
+        set('[data-fuel-eu-notice]',data.notice||'European Commission weekly consumer-price references including taxes.');
+        const source=document.querySelector('[data-fuel-eu-source]');
+        if(source&&data.source?.url){source.href=data.source.url;source.textContent=data.source.name||'European Commission Weekly Oil Bulletin'}
+        euStatus.textContent=`European Commission weekly EU27 fuel references loaded for ${dateOnly(data.data_date)}. Select a country below; these are not real-time station quotes.`;
+      })
+      .catch(()=>{
+        euStatus.textContent='EU27 weekly fuel data is temporarily unavailable. NexusNova will not substitute an unverified or guessed value.';
+        euStatus.classList.add('is-error');
       });
   }
 })();

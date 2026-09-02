@@ -50,21 +50,28 @@ test('EIA parser fails closed when the national row is missing or incomplete',as
   assert.throws(()=>parseEiaWeeklyUsRow(malformed),/U\.S\. national row/i);
 });
 
-test('fuel browser code reads cached local JSON files and never contacts upstream fuel sources',()=>{
+test('fuel browser code reads only cached NexusNova JSON files for Pakistan, U.S. and EU',()=>{
   const client=read('assets/js/live-fuel.js');
   assert.match(client,/assets\/data\/live-fuel\.json/);
   assert.match(client,/assets\/data\/live-fuel-us\.json/);
+  assert.match(client,/assets\/data\/live-fuel-eu\.json/);
   assert.doesNotMatch(client,/psopk\.com/);
   assert.doesNotMatch(client,/eia\.gov/);
+  assert.doesNotMatch(client,/energy\.ec\.europa\.eu/);
 });
 
-test('fuel page shows Pakistan and U.S. source freshness without fake real-time claims',()=>{
+test('fuel page shows Pakistan, U.S. and EU source freshness without fake real-time claims',()=>{
   const page=read('fuel-rates.html');
   assert.match(page,/Pakistan State Oil \(PSO\)/i);
   assert.match(page,/Effective from:/i);
   assert.match(page,/U\.S\. Energy Information Administration \(EIA\)/i);
   assert.match(page,/weekly national averages/i);
   assert.match(page,/USD per gallon/i);
+  assert.match(page,/European Commission Weekly Oil Bulletin/i);
+  assert.match(page,/EU27/i);
+  assert.match(page,/EUR per litre/i);
+  assert.match(page,/EUR\/1000 L/i);
+  assert.match(page,/CC BY 4\.0/i);
   assert.match(page,/including taxes/i);
   assert.match(page,/not a local station quote/i);
   assert.match(page,/second-by-second/i);
@@ -95,5 +102,22 @@ test('U.S. fuel data contract stays weekly, sourced and fail-closed',()=>{
     assert.match(data.data_date,/^\d{4}-\d{2}-\d{2}$/);
     assert.ok(Number(data.prices?.regular_gasoline?.usd_per_gallon)>0);
     assert.ok(Number(data.prices?.on_highway_diesel?.usd_per_gallon)>0);
+  }
+});
+
+test('EU fuel data contract stays weekly, EU27, EUR/litre and fail-closed',()=>{
+  const data=JSON.parse(read('assets/data/live-fuel-eu.json'));
+  assert.equal(data.source.name,'European Commission Weekly Oil Bulletin');
+  assert.equal(data.region,'EU27');
+  assert.equal(data.currency,'EUR');
+  assert.equal(data.unit,'EUR per litre');
+  assert.equal(data.frequency,'weekly');
+  assert.ok(['pending','ok'].includes(data.status));
+  if(data.status==='pending'){
+    assert.deepEqual(data.countries,[]);
+  }else{
+    assert.match(data.data_date,/^\d{4}-\d{2}-\d{2}$/);
+    assert.equal(data.countries.length,27);
+    assert.ok(data.countries.every(item=>Number(item.gasoline_eur_per_litre)>0&&Number(item.diesel_eur_per_litre)>0));
   }
 });

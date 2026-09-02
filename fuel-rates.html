@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pakistan & USA Fuel Prices | NexusNova LIVE</title>
-  <meta name="description" content="Check Pakistan petrol and diesel reference prices from PSO plus official weekly U.S. gasoline and diesel national averages from EIA, with source dates and refresh times.">
+  <title>Pakistan, USA & EU Fuel Prices | NexusNova LIVE</title>
+  <meta name="description" content="Check Pakistan PSO petrol and diesel, U.S. EIA weekly fuel averages, and European Commission weekly Euro-super 95 and diesel prices across all 27 EU countries.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#f5f7fb">
   <link rel="canonical" href="https://nexusnovatools.com/fuel-rates.html">
@@ -13,15 +13,15 @@
   <link rel="stylesheet" href="assets/css/live.css">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NexusNova Tools">
-  <meta property="og:title" content="Pakistan & USA Fuel Prices — NexusNova LIVE">
-  <meta property="og:description" content="PSO Pakistan fuel references and official EIA weekly U.S. national gasoline and diesel averages with transparent freshness labels.">
+  <meta property="og:title" content="Pakistan, USA & EU Fuel Prices — NexusNova LIVE">
+  <meta property="og:description" content="Pakistan PSO references, U.S. EIA weekly averages and European Commission weekly EU27 petrol and diesel prices with transparent freshness labels.">
   <meta property="og:url" content="https://nexusnovatools.com/fuel-rates.html">
   <meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Pakistan & USA Fuel Prices — NexusNova LIVE">
-  <meta name="twitter:description" content="Pakistan PSO fuel references plus weekly U.S. EIA gasoline and diesel averages.">
+  <meta name="twitter:title" content="Pakistan, USA & EU Fuel Prices — NexusNova LIVE">
+  <meta name="twitter:description" content="Pakistan PSO fuel references plus official weekly U.S. EIA and EU27 European Commission fuel data.">
   <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Pakistan & USA Fuel Prices","url":"https://nexusnovatools.com/fuel-rates.html","description":"Pakistan fuel reference prices from Pakistan State Oil and weekly U.S. national gasoline and diesel averages from the U.S. Energy Information Administration.","isPartOf":{"@type":"WebSite","name":"NexusNova Tools","url":"https://nexusnovatools.com/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Pakistan, USA & EU Fuel Prices","url":"https://nexusnovatools.com/fuel-rates.html","description":"Pakistan fuel reference prices from Pakistan State Oil, weekly U.S. gasoline and diesel national averages from EIA, and weekly EU27 Euro-super 95 and automotive diesel prices from the European Commission.","isPartOf":{"@type":"WebSite","name":"NexusNova Tools","url":"https://nexusnovatools.com/"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},{"@type":"ListItem","position":2,"name":"NexusNova LIVE","item":"https://nexusnovatools.com/live.html"},{"@type":"ListItem","position":3,"name":"Fuel Rates","item":"https://nexusnovatools.com/fuel-rates.html"}]}</script>
 </head>
 <body class="nn-live-page">
@@ -37,8 +37,8 @@
     <div class="container">
       <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a> <span aria-hidden="true">›</span> <a href="live.html">NexusNova LIVE</a> <span aria-hidden="true">›</span> <span aria-current="page">Fuel</span></nav>
       <span class="kicker">⛽ NEXUSNOVA LIVE // FUEL</span>
-      <h1>Pakistan and U.S. fuel prices with <span class="gradient-text">source frequency clearly labelled.</span></h1>
-      <p>Pakistan uses current published PSO reference rates. The U.S. section uses official EIA weekly national retail averages. NexusNova shows source dates and never presents periodic data as second-by-second pricing.</p>
+      <h1>Pakistan, U.S. and EU fuel prices with <span class="gradient-text">source frequency clearly labelled.</span></h1>
+      <p>Pakistan uses published PSO reference rates, the U.S. uses official EIA weekly national averages, and EU27 uses the European Commission Weekly Oil Bulletin. Source dates, units and limitations stay visible so periodic data is never presented as second-by-second pricing.</p>
       <div class="live-trust-row"><span>Official sources</span><span>Source dates shown</span><span>Cached refresh</span><span>No guessed price</span></div>
     </div>
   </section>
@@ -83,16 +83,46 @@
     </div>
   </section>
 
+  <section class="section" aria-labelledby="eu-fuel-title">
+    <div class="container">
+      <div class="section-head">
+        <div><span class="kicker">🇪🇺 EU27 WEEKLY COUNTRY PRICES</span><h2 id="eu-fuel-title">Euro-super 95 & automotive diesel</h2></div>
+        <p>The European Commission Weekly Oil Bulletin publishes consumer prices with taxes for every EU country. NexusNova converts the official EUR per 1000 litres values to EUR per litre for easier reading.</p>
+      </div>
+      <div class="live-status" data-fuel-eu-status role="status" aria-live="polite">Loading European Commission weekly EU27 prices…</div>
+      <div class="tool-card live-converter">
+        <div class="field">
+          <label for="fuel-eu-country">EU country</label>
+          <select id="fuel-eu-country" data-fuel-eu-country><option>Loading countries…</option></select>
+        </div>
+        <p class="mini-note">Showing official weekly national consumer-price references for <strong data-fuel-eu-selected>selected country</strong>.</p>
+      </div>
+      <div class="live-rate-grid" aria-label="Selected EU country weekly fuel prices">
+        <article class="live-rate-card"><header><h3>Euro-super 95</h3><span class="live-code">PETROL · WITH TAXES</span></header><strong class="live-rate-value" data-fuel-eu-gasoline>—</strong><span class="live-rate-unit">EUR per litre · converted from EUR/1000 L</span><span class="live-change" data-fuel-eu-gasoline-change>Previous published-week comparison loading…</span></article>
+        <article class="live-rate-card"><header><h3>Automotive Diesel</h3><span class="live-code">DIESEL · WITH TAXES</span></header><strong class="live-rate-value" data-fuel-eu-diesel>—</strong><span class="live-rate-unit">EUR per litre · converted from EUR/1000 L</span><span class="live-change" data-fuel-eu-diesel-change>Previous published-week comparison loading…</span></article>
+      </div>
+      <div class="live-meta">
+        <span><strong>Source:</strong> <a data-fuel-eu-source href="https://energy.ec.europa.eu/data-and-analysis/weekly-oil-bulletin_en" rel="noopener noreferrer">European Commission Weekly Oil Bulletin</a></span>
+        <span><strong>Weekly data date:</strong> <time data-fuel-eu-date>—</time></span>
+        <span><strong>NexusNova refresh:</strong> <time data-fuel-eu-generated>—</time></span>
+      </div>
+      <p class="mini-note" data-fuel-eu-notice>European Commission weekly EU27 fuel notice will appear here.</p>
+      <p class="mini-note">Attribution: European Commission / Weekly Oil Bulletin. Commission-owned website content is generally reusable under CC BY 4.0 unless otherwise indicated; NexusNova changes presentation and converts EUR/1000 L to EUR/L.</p>
+    </div>
+  </section>
+
   <section class="section">
     <div class="container article live-explainer">
       <h2>Why these fuel figures use different freshness labels</h2>
-      <p>Pakistan prices are published with an effective date and can remain unchanged until the next official revision. U.S. EIA gasoline and diesel figures are weekly national averages. NexusNova checks each source on an appropriate schedule and does not turn either dataset into a fake real-time feed.</p>
+      <p>Pakistan prices are published with an effective date and can remain unchanged until the next official revision. U.S. EIA gasoline and diesel figures are weekly national averages. European Commission Oil Bulletin figures are weekly national consumer-price references for the 27 EU countries. NexusNova checks each source on an appropriate schedule and does not turn periodic data into a fake real-time feed.</p>
       <h2>How NexusNova prevents stale or mismatched source data</h2>
-      <p>The PSO publisher validates the effective date, Premier Euro 5 price and Hi-Cetane Diesel Euro 5 price together. The separate EIA publisher validates the national U.S. row, weekly dates, gasoline and diesel values, and requires both U.S. products to carry the same latest data date. A failed validation stops publishing instead of inventing a value.</p>
-      <h2>Do not compare the Pakistan and U.S. numbers directly</h2>
-      <p>Pakistan values are PKR per litre, while U.S. values are USD per gallon. They also represent different national pricing systems. Convert both currency and volume units before making a numerical comparison, and remember that neither figure promises the exact price at a specific filling station.</p>
+      <p>The PSO publisher validates petrol and HSD together. The EIA publisher validates the U.S. national row and matching weekly dates. The EU publisher validates the Commission workbook headers, EUR/1000 litre units, source date, Euro-super 95 and automotive diesel columns, and all 27 EU country rows. A failed validation stops publishing instead of inventing a value.</p>
+      <h2>How EU prices are normalized</h2>
+      <p>The Commission workbook reports the selected petrol and diesel products in euros per 1000 litres. NexusNova divides each validated source value by 1000 and displays euros per litre. It does not convert those figures into another currency or claim they are a specific station's pump quote.</p>
+      <h2>Do not compare markets without matching units</h2>
+      <p>Pakistan values are PKR per litre, U.S. values are USD per gallon, and EU values are EUR per litre. Convert both currency and volume units before making a numerical comparison, and remember that national references or averages do not promise the exact price at a particular filling station.</p>
       <h2>Outlet and station-price limitations</h2>
-      <p>PSO notes that applicable freight charges can affect final selling prices at retail outlets. EIA's U.S. figures are national averages including taxes and can differ substantially by state, city and station. Confirm the actual pump price where you plan to buy fuel.</p>
+      <p>PSO notes that applicable freight charges can affect final selling prices at retail outlets. EIA U.S. figures are national averages including taxes. European Commission figures are country-level weekly consumer-price references including taxes. Local station prices can therefore differ from every section on this page.</p>
       <div class="hero-actions"><a class="btn btn-secondary" href="live.html">← Back to NexusNova LIVE</a><a class="btn btn-primary" href="gold-rates.html">Gold Rates →</a></div>
     </div>
   </section>
