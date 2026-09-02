@@ -45,8 +45,10 @@ jobs:
           text=Path('assets/js/main.js').read_text(encoding='utf-8')
           if 'setTimeout(load,8000)' in text:
               raise SystemExit('Old 8-second GA4 delay still present')
-          if "  load();\n})();" not in text:
-              raise SystemExit('Immediate async GA4 load signature missing')
+          if "['pointerdown','keydown','touchstart'].forEach" in text:
+              raise SystemExit('Old interaction-gated GA4 loader still present')
+          if '  load();' not in text:
+              raise SystemExit('Immediate GA4 load call missing')
           print('GA4 timing verification passed')
           PY
 
