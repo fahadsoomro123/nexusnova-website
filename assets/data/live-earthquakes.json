@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-02T12:48:07.516Z",
+  "generated_at": "2026-09-02T13:02:12.973Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-02T12:47:14.000Z",
+  "feed_generated_at": "2026-09-02T13:01:18.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 53,
+  "source_count": 56,
   "pakistan_region_events": [
     {
       "id": "us7000tdf1",
@@ -46,18 +46,75 @@
       "magnitude": 3.35880427407049,
       "place": "6 km SE of Ontario, CA",
       "time": "2026-09-02T12:37:12.720Z",
-      "updated": "2026-09-02T12:42:07.679Z",
+      "updated": "2026-09-02T12:58:18.215Z",
       "depth_km": 6.2,
       "coordinates": {
         "lat": 34.0133,
         "lon": -117.5907
       },
-      "significance": 174,
-      "felt": 2,
+      "significance": 223,
+      "felt": 130,
       "alert": null,
       "status": "automatic",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41540608",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tdms",
+      "magnitude": 5.9,
+      "place": "southern East Pacific Rise",
+      "time": "2026-09-02T12:35:56.627Z",
+      "updated": "2026-09-02T12:59:42.472Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -34.9815,
+        "lon": -109.0259
+      },
+      "significance": 536,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdms",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tdmm",
+      "magnitude": 5.2,
+      "place": "78 km SSW of Nikolski, Alaska",
+      "time": "2026-09-02T12:32:01.324Z",
+      "updated": "2026-09-02T12:54:40.637Z",
+      "depth_km": 35,
+      "coordinates": {
+        "lat": 52.3538,
+        "lon": -169.4988
+      },
+      "significance": 416,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdmm",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tdmp",
+      "magnitude": 5.6,
+      "place": "71 km WSW of Puerto Madero, Mexico",
+      "time": "2026-09-02T12:28:31.022Z",
+      "updated": "2026-09-02T13:01:04.609Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 14.3909,
+        "lon": -92.9873
+      },
+      "significance": 482,
+      "felt": 0,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tdmp",
       "pakistan_region": false
     },
     {
