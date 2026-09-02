@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "pending",
+  "generated_at": null,
+  "freshness": "Scheduled NexusNova snapshot. No crypto value is published until the server-side source key is configured and a validated response is received.",
+  "source": {
+    "name": "Coinranking",
+    "url": "https://coinranking.com/",
+    "api_url": "https://api.coinranking.com/v2/coins",
+    "attribution": "Data provided by Coinranking"
+  },
+  "quote_currency": "USD",
+  "time_period": "24h",
+  "usd_pkr_reference": null,
+  "coins": [],
+  "notice": "Crypto publisher is waiting for a server-side Coinranking API key. NexusNova does not expose API keys in browser code or invent missing market prices."
+}
