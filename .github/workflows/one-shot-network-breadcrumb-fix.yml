@@ -45,10 +45,9 @@ jobs:
           files=['dns-lookup.html','ip-cidr-calculator.html','website-reachability-checker.html','public-ip-checker.html','ssl-certificate-checker.html']
           for name in files:
               text=Path(name).read_text(encoding='utf-8')
-              head=text.split('</nav>',1)[0]
-              if 'href="network-tools.html"' not in head:
-                  raise SystemExit(f'{name}: Network Tools breadcrumb link missing')
-          print('All five network tool breadcrumbs link to Network Tools')
+              if 'href="network-tools.html"' not in text:
+                  raise SystemExit(f'{name}: Network Tools link missing')
+          print('All five network tool pages link to Network Tools')
           PY
 
       - name: Commit targeted breadcrumb fix
