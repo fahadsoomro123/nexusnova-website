@@ -1,0 +1,72 @@
+name: NexusNova One-Time Buffer Wiring
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-buffer-env.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  wire-buffer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Wire Buffer environment into social workflows
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('.github/workflows/traffic-autopilot.yml'),
+              Path('.github/workflows/new-tool-social-launch.yml'),
+          ]
+          dollar = '$'
+          marker = '      X_API_KEY: ' + dollar + '{{ secrets.X_API_KEY }}'
+          insert = (
+              '      BUFFER_API_KEY: ' + dollar + '{{ secrets.BUFFER_API_KEY }}\n'
+              "      BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'\n"
+              + marker
+          )
+          for path in files:
+              text = path.read_text(encoding='utf-8')
+              if 'BUFFER_API_KEY:' in text:
+                  print(path, 'already wired')
+                  continue
+              if marker not in text:
+                  raise SystemExit(f'{path}: X env marker missing')
+              path.write_text(text.replace(marker, insert, 1), encoding='utf-8')
+              print('wired', path)
+          PY
+
+      - name: Verify Buffer integration syntax
+        shell: bash
+        run: |
+          python -m py_compile .github/scripts/buffer_publish.py
+          python -m py_compile .github/scripts/distribute_social_growth.py
+          grep -q 'BUFFER_API_KEY' .github/workflows/traffic-autopilot.yml
+          grep -q 'BUFFER_X_CHANNEL_ID' .github/workflows/traffic-autopilot.yml
+          grep -q 'BUFFER_API_KEY' .github/workflows/new-tool-social-launch.yml
+          grep -q 'BUFFER_X_CHANNEL_ID' .github/workflows/new-tool-social-launch.yml
+          grep -q 'from buffer_publish import post_buffer_x' .github/scripts/distribute_social_growth.py
+
+      - name: Commit Buffer wiring
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-buffer[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/traffic-autopilot.yml .github/workflows/new-tool-social-launch.yml
+          if [ -z "$(git status --porcelain)" ]; then
+            echo 'No Buffer wiring changes needed.'
+            exit 0
+          fi
+          git commit -m 'automation: route X publishing through Buffer when configured'
+          git pull --rebase origin main
+          git push origin HEAD:main
