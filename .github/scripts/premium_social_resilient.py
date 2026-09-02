@@ -14,6 +14,7 @@ import premium_social_campaign as engine  # noqa: E402
 
 CACHE_DIR = ROOT / "assets/generated/ai-social-library"
 _original_download = engine.download_ai_background
+_original_build_copy = engine.build_copy
 
 
 def _cache_fresh_ai(image: Image.Image, prompt: str, seed: int) -> Path:
@@ -76,8 +77,69 @@ def resilient_download(prompt: str, seed: int) -> tuple[Image.Image, str]:
         return _emergency_background(seed)
 
 
+def _append_x(base: str, teaser: str, limit: int = 190) -> str:
+    base = engine.clean(base, limit)
+    teaser = engine.clean(teaser, limit)
+    if not base:
+        return teaser[:limit]
+    room = limit - len(teaser) - 3
+    if room < 40:
+        return teaser[:limit]
+    trimmed = base[:room].rstrip(" ,.;:-")
+    return f"{trimmed} • {teaser}"[:limit]
+
+
+def brand_aware_copy(item: dict, slot: int, trends: list[str]) -> dict:
+    copy = _original_build_copy(item, slot, trends)
+    platform = dict(copy.get("platform_copy") or {})
+    hashtags = list(copy.get("hashtags") or [])
+
+    if slot == 2:
+        teaser = "NexusNova app is coming soon with 60+ premium tools."
+        platform["x"] = _append_x(platform.get("x", ""), teaser)
+        platform["facebook"] = engine.clean(
+            f"{platform.get('facebook','')}\n\nComing soon: the NexusNova app with 60+ premium tools.",
+            700,
+        )
+        platform["instagram"] = engine.clean(
+            f"{platform.get('instagram','')}\n\nComing soon: the NexusNova app with 60+ premium tools.",
+            1500,
+        )
+        copy["image_prompt"] = engine.clean(
+            f"{copy.get('image_prompt','')} Include a subtle premium mobile-app launch concept representing a unified ecosystem of 60+ digital tools; no readable text, no fake app-store badges.",
+            900,
+        )
+        for tag in ("NexusNovaApp", "DigitalTools"):
+            if tag not in hashtags:
+                hashtags.append(tag)
+
+    elif slot == 5:
+        teaser = "Mining is already live on nexusnovatools.com; the 60+ tools app is coming soon."
+        platform["x"] = _append_x(platform.get("x", ""), teaser)
+        platform["facebook"] = engine.clean(
+            f"{platform.get('facebook','')}\n\nNexusNova mining is already live on the web experience at nexusnovatools.com. The NexusNova app is coming soon with 60+ premium tools.",
+            700,
+        )
+        platform["instagram"] = engine.clean(
+            f"{platform.get('instagram','')}\n\nNexusNova mining is already live on the web experience at nexusnovatools.com. The NexusNova app is coming soon with 60+ premium tools.",
+            1500,
+        )
+        copy["image_prompt"] = engine.clean(
+            f"{copy.get('image_prompt','')} Blend in a sophisticated abstract mining-progress dashboard and premium mobile-app ecosystem visual; no coins, currency symbols, earnings claims, readable text, or fake store badges.",
+            900,
+        )
+        for tag in ("NexusNovaApp", "NexusNovaMining"):
+            if tag not in hashtags:
+                hashtags.append(tag)
+
+    copy["platform_copy"] = platform
+    copy["hashtags"] = hashtags[:5]
+    return copy
+
+
 def main() -> None:
     engine.download_ai_background = resilient_download
+    engine.build_copy = brand_aware_copy
     engine.main()
 
 
