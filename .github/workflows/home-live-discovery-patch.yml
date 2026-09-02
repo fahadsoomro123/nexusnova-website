@@ -1,0 +1,63 @@
+name: Home LIVE Discovery Patch
+
+on:
+  push:
+    branches:
+      - nexusnova-home-social-live-discovery-20260902
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: nexusnova-home-social-live-discovery-20260902
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch homepage discovery and social metadata
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          replacements={
+            '<meta name="description" content="Free browser tools for AI token estimates, YouTube thumbnails, typing speed, invoices, OCR, QR, images, PDFs, gaming, calculators and productivity.">':'<meta name="description" content="Free browser tools plus NexusNova LIVE for worldwide weather, satellite, sports, currency, gold, fuel and Pakistan-first calculators, alongside AI, PDF, image and productivity utilities.">',
+            '<meta property="og:title" content="NexusNova Tools — Smart Free Browser Utilities">':'<meta property="og:title" content="NexusNova Tools — LIVE Pakistan Data & Free Browser Tools">',
+            '<meta property="og:description" content="AI token planning, YouTube thumbnails, typing, invoices, OCR, QR, photo, gaming, PDF, calculators and productivity utilities in your browser.">':'<meta property="og:description" content="Worldwide weather and satellite, live sports, currency, gold, fuel and Pakistan-first calculators plus useful browser tools — with sources and limitations shown.">',
+            '<meta name="twitter:title" content="NexusNova Tools — Free Online AI, PDF, Image & Utility Tools">':'<meta name="twitter:title" content="NexusNova Tools — LIVE Data & Free Browser Tools">',
+            '<meta name="twitter:description" content="Free browser tools for AI, PDFs, images, OCR, QR, gaming, calculators and productivity.">':'<meta name="twitter:description" content="Worldwide weather, satellite, sports, currency, gold, fuel and Pakistan-first calculators plus free browser utilities.">',
+            '"description":"Free browser tools for AI, OCR, QR scanning, images, gaming settings, PDF, privacy, calculators, creator workflows and productivity."':'"description":"Free browser tools plus worldwide weather, satellite, sports, currency, gold, fuel and Pakistan-first calculators through NexusNova LIVE."'
+          }
+          for old,new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'missing metadata patch anchor: {old[:80]}')
+            s=s.replace(old,new,1)
+          old='<a class="home-tool" data-home-tool href="earthquakes-live.html"><b>Recent Earthquakes</b><span>Recent USGS M2.5+ events worldwide with a Pakistan-region view.</span></a><a class="home-tool" data-home-tool href="salary-tax-calculator-pakistan.html">'
+          new='<a class="home-tool" data-home-tool href="earthquakes-live.html"><b>Recent Earthquakes</b><span>Recent USGS M2.5+ events worldwide with a Pakistan-region view.</span></a><a class="home-tool" data-home-tool href="sports-live.html"><b>LIVE Sports</b><span>Cricket-first live and recent scores plus football, basketball and tennis with visible SportScore attribution.</span></a><a class="home-tool" data-home-tool href="live-alerts.html"><b>LIVE Threshold Alerts</b><span>Save one same-device threshold for USD/PKR, international-derived gold, petrol or diesel; checks run while the page is open.</span></a><a class="home-tool" data-home-tool href="salary-tax-calculator-pakistan.html">'
+          if old not in s:
+            raise SystemExit('missing homepage LIVE card anchor')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - name: Validate syntax and tests
+        run: |
+          npm run check
+          npm test
+          grep -q 'href="sports-live.html"' index.html
+          grep -q 'href="live-alerts.html"' index.html
+          grep -q 'Worldwide weather and satellite, live sports' index.html
+      - name: Commit verified homepage patch and remove one-time workflow
+        run: |
+          rm .github/workflows/home-live-discovery-patch.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/home-live-discovery-patch.yml
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: surface Sports LIVE and alerts on homepage'
+          git push origin HEAD:nexusnova-home-social-live-discovery-20260902
