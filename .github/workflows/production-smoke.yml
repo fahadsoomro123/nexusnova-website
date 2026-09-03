@@ -1,4 +1,4 @@
-# Production verification guard for NexusNova core and Labs pages.
+# Production verification guard for NexusNova core, Labs and cleaned trust/tool pages.
 name: NexusNova Production Smoke
 
 on:
@@ -28,6 +28,12 @@ on:
       - 'widgets.html'
       - 'widget-pakistan-today.html'
       - 'reaction-time-test.html'
+      - 'contact.html'
+      - 'privacy.html'
+      - 'resume-builder.html'
+      - 'image-to-text-ocr.html'
+      - 'invoice-maker.html'
+      - 'jpg-to-pdf.html'
   workflow_dispatch:
 
 permissions:
@@ -38,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
-      - name: Wait for deployed core and Labs markers
+      - name: Wait for deployed core, Labs and cleanup markers
         shell: bash
         run: |
           set -euo pipefail
@@ -52,8 +58,14 @@ jobs:
             xray="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/xray.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             widgets="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/widgets.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             reaction="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/reaction-time-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
-            if grep -Fq 'href="live.html">LIVE</a>' <<<"$home" \
-              && grep -Fq 'Live data and Pakistan tools are now here' <<<"$home" \
+            contact="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/contact.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            privacy="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/privacy.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            resume="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/resume-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            ocr="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-to-text-ocr.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            invoice="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            jpgpdf="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/jpg-to-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            if grep -Fq 'href="labs.html">Explore NexusNova Labs</a>' <<<"$home" \
+              && grep -Fq 'NEW • NEXUSNOVA LABS' <<<"$home" \
               && grep -Fq 'OpenAQ PM2.5 foundation is pending its server-side source key' <<<"$live" \
               && grep -Fq 'Coinranking market-data foundation is pending its server-side source key' <<<"$live" \
               && grep -Fq 'NEXUSNOVA LABS // NEW IDEAS' <<<"$labs" \
@@ -61,13 +73,21 @@ jobs:
               && grep -Fq 'MAGIC DROP // LOCAL-FIRST BETA' <<<"$magic" \
               && grep -Fq 'NEXUSNOVA X-RAY // BETA' <<<"$xray" \
               && grep -Fq 'FREE EMBED WIDGETS // BETA' <<<"$widgets" \
-              && grep -Fq 'NEXUSNOVA CHALLENGE // REACTION' <<<"$reaction"; then
-              echo 'Current core and Labs markers are deployed.'
+              && grep -Fq 'NEXUSNOVA CHALLENGE // REACTION' <<<"$reaction" \
+              && grep -Fq 'Official support email' <<<"$contact" \
+              && grep -Fq 'nexusnovatools@gmail.com' <<<"$contact" \
+              && grep -Fq 'Plain-language privacy:' <<<"$privacy" \
+              && grep -Fq 'Working browser tool:' <<<"$resume" \
+              && grep -Fq 'ENGLISH OCR // IMAGE TO TEXT' <<<"$ocr" \
+              && grep -Fq 'Simple Invoice Generator' <<<"$invoice" \
+              && grep -Fq 'JPG/JPEG images only' <<<"$jpgpdf" \
+              && ! grep -Fq 'image-converter.html' <<<"$jpgpdf"; then
+              echo 'Current core, Labs and cleanup markers are deployed.'
               exit 0
             fi
             sleep 5
           done
-          echo 'Production did not expose the expected current core and Labs markers.' >&2
+          echo 'Production did not expose the expected current core, Labs and cleanup markers.' >&2
           exit 1
 
       - name: Verify important production routes
@@ -97,6 +117,12 @@ jobs:
             '/widgets.html'
             '/widget-pakistan-today.html'
             '/reaction-time-test.html'
+            '/contact.html'
+            '/privacy.html'
+            '/resume-builder.html'
+            '/image-to-text-ocr.html'
+            '/invoice-maker.html'
+            '/jpg-to-pdf.html'
           )
           for route in "${routes[@]}"; do
             code="$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base$route?smoke=${GITHUB_SHA}")"
