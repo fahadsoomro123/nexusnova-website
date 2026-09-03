@@ -1,0 +1,78 @@
+name: NexusNova Production Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-smoke.yml'
+      - 'index.html'
+      - 'live.html'
+      - 'sports-live.html'
+      - 'network-tools.html'
+      - 'public-ip-checker.html'
+      - 'ssl-certificate-checker.html'
+      - 'currency-rates.html'
+      - 'gold-rates.html'
+      - 'fuel-rates.html'
+      - 'weather-live.html'
+      - 'earthquakes-live.html'
+      - 'zakat-calculator-pakistan.html'
+      - 'electricity-bill-calculator-pakistan.html'
+      - 'salary-tax-calculator-pakistan.html'
+      - 'prayer-times-qibla-pakistan.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for deployed homepage markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnovatools.com'
+          for attempt in $(seq 1 24); do
+            home="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            live="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/live.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            if grep -Fq 'href="live.html">LIVE</a>' <<<"$home" \
+              && grep -Fq 'Live data and Pakistan tools are now here' <<<"$home" \
+              && grep -Fq 'OpenAQ PM2.5 foundation is pending its server-side source key' <<<"$live" \
+              && grep -Fq 'Coinranking market-data foundation is pending its server-side source key' <<<"$live"; then
+              echo 'Current homepage and LIVE markers are deployed.'
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Production did not expose the expected current markers.' >&2
+          exit 1
+
+      - name: Verify important production routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnovatools.com'
+          routes=(
+            '/live.html'
+            '/sports-live.html'
+            '/network-tools.html'
+            '/public-ip-checker.html'
+            '/ssl-certificate-checker.html'
+            '/currency-rates.html'
+            '/gold-rates.html'
+            '/fuel-rates.html'
+            '/weather-live.html'
+            '/earthquakes-live.html'
+            '/zakat-calculator-pakistan.html'
+            '/electricity-bill-calculator-pakistan.html'
+            '/salary-tax-calculator-pakistan.html'
+            '/prayer-times-qibla-pakistan.html'
+          )
+          for route in "${routes[@]}"; do
+            code="$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base$route?smoke=${GITHUB_SHA}")"
+            echo "$code $route"
+            test "$code" = '200'
+          done
