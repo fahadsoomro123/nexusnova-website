@@ -6,6 +6,8 @@ on:
     paths:
       - '*.html'
 
+# External social publishing is intentionally opt-in. Set the repository variable
+# ENABLE_EXTERNAL_SOCIAL_AUTOPUBLISH=true before allowing this job to publish.
 permissions:
   contents: write
 
@@ -15,6 +17,7 @@ concurrency:
 
 jobs:
   announce-new-tools:
+    if: vars.ENABLE_EXTERNAL_SOCIAL_AUTOPUBLISH == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
