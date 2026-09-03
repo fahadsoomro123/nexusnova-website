@@ -14,13 +14,24 @@ on:
       - '.github/scripts/site_quality_audit.py'
       - '.github/scripts/browser_quality_guard.py'
       - '.github/workflows/site-quality-audit.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - '**/*.xml'
+      - '**/*.txt'
+      - '.github/scripts/site_quality_audit.py'
+      - '.github/scripts/browser_quality_guard.py'
+      - '.github/workflows/site-quality-audit.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: nexusnova-site-quality
+  group: nexusnova-site-quality-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -39,17 +50,21 @@ jobs:
       - name: Scan full site map, SEO and internal links
         run: python .github/scripts/site_quality_audit.py
 
-      - name: Require zero severe static findings
+      - name: Require zero static findings
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           data=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
           severe=data.get('severe',[])
-          if severe:
-              print('\n'.join(f'- {item}' for item in severe))
-              raise SystemExit(f'{len(severe)} severe full-site audit finding(s) remain')
-          print('Static site map + SEO audit has zero severe findings.')
+          warnings=data.get('warnings',[])
+          if severe or warnings:
+              for item in severe:
+                  print(f'SEVERE: {item}')
+              for item in warnings:
+                  print(f'WARNING: {item}')
+              raise SystemExit(f'{len(severe)} severe and {len(warnings)} warning static finding(s) remain')
+          print('Static site map + SEO audit has zero severe findings and zero warnings.')
           PY
 
       - name: Install browser quality dependencies
@@ -82,6 +97,27 @@ jobs:
 
       - name: Verify desktop and mobile browser quality
         run: python .github/scripts/browser_quality_guard.py
+
+      - name: Require zero browser findings
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('quality-artifacts/browser-quality-report.json')
+          if not path.exists():
+              raise SystemExit('Browser quality report missing.')
+          data=json.loads(path.read_text(encoding='utf-8'))
+          severe=data.get('severe',[])
+          warnings=data.get('warnings',[])
+          if severe or warnings:
+              for item in severe:
+                  print(f'SEVERE: {item}')
+              for item in warnings:
+                  print(f'WARNING: {item}')
+              raise SystemExit(f'{len(severe)} severe and {len(warnings)} warning browser finding(s) remain')
+          print('Browser audit has zero severe findings and zero warnings.')
+          PY
 
       - name: Add reports to job summary
         if: always()
