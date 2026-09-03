@@ -8,6 +8,7 @@ EDITORIAL_DIRS = ('articles', 'guides', 'tech')
 
 REDIRECT_SCRIPT = "<script data-index-canonical-redirect>(()=>{if(location.pathname==='/index.html'){location.replace('/'+location.search+location.hash)}})();</script>"
 EDITORIAL_LINE = '<p class="article-meta" data-editorial-attribution>Editorial owner: <a href="../editorial-team.html">NexusNova Editorial Team</a></p>'
+TOPICAL_HUBS = '''<section class="section" data-topical-hubs><div class="container"><div class="section-head"><div><span class="kicker">BROWSE BY TASK</span><h2>Focused tool categories.</h2></div><p>Start with one clear task area instead of scanning unrelated utilities.</p></div><div class="home-tools"><a class="home-tool" href="pdf-tools.html"><b>PDF &amp; Documents</b><span>Merge, split, create and convert document workflows.</span></a><a class="home-tool" href="image-tools.html"><b>Image Tools</b><span>Compress, resize, convert, OCR and metadata tasks.</span></a><a class="home-tool" href="calculator-tools.html"><b>Calculators</b><span>Math, finance, date, gaming and AI estimates.</span></a><a class="home-tool" href="productivity-tools.html"><b>Productivity</b><span>Resume, invoice, prompts, notes and planning.</span></a><a class="home-tool" href="pakistan-tools.html"><b>Pakistan Tools</b><span>Currency, fuel, tax, electricity, Zakat, prayer and holidays.</span></a><a class="home-tool" href="categories.html"><b>All Categories</b><span>Browse every major NexusNova tool cluster.</span></a></div></div></section>'''
 
 
 def write_if_changed(path: Path, value: str) -> bool:
@@ -26,6 +27,8 @@ def fix_homepage() -> bool:
         # Keep the canonical root as the primary signal; this conditional redirect
         # only fires when the explicit /index.html duplicate is requested.
         text = re.sub(r'(<meta\s+name=["\']viewport["\'][^>]*>)', r'\1' + REDIRECT_SCRIPT, text, count=1, flags=re.I)
+    if 'data-topical-hubs' not in text:
+        text = re.sub(r'</main>', TOPICAL_HUBS + '</main>', text, count=1, flags=re.I)
     return write_if_changed(path, text) if text != original else False
 
 
