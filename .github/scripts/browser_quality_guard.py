@@ -146,6 +146,26 @@ def main() -> None:
         for mode, viewport in VIEWPORTS.items():
             context = browser.new_context(viewport=viewport, device_scale_factor=1)
 
+            # The production Worker intentionally does not allow localhost as an
+            # auth origin. Mock only this read-only configuration request so the
+            # local browser audit does not weaken production CORS or emit fake
+            # console failures. Turnstile is disabled in this deterministic QA
+            # context; real production auth/Turnstile behavior is tested elsewhere.
+            def security_config(route):
+                route.fulfill(
+                    status=200,
+                    content_type="application/json",
+                    headers={"Access-Control-Allow-Origin": "*"},
+                    body=json.dumps({
+                        "ok": True,
+                        "enabled": False,
+                        "siteKey": "",
+                        "action": "auth",
+                    }),
+                )
+
+            context.route("**/api/auth/security-config", security_config)
+
             for name, rel in PAGES:
                 page = context.new_page()
                 console_errors: list[str] = []
