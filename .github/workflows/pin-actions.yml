@@ -1,0 +1,42 @@
+name: Pin GitHub Actions
+
+on:
+  push:
+    branches: [main, audit-fixes-20260904]
+    paths:
+      - '.github/workflows/**'
+      - '.github/scripts/pin_actions.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-pin-actions
+  cancel-in-progress: true
+
+jobs:
+  pin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Pin external workflow actions
+        run: python .github/scripts/pin_actions.py --apply
+
+      - name: Publish pinned workflow refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-security[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/
+          if [ -z "$(git status --porcelain -- .github/workflows/)" ]; then
+            echo 'All workflow actions already pinned.'
+            exit 0
+          fi
+          git commit -m 'security: pin GitHub Actions to commit SHAs'
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
