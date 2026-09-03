@@ -2,18 +2,20 @@ name: NexusNova Premium Social 5x Daily
 
 on:
   schedule:
-    # Pakistan time (UTC+5): 08:30, 11:30, 14:30, 17:30, 20:30
-    - cron: '30 3 * * *'
-    - cron: '30 6 * * *'
-    - cron: '30 9 * * *'
-    - cron: '30 12 * * *'
-    - cron: '30 15 * * *'
+    # Recovery heartbeat every 30 minutes during Pakistan posting hours.
+    # The resolver below publishes ONLY the earliest due slot not already posted today.
+    - cron: '10,40 3-15 * * *'
+    - cron: '10 16 * * *'
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Campaign slot 1-5 (blank = infer from UTC hour)'
+        description: 'Campaign slot 1-5 (blank = recover earliest due missing slot)'
         required: false
         type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/premium-social-daily.yml'
 
 permissions:
   contents: write
@@ -41,33 +43,93 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install image dependency
-        run: python -m pip install --disable-pip-version-check pillow
-
-      - name: Resolve five-a-day slot
+      - name: Resolve due or missed slot safely
         id: slot
         shell: bash
         env:
           MANUAL_SLOT: ${{ github.event.inputs.slot }}
         run: |
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import datetime, os
-          raw=(os.getenv('MANUAL_SLOT') or '').strip()
+          import datetime, json, os
+          from pathlib import Path
+
+          PKT = datetime.timezone(datetime.timedelta(hours=5))
+          now = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT)
+          today = now.date()
+          due_times = {
+              1: datetime.time(8, 30),
+              2: datetime.time(11, 30),
+              3: datetime.time(14, 30),
+              4: datetime.time(17, 30),
+              5: datetime.time(20, 30),
+          }
+
+          history_path = Path('assets/data/premium-social-history.json')
+          try:
+              doc = json.loads(history_path.read_text(encoding='utf-8')) if history_path.exists() else {}
+          except Exception:
+              doc = {}
+          rows = doc.get('posts') if isinstance(doc, dict) else []
+          if not isinstance(rows, list):
+              rows = []
+
+          posted_today = set()
+          for row in rows:
+              try:
+                  slot = int(row.get('slot', 0))
+                  stamp = str(row.get('generated_at') or row.get('published_at') or '')
+                  dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
+                  if dt.date() == today and slot in due_times:
+                      posted_today.add(slot)
+              except Exception:
+                  continue
+
+          raw = (os.getenv('MANUAL_SLOT') or '').strip()
+          slot = None
+          reason = ''
           if raw:
-              try: slot=max(1,min(5,int(raw)))
-              except Exception: slot=1
+              try:
+                  requested = max(1, min(5, int(raw)))
+              except Exception:
+                  requested = 1
+              if requested in posted_today:
+                  reason = f'manual slot {requested} already posted today'
+              else:
+                  slot = requested
+                  reason = f'manual slot {requested}'
           else:
-              hour=datetime.datetime.now(datetime.timezone.utc).hour
-              slot={3:1,6:2,9:3,12:4,15:5}.get(hour,1)
-          print(f'slot={slot}')
+              due = [s for s, t in due_times.items() if now.time().replace(tzinfo=None) >= t]
+              missing = [s for s in due if s not in posted_today]
+              if missing:
+                  slot = min(missing)
+                  reason = f'recover earliest due missing slot; due={due}; posted={sorted(posted_today)}'
+              else:
+                  reason = f'nothing due/missing; due={due}; posted={sorted(posted_today)}'
+
+          print(f"should_run={'true' if slot else 'false'}")
+          print(f"slot={slot or 0}")
+          print(f"reason={reason}")
+          print(f"pkt_now={now.isoformat()}")
           PY
 
+      - name: Explain no-op heartbeat
+        if: steps.slot.outputs.should_run != 'true'
+        run: |
+          echo "No premium post needed on this heartbeat."
+          echo "Reason: ${{ steps.slot.outputs.reason }}"
+
+      - name: Set up Python
+        if: steps.slot.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image dependency
+        if: steps.slot.outputs.should_run == 'true'
+        run: python -m pip install --disable-pip-version-check pillow
+
       - name: Compile premium social code
+        if: steps.slot.outputs.should_run == 'true'
         run: |
           python -m py_compile .github/scripts/ai_provider.py
           python -m py_compile .github/scripts/buffer_publish.py
@@ -77,11 +139,13 @@ jobs:
           python -m py_compile .github/scripts/publish_premium_social.py
 
       - name: Generate trend-aware premium creative
+        if: steps.slot.outputs.should_run == 'true'
         env:
           SOCIAL_SLOT: ${{ steps.slot.outputs.slot }}
         run: python .github/scripts/premium_social_resilient.py
 
       - name: Quality gate
+        if: steps.slot.outputs.should_run == 'true'
         shell: bash
         run: |
           python - <<'PY'
@@ -103,7 +167,44 @@ jobs:
           print('Premium social quality gate passed:', item['campaign'], provider)
           PY
 
+      - name: Recheck dedupe before publishing
+        if: steps.slot.outputs.should_run == 'true'
+        id: dedupe
+        shell: bash
+        env:
+          SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          git pull --rebase origin main
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import datetime, json, os
+          from pathlib import Path
+          PKT = datetime.timezone(datetime.timedelta(hours=5))
+          today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
+          slot = int(os.environ['SLOT'])
+          path = Path('assets/data/premium-social-history.json')
+          duplicate = False
+          try:
+              rows = json.loads(path.read_text(encoding='utf-8')).get('posts', [])
+          except Exception:
+              rows = []
+          for row in rows if isinstance(rows, list) else []:
+              try:
+                  stamp = str(row.get('generated_at') or row.get('published_at') or '')
+                  dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
+                  if dt.date() == today and int(row.get('slot', 0)) == slot:
+                      duplicate = True
+                      break
+              except Exception:
+                  pass
+          print(f"duplicate={'true' if duplicate else 'false'}")
+          PY
+
+      - name: Stop duplicate safely
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate == 'true'
+        run: echo 'Another serialized run already published this slot today; skipping duplicate.'
+
       - name: Publish creative to website
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
         shell: bash
         run: |
           git config user.name 'nexusnova-social[bot]'
@@ -119,6 +220,7 @@ jobs:
           fi
 
       - name: Publish to X, Facebook and Instagram
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
         run: python .github/scripts/publish_premium_social.py
 
       - name: Summary
@@ -126,6 +228,8 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Premium Social' >> "$GITHUB_STEP_SUMMARY"
+          echo "PKT resolver time: ${{ steps.slot.outputs.pkt_now }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Resolver: ${{ steps.slot.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Slot: ${{ steps.slot.outputs.slot }}" >> "$GITHUB_STEP_SUMMARY"
           if [ -f premium-social-publish.json ]; then
             echo '### Campaign' >> "$GITHUB_STEP_SUMMARY"
