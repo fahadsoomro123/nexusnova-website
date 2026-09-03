@@ -17,6 +17,7 @@ from buffer_publish import post_buffer_x_now  # noqa: E402
 
 PAYLOAD = ROOT / "premium-social-publish.json"
 REPORT = ROOT / "premium-social-report.json"
+PUBLISHED = ROOT / "assets/data/premium-social-published.json"
 NATIVE_GROWTH_SLOTS = {2, 4}
 
 
@@ -114,6 +115,44 @@ def post_instagram_native(assets: dict, caption: str, image_url: str, hashtags: 
     if not str(published.get("id", "")).strip():
         raise RuntimeError("Instagram media publish returned no media ID")
     return {"posted": True, "image_attached": True, "response": published}
+
+
+def mark_successful_delivery(report: dict) -> None:
+    """Record a slot only after at least one real social destination accepted the post."""
+    try:
+        doc = json.loads(PUBLISHED.read_text(encoding="utf-8")) if PUBLISHED.exists() else {}
+    except Exception:
+        doc = {}
+    posts = doc.get("posts") if isinstance(doc, dict) else []
+    if not isinstance(posts, list):
+        posts = []
+
+    campaign = str(report.get("campaign") or "").strip()
+    slot = int(report.get("slot") or 0)
+    published_at = str(report.get("generated_at") or "").strip()
+    outcomes = report.get("outcomes") if isinstance(report.get("outcomes"), list) else []
+
+    # Replace an exact campaign entry instead of growing duplicates on reruns.
+    posts = [row for row in posts if str(row.get("campaign") or "") != campaign]
+    posts.append({
+        "published_at": published_at,
+        "slot": slot,
+        "campaign": campaign,
+        "successful_destinations": int(report.get("successful_destinations") or 0),
+        "outcomes": [
+            {
+                "platform": str(row.get("platform") or ""),
+                "ok": bool(row.get("ok")),
+            }
+            for row in outcomes
+            if str(row.get("platform") or "") in {"x", "facebook", "instagram"}
+        ],
+    })
+    PUBLISHED.parent.mkdir(parents=True, exist_ok=True)
+    PUBLISHED.write_text(
+        json.dumps({"version": 1, "posts": posts[-100:]}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
@@ -214,6 +253,9 @@ def main() -> None:
     print(json.dumps(report, indent=2, ensure_ascii=False))
     if successful == 0:
         raise SystemExit("Premium social publishing reached zero destinations")
+
+    mark_successful_delivery(report)
+    print("Successful social delivery recorded in", PUBLISHED)
 
 
 if __name__ == "__main__":
