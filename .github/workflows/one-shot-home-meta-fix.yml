@@ -1,0 +1,43 @@
+name: NexusNova One-Time Homepage Meta Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-home-meta-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-home-meta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Shorten homepage meta description safely
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          old = 'Free browser tools plus NexusNova LIVE for worldwide weather, satellite, sports, currency, gold, fuel and Pakistan-first calculators, alongside AI, PDF, image and productivity utilities.'
+          new = 'Free browser tools plus NexusNova LIVE for weather, sports, currency, gold, fuel, Pakistan calculators, AI, PDF, image and productivity utilities.'
+          if old not in text:
+              raise SystemExit('Expected homepage meta description not found; refusing broad edit.')
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          print('Homepage meta description length:', len(new))
+          PY
+      - name: Commit homepage-only change
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-quality[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'seo: tighten homepage meta description'
+          git pull --rebase origin main
+          git push origin HEAD:main
