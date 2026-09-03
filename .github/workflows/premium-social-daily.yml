@@ -3,7 +3,7 @@ name: NexusNova Premium Social 5x Daily
 on:
   schedule:
     # Recovery heartbeat every 30 minutes during Pakistan posting hours.
-    # The resolver below publishes ONLY the earliest due slot not already posted today.
+    # The resolver publishes ONLY the earliest due slot not already posted today.
     - cron: '10,40 3-15 * * *'
     - cron: '10 16 * * *'
   workflow_dispatch:
@@ -174,14 +174,15 @@ jobs:
         env:
           SLOT: ${{ steps.slot.outputs.slot }}
         run: |
-          git pull --rebase origin main
+          git fetch origin main
+          git show origin/main:assets/data/premium-social-history.json > /tmp/remote-premium-social-history.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-history.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import datetime, json, os
           from pathlib import Path
           PKT = datetime.timezone(datetime.timedelta(hours=5))
           today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
           slot = int(os.environ['SLOT'])
-          path = Path('assets/data/premium-social-history.json')
+          path = Path('/tmp/remote-premium-social-history.json')
           duplicate = False
           try:
               rows = json.loads(path.read_text(encoding='utf-8')).get('posts', [])
