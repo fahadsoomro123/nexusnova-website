@@ -37,6 +37,17 @@ def safe_error(exc: Exception) -> str:
     return str(exc).replace("\n", " ").strip()[:350]
 
 
+def image_label(item: dict) -> str:
+    provider = str(item.get("image_provider", "")).strip().lower()
+    if provider.startswith("pollinations-"):
+        return "fresh AI image"
+    if provider == "cached-ai-library":
+        return "cached AI image"
+    if provider == "emergency-branded":
+        return "premium branded fallback"
+    return provider or "image"
+
+
 def main() -> None:
     if not PAYLOAD.exists():
         raise SystemExit("premium-social-publish.json is missing")
@@ -45,11 +56,12 @@ def main() -> None:
     if not image_url:
         raise SystemExit("Premium social image URL missing")
     if not base.wait_for_public_image(image_url, attempts=24, delay=10):
-        raise SystemExit("Premium AI image never became public; refusing image-less publishing")
+        raise SystemExit("Premium social image never became public; refusing image-less publishing")
 
     copy = item.get("platform_copy") if isinstance(item.get("platform_copy"), dict) else {}
     hashtags = [str(x).lstrip("#") for x in (item.get("hashtags") or []) if str(x).strip()][:5]
     outcomes: list[dict] = []
+    label = image_label(item)
 
     def record(platform: str, ok: bool, detail: str = "") -> None:
         row = {"platform": platform, "ok": ok, "detail": detail}
@@ -64,9 +76,10 @@ def main() -> None:
                 tracked_url(item, "x"),
                 hashtags,
                 image_url=image_url,
-                ai_assisted=True,
+                ai_assisted=label in {"fresh AI image", "cached AI image"},
             )
-            record("x", bool(result.get("posted")), "Buffer shareNow · AI image" if result.get("image_attached") else "Buffer shareNow · image fallback")
+            detail = f"Buffer shareNow · {label}" if result.get("image_attached") else "Buffer shareNow · image fallback"
+            record("x", bool(result.get("posted")), detail)
         except Exception as exc:
             record("x", False, safe_error(exc))
     else:
@@ -88,7 +101,7 @@ def main() -> None:
             fb_tags = " ".join(f"#{tag}" for tag in hashtags[:3])
             fb_message = f"{str(copy.get('facebook') or item.get('hook') or item.get('title')).strip()}\n\n{fb_tags}".strip()
             result = base.post_facebook(assets, fb_message, tracked_url(item, "facebook"), image_url)
-            record("facebook", True, "AI image" if result.get("image_attached") else "link fallback")
+            record("facebook", True, label if result.get("image_attached") else "link fallback")
         except Exception as exc:
             record("facebook", False, safe_error(exc))
 
@@ -99,7 +112,7 @@ def main() -> None:
                 ig_item["summary"] = ""
                 ig_item["hashtags"] = hashtags
                 base.post_instagram(ig_item, assets, tracked_url(item, "instagram"))
-                record("instagram", True, "AI image")
+                record("instagram", True, label)
             except Exception as exc:
                 record("instagram", False, safe_error(exc))
         else:
@@ -113,6 +126,7 @@ def main() -> None:
         "url": item.get("url"),
         "image_url": image_url,
         "image_provider": item.get("image_provider"),
+        "image_label": label,
         "outcomes": outcomes,
         "successful_destinations": successful,
     }
