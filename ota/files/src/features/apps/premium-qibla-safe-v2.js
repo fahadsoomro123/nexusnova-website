@@ -1,380 +1,353 @@
-import { premiumQiblaRenderers } from './premium-qibla.js';
-
-const SVG_NS = 'http://www.w3.org/2000/svg';
+const KAABA_LATITUDE = 21.4225;
+const KAABA_LONGITUDE = 39.8262;
+const FACE_ASSET = './assets/qibla/qibla-purple-gold-face.webp';
+const POINTER_ASSET = './assets/qibla/qibla-purple-gold-pointer.png';
 
 function normalized(value) {
   return ((Number(value) % 360) + 360) % 360;
-}
-
-function normalizedHeading(event) {
-  const webkit = Number(event?.webkitCompassHeading);
-  if (Number.isFinite(webkit)) return normalized(webkit);
-  const alpha = Number(event?.alpha);
-  if (Number.isFinite(alpha)) return normalized(360 - alpha);
-  return NaN;
 }
 
 function shortestDelta(from, to) {
   return ((normalized(to) - normalized(from) + 540) % 360) - 180;
 }
 
-function rotateValue(value) {
-  const match = String(value || '').match(/rotate\(\s*(-?\d+(?:\.\d+)?)/i);
-  return match ? Number(match[1]) : NaN;
-}
-
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function rewritePaintRefs(node, prefix) {
-  const refs = new Set();
-  const elements = [node, ...node.querySelectorAll('*')];
-  elements.forEach(element => {
-    for (const attr of [...element.attributes]) {
-      const regex = /url\(#([^)]+)\)/g;
-      let match;
-      while ((match = regex.exec(attr.value))) refs.add(match[1]);
-    }
-  });
-  const map = new Map([...refs].map(id => [id, `${prefix}-${id}`]));
-  elements.forEach(element => {
-    for (const attr of [...element.attributes]) {
-      let value = attr.value;
-      map.forEach((next, old) => { value = value.replaceAll(`url(#${old})`, `url(#${next})`); });
-      if (value !== attr.value) element.setAttribute(attr.name, value);
-    }
-  });
-  return map;
+function headingFromEvent(event) {
+  const webkitHeading = event?.webkitCompassHeading == null ? NaN : Number(event.webkitCompassHeading);
+  if (Number.isFinite(webkitHeading)) return normalized(webkitHeading);
+  const alpha = event?.alpha == null ? NaN : Number(event.alpha);
+  if (Number.isFinite(alpha)) return normalized(360 - alpha);
+  return NaN;
 }
 
-function buildLiteNeedle(compass, sourceSvg, sourcePointer) {
-  if (!(compass instanceof HTMLElement) || !(sourceSvg instanceof SVGElement) || !(sourcePointer instanceof SVGElement)) return null;
-  const needle = document.createElement('div');
-  needle.className = 'nx2-qb-needle-lite';
-  needle.setAttribute('aria-hidden', 'true');
+function bearingToKaaba(latitude, longitude) {
+  const startLatitude = Number(latitude) * Math.PI / 180;
+  const kaabaLatitude = KAABA_LATITUDE * Math.PI / 180;
+  const longitudeDelta = (KAABA_LONGITUDE - Number(longitude)) * Math.PI / 180;
+  const y = Math.sin(longitudeDelta) * Math.cos(kaabaLatitude);
+  const x = Math.cos(startLatitude) * Math.sin(kaabaLatitude)
+    - Math.sin(startLatitude) * Math.cos(kaabaLatitude) * Math.cos(longitudeDelta);
+  return normalized(Math.atan2(y, x) * 180 / Math.PI);
+}
 
-  // Reuse the approved golden pointer artwork, but crop its SVG surface from
-  // 1000x1000 to a narrow 140x500 strip so Android never promotes a full-screen
-  // transparent moving tile.
-  const overlay = document.createElementNS(SVG_NS, 'svg');
-  overlay.setAttribute('viewBox', '430 0 140 500');
-  overlay.setAttribute('preserveAspectRatio', 'xMidYMax meet');
-  overlay.setAttribute('focusable', 'false');
+function distanceToKaaba(latitude, longitude) {
+  const earthRadiusKm = 6371;
+  const startLatitude = Number(latitude) * Math.PI / 180;
+  const kaabaLatitude = KAABA_LATITUDE * Math.PI / 180;
+  const latitudeDelta = (KAABA_LATITUDE - Number(latitude)) * Math.PI / 180;
+  const longitudeDelta = (KAABA_LONGITUDE - Number(longitude)) * Math.PI / 180;
+  const rawA = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(startLatitude) * Math.cos(kaabaLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+  const a = clamp(rawA, 0, 1);
+  return 2 * earthRadiusKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-  const pointer = sourcePointer.cloneNode(true);
-  pointer.removeAttribute('data-qb-pointer');
-  pointer.removeAttribute('transform');
-  [pointer, ...pointer.querySelectorAll('*')].forEach(element => element.removeAttribute('filter'));
-
-  const prefix = `nxq-lite-${Math.random().toString(36).slice(2, 9)}`;
-  const paintMap = rewritePaintRefs(pointer, prefix);
-  if (paintMap.size) {
-    const defs = document.createElementNS(SVG_NS, 'defs');
-    paintMap.forEach((nextId, oldId) => {
-      const source = sourceSvg.querySelector(`[id="${oldId}"]`);
-      if (!(source instanceof SVGElement)) return;
-      const clone = source.cloneNode(true);
-      clone.id = nextId;
-      defs.appendChild(clone);
+function currentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Location is unavailable on this device.'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 30000
     });
-    if (defs.childNodes.length) overlay.appendChild(defs);
-  }
-  overlay.appendChild(pointer);
-  needle.appendChild(overlay);
-  compass.appendChild(needle);
-  return needle;
-}
-
-function installLiteNeedleStyle(root) {
-  const style = document.createElement('style');
-  style.textContent = `
-    .nx2-qb-compass{position:relative!important;isolation:auto!important;contain:none!important;filter:none!important}
-    .nx2-qb-needle-lite{
-      position:absolute;z-index:6;left:50%;top:7%;bottom:50%;width:52px;margin-left:-26px;
-      transform:rotate(0deg);transform-origin:50% 100%;
-      transition:transform 112ms cubic-bezier(.2,.78,.24,1);pointer-events:none;
-    }
-    .nx2-qb-needle-lite svg{display:block;width:100%;height:100%;overflow:visible;filter:none}
-    @media(max-width:390px){
-      .nx2-qb-needle-lite{width:46px;margin-left:-23px}
-    }
-    @media(prefers-reduced-motion:reduce){.nx2-qb-needle-lite{transition-duration:0ms}}
-  `;
-  root.prepend(style);
-  return style;
-}
-
-function compactReusableInfo(root) {
-  const readyCopy = root.querySelector('.nx2-qb-ready > div:nth-child(2)');
-  const location = root.querySelector('[data-qb-location]');
-  const distance = root.querySelector('[data-qb-distance]');
-  const status = root.querySelector('[data-qb-status]');
-  if (!(readyCopy instanceof HTMLElement) || !(status instanceof HTMLElement)) return null;
-
-  const meta = document.createElement('div');
-  meta.className = 'nx2-qb-ready-meta';
-  if (location instanceof HTMLElement) meta.appendChild(location);
-  if (distance instanceof HTMLElement) {
-    const distanceWrap = document.createElement('span');
-    distanceWrap.className = 'nx2-qb-ready-distance';
-    distanceWrap.append(distance, document.createTextNode(' km'));
-    meta.appendChild(distanceWrap);
-  }
-  readyCopy.insertBefore(meta, status);
-  return meta;
-}
-
-function flattenStaticFace(sourceSvg) {
-  if (!(sourceSvg instanceof SVGElement)) return null;
-  let objectUrl = '';
-  let disposed = false;
-  let ready = false;
-  let requestedSize = 0;
-  let replaced = false;
-
-  const canvas = document.createElement('canvas');
-  canvas.className = 'nx2-qb-face-canvas';
-  canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', 'Qibla compass');
-  Object.assign(canvas.style, {
-    display:'block', width:'100%', height:'100%', pointerEvents:'none'
   });
-
-  const image = new Image();
-  const paint = size => {
-    requestedSize = Number(size) || requestedSize;
-    if (!ready || disposed || requestedSize <= 0) return;
-    const ratio = clamp(Number(window.devicePixelRatio) || 1, 1, 2.25);
-    const pixels = Math.round(clamp(requestedSize * ratio, 480, 1100));
-    if (canvas.width !== pixels || canvas.height !== pixels) {
-      canvas.width = pixels;
-      canvas.height = pixels;
-    }
-    const context = canvas.getContext('2d', { alpha:true });
-    if (!context) return;
-    context.clearRect(0, 0, pixels, pixels);
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
-    context.drawImage(image, 0, 0, pixels, pixels);
-    if (!replaced && sourceSvg.isConnected) {
-      sourceSvg.replaceWith(canvas);
-      replaced = true;
-    }
-  };
-
-  try {
-    const clone = sourceSvg.cloneNode(true);
-    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-    clone.setAttribute('width', '1000');
-    clone.setAttribute('height', '1000');
-    const markup = new XMLSerializer().serializeToString(clone);
-    objectUrl = URL.createObjectURL(new Blob([markup], { type:'image/svg+xml;charset=utf-8' }));
-    image.onload = () => {
-      ready = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      objectUrl = '';
-      paint(requestedSize);
-    };
-    image.onerror = () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      objectUrl = '';
-    };
-    image.src = objectUrl;
-  } catch {
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    objectUrl = '';
-  }
-
-  return {
-    paint,
-    dispose() {
-      disposed = true;
-      image.onload = null;
-      image.onerror = null;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      objectUrl = '';
-    }
-  };
 }
+
+function locationErrorMessage(error) {
+  if (Number(error?.code) === 1) return 'Location permission is required for Qibla.';
+  if (Number(error?.code) === 2) return 'Turn on device location to calculate Qibla.';
+  if (Number(error?.code) === 3) return 'Location request timed out. Reopen Qibla to retry.';
+  return error?.message || 'Location is unavailable on this device.';
+}
+
+const styles = `
+  .nx2-qibla-screen>.nx-app-head{display:none!important}
+  .nxq4-qibla{
+    box-sizing:border-box!important;width:100%!important;max-width:none!important;height:100%!important;min-height:0!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;color:#fff;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .nxq4-qibla *{box-sizing:border-box}
+  .nxq4-page{
+    position:relative;width:100%;height:100%;min-height:0;overflow:hidden;isolation:isolate;
+    background:
+      radial-gradient(circle at 50% 45%,rgba(126,28,194,.31),transparent 44%),
+      radial-gradient(circle at 15% 12%,rgba(91,20,143,.22),transparent 37%),
+      linear-gradient(155deg,#160520 0%,#09020f 49%,#180522 100%);
+  }
+  .nxq4-page::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;
+    background:radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(0,0,0,.72) 100%);
+  }
+  .nxq4-back{
+    position:absolute;z-index:20;top:calc(env(safe-area-inset-top,0px) + 9px);left:max(9px,env(safe-area-inset-left,0px));
+    width:42px;height:42px;display:grid;place-items:center;padding:0 0 2px;border:1px solid rgba(218,151,255,.35);border-radius:14px;
+    color:#fff;background:linear-gradient(145deg,rgba(75,20,103,.92),rgba(21,5,31,.96));
+    box-shadow:inset 0 1px rgba(255,255,255,.16),0 8px 24px rgba(0,0,0,.34);font:750 30px/1 system-ui,sans-serif;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .nxq4-back:active{transform:scale(.95)}
+  .nxq4-stage{position:absolute;z-index:2;inset:0;display:grid;place-items:center;min-width:0;min-height:0;overflow:hidden}
+  .nxq4-compass{position:relative;width:320px;height:320px;max-width:100%;max-height:100%;overflow:hidden;contain:layout paint;transform:translateZ(0)}
+  .nxq4-face,.nxq4-pointer{position:absolute;display:block;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none}
+  .nxq4-face{z-index:1;inset:0;width:100%;height:100%}
+  .nxq4-pointer{
+    z-index:2;inset:13%;width:74%;height:74%;opacity:0;transform-origin:50% 50%;transform:rotate(0deg);backface-visibility:hidden;
+    transition:transform 105ms cubic-bezier(.2,.74,.22,1),opacity 150ms ease-out;
+  }
+  .nxq4-pointer.is-ready{opacity:1}
+  .nxq4-metrics{
+    position:absolute;z-index:8;left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));
+    bottom:calc(env(safe-area-inset-bottom,0px) + 8px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+    width:auto;max-width:520px;margin:auto;
+  }
+  .nxq4-metric{
+    min-width:0;height:76px;padding:9px 12px;border:1px solid rgba(213,139,255,.36);border-radius:17px;
+    background:linear-gradient(145deg,rgba(55,12,76,.91),rgba(17,4,27,.96));
+    box-shadow:inset 0 1px rgba(255,255,255,.12),0 10px 25px rgba(0,0,0,.28);overflow:hidden;
+  }
+  .nxq4-metric>span{display:block;color:#e2a5ff;font-size:9px;font-weight:850;letter-spacing:.1em;white-space:nowrap}
+  .nxq4-metric>strong{display:block;margin-top:5px;color:#fff5cf;font-size:clamp(21px,6vw,27px);line-height:1;font-weight:850;white-space:nowrap;text-shadow:0 0 13px rgba(255,190,73,.19)}
+  .nxq4-metric>strong small{font-size:.42em;color:#e4bd67;font-weight:800}
+  .nxq4-metric>small{display:block;margin-top:4px;color:#ba9fc5;font-size:8px;font-weight:650;letter-spacing:.04em;white-space:nowrap}
+  .nxq4-error{
+    position:absolute;z-index:12;top:calc(env(safe-area-inset-top,0px) + 58px);left:50%;width:max-content;max-width:calc(100% - 24px);
+    margin:0;padding:7px 10px;border:1px solid rgba(255,181,99,.38);border-radius:12px;transform:translateX(-50%);
+    color:#ffe5bc;background:rgba(41,11,35,.92);box-shadow:0 8px 20px rgba(0,0,0,.3);font-size:10px;line-height:1.3;text-align:center;
+  }
+  .nxq4-error[hidden]{display:none!important}
+  @media(max-height:620px){
+    .nxq4-back{width:38px;height:38px;top:calc(env(safe-area-inset-top,0px) + 6px);left:6px}
+    .nxq4-metric{height:64px;padding:7px 9px}.nxq4-metric>strong{margin-top:3px}.nxq4-metric>small{margin-top:2px}
+  }
+  @media(max-width:390px){
+    .nxq4-metrics{left:5px;right:5px;gap:5px}.nxq4-metric{padding-left:9px;padding-right:9px;border-radius:15px}
+  }
+  @media(prefers-reduced-motion:reduce){.nxq4-pointer{transition-duration:0ms}}
+`;
 
 export function renderQiblaSafeV2() {
-  const base = premiumQiblaRenderers.qibla;
-  const root = base?.();
-  if (!(root instanceof HTMLElement)) return root;
+  const root = document.createElement('div');
+  root.className = 'nx-app-body nx2-qibla nxq4-qibla';
+  root.innerHTML = `
+    <style>${styles}</style>
+    <section class="nxq4-page">
+      <button class="nxq4-back" type="button" data-qb-back aria-label="Back to Nova Hub">‹</button>
+      <div class="nxq4-stage">
+        <div class="nxq4-compass" role="img" aria-label="Live purple and gold Qibla compass">
+          <img class="nxq4-face" src="${FACE_ASSET}" alt="" draggable="false" decoding="async" fetchpriority="high">
+          <img class="nxq4-pointer" data-qb-pointer src="${POINTER_ASSET}" alt="" draggable="false" decoding="async" fetchpriority="high">
+        </div>
+      </div>
+      <section class="nxq4-metrics" aria-label="Qibla results">
+        <article class="nxq4-metric">
+          <span>QIBLA DIRECTION</span>
+          <strong data-qb-bearing>—</strong>
+          <small>FROM TRUE NORTH</small>
+        </article>
+        <article class="nxq4-metric">
+          <span>DISTANCE</span>
+          <strong><b data-qb-distance>—</b> <small>km</small></strong>
+          <small>TO KAABA</small>
+        </article>
+      </section>
+      <p class="nxq4-error" data-qb-error role="status" aria-live="polite" hidden></p>
+    </section>
+  `;
 
-  const compass = root.querySelector('.nx2-qb-compass');
-  const visual = root.querySelector('.nx2-qb-visual');
-  const rotor = root.querySelector('[data-qb-rotor]');
+  const page = root.querySelector('.nxq4-page');
+  const stage = root.querySelector('.nxq4-stage');
+  const compass = root.querySelector('.nxq4-compass');
+  const metrics = root.querySelector('.nxq4-metrics');
+  const backButton = root.querySelector('[data-qb-back]');
   const pointer = root.querySelector('[data-qb-pointer]');
-  const sourceSvg = pointer?.ownerSVGElement || rotor?.ownerSVGElement || null;
+  const bearingElement = root.querySelector('[data-qb-bearing]');
+  const distanceElement = root.querySelector('[data-qb-distance]');
+  const errorElement = root.querySelector('[data-qb-error]');
 
-  installLiteNeedleStyle(root);
-  compactReusableInfo(root);
-
-  // The premium face is cloned once and then never mutated. The base renderer
-  // continues writing to its detached rotor, so sensor samples cannot invalidate
-  // or re-raster the large visible SVG on Android WebView.
-  if (rotor instanceof SVGElement) {
-    const staticRotor = rotor.cloneNode(true);
-    staticRotor.removeAttribute('data-qb-rotor');
-    staticRotor.removeAttribute('transform');
-    staticRotor.removeAttribute('filter');
-    staticRotor.querySelectorAll('[filter]').forEach(element => element.removeAttribute('filter'));
-    rotor.replaceWith(staticRotor);
-  }
-
-  // The original pointer remains the base renderer's calculation sink but is
-  // detached from paint. Only a narrow HTML/CSS needle is composited and moved.
-  const needle = buildLiteNeedle(compass, sourceSvg, pointer);
-  let needleTarget = NaN;
-  const setNeedleTarget = angle => {
-    if (!(needle instanceof HTMLElement) || !Number.isFinite(angle)) return;
-    if (!Number.isFinite(needleTarget)) needleTarget = angle;
-    else needleTarget += shortestDelta(needleTarget, angle);
-    needle.style.transform = `rotate(${needleTarget.toFixed(3)}deg)`;
-  };
-
-  let pointerObserver = null;
-  if (pointer instanceof SVGElement) {
-    const initial = rotateValue(pointer.getAttribute('transform'));
-    pointer.removeAttribute('filter');
-    pointer.remove();
-    if (Number.isFinite(initial)) setNeedleTarget(initial);
-    pointerObserver = new MutationObserver(() => {
-      const angle = rotateValue(pointer.getAttribute('transform'));
-      if (Number.isFinite(angle)) setNeedleTarget(angle);
-    });
-    pointerObserver.observe(pointer, { attributes:true, attributeFilter:['transform'] });
-  }
-
-  if (compass instanceof HTMLElement) {
-    compass.style.setProperty('position', 'relative');
-    compass.style.setProperty('filter', 'none', 'important');
-    compass.style.setProperty('transform', 'none', 'important');
-  }
-  if (sourceSvg instanceof SVGElement) {
-    sourceSvg.style.setProperty('filter', 'none', 'important');
-    sourceSvg.style.setProperty('transform', 'none', 'important');
-    sourceSvg.querySelectorAll('filter').forEach(filter => filter.remove());
-  }
-  const flatFace = flattenStaticFace(sourceSvg);
-
-  // Fit the square to the exact free fullscreen cell. This is layout-only and
-  // runs on viewport changes, never as a continuous sensor animation loop.
-  const fitCompass = () => {
-    if (!(compass instanceof HTMLElement) || !(visual instanceof HTMLElement)) return;
-    const size = Math.floor(Math.min(visual.clientWidth, visual.clientHeight));
-    if (size > 0) {
-      compass.style.setProperty('--nx-qb-fit-size', `${size}px`);
-      flatFace?.paint(size);
-    }
-  };
-  const resizeObserver = typeof ResizeObserver === 'function' && visual instanceof HTMLElement
-    ? new ResizeObserver(fitCompass)
-    : null;
-  const layoutObserver = new MutationObserver(fitCompass);
-  resizeObserver?.observe(visual);
-  layoutObserver.observe(root, { attributes:true, attributeFilter:['class'] });
-  window.addEventListener('resize', fitCompass, { passive:true });
-  queueMicrotask(fitCompass);
-
-  // Absolute heading wins. A circular low-pass filter removes magnetic jitter,
-  // while the speed limit rejects implausible single-sample jumps.
-  let disposed = false;
+  let screen = null;
+  let bearing = NaN;
   let filteredHeading = NaN;
+  let displayedPointerAngle = NaN;
   let lastSensorAt = 0;
   let lastAbsoluteAt = 0;
-  let lastEmitAt = 0;
-  let pendingHeading = NaN;
-  let emitTimer = 0;
-  const EMIT_INTERVAL_MS = 33;
-  const FILTER_TAU_MS = 95;
-  const MAX_SENSOR_SPEED = 540;
-  const JITTER_DEADBAND = 0.18;
+  let lastPaintAt = 0;
+  let pendingPaintTimer = 0;
+  let sensorTimeout = 0;
+  let disposed = false;
 
-  const emit = heading => {
-    if (disposed || !Number.isFinite(heading)) return;
-    lastEmitAt = performance.now();
-    const value = normalized(heading);
-    const synthetic = new Event('deviceorientation');
-    Object.defineProperty(synthetic, '__nxQiblaNormalized', { value:true });
-    Object.defineProperty(synthetic, 'webkitCompassHeading', { value });
-    Object.defineProperty(synthetic, 'alpha', { value:360 - value });
-    window.dispatchEvent(synthetic);
+  const errors = { location:'', sensor:'' };
+  const renderError = () => {
+    if (!(errorElement instanceof HTMLElement)) return;
+    const message = errors.location || errors.sensor;
+    errorElement.textContent = message;
+    errorElement.hidden = !message;
   };
 
-  const scheduleEmit = heading => {
-    pendingHeading = heading;
-    const elapsed = performance.now() - lastEmitAt;
-    if (elapsed >= EMIT_INTERVAL_MS && !emitTimer) {
-      const next = pendingHeading;
-      pendingHeading = NaN;
-      emit(next);
+  const fitCompass = () => {
+    if (!(page instanceof HTMLElement) || !(stage instanceof HTMLElement) || !(compass instanceof HTMLElement)) return;
+    const metricHeight = metrics instanceof HTMLElement ? metrics.offsetHeight : 76;
+    const backHeight = backButton instanceof HTMLElement ? backButton.offsetHeight : 42;
+    const verticalReserve = Math.max(metricHeight + 14, backHeight + 18);
+    const size = Math.floor(Math.min(stage.clientWidth - 4, stage.clientHeight - verticalReserve * 2));
+    if (size > 0) {
+      compass.style.width = `${size}px`;
+      compass.style.height = `${size}px`;
+    }
+  };
+
+  const paintPointer = () => {
+    if (!(pointer instanceof HTMLElement) || !Number.isFinite(bearing) || !Number.isFinite(filteredHeading)) return;
+    const target = shortestDelta(filteredHeading, bearing);
+    if (!Number.isFinite(displayedPointerAngle)) displayedPointerAngle = target;
+    else displayedPointerAngle += shortestDelta(displayedPointerAngle, target);
+    pointer.style.transform = `rotate(${displayedPointerAngle.toFixed(3)}deg)`;
+    pointer.classList.add('is-ready');
+  };
+
+  const schedulePointerPaint = () => {
+    const elapsed = performance.now() - lastPaintAt;
+    if (elapsed >= 33 && !pendingPaintTimer) {
+      lastPaintAt = performance.now();
+      paintPointer();
       return;
     }
-    if (emitTimer) return;
-    emitTimer = window.setTimeout(() => {
-      emitTimer = 0;
-      const next = pendingHeading;
-      pendingHeading = NaN;
-      emit(next);
-    }, Math.max(1, EMIT_INTERVAL_MS - elapsed));
+    if (pendingPaintTimer) return;
+    pendingPaintTimer = window.setTimeout(() => {
+      pendingPaintTimer = 0;
+      if (disposed) return;
+      lastPaintAt = performance.now();
+      paintPointer();
+    }, Math.max(1, 33 - elapsed));
   };
 
-  const intercept = event => {
-    if (disposed || event?.__nxQiblaNormalized) return;
+  const onOrientation = event => {
+    if (disposed) return;
     const now = performance.now();
-    const isAbsolute = event.type === 'deviceorientationabsolute' || event.absolute === true;
-    if (isAbsolute) lastAbsoluteAt = now;
-    else if (now - lastAbsoluteAt < 2500) {
-      event.stopImmediatePropagation();
-      return;
+    const rawHeading = headingFromEvent(event);
+    if (!Number.isFinite(rawHeading)) return;
+    const absolute = event.type === 'deviceorientationabsolute' || event.absolute === true;
+    if (absolute) lastAbsoluteAt = now;
+    else if (now - lastAbsoluteAt < 2500) return;
+    errors.sensor = '';
+    renderError();
+    if (sensorTimeout) {
+      clearTimeout(sensorTimeout);
+      sensorTimeout = 0;
     }
-
-    const raw = normalizedHeading(event);
-    if (!Number.isFinite(raw)) return;
-    event.stopImmediatePropagation();
 
     if (!Number.isFinite(filteredHeading)) {
-      filteredHeading = raw;
+      filteredHeading = rawHeading;
       lastSensorAt = now;
-      scheduleEmit(filteredHeading);
+      schedulePointerPaint();
       return;
     }
 
-    const dtMs = clamp(lastSensorAt ? now - lastSensorAt : 16.7, 8, 140);
+    const elapsed = clamp(lastSensorAt ? now - lastSensorAt : 16.7, 8, 140);
     lastSensorAt = now;
-    let delta = shortestDelta(filteredHeading, raw);
-    const maxDelta = Math.max(6, MAX_SENSOR_SPEED * dtMs / 1000);
-    delta = clamp(delta, -maxDelta, maxDelta);
-    if (Math.abs(delta) <= JITTER_DEADBAND) return;
-
-    const alpha = 1 - Math.exp(-dtMs / FILTER_TAU_MS);
-    filteredHeading = normalized(filteredHeading + delta * alpha);
-    scheduleEmit(filteredHeading);
+    let delta = shortestDelta(filteredHeading, rawHeading);
+    const maximumDelta = Math.max(6, 540 * elapsed / 1000);
+    delta = clamp(delta, -maximumDelta, maximumDelta);
+    if (Math.abs(delta) <= .18) return;
+    const smoothing = 1 - Math.exp(-elapsed / 95);
+    filteredHeading = normalized(filteredHeading + delta * smoothing);
+    schedulePointerPaint();
   };
 
-  window.addEventListener('deviceorientationabsolute', intercept, true);
-  window.addEventListener('deviceorientation', intercept, true);
+  const attachOrientation = () => {
+    window.addEventListener('deviceorientationabsolute', onOrientation, true);
+    window.addEventListener('deviceorientation', onOrientation, true);
+    sensorTimeout = window.setTimeout(() => {
+      sensorTimeout = 0;
+      if (disposed || Number.isFinite(filteredHeading)) return;
+      errors.sensor = 'Compass sensor is unavailable on this device.';
+      renderError();
+    }, 8000);
+  };
 
-  const baseCleanup = root.__cleanup;
+  const startOrientationAutomatically = async () => {
+    try {
+      const OrientationEvent = window.DeviceOrientationEvent;
+      if (typeof OrientationEvent?.requestPermission === 'function') {
+        const permission = await OrientationEvent.requestPermission();
+        if (disposed) return;
+        if (permission !== 'granted') throw new Error('Motion permission is required for Qibla.');
+      }
+      if (!disposed) attachOrientation();
+    } catch (error) {
+      if (disposed) return;
+      errors.sensor = error?.message || 'Compass sensor permission is required.';
+      renderError();
+    }
+  };
+
+  const loadLocationAutomatically = async () => {
+    try {
+      const position = await currentPosition();
+      if (disposed) return;
+      const rawLatitude = position?.coords?.latitude;
+      const rawLongitude = position?.coords?.longitude;
+      const latitude = rawLatitude == null ? NaN : Number(rawLatitude);
+      const longitude = rawLongitude == null ? NaN : Number(rawLongitude);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        throw new Error('Location returned invalid coordinates.');
+      }
+      bearing = bearingToKaaba(latitude, longitude);
+      const distance = distanceToKaaba(latitude, longitude);
+      if (bearingElement instanceof HTMLElement) bearingElement.textContent = `${Math.round(bearing)}°`;
+      if (distanceElement instanceof HTMLElement) distanceElement.textContent = Math.round(distance).toLocaleString();
+      errors.location = '';
+      renderError();
+      schedulePointerPaint();
+    } catch (error) {
+      if (disposed) return;
+      errors.location = locationErrorMessage(error);
+      renderError();
+    }
+  };
+
+  const openHub = () => {
+    const appBack = screen?.querySelector(':scope > .nx-app-head [data-app-back]');
+    if (appBack instanceof HTMLElement) appBack.click();
+    else window.NexusNovaFresh?.openHub?.();
+  };
+
+  const resizeObserver = typeof ResizeObserver === 'function' && stage instanceof HTMLElement
+    ? new ResizeObserver(fitCompass)
+    : null;
+  resizeObserver?.observe(stage);
+  backButton?.addEventListener('click', openHub);
+  window.addEventListener('resize', fitCompass, { passive:true });
+
+  queueMicrotask(() => {
+    if (disposed) return;
+    screen = root.closest('.nx-screen');
+    screen?.classList.add('nx2-qibla-screen');
+    fitCompass();
+    startOrientationAutomatically();
+    loadLocationAutomatically();
+  });
+
   let cleaned = false;
   root.__cleanup = () => {
     if (cleaned) return;
     cleaned = true;
     disposed = true;
-    if (emitTimer) clearTimeout(emitTimer);
-    emitTimer = 0;
-    pointerObserver?.disconnect();
+    if (pendingPaintTimer) clearTimeout(pendingPaintTimer);
+    if (sensorTimeout) clearTimeout(sensorTimeout);
+    pendingPaintTimer = 0;
+    sensorTimeout = 0;
     resizeObserver?.disconnect();
-    layoutObserver.disconnect();
-    flatFace?.dispose();
+    backButton?.removeEventListener('click', openHub);
     window.removeEventListener('resize', fitCompass);
-    window.removeEventListener('deviceorientationabsolute', intercept, true);
-    window.removeEventListener('deviceorientation', intercept, true);
-    needle?.remove();
-    baseCleanup?.();
+    window.removeEventListener('deviceorientationabsolute', onOrientation, true);
+    window.removeEventListener('deviceorientation', onOrientation, true);
+    screen?.classList.remove('nx2-qibla-screen');
   };
 
   return root;
