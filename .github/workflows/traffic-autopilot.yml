@@ -21,11 +21,14 @@ on:
       - '.github/scripts/distribute_update.py'
       - '.github/scripts/prepare_instagram_media.py'
       - '.github/workflows/traffic-autopilot.yml'
+      - '.github/workflows/actions-policy.yml'
       - 'assets/js/main.js'
       - 'assets/css/scifi.css'
       - 'assets/js/live-tech-pulse.js'
       - 'assets/css/live-tech-pulse.css'
 
+# External social publishing is opt-in. The content/SEO autopilot can still
+# prepare and validate useful site changes without posting to third parties.
 permissions:
   contents: write
 
@@ -47,15 +50,7 @@ jobs:
       GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
       SEARCH_GROWTH_MIN_IMPRESSIONS: ${{ vars.SEARCH_GROWTH_MIN_IMPRESSIONS }}
       SEARCH_GROWTH_COOLDOWN_DAYS: ${{ vars.SEARCH_GROWTH_COOLDOWN_DAYS }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
-      X_API_KEY: ${{ secrets.X_API_KEY }}
-      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
-      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
-      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
-      SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -200,7 +195,17 @@ jobs:
         run: python .github/scripts/submit_indexnow.py
 
       - name: Distribute adaptive useful update to configured social channels
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.commit.outputs.changed == 'true' && vars.ENABLE_EXTERNAL_SOCIAL_AUTOPUBLISH == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+          SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
         continue-on-error: true
         run: python .github/scripts/distribute_social_growth.py
 
