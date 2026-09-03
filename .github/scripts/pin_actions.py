@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 """Check or pin GitHub Actions references to immutable commit SHAs.
 
+This intentionally uses a local allowlist instead of live GitHub API lookups.
+That keeps CI deterministic and prevents a network/rate-limit failure from
+blocking repository maintenance.
+
 Usage:
   python .github/scripts/pin_actions.py --check
   python .github/scripts/pin_actions.py --apply
-
-Only workflow `uses:` entries are considered. Local actions and Docker images
-are ignored. When applying, annotated comments such as `# v4` are preserved.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import sys
-import urllib.error
-import urllib.parse
-import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -24,52 +21,18 @@ WORKFLOW_DIR = ROOT / ".github" / "workflows"
 SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 USES_RE = re.compile(r"^(\s*uses:\s*)([^\s#]+)(\s*(?:#.*)?)$")
 
-
-def api_json(url: str) -> dict:
-    request = urllib.request.Request(
-        url,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "nexusnova-actions-pinner/1.0",
-            "X-GitHub-Api-Version": "2022-11-28",
-        },
-    )
-    with urllib.request.urlopen(request, timeout=20) as response:
-        return json.loads(response.read().decode("utf-8"))
-
-
-def resolve_ref(repo: str, ref: str) -> str:
-    if SHA_RE.fullmatch(ref):
-        return ref.lower()
-
-    encoded = urllib.parse.quote(ref, safe="")
-    candidates = [
-        f"https://api.github.com/repos/{repo}/git/ref/tags/{encoded}",
-        f"https://api.github.com/repos/{repo}/git/ref/heads/{encoded}",
-    ]
-    last_error: Exception | None = None
-    for url in candidates:
-        try:
-            payload = api_json(url)
-        except urllib.error.HTTPError as exc:
-            last_error = exc
-            if exc.code == 404:
-                continue
-            raise
-        obj = payload.get("object") or {}
-        sha = str(obj.get("sha") or "")
-        obj_type = str(obj.get("type") or "")
-        if SHA_RE.fullmatch(sha) and obj_type == "commit":
-            return sha.lower()
-        if SHA_RE.fullmatch(sha) and obj_type == "tag":
-            tag_payload = api_json(
-                f"https://api.github.com/repos/{repo}/git/tags/{sha}"
-            )
-            target = tag_payload.get("object") or {}
-            target_sha = str(target.get("sha") or "")
-            if SHA_RE.fullmatch(target_sha) and str(target.get("type")) == "commit":
-                return target_sha.lower()
-    raise RuntimeError(f"Could not resolve {repo}@{ref}: {last_error or 'ref not found'}")
+# Immutable commit pins verified against the corresponding official action tags.
+PIN_MAP = {
+    "actions/checkout@v4": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4",
+    "actions/checkout@v6": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6",
+    "actions/setup-python@v5": "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5",
+    "actions/setup-python@v6": "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6",
+    "actions/setup-node@v4": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4",
+    "actions/setup-node@v5": "actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5",
+    "actions/setup-node@v7": "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7",
+    "actions/upload-artifact@v4": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4",
+    "actions/github-script@v7": "actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7",
+}
 
 
 def workflow_files() -> list[Path]:
@@ -91,6 +54,20 @@ def parse_uses(line: str) -> tuple[str, str, str] | None:
     if len(parts) < 2 or not parts[0] or not parts[1]:
         raise RuntimeError(f"Unsupported external action reference: {target}")
     return repo_path, ref, comment
+
+
+def replacement_for(repo_path: str, ref: str, comment: str) -> str:
+    key = f"{repo_path}@{ref}"
+    mapped = PIN_MAP.get(key)
+    if mapped:
+        return mapped
+    if SHA_RE.fullmatch(ref):
+        suffix = comment if comment.strip() else ""
+        return f"{repo_path}@{ref}{suffix}"
+    raise RuntimeError(
+        f"No verified immutable pin is registered for {key}. "
+        "Add its verified commit SHA to PIN_MAP before using --apply."
+    )
 
 
 def check() -> int:
@@ -124,15 +101,9 @@ def apply() -> int:
                 output.append(line)
                 continue
             repo_path, ref, comment = parsed
-            if SHA_RE.fullmatch(ref):
-                output.append(line)
-                continue
-            repo = "/".join(repo_path.split("/")[:2])
-            sha = resolve_ref(repo, ref)
-            suffix = comment if comment.strip() else f" # {ref}"
-            newline = f"uses: {repo_path}@{sha}{suffix}\n"
+            replacement = replacement_for(repo_path, ref, comment)
             indent = line[: len(line) - len(line.lstrip(" "))]
-            newline = indent + newline
+            newline = f"{indent}uses: {replacement}\n"
             if newline != line:
                 file_changed = True
                 changed = True
