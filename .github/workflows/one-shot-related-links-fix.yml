@@ -1,0 +1,78 @@
+name: NexusNova One-Time Related Links Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-related-links-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  improve-static-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add useful related links to four weak-navigation pages
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          inserts = {
+              'earthquakes-live.html': '<section class="section" data-related-links><div class="container article"><h2>Related NexusNova LIVE pages</h2><p><a href="weather-live.html">Worldwide Weather & Satellite</a> · <a href="sports-live.html">LIVE Sports</a> · <a href="live.html">Pakistan Today Dashboard</a></p></div></section>',
+              'ip-cidr-calculator.html': '<section class="section" data-related-links><div class="container article"><h2>Related network tools</h2><p><a href="dns-lookup.html">DNS Lookup</a> · <a href="ssl-certificate-checker.html">SSL Certificate Checker</a> · <a href="website-reachability-checker.html">Website Reachability Checker</a></p></div></section>',
+              'live-alerts.html': '<section class="section" data-related-links><div class="container article"><h2>Related LIVE data</h2><p><a href="currency-rates.html">Currency Rates</a> · <a href="gold-rates.html">Gold Rates</a> · <a href="fuel-rates.html">Fuel Rates</a></p></div></section>',
+              'website-reachability-checker.html': '<section class="section" data-related-links><div class="container article"><h2>Related network tools</h2><p><a href="dns-lookup.html">DNS Lookup</a> · <a href="ssl-certificate-checker.html">SSL Certificate Checker</a> · <a href="public-ip-checker.html">Public IP Checker</a></p></div></section>',
+          }
+
+          for name, section in inserts.items():
+              path = Path(name)
+              text = path.read_text(encoding='utf-8')
+              if 'data-related-links' in text:
+                  print(name, 'already has related links')
+                  continue
+              if '</main>' not in text:
+                  raise SystemExit(f'{name}: </main> missing; refusing broad edit')
+              text = text.replace('</main>', section + '</main>', 1)
+              path.write_text(text, encoding='utf-8')
+              print('Updated', name)
+          PY
+
+      - name: Verify structural audits
+        shell: bash
+        run: |
+          python .github/scripts/site_quality_audit.py
+          python .github/scripts/adsense_readiness_audit.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          targets = {
+              'earthquakes-live.html',
+              'ip-cidr-calculator.html',
+              'live-alerts.html',
+              'website-reachability-checker.html',
+          }
+          doc = json.loads(Path('adsense-readiness.json').read_text(encoding='utf-8'))
+          weak = {row.get('page') for row in doc.get('details', {}).get('weak_navigation_pages', [])}
+          remaining = sorted(targets & weak)
+          if remaining:
+              raise SystemExit('Related-link verification failed: ' + ', '.join(remaining))
+          if doc.get('severe_findings'):
+              raise SystemExit('AdSense structural audit has severe findings')
+          print('Related-link audit passed for all four pages.')
+          PY
+
+      - name: Commit only the four page improvements
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-quality[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add earthquakes-live.html ip-cidr-calculator.html live-alerts.html website-reachability-checker.html
+          git commit -m 'seo: strengthen related links on utility pages'
+          git pull --rebase origin main
+          git push origin HEAD:main
