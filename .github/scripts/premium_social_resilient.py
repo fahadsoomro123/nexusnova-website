@@ -124,16 +124,17 @@ def brand_aware_copy(item: dict, slot: int, trends: list[str]) -> dict:
     copy = _original_build_copy(item, slot, trends)
     platform = _grounded_platform_copy(item, copy)
     hashtags = list(copy.get("hashtags") or [])
+    title = engine.clean(item.get("title", "this tool"), 110)
 
     if slot == 2:
-        teaser = "NexusNova app is coming soon with 60+ premium tools."
+        teaser = "App coming soon: 60+ premium tools. Follow @NexusNovaTools for launch updates."
         platform["x"] = _append_x(platform.get("x", ""), teaser)
         platform["facebook"] = engine.clean(
-            f"{platform.get('facebook','')}\n\nComing soon: the NexusNova app with 60+ premium tools.",
+            f"{platform.get('facebook','')}\n\nComing soon: the NexusNova app with 60+ premium tools. Which tool would you want first in the app? Follow NexusNova for launch updates.",
             700,
         )
         platform["instagram"] = engine.clean(
-            f"{platform.get('instagram','')}\n\nComing soon: the NexusNova app with 60+ premium tools.",
+            f"{platform.get('instagram','')}\n\nComing soon: the NexusNova app with 60+ premium tools. Which tool would you want first in the app? Follow @nexusnovatools for launch updates.",
             1500,
         )
         copy["image_prompt"] = engine.clean(
@@ -144,8 +145,29 @@ def brand_aware_copy(item: dict, slot: int, trends: list[str]) -> dict:
             if tag not in hashtags:
                 hashtags.append(tag)
 
+    elif slot == 4:
+        platform["x"] = _word_trim(
+            f"{title}: what would make a tool like this more useful for you? Follow @NexusNovaTools for practical tools and product updates.",
+            190,
+        )
+        platform["facebook"] = engine.clean(
+            f"{title}\n\nWhat would make a tool like this more useful for you? We use real feedback to shape what NexusNova improves next. Follow NexusNova for practical tools and product updates.",
+            700,
+        )
+        platform["instagram"] = engine.clean(
+            f"{title}\n\nWhat would make a tool like this more useful for you? We use real feedback to shape what NexusNova improves next. Follow @nexusnovatools for practical tools, app previews and product updates.",
+            1500,
+        )
+        copy["image_prompt"] = engine.clean(
+            f"{copy.get('image_prompt','')} Make the composition discussion-worthy and save-worthy, focused on one clear visual idea related to {title}; no readable text, no fake claims.",
+            900,
+        )
+        for tag in ("NexusNova", "OnlineTools", "Productivity"):
+            if tag not in hashtags:
+                hashtags.append(tag)
+
     elif slot == 5:
-        teaser = "Mining is already live on nexusnovatools.com; the 60+ tools app is coming soon."
+        teaser = "Mining is live on nexusnovatools.com; the 60+ tools app is coming soon."
         platform["x"] = _append_x(platform.get("x", ""), teaser)
         platform["facebook"] = engine.clean(
             f"{platform.get('facebook','')}\n\nNexusNova mining is already live on the web experience at nexusnovatools.com. The NexusNova app is coming soon with 60+ premium tools.",
