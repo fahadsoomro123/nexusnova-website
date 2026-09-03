@@ -42,13 +42,15 @@
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const year=document.querySelector('[data-year]');if(year)year.textContent=String(new Date().getFullYear());
+  document.querySelectorAll('.brand-mark').forEach(mark=>mark.setAttribute('aria-hidden','true'));
+  const coreEmblem=document.querySelector('.core-emblem');if(coreEmblem){coreEmblem.setAttribute('aria-label','NexusNova Tools');coreEmblem.querySelectorAll('small,strong').forEach(part=>part.setAttribute('aria-hidden','true'));}
   const header=document.querySelector('[data-header]');const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>6);updateHeader();window.addEventListener('scroll',updateHeader,{passive:true});
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['live.html','LIVE'],['tools.html','Tools'],['trending-tools.html','Trending'],['smart-tools.html','Smart'],['gaming.html','Gaming'],['articles.html','Articles'],['tech.html','Tech'],['guides.html','Guides'],['developer-tools.html','Developer'],['app.html','App']
+      ['index.html','Home'],['labs.html','Labs'],['live.html','LIVE'],['tools.html','Tools'],['articles.html','Articles'],['guides.html','Guides'],['app.html','App']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
