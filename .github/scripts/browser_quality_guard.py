@@ -42,12 +42,7 @@ VIEWPORTS = {
 
 
 def verify_authenticated_header(browser, report: dict) -> None:
-    """Exercise the deployed header logic with a deterministic Firebase auth mock.
-
-    This does not mint or use a real account credential. It verifies that the real
-    auth-header module is loaded by the page, consumes an authenticated Firebase
-    state, removes guest CTAs and renders the accessible account menu.
-    """
+    """Exercise the deployed header logic with a deterministic Firebase auth mock."""
     context = browser.new_context(viewport={"width": 1280, "height": 900})
 
     def firebase_app(route):
@@ -195,9 +190,7 @@ def main() -> None:
                             f"{mode}/{rel}: horizontal overflow {metrics['sw']} > {metrics['cw']}"
                         )
                     if metrics["h1"] != 1 and rel not in {"register.html"}:
-                        report["warnings"].append(
-                            f"{mode}/{rel}: H1 count {metrics['h1']}"
-                        )
+                        report["warnings"].append(f"{mode}/{rel}: H1 count {metrics['h1']}")
                     if not metrics["header"]:
                         report["severe"].append(f"{mode}/{rel}: shared header missing")
                     if not metrics["nav"]:
@@ -205,18 +198,12 @@ def main() -> None:
                     if not metrics["menuButton"]:
                         report["severe"].append(f"{mode}/{rel}: menu button missing")
                     if not metrics["theme"]:
-                        report["severe"].append(
-                            f"{mode}/{rel}: canonical premium theme coverage missing"
-                        )
+                        report["severe"].append(f"{mode}/{rel}: canonical premium theme coverage missing")
                     if metrics["brokenImages"]:
                         report["severe"].append(
                             f"{mode}/{rel}: {metrics['brokenImages']} broken visible image(s)"
                         )
 
-                    # Ordinary guest pages must expose standard header auth CTAs.
-                    # register.html is itself the account gateway and must instead
-                    # expose both of its account-mode tabs. account.html is the
-                    # protected dashboard shell and has signed-in/redirect behavior.
                     if rel not in {"account.html", "register.html"} and (
                         not metrics["signin"] or not metrics["signup"]
                     ):
@@ -239,12 +226,12 @@ def main() -> None:
                                 )
 
                     if console_errors:
+                        unique_errors = list(dict.fromkeys(console_errors))
+                        detail = " | ".join(unique_errors[:4])
                         report["warnings"].append(
-                            f"{mode}/{rel}: {len(console_errors)} console error(s)"
+                            f"{mode}/{rel}: {len(console_errors)} console error(s): {detail}"
                         )
 
-                    # Mobile navigation must be keyboard/click accessible and keep
-                    # aria-expanded synchronized with the visible open state.
                     if mode == "mobile" and metrics["menuButton"] and metrics["nav"]:
                         button = page.locator("[data-menu-btn]")
                         nav = page.locator("[data-nav]")
@@ -256,9 +243,7 @@ def main() -> None:
 
                         label = (button.get_attribute("aria-label") or "").strip()
                         if not label:
-                            report["severe"].append(
-                                f"mobile/{rel}: menu button missing aria-label"
-                            )
+                            report["severe"].append(f"mobile/{rel}: menu button missing aria-label")
 
                         button.focus()
                         page.keyboard.press("Enter")
@@ -288,17 +273,13 @@ def main() -> None:
                                 f"{mode}/index.html: Live Tech Pulse did not mount"
                             )
 
-                    page.screenshot(
-                        path=str(OUT / f"{mode}-{name}.png"), full_page=True
-                    )
+                    page.screenshot(path=str(OUT / f"{mode}-{name}.png"), full_page=True)
                     report["pages"].append(
                         {"mode": mode, "page": rel, "status": status, **metrics}
                     )
 
                 except Exception as exc:
-                    report["severe"].append(
-                        f"{mode}/{rel}: browser check failed: {exc}"
-                    )
+                    report["severe"].append(f"{mode}/{rel}: browser check failed: {exc}")
                 finally:
                     page.close()
 
