@@ -1,0 +1,56 @@
+name: NexusNova Deep Site Quality
+
+on:
+  push:
+    branches:
+      - deep-site-audit-fix-20260903
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'sitemap*.xml'
+      - 'robots.txt'
+      - '.github/scripts/deep_site_audit.py'
+      - '.github/workflows/deep-site-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deep-static-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run deep public-site audit
+        run: python .github/scripts/deep_site_audit.py
+
+      - name: Add report to summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Deep Public-Site Audit' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f deep-site-audit.txt ]; then cat deep-site-audit.txt >> "$GITHUB_STEP_SUMMARY"; else echo 'Deep audit did not produce a report.' >> "$GITHUB_STEP_SUMMARY"; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-deep-site-audit-${{ github.run_id }}
+          path: |
+            deep-site-audit.json
+            deep-site-audit.txt
+          if-no-files-found: warn
+          retention-days: 30

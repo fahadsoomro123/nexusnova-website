@@ -1,23 +1,87 @@
 (()=>{
   const measurementId='G-YLPFKWSS12';
-  if(window.__nexusnovaGa4Scheduled||document.querySelector('script[data-nexusnova-ga4]'))return;
-  window.__nexusnovaGa4Scheduled=true;
+  const consentKey='nexusnova_analytics_consent_v1';
+  if(window.__nexusnovaConsentReady)return;
+  window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  window.gtag('consent','default',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied',
+    wait_for_update:500
+  });
   window.gtag('js',new Date());
-  window.gtag('config',measurementId,{allow_google_signals:false,allow_ad_personalization_signals:false});
-  let loaded=false;
-  const load=()=>{
-    if(loaded||document.querySelector('script[data-nexusnova-ga4]'))return;
-    loaded=true;
+
+  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}};
+  let analyticsLoaded=false;
+  const loadAnalytics=()=>{
+    window.gtag('consent','update',{
+      analytics_storage:'granted',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+    if(analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
+    analyticsLoaded=true;
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
     analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
     analyticsScript.dataset.nexusnovaGa4='';
+    analyticsScript.onload=()=>window.gtag('config',measurementId,{
+      allow_google_signals:false,
+      allow_ad_personalization_signals:false
+    });
     document.head.appendChild(analyticsScript);
   };
-  load();
+  const denyAnalytics=()=>window.gtag('consent','update',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied'
+  });
 
+  const mountChoices=()=>{
+    if(document.querySelector('[data-nexusnova-consent]'))return;
+    const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
+    const base=inSubdir?'../':'';
+    const style=document.createElement('style');
+    style.dataset.nexusnovaConsentStyle='';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:780px;margin:auto;padding:16px 18px;border:1px solid #cbd5e1;border-radius:18px;background:#fff;color:#111827;box-shadow:0 18px 55px rgba(15,23,42,.22);font:14px/1.45 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 12px}.nn-consent-actions{display:flex;gap:8px;flex-wrap:wrap}.nn-consent button,.nn-privacy-choice{border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{position:fixed;right:14px;bottom:14px;z-index:9998;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:10px}.nn-privacy-choice{right:10px;bottom:10px}}';
+    document.head.appendChild(style);
+
+    const banner=document.createElement('div');
+    banner.className='nn-consent';
+    banner.dataset.nexusnovaConsent='';
+    banner.setAttribute('role','dialog');
+    banner.setAttribute('aria-label','Analytics privacy choice');
+    banner.innerHTML=`<p><strong>Optional analytics</strong><br>NexusNova can use Google Analytics to measure website traffic. Analytics stays off unless you allow it. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow analytics</button><button type="button" data-consent-deny>No thanks</button></div>`;
+    document.body.appendChild(banner);
+
+    const reopen=document.createElement('button');
+    reopen.type='button';
+    reopen.className='nn-privacy-choice';
+    reopen.textContent='Privacy choices';
+    reopen.setAttribute('aria-label','Open analytics privacy choices');
+    document.body.appendChild(reopen);
+
+    const hide=()=>{banner.hidden=true};
+    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics();hide()});
+    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();hide()});
+    reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
+
+    const choice=readChoice();
+    if(choice==='granted'){loadAnalytics();hide()}
+    else if(choice==='denied'){denyAnalytics();hide()}
+  };
+
+  const initialChoice=readChoice();
+  if(initialChoice==='granted')loadAnalytics();
+  else denyAnalytics();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
+  else mountChoices();
 })();
 
 (()=>{
@@ -50,7 +114,7 @@
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['labs.html','Labs'],['live.html','LIVE'],['tools.html','Tools'],['articles.html','Articles'],['guides.html','Guides'],['app.html','App']
+      ['index.html','Home'],['tools.html','Tools'],['categories.html','Categories'],['labs.html','Labs'],['live.html','LIVE'],['articles.html','Articles'],['guides.html','Guides']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
