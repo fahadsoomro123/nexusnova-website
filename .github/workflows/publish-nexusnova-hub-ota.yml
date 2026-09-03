@@ -13,7 +13,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Extract current signed app web assets
         shell: bash
@@ -53,7 +53,6 @@ jobs:
           token='nxhub-'+version[:12]
           index=Path('ota/files/index.html')
           s=index.read_text(encoding='utf-8')
-          # Bust WebView/HTTP cache for all local CSS and JS requests without changing paths seen by OTA.
           s=re.sub(r'(href="\./[^"?]+\.css)(")', rf'\1?ota={token}\2', s)
           s=re.sub(r'(src="\./[^"?]+\.js)(")', rf'\1?ota={token}\2', s)
           clear_script=f'''\n  <script>\n  (function(){{\n    try {{\n      if ('caches' in window) caches.keys().then(function(keys){{ return Promise.all(keys.filter(function(k){{return /^nexusnova/i.test(k);}}).map(function(k){{return caches.delete(k);}})); }}).catch(function(){{}});\n      if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){{ rs.forEach(function(r){{ try{{r.update();}}catch(e){{}} }}); }}).catch(function(){{}});\n    }} catch(e) {{}}\n  }})();\n  </script>\n'''
@@ -84,11 +83,7 @@ jobs:
           files=[]
           for p in sorted(x for x in root.rglob('*') if x.is_file()):
               b=p.read_bytes()
-              files.append({
-                  'path':p.relative_to(root).as_posix(),
-                  'sha256':hashlib.sha256(b).hexdigest(),
-                  'size':len(b),
-              })
+              files.append({'path':p.relative_to(root).as_posix(),'sha256':hashlib.sha256(b).hexdigest(),'size':len(b)})
           manifest={'files':files,'schema':1,'version':os.environ['VERSION']}
           Path('ota/manifest.json').write_text(json.dumps(manifest,separators=(',',':'))+'\n',encoding='utf-8')
           print('OTA files:',len(files),'bytes:',sum(x['size'] for x in files))
