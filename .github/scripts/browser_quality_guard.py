@@ -8,11 +8,19 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "quality-artifacts"
 OUT.mkdir(exist_ok=True)
 
-# Keep this list focused on representative high-value routes while covering
-# the main public surfaces, auth/account UI and legal/trust pages.
+# Representative public surfaces, new topical hubs, account UI and trust pages.
+# This remains intentionally smaller than the static crawl while exercising the
+# shared runtime on both desktop and mobile.
 PAGES = [
     ("home", "index.html"),
     ("tools", "tools.html"),
+    ("categories", "categories.html"),
+    ("pdf-hub", "pdf-tools.html"),
+    ("image-hub", "image-tools.html"),
+    ("calculator-hub", "calculator-tools.html"),
+    ("productivity-hub", "productivity-tools.html"),
+    ("pakistan-hub", "pakistan-tools.html"),
+    ("labs", "labs.html"),
     ("trending", "trending-tools.html"),
     ("app", "app.html"),
     ("articles", "articles.html"),
@@ -205,15 +213,30 @@ def main() -> None:
                             f"{mode}/{rel}: {metrics['brokenImages']} broken visible image(s)"
                         )
 
-                    # Public/guest surfaces must expose the standard auth entry.
-                    # account.html is a protected dashboard shell and intentionally
-                    # uses its own signed-in/redirect behavior instead of guest auth CTAs.
-                    if rel != "account.html" and (
+                    # Ordinary guest pages must expose standard header auth CTAs.
+                    # register.html is itself the account gateway and must instead
+                    # expose both of its account-mode tabs. account.html is the
+                    # protected dashboard shell and has signed-in/redirect behavior.
+                    if rel not in {"account.html", "register.html"} and (
                         not metrics["signin"] or not metrics["signup"]
                     ):
                         report["severe"].append(
                             f"{mode}/{rel}: guest Sign in / Sign up header actions missing"
                         )
+                    if rel == "register.html":
+                        create_tabs = page.locator('[data-mode="register"]')
+                        signin_tabs = page.locator('[data-mode="signin"]')
+                        if create_tabs.count() != 1 or signin_tabs.count() != 1:
+                            report["severe"].append(
+                                f"{mode}/{rel}: account gateway Create Account / Sign In tabs missing"
+                            )
+                        else:
+                            create_label = (create_tabs.inner_text() or "").strip().lower()
+                            signin_label = (signin_tabs.inner_text() or "").strip().lower()
+                            if "create" not in create_label or "sign in" not in signin_label:
+                                report["severe"].append(
+                                    f"{mode}/{rel}: account gateway tabs have unexpected labels"
+                                )
 
                     if console_errors:
                         report["warnings"].append(
