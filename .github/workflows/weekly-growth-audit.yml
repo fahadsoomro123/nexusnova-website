@@ -56,7 +56,7 @@ jobs:
           mkdir -p quality-artifacts/lighthouse
           for page in index.html tools.html trending-tools.html articles.html tech.html; do
             name="${page%.html}"
-            npx --yes lighthouse@latest "http://127.0.0.1:8000/$page" --quiet --chrome-flags="--headless --no-sandbox" --only-categories=performance,seo,accessibility --output=json --output-path="quality-artifacts/lighthouse/$name.json"
+            npx --yes lighthouse@13.4.1 "http://127.0.0.1:8000/$page" --quiet --chrome-flags="--headless --no-sandbox" --only-categories=performance,seo,accessibility --output=json --output-path="quality-artifacts/lighthouse/$name.json"
           done
 
       - name: Build readable Lighthouse summary
