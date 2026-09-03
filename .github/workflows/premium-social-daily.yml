@@ -2,8 +2,6 @@ name: NexusNova Premium Social 5x Daily
 
 on:
   schedule:
-    # Recovery heartbeat every 30 minutes during Pakistan posting hours.
-    # The resolver publishes ONLY the earliest due slot not successfully delivered today.
     - cron: '10,40 3-15 * * *'
     - cron: '10 16 * * *'
   workflow_dispatch:
@@ -17,6 +15,8 @@ on:
     paths:
       - '.github/workflows/premium-social-daily.yml'
 
+# External social publishing is intentionally opt-in. Set the repository variable
+# ENABLE_EXTERNAL_SOCIAL_AUTOPUBLISH=true before allowing this job to publish.
 permissions:
   contents: write
 
@@ -26,6 +26,7 @@ concurrency:
 
 jobs:
   create-and-publish:
+    if: vars.ENABLE_EXTERNAL_SOCIAL_AUTOPUBLISH == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 18
     env:
@@ -39,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
 
@@ -120,7 +121,7 @@ jobs:
 
       - name: Set up Python
         if: steps.slot.outputs.should_run == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -262,7 +263,7 @@ jobs:
 
       - name: Upload private diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: premium-social-${{ github.run_id }}
           path: |

@@ -1,0 +1,31 @@
+name: Pin GitHub Actions
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/scripts/pin_actions.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.github/scripts/pin_actions.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-pin-actions
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Verify immutable workflow pins
+        run: python .github/scripts/pin_actions.py --check

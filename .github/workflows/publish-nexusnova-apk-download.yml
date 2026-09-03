@@ -40,7 +40,7 @@ jobs:
           test -n "$APK_ARTIFACT_URL" || { echo 'APK publish blocked: NEXUSNOVA_APK_ARTIFACT_URL secret is not configured.' >&2; exit 1; }
 
       - name: Checkout current main
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: main
           fetch-depth: 0

@@ -1,0 +1,56 @@
+name: NexusNova Repository Size Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-repository-size-guard-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  binary-size:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject newly added oversized binary artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main:refs/remotes/origin/main
+
+          mapfile -t added < <(git diff --diff-filter=A --name-only origin/main...HEAD)
+          failures=0
+
+          for file in "${added[@]}"; do
+            [ -f "$file" ] || continue
+            case "$file" in
+              *.apk|*.aab|*.ipa|*.exe|*.msi|*.dmg|*.zip|*.tar|*.gz|*.7z|*.rar|*.iso|*.bin|*.wasm|*.mp4|*.mov|*.webm|*.mp3|*.wav|*.flac)
+                size=$(stat -c '%s' "$file")
+                if [ "$size" -gt 10485760 ]; then
+                  echo "BLOCKED: $file is $size bytes (>10 MiB)."
+                  failures=$((failures+1))
+                fi
+                ;;
+            esac
+          done
+
+          if [ "$failures" -gt 0 ]; then
+            echo
+            echo 'Large release binaries should live in GitHub Releases/object storage rather than normal source history.'
+            echo 'Existing legacy binaries are not deleted by this guard because doing so could break public URLs.'
+            exit 1
+          fi
+
+          echo 'No newly added oversized binary artifacts detected.'
