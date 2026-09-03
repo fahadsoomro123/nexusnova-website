@@ -6,6 +6,7 @@ on:
       - deep-site-audit-fix-20260903
     paths:
       - '.github/scripts/apply_deep_site_fixes.py'
+      - '.github/scripts/apply_deep_site_fixes_round2.py'
       - '.github/workflows/apply-deep-site-fixes.yml'
   workflow_dispatch:
 
@@ -29,7 +30,9 @@ jobs:
           python-version: '3.12'
 
       - name: Apply verified public-site fixes
-        run: python .github/scripts/apply_deep_site_fixes.py
+        run: |
+          python .github/scripts/apply_deep_site_fixes.py
+          python .github/scripts/apply_deep_site_fixes_round2.py
 
       - name: Run existing full-site audit
         run: python .github/scripts/site_quality_audit.py
