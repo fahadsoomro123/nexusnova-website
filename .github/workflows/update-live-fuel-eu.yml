@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 8
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Refresh European Commission weekly fuel prices
         run: python3 .github/scripts/update_live_fuel_eu.py
