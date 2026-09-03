@@ -8,6 +8,8 @@ on:
       - '.github/scripts/apply_deep_site_fixes.py'
       - '.github/scripts/apply_deep_site_fixes_round2.py'
       - '.github/scripts/apply_deep_site_fixes_round3.py'
+      - '.github/scripts/apply_deep_site_fixes_round4.py'
+      - '.github/scripts/production_readiness_audit.py'
       - '.github/workflows/apply-deep-site-fixes.yml'
   workflow_dispatch:
 
@@ -35,6 +37,7 @@ jobs:
           python .github/scripts/apply_deep_site_fixes.py
           python .github/scripts/apply_deep_site_fixes_round2.py
           python .github/scripts/apply_deep_site_fixes_round3.py
+          python .github/scripts/apply_deep_site_fixes_round4.py
 
       - name: Run existing full-site audit
         run: python .github/scripts/site_quality_audit.py
@@ -55,6 +58,9 @@ jobs:
               raise SystemExit(f'{len(warnings)} deep-audit warning(s) remain')
           print('Deep audit has zero warnings.')
           PY
+
+      - name: Run production-readiness audit
+        run: python .github/scripts/production_readiness_audit.py
 
       - name: Show protected-area diff guard
         shell: bash
@@ -80,5 +86,5 @@ jobs:
           git config user.name 'Fahad Hussain'
           git config user.email '166254374+fahadsoomro123@users.noreply.github.com'
           git add --all
-          git commit -m 'fix: close final NexusNova deep-audit warnings'
+          git commit -m 'fix: close public crawl and production-readiness gaps'
           git push origin HEAD:deep-site-audit-fix-20260903
