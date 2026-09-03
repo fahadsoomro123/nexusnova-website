@@ -1,3 +1,11 @@
+@layer base, nexusnova-enhancements;
+@import url("./scifi.css") layer(nexusnova-enhancements);
+@import url("./motion.css") layer(nexusnova-enhancements);
+@import url("./tool-icons.css") layer(nexusnova-enhancements);
+@import url("./polish.css") layer(nexusnova-enhancements);
+@import url("./auth-nav.css") layer(nexusnova-enhancements);
+
+@layer base{
 :root{
   --bg:#07111f;
   --bg-soft:#0b1728;
@@ -130,3 +138,4 @@ h3{font-size:21px}
 @media (max-width:920px){.hero-grid,.feature-band{grid-template-columns:1fr}.hero-orbit{min-height:410px}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3,.guide-grid{grid-template-columns:1fr 1fr}.app-showcase{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr}.footer-grid>div:first-child{grid-column:1/-1}}
 @media (max-width:720px){.container{width:min(100% - 22px,var(--max))}.menu-btn{display:grid;place-items:center}.nav{display:none;position:absolute;left:11px;right:11px;top:68px;padding:10px;flex-direction:column;align-items:stretch;border:1px solid var(--line);border-radius:18px;background:rgba(7,17,31,.98);box-shadow:var(--shadow)}.nav.open{display:flex}.nav a{padding:12px 13px}.hero{padding:58px 0 38px}.hero-grid{gap:34px}.hero-orbit{min-height:360px}.hero-orbit::before{width:280px;height:280px;left:50%;top:40px;transform:translateX(-50%)}.hero-orbit::after{width:190px;height:190px;left:50%;top:85px;transform:translateX(-50%)}.orbit-card{width:136px;padding:12px}.orbit-card:nth-of-type(1){top:18px;left:12px}.orbit-card:nth-of-type(2){top:45px;right:10px}.orbit-card:nth-of-type(3){bottom:28px;left:12px}.orbit-card:nth-of-type(4){bottom:20px;right:12px}.section{padding:52px 0}.section-head{align-items:start;flex-direction:column}.grid-3,.grid-4,.tool-grid,.stat-strip,.guide-grid{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--line)}.stat:last-child{border-bottom:0}.form-row{grid-template-columns:1fr}.cta{align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr}.footer-grid>div:first-child{grid-column:auto}.footer-bottom{flex-direction:column}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+}
