@@ -3,7 +3,7 @@ name: NexusNova Premium Social 5x Daily
 on:
   schedule:
     # Recovery heartbeat every 30 minutes during Pakistan posting hours.
-    # The resolver publishes ONLY the earliest due slot not already posted today.
+    # The resolver publishes ONLY the earliest due slot not successfully delivered today.
     - cron: '10,40 3-15 * * *'
     - cron: '10 16 * * *'
   workflow_dispatch:
@@ -64,9 +64,9 @@ jobs:
               5: datetime.time(20, 30),
           }
 
-          history_path = Path('assets/data/premium-social-history.json')
+          delivery_path = Path('assets/data/premium-social-published.json')
           try:
-              doc = json.loads(history_path.read_text(encoding='utf-8')) if history_path.exists() else {}
+              doc = json.loads(delivery_path.read_text(encoding='utf-8')) if delivery_path.exists() else {}
           except Exception:
               doc = {}
           rows = doc.get('posts') if isinstance(doc, dict) else []
@@ -77,9 +77,9 @@ jobs:
           for row in rows:
               try:
                   slot = int(row.get('slot', 0))
-                  stamp = str(row.get('generated_at') or row.get('published_at') or '')
+                  stamp = str(row.get('published_at') or '')
                   dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
-                  if dt.date() == today and slot in due_times:
+                  if dt.date() == today and slot in due_times and int(row.get('successful_destinations', 0)) > 0:
                       posted_today.add(slot)
               except Exception:
                   continue
@@ -93,7 +93,7 @@ jobs:
               except Exception:
                   requested = 1
               if requested in posted_today:
-                  reason = f'manual slot {requested} already posted today'
+                  reason = f'manual slot {requested} already delivered today'
               else:
                   slot = requested
                   reason = f'manual slot {requested}'
@@ -102,9 +102,9 @@ jobs:
               missing = [s for s in due if s not in posted_today]
               if missing:
                   slot = min(missing)
-                  reason = f'recover earliest due missing slot; due={due}; posted={sorted(posted_today)}'
+                  reason = f'recover earliest due missing delivery; due={due}; delivered={sorted(posted_today)}'
               else:
-                  reason = f'nothing due/missing; due={due}; posted={sorted(posted_today)}'
+                  reason = f'nothing due/missing; due={due}; delivered={sorted(posted_today)}'
 
           print(f"should_run={'true' if slot else 'false'}")
           print(f"slot={slot or 0}")
@@ -175,14 +175,14 @@ jobs:
           SLOT: ${{ steps.slot.outputs.slot }}
         run: |
           git fetch origin main
-          git show origin/main:assets/data/premium-social-history.json > /tmp/remote-premium-social-history.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-history.json
+          git show origin/main:assets/data/premium-social-published.json > /tmp/remote-premium-social-published.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-published.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import datetime, json, os
           from pathlib import Path
           PKT = datetime.timezone(datetime.timedelta(hours=5))
           today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
           slot = int(os.environ['SLOT'])
-          path = Path('/tmp/remote-premium-social-history.json')
+          path = Path('/tmp/remote-premium-social-published.json')
           duplicate = False
           try:
               rows = json.loads(path.read_text(encoding='utf-8')).get('posts', [])
@@ -190,9 +190,9 @@ jobs:
               rows = []
           for row in rows if isinstance(rows, list) else []:
               try:
-                  stamp = str(row.get('generated_at') or row.get('published_at') or '')
+                  stamp = str(row.get('published_at') or '')
                   dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
-                  if dt.date() == today and int(row.get('slot', 0)) == slot:
+                  if dt.date() == today and int(row.get('slot', 0)) == slot and int(row.get('successful_destinations', 0)) > 0:
                       duplicate = True
                       break
               except Exception:
@@ -202,7 +202,7 @@ jobs:
 
       - name: Stop duplicate safely
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate == 'true'
-        run: echo 'Another serialized run already published this slot today; skipping duplicate.'
+        run: echo 'Another serialized run already delivered this slot today; skipping duplicate.'
 
       - name: Publish creative to website
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
@@ -223,6 +223,21 @@ jobs:
       - name: Publish to X, Facebook and Instagram
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
         run: python .github/scripts/publish_premium_social.py
+
+      - name: Commit confirmed delivery ledger
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
+        shell: bash
+        run: |
+          git config user.name 'nexusnova-social[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/data/premium-social-published.json
+          if [ -n "$(git status --porcelain -- assets/data/premium-social-published.json)" ]; then
+            git commit -m "automation: confirm social delivery slot ${{ steps.slot.outputs.slot }} ${GITHUB_RUN_ID}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo 'No new confirmed delivery ledger change.'
+          fi
 
       - name: Summary
         if: always()
@@ -253,5 +268,6 @@ jobs:
           path: |
             premium-social-publish.json
             premium-social-report.json
+            assets/data/premium-social-published.json
           if-no-files-found: ignore
           retention-days: 14
