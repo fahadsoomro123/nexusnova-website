@@ -37,7 +37,6 @@ STOPWORDS = {
     "how", "what", "why", "into", "using", "use", "best", "quick",
 }
 FORMATS = ["quick_tip", "problem_solution", "tool_demo", "bookmark_worthy"]
-GENERIC_SOCIAL_PATHS = {"/articles.html", "/tools.html", "/popular-tools.html", "/categories.html"}
 
 
 def load_json(path: Path, default):
@@ -128,23 +127,6 @@ def local_html_metadata(url: str) -> tuple[str, str] | None:
     return title, summary
 
 
-def is_dedicated_tool_url(url: str) -> bool:
-    path = urlsplit(url).path or "/"
-    if path in GENERIC_SOCIAL_PATHS or path == "/":
-        return False
-    rel = path.lstrip("/")
-    if not rel.endswith(".html"):
-        return False
-    target = ROOT / rel
-    if not target.exists() or not target.is_file():
-        return False
-    try:
-        page = target.read_text(encoding="utf-8", errors="ignore")
-    except Exception:
-        return False
-    return "WebApplication" in page and "tool-card" in page
-
-
 def add_candidate(pool: dict[str, dict], url: str, title: str, summary: str, source: str, score: float, reason: str) -> None:
     url = canonical_url(url)
     if not url:
@@ -164,11 +146,6 @@ def add_candidate(pool: dict[str, dict], url: str, title: str, summary: str, sou
     candidate_path = urlsplit(url).path or "/"
     if any(part in candidate_path.lower() for part in EXCLUDED_PATH_PARTS):
         return
-    if candidate_path in GENERIC_SOCIAL_PATHS:
-        return
-    if is_dedicated_tool_url(url):
-        score = float(score) + 18
-        reason = f"{reason}; dedicated interactive tool bonus"
     row = pool.get(url)
     if not row:
         dedicated_bonus = 24.0 if is_dedicated_tool(url) else 0.0
