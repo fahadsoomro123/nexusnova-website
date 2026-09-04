@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Audit live canonical, redirect and security headers
+      - name: Audit live canonical, index consolidation and host headers
         shell: bash
         run: |
           set -euo pipefail
@@ -40,35 +40,37 @@ jobs:
 
           HOME='https://nexusnovatools.com/'
           INDEX='https://nexusnovatools.com/index.html'
-          UA='NexusNovaProductionAudit/1.0'
+          UA='NexusNovaProductionAudit/1.1'
 
-          def request(url, method='GET'):
-              req=urllib.request.Request(url, method=method, headers={
+          def request(url):
+              req=urllib.request.Request(url, headers={
                   'User-Agent': UA,
                   'Cache-Control': 'no-cache',
                   'Accept': 'text/html,*/*;q=0.8',
               })
               try:
                   with urllib.request.urlopen(req, timeout=25) as resp:
-                      body=resp.read().decode('utf-8','replace') if method != 'HEAD' else ''
                       return {
                           'status': resp.status,
                           'url': resp.geturl(),
                           'headers': {k.lower(): v for k,v in resp.headers.items()},
-                          'body': body,
+                          'body': resp.read().decode('utf-8','replace'),
                       }
               except urllib.error.HTTPError as exc:
                   return {
                       'status': exc.code,
                       'url': exc.geturl(),
                       'headers': {k.lower(): v for k,v in exc.headers.items()},
-                      'body': exc.read().decode('utf-8','replace') if method != 'HEAD' else '',
+                      'body': exc.read().decode('utf-8','replace'),
                   }
 
           home=request(HOME)
           index=request(INDEX)
           canonical=re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)', home['body'], re.I)
           canonical_value=canonical.group(1).strip() if canonical else ''
+          index_canonical=re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)', index['body'], re.I)
+          index_canonical_value=index_canonical.group(1).strip() if index_canonical else ''
+          client_redirect_marker='data-index-canonical-redirect' in index['body']
 
           headers=home['headers']
           security={
@@ -79,24 +81,40 @@ jobs:
               'permissions-policy': headers.get('permissions-policy',''),
               'x-frame-options': headers.get('x-frame-options',''),
           }
-          # HSTS is the universal transport header we require on the HTTPS origin.
-          # Frame protection is intentionally not made a domain-wide hard failure:
-          # NexusNova publishes an iframe widget that must remain embeddable.
+
           required={
               'https_home_200': home['status'] == 200,
               'home_canonical_root': canonical_value == HOME,
               'index_resolves_successfully': 200 <= index['status'] < 400,
+              'index_canonical_root': index_canonical_value == HOME,
+          }
+          host_advisories={
+              'index_http_redirect_to_root': index['url'] == HOME,
+              'index_client_redirect_present': client_redirect_marker,
               'hsts_present': bool(security['strict-transport-security']),
+              'csp_present': bool(security['content-security-policy']),
+              'x_content_type_options_present': bool(security['x-content-type-options']),
+              'referrer_policy_present': bool(security['referrer-policy']),
+              'permissions_policy_present': bool(security['permissions-policy']),
+              'frame_protection_present': bool(security['x-frame-options']) or 'frame-ancestors' in security['content-security-policy'].lower(),
           }
 
           report={
               'home': {'status':home['status'],'effective_url':home['url'],'canonical':canonical_value},
-              'index_html': {'status':index['status'],'effective_url':index['url']},
+              'index_html': {
+                  'status':index['status'],
+                  'effective_url':index['url'],
+                  'canonical':index_canonical_value,
+                  'client_redirect_marker':client_redirect_marker,
+              },
               'security_headers': security,
               'required_checks': required,
+              'host_advisories': host_advisories,
+              'hosting_context': 'Public site is served through GitHub Pages with a custom domain. Repository HTML cannot create HSTS or a true server-side /index.html -> / redirect; those require an edge/proxy or different host configuration.',
               'notes': [
-                  'CSP/X-Frame-Options are reported, not globally required, because widget-pakistan-today.html is intentionally embeddable.',
-                  'Headers are live HTTP response evidence; HTML meta tags are not counted as substitutes for server headers.',
+                  'Missing host-managed headers are reported as advisories, not disguised as application-code failures.',
+                  'CSP/X-Frame-Options are not globally required because widget-pakistan-today.html is intentionally embeddable.',
+                  'The canonical root remains a required SEO signal. A client-side /index.html consolidation marker is also reported when deployed.',
               ],
           }
           Path('live-production-audit.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
@@ -125,7 +143,7 @@ jobs:
                   'category':'performance',
               })
               try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.0'})
+                  req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.1'})
                   with urllib.request.urlopen(req,timeout=90) as resp:
                       data=json.loads(resp.read().decode('utf-8'))
                   field=data.get('loadingExperience') or {}
@@ -166,7 +184,7 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Live Production Evidence' >> "$GITHUB_STEP_SUMMARY"
-          echo '### Canonical + security headers' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Canonical + hosting/security evidence' >> "$GITHUB_STEP_SUMMARY"
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat live-production-audit.json 2>/dev/null || echo '{"status":"not produced"}'
           echo '```' >> "$GITHUB_STEP_SUMMARY"
