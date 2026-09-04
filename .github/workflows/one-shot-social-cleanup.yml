@@ -1,0 +1,52 @@
+name: NexusNova One-Shot Social Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-social-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove duplicate scoring layer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/scripts/social_growth_engine.py')
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('GENERIC_SOCIAL_PATHS = {"/articles.html", "/tools.html", "/popular-tools.html", "/categories.html"}\n','')
+          helper='''\n\ndef is_dedicated_tool_url(url: str) -> bool:\n    path = urlsplit(url).path or "/"\n    if path in GENERIC_SOCIAL_PATHS or path == "/":\n        return False\n    rel = path.lstrip("/")\n    if not rel.endswith(".html"):\n        return False\n    target = ROOT / rel\n    if not target.exists() or not target.is_file():\n        return False\n    try:\n        page = target.read_text(encoding="utf-8", errors="ignore")\n    except Exception:\n        return False\n    return "WebApplication" in page and "tool-card" in page\n'''
+          t=t.replace(helper,'')
+          duplicate='''    if candidate_path in GENERIC_SOCIAL_PATHS:\n        return\n    if is_dedicated_tool_url(url):\n        score = float(score) + 18\n        reason = f"{reason}; dedicated interactive tool bonus"\n'''
+          t=t.replace(duplicate,'')
+          p.write_text(t,encoding='utf-8')
+          PY
+          python -m py_compile .github/scripts/social_growth_engine.py
+          ! grep -q 'GENERIC_SOCIAL_PATHS' .github/scripts/social_growth_engine.py
+          ! grep -q 'is_dedicated_tool_url' .github/scripts/social_growth_engine.py
+          grep -q 'GENERIC_SOCIAL_HUBS' .github/scripts/social_growth_engine.py
+          grep -q 'dedicated interactive utility priority bonus' .github/scripts/social_growth_engine.py
+          grep -q 'zero-engagement penalty applied' .github/scripts/social_growth_engine.py
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-social[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/scripts/social_growth_engine.py
+          git commit -m 'chore: consolidate high-intent social scoring'
+          git pull --rebase origin main
+          git push origin HEAD:main
