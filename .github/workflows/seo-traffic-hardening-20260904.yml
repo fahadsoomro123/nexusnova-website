@@ -1,0 +1,64 @@
+name: NexusNova SEO Traffic Hardening 20260904
+
+on:
+  push:
+    branches:
+      - seo/traffic-hardening-20260904
+    paths:
+      - '.github/scripts/seo_traffic_hardening_20260904.py'
+      - '.github/workflows/seo-traffic-hardening-20260904.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply traffic and audit hardening
+        run: python .github/scripts/seo_traffic_hardening_20260904.py
+
+      - name: Run static site quality audit
+        run: |
+          python .github/scripts/site_quality_audit.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          if d.get('severe') or d.get('warnings'):
+              print(Path('site-quality-report.txt').read_text(encoding='utf-8'))
+              raise SystemExit('Site quality findings remain')
+          print('Static site quality: zero severe findings, zero warnings')
+          PY
+
+      - name: Run deep site audit
+        run: python .github/scripts/deep_site_audit.py
+
+      - name: Run AdSense readiness audit
+        run: python .github/scripts/adsense_readiness_audit.py
+
+      - name: Run production readiness audit
+        run: python .github/scripts/production_readiness_audit.py
+
+      - name: Commit generated SEO changes and remove helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-seo[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add '*.html' articles guides tech sitemap.xml sitemap-recent.xml sitemap-new-tools.xml
+          git rm .github/scripts/seo_traffic_hardening_20260904.py .github/workflows/seo-traffic-hardening-20260904.yml
+          git commit -m 'seo: harden traffic pages, schema and discovery'
+          git pull --rebase origin seo/traffic-hardening-20260904
+          git push origin HEAD:seo/traffic-hardening-20260904
