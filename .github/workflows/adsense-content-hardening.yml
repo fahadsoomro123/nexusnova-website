@@ -1,0 +1,106 @@
+name: NexusNova AdSense Content Hardening
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/adsense_content_hardening.py'
+      - '.github/workflows/adsense-content-hardening.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/adsense_content_hardening.py'
+      - '.github/workflows/adsense-content-hardening.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  harden-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile hardening script
+        run: python -m py_compile .github/scripts/adsense_content_hardening.py
+
+      - name: Add unique useful content to thin pages
+        run: python .github/scripts/adsense_content_hardening.py
+
+      - name: Run full static site quality audit
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Run AdSense readiness audit
+        run: python .github/scripts/adsense_readiness_audit.py
+
+      - name: Enforce zero content-depth red flags
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          adsense = json.loads(Path('adsense-readiness.json').read_text(encoding='utf-8'))
+          severe = adsense.get('severe_findings', [])
+          warnings = adsense.get('warnings', [])
+          low = adsense.get('details', {}).get('low_text_pages', [])
+          very_low = adsense.get('details', {}).get('very_low_text_pages', [])
+          if severe:
+              raise SystemExit('AdSense hardening blocked: severe findings remain: ' + repr(severe))
+          if warnings:
+              raise SystemExit('AdSense hardening blocked: warnings remain: ' + repr(warnings))
+          if low or very_low:
+              raise SystemExit(f'AdSense hardening blocked: low-text pages remain: {low or very_low}')
+
+          site = json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          site_severe = site.get('severe', site.get('severe_findings', []))
+          site_warnings = site.get('warnings', [])
+          if site_severe or site_warnings:
+              raise SystemExit(f'Site-quality hardening blocked: severe={site_severe!r} warnings={site_warnings!r}')
+
+          changed = [x.strip() for x in Path('adsense-content-hardening-changed-files.txt').read_text(encoding='utf-8').splitlines() if x.strip()]
+          print(f'Changed content pages: {len(changed)}')
+          print('AdSense content-depth gate: PASS')
+          PY
+
+      - name: Commit verified content hardening
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(sed '/^[[:space:]]*$/d' adsense-content-hardening-changed-files.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No content changes required.'
+            exit 0
+          fi
+
+          git config user.name 'nexusnova-content-guard[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for file in "${files[@]}"; do
+            git add -- "$file"
+          done
+          git commit -m 'content: strengthen thin utility pages for AdSense review'
+
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              echo 'Verified content hardening pushed to main.'
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying after sync..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            sleep $((attempt * 3))
+          done
+          echo 'Unable to push verified content hardening after retries.' >&2
+          exit 1
