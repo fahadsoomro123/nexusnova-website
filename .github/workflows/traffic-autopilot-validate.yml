@@ -37,6 +37,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check feedparser
+
       - name: Compile automation scripts
         run: |
           python -m py_compile .github/scripts/ai_provider.py
