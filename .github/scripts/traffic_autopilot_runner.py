@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 import feedparser
@@ -18,6 +19,13 @@ SOURCES = [
     {"name": "Microsoft Windows Blog", "url": "https://blogs.windows.com/feed/", "category": "Windows", "weight": 4},
     {"name": "OpenAI News", "url": "https://openai.com/news/rss.xml", "category": "AI", "weight": 5},
 ]
+
+INDEX_ROBOTS = "index,follow,max-image-preview:large"
+QUARANTINE_ROBOTS = "noindex,follow,max-image-preview:large"
+ROBOTS_META_RE = re.compile(
+    r'(<meta\b[^>]*\bname=["\']robots["\'][^>]*\bcontent=["\'])[^"\']*(["\'][^>]*>)',
+    re.IGNORECASE,
+)
 
 
 def parsed_time(entry) -> datetime | None:
@@ -89,44 +97,119 @@ def collect_trends() -> tuple[list[dict], list[str]]:
     return selected, errors
 
 
+def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
+    """Keep unreviewed autopilot pages out of search/discovery until a human approves them."""
+    reviewed_rows: list[dict] = []
+    quarantined: list[str] = []
+    restored: list[str] = []
+    errors: list[str] = []
+    article_root = (core.ROOT / "articles").resolve()
+
+    for row in history.get("articles", []):
+        rel = str(row.get("path", "")).strip()
+        if not rel:
+            continue
+        page = (core.ROOT / rel).resolve()
+        try:
+            page.relative_to(article_root)
+        except ValueError:
+            errors.append(f"{rel}: outside articles directory")
+            continue
+        if page.suffix.lower() != ".html":
+            errors.append(f"{rel}: not an HTML article")
+            continue
+        if not page.exists():
+            errors.append(f"{rel}: article file missing")
+            continue
+
+        reviewed = row.get("reviewed") is True
+        desired = INDEX_ROBOTS if reviewed else QUARANTINE_ROBOTS
+        text = page.read_text(encoding="utf-8", errors="replace")
+        new_text, count = ROBOTS_META_RE.subn(rf"\g<1>{desired}\g<2>", text, count=1)
+        if count != 1:
+            errors.append(f"{rel}: robots meta tag not found")
+            continue
+        if new_text != text:
+            page.write_text(new_text, encoding="utf-8")
+            (restored if reviewed else quarantined).append(rel)
+        if reviewed:
+            reviewed_rows.append(row)
+
+    reviewed_history = dict(history)
+    reviewed_history["articles"] = reviewed_rows
+    return reviewed_history, {
+        "mode": "manual_review_only",
+        "reviewed_articles": len(reviewed_rows),
+        "unreviewed_articles": max(0, len(history.get("articles", [])) - len(reviewed_rows)),
+        "quarantined_pages_changed": quarantined,
+        "reviewed_pages_restored": restored,
+        "errors": errors,
+    }
+
+
 def main() -> None:
     if not os.getenv("GSC_SITE_URL", "").strip():
         os.environ["GSC_SITE_URL"] = "sc-domain:nexusnovatools.com"
-    # Keep the established article builder and safety gates, but route its AI call
-    # through the Gemini-first provider with OpenAI used only as technical failover.
-    core.ai_json = ai_provider.ai_json
+
+    # During AdSense review, automated article publication is hard-paused.
+    # Existing autopilot pages are only indexable/discoverable after a human
+    # explicitly sets reviewed=true for that history entry in a reviewed PR.
     history = core.load_json(core.HISTORY_PATH, {"version": 1, "articles": [], "seo_refresh": {}})
+    reviewed_history, editorial = apply_editorial_review_state(history)
+
     trends, feed_errors = collect_trends()
     pulse = core.write_pulse(trends)
     opportunities, analytics_report = core.google_signals()
     candidate = core.choose_article_candidate(trends, history)
-    published = core.build_article(candidate, history, opportunities) if candidate else None
+
+    published = None
     changed_urls = [f"{core.SITE}/", f"{core.SITE}/articles.html"]
-    if published:
-        history.setdefault("articles", []).insert(0, published)
-        history["articles"] = history["articles"][:60]
-        changed_urls.append(published["url"])
-        core.PUBLISH_PATH.write_text(json.dumps(published, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    elif core.PUBLISH_PATH.exists():
+    changed_urls.extend(
+        f"{core.SITE}/{path}" for path in editorial["quarantined_pages_changed"]
+    )
+
+    if core.PUBLISH_PATH.exists():
         core.PUBLISH_PATH.unlink()
+
     core.HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
     core.HISTORY_PATH.write_text(json.dumps(history, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    core.update_discovery(history)
+    core.update_discovery(reviewed_history)
     core.CHANGED_URLS_PATH.write_text("\n".join(dict.fromkeys(changed_urls)) + "\n", encoding="utf-8")
+
     report = {
         "run_at": core.NOW.isoformat().replace("+00:00", "Z"),
         "trend_items_selected": len(pulse.get("items", [])),
         "feed_errors": feed_errors,
         "article_published": published,
         "article_candidate": core.public_item(candidate) if candidate else None,
+        "editorial_review": editorial,
         "ai": ai_provider.status(),
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
-        "safety": {"max_articles_per_run": 1, "minimum_article_score": 14, "source_allowlist_only": True, "direct_article_urls_only": True, "live_tech_max_age_days": 35, "no_publish_when_source_too_thin": True, "gemini_primary_openai_failover_only": True},
+        "safety": {
+            "automatic_article_publish": False,
+            "manual_editorial_review_required": True,
+            "max_articles_per_run": 0,
+            "minimum_article_score": 14,
+            "source_allowlist_only": True,
+            "direct_article_urls_only": True,
+            "live_tech_max_age_days": 35,
+            "no_publish_when_source_too_thin": True,
+        },
     }
     core.REPORT_PATH.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     ai_status = ai_provider.status()
-    print(json.dumps({"trend_items": len(pulse.get("items", [])), "published": published["url"] if published else None, "ai_provider": ai_status.get("provider"), "gsc_connected": analytics_report.get("connected", False), "feed_errors": len(feed_errors)}, indent=2))
+    print(json.dumps({
+        "trend_items": len(pulse.get("items", [])),
+        "published": None,
+        "article_candidate": candidate["url"] if candidate else None,
+        "editorial_mode": editorial["mode"],
+        "quarantined_changed": len(editorial["quarantined_pages_changed"]),
+        "reviewed_articles": editorial["reviewed_articles"],
+        "ai_provider": ai_status.get("provider"),
+        "gsc_connected": analytics_report.get("connected", False),
+        "feed_errors": len(feed_errors),
+    }, indent=2))
 
 
 if __name__ == "__main__":
