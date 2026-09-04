@@ -29,6 +29,16 @@ jobs:
       - name: Apply traffic and audit hardening
         run: python .github/scripts/seo_traffic_hardening_20260904.py
 
+      - name: Remove stale QR helper link
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('qr-code-scanner.html')
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('<a href="url-parser.html">URL Parser</a>', '<a href="tools.html">All Tools</a>')
+          p.write_text(t, encoding='utf-8')
+          PY
+
       - name: Run static site quality audit
         run: |
           python .github/scripts/site_quality_audit.py
