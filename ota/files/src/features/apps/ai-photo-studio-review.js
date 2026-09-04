@@ -1,6 +1,8 @@
 import { renderAiPhotoStudio as renderFlagshipAiPhotoStudio } from './ai-photo-studio-flagship.js';
 import { installSliderOnlyFocus } from './ai-photo-focus-interaction.js';
-import { installAiPhotoCanvaWorkspace } from './ai-photo-canva-workspace.js';
+import { installAiPhotoCanvaWorkspaceV3 } from './ai-photo-canva-workspace-v3.js';
+import { installPuterImageGenerator } from './ai-photo-puter-generator.js';
+import { installAiPhotoStudioHome } from './ai-photo-studio-home.js';
 
 export function renderAiPhotoStudio(){
   const root=renderFlagshipAiPhotoStudio();
@@ -19,12 +21,16 @@ export function renderAiPhotoStudio(){
   }
   const previousCleanup=root.__cleanup;
   const focusCleanup=installSliderOnlyFocus(root);
-  const workspaceCleanup=installAiPhotoCanvaWorkspace(root);
+  const workspaceCleanup=installAiPhotoCanvaWorkspaceV3(root);
+  const puterCleanup=installPuterImageGenerator(root);
+  const homeCleanup=installAiPhotoStudioHome(root);
   root.__cleanup=()=>{
+    homeCleanup?.();
+    puterCleanup?.();
     workspaceCleanup?.();
     focusCleanup?.();
     previousCleanup?.();
   };
-  root.dataset.aiPhotoFlagship='review-v2-canva-class';
+  root.dataset.aiPhotoFlagship='review-v5-premium-home';
   return root;
 }
