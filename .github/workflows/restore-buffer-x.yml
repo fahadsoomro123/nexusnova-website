@@ -8,74 +8,25 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  restore-and-post:
+  verify-and-post:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     env:
       BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
       BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Verify Buffer credentials are available
+      - name: Verify Buffer-only X routing is persisted
         shell: bash
         run: |
           set -euo pipefail
           test -n "$BUFFER_API_KEY" || { echo 'BUFFER_API_KEY is missing'; exit 1; }
           test -n "$BUFFER_X_CHANNEL_ID" || { echo 'BUFFER_X_CHANNEL_ID is missing'; exit 1; }
-          echo 'Buffer credentials are available to the workflow.'
-
-      - name: Restore Buffer-only X environment in social workflows
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          targets = [
-              Path('.github/workflows/traffic-autopilot.yml'),
-              Path('.github/workflows/new-tool-social-launch.yml'),
-          ]
-          x_names = {
-              'X_API_KEY',
-              'X_API_KEY_SECRET',
-              'X_ACCESS_TOKEN',
-              'X_ACCESS_TOKEN_SECRET',
-          }
-          dollar = '$'
-
-          for path in targets:
-              text = path.read_text(encoding='utf-8')
-              out = []
-              inserted = False
-              for line in text.splitlines():
-                  stripped = line.strip()
-                  if any(stripped.startswith(name + ':') for name in x_names):
-                      continue
-                  if stripped.startswith('BUFFER_API_KEY:') or stripped.startswith('BUFFER_X_CHANNEL_ID:'):
-                      continue
-                  out.append(line)
-                  if stripped.startswith('TELEGRAM_CHANNEL_ID:'):
-                      indent = line[:len(line) - len(line.lstrip())]
-                      out.append(indent + 'BUFFER_API_KEY: ' + dollar + '{{ secrets.BUFFER_API_KEY }}')
-                      out.append(indent + "BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'")
-                      inserted = True
-              if not inserted:
-                  raise SystemExit(f'{path}: TELEGRAM_CHANNEL_ID line not found')
-              path.write_text('\n'.join(out) + '\n', encoding='utf-8')
-              print('Restored Buffer-only X routing:', path)
-          PY
-
-      - name: Verify paid direct X credentials are absent
-        shell: bash
-        run: |
-          set -euo pipefail
           for file in .github/workflows/traffic-autopilot.yml .github/workflows/new-tool-social-launch.yml; do
             grep -q 'BUFFER_API_KEY:' "$file"
             grep -q 'BUFFER_X_CHANNEL_ID:' "$file"
@@ -86,24 +37,9 @@ jobs:
           done
           python -m py_compile .github/scripts/buffer_publish.py
           python -m py_compile .github/scripts/distribute_social_growth.py
-          echo 'Buffer-only X routing verification passed.'
+          echo 'Persisted Buffer-only X routing verified.'
 
-      - name: Commit restored workflow wiring
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'nexusnova-buffer[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/traffic-autopilot.yml .github/workflows/new-tool-social-launch.yml
-          if git diff --cached --quiet; then
-            echo 'Buffer wiring already correct; nothing to commit.'
-          else
-            git commit -m 'fix: restore Buffer-only X publishing'
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
-
-      - name: Publish immediate X smoke post through Buffer
+      - name: Publish immediate X post through Buffer
         shell: bash
         run: |
           set -euo pipefail
