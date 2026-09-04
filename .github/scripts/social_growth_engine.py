@@ -25,6 +25,12 @@ EXCLUDED_PATH_PARTS = {
     "privacy", "terms", "contact", "about", "login", "register", "cookie",
     "disclaimer", "editorial-team", "tool-methodology", "account", "auth",
 }
+GENERIC_SOCIAL_HUBS = {
+    "/", "/index.html", "/articles.html", "/tools.html", "/popular-tools.html",
+    "/categories.html", "/guides.html", "/calculator-tools.html", "/pdf-tools.html",
+    "/image-tools.html", "/productivity-tools.html", "/network-tools.html",
+    "/pakistan-tools.html", "/trending-tools.html", "/live.html", "/labs.html",
+}
 STOPWORDS = {
     "the", "and", "for", "with", "from", "your", "this", "that", "free",
     "online", "tool", "tools", "calculator", "converter", "guide", "nexusnova",
@@ -60,6 +66,27 @@ def canonical_url(url: str) -> str:
         return ""
     path = parts.path or "/"
     return urlunsplit(("https", "nexusnovatools.com", path, "", ""))
+
+
+def is_generic_social_hub(url: str) -> bool:
+    path = urlsplit(url).path or "/"
+    return path.lower() in GENERIC_SOCIAL_HUBS
+
+
+def is_dedicated_tool(url: str) -> bool:
+    path = urlsplit(url).path or "/"
+    rel = "index.html" if path == "/" else path.lstrip("/")
+    if not rel.endswith(".html"):
+        return False
+    target = ROOT / rel
+    if not target.exists() or not target.is_file():
+        return False
+    try:
+        raw = target.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+    compact = re.sub(r"\s+", "", raw)
+    return '"@type":"WebApplication"' in compact
 
 
 def local_html_metadata(url: str) -> tuple[str, str] | None:
@@ -102,6 +129,8 @@ def add_candidate(pool: dict[str, dict], url: str, title: str, summary: str, sou
     url = canonical_url(url)
     if not url:
         return
+    if is_generic_social_hub(url):
+        return
     metadata = local_html_metadata(url)
     if metadata:
         local_title, local_summary = metadata
@@ -116,13 +145,17 @@ def add_candidate(pool: dict[str, dict], url: str, title: str, summary: str, sou
         return
     row = pool.get(url)
     if not row:
+        dedicated_bonus = 24.0 if is_dedicated_tool(url) else 0.0
+        reasons = [reason]
+        if dedicated_bonus:
+            reasons.append("dedicated interactive utility priority bonus")
         pool[url] = {
             "url": url,
             "title": title,
             "summary": summary or "A focused NexusNova browser utility for an everyday digital task.",
             "source": source,
-            "score": float(score),
-            "reasons": [reason],
+            "score": float(score) + dedicated_bonus,
+            "reasons": reasons,
         }
         return
     row["score"] += float(score)
@@ -186,7 +219,15 @@ def build_candidates() -> dict[str, dict]:
         if sessions <= 0:
             continue
         engagement = engaged / sessions if sessions else 0
-        score = 18 + min(26, sessions * 1.2) + min(14, engagement * 14)
+        if engaged <= 0:
+            score = -8 - min(32, sessions * 4)
+            reason = f"GA4 quality warning: {round(sessions, 1)} sessions / 0 engaged; zero-engagement penalty applied"
+        elif engagement < 0.25:
+            score = 8 + min(12, sessions * 0.8) + min(8, engagement * 8)
+            reason = f"GA4 weak engagement: {round(sessions, 1)} sessions / {round(engaged, 1)} engaged"
+        else:
+            score = 22 + min(24, sessions * 1.5) + min(18, engagement * 18)
+            reason = f"GA4 engaged landing-page signal: {round(sessions, 1)} sessions / {round(engaged, 1)} engaged"
         add_candidate(
             pool,
             path,
@@ -194,7 +235,7 @@ def build_candidates() -> dict[str, dict]:
             "",
             "ga4_engagement",
             score,
-            f"GA4 landing-page signal: {round(sessions, 1)} sessions / {round(engaged, 1)} engaged",
+            reason,
         )
 
     return pool
