@@ -1,0 +1,205 @@
+name: NexusNova Live Production Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-production-audit.yml'
+      - '.github/workflows/production-smoke.yml'
+      - 'index.html'
+      - 'assets/js/main.js'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-production-audit.yml'
+      - '.github/workflows/production-smoke.yml'
+      - 'index.html'
+      - 'assets/js/main.js'
+  schedule:
+    - cron: '20 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Audit live canonical, index consolidation and host headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import re
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          HOME='https://nexusnovatools.com/'
+          INDEX='https://nexusnovatools.com/index.html'
+          UA='NexusNovaProductionAudit/1.1'
+
+          def request(url):
+              req=urllib.request.Request(url, headers={
+                  'User-Agent': UA,
+                  'Cache-Control': 'no-cache',
+                  'Accept': 'text/html,*/*;q=0.8',
+              })
+              try:
+                  with urllib.request.urlopen(req, timeout=25) as resp:
+                      return {
+                          'status': resp.status,
+                          'url': resp.geturl(),
+                          'headers': {k.lower(): v for k,v in resp.headers.items()},
+                          'body': resp.read().decode('utf-8','replace'),
+                      }
+              except urllib.error.HTTPError as exc:
+                  return {
+                      'status': exc.code,
+                      'url': exc.geturl(),
+                      'headers': {k.lower(): v for k,v in exc.headers.items()},
+                      'body': exc.read().decode('utf-8','replace'),
+                  }
+
+          home=request(HOME)
+          index=request(INDEX)
+          canonical=re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)', home['body'], re.I)
+          canonical_value=canonical.group(1).strip() if canonical else ''
+          index_canonical=re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)', index['body'], re.I)
+          index_canonical_value=index_canonical.group(1).strip() if index_canonical else ''
+          client_redirect_marker='data-index-canonical-redirect' in index['body']
+
+          headers=home['headers']
+          security={
+              'strict-transport-security': headers.get('strict-transport-security',''),
+              'content-security-policy': headers.get('content-security-policy',''),
+              'x-content-type-options': headers.get('x-content-type-options',''),
+              'referrer-policy': headers.get('referrer-policy',''),
+              'permissions-policy': headers.get('permissions-policy',''),
+              'x-frame-options': headers.get('x-frame-options',''),
+          }
+
+          required={
+              'https_home_200': home['status'] == 200,
+              'home_canonical_root': canonical_value == HOME,
+              'index_resolves_successfully': 200 <= index['status'] < 400,
+              'index_canonical_root': index_canonical_value == HOME,
+          }
+          host_advisories={
+              'index_http_redirect_to_root': index['url'] == HOME,
+              'index_client_redirect_present': client_redirect_marker,
+              'hsts_present': bool(security['strict-transport-security']),
+              'csp_present': bool(security['content-security-policy']),
+              'x_content_type_options_present': bool(security['x-content-type-options']),
+              'referrer_policy_present': bool(security['referrer-policy']),
+              'permissions_policy_present': bool(security['permissions-policy']),
+              'frame_protection_present': bool(security['x-frame-options']) or 'frame-ancestors' in security['content-security-policy'].lower(),
+          }
+
+          report={
+              'home': {'status':home['status'],'effective_url':home['url'],'canonical':canonical_value},
+              'index_html': {
+                  'status':index['status'],
+                  'effective_url':index['url'],
+                  'canonical':index_canonical_value,
+                  'client_redirect_marker':client_redirect_marker,
+              },
+              'security_headers': security,
+              'required_checks': required,
+              'host_advisories': host_advisories,
+              'hosting_context': 'Public site is served through GitHub Pages with a custom domain. Repository HTML cannot create HSTS or a true server-side /index.html -> / redirect; those require an edge/proxy or different host configuration.',
+              'notes': [
+                  'Missing host-managed headers are reported as advisories, not disguised as application-code failures.',
+                  'CSP/X-Frame-Options are not globally required because widget-pakistan-today.html is intentionally embeddable.',
+                  'The canonical root remains a required SEO signal. A client-side /index.html consolidation marker is also reported when deployed.',
+              ],
+          }
+          Path('live-production-audit.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(report,indent=2))
+          failed=[k for k,v in required.items() if not v]
+          if failed:
+              raise SystemExit('Live production required check(s) failed: '+', '.join(failed))
+          PY
+
+      - name: Query PageSpeed for field and lab evidence
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          target='https://nexusnovatools.com/'
+          out={'target':target,'source':'Google PageSpeed Insights API v5','strategies':{}}
+          for strategy in ('mobile','desktop'):
+              url='https://www.googleapis.com/pagespeedonline/v5/runPagespeed?'+urllib.parse.urlencode({
+                  'url':target,
+                  'strategy':strategy,
+                  'category':'performance',
+              })
+              try:
+                  req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.1'})
+                  with urllib.request.urlopen(req,timeout=90) as resp:
+                      data=json.loads(resp.read().decode('utf-8'))
+                  field=data.get('loadingExperience') or {}
+                  origin=data.get('originLoadingExperience') or {}
+                  field_source='url' if field.get('metrics') else ('origin' if origin.get('metrics') else 'none')
+                  selected=field if field.get('metrics') else origin
+                  metrics=selected.get('metrics') or {}
+                  def pct(key):
+                      item=metrics.get(key) or {}
+                      return item.get('percentile')
+                  lighthouse=data.get('lighthouseResult') or {}
+                  audits=lighthouse.get('audits') or {}
+                  categories=lighthouse.get('categories') or {}
+                  out['strategies'][strategy]={
+                      'available':True,
+                      'field_source':field_source,
+                      'field_overall_category':selected.get('overall_category'),
+                      'field_lcp_ms':pct('LARGEST_CONTENTFUL_PAINT_MS'),
+                      'field_inp_ms':pct('INTERACTION_TO_NEXT_PAINT'),
+                      'field_cls':(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE')/100 if isinstance(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE'),(int,float)) else None),
+                      'lab_performance_score':round((categories.get('performance') or {}).get('score',0)*100) if (categories.get('performance') or {}).get('score') is not None else None,
+                      'lab_lcp_ms':(audits.get('largest-contentful-paint') or {}).get('numericValue'),
+                      'lab_cls':(audits.get('cumulative-layout-shift') or {}).get('numericValue'),
+                      'lab_tbt_ms':(audits.get('total-blocking-time') or {}).get('numericValue'),
+                  }
+              except Exception as exc:
+                  out['strategies'][strategy]={
+                      'available':False,
+                      'error':f'{type(exc).__name__}: {exc}',
+                      'field_source':'unavailable',
+                  }
+          Path('pagespeed-evidence.json').write_text(json.dumps(out,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(out,indent=2))
+          PY
+
+      - name: Publish evidence summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Live Production Evidence' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Canonical + hosting/security evidence' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat live-production-audit.json 2>/dev/null || echo '{"status":"not produced"}'
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo '### PageSpeed / CrUX evidence' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat pagespeed-evidence.json 2>/dev/null || echo '{"status":"not produced"}'
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-live-production-audit-${{ github.run_id }}
+          path: |
+            live-production-audit.json
+            pagespeed-evidence.json
+          if-no-files-found: warn
+          retention-days: 30

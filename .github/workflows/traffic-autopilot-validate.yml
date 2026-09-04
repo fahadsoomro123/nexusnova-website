@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - '.gitignore'
       - '.github/scripts/ai_provider.py'
       - '.github/scripts/traffic_autopilot.py'
       - '.github/scripts/traffic_autopilot_runner.py'
@@ -67,15 +68,34 @@ jobs:
       - name: Full public-site quality audit
         run: python .github/scripts/site_quality_audit.py
 
-      - name: Enforce zero severe site findings
+      - name: Enforce zero static findings
         run: |
           python - <<'PY'
-          import re
+          import json
           from pathlib import Path
-          report=Path('site-quality-report.txt').read_text(encoding='utf-8')
-          m=re.search(r'Severe findings:\s*(\d+)', report)
-          severe=int(m.group(1)) if m else 999
-          print(f'Severe findings: {severe}')
-          if severe:
-              raise SystemExit('Validation failed: severe public-site findings detected.')
+          data=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=data.get('severe',[])
+          warnings=data.get('warnings',[])
+          print(f'Severe findings: {len(severe)}')
+          print(f'Warnings: {len(warnings)}')
+          if severe or warnings:
+              raise SystemExit('Validation failed: public-site findings detected.')
           PY
+
+      - name: Prove generated audit output cannot dirty tracked worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked_dirty="$(git status --porcelain --untracked-files=no)"
+          if [ -n "$tracked_dirty" ]; then
+            echo 'Tracked worktree became dirty after audit:' >&2
+            echo "$tracked_dirty" >&2
+            exit 1
+          fi
+          for generated in site-quality-report.json site-quality-report.txt deep-site-audit.json deep-site-audit.txt; do
+            if git ls-files --error-unmatch "$generated" >/dev/null 2>&1; then
+              echo "Generated audit file is still tracked: $generated" >&2
+              exit 1
+            fi
+          done
+          echo 'Generated audit reports are untracked/ignored and rebase-safe.'

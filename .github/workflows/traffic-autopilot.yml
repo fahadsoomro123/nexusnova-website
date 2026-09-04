@@ -125,6 +125,61 @@ jobs:
       - name: Rebuild machine-readable article feed
         run: python .github/scripts/build_articles_feed.py
 
+      - name: Normalize generated article SEO titles
+        shell: bash
+        run: |
+          python - <<'PY'
+          import html
+          import re
+          import subprocess
+          from pathlib import Path
+
+          suffix = ' — NexusNova Tools'
+          status = subprocess.check_output(
+              ['git', 'status', '--porcelain', '--', 'articles'], text=True
+          )
+          paths = []
+          for line in status.splitlines():
+              raw = line[3:].strip()
+              if ' -> ' in raw:
+                  raw = raw.split(' -> ', 1)[1].strip()
+              path = Path(raw)
+              if path.suffix.lower() == '.html' and path.exists():
+                  paths.append(path)
+
+          changed = 0
+          for path in sorted(set(paths)):
+              text = path.read_text(encoding='utf-8', errors='replace')
+              match = re.search(r'<title>(.*?)</title>', text, re.I | re.S)
+              if not match:
+                  continue
+              title = html.unescape(re.sub(r'\s+', ' ', match.group(1))).strip()
+              if len(title) <= 70:
+                  continue
+              base = title
+              for known in (suffix, ' | NexusNova Tools', ' | NexusNova'):
+                  if base.endswith(known):
+                      base = base[:-len(known)].strip()
+                      break
+              budget = 70 - len(suffix)
+              words = base.split()
+              compact = ''
+              for word in words:
+                  candidate = f'{compact} {word}'.strip()
+                  if len(candidate) > budget:
+                      break
+                  compact = candidate
+              if not compact:
+                  compact = base[:budget].rstrip(' -—|:')
+              new_title = compact.rstrip(' -—|:') + suffix
+              encoded = html.escape(new_title, quote=False)
+              text = text[:match.start(1)] + encoded + text[match.end(1):]
+              path.write_text(text, encoding='utf-8')
+              changed += 1
+              print(f'Normalized {path}: {len(title)} -> {len(new_title)} chars')
+          print(f'Generated article title normalizations: {changed}')
+          PY
+
       - name: Full public-site SEO and link audit
         run: python .github/scripts/site_quality_audit.py
 
@@ -136,16 +191,19 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          import re
           from pathlib import Path
           from urllib.parse import urlsplit
 
-          report=Path('site-quality-report.txt').read_text(encoding='utf-8')
-          m=re.search(r'Severe findings:\s*(\d+)',report)
-          severe=int(m.group(1)) if m else 999
-          print(f'Severe findings: {severe}')
+          site_quality=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=site_quality.get('severe',[])
+          warnings=site_quality.get('warnings',[])
+          print(f'Severe findings: {len(severe)}')
+          print(f'Warnings: {len(warnings)}')
           if severe:
               raise SystemExit('Autopilot blocked: public-site audit has severe findings.')
+          if warnings:
+              print('\n'.join(f'- {item}' for item in warnings))
+              raise SystemExit('Autopilot blocked: public-site audit has warnings.')
 
           if Path('search-growth-changed-files.txt').exists():
               files=[x.strip() for x in Path('search-growth-changed-files.txt').read_text().splitlines() if x.strip()]
@@ -171,7 +229,9 @@ jobs:
 
       - name: Commit safe daily changes
         id: commit
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'nexusnova-autopilot[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap-autopilot.xml sitemap-index.xml llms.txt
@@ -184,12 +244,19 @@ jobs:
               [ -n "$file" ] && git add -- "$file"
             done < search-growth-changed-files.txt
           fi
-          if [ -z "$(git status --porcelain)" ]; then
+          if git diff --cached --quiet; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
-            echo 'No useful public change today.'
+            echo 'No useful staged public change today.'
             exit 0
           fi
           git commit -m "automation: daily traffic autopilot ${GITHUB_RUN_ID}"
+          # Generated diagnostics are ignored/untracked. A clean worktree is
+          # required before rebasing against any bot commit that reached main.
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo 'Autopilot blocked: tracked unstaged changes remain after safe commit.' >&2
+            git status --short >&2
+            exit 1
+          fi
           git pull --rebase origin main
           git push origin HEAD:main
           echo 'changed=true' >> "$GITHUB_OUTPUT"
