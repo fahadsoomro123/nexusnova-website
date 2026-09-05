@@ -4,6 +4,8 @@ import { installAiPhotoCanvaWorkspaceV3 } from './ai-photo-canva-workspace-v3.js
 import { installPuterImageGenerator } from './ai-photo-puter-generator.js';
 import { installAiPhotoStudioHome } from './ai-photo-studio-home.js';
 import { installAiPhotoPhoneFeedbackV1 } from './ai-photo-phone-feedback-v1.js';
+import { installAiPhotoLockedVisualV1 } from './ai-photo-locked-visual-v1.js';
+import { installAiPhotoLockedReferenceAssetsV1 } from './ai-photo-locked-reference-assets-v1.js';
 
 export function renderAiPhotoStudio(){
   const root=renderFlagshipAiPhotoStudio();
@@ -26,7 +28,11 @@ export function renderAiPhotoStudio(){
   const puterCleanup=installPuterImageGenerator(root);
   const homeCleanup=installAiPhotoStudioHome(root);
   const phoneFeedbackCleanup=installAiPhotoPhoneFeedbackV1(root);
+  const lockedVisualCleanup=installAiPhotoLockedVisualV1(root);
+  const lockedReferenceCleanup=installAiPhotoLockedReferenceAssetsV1(root);
   root.__cleanup=()=>{
+    lockedReferenceCleanup?.();
+    lockedVisualCleanup?.();
     phoneFeedbackCleanup?.();
     homeCleanup?.();
     puterCleanup?.();
@@ -34,6 +40,6 @@ export function renderAiPhotoStudio(){
     focusCleanup?.();
     previousCleanup?.();
   };
-  root.dataset.aiPhotoFlagship='review-v6-phone-feedback';
+  root.dataset.aiPhotoFlagship='review-v8-locked-reference';
   return root;
 }
