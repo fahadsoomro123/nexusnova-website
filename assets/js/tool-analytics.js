@@ -15,6 +15,6 @@
     if(el.matches('#copy,[id*="copy" i]')){send('copy_result','copy');return}
     if(el.matches('#share,[id*="share" i]')){send('share_result','share');return}
     if(el.matches('#download,#image-download,[download],[id*="download" i]')){send('download_click','download');return}
-    if(el.matches('[data-go],#scan,#remove,#image-run,#calculate'))send('tool_action','run');
+    if(el.matches('[data-go],[data-mode],#run,#scan,#remove,#image-run,#calculate'))send('tool_action','run');
   },{passive:true});
 })();
