@@ -2,8 +2,8 @@ import { travelCall, travelHealth } from './travel-edge-client.js';
 
 const PLAN_KEY = 'nexusnova_travel_private_plan_v19';
 const OTA_STATE_KEY = 'nexusnova_ota_revision_counter_v1';
-const OTA_RELEASE_ID = 'travel-reference-ota-2';
-const OTA_RELEASE_REVISION = 2;
+const OTA_RELEASE_ID = 'travel-reference-ota-3';
+const OTA_RELEASE_REVISION = 3;
 const HERO_B64_URL = new URL('../../../assets/travel/reference-hero-right.webp.b64', import.meta.url).href;
 const FROM_B64_URL = new URL('../../../assets/travel/reference-from-exact.webp.b64', import.meta.url).href;
 const TO_B64_URL = new URL('../../../assets/travel/reference-to-exact.webp.b64', import.meta.url).href;
