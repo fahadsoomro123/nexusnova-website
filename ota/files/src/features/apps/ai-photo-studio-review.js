@@ -29,8 +29,8 @@ export function renderAiPhotoStudio(){
   const root=renderFlagshipAiPhotoStudio();
   const otaProofBadge=document.createElement('span');
   otaProofBadge.id='nx-ai-photo-ota-proof-badge';
-  otaProofBadge.textContent='1';
-  otaProofBadge.setAttribute('aria-label','OTA 1 active');
+  otaProofBadge.textContent='2';
+  otaProofBadge.setAttribute('aria-label','OTA 2 active');
   Object.assign(otaProofBadge.style,{position:'fixed',top:'8px',right:'8px',minWidth:'20px',height:'20px',padding:'0 5px',display:'grid',placeItems:'center',borderRadius:'10px',background:'#22c55e',color:'#06130a',font:'800 12px/1 system-ui,sans-serif',border:'2px solid rgba(255,255,255,.95)',boxShadow:'0 0 0 2px rgba(34,197,94,.28),0 0 12px rgba(34,197,94,.85)',zIndex:'2147483647',pointerEvents:'none'});
   root.append(otaProofBadge);
   const dedicated=[
