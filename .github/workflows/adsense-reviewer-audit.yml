@@ -1,0 +1,62 @@
+name: AdSense Reviewer Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'adsense_reviewer_audit.py'
+      - '.github/workflows/adsense-reviewer-audit.yml'
+      - '**.html'
+      - 'sitemap*.xml'
+      - 'robots.txt'
+      - 'ads.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reviewer-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run repository + live reviewer audit
+        run: python adsense_reviewer_audit.py --live
+      - name: Publish audit summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## AdSense Reviewer Audit' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f adsense-reviewer-audit.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          data=json.load(open('adsense-reviewer-audit.json',encoding='utf-8'))
+          s=data.get('summary',{})
+          print(f"- Status: **{s.get('status','UNKNOWN')}**")
+          print(f"- Blockers: **{s.get('blockers','?')}**")
+          print(f"- Warnings: **{s.get('warnings','?')}**")
+          local=data.get('local',{})
+          print(f"- Unique sitemap URLs: **{local.get('unique_sitemap_urls','?')}**")
+          print(f"- Sitemap entries: **{local.get('sitemap_entries','?')}**")
+          if local.get('blockers'):
+              print('\n### Local blockers')
+              for item in local['blockers'][:100]:
+                  print(f"- `{json.dumps(item,ensure_ascii=False)}`")
+          live=data.get('live',{})
+          if live.get('blockers'):
+              print('\n### Live blockers')
+              for item in live['blockers'][:100]:
+                  print(f"- `{json.dumps(item,ensure_ascii=False)}`")
+          PY
+          else
+            echo '- Report was not produced.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload full audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adsense-reviewer-audit-${{ github.run_id }}
+          path: adsense-reviewer-audit.json
+          if-no-files-found: warn
+          retention-days: 30
