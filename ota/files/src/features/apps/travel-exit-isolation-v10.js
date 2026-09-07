@@ -1,4 +1,4 @@
-import './travel-phone-layout-v14.js';
+import './travel-phone-layout-v15.js';
 
 // NexusNova Travel v10 route-exit isolation.
 // Travel intentionally locks the document while its fullscreen shell is mounted.
@@ -13,7 +13,8 @@ const GLOBAL_CLASSES = Object.freeze([
   'nn-travel-route-focus-open',
   'nn-travel-v8-active',
   'nn-travel-v8-editing',
-  'nn-travel-v14-keyboard'
+  'nn-travel-v14-keyboard',
+  'nn-travel-v15-keyboard'
 ]);
 const ROOT_CLASSES = Object.freeze([
   'nn-v8-results-open',
@@ -27,7 +28,8 @@ const ROOT_PROPERTIES = Object.freeze([
   '--nn-v8-results-bottom',
   '--nn-travel-frame-height',
   '--nn-v13-frame-height',
-  '--nn-v14-frame-height'
+  '--nn-v14-frame-height',
+  '--nn-v15-frame-height'
 ]);
 const SCREEN_CLASSES = Object.freeze([
   'nn-travel-reference-shell',
