@@ -1,8 +1,8 @@
-// NexusNova Travel OTA revision 14 badge stamper.
+// NexusNova Travel OTA revision 15 badge stamper.
 // Release-only metadata helper: no layout, provider, or navigation logic lives here.
-const REVISION = '14';
+const REVISION = '15';
 const ROOT_SELECTOR = '.nn-travel-v19';
-const STYLE_ID = 'nn-travel-ota-proof-v14';
+const STYLE_ID = 'nn-travel-ota-proof-v15';
 
 function ensureStyle() {
   if (document.getElementById(STYLE_ID)) return;
