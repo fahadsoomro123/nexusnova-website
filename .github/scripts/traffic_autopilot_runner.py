@@ -4,6 +4,7 @@ import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import feedparser
 import ai_provider
@@ -22,14 +23,12 @@ SOURCES = [
 
 INDEX_ROBOTS = "index,follow,max-image-preview:large"
 QUARANTINE_ROBOTS = "noindex,follow,max-image-preview:large"
-# Keep source-summary/autopilot articles out of search/discovery while the site
-# is being remediated for an AdSense low-value-content rejection. This flag is
-# intentionally explicit and reversible after a manual editorial re-review.
 ADSENSE_REMEDIATION_MODE = True
 ROBOTS_META_RE = re.compile(
     r'(<meta\b[^>]*\bname=["\']robots["\'][^>]*\bcontent=["\'])[^"\']*(["\'][^>]*>)',
     re.IGNORECASE,
 )
+SITEMAP_URL_RE = re.compile(r"\s*<url>\s*<loc>([^<]+)</loc>.*?</url>\s*", re.IGNORECASE | re.DOTALL)
 
 
 def parsed_time(entry) -> datetime | None:
@@ -76,7 +75,6 @@ def collect_trends() -> tuple[list[dict], list[str]]:
             if not title or not url:
                 continue
             summary = core.clean_text(entry.get("summary", "") or entry.get("description", ""))
-            # Feed metadata comes first so the resolved per-entry URL cannot be overwritten by source['url'].
             row = {**source, "title": title, "url": url, "summary": summary, "published": parsed_time(entry)}
             row["category"] = core.infer_category(f"{title} {summary}", source["category"])
             row["score"] = core.score_item(row)
@@ -151,14 +149,40 @@ def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
     }
 
 
+def sync_primary_sitemap(history: dict) -> list[str]:
+    """Remove autopilot source-summary URLs from the primary sitemap during remediation."""
+    if not ADSENSE_REMEDIATION_MODE:
+        return []
+    sitemap = core.ROOT / "sitemap.xml"
+    if not sitemap.exists():
+        return []
+    blocked = {str(row.get("url", "")).strip() for row in history.get("articles", []) if row.get("url")}
+    if not blocked:
+        return []
+    raw = sitemap.read_text(encoding="utf-8", errors="strict")
+    removed: list[str] = []
+
+    def repl(match: re.Match[str]) -> str:
+        url = match.group(1).strip()
+        if url in blocked:
+            removed.append(url)
+            return "\n"
+        return match.group(0)
+
+    updated = SITEMAP_URL_RE.sub(repl, raw)
+    updated = re.sub(r"\n{3,}", "\n\n", updated)
+    if updated != raw:
+        sitemap.write_text(updated, encoding="utf-8")
+    return removed
+
+
 def main() -> None:
     if not os.getenv("GSC_SITE_URL", "").strip():
         os.environ["GSC_SITE_URL"] = "sc-domain:nexusnovatools.com"
 
-    # Automated publication is hard-paused. During AdSense remediation all
-    # autopilot source-summary pages are force-quarantined from discovery.
     history = core.load_json(core.HISTORY_PATH, {"version": 1, "articles": [], "seo_refresh": {}})
     reviewed_history, editorial = apply_editorial_review_state(history)
+    primary_sitemap_removed = sync_primary_sitemap(history)
 
     trends, feed_errors = collect_trends()
     pulse = core.write_pulse(trends)
@@ -167,9 +191,8 @@ def main() -> None:
 
     published = None
     changed_urls = [f"{core.SITE}/", f"{core.SITE}/articles.html"]
-    changed_urls.extend(
-        f"{core.SITE}/{path}" for path in editorial["quarantined_pages_changed"]
-    )
+    changed_urls.extend(f"{core.SITE}/{path}" for path in editorial["quarantined_pages_changed"])
+    changed_urls.extend(primary_sitemap_removed)
 
     if core.PUBLISH_PATH.exists():
         core.PUBLISH_PATH.unlink()
@@ -186,6 +209,7 @@ def main() -> None:
         "article_published": published,
         "article_candidate": core.public_item(candidate) if candidate else None,
         "editorial_review": editorial,
+        "primary_sitemap_removed": primary_sitemap_removed,
         "ai": ai_provider.status(),
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
@@ -210,6 +234,7 @@ def main() -> None:
         "editorial_mode": editorial["mode"],
         "quarantined_changed": len(editorial["quarantined_pages_changed"]),
         "reviewed_articles": editorial["reviewed_articles"],
+        "primary_sitemap_removed": len(primary_sitemap_removed),
         "ai_provider": ai_status.get("provider"),
         "gsc_connected": analytics_report.get("connected", False),
         "feed_errors": len(feed_errors),
