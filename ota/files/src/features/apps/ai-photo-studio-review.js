@@ -27,21 +27,8 @@ import { installAiPhotoNavigation } from './ai-photo-navigation.js';
 import { hydrateAiPhotoTemplatePhotos } from './ai-photo-template-photo-hydrator-v1.js';
 import { installAiPhotoMobileWorkspaceCleanV1 } from './ai-photo-mobile-workspace-clean-v1.js';
 
-function installOtaProof3(){
-  let badge=document.getElementById('nx-ai-photo-ota-proof-badge');
-  if(!badge){
-    badge=document.createElement('div');
-    badge.id='nx-ai-photo-ota-proof-badge';
-    badge.style.cssText='position:fixed;top:6px;right:6px;z-index:2147483647;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#16c784;color:#06140e;font:900 12px/1 system-ui,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.45);pointer-events:none';
-    document.body.appendChild(badge);
-  }
-  badge.textContent='3';
-  badge.setAttribute('aria-label','OTA 3 active');
-}
-
 export function renderAiPhotoStudio(){
   hydrateAiPhotoTemplatePhotos();
-  installOtaProof3();
   const root=renderFlagshipAiPhotoStudio();
   const dedicated=[
     ['maskSize',13],
