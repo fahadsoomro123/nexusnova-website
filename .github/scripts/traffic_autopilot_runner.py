@@ -22,6 +22,10 @@ SOURCES = [
 
 INDEX_ROBOTS = "index,follow,max-image-preview:large"
 QUARANTINE_ROBOTS = "noindex,follow,max-image-preview:large"
+# Keep source-summary/autopilot articles out of search/discovery while the site
+# is being remediated for an AdSense low-value-content rejection. This flag is
+# intentionally explicit and reversible after a manual editorial re-review.
+ADSENSE_REMEDIATION_MODE = True
 ROBOTS_META_RE = re.compile(
     r'(<meta\b[^>]*\bname=["\']robots["\'][^>]*\bcontent=["\'])[^"\']*(["\'][^>]*>)',
     re.IGNORECASE,
@@ -98,7 +102,7 @@ def collect_trends() -> tuple[list[dict], list[str]]:
 
 
 def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
-    """Keep unreviewed autopilot pages out of search/discovery until a human approves them."""
+    """Keep autopilot pages out of search/discovery until remediation and manual review are complete."""
     reviewed_rows: list[dict] = []
     quarantined: list[str] = []
     restored: list[str] = []
@@ -122,7 +126,7 @@ def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
             errors.append(f"{rel}: article file missing")
             continue
 
-        reviewed = row.get("reviewed") is True
+        reviewed = row.get("reviewed") is True and not ADSENSE_REMEDIATION_MODE
         desired = INDEX_ROBOTS if reviewed else QUARANTINE_ROBOTS
         text = page.read_text(encoding="utf-8", errors="replace")
         new_text, count = ROBOTS_META_RE.subn(rf"\g<1>{desired}\g<2>", text, count=1)
@@ -138,7 +142,7 @@ def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
     reviewed_history = dict(history)
     reviewed_history["articles"] = reviewed_rows
     return reviewed_history, {
-        "mode": "manual_review_only",
+        "mode": "adsense_remediation_quarantine" if ADSENSE_REMEDIATION_MODE else "manual_review_only",
         "reviewed_articles": len(reviewed_rows),
         "unreviewed_articles": max(0, len(history.get("articles", [])) - len(reviewed_rows)),
         "quarantined_pages_changed": quarantined,
@@ -151,9 +155,8 @@ def main() -> None:
     if not os.getenv("GSC_SITE_URL", "").strip():
         os.environ["GSC_SITE_URL"] = "sc-domain:nexusnovatools.com"
 
-    # During AdSense review, automated article publication is hard-paused.
-    # Existing autopilot pages are only indexable/discoverable after a human
-    # explicitly sets reviewed=true for that history entry in a reviewed PR.
+    # Automated publication is hard-paused. During AdSense remediation all
+    # autopilot source-summary pages are force-quarantined from discovery.
     history = core.load_json(core.HISTORY_PATH, {"version": 1, "articles": [], "seo_refresh": {}})
     reviewed_history, editorial = apply_editorial_review_state(history)
 
@@ -187,6 +190,7 @@ def main() -> None:
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
         "safety": {
+            "adsense_remediation_mode": ADSENSE_REMEDIATION_MODE,
             "automatic_article_publish": False,
             "manual_editorial_review_required": True,
             "max_articles_per_run": 0,
