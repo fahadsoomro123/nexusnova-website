@@ -1,0 +1,121 @@
+name: Drive History OTA 6
+
+on:
+  push:
+    branches: [nexusnova-ota-public]
+    paths:
+      - '.github/workflows/drive-history-ota-6.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-ota-public-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DRIVE_SOURCE: 6bb975d1a6791940776a8b628358336f5df5728c
+      OTA_BASE: 8d1aaaee6f28b974a8c8b3ff213beb1318ec7405
+    steps:
+      - name: Check out live OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Fetch exact public Drive web patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ota/files/src
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/fahadsoomro123/nexusnova-app-public-build/${DRIVE_SOURCE}/fresh-rebuild/src/nova-drive-history-v1.js" \
+            -o ota/files/src/nova-drive-history-v1.js
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/fahadsoomro123/nexusnova-app-public-build/${DRIVE_SOURCE}/fresh-rebuild/src/nova-vehicle-premium-ui.js" \
+            -o ota/files/src/nova-vehicle-premium-ui.js
+
+      - name: Build cumulative atomic OTA manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          manifest_path = Path('ota/manifest.json')
+          manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+          source = os.environ['DRIVE_SOURCE'].strip().lower()
+          base = os.environ['OTA_BASE'].strip().lower()
+          assert manifest.get('schema') == 2, 'OTA schema changed'
+          assert manifest.get('base') == base, f"OTA base changed: {manifest.get('base')}"
+          assert len(source) == 40 and all(c in '0123456789abcdef' for c in source)
+
+          entries = {row['path']: dict(row) for row in manifest.get('files', [])}
+          before = {k: dict(v) for k, v in entries.items()}
+          drive_paths = [
+              'src/nova-drive-history-v1.js',
+              'src/nova-vehicle-premium-ui.js',
+          ]
+
+          for rel in drive_paths:
+              data = (Path('ota/files') / rel).read_bytes()
+              entries[rel] = {
+                  'path': rel,
+                  'sha256': hashlib.sha256(data).hexdigest(),
+                  'size': len(data),
+              }
+
+          history = (Path('ota/files') / 'src/nova-drive-history-v1.js').read_text(encoding='utf-8')
+          loader = (Path('ota/files') / 'src/nova-vehicle-premium-ui.js').read_text(encoding='utf-8')
+          assert "native.active===true" in history, 'new-trip reset gate missing'
+          assert "paintSticky" in history, 'sticky last-trip display missing'
+          assert "data-approved-history-view" in history, 'fixed History sibling view missing'
+          assert "nova-drive-history-v1.js?ota=drive-history-v1" in loader, 'History loader missing'
+          assert 'index.html' in entries, 'OTA entry point missing'
+
+          # Preserve every currently-live Travel/AI Photo/ad file exactly; only the
+          # two Drive paths above may be new or replaced in this release.
+          for path, old in before.items():
+              if path not in drive_paths:
+                  assert entries[path] == old, f'unrelated OTA entry changed: {path}'
+
+          previous_proof = str(manifest.get('proof_number', '0'))
+          try:
+              next_proof = str(max(5, int(previous_proof)) + 1)
+          except ValueError:
+              next_proof = '6'
+
+          manifest['version'] = source
+          manifest['drive_source'] = source
+          manifest['proof_number'] = next_proof
+          manifest['files'] = sorted(entries.values(), key=lambda row: row['path'])
+
+          total = 0
+          for row in manifest['files']:
+              data = (Path('ota/files') / row['path']).read_bytes()
+              assert len(data) == row['size'], row['path']
+              assert hashlib.sha256(data).hexdigest() == row['sha256'], row['path']
+              total += len(data)
+          assert 1 <= len(manifest['files']) < 2000
+          assert total < 60 * 1024 * 1024
+
+          manifest_path.write_text(json.dumps(manifest, separators=(',', ':')), encoding='utf-8')
+          print(f"PASS: OTA {next_proof} version={source} files={len(manifest['files'])} bytes={total}; unrelated live OTA files preserved")
+          PY
+
+      - name: Activate Drive History OTA atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota/manifest.json ota/files/src/nova-drive-history-v1.js ota/files/src/nova-vehicle-premium-ui.js
+          git rm .github/workflows/drive-history-ota-6.yml
+          git diff --cached --check
+          git commit -m "release: activate Drive History OTA 6 ${DRIVE_SOURCE}"
+          git push origin HEAD:nexusnova-ota-public
