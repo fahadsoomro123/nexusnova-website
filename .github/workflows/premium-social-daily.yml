@@ -12,6 +12,13 @@ on:
         description: 'Campaign slot 1-5 (blank = recover earliest due missing slot)'
         required: false
         type: string
+  workflow_run:
+    # Independent safety net: the hourly traffic watcher is already running on GitHub-hosted runners.
+    # If this workflow's own schedule is delayed/missed, its completion wakes the same idempotent resolver.
+    workflows:
+      - NexusNova Meaningful Traffic Watch
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
