@@ -1,6 +1,8 @@
 import { travelCall, travelHealth } from './travel-edge-client.js';
 
 const PLAN_KEY = 'nexusnova_travel_private_plan_v19';
+const OTA_STATE_KEY = 'nexusnova_ota_revision_counter_v1';
+const OTA_RELEASE_ID = 'travel-reference-ota-1';
 const HERO_B64_URL = new URL('../../../assets/travel/reference-hero-right.webp.b64', import.meta.url).href;
 const FROM_B64_URL = new URL('../../../assets/travel/reference-from-exact.webp.b64', import.meta.url).href;
 const TO_B64_URL = new URL('../../../assets/travel/reference-to-exact.webp.b64', import.meta.url).href;
@@ -51,6 +53,7 @@ color:#f7fbff!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",san
 .nn-travel-v19 button,.nn-travel-v19 input,.nn-travel-v19 select,.nn-travel-v19 textarea{font:inherit}
 .nn-travel-v19 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .nn-travel-frame{position:absolute;inset:0;display:grid;grid-template-rows:10vw 8.7vw minmax(0,1fr);gap:0;overflow:hidden}
+.nn-ota-badge{position:absolute;left:3px;top:2px;z-index:500;min-width:16px;height:16px;padding:0 4px;border:1px solid rgba(92,255,139,.92);border-radius:999px;background:#063a1e;color:#6dff99;font-size:10px;font-weight:900;line-height:14px;text-align:center;box-shadow:0 0 9px rgba(46,255,118,.58)}
 .nn-travel-head{height:10vw;min-height:38px;max-height:46px;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:0 3.1vw}
 .nn-head-btn{width:7.5vw;height:7.5vw;min-width:34px;min-height:34px;max-width:42px;max-height:42px;border:1px solid #1f6e9e;border-radius:50%;background:linear-gradient(180deg,#09365a,#041d32);color:#b8edff;display:grid;place-items:center;font-size:25px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 5px 13px rgba(0,0,0,.34)}
 .nn-head-btn:last-child{justify-self:end;font-size:21px}
@@ -179,6 +182,7 @@ function routeMarkup(kind, label, value, city, attr) {
 
 function markup() {
   return `<div class="nn-travel-frame">
+    <div class="nn-ota-badge" data-ota-badge aria-label="OTA revision"></div>
     <header class="nn-travel-head">
       <button class="nn-head-btn" data-travel-back type="button" aria-label="Back">‹</button>
       <div class="nn-brand" aria-label="NexusNova Travel">
@@ -557,6 +561,24 @@ function loadPlan(root) {
   } catch {}
 }
 
+function updateOtaBadge(root) {
+  let state = {releaseId:'', count:0};
+  try {
+    state = {...state, ...(JSON.parse(localStorage.getItem(OTA_STATE_KEY) || '{}') || {})};
+    if (state.releaseId !== OTA_RELEASE_ID) {
+      state.releaseId = OTA_RELEASE_ID;
+      state.count = Math.max(0, Number(state.count) || 0) + 1;
+      localStorage.setItem(OTA_STATE_KEY, JSON.stringify(state));
+    }
+  } catch {
+    state = {releaseId:OTA_RELEASE_ID, count:1};
+  }
+  const badge = root.querySelector('[data-ota-badge]');
+  if (badge) badge.textContent = String(Math.max(1, Number(state.count) || 1));
+  root.dataset.otaRevision = String(Math.max(1, Number(state.count) || 1));
+  root.dataset.otaRelease = OTA_RELEASE_ID;
+}
+
 async function readB64(url) {
   const response = await fetch(url, {cache:'force-cache'});
   const text = (await response.text()).trim();
@@ -720,6 +742,7 @@ export function renderTravelSuite() {
   root.innerHTML = markup();
 
   document.documentElement.classList.add('nn-travel-reference-lock');
+  updateOtaBadge(root);
   activatePanel(root,'flights');
   wire(root);
   installShell(root);
