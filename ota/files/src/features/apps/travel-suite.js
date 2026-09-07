@@ -2,8 +2,7 @@ import { travelCall, travelHealth } from './travel-edge-client.js';
 
 const PLAN_KEY = 'nexusnova_travel_private_plan_v19';
 const OTA_STATE_KEY = 'nexusnova_ota_revision_counter_v1';
-const OTA_RELEASE_ID = 'travel-reference-ota-3';
-const OTA_RELEASE_REVISION = 3;
+const OTA_RELEASE_ID = 'travel-reference-ota-1';
 const HERO_B64_URL = new URL('../../../assets/travel/reference-hero-right.webp.b64', import.meta.url).href;
 const FROM_B64_URL = new URL('../../../assets/travel/reference-from-exact.webp.b64', import.meta.url).href;
 const TO_B64_URL = new URL('../../../assets/travel/reference-to-exact.webp.b64', import.meta.url).href;
@@ -568,15 +567,15 @@ function updateOtaBadge(root) {
     state = {...state, ...(JSON.parse(localStorage.getItem(OTA_STATE_KEY) || '{}') || {})};
     if (state.releaseId !== OTA_RELEASE_ID) {
       state.releaseId = OTA_RELEASE_ID;
-      state.count = OTA_RELEASE_REVISION;
+      state.count = Math.max(0, Number(state.count) || 0) + 1;
       localStorage.setItem(OTA_STATE_KEY, JSON.stringify(state));
     }
   } catch {
-    state = {releaseId:OTA_RELEASE_ID, count:OTA_RELEASE_REVISION};
+    state = {releaseId:OTA_RELEASE_ID, count:1};
   }
   const badge = root.querySelector('[data-ota-badge]');
-  if (badge) badge.textContent = String(OTA_RELEASE_REVISION);
-  root.dataset.otaRevision = String(OTA_RELEASE_REVISION);
+  if (badge) badge.textContent = String(Math.max(1, Number(state.count) || 1));
+  root.dataset.otaRevision = String(Math.max(1, Number(state.count) || 1));
   root.dataset.otaRelease = OTA_RELEASE_ID;
 }
 
