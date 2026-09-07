@@ -1,5 +1,5 @@
 import { renderAiPhotoStudio as renderFlagshipAiPhotoStudio } from './ai-photo-adjust-editor.js';
-import { installSliderOnlyFocus } from './ai-photo-focus-interaction.js';
+import { installSliderOnlyFocus } from './ai-photo-slider-focus-global-v25.js';
 import { installAiPhotoCanvaWorkspaceV3 } from './ai-photo-canva-workspace-v3.js';
 import { installAiPhotoDesignEditorControls } from './ai-photo-design-editor-controls.js';
 import { installAiPhotoDesignDelightV13 } from './ai-photo-design-delight-v13.js';
@@ -24,15 +24,25 @@ import { installAiPhotoFlagshipShellV14 } from './ai-photo-flagship-shell-v14.js
 import { installAiPhotoTouchSmoothV15 } from './ai-photo-touch-smooth-v15.js';
 import { installAiPhotoRetouchRepairV20 } from './ai-photo-retouch-repair-v20.js';
 import { installAiPhotoNavigation } from './ai-photo-navigation.js';
+import { hydrateAiPhotoTemplatePhotos } from './ai-photo-template-photo-hydrator-v1.js';
+import { installAiPhotoMobileWorkspaceCleanV1 } from './ai-photo-mobile-workspace-clean-v1.js';
+
+function installOtaProof3(){
+  let badge=document.getElementById('nx-ai-photo-ota-proof-badge');
+  if(!badge){
+    badge=document.createElement('div');
+    badge.id='nx-ai-photo-ota-proof-badge';
+    badge.style.cssText='position:fixed;top:6px;right:6px;z-index:2147483647;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#16c784;color:#06140e;font:900 12px/1 system-ui,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.45);pointer-events:none';
+    document.body.appendChild(badge);
+  }
+  badge.textContent='3';
+  badge.setAttribute('aria-label','OTA 3 active');
+}
 
 export function renderAiPhotoStudio(){
+  hydrateAiPhotoTemplatePhotos();
+  installOtaProof3();
   const root=renderFlagshipAiPhotoStudio();
-  const otaProofBadge=document.createElement('span');
-  otaProofBadge.id='nx-ai-photo-ota-proof-badge';
-  otaProofBadge.textContent='2';
-  otaProofBadge.setAttribute('aria-label','OTA 2 active');
-  Object.assign(otaProofBadge.style,{position:'fixed',top:'8px',right:'8px',minWidth:'20px',height:'20px',padding:'0 5px',display:'grid',placeItems:'center',borderRadius:'10px',background:'#22c55e',color:'#06130a',font:'800 12px/1 system-ui,sans-serif',border:'2px solid rgba(255,255,255,.95)',boxShadow:'0 0 0 2px rgba(34,197,94,.28),0 0 12px rgba(34,197,94,.85)',zIndex:'2147483647',pointerEvents:'none'});
-  root.append(otaProofBadge);
   const dedicated=[
     ['maskSize',13],
     ['maskFeather',45],
@@ -56,6 +66,7 @@ export function renderAiPhotoStudio(){
   const puterCleanup=installPuterImageGenerator(root);
   const homeCleanup=installAiPhotoStudioHome(root);
   const phoneFeedbackCleanup=installAiPhotoPhoneFeedbackV1(root);
+  const mobileWorkspaceCleanup=installAiPhotoMobileWorkspaceCleanV1(root);
   const generativeEditCleanup=installAiPhotoGenerativeEditV19(root);
   const lockedVisualCleanup=installAiPhotoLockedVisualV1(root);
   const quickToolsCleanup=installAiPhotoQuickTools(root);
@@ -89,6 +100,7 @@ export function renderAiPhotoStudio(){
     quickToolsCleanup?.();
     lockedVisualCleanup?.();
     generativeEditCleanup?.();
+    mobileWorkspaceCleanup?.();
     phoneFeedbackCleanup?.();
     homeCleanup?.();
     puterCleanup?.();
