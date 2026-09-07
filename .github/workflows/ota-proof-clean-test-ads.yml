@@ -1,0 +1,111 @@
+name: OTA Clean Proof + Test Ads
+
+on:
+  push:
+    branches: [nexusnova-ota-public]
+    paths:
+      - '.github/workflows/ota-proof-clean-test-ads.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      APP_SOURCE: f11bd996c41a75825684c65f1d3988f4079969e1
+      APP_REPO: fahadsoomro123/nexusnova-app-public-build
+    steps:
+      - name: Check out current OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Preserve latest concurrent OTA state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin nexusnova-ota-public
+
+      - name: Stage clean AI Photo proof removal and test-ad warmup
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://raw.githubusercontent.com/${APP_REPO}/${APP_SOURCE}/fresh-rebuild"
+          mkdir -p ota/files/src/features/apps ota/files/src
+          curl -fsSL "$base/src/features/apps/ai-photo-studio-review.js" -o ota/files/src/features/apps/ai-photo-studio-review.js
+          curl -fsSL "$base/src/main.js" -o ota/files/src/main.js
+
+          if grep -Eq 'nx-ai-photo-ota-proof-badge|installOtaProof|OTA [0-9]+ active' ota/files/src/features/apps/ai-photo-studio-review.js; then
+            echo 'OTA proof marker still exists in clean source.' >&2
+            exit 1
+          fi
+          grep -Fq "import { nativeAds } from './core/native-ads.js';" ota/files/src/main.js
+          grep -Fq 'nativeAds.requestStatus();' ota/files/src/main.js
+
+          # Safety-lock verification: the source used for this OTA must remain on
+          # Google's official test inventory; no production ad serving is enabled.
+          curl -fsSL "$base/../NexusNovaAndroid/app/build.gradle.kts" -o /tmp/build.gradle.kts
+          curl -fsSL "$base/../NexusNovaAndroid/app/src/main/java/com/nexusnova/app/NexusAdManager.kt" -o /tmp/NexusAdManager.kt
+          grep -Fq 'NEXUS_ADS_TEST_MODE", "true"' /tmp/build.gradle.kts
+          grep -Fq 'ca-app-pub-3940256099942544/5224354917' /tmp/NexusAdManager.kt
+          grep -Fq 'ca-app-pub-3940256099942544/1033173712' /tmp/NexusAdManager.kt
+          echo 'PASS — proof marker absent and Google TEST ad warmup is source-locked.'
+
+      - name: Rebuild cumulative manifest without touching Travel payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+          const manifestPath='ota/manifest.json';
+          const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+          if(manifest.schema!==2) throw new Error('Unexpected OTA schema');
+          if(manifest.base!=='8d1aaaee6f28b974a8c8b3ff213beb1318ec7405') throw new Error('Installed APK base changed');
+          if(Number(manifest.travel_revision)!==5) throw new Error('Travel revision 5 was not preserved');
+          const changed=[
+            'src/features/apps/ai-photo-studio-review.js',
+            'src/main.js'
+          ];
+          const rows=new Map((manifest.files||[]).map(row=>[row.path,row]));
+          for(const path of changed){
+            const bytes=fs.readFileSync(`ota/files/${path}`);
+            rows.set(path,{path,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),size:bytes.length});
+          }
+          manifest.version=process.env.GITHUB_SHA;
+          manifest.ad_test_source=process.env.APP_SOURCE;
+          manifest.visual_proof=false;
+          manifest.files=[...rows.values()].sort((a,b)=>a.path.localeCompare(b.path));
+          for(const row of manifest.files){
+            const file=`ota/files/${row.path}`;
+            if(!fs.existsSync(file)) throw new Error(`Missing OTA file ${row.path}`);
+            const bytes=fs.readFileSync(file);
+            const hash=crypto.createHash('sha256').update(bytes).digest('hex');
+            if(bytes.length!==row.size||hash!==row.sha256) throw new Error(`Hash mismatch ${row.path}`);
+          }
+          fs.writeFileSync(manifestPath,JSON.stringify(manifest));
+          console.log(`PASS — ${manifest.files.length} cumulative files verified; version ${manifest.version}`);
+          NODE
+
+      - name: Publish new OTA version
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota/files/src/main.js ota/files/src/features/apps/ai-photo-studio-review.js ota/manifest.json
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No OTA changes to publish.' >&2; exit 1; }
+          git commit -m "ota: remove proof badge and warm Google test ads"
+          git push origin HEAD:nexusnova-ota-public
+
+      - name: Verify published state
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Eq 'nx-ai-photo-ota-proof-badge|installOtaProof|OTA [0-9]+ active' ota/files/src/features/apps/ai-photo-studio-review.js
+          grep -Fq 'nativeAds.requestStatus();' ota/files/src/main.js
+          node -e "const m=require('./ota/manifest.json'); if(m.version!==process.env.GITHUB_SHA||m.visual_proof!==false||m.ad_test_source!==process.env.APP_SOURCE||m.travel_revision!==5) process.exit(1); console.log('PASS — clean proof removal + test-ad warmup manifest active')"
