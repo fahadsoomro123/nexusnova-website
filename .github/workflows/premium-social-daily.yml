@@ -2,6 +2,8 @@ name: NexusNova Premium Social 5x Daily
 
 on:
   schedule:
+    # Exact premium slots in Pakistan time (UTC+5): 08:30, 11:30, 14:30, 17:30, 20:30.
+    - cron: '30 3,6,9,12,15 * * *'
     # Recovery heartbeat every 30 minutes during Pakistan posting hours.
     # The resolver publishes ONLY the earliest due slot not successfully delivered today.
     - cron: '10,40 3-15 * * *'
