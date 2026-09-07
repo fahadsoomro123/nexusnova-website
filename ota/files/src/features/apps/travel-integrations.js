@@ -1,7 +1,6 @@
 import { renderTravelGroundPanel } from './travel-ground.js';
 
-const TRAVEL_HOST_STYLE_ID = 'nn-travel-host-guard-v7';
-const TRAVEL_OTA_REVISION = 5;
+const TRAVEL_HOST_STYLE_ID = 'nn-travel-host-guard-v8';
 
 function localDateOffset(days = 0) {
   const date = new Date();
@@ -65,15 +64,6 @@ function normalizeTravelDates(root) {
   if (tripStart && !hasSavedTrip && !tripStart.value) tripStart.value = localDateOffset(0);
 }
 
-function stampTravelRevision(root) {
-  const badge = root.querySelector('.nn-ota-badge');
-  if (!badge) return;
-  badge.textContent = String(TRAVEL_OTA_REVISION);
-  badge.dataset.otaRevision = String(TRAVEL_OTA_REVISION);
-  badge.setAttribute('aria-label', `OTA revision ${TRAVEL_OTA_REVISION}`);
-  root.dataset.otaRevision = String(TRAVEL_OTA_REVISION);
-}
-
 function installRouteEditing(root) {
   const bindings = [
     ['[data-flight-origin]', '[data-city="from"]'],
@@ -127,7 +117,7 @@ html.nn-travel-host-lock .nx-screen.nn-travel-host-screen>[data-app-mount]{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important
 }
-html.nn-travel-host-lock .nx-dock.global{
+html.nn-travel-host-lock #nx-app>.nx-dock{
   margin:0!important;transform:none!important;left:5px!important;right:5px!important;
   width:auto!important;bottom:4px!important
 }
@@ -137,7 +127,7 @@ html.nn-travel-host-lock .nn-travel-v19{
 }
 html.nn-travel-host-lock .nn-travel-v19 .nn-travel-frame{
   top:0!important;left:0!important;right:0!important;bottom:auto!important;
-  width:100%!important;height:var(--nn-travel-frame-height,calc(100% - 72px))!important;
+  width:100%!important;height:var(--nn-travel-frame-height,calc(100% - 54px))!important;
   min-height:0!important;max-height:none!important;overflow:hidden!important
 }
 html.nn-travel-host-lock .nn-travel-v19 .nn-travel-stage{
@@ -181,8 +171,8 @@ html.nn-travel-host-lock .nn-travel-v19 [data-ground-results]{
     min-height:0!important;height:100%!important
   }
 }
-html.nn-travel-keyboard-open .nx-dock.global,
-html.nn-travel-route-focus-open .nx-dock.global{display:none!important}
+html.nn-travel-keyboard-open #nx-app>.nx-dock,
+html.nn-travel-route-focus-open #nx-app>.nx-dock{display:none!important}
 html.nn-travel-keyboard-open .nn-travel-v19 .nn-travel-frame,
 .nn-travel-v19.nn-travel-route-focus .nn-travel-frame{
   grid-template-rows:0 0 minmax(0,1fr)!important
@@ -230,7 +220,7 @@ html.nn-travel-keyboard-open .nn-travel-v19 .nn-route,
 html.nn-travel-keyboard-open .nn-travel-v19 .nn-route,
 .nn-travel-v19.nn-travel-route-focus .nn-route{padding:4px 7px!important}
 html.nn-travel-keyboard-open .nn-travel-v19 .nn-route input,
-.nn-travel-v19.nn-travel-route-focus .nn-route input{width:82%!important;height:27px!important;font-size:18px!important}
+.nn-travel-v19.nn-travel-route-focus .nn-route input{width:82%!important;height:30px!important;min-height:30px!important;font-size:18px!important}
 html.nn-travel-keyboard-open .nn-travel-v19 .nn-route small,
 .nn-travel-v19.nn-travel-route-focus .nn-route small{font-size:7px!important;line-height:1.05!important}
 html.nn-travel-keyboard-open .nn-travel-v19 .nn-control,
@@ -261,10 +251,9 @@ html.nn-travel-keyboard-open .nn-travel-v19 .nn-trust b,
 }
 
 function installLockedTravelHost(root) {
-  if (root.dataset.travelHostGuard === 'v7') return;
-  root.dataset.travelHostGuard = 'v7';
+  if (root.dataset.travelHostGuard === 'v8') return;
+  root.dataset.travelHostGuard = 'v8';
   ensureTravelHostStyle();
-  stampTravelRevision(root);
   installRouteEditing(root);
 
   const doc = document.documentElement;
@@ -302,22 +291,25 @@ function installLockedTravelHost(root) {
     const viewportTop = Math.max(0, Number(visual?.offsetTop || 0));
     const visibleBottom = viewportTop + Math.min(layoutHeight, visibleHeight);
     const compact = keyboardOpen || routeFocus;
-    let targetBottom = Math.min(rootRect.bottom, visibleBottom);
+    let targetBottom = visibleBottom;
     let dockGap = 0;
 
     if (!compact) {
-      const dock = document.querySelector('.nx-dock.global');
+      const dock = document.querySelector('#nx-app > .nx-dock') || document.querySelector('.nx-dock');
       if (dock instanceof HTMLElement && getComputedStyle(dock).display !== 'none') {
         const dockRect = dock.getBoundingClientRect();
-        targetBottom = Math.min(targetBottom, dockRect.top - 6);
+        targetBottom = Math.min(visibleBottom, dockRect.top - 6);
         dockGap = Math.max(0, Math.round(dockRect.top - targetBottom));
       }
     }
 
+    targetBottom = Math.max(rootRect.top + 1, targetBottom);
     const frameHeight = Math.max(1, Math.floor(targetBottom - rootRect.top));
     root.style.setProperty('--nn-travel-frame-height', `${frameHeight}px`);
     root.dataset.travelFrameHeight = String(frameHeight);
     root.dataset.travelDockGap = String(dockGap);
+    root.dataset.travelRootBottom = String(Math.round(rootRect.bottom));
+    root.dataset.travelTargetBottom = String(Math.round(targetBottom));
   };
 
   const syncViewport = () => {
