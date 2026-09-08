@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — VIP Orbit V10</title>
+<style>
+:root{--bg:#020914;--panel:#061421;--text:#eff9ff;--muted:#7890a5;--cyan:#6ff2ff;--violet:#9d80ff;--mint:#6ff0c9}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 80% 8%,rgba(122,78,255,.13),transparent 29%),radial-gradient(circle at 15% 82%,rgba(63,223,255,.07),transparent 27%),linear-gradient(180deg,#020812,#07131f);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}body{padding:12px}.shell{width:min(1000px,100%);margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 14px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;color:#91f8ff;border:1px solid rgba(111,236,255,.28);background:linear-gradient(145deg,rgba(74,229,255,.15),rgba(145,97,255,.17));box-shadow:0 0 30px rgba(93,231,255,.08)}.brand b{display:block;font-size:13px;letter-spacing:.11em}.brand small{display:block;color:#6f879b;font-size:9px;letter-spacing:.14em}.badge{font-size:8px;letter-spacing:.13em;color:#82eff9;border:1px solid rgba(105,229,255,.16);padding:7px 10px;border-radius:999px}.panel{border:1px solid rgba(111,229,255,.16);border-radius:29px;background:linear-gradient(155deg,rgba(9,24,39,.97),rgba(4,14,24,.99));padding:12px;box-shadow:0 28px 80px rgba(0,0,0,.34)}.camera{position:relative;height:min(74vh,720px);min-height:560px;border-radius:24px;overflow:hidden;background:#01060b;border:1px solid rgba(107,229,255,.14)}.camera:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 50% 44%,rgba(78,203,255,.08),transparent 44%),linear-gradient(180deg,rgba(117,90,255,.025),transparent 42%,rgba(65,229,204,.02));mix-blend-mode:screen}.camera:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 100px rgba(1,7,13,.54)}video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}video{transform:scaleX(-1);filter:brightness(1.14) contrast(.96) saturate(.95)}canvas{z-index:2;transform:scaleX(-1);pointer-events:none}.hud{position:absolute;z-index:5;left:15px;right:15px;top:15px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}.pill{padding:8px 11px;border-radius:999px;background:rgba(3,11,20,.66);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px);font-size:8px;letter-spacing:.12em;color:#8ca4b7}.pill strong{color:#88f0fb}.challenge{position:absolute;z-index:6;left:15px;right:15px;bottom:15px;padding:15px 16px;border-radius:19px;background:rgba(4,13,23,.78);border:1px solid rgba(102,225,255,.10);backdrop-filter:blur(15px);box-shadow:0 16px 46px rgba(0,0,0,.20)}.challenge small{display:block;color:#70879b;font-size:8px;letter-spacing:.14em;margin-bottom:5px}.challenge b{font-size:18px}.challenge p{margin:5px 0 0;color:#8299ab;font-size:9px}.controls{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:10px}.btn{border-radius:14px;padding:14px 16px;font-weight:900;font-size:12px}.start{border:0;background:linear-gradient(135deg,#50deed,#887ef3);color:#04111b}.reset{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#c7d8e5}.msg{margin-top:10px;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.07);color:#8097aa;font-size:10px;line-height:1.45}.ok{display:none;border-color:rgba(99,239,189,.18);color:#a4ddca}.ok.show{display:block}.err{display:none;border-color:rgba(255,177,109,.16);color:#c1a58d}.err.show{display:block}.foot{text-align:center;color:#60798d;font-size:8px;letter-spacing:.11em;margin:11px 0 2px}@media(max-width:520px){.camera{height:71vh;min-height:530px}.controls{grid-template-columns:1fr}.reset{display:none}.badge{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div class="brand"><div class="logo">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>VIP ORBIT • V10</small></div></div>
+    <div class="badge">ROUND PROGRESS SYSTEM</div>
+  </div>
+  <div class="panel">
+    <div class="camera">
+      <video id="v" autoplay playsinline muted></video>
+      <canvas id="c"></canvas>
+      <div class="hud"><div class="pill"><strong id="state">CAMERA OFF</strong></div><div class="pill" id="meter">PROGRESS • 0%</div></div>
+      <div class="challenge"><small>HUMANPROOF LIVE CHECK</small><b id="prompt">Ready when you are.</b><p id="sub">Tap Start Verification to begin.</p></div>
+    </div>
+    <div class="controls"><button class="btn start" id="start">START VERIFICATION</button><button class="btn reset" id="reset">RESET</button></div>
+    <div class="msg ok" id="ok">Human confirmed. In the full product this result continues into exact-action binding and the signed verification receipt.</div>
+    <div class="msg err" id="err"></div>
+  </div>
+  <div class="foot">ISOLATED PREVIEW • NOT PRODUCTION • NO FACE MESH SHOWN TO THE USER</div>
+</div>
+<script type="module">
+import{FaceLandmarker,FilesetResolver}from'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3';
+const v=document.getElementById('v'),c=document.getElementById('c'),x=c.getContext('2d'),start=document.getElementById('start'),reset=document.getElementById('reset'),state=document.getElementById('state'),meter=document.getElementById('meter'),prompt=document.getElementById('prompt'),sub=document.getElementById('sub'),ok=document.getElementById('ok'),err=document.getElementById('err');
+let lm=null,stream=null,run=false,last=-1,idx=0,hold=0,seq=[],phase=0,progress=0,targetProgress=0,ring={cx:0,cy:0,r:165},targetRing={cx:0,cy:0,r:165};
+const challenges=[{k:'blink',t:'Blink once',s:'Complete this check to fill the first half.'},{k:'smile',t:'Give a small smile',s:'A quick natural smile.'},{k:'mouth',t:'Open your mouth briefly',s:'Complete this check to fill the first half.'},{k:'brows',t:'Raise your eyebrows',s:'Complete this check to finish the circle.'}];
+const pick=()=>[...challenges].sort(()=>Math.random()-.5).slice(0,2);
+async function model(){if(lm)return;prompt.textContent='Preparing HumanProof…';sub.textContent='Initializing live face intelligence.';const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm');lm=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true,minFaceDetectionConfidence:.55,minFacePresenceConfidence:.55,minTrackingConfidence:.55})}
+function scores(r){const o={};for(const q of r.faceBlendshapes?.[0]?.categories||[])o[q.categoryName]=q.score;return o}
+function pass(k,s){if(k==='blink')return(s.eyeBlinkLeft||0)>.48&&(s.eyeBlinkRight||0)>.48;if(k==='smile')return((s.mouthSmileLeft||0)+(s.mouthSmileRight||0))/2>.42;if(k==='mouth')return(s.jawOpen||0)>.48;if(k==='brows')return(s.browInnerUp||0)>.32;return false}
+function show(){const q=seq[idx];prompt.textContent=q.t;sub.textContent=`Step ${idx+1} of 2 • ${q.s}`}
+function pt(a,i){return{x:a[i].x*c.width,y:a[i].y*c.height}}
+function updateRing(a){const L=pt(a,234),R=pt(a,454),T=pt(a,10),B=pt(a,152);const fw=Math.abs(R.x-L.x),fh=Math.abs(B.y-T.y);targetRing.cx=(L.x+R.x)/2;targetRing.cy=(T.y+B.y)/2;targetRing.r=Math.max(145,Math.min(Math.min(c.width,c.height)*.39,Math.max(fw*.92,fh*.62)+52));for(const k of['cx','cy','r'])ring[k]+=(targetRing[k]-ring[k])*.15}
+function arcSegment(cx,cy,r,a0,a1,width,color,alpha,glow){x.save();x.lineCap='round';x.strokeStyle=color;x.globalAlpha=alpha;x.lineWidth=width;x.shadowColor=color;x.shadowBlur=glow;x.beginPath();x.arc(cx,cy,r,a0,a1);x.stroke();x.restore()}
+function drawOrbit(a){
+  phase+=.032;updateRing(a);progress+=(targetProgress-progress)*.12;
+  const cx=ring.cx,cy=ring.cy,r=ring.r,done=targetProgress>=1;
+  const segs=28,gap=.035,filled=Math.round(progress*segs);
+  arcSegment(cx,cy,r,0,Math.PI*2,27,'rgba(18,39,58,1)',.74,0);
+  arcSegment(cx,cy,r,0,Math.PI*2,19,'rgba(95,223,255,1)',.09,18);
+  for(let i=0;i<segs;i++){
+    const a0=-Math.PI/2+i*(Math.PI*2/segs)+gap;
+    const a1=-Math.PI/2+(i+1)*(Math.PI*2/segs)-gap;
+    const isFill=i<filled;
+    if(isFill){
+      const color=done?'rgba(111,240,201,1)':(i%3===0?'rgba(158,128,255,1)':'rgba(111,242,255,1)');
+      arcSegment(cx,cy,r,a0,a1,16,color,.24,24);
+      arcSegment(cx,cy,r,a0,a1,11,color,.98,13);
+      arcSegment(cx,cy,r-1,a0+.01,a1-.01,3,'rgba(238,255,255,1)',.42,5);
+    }else{
+      arcSegment(cx,cy,r,a0,a1,12,'rgba(40,70,91,1)',.48,0);
+      arcSegment(cx,cy,r,a0+.01,a1-.01,2,'rgba(132,181,204,1)',.16,0);
+    }
+  }
+  arcSegment(cx,cy,r-26,0,Math.PI*2,5,done?'rgba(111,240,201,1)':'rgba(121,236,255,1)',.22,14);
+  arcSegment(cx,cy,r-26,phase*.28,phase*.28+Math.PI*.72,3,done?'rgba(111,240,201,1)':'rgba(171,137,255,1)',.68,14);
+  arcSegment(cx,cy,r+21,phase*.42,phase*.42+Math.PI*.36,4,done?'rgba(111,240,201,1)':'rgba(117,242,255,1)',.72,16);
+  arcSegment(cx,cy,r+21,phase*.42+Math.PI,phase*.42+Math.PI*1.22,3,'rgba(171,137,255,1)',done?.38:.58,12);
+  const marks=[[-Math.PI/2,0],[-Math.PI/2+Math.PI,0.5],[-Math.PI/2+Math.PI*2,1]];
+  for(const [ang,p] of marks){const px=cx+Math.cos(ang)*(r+1),py=cy+Math.sin(ang)*(r+1),active=progress+0.01>=p;x.save();x.beginPath();x.arc(px,py,active?5.2:3.4,0,Math.PI*2);x.fillStyle=active?(done?'rgba(111,240,201,.98)':'rgba(228,252,255,.98)'):'rgba(85,116,134,.55)';x.shadowColor=x.fillStyle;x.shadowBlur=active?18:0;x.fill();x.restore()}
+  if(idx<2){const k=seq[idx]?.k;if(k==='blink'){const p1=pt(a,159),p2=pt(a,386);bloom(p1.x,p1.y,36,'163,137,255');bloom(p2.x,p2.y,36,'163,137,255')}else if(k==='smile'||k==='mouth'){const p=pt(a,13);bloom(p.x,p.y,52,'163,137,255')}else if(k==='brows'){const p1=pt(a,105),p2=pt(a,334);bloom(p1.x,p1.y,42,'111,242,255');bloom(p2.x,p2.y,42,'111,242,255')}}
+  meter.textContent=`PROGRESS • ${Math.round(progress*100)}%`;
+  if(done){const g=x.createRadialGradient(cx,cy,r*.15,cx,cy,r*1.04);g.addColorStop(0,'rgba(111,240,201,0)');g.addColorStop(.62,'rgba(111,240,201,.03)');g.addColorStop(1,`rgba(111,240,201,${.10+.04*Math.sin(phase*2)})`);x.fillStyle=g;x.beginPath();x.arc(cx,cy,r*1.05,0,Math.PI*2);x.fill()}
+}
+function bloom(px,py,r,rgb){const g=x.createRadialGradient(px,py,1,px,py,r);g.addColorStop(0,`rgba(${rgb},.68)`);g.addColorStop(.38,`rgba(${rgb},.20)`);g.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,Math.PI*2);x.fill()}
+async function begin(){err.classList.remove('show');ok.classList.remove('show');idx=0;hold=0;progress=0;targetProgress=0;seq=pick();start.disabled=true;try{if(!window.isSecureContext)throw Error('Secure HTTPS is required for camera verification.');await model();stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});v.srcObject=stream;await v.play();run=true;state.textContent='FACE SEARCHING';meter.textContent='PROGRESS • 0%';prompt.textContent='Center your face';sub.textContent='Keep your face inside the VIP circle.';requestAnimationFrame(loop)}catch(e){start.disabled=false;state.textContent='CAMERA OFF';meter.textContent='PROGRESS • 0%';prompt.textContent='Camera unavailable';sub.textContent='Allow camera permission and try again.';err.textContent=e?.message||String(e);err.classList.add('show')}}
+function stop(){run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null;x.clearRect(0,0,c.width,c.height);state.textContent='CAMERA OFF';meter.textContent='PROGRESS • 0%';start.disabled=false;prompt.textContent='Ready when you are.';sub.textContent='Tap Start Verification to begin.'}
+start.onclick=begin;reset.onclick=stop;
+function loop(){if(!run)return;if(v.readyState>=2&&v.currentTime!==last){last=v.currentTime;c.width=v.videoWidth||1280;c.height=v.videoHeight||720;x.clearRect(0,0,c.width,c.height);try{const r=lm.detectForVideo(v,performance.now());if(r.faceLandmarks?.length){state.textContent=idx>=2?'HUMAN CONFIRMED':'FACE LOCKED';drawOrbit(r.faceLandmarks[0]);if(idx===0&&prompt.textContent==='Center your face')show();if(idx<2){if(pass(seq[idx].k,scores(r))){hold++;if(hold>=2){idx++;hold=0;targetProgress=idx/2;if(idx>=2){state.textContent='HUMAN CONFIRMED';prompt.textContent='Human confirmed';sub.textContent='Both live checks completed.';ok.classList.add('show')}else show()}}else hold=0}}else state.textContent='FACE SEARCHING'}catch(e){}}requestAnimationFrame(loop)}
+</script>
+</body>
+</html>
