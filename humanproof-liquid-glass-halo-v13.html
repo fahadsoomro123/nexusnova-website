@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Liquid Glass Halo V13</title>
+<style>
+:root{
+  --bg:#030812;--panel:#07131f;--text:#eef8ff;--muted:#7d93a8;
+  --cyan:#73edff;--violet:#a98cff;--mint:#78f1ce;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+radial-gradient(circle at 80% 7%,rgba(135,92,255,.13),transparent 28%),
+radial-gradient(circle at 17% 82%,rgba(70,225,255,.06),transparent 26%),
+linear-gradient(180deg,#030812,#07131f);
+color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{padding:12px}.shell{width:min(980px,100%);margin:auto}
+.top{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;color:#8ff7ff;
+border:1px solid rgba(106,232,255,.28);background:linear-gradient(145deg,rgba(72,225,255,.14),rgba(146,97,255,.16))}
+.top b{display:block;font-size:13px;letter-spacing:.11em}.top small{display:block;color:#71879b;font-size:9px;letter-spacing:.14em}
+.panel{border:1px solid rgba(111,229,255,.16);border-radius:28px;padding:12px;
+background:linear-gradient(155deg,rgba(10,25,41,.97),rgba(5,15,25,.99));box-shadow:0 28px 80px rgba(0,0,0,.33)}
+.camera{position:relative;height:min(74vh,720px);min-height:560px;border-radius:24px;overflow:hidden;background:#02070c;
+border:1px solid rgba(106,229,255,.13)}
+video,canvas{position:absolute;inset:0;width:100%;height:100%}
+video{object-fit:cover;transform:scaleX(-1);filter:brightness(1.12) contrast(.98) saturate(.95)}
+canvas{z-index:2;pointer-events:none}
+.camera:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 110px rgba(2,9,17,.50)}
+.status{position:absolute;z-index:5;left:50%;top:16px;transform:translateX(-50%);padding:8px 12px;border-radius:999px;
+background:rgba(3,11,20,.66);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px);
+font-size:8px;letter-spacing:.13em;color:#9ab0c1}
+.challenge{position:absolute;z-index:6;left:18px;right:18px;bottom:18px;text-align:center;padding:14px 16px;border-radius:18px;
+background:rgba(4,13,23,.82);border:1px solid rgba(102,225,255,.09);backdrop-filter:blur(15px)}
+.challenge small{display:block;color:#6f879b;font-size:8px;letter-spacing:.14em;margin-bottom:6px}
+.challenge b{font-size:18px}.challenge p{margin:5px 0 0;color:#8399aa;font-size:10px}
+.progressbar{margin-top:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.025);
+border-radius:16px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between}
+.progressbar span{font-size:9px;color:#7f96a9;letter-spacing:.11em}.progressbar strong{font-size:11px;color:#c9f6ff}
+.controls{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:9px}
+.btn{border-radius:14px;padding:14px 16px;font-weight:900;font-size:12px}
+.start{border:0;background:linear-gradient(135deg,#52dcec,#887ef3);color:#05111b}
+.reset{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#c7d8e5}
+.err,.ok{display:none;margin-top:10px;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.07);font-size:10px}
+.err.show,.ok.show{display:block}.err{color:#c1a58d}.ok{color:#a6dec9;border-color:rgba(99,239,189,.17)}
+.foot{text-align:center;color:#60798d;font-size:8px;letter-spacing:.11em;margin:11px 0 2px}
+@media(max-width:520px){.camera{height:71vh;min-height:530px}.controls{grid-template-columns:1fr}.reset{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top"><div class="logo">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>LIQUID GLASS HALO • V13</small></div></div>
+  <div class="panel">
+    <div class="camera" id="camera">
+      <video id="v" autoplay playsinline muted></video>
+      <canvas id="c"></canvas>
+      <div class="status" id="status">CAMERA OFF</div>
+      <div class="challenge">
+        <small>HUMANPROOF LIVE CHECK</small>
+        <b id="prompt">Ready when you are.</b>
+        <p id="sub">Tap Start Verification to begin.</p>
+      </div>
+    </div>
+
+    <div class="progressbar"><span>VERIFICATION</span><strong id="pct">0%</strong></div>
+    <div class="controls">
+      <button class="btn start" id="start">START VERIFICATION</button>
+      <button class="btn reset" id="reset">RESET</button>
+    </div>
+    <div class="ok" id="ok">Human confirmed. In production this continues into action binding and the signed verification receipt.</div>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="foot">ISOLATED PREVIEW • NOT PRODUCTION • CLEAN FACE • 0% → 50% → 100%</div>
+</div>
+
+<script type="module">
+import {FaceLandmarker,FilesetResolver} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3';
+
+const camera=document.getElementById('camera'),v=document.getElementById('v'),c=document.getElementById('c'),x=c.getContext('2d');
+const start=document.getElementById('start'),reset=document.getElementById('reset'),status=document.getElementById('status');
+const prompt=document.getElementById('prompt'),sub=document.getElementById('sub'),pct=document.getElementById('pct');
+const ok=document.getElementById('ok'),err=document.getElementById('err');
+
+let lm=null,stream=null,run=false,last=-1,idx=0,hold=0,seq=[];
+let progress=0,targetProgress=0,phase=0,faceOK=false;
+
+const challenges=[
+{k:'blink',t:'Blink once',s:'Complete this step to light the first half.'},
+{k:'smile',t:'Give a small smile',s:'Complete this step to finish the halo.'},
+{k:'mouth',t:'Open your mouth briefly',s:'Complete this step to finish the halo.'},
+{k:'brows',t:'Raise your eyebrows',s:'Complete this step to finish the halo.'}
+];
+const pick=()=>[...challenges].sort(()=>Math.random()-.5).slice(0,2);
+
+function resizeCanvas(){
+  const r=c.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+  if(c.width!==w||c.height!==h)c.width=w,c.height=h;
+  x.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resizeCanvas).observe(camera);
+window.addEventListener('resize',resizeCanvas);
+
+async function model(){
+  if(lm)return;
+  prompt.textContent='Preparing HumanProof…';sub.textContent='Initializing live face intelligence.';
+  const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm');
+  lm=await FaceLandmarker.createFromOptions(vision,{
+    baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},
+    runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true,
+    minFaceDetectionConfidence:.55,minFacePresenceConfidence:.55,minTrackingConfidence:.55
+  });
+}
+function scores(r){const o={};for(const q of r.faceBlendshapes?.[0]?.categories||[])o[q.categoryName]=q.score;return o}
+function pass(k,s){
+  if(k==='blink')return(s.eyeBlinkLeft||0)>.48&&(s.eyeBlinkRight||0)>.48;
+  if(k==='smile')return((s.mouthSmileLeft||0)+(s.mouthSmileRight||0))/2>.42;
+  if(k==='mouth')return(s.jawOpen||0)>.48;
+  if(k==='brows')return(s.browInnerUp||0)>.32;
+  return false;
+}
+function show(){const q=seq[idx];prompt.textContent=q.t;sub.textContent=`Step ${idx+1} of 2 • ${q.s}`}
+
+function layout(){
+  const W=c.clientWidth,H=c.clientHeight;
+  const r=Math.min(W*.405,H*.285);
+  return {W,H,cx:W/2,cy:H*.425,r};
+}
+
+function mapPoint(nx,ny){
+  const cw=c.clientWidth,ch=c.clientHeight,vw=v.videoWidth||1280,vh=v.videoHeight||720;
+  const scale=Math.max(cw/vw,ch/vh),dw=vw*scale,dh=vh*scale,ox=(cw-dw)/2,oy=(ch-dh)/2;
+  const px=ox+nx*dw,py=oy+ny*dh;
+  return {x:cw-px,y:py};
+}
+
+function faceFits(a,L){
+  let minX=1,maxX=0,minY=1,maxY=0;
+  for(const p of a){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y)}
+  const p1=mapPoint(minX,minY),p2=mapPoint(maxX,maxY);
+  const fx=(p1.x+p2.x)/2,fy=(p1.y+p2.y)/2,fw=Math.abs(p2.x-p1.x),fh=Math.abs(p2.y-p1.y);
+  const centered=Math.hypot(fx-L.cx,fy-L.cy)<L.r*.36;
+  const sizeOK=fw<L.r*1.42&&fh<L.r*1.62&&fw>L.r*.58&&fh>L.r*.72;
+  return centered&&sizeOK;
+}
+
+function ringStroke(cx,cy,r,a0,a1,w,color,blur=0,alpha=1){
+  x.save();x.lineCap='round';x.globalAlpha=alpha;x.strokeStyle=color;x.lineWidth=w;
+  if(blur){x.shadowColor=color;x.shadowBlur=blur}
+  x.beginPath();x.arc(cx,cy,r,a0,a1);x.stroke();x.restore();
+}
+
+function drawHalo(){
+  phase+=.024;
+  progress+=(targetProgress-progress)*.085;
+  pct.textContent=Math.round(progress*100)+'%';
+
+  const L=layout(),{W,H,cx,cy,r}=L;
+  x.clearRect(0,0,W,H);
+
+  x.save();x.fillStyle='rgba(1,7,14,.28)';x.fillRect(0,0,W,H);
+  x.globalCompositeOperation='destination-out';x.beginPath();x.arc(cx,cy,r-16,0,Math.PI*2);x.fill();x.restore();
+
+  ringStroke(cx,cy,r,0,Math.PI*2,30,'rgba(34,55,70,.36)',0,1);
+  ringStroke(cx,cy,r,0,Math.PI*2,22,'rgba(116,235,255,.10)',12,1);
+  ringStroke(cx,cy,r-11,0,Math.PI*2,2,'rgba(255,255,255,.18)',0,1);
+  ringStroke(cx,cy,r+11,0,Math.PI*2,1.4,'rgba(117,237,255,.18)',5,1);
+
+  if(progress>0.002){
+    const end=-Math.PI/2+Math.PI*2*progress;
+    const grad=x.createConicGradient(-Math.PI/2,cx,cy);
+    grad.addColorStop(0,'#70efff');grad.addColorStop(.27,'#9b8cff');
+    grad.addColorStop(.52,'#72e7ff');grad.addColorStop(.78,'#b48fff');grad.addColorStop(1,'#70efff');
+    ringStroke(cx,cy,r,-Math.PI/2,end,19,progress>.985?'rgba(120,241,206,1)':grad,18,1);
+    ringStroke(cx,cy,r-5,-Math.PI/2,end,4,'rgba(255,255,255,.64)',8,.9);
+  }
+
+  const jewel=(ang,active)=>{
+    const px=cx+r*Math.cos(ang),py=cy+r*Math.sin(ang);
+    x.save();x.fillStyle=active?(progress>.985?'#78f1ce':'#d6fbff'):'rgba(116,145,166,.55)';
+    x.shadowColor=active?'rgba(115,239,255,.85)':'transparent';x.shadowBlur=active?14:0;
+    x.beginPath();x.arc(px,py,5.5,0,Math.PI*2);x.fill();x.restore();
+  };
+  jewel(Math.PI/2,progress>=.49);jewel(-Math.PI/2,progress>=.99);
+
+  const t=-Math.PI/2+(phase%(Math.PI*2));
+  ringStroke(cx,cy,r+2,t,t+.19,5,'rgba(255,255,255,.72)',14,.92);
+
+  if(faceOK){
+    ringStroke(cx,cy,r-20,0,Math.PI*2,2,progress>.985?'rgba(120,241,206,.50)':'rgba(119,239,255,.36)',8,.9);
+  }
+
+  if(progress>.985){
+    const pulse=.28+.16*Math.sin(phase*2.5);
+    ringStroke(cx,cy,r+16,0,Math.PI*2,3,`rgba(120,241,206,${pulse})`,18,1);
+  }
+  return L;
+}
+
+async function begin(){
+  err.classList.remove('show');ok.classList.remove('show');
+  idx=0;hold=0;progress=0;targetProgress=0;faceOK=false;seq=pick();start.disabled=true;
+  try{
+    if(!window.isSecureContext)throw Error('Secure HTTPS is required for camera verification.');
+    await model();
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+    v.srcObject=stream;await v.play();resizeCanvas();run=true;
+    status.textContent='CENTER YOUR FACE';prompt.textContent='Center your face';sub.textContent='Keep your full face naturally inside the halo.';
+    requestAnimationFrame(loop);
+  }catch(e){
+    start.disabled=false;status.textContent='CAMERA OFF';prompt.textContent='Camera unavailable';sub.textContent='Allow camera permission and try again.';
+    err.textContent=e?.message||String(e);err.classList.add('show');
+  }
+}
+function stop(){
+  run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+  v.srcObject=null;resizeCanvas();x.clearRect(0,0,c.clientWidth,c.clientHeight);
+  status.textContent='CAMERA OFF';start.disabled=false;prompt.textContent='Ready when you are.';sub.textContent='Tap Start Verification to begin.';
+}
+start.onclick=begin;reset.onclick=stop;
+
+function loop(){
+  if(!run)return;
+  resizeCanvas();
+  const L=drawHalo();
+  if(v.readyState>=2&&v.currentTime!==last){
+    last=v.currentTime;
+    try{
+      const r=lm.detectForVideo(v,performance.now());
+      if(r.faceLandmarks?.length){
+        faceOK=faceFits(r.faceLandmarks[0],L);
+        if(faceOK){
+          status.textContent=idx>=2?'HUMAN CONFIRMED':'FACE ACQUIRED';
+          if(idx===0&&prompt.textContent==='Center your face')show();
+          if(idx<2){
+            if(pass(seq[idx].k,scores(r))){
+              hold++;
+              if(hold>=2){
+                idx++;hold=0;targetProgress=idx===1?.5:1;
+                if(idx>=2){
+                  status.textContent='HUMAN CONFIRMED';prompt.textContent='Human verification complete';sub.textContent='Both live checks completed.';
+                  ok.classList.add('show');
+                }else show();
+              }
+            }else hold=0;
+          }
+        }else{
+          status.textContent='CENTER YOUR FACE';prompt.textContent='Center your face';sub.textContent='Keep your full face naturally inside the halo.';hold=0;
+        }
+      }else{faceOK=false;status.textContent='FACE SEARCHING';hold=0}
+    }catch(e){}
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
