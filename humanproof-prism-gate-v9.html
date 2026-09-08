@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Prism Gate V9</title>
+<style>
+:root{
+  --bg:#030914;--panel:#071420;--text:#eef8ff;--muted:#7f95a9;
+  --cyan:#78efff;--violet:#ad8cff;--mint:#75f1cf;--line:rgba(111,229,255,.16)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+radial-gradient(circle at 76% 8%,rgba(129,92,255,.12),transparent 28%),
+radial-gradient(circle at 18% 82%,rgba(66,223,255,.06),transparent 28%),
+linear-gradient(180deg,#030914,#07131f);color:var(--text);
+font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{padding:12px}
+.shell{width:min(1000px,100%);margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 14px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;color:#8ff6ff;border:1px solid rgba(106,232,255,.28);background:linear-gradient(145deg,rgba(72,225,255,.14),rgba(146,97,255,.16));box-shadow:0 0 30px rgba(90,228,255,.07)}
+.brand b{display:block;font-size:13px;letter-spacing:.11em}.brand small{display:block;color:#70879b;font-size:9px;letter-spacing:.14em}
+.badge{font-size:8px;letter-spacing:.13em;color:#7deefa;border:1px solid rgba(105,229,255,.17);padding:7px 10px;border-radius:999px}
+.panel{border:1px solid var(--line);border-radius:29px;background:linear-gradient(155deg,rgba(10,25,41,.97),rgba(5,15,25,.99));padding:12px;box-shadow:0 28px 80px rgba(0,0,0,.33)}
+.camera{position:relative;height:min(74vh,720px);min-height:560px;border-radius:24px;overflow:hidden;background:#02070c;border:1px solid rgba(106,229,255,.13)}
+.camera:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:
+radial-gradient(ellipse at 50% 45%,rgba(92,202,255,.07),transparent 45%),
+linear-gradient(180deg,rgba(116,91,255,.03),transparent 38%,rgba(67,231,205,.02));mix-blend-mode:screen}
+.camera:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;box-shadow:inset 0 0 100px rgba(2,9,17,.5)}
+video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+video{transform:scaleX(-1);filter:brightness(1.12) contrast(.96) saturate(.95)}
+canvas{z-index:2;transform:scaleX(-1);pointer-events:none}
+.hud{position:absolute;z-index:5;left:16px;right:16px;top:15px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.pill{padding:7px 10px;border-radius:999px;background:rgba(3,11,20,.62);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px);font-size:8px;letter-spacing:.12em;color:#8da4b7}
+.pill strong{color:#87effa}
+.challenge{position:absolute;z-index:6;left:15px;right:15px;bottom:15px;padding:15px 16px;border-radius:19px;background:rgba(4,13,23,.76);border:1px solid rgba(102,225,255,.09);backdrop-filter:blur(15px);box-shadow:0 16px 46px rgba(0,0,0,.18)}
+.challenge small{display:block;color:#6f879b;font-size:8px;letter-spacing:.14em;margin-bottom:5px}
+.challenge b{font-size:17px}.challenge p{margin:5px 0 0;color:#8198aa;font-size:9px}
+.controls{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:10px}
+.btn{border-radius:14px;padding:14px 16px;font-weight:900;font-size:12px}
+.start{border:0;background:linear-gradient(135deg,#50dced,#887ef3);color:#05111b}
+.reset{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#c7d8e5}
+.progress{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}
+.p{height:5px;border-radius:999px;background:rgba(255,255,255,.055);overflow:hidden}.p i{display:block;width:0;height:100%;background:linear-gradient(90deg,#66e2f2,#9a86f7);transition:.35s}.p.done i{width:100%}
+.msg{margin-top:10px;padding:11px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.07);color:#8097aa;font-size:10px;line-height:1.45}
+.ok{display:none;border-color:rgba(99,239,189,.17);color:#a4ddca}.ok.show{display:block}
+.err{display:none;border-color:rgba(255,177,109,.16);color:#c1a58d}.err.show{display:block}
+.foot{text-align:center;color:#60798d;font-size:8px;letter-spacing:.11em;margin:11px 0 2px}
+@media(max-width:520px){.camera{height:71vh;min-height:530px}.controls{grid-template-columns:1fr}.reset{display:none}.badge{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div class="brand"><div class="logo">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>PRISM GATE • V9</small></div></div>
+    <div class="badge">NEW SYSTEM • NO RING • NO MESH</div>
+  </div>
+
+  <div class="panel">
+    <div class="camera">
+      <video id="v" autoplay playsinline muted></video>
+      <canvas id="c"></canvas>
+
+      <div class="hud">
+        <div class="pill"><strong id="state">CAMERA OFF</strong></div>
+        <div class="pill" id="signal">PRISM • STANDBY</div>
+      </div>
+
+      <div class="challenge">
+        <small>HUMANPROOF LIVE CHECK</small>
+        <b id="prompt">Ready when you are.</b>
+        <p id="sub">Tap Start Verification to begin.</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn start" id="start">START VERIFICATION</button>
+      <button class="btn reset" id="reset">RESET</button>
+    </div>
+    <div class="progress"><div class="p" id="p0"><i></i></div><div class="p" id="p1"><i></i></div></div>
+    <div class="msg ok" id="ok">HumanProof live-response sequence complete. In the full product this continues into action binding and the signed verification receipt.</div>
+    <div class="msg err" id="err"></div>
+  </div>
+
+  <div class="foot">ISOLATED PREVIEW • NOT PRODUCTION • NO FACE MESH SHOWN TO THE USER</div>
+</div>
+
+<script type="module">
+import {FaceLandmarker,FilesetResolver} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3';
+
+const v=document.getElementById('v'),c=document.getElementById('c'),x=c.getContext('2d');
+const start=document.getElementById('start'),reset=document.getElementById('reset');
+const state=document.getElementById('state'),signal=document.getElementById('signal');
+const prompt=document.getElementById('prompt'),sub=document.getElementById('sub'),ok=document.getElementById('ok'),err=document.getElementById('err');
+
+let lm=null,stream=null,run=false,last=-1,idx=0,hold=0,seq=[],phase=0;
+let box={cx:0,cy:0,w:260,h:360},target={cx:0,cy:0,w:260,h:360};
+
+const challenges=[
+{k:'blink',t:'Blink once',s:'One natural blink.'},
+{k:'smile',t:'Give a small smile',s:'A quick natural smile.'},
+{k:'mouth',t:'Open your mouth briefly',s:'Open, then relax.'},
+{k:'brows',t:'Raise your eyebrows',s:'Just for a moment.'}
+];
+
+const pick=()=>[...challenges].sort(()=>Math.random()-.5).slice(0,2);
+
+async function model(){
+  if(lm)return;
+  prompt.textContent='Preparing HumanProof…';
+  sub.textContent='Initializing live face intelligence.';
+  const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm');
+  lm=await FaceLandmarker.createFromOptions(vision,{
+    baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},
+    runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true,
+    minFaceDetectionConfidence:.55,minFacePresenceConfidence:.55,minTrackingConfidence:.55
+  });
+}
+
+function scores(r){
+  const o={};
+  for(const q of r.faceBlendshapes?.[0]?.categories||[])o[q.categoryName]=q.score;
+  return o
+}
+
+function pass(k,s){
+  if(k==='blink')return(s.eyeBlinkLeft||0)>.48&&(s.eyeBlinkRight||0)>.48;
+  if(k==='smile')return((s.mouthSmileLeft||0)+(s.mouthSmileRight||0))/2>.42;
+  if(k==='mouth')return(s.jawOpen||0)>.48;
+  if(k==='brows')return(s.browInnerUp||0)>.32;
+  return false
+}
+
+function show(){
+  const q=seq[idx];
+  prompt.textContent=q.t;
+  sub.textContent=`Step ${idx+1} of 2 • ${q.s}`;
+}
+
+function pt(a,i){return{x:a[i].x*c.width,y:a[i].y*c.height}}
+
+function updateBox(a){
+  const L=pt(a,234),R=pt(a,454),T=pt(a,10),B=pt(a,152);
+  target.cx=(L.x+R.x)/2;
+  target.cy=(T.y+B.y)/2;
+  target.w=Math.max(210,Math.abs(R.x-L.x)*1.55);
+  target.h=Math.max(300,Math.abs(B.y-T.y)*1.45);
+  for(const k of['cx','cy','w','h'])box[k]+= (target[k]-box[k])*.15;
+}
+
+function roundedRectPath(ctx,x0,y0,w,h,r){
+  const rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x0+rr,y0);
+  ctx.arcTo(x0+w,y0,x0+w,y0+h,rr);
+  ctx.arcTo(x0+w,y0+h,x0,y0+h,rr);
+  ctx.arcTo(x0,y0+h,x0,y0,rr);
+  ctx.arcTo(x0,y0,x0+w,y0,rr);
+  ctx.closePath();
+}
+
+function drawGlassPanel(x0,y0,w,h,side,alpha=1,done=false){
+  const cyan=done?'117,241,207':'111,239,255';
+  const vio=done?'117,241,207':'168,137,255';
+  x.save();
+
+  const grad=x.createLinearGradient(x0,0,x0+w,0);
+  if(side==='left'){
+    grad.addColorStop(0,`rgba(${vio},${.04*alpha})`);
+    grad.addColorStop(.55,`rgba(${cyan},${.14*alpha})`);
+    grad.addColorStop(1,`rgba(${cyan},${.03*alpha})`);
+  }else{
+    grad.addColorStop(0,`rgba(${cyan},${.03*alpha})`);
+    grad.addColorStop(.45,`rgba(${cyan},${.14*alpha})`);
+    grad.addColorStop(1,`rgba(${vio},${.04*alpha})`);
+  }
+  roundedRectPath(x,x0,y0,w,h,26);
+  x.fillStyle=grad;x.fill();
+  x.strokeStyle=`rgba(${cyan},${.38*alpha})`;x.lineWidth=1.2;x.stroke();
+
+  for(let i=1;i<=3;i++){
+    const xx=side==='left'?x0+w*(i/4):x0+w*(1-i/4);
+    x.beginPath();
+    x.moveTo(xx,y0+18);
+    x.lineTo(xx+(side==='left'?18:-18),y0+h-18);
+    x.strokeStyle=`rgba(${i===2?vio:cyan},${(.18+.06*i)*alpha})`;
+    x.lineWidth=.8;
+    x.stroke();
+  }
+
+  const edgeX=side==='left'?x0+w:x0;
+  const eg=x.createLinearGradient(0,y0,0,y0+h);
+  eg.addColorStop(0,`rgba(${cyan},0)`);
+  eg.addColorStop(.2,`rgba(${cyan},${.75*alpha})`);
+  eg.addColorStop(.5,`rgba(${vio},${.8*alpha})`);
+  eg.addColorStop(.8,`rgba(${cyan},${.75*alpha})`);
+  eg.addColorStop(1,`rgba(${cyan},0)`);
+  x.strokeStyle=eg;x.lineWidth=2.5;x.shadowColor=`rgba(${cyan},.7)`;x.shadowBlur=16;
+  x.beginPath();x.moveTo(edgeX,y0+10);x.lineTo(edgeX,y0+h-10);x.stroke();
+
+  x.restore();
+}
+
+function bloom(px,py,r,color,alpha=.65){
+  const g=x.createRadialGradient(px,py,1,px,py,r);
+  g.addColorStop(0,color.replace('1)',`${alpha})`));
+  g.addColorStop(.35,color.replace('1)',`${alpha*.28})`));
+  g.addColorStop(1,color.replace('1)','0)'));
+  x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,Math.PI*2);x.fill();
+}
+
+function drawPrism(a){
+  phase+=.03;
+  updateBox(a);
+  const done=idx>=2;
+  const pulse=.82+.18*Math.sin(phase*1.8);
+  const gap=Math.max(54,box.w*.17);
+  const panelW=Math.max(48,box.w*.22);
+  const y0=box.cy-box.h/2;
+  const h=box.h;
+  const leftX=box.cx-gap-panelW;
+  const rightX=box.cx+gap;
+
+  drawGlassPanel(leftX,y0,panelW,h,'left',pulse,done);
+  drawGlassPanel(rightX,y0,panelW,h,'right',pulse,done);
+
+  x.save();
+  for(let i=0;i<8;i++){
+    const yy=y0+35+i*(h-70)/7;
+    const drift=Math.sin(phase*1.2+i*.8)*8;
+    const lx=leftX-18-drift,rx=rightX+panelW+18+drift;
+    x.strokeStyle=i%2? 'rgba(169,140,255,.55)':'rgba(116,240,255,.55)';
+    x.lineWidth=2;
+    x.shadowColor=x.strokeStyle;x.shadowBlur=10;
+    x.beginPath();x.moveTo(lx,yy-7);x.lineTo(lx,yy+7);x.stroke();
+    x.beginPath();x.moveTo(rx,yy-7);x.lineTo(rx,yy+7);x.stroke();
+  }
+  x.restore();
+
+  const scanT=(Math.sin(phase*.85)+1)/2;
+  const sy=y0+scanT*h;
+  const sg=x.createLinearGradient(box.cx-box.w*.65,0,box.cx+box.w*.65,0);
+  sg.addColorStop(0,'rgba(111,239,255,0)');
+  sg.addColorStop(.25,'rgba(111,239,255,.08)');
+  sg.addColorStop(.5,done?'rgba(117,241,207,.28)':'rgba(168,137,255,.22)');
+  sg.addColorStop(.75,'rgba(111,239,255,.08)');
+  sg.addColorStop(1,'rgba(111,239,255,0)');
+  x.fillStyle=sg;
+  x.fillRect(box.cx-box.w*.7,sy-18,box.w*1.4,36);
+
+  x.save();
+  for(let i=0;i<4;i++){
+    const off=(i+1)*18;
+    const alpha=.14+(3-i)*.04;
+    x.strokeStyle=done?`rgba(117,241,207,${alpha})`:`rgba(112,237,255,${alpha})`;
+    x.lineWidth=1;
+    x.beginPath();x.moveTo(leftX-off,y0+16);x.lineTo(leftX-off,y0+h-16);x.stroke();
+    x.beginPath();x.moveTo(rightX+panelW+off,y0+16);x.lineTo(rightX+panelW+off,y0+h-16);x.stroke();
+  }
+  x.restore();
+
+  if(idx<2){
+    const key=seq[idx]?.k;
+    if(key==='blink'){
+      const e1=pt(a,159),e2=pt(a,386);
+      bloom(e1.x,e1.y,48,'rgba(168,137,255,1)',.78);
+      bloom(e2.x,e2.y,48,'rgba(168,137,255,1)',.78);
+    }else if(key==='smile'||key==='mouth'){
+      const m=pt(a,13);
+      bloom(m.x,m.y,64,'rgba(168,137,255,1)',.72);
+    }else if(key==='brows'){
+      const b1=pt(a,105),b2=pt(a,334);
+      bloom(b1.x,b1.y,54,'rgba(111,239,255,1)',.75);
+      bloom(b2.x,b2.y,54,'rgba(111,239,255,1)',.75);
+    }
+  }
+
+  const cx=box.cx,cy=box.cy;
+  x.save();
+  x.strokeStyle=done?'rgba(117,241,207,.58)':'rgba(111,239,255,.42)';
+  x.lineWidth=1;
+  x.shadowColor=x.strokeStyle;x.shadowBlur=12;
+  x.beginPath();x.moveTo(cx-18,cy);x.lineTo(cx-5,cy);x.stroke();
+  x.beginPath();x.moveTo(cx+5,cy);x.lineTo(cx+18,cy);x.stroke();
+  x.beginPath();x.moveTo(cx,cy-18);x.lineTo(cx,cy-5);x.stroke();
+  x.beginPath();x.moveTo(cx,cy+5);x.lineTo(cx,cy+18);x.stroke();
+  x.restore();
+
+  if(done){
+    bloom(box.cx,box.cy,Math.max(box.w,box.h)*.55,'rgba(117,241,207,1)',.18+.06*Math.sin(phase*2));
+  }
+}
+
+async function begin(){
+  err.classList.remove('show');ok.classList.remove('show');
+  document.querySelectorAll('.p').forEach(e=>e.classList.remove('done'));
+  idx=0;hold=0;seq=pick();start.disabled=true;
+  try{
+    if(!window.isSecureContext)throw Error('Secure HTTPS is required for camera verification.');
+    await model();
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+    v.srcObject=stream;await v.play();run=true;
+    state.textContent='FACE SEARCHING';signal.textContent='PRISM • ACQUIRING';
+    prompt.textContent='Center your face';sub.textContent='Hold naturally inside the field.';
+    requestAnimationFrame(loop);
+  }catch(e){
+    start.disabled=false;state.textContent='CAMERA OFF';signal.textContent='PRISM • STANDBY';
+    prompt.textContent='Camera unavailable';sub.textContent='Allow camera permission and try again.';
+    err.textContent=e?.message||String(e);err.classList.add('show');
+  }
+}
+
+function stop(){
+  run=false;
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+  v.srcObject=null;state.textContent='CAMERA OFF';signal.textContent='PRISM • STANDBY';
+  x.clearRect(0,0,c.width,c.height);start.disabled=false;
+  prompt.textContent='Ready when you are.';sub.textContent='Tap Start Verification to begin.';
+}
+
+start.onclick=begin;reset.onclick=stop;
+
+function loop(){
+  if(!run)return;
+  if(v.readyState>=2&&v.currentTime!==last){
+    last=v.currentTime;c.width=v.videoWidth||1280;c.height=v.videoHeight||720;x.clearRect(0,0,c.width,c.height);
+    try{
+      const r=lm.detectForVideo(v,performance.now());
+      if(r.faceLandmarks?.length){
+        state.textContent='FACE ACQUIRED';signal.textContent='PRISM • LIVE RESPONSE';
+        drawPrism(r.faceLandmarks[0]);
+        if(idx===0&&prompt.textContent==='Center your face')show();
+        if(idx<2){
+          if(pass(seq[idx].k,scores(r))){
+            hold++;
+            if(hold>=2){
+              document.getElementById('p'+idx).classList.add('done');
+              idx++;hold=0;
+              if(idx>=2){
+                state.textContent='HUMAN CONFIRMED';
+                signal.textContent='PRISM • COMPLETE';
+                prompt.textContent='Human check complete';
+                sub.textContent='Live response sequence captured.';
+                ok.classList.add('show');
+              }else show();
+            }
+          }else hold=0;
+        }
+      }else{
+        state.textContent='FACE SEARCHING';
+        signal.textContent='PRISM • ACQUIRING';
+      }
+    }catch(e){}
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
