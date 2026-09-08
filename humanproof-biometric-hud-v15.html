@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Biometric HUD V15</title>
+<style>
+:root{--bg:#030812;--text:#eef8ff;--muted:#7890a5;--cyan:#55ecff;--cyan2:#06c9ea;--mint:#71f0cb}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+radial-gradient(circle at 78% 8%,rgba(80,190,255,.08),transparent 25%),
+linear-gradient(180deg,#020710,#06111c);color:var(--text);
+font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+body{padding:12px}.shell{width:min(980px,100%);margin:auto}
+.top{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:900;color:#8ff7ff;border:1px solid rgba(80,232,255,.28);background:linear-gradient(145deg,rgba(72,225,255,.14),rgba(92,126,255,.12))}
+.top b{display:block;font-size:13px;letter-spacing:.11em}.top small{display:block;color:#71879b;font-size:9px;letter-spacing:.14em}
+.panel{border:1px solid rgba(82,226,255,.15);border-radius:28px;padding:12px;background:linear-gradient(155deg,rgba(8,23,38,.98),rgba(4,13,22,.99));box-shadow:0 28px 80px rgba(0,0,0,.34)}
+.camera{position:relative;height:min(75vh,730px);min-height:560px;border-radius:24px;overflow:hidden;background:#01060b;border:1px solid rgba(78,224,255,.13)}
+video,canvas{position:absolute;inset:0;width:100%;height:100%}
+video{object-fit:cover;transform:scaleX(-1);filter:brightness(1.12) contrast(1.01) saturate(.92)}
+canvas{z-index:2;pointer-events:none}
+.camera:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:
+linear-gradient(180deg,rgba(0,8,14,.08),transparent 20%,transparent 75%,rgba(0,8,14,.18));
+box-shadow:inset 0 0 110px rgba(0,6,12,.44)}
+.status{position:absolute;z-index:5;left:16px;top:15px;padding:7px 10px;border-radius:4px;background:rgba(0,18,27,.72);border:1px solid rgba(74,229,255,.22);font-size:8px;letter-spacing:.13em;color:#81effc;backdrop-filter:blur(8px)}
+.challenge{position:absolute;z-index:6;left:14px;right:14px;bottom:14px;padding:12px 14px;border-radius:12px;background:rgba(2,13,21,.82);border:1px solid rgba(79,225,255,.11);backdrop-filter:blur(12px)}
+.challenge small{display:block;color:#66859a;font-size:8px;letter-spacing:.14em;margin-bottom:4px}.challenge b{font-size:16px}.challenge p{margin:4px 0 0;color:#8298a9;font-size:9px}
+.progressbar{margin-top:9px;display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:12px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02)}
+.progressbar span{font-size:8px;color:#7290a3;letter-spacing:.12em}.progressbar strong{font-size:10px;color:#b9f6ff}
+.controls{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:9px}.btn{border-radius:13px;padding:13px 16px;font-weight:900;font-size:12px}
+.start{border:0;background:linear-gradient(135deg,#4edcf0,#61b7ff);color:#03111a}.reset{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);color:#c7d8e5}
+.ok,.err{display:none;margin-top:9px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.07);font-size:10px}.ok.show,.err.show{display:block}.ok{color:#a6dec9}.err{color:#c9a388}
+.foot{text-align:center;color:#587287;font-size:8px;letter-spacing:.11em;margin:10px 0 2px}
+@media(max-width:520px){.camera{height:72vh;min-height:540px}.controls{grid-template-columns:1fr}.reset{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top"><div class="logo">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>LIVE BIOMETRIC HUD • V15</small></div></div>
+  <div class="panel">
+    <div class="camera" id="camera">
+      <video id="v" autoplay playsinline muted></video>
+      <canvas id="c"></canvas>
+      <div class="status" id="status">SYSTEM STANDBY</div>
+      <div class="challenge">
+        <small>LIVE RESPONSE CHECK</small>
+        <b id="prompt">Ready when you are.</b>
+        <p id="sub">Tap Start Verification to begin.</p>
+      </div>
+    </div>
+    <div class="progressbar"><span>BIOMETRIC SEQUENCE</span><strong id="pct">0%</strong></div>
+    <div class="controls"><button class="btn start" id="start">START VERIFICATION</button><button class="btn reset" id="reset">RESET</button></div>
+    <div class="ok" id="ok">Human confirmed. In production this continues into exact-action binding and the signed verification receipt.</div>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="foot">ISOLATED PREVIEW • NOT PRODUCTION • CODED LIVE CAMERA HUD</div>
+</div>
+
+<script type="module">
+import {FaceLandmarker,FilesetResolver} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3';
+
+const camera=document.getElementById('camera'),v=document.getElementById('v'),c=document.getElementById('c'),x=c.getContext('2d');
+const start=document.getElementById('start'),reset=document.getElementById('reset'),status=document.getElementById('status');
+const prompt=document.getElementById('prompt'),sub=document.getElementById('sub'),pct=document.getElementById('pct'),ok=document.getElementById('ok'),err=document.getElementById('err');
+
+let lm=null,stream=null,run=false,last=-1,idx=0,hold=0,seq=[],phase=0,progress=0,targetProgress=0;
+let latest=null;
+
+const challenges=[
+{k:'blink',t:'Blink once',s:'Live eye response analysis.'},
+{k:'smile',t:'Give a small smile',s:'Facial motion response analysis.'},
+{k:'mouth',t:'Open your mouth briefly',s:'Live motion response analysis.'},
+{k:'brows',t:'Raise your eyebrows',s:'Upper-face motion response analysis.'}
+];
+const pick=()=>[...challenges].sort(()=>Math.random()-.5).slice(0,2);
+
+function resize(){
+  const r=c.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  x.setTransform(dpr,0,0,dpr,0,0);
+}
+new ResizeObserver(resize).observe(camera);addEventListener('resize',resize);
+
+async function model(){
+  if(lm)return;
+  prompt.textContent='Initializing biometric engine…';sub.textContent='Loading live face tracking.';
+  const vision=await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm');
+  lm=await FaceLandmarker.createFromOptions(vision,{
+    baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'},
+    runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true,
+    minFaceDetectionConfidence:.55,minFacePresenceConfidence:.55,minTrackingConfidence:.55
+  });
+}
+function scores(r){const o={};for(const q of r.faceBlendshapes?.[0]?.categories||[])o[q.categoryName]=q.score;return o}
+function pass(k,s){
+  if(k==='blink')return(s.eyeBlinkLeft||0)>.48&&(s.eyeBlinkRight||0)>.48;
+  if(k==='smile')return((s.mouthSmileLeft||0)+(s.mouthSmileRight||0))/2>.42;
+  if(k==='mouth')return(s.jawOpen||0)>.48;
+  if(k==='brows')return(s.browInnerUp||0)>.32;
+  return false;
+}
+function show(){const q=seq[idx];prompt.textContent=q.t;sub.textContent=`Step ${idx+1} of 2 • ${q.s}`}
+
+function mapPoint(p){
+  const cw=c.clientWidth,ch=c.clientHeight,vw=v.videoWidth||1280,vh=v.videoHeight||720;
+  const scale=Math.max(cw/vw,ch/vh),dw=vw*scale,dh=vh*scale,ox=(cw-dw)/2,oy=(ch-dh)/2;
+  const px=ox+p.x*dw,py=oy+p.y*dh;
+  return{x:cw-px,y:py,z:p.z||0};
+}
+function faceBox(a){
+  const pts=a.map(mapPoint);
+  let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  for(const p of pts){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y)}
+  return{pts,minX,maxX,minY,maxY,cx:(minX+maxX)/2,cy:(minY+maxY)/2,w:maxX-minX,h:maxY-minY};
+}
+function line(ax,ay,bx,by,color='rgba(70,235,255,.6)',w=1,blur=0){
+  x.save();x.strokeStyle=color;x.lineWidth=w;if(blur){x.shadowColor=color;x.shadowBlur=blur}
+  x.beginPath();x.moveTo(ax,ay);x.lineTo(bx,by);x.stroke();x.restore();
+}
+function text(t,px,py,size=8,alpha=.8){
+  x.save();x.font=`600 ${size}px ui-monospace,SFMono-Regular,monospace`;x.fillStyle=`rgba(105,238,255,${alpha})`;x.fillText(t,px,py);x.restore();
+}
+function bracket(px,py,sx,sy,len=17){
+  line(px,py,px+sx*len,py,'rgba(79,236,255,.72)',1.2,5);
+  line(px,py,px,py+sy*len,'rgba(79,236,255,.72)',1.2,5);
+}
+function circleHud(cx,cy,r,value,label,offset){
+  x.save();
+  x.strokeStyle='rgba(62,229,255,.22)';x.lineWidth=1;x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.stroke();
+  x.strokeStyle='rgba(69,235,255,.72)';x.shadowColor='rgba(60,224,255,.65)';x.shadowBlur=7;x.lineWidth=1.6;
+  x.beginPath();x.arc(cx,cy,r-4,-Math.PI/2+offset,-Math.PI/2+offset+Math.PI*1.2);x.stroke();
+  x.shadowBlur=0;x.strokeStyle='rgba(139,248,255,.42)';x.lineWidth=1;
+  for(let i=0;i<10;i++){const a=i/10*Math.PI*2+offset*.35;line(cx+Math.cos(a)*(r-1),cy+Math.sin(a)*(r-1),cx+Math.cos(a)*(r-5),cy+Math.sin(a)*(r-5),'rgba(92,232,255,.45)',.7)}
+  x.fillStyle='rgba(3,22,30,.68)';x.beginPath();x.arc(cx,cy,r-8,0,Math.PI*2);x.fill();
+  x.fillStyle='#79efff';x.font='700 8px ui-monospace,monospace';x.textAlign='center';x.fillText(value,cx,cy+2);
+  x.font='600 5px ui-monospace,monospace';x.fillStyle='rgba(133,235,247,.72)';x.fillText(label,cx,cy+10);
+  x.restore();
+}
+function marker(p,r=5){
+  x.save();x.strokeStyle='rgba(74,236,255,.72)';x.lineWidth=1;x.shadowColor='rgba(60,225,255,.7)';x.shadowBlur=6;
+  x.strokeRect(p.x-r,p.y-r,r*2,r*2);x.restore();
+}
+function drawMesh(box){
+  const con=FaceLandmarker.FACE_LANDMARKS_TESSELATION||[];
+  const sweep=(Math.sin(phase*.7)+1)/2;
+  const scanX=box.minX+box.w*(.15+.7*sweep);
+  for(const e of con){
+    const a=box.pts[e.start],b=box.pts[e.end]; if(!a||!b)continue;
+    const mx=(a.x+b.x)/2;
+    if(mx>scanX)continue;
+    const rel=(mx-box.minX)/Math.max(1,box.w);
+    if(rel>.68)continue;
+    const d=Math.abs(mx-scanX);
+    const alpha=d<18?.68:.24;
+    line(a.x,a.y,b.x,b.y,`rgba(50,226,246,${alpha})`,d<18?1.0:.55,d<18?6:0);
+  }
+  const g=x.createLinearGradient(scanX-14,0,scanX+14,0);
+  g.addColorStop(0,'rgba(48,230,250,0)');g.addColorStop(.5,'rgba(82,240,255,.34)');g.addColorStop(1,'rgba(48,230,250,0)');
+  x.fillStyle=g;x.fillRect(scanX-14,box.minY-6,28,box.h+12);
+  line(scanX,box.minY-5,scanX,box.maxY+5,'rgba(119,249,255,.78)',1.2,8);
+}
+function drawHud(a){
+  const b=faceBox(a);phase+=.03;progress+=(targetProgress-progress)*.08;pct.textContent=Math.round(progress*100)+'%';
+  bracket(b.minX-8,b.minY-8,1,1,20);bracket(b.maxX+8,b.minY-8,-1,1,20);
+  bracket(b.minX-8,b.maxY+8,1,-1,20);bracket(b.maxX+8,b.maxY+8,-1,-1,20);
+
+  drawMesh(b);
+
+  [33,263,1,61,291,152].forEach((id,i)=>marker(b.pts[id],i===2?6:4));
+  const eyeL=b.pts[33],eyeR=b.pts[263],nose=b.pts[1],mouthL=b.pts[61],mouthR=b.pts[291];
+  line(eyeL.x,eyeL.y,eyeR.x,eyeR.y,'rgba(73,233,252,.34)',.7);
+  line(nose.x,nose.y,mouthL.x,mouthL.y,'rgba(73,233,252,.30)',.7);
+  line(nose.x,nose.y,mouthR.x,mouthR.y,'rgba(73,233,252,.30)',.7);
+
+  const safeX=Math.max(42,Math.min(b.minX-50,c.clientWidth*.28));
+  const baseY=Math.max(118,Math.min(b.cy,c.clientHeight-170));
+  circleHud(safeX,baseY-48,22,idx>=1?'LIVE':'SCAN','MOTION',phase*.8);
+  circleHud(safeX+18,baseY,25,Math.round(progress*100)+'%','MATCH',-phase*.55);
+  circleHud(safeX-2,baseY+52,21,latest?'ON':'--','DEPTH',phase*.62);
+
+  const barX=Math.max(12,Math.min(b.minX-75,c.clientWidth-155)),barY=Math.max(58,b.minY-34);
+  x.save();x.fillStyle='rgba(0,39,51,.62)';x.fillRect(barX,barY,145,18);
+  x.fillStyle='rgba(66,225,246,.28)';x.fillRect(barX,barY,95+Math.sin(phase)*12,18);
+  x.fillStyle='rgba(104,246,255,.92)';x.fillRect(barX,barY,3,18);x.restore();
+  text('LIVE BIOMETRIC ANALYSIS',barX+9,barY+12,7,.96);
+
+  text('FACIAL VECTOR',b.maxX-52,b.minY+18,6,.65);
+  text('LIVE',b.maxX+10,b.cy-4,6,.88);
+  line(b.maxX+4,b.cy,b.maxX+26,b.cy,'rgba(75,235,255,.5)',.8);
+
+  if(idx>=2){
+    x.save();x.strokeStyle='rgba(113,240,203,.8)';x.lineWidth=2;x.shadowColor='rgba(113,240,203,.8)';x.shadowBlur=12;
+    x.strokeRect(b.minX-12,b.minY-12,b.w+24,b.h+24);x.restore();
+  }
+}
+
+async function begin(){
+  err.classList.remove('show');ok.classList.remove('show');idx=0;hold=0;progress=0;targetProgress=0;seq=pick();latest=null;start.disabled=true;
+  try{
+    if(!window.isSecureContext)throw Error('Secure HTTPS is required for camera verification.');
+    await model();
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+    v.srcObject=stream;await v.play();resize();run=true;
+    status.textContent='ACQUIRING FACE';prompt.textContent='Look at the camera';sub.textContent='Keep your face naturally visible.';
+    requestAnimationFrame(loop);
+  }catch(e){
+    start.disabled=false;status.textContent='SYSTEM STANDBY';prompt.textContent='Camera unavailable';sub.textContent='Allow camera permission and try again.';
+    err.textContent=e?.message||String(e);err.classList.add('show');
+  }
+}
+function stop(){
+  run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null;latest=null;resize();x.clearRect(0,0,c.clientWidth,c.clientHeight);
+  status.textContent='SYSTEM STANDBY';start.disabled=false;prompt.textContent='Ready when you are.';sub.textContent='Tap Start Verification to begin.';
+}
+start.onclick=begin;reset.onclick=stop;
+
+function loop(){
+  if(!run)return;resize();x.clearRect(0,0,c.clientWidth,c.clientHeight);
+  if(v.readyState>=2&&v.currentTime!==last){
+    last=v.currentTime;
+    try{latest=lm.detectForVideo(v,performance.now())}catch(e){}
+  }
+  if(latest?.faceLandmarks?.length){
+    status.textContent=idx>=2?'HUMAN CONFIRMED':'LIVE BIOMETRIC ANALYSIS';
+    const a=latest.faceLandmarks[0];drawHud(a);
+    if(idx===0&&prompt.textContent==='Look at the camera')show();
+    if(idx<2){
+      if(pass(seq[idx].k,scores(latest))){
+        hold++;
+        if(hold>=2){
+          idx++;hold=0;targetProgress=idx===1?.5:1;
+          if(idx>=2){
+            status.textContent='HUMAN CONFIRMED';prompt.textContent='Human verification complete';sub.textContent='Live biometric response sequence captured.';ok.classList.add('show');
+          }else show();
+        }
+      }else hold=0;
+    }
+  }else{
+    phase+=.03;status.textContent='ACQUIRING FACE';prompt.textContent='Look at the camera';sub.textContent='Keep your face naturally visible.';
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
