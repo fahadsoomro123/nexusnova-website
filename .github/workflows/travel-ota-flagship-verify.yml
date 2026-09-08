@@ -1,0 +1,58 @@
+name: Travel OTA Flagship Verify
+on:
+  push:
+    branches: [nexusnova-ota-public]
+    paths:
+      - 'ota/files/index.html'
+      - 'ota/files/src/features/apps/travel-hyper3d-layout-v21.js'
+      - 'ota/files/src/features/apps/travel-hyper3d-hd-v23.js'
+      - 'ota/files/src/features/apps/travel-hyper3d-flagship-v25.js'
+      - 'ota/files/src/features/apps/travel-passenger-popover-v26.js'
+      - 'ota/files/src/features/apps/travel-clean-ui-v27.js'
+      - '.github/workflows/travel-ota-flagship-verify.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Travel flagship OTA staging
+        run: |
+          set -euo pipefail
+          paths=(
+            'ota/files/index.html'
+            'ota/files/src/features/apps/travel-hyper3d-layout-v21.js'
+            'ota/files/src/features/apps/travel-hyper3d-hd-v23.js'
+            'ota/files/src/features/apps/travel-hyper3d-flagship-v25.js'
+            'ota/files/src/features/apps/travel-passenger-popover-v26.js'
+            'ota/files/src/features/apps/travel-clean-ui-v27.js'
+          )
+          for p in "${paths[@]}"; do
+            printf 'OTA_HASH %s ' "$p"
+            sha256sum "$p" | awk '{printf "%s ",$1}'
+            wc -c < "$p"
+          done
+          test "$(git hash-object ota/files/src/features/apps/travel-hyper3d-layout-v21.js)" = 'b9556031456f552265b765e1c7ab0679c3d93cf0'
+          test "$(git hash-object ota/files/src/features/apps/travel-hyper3d-hd-v23.js)" = '08b7a1bb11cf8b66c0dbe761deff0343434b02be'
+          test "$(git hash-object ota/files/src/features/apps/travel-hyper3d-flagship-v25.js)" = 'a91fd2935eaa6aa8f5ab2f385574267bab966922'
+          test "$(git hash-object ota/files/src/features/apps/travel-passenger-popover-v26.js)" = '518bba4142d4484b6fde3c35027e405ff2ae3a2b'
+          test "$(git hash-object ota/files/src/features/apps/travel-clean-ui-v27.js)" = 'e2d0142132788b3939dd60ac25079ea4b66f0a16'
+          node --check ota/files/src/features/apps/travel-hyper3d-layout-v21.js
+          node --check ota/files/src/features/apps/travel-hyper3d-hd-v23.js
+          node --check ota/files/src/features/apps/travel-hyper3d-flagship-v25.js
+          node --check ota/files/src/features/apps/travel-passenger-popover-v26.js
+          node --check ota/files/src/features/apps/travel-clean-ui-v27.js
+          grep -Fq 'travel-clean-ui-v27.js?ota=travel-v19-flagship' ota/files/index.html
+          grep -Fq 'travel-hyper3d-layout-v21.js?ota=travel-v19-flagship' ota/files/index.html
+          grep -Fq 'travel-hyper3d-hd-v23.js?ota=travel-v19-flagship' ota/files/index.html
+          grep -Fq 'travel-hyper3d-flagship-v25.js?ota=travel-v19-flagship' ota/files/index.html
+          grep -Fq 'travel-passenger-popover-v26.js?ota=travel-v19-flagship' ota/files/index.html
+          ! grep -Fq 'travel-result-details-v1.js?' ota/files/index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('ota/files/index.html').read_text()
+          assert s.index('travel-clean-ui-v27.js') < s.index('travel-ota-revision-v13.js')
+          assert s.index('travel-hyper3d-layout-v21.js') < s.index('travel-hyper3d-hd-v23.js') < s.index('travel-hyper3d-flagship-v25.js') < s.index('travel-passenger-popover-v26.js')
+          print('OTA_STAGE_OK')
+          PY
