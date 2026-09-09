@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Solid Gold Credential Preview</title>
+<meta name="theme-color" content="#d9ad45">
+<style>
+:root{
+  --gold-hi:#fff2b0;
+  --gold:#d7aa43;
+  --gold-mid:#b47d18;
+  --gold-deep:#694006;
+  --bronze:#3d2605;
+  --ink:#241704;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:
+  radial-gradient(circle at 50% 18%,rgba(255,239,173,.42),transparent 30%),
+  linear-gradient(180deg,#1d160b 0%,#0d0a06 100%);color:#f7e7b0}
+body{display:grid;place-items:center;padding:34px 14px}
+.stage{width:min(980px,100%)}
+.demo-note{text-align:center;margin-bottom:16px;font-size:10px;letter-spacing:.18em;font-weight:900;color:#dfca91}
+.demo-note span{display:inline-block;padding:8px 11px;border:1px solid rgba(255,230,151,.24);border-radius:999px;background:rgba(255,255,255,.04)}
+.card-scene{display:grid;place-items:center;perspective:1400px}
+.gold-card{
+  position:relative;
+  width:min(856px,calc(100vw - 28px));
+  aspect-ratio:85.60/53.98;
+  border-radius:5.3% / 8.4%;
+  overflow:hidden;
+  color:var(--ink);
+  background:
+    linear-gradient(118deg,transparent 0 18%,rgba(255,255,255,.34) 25%,transparent 33% 58%,rgba(255,245,189,.17) 66%,transparent 75%),
+    repeating-linear-gradient(98deg,rgba(255,255,255,.022) 0 1px,rgba(82,45,0,.025) 1px 2px,transparent 2px 4px),
+    linear-gradient(135deg,#845607 0%,#d8ad47 15%,#ffe994 31%,#c89129 45%,#f6d56f 61%,#a66d0e 78%,#e9c65c 100%);
+  box-shadow:
+    0 34px 58px rgba(0,0,0,.54),
+    0 6px 0 #6a4307,
+    0 9px 18px rgba(0,0,0,.42),
+    inset 0 2px 1px rgba(255,255,255,.75),
+    inset 0 -3px 3px rgba(81,46,0,.58),
+    inset 3px 0 2px rgba(255,236,159,.38),
+    inset -3px 0 2px rgba(85,49,2,.32);
+  transform:rotateX(1.4deg) rotateY(-1.8deg);
+  transform-style:preserve-3d;
+}
+.gold-card:before{content:"";position:absolute;inset:2.1%;border-radius:4.4% / 7.2%;border:1px solid rgba(74,44,2,.48);box-shadow:
+  inset 0 0 0 1px rgba(255,243,180,.52),
+  0 1px 0 rgba(255,255,255,.46),
+  0 -1px 0 rgba(87,49,0,.42);pointer-events:none;z-index:8}
+.gold-card:after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(circle at 11% 13%,rgba(255,255,255,.24),transparent 12%),
+  linear-gradient(102deg,transparent 0 34%,rgba(255,255,255,.20) 43%,transparent 50% 100%);
+  mix-blend-mode:screen;opacity:.78;z-index:7}
+.metal-noise{position:absolute;inset:0;opacity:.32;pointer-events:none;background-image:
+  repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px),
+  repeating-linear-gradient(90deg,rgba(58,31,0,.02) 0 1px,transparent 1px 5px)}
+.content{position:absolute;inset:7.2% 6.7%;display:grid;grid-template-columns:1fr 28%;grid-template-rows:auto 1fr auto;gap:5.2% 4.8%;z-index:4}
+.brand{grid-column:1;display:flex;align-items:center;gap:3.2%}
+.logo{width:11.7%;aspect-ratio:1;border-radius:22%;display:grid;place-items:center;font-size:clamp(19px,3.1vw,34px);font-weight:1000;color:#5b3703;background:linear-gradient(145deg,#fff1aa,#c28d27);border:1px solid #6d4509;box-shadow:
+  1px 1px 0 rgba(255,255,255,.7),
+  -1px -1px 0 rgba(86,48,0,.42),
+  inset 1px 1px 2px rgba(255,255,255,.62),
+  inset -2px -2px 3px rgba(91,52,0,.30);text-shadow:0 1px 0 #fff0a5,0 2px 2px rgba(87,48,0,.45)}
+.brand-copy strong{display:block;font-size:clamp(11px,1.7vw,18px);letter-spacing:.16em;text-transform:uppercase;text-shadow:0 1px 0 rgba(255,244,179,.95),0 2px 2px rgba(73,41,0,.42)}
+.brand-copy small{display:block;margin-top:4px;font-size:clamp(6px,.82vw,9px);letter-spacing:.22em;font-weight:900;color:#563605;text-shadow:0 1px 0 rgba(255,242,169,.75)}
+.main{grid-column:1;align-self:center;min-width:0}
+.kicker{font-size:clamp(7px,.92vw,10px);letter-spacing:.18em;font-weight:950;color:#5b3907;text-transform:uppercase;text-shadow:0 1px 0 rgba(255,242,172,.72)}
+.title{margin:1.8% 0 2.4%;font-family:Georgia,"Times New Roman",serif;font-size:clamp(31px,5.4vw,58px);line-height:.84;letter-spacing:-.045em;text-transform:uppercase;color:#5b3500;text-shadow:
+  0 1px 0 #fff0a0,
+  0 2px 0 #cf9f36,
+  0 3px 1px #774800,
+  0 5px 7px rgba(75,42,0,.28)}
+.action-label{margin-top:3.4%;font-size:clamp(6px,.80vw,9px);letter-spacing:.16em;font-weight:950;color:#644007;text-transform:uppercase}
+.action{margin-top:1.1%;font-size:clamp(11px,1.55vw,17px);font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#332004;text-shadow:0 1px 0 rgba(255,239,159,.7)}
+.rule{height:1px;margin-top:2.2%;background:linear-gradient(90deg,#5b3703,rgba(91,55,3,.35),transparent);box-shadow:0 1px 0 rgba(255,240,166,.55)}
+.meta{display:flex;gap:5.4%;margin-top:2.4%;flex-wrap:wrap}
+.meta span{font-size:clamp(6px,.76vw,8px);letter-spacing:.08em;font-weight:850;color:#533402}
+.meta b{font-weight:1000}
+.qr-zone{grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:stretch;text-align:center}
+.qr-frame{position:relative;margin:auto;width:100%;aspect-ratio:1;border-radius:14%;padding:8.5%;background:linear-gradient(145deg,#fce49a,#a96f12);border:1px solid #644006;box-shadow:
+  1px 1px 0 rgba(255,255,255,.65),
+  -1px -1px 0 rgba(72,40,0,.38),
+  0 7px 12px rgba(72,40,0,.23),
+  inset 1px 1px 3px rgba(255,255,255,.52),
+  inset -3px -3px 4px rgba(87,48,0,.30)}
+.qr-inner{height:100%;border-radius:8%;display:grid;place-items:center;background:#fff4bd;border:1px solid #74500e;box-shadow:inset 0 0 0 3px rgba(125,82,8,.12)}
+#qr{width:86%!important;height:86%!important;image-rendering:pixelated}
+.qr-caption{margin-top:7%;font-size:clamp(5px,.68vw,8px);letter-spacing:.18em;font-weight:1000;color:#4c2e02;text-shadow:0 1px 0 rgba(255,235,151,.78)}
+.seal{position:absolute;right:5.3%;bottom:6.4%;width:15.8%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;background:
+  radial-gradient(circle at 35% 28%,#fff2a9 0 12%,#d4a23b 36%,#875509 71%,#f0ce69 100%);border:1px solid #654006;box-shadow:
+  0 8px 15px rgba(73,41,0,.28),
+  inset 0 0 0 3px rgba(255,236,149,.55),
+  inset 0 0 0 6px rgba(91,54,3,.33),
+  1px 1px 0 rgba(255,255,255,.65)}
+.seal div{font-family:Georgia,"Times New Roman",serif;font-size:clamp(8px,1.15vw,13px);font-weight:950;color:#4d2d00;text-shadow:0 1px 0 #fff0a0,0 2px 2px rgba(83,46,0,.38)}
+.seal small{display:block;font-family:Inter,ui-sans-serif,sans-serif;font-size:clamp(4px,.55vw,6px);letter-spacing:.13em;margin-top:2px}
+.bottom{grid-column:1 / -1;align-self:end;padding-right:19%;display:flex;align-items:end;justify-content:space-between;gap:4%}
+.slogan{font-family:Georgia,"Times New Roman",serif;font-size:clamp(10px,1.35vw,15px);font-weight:700;color:#472a01;text-shadow:0 1px 0 rgba(255,242,170,.82)}
+.status{font-size:clamp(6px,.76vw,8px);letter-spacing:.16em;font-weight:1000;color:#4e3002;white-space:nowrap}
+.status i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:#4f7f22;box-shadow:0 0 0 1px rgba(54,78,21,.45),0 0 6px rgba(95,145,48,.55)}
+.edge-left,.edge-right{position:absolute;top:11%;bottom:11%;width:2px;z-index:6;background:linear-gradient(180deg,transparent,#fff2a7 20%,#875005 55%,#f8dd83 82%,transparent);opacity:.74}
+.edge-left{left:3.1%}.edge-right{right:3.1%}
+.caption{text-align:center;margin-top:22px;color:#d6c08b;font-size:10px;line-height:1.6}
+.caption b{color:#f2dda4}
+@media(max-width:640px){
+  body{padding:24px 8px}.gold-card{width:calc(100vw - 16px);transform:none}.content{inset:7% 6.5%;gap:4.8% 4%}.title{font-size:clamp(25px,8.3vw,45px)}.brand-copy strong{font-size:clamp(9px,2.8vw,15px)}.action{font-size:clamp(8px,2.6vw,14px)}.meta{gap:3.5%}.qr-caption{letter-spacing:.10em}.seal{width:16.5%}.bottom{padding-right:20%}.slogan{font-size:clamp(8px,2.1vw,12px)}}
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="demo-note"><span>DESIGN PREVIEW • DEMO CREDENTIAL • NOT A LIVE RECEIPT</span></div>
+  <div class="card-scene">
+    <article class="gold-card" aria-label="NexusNova HumanProof solid gold verification credential preview">
+      <div class="metal-noise"></div><div class="edge-left"></div><div class="edge-right"></div>
+      <div class="content">
+        <div class="brand">
+          <div class="logo">N</div>
+          <div class="brand-copy"><strong>NexusNova HumanProof</strong><small>VERIFIED ACTION • GOLD CREDENTIAL</small></div>
+        </div>
+
+        <section class="main">
+          <div class="kicker">Human presence + exact-action approval</div>
+          <div class="title">HumanProof<br>Verified</div>
+          <div class="action-label">Exact approved action</div>
+          <div class="action">Approve production deployment #4821</div>
+          <div class="rule"></div>
+          <div class="meta">
+            <span>ID <b>DEMO-HP-AX7K-29Q4</b></span>
+            <span>ISSUED <b>09 SEP 2026 • 22:58 PKT</b></span>
+          </div>
+        </section>
+
+        <aside class="qr-zone">
+          <div class="qr-frame"><div class="qr-inner"><canvas id="qr" aria-label="Demo HumanProof verification QR code"></canvas></div></div>
+          <div class="qr-caption">SCAN TO VERIFY</div>
+        </aside>
+
+        <div class="bottom">
+          <div class="slogan">Trust the action. Not just the screen.</div>
+          <div class="status"><i></i> VERIFIED ACTION</div>
+        </div>
+      </div>
+      <div class="seal"><div>✓<br>VERIFIED<small>HUMANPROOF</small></div></div>
+    </article>
+  </div>
+  <div class="caption"><b>Credit-card proportion:</b> 85.60 × 53.98 mm visual ratio. Static metallic-gold CSS render — no generated image used.</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+<script>
+(()=>{
+  const canvas=document.getElementById('qr');
+  if(!canvas||!window.QRCode)return;
+  QRCode.toCanvas(canvas,'https://nexusnovatools.com/humanproof.html?demo=DEMO-HP-AX7K-29Q4',{
+    width:240,
+    margin:1,
+    errorCorrectionLevel:'H',
+    color:{dark:'#382100',light:'#fff4bd'}
+  },()=>{});
+})();
+</script>
+</body>
+</html>
