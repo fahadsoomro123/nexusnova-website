@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Verified Card Preview</title>
+<meta name="theme-color" content="#f5fff9">
+<style>
+:root{
+  --ink:#123d33;
+  --muted:#668179;
+  --paper:#fffefd;
+  --pearl:#f6fff9;
+  --emerald:#34b485;
+  --mint:#61d8ad;
+  --lilac:#a88be8;
+  --rose:#d381ac;
+  --line:rgba(33,104,83,.14);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+  radial-gradient(circle at 12% 15%,rgba(97,216,173,.20),transparent 28%),
+  radial-gradient(circle at 86% 18%,rgba(168,139,232,.17),transparent 28%),
+  radial-gradient(circle at 88% 88%,rgba(211,129,172,.15),transparent 26%),
+  linear-gradient(180deg,#f7fff9 0%,#fffafc 100%);
+  color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{display:grid;place-items:center;padding:42px 18px}
+.stage{width:min(1120px,100%)}
+.preview-label{display:flex;justify-content:center;margin-bottom:16px}
+.preview-label span{font-size:10px;letter-spacing:.16em;font-weight:950;color:#6b8179;padding:8px 11px;border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:999px}
+.card-wrap{position:relative;padding:1px;border-radius:32px;background:linear-gradient(115deg,var(--emerald),var(--mint) 35%,var(--lilac) 68%,var(--rose));box-shadow:0 32px 90px rgba(48,102,85,.18)}
+.card{position:relative;overflow:hidden;border-radius:31px;background:linear-gradient(145deg,#fffefd 0%,#fbfffd 52%,#fffafd 100%);min-height:560px;padding:34px}
+.card:before{content:"";position:absolute;inset:-24% auto auto -8%;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(97,216,173,.20),rgba(97,216,173,0) 67%)}
+.card:after{content:"";position:absolute;right:-130px;bottom:-160px;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,rgba(168,139,232,.16),rgba(211,129,172,.08) 48%,transparent 70%)}
+.security-grid{position:absolute;inset:0;opacity:.22;pointer-events:none;background-image:
+  linear-gradient(rgba(32,103,82,.045) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(32,103,82,.045) 1px,transparent 1px);
+  background-size:28px 28px;mask-image:linear-gradient(90deg,transparent,black 16%,black 84%,transparent)}
+.top-strip{position:absolute;left:0;right:0;top:0;height:8px;background:linear-gradient(90deg,var(--emerald),var(--mint) 34%,var(--lilac) 68%,var(--rose))}
+.head{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:start}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-weight:1000;color:white;background:linear-gradient(135deg,var(--emerald),var(--mint) 50%,var(--lilac));box-shadow:0 14px 28px rgba(52,180,133,.18)}
+.brand strong{display:block;font-size:14px;letter-spacing:.08em}
+.brand small{display:block;font-size:8px;letter-spacing:.15em;color:#70867f;margin-top:4px;font-weight:800}
+.demo{font-size:9px;line-height:1.45;text-align:right;letter-spacing:.11em;font-weight:950;color:#89667a;padding:9px 11px;border:1px solid rgba(211,129,172,.20);background:#fff9fc;border-radius:12px}
+.status-row{position:relative;z-index:2;display:grid;grid-template-columns:1.35fr .65fr;gap:28px;margin-top:34px;align-items:end}
+.eyebrow{font-size:10px;letter-spacing:.15em;font-weight:950;color:#2d8468}
+.status h1{margin:10px 0 12px;font-size:clamp(46px,7vw,82px);line-height:.88;letter-spacing:-.06em}
+.status h1 span{background:linear-gradient(90deg,#208060 0%,#58c8a1 40%,#9b83df 70%,#ce78a6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.status p{margin:0;max-width:700px;color:var(--muted);font-size:15px;line-height:1.7}
+.seal{justify-self:end;width:170px;aspect-ratio:1;border-radius:50%;padding:8px;background:conic-gradient(from 20deg,var(--emerald),var(--mint),var(--lilac),var(--rose),var(--emerald));box-shadow:0 20px 50px rgba(82,148,126,.16)}
+.seal-inner{height:100%;border-radius:50%;display:grid;place-items:center;text-align:center;background:#fffefd;border:1px solid rgba(33,104,83,.12);box-shadow:inset 0 0 0 7px rgba(97,216,173,.06)}
+.check{width:54px;height:54px;margin:0 auto 7px;border-radius:50%;display:grid;place-items:center;color:white;font-size:30px;font-weight:1000;background:linear-gradient(135deg,var(--emerald),var(--mint));box-shadow:0 12px 28px rgba(52,180,133,.20)}
+.seal b{display:block;font-size:10px;letter-spacing:.13em}.seal small{display:block;margin-top:5px;font-size:8px;color:#72877f;letter-spacing:.08em}
+.action{position:relative;z-index:2;margin-top:30px;border:1px solid rgba(47,123,99,.13);background:rgba(255,255,255,.80);border-radius:22px;padding:22px 24px;box-shadow:0 16px 42px rgba(38,101,81,.07)}
+.action-label{font-size:9px;letter-spacing:.15em;font-weight:950;color:#6e857d}
+.action-value{margin-top:8px;font-size:clamp(22px,3.2vw,34px);font-weight:950;letter-spacing:-.035em;line-height:1.12}
+.action-sub{margin-top:8px;color:#6f857e;font-size:12px}
+.proofs{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.proof{padding:15px 16px;border:1px solid rgba(38,112,89,.12);border-radius:16px;background:rgba(252,255,253,.84)}
+.proof small{display:block;font-size:8px;letter-spacing:.13em;color:#758981;font-weight:850}.proof b{display:block;margin-top:6px;font-size:13px}.proof i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 12px rgba(52,180,133,.55);margin-right:6px}
+.meta{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:stretch;margin-top:18px}
+.meta-item{padding:14px 15px;border-top:1px solid var(--line)}
+.meta-item small{display:block;font-size:8px;letter-spacing:.11em;color:#798b85;font-weight:850}.meta-item b{display:block;margin-top:6px;font-size:12px;word-break:break-word}
+.codebox{min-width:136px;display:grid;grid-template-columns:repeat(9,7px);grid-auto-rows:7px;gap:3px;padding:12px;border-radius:15px;border:1px solid rgba(56,117,98,.12);background:white;align-content:center;justify-content:center}
+.codebox span{background:#1f5e4c;border-radius:1px}.codebox span:nth-child(2n),.codebox span:nth-child(5n){opacity:.14}.codebox span:nth-child(7n){background:#a47fd3}.codebox span:nth-child(11n){background:#d381ac}
+.foot{position:relative;z-index:2;display:flex;justify-content:space-between;gap:18px;align-items:end;margin-top:24px;padding-top:18px;border-top:1px solid rgba(33,104,83,.12)}
+.slogan{font-size:13px;font-weight:950;letter-spacing:-.01em}.slogan span{color:#7c8f88;font-weight:700;margin-left:7px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}.btn{min-height:40px;padding:0 14px;border-radius:12px;border:1px solid rgba(42,112,90,.14);background:white;color:#315f51;font-weight:900;font-size:11px}.btn.primary{border:0;color:white;background:linear-gradient(135deg,var(--emerald),var(--mint) 58%,var(--lilac))}
+.note{margin-top:16px;text-align:center;color:#7d8f89;font-size:10px;line-height:1.5}
+@media(max-width:760px){body{padding:22px 10px}.card{padding:24px 18px;min-height:0}.head{grid-template-columns:1fr}.demo{text-align:left;width:max-content;max-width:100%}.status-row{grid-template-columns:1fr}.seal{justify-self:start;width:142px}.proofs{grid-template-columns:1fr}.meta{grid-template-columns:1fr 1fr}.codebox{grid-column:1/-1}.foot{align-items:flex-start;flex-direction:column}.actions{justify-content:flex-start}.status h1{font-size:50px}}
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="preview-label"><span>DESIGN PREVIEW • NOT A LIVE RECEIPT</span></div>
+  <section class="card-wrap" aria-label="HumanProof verified action card design preview">
+    <article class="card">
+      <div class="top-strip"></div><div class="security-grid"></div>
+      <header class="head">
+        <div class="brand"><div class="mark">N</div><div><strong>NEXUSNOVA HUMANPROOF</strong><small>VERIFIED ACTION • FLAGSHIP RECEIPT</small></div></div>
+        <div class="demo">SAMPLE ONLY<br>NOT AN ISSUED VERIFICATION</div>
+      </header>
+
+      <div class="status-row">
+        <div class="status">
+          <div class="eyebrow">HUMAN PRESENCE + EXACT-ACTION APPROVAL</div>
+          <h1><span>Verified</span><br>Action.</h1>
+          <p>A live human completed the required verification step and approved the exact action shown on this receipt. This preview demonstrates the final post-payment HumanProof artifact design.</p>
+        </div>
+        <div class="seal"><div class="seal-inner"><div><div class="check">✓</div><b>HUMANPROOF</b><small>VERIFIED ACTION</small></div></div></div>
+      </div>
+
+      <section class="action">
+        <div class="action-label">EXACT APPROVED ACTION</div>
+        <div class="action-value">Approve production deployment #4821</div>
+        <div class="action-sub">Environment: NexusNova Production • Action nonce bound to this receipt</div>
+      </section>
+
+      <section class="proofs">
+        <div class="proof"><small>LIVE HUMAN STEP</small><b><i></i>Challenge completed</b></div>
+        <div class="proof"><small>ACTION BINDING</small><b><i></i>Exact action attached</b></div>
+        <div class="proof"><small>RECEIPT STATE</small><b><i></i>Issued after confirmation</b></div>
+      </section>
+
+      <section class="meta">
+        <div class="meta-item"><small>VERIFICATION ID</small><b>DEMO-HP-9A7C-4821</b></div>
+        <div class="meta-item"><small>ISSUED</small><b>09 Sep 2026 • 22:44 PKT</b></div>
+        <div class="meta-item"><small>STATUS</small><b>Verified Action</b></div>
+        <div class="codebox" aria-label="Decorative demo verification matrix">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <div class="slogan">Trust the action.<span>Not just the screen.</span></div>
+        <div class="actions"><button class="btn" type="button">Share Verification</button><button class="btn primary" type="button">Download Receipt</button></div>
+      </footer>
+    </article>
+  </section>
+  <div class="note">Visual prototype only. A production HumanProof receipt would be issued only after the required verification and server-confirmed payment flow.</div>
+</main>
+</body>
+</html>
