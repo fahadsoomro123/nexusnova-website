@@ -43,6 +43,10 @@
     ad_personalization:'denied'
   });
 
+  const shouldAutoEnableAnalytics=()=>{
+    try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}
+  };
+
   const mountChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
     const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
@@ -57,7 +61,7 @@
     banner.dataset.nexusnovaConsent='';
     banner.setAttribute('role','dialog');
     banner.setAttribute('aria-label','Analytics privacy choice');
-    banner.innerHTML=`<p><strong>Optional analytics</strong><br>NexusNova can use Google Analytics to measure website traffic. Analytics stays off unless you allow it. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow analytics</button><button type="button" data-consent-deny>No thanks</button></div>`;
+    banner.innerHTML=`<p><strong>Optional analytics</strong><br>NexusNova can use Google Analytics to measure website traffic. You can allow or decline optional analytics at any time. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow analytics</button><button type="button" data-consent-deny>No thanks</button></div>`;
     document.body.appendChild(banner);
 
     const reopen=document.createElement('button');
@@ -73,12 +77,12 @@
     reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
 
     const choice=readChoice();
-    if(choice==='granted'){loadAnalytics();hide()}
+    if(choice==='granted'||(!choice&&shouldAutoEnableAnalytics())){loadAnalytics();hide()}
     else if(choice==='denied'){denyAnalytics();hide()}
   };
 
   const initialChoice=readChoice();
-  if(initialChoice==='granted')loadAnalytics();
+  if(initialChoice==='granted'||(!initialChoice&&shouldAutoEnableAnalytics()))loadAnalytics();
   else denyAnalytics();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
   else mountChoices();

@@ -1,0 +1,139 @@
+name: NexusNova AdSense Content Hardening
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/adsense_content_hardening.py'
+      - '.github/scripts/adsense_low_value_remediation.py'
+      - '.github/workflows/adsense-content-hardening.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/scripts/adsense_content_hardening.py'
+      - '.github/scripts/adsense_low_value_remediation.py'
+      - '.github/workflows/adsense-content-hardening.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  harden-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compile remediation scripts
+        run: |
+          python -m py_compile .github/scripts/adsense_content_hardening.py
+          python -m py_compile .github/scripts/adsense_low_value_remediation.py
+
+      - name: Preserve existing page-specific hardening
+        run: python .github/scripts/adsense_content_hardening.py
+
+      - name: Add people-first examples, limitations and decision guidance
+        run: python .github/scripts/adsense_low_value_remediation.py
+
+      - name: Build combined changed-file list
+        shell: bash
+        run: |
+          cat adsense-content-hardening-changed-files.txt adsense-value-remediation-changed-files.txt 2>/dev/null \
+            | sed '/^[[:space:]]*$/d' | sort -u > adsense-combined-changed-files.txt
+          echo "Combined changed pages: $(wc -l < adsense-combined-changed-files.txt)"
+
+      - name: Run full static site quality audit
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Run AdSense structural readiness audit
+        run: python .github/scripts/adsense_readiness_audit.py
+
+      - name: Enforce remediation integrity and zero structural red flags
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import json
+          from pathlib import Path
+
+          adsense = json.loads(Path('adsense-readiness.json').read_text(encoding='utf-8'))
+          severe = adsense.get('severe_findings', [])
+          warnings = adsense.get('warnings', [])
+          low = adsense.get('details', {}).get('low_text_pages', [])
+          very_low = adsense.get('details', {}).get('very_low_text_pages', [])
+          if severe:
+              raise SystemExit('AdSense hardening blocked: severe findings remain: ' + repr(severe))
+          if warnings:
+              raise SystemExit('AdSense hardening blocked: warnings remain: ' + repr(warnings))
+          if low or very_low:
+              raise SystemExit(f'AdSense hardening blocked: low-text pages remain: {low or very_low}')
+
+          site = json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          site_severe = site.get('severe', site.get('severe_findings', []))
+          site_warnings = site.get('warnings', [])
+          if site_severe or site_warnings:
+              raise SystemExit(f'Site-quality hardening blocked: severe={site_severe!r} warnings={site_warnings!r}')
+
+          spec = importlib.util.spec_from_file_location('value_remediation', '.github/scripts/adsense_low_value_remediation.py')
+          module = importlib.util.module_from_spec(spec)
+          assert spec.loader is not None
+          spec.loader.exec_module(module)
+          marker = module.MARKER_START
+          missing = []
+          duplicates = []
+          for name in module.CONTENT:
+              text = Path(name).read_text(encoding='utf-8')
+              count = text.count(marker)
+              if count == 0:
+                  missing.append(name)
+              elif count > 1:
+                  duplicates.append(name)
+          if missing or duplicates:
+              raise SystemExit(f'Value-remediation integrity failed: missing={missing!r} duplicates={duplicates!r}')
+
+          changed = [x.strip() for x in Path('adsense-combined-changed-files.txt').read_text(encoding='utf-8').splitlines() if x.strip()]
+          print(f'Changed content pages: {len(changed)}')
+          print(f'People-first remediation targets verified: {len(module.CONTENT)}')
+          print('AdSense remediation structural gate: PASS')
+          PY
+
+      - name: Commit verified content remediation
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(sed '/^[[:space:]]*$/d' adsense-combined-changed-files.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No content changes required.'
+            exit 0
+          fi
+
+          git config user.name 'nexusnova-content-guard[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for file in "${files[@]}"; do
+            git add -- "$file"
+          done
+          git commit -m 'content: add people-first depth to weak utility pages'
+
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              echo 'Verified AdSense value remediation pushed to main.'
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying after sync..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            sleep $((attempt * 3))
+          done
+          echo 'Unable to push verified content remediation after retries.' >&2
+          exit 1

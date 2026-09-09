@@ -1,0 +1,200 @@
+name: NexusNova Travel OTA 5 Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/travel-ota5-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-travel-ota-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOURCE_REPO: fahadsoomro123/nexusnova-app-public-build
+      SOURCE_SHA: 1d42d66a4c18cc8744ea08cc8237796814fc6b62
+      SOURCE_QA_RUN: '34094782917'
+      SOURCE_ANDROID_RUN: '34094782771'
+      OTA_REPO: fahadsoomro123/nexusnova-website
+      OTA_BRANCH: nexusnova-ota-public
+    steps:
+      - name: Checkout cumulative OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Verify exact public source and release gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api='https://api.github.com/repos/'
+          auth=(-H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28')
+          source_head="$(curl -fsSL "${auth[@]}" "${api}${SOURCE_REPO}/git/ref/heads/main" | jq -r '.object.sha')"
+          test "$source_head" = "$SOURCE_SHA" || { echo "Source main advanced to $source_head; refusing stale OTA."; exit 1; }
+          for run_id in "$SOURCE_QA_RUN" "$SOURCE_ANDROID_RUN"; do
+            json="$(curl -fsSL "${auth[@]}" "${api}${SOURCE_REPO}/actions/runs/${run_id}")"
+            status="$(jq -r '.status' <<<"$json")"
+            conclusion="$(jq -r '.conclusion' <<<"$json")"
+            head="$(jq -r '.head_sha' <<<"$json")"
+            test "$status" = completed && test "$conclusion" = success && test "$head" = "$SOURCE_SHA" || {
+              echo "Release gate failed for run ${run_id}: status=${status} conclusion=${conclusion} head=${head}"; exit 1;
+            }
+          done
+          git pull --ff-only origin "$OTA_BRANCH"
+
+      - name: Stage verified Travel runtime files
+        run: |
+          set -euo pipefail
+          base="https://raw.githubusercontent.com/${SOURCE_REPO}/${SOURCE_SHA}/fresh-rebuild"
+          dest='ota/files/src/features/apps'
+          mkdir -p "$dest"
+          for name in travel-suite.js travel-integrations.js travel-edge-client.js travel-edge-config.js travel-ground.js; do
+            curl -fL --retry 4 --retry-delay 2 "${base}/src/features/apps/${name}" -o "${dest}/${name}"
+          done
+
+          # Existing visual assets must remain exact; verify rather than rewrite them.
+          for name in reference-from-exact.webp.b64 reference-hero-right.webp.b64 reference-to-exact.webp.b64; do
+            curl -fL --retry 4 --retry-delay 2 "${base}/assets/travel/${name}" -o "/tmp/${name}"
+            cmp "/tmp/${name}" "ota/files/assets/travel/${name}"
+          done
+
+          grep -q "nn-travel-host-guard-v7" "$dest/travel-integrations.js"
+          grep -q "TRAVEL_OTA_REVISION = 5" "$dest/travel-integrations.js"
+          grep -q "grid-row:3!important" "$dest/travel-integrations.js"
+          grep -q "searchWorldwideFlights" "$dest/travel-suite.js"
+          grep -q "searchWorldwideHotels" "$dest/travel-suite.js"
+          grep -q "from './travel-edge-config.js'" "$dest/travel-edge-client.js"
+          grep -q "fresh-travel-only" "$dest/travel-ground.js"
+          if grep -qi firebase "$dest/travel-ground.js"; then echo 'Firebase leaked into fresh Travel ground bridge'; exit 1; fi
+
+      - name: Commit OTA runtime files first
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ota/files/src/features/apps/travel-suite.js \
+                  ota/files/src/features/apps/travel-integrations.js \
+                  ota/files/src/features/apps/travel-edge-client.js \
+                  ota/files/src/features/apps/travel-edge-config.js \
+                  ota/files/src/features/apps/travel-ground.js
+          if git diff --cached --quiet; then
+            echo 'Travel runtime already matches OTA 5 candidate.'
+          else
+            git commit -m "ota: stage Travel revision 5 runtime"
+            git push origin "HEAD:${OTA_BRANCH}"
+          fi
+
+      - name: Build cumulative manifest with revision 5
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin "$OTA_BRANCH"
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          source = os.environ['SOURCE_SHA']
+          manifest_path = Path('ota/manifest.json')
+          manifest = json.loads(manifest_path.read_text())
+          if manifest.get('schema') != 2:
+              raise SystemExit('Unexpected OTA schema')
+          if not manifest.get('ai_photo_source'):
+              raise SystemExit('Refusing to drop existing AI Photo OTA state')
+
+          changed = [
+              'src/features/apps/travel-suite.js',
+              'src/features/apps/travel-integrations.js',
+              'src/features/apps/travel-edge-client.js',
+              'src/features/apps/travel-edge-config.js',
+              'src/features/apps/travel-ground.js',
+          ]
+          by_path = {item['path']: dict(item) for item in manifest.get('files', [])}
+          for rel in changed:
+              data = Path('ota/files', rel).read_bytes()
+              by_path[rel] = {
+                  'path': rel,
+                  'sha256': hashlib.sha256(data).hexdigest(),
+                  'size': len(data),
+              }
+
+          # Preserve every unrelated/cumulative OTA entry and only replace Travel runtime metadata.
+          manifest['version'] = source
+          manifest['source'] = source
+          manifest['proof_number'] = '5'
+          manifest['travel_revision'] = 5
+          manifest['files'] = [by_path[k] for k in sorted(by_path)]
+          manifest_path.write_text(json.dumps(manifest, separators=(',', ':')))
+          print('Manifest entries:', len(manifest['files']))
+          print('AI Photo source preserved:', manifest['ai_photo_source'])
+          PY
+
+      - name: Commit manifest LAST
+        run: |
+          set -euo pipefail
+          git add ota/manifest.json
+          git diff --cached --exit-code && { echo 'Manifest did not change'; exit 1; } || true
+          git commit -m "ota: publish Travel revision 5 manifest"
+          git push origin "HEAD:${OTA_BRANCH}"
+
+      - name: Verify repository and live raw OTA 5
+        run: |
+          set -euo pipefail
+          git fetch origin "$OTA_BRANCH"
+          git show "origin/${OTA_BRANCH}:ota/manifest.json" > /tmp/repo-manifest.json
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          source = os.environ['SOURCE_SHA']
+          m = json.load(open('/tmp/repo-manifest.json'))
+          assert m['version'] == source and m['source'] == source
+          assert str(m['proof_number']) == '5' and int(m['travel_revision']) == 5
+          changed = [
+              'src/features/apps/travel-suite.js',
+              'src/features/apps/travel-integrations.js',
+              'src/features/apps/travel-edge-client.js',
+              'src/features/apps/travel-edge-config.js',
+              'src/features/apps/travel-ground.js',
+          ]
+          by = {x['path']: x for x in m['files']}
+          for rel in changed:
+              data = subprocess.check_output(['git','show',f"origin/{os.environ['OTA_BRANCH']}:ota/files/{rel}"])
+              assert hashlib.sha256(data).hexdigest() == by[rel]['sha256'], rel
+              assert len(data) == by[rel]['size'], rel
+          print('Repository hash/size verification PASS')
+          PY
+
+          raw="https://raw.githubusercontent.com/${OTA_REPO}/${OTA_BRANCH}"
+          for attempt in 1 2 3 4 5; do
+            if curl -fL --retry 2 "${raw}/ota/manifest.json?run=${GITHUB_RUN_ID}-${attempt}" -o /tmp/live-manifest.json && \
+               python3 -c "import json; m=json.load(open('/tmp/live-manifest.json')); assert m['version']=='${SOURCE_SHA}' and int(m['travel_revision'])==5 and str(m['proof_number'])=='5'"; then
+              break
+            fi
+            test "$attempt" != 5 || { echo 'Live manifest did not converge'; exit 1; }
+            sleep 5
+          done
+
+          python3 - <<'PY'
+          import json
+          m=json.load(open('/tmp/live-manifest.json'))
+          keep=['src/features/apps/travel-suite.js','src/features/apps/travel-integrations.js','src/features/apps/travel-edge-client.js','src/features/apps/travel-edge-config.js','src/features/apps/travel-ground.js']
+          by={x['path']:x for x in m['files']}
+          open('/tmp/live-check.tsv','w').write('\n'.join(f"{p}\t{by[p]['sha256']}\t{by[p]['size']}" for p in keep)+'\n')
+          PY
+          while IFS=$'\t' read -r rel expected_hash expected_size; do
+            out="/tmp/$(basename "$rel")"
+            curl -fL --retry 4 --retry-delay 2 "${raw}/ota/files/${rel}?run=${GITHUB_RUN_ID}" -o "$out"
+            got_hash="$(sha256sum "$out" | awk '{print $1}')"
+            got_size="$(wc -c < "$out" | tr -d ' ')"
+            test "$got_hash" = "$expected_hash" && test "$got_size" = "$expected_size" || {
+              echo "Live verification failed for $rel"; exit 1;
+            }
+          done < /tmp/live-check.tsv
+          echo 'TRAVEL OTA 5 LIVE VERIFICATION PASS'

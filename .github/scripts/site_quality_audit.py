@@ -116,7 +116,8 @@ def parse_sitemaps() -> tuple[set[str], list[str], list[str]]:
     urls: set[str] = set()
     files: list[str] = []
     problems: list[str] = []
-    for path in sorted(ROOT.glob('sitemap*.xml')):
+    # Product-specific sitemap files can be named either sitemap-*.xml or *-sitemap.xml.
+    for path in sorted(ROOT.glob('*sitemap*.xml')):
         files.append(path.as_posix())
         try:
             root = ET.fromstring(path.read_text(encoding='utf-8', errors='replace'))
@@ -191,7 +192,13 @@ def main() -> None:
             if in_sitemap:
                 mapped += 1
 
-        has_theme = 'assets/css/scifi.css' in text or '../assets/css/scifi.css' in text or 'assets/js/main.js' in text or '../assets/js/main.js' in text
+        has_theme = (
+            'assets/css/scifi.css' in text
+            or '../assets/css/scifi.css' in text
+            or 'assets/js/main.js' in text
+            or '../assets/js/main.js' in text
+            or 'assets/css/humanproof.css' in text
+        )
         if has_theme:
             theme_covered += 1
         elif rel not in SKIP_HTML:

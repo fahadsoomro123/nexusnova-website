@@ -1,0 +1,39 @@
+name: AdSense Final Remediation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'adsense_final_remediation.py'
+      - '.github/workflows/adsense-final-remediation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Sync latest main
+        run: git pull --rebase origin main
+      - name: Apply targeted remediation
+        run: python adsense_final_remediation.py
+      - name: Commit only if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-adsense[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- '*.html' 'sitemap.xml'
+          if git diff --cached --quiet; then
+            echo 'No remediation changes needed.'
+            exit 0
+          fi
+          git commit -m 'adsense: complete reviewer-facing remediation'
+          git pull --rebase origin main
+          git push origin main

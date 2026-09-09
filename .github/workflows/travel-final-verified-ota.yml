@@ -1,0 +1,176 @@
+name: Travel Final Verified OTA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/travel-final-verified-ota.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOURCE_SHA: a0c814918d99ec67f3c188e9200caa16bf228e8e
+      OTA_BASE: 8d1aaaee6f28b974a8c8b3ff213beb1318ec7405
+      EXPECTED_OTA_HEAD: a3150f37b036756e07c94e0d739d773f5ec473c9
+      APP_RAW: https://raw.githubusercontent.com/fahadsoomro123/nexusnova-app-public-build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build verified Travel differential OTA on latest public branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin nexusnova-ota-public
+          CURRENT="$(git rev-parse origin/nexusnova-ota-public)"
+          test "$CURRENT" = "$EXPECTED_OTA_HEAD" || {
+            echo "OTA branch moved: expected $EXPECTED_OTA_HEAD got $CURRENT" >&2
+            exit 1
+          }
+
+          rm -rf /tmp/nexusnova-travel-ota
+          git worktree add -B travel-final-ota /tmp/nexusnova-travel-ota origin/nexusnova-ota-public
+          ROOT=/tmp/nexusnova-travel-ota
+          mkdir -p "$ROOT/ota/files/src/features/apps"
+
+          pull_file() {
+            local src="$1" dst="$2"
+            curl -fsSL --retry 3 --retry-delay 1 "$APP_RAW/$SOURCE_SHA/fresh-rebuild/$src" -o "$ROOT/ota/files/$dst"
+            test -s "$ROOT/ota/files/$dst"
+          }
+
+          pull_file index.html index.html
+          pull_file src/features/apps/travel-suite.js src/features/apps/travel-suite.js
+          pull_file src/features/apps/travel-integrations.js src/features/apps/travel-integrations.js
+          pull_file src/features/apps/travel-flagship-runtime-v8.js src/features/apps/travel-flagship-runtime-v8.js
+          pull_file src/features/apps/travel-ground.js src/features/apps/travel-ground.js
+          pull_file src/features/apps/travel-edge-client.js src/features/apps/travel-edge-client.js
+          pull_file src/features/apps/travel-edge-config.js src/features/apps/travel-edge-config.js
+
+          grep -Fq 'travel-flagship-runtime-v8.js?ota=travel-v8' "$ROOT/ota/files/index.html"
+          node --check "$ROOT/ota/files/src/features/apps/travel-suite.js"
+          node --check "$ROOT/ota/files/src/features/apps/travel-integrations.js"
+          node --check "$ROOT/ota/files/src/features/apps/travel-flagship-runtime-v8.js"
+          for marker in 'nn-ota-badge' 'OTA_STATE_KEY' 'OTA_RELEASE_ID' 'updateOtaBadge' 'stampTravelRevision' 'data-ota-badge'; do
+            if grep -Fq "$marker" "$ROOT/ota/files/src/features/apps/travel-suite.js"; then
+              echo "Temporary Travel OTA badge marker survived: $marker" >&2
+              exit 1
+            fi
+          done
+
+          ROOT="$ROOT" SOURCE_SHA="$SOURCE_SHA" OTA_BASE="$OTA_BASE" node <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          const crypto=require('crypto');
+          const root=process.env.ROOT;
+          const source=process.env.SOURCE_SHA;
+          const base=process.env.OTA_BASE;
+          const manifestPath=path.join(root,'ota/manifest.json');
+          const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+          if(manifest.schema!==2) throw new Error('OTA schema changed');
+          if(manifest.base!==base) throw new Error(`OTA base mismatch before publish: ${manifest.base}`);
+          const required=[
+            'index.html',
+            'src/features/apps/travel-suite.js',
+            'src/features/apps/travel-integrations.js',
+            'src/features/apps/travel-flagship-runtime-v8.js',
+            'src/features/apps/travel-ground.js',
+            'src/features/apps/travel-edge-client.js',
+            'src/features/apps/travel-edge-config.js'
+          ];
+          const paths=new Set((manifest.files||[]).map(x=>x.path));
+          required.forEach(p=>paths.add(p));
+          const files=[...paths].sort().map(p=>{
+            const full=path.join(root,'ota/files',p);
+            if(!fs.existsSync(full)) throw new Error(`Manifest file missing: ${p}`);
+            const data=fs.readFileSync(full);
+            return {path:p,sha256:crypto.createHash('sha256').update(data).digest('hex'),size:data.length};
+          });
+          manifest.schema=2;
+          manifest.base=base;
+          manifest.version=source;
+          manifest.source=source;
+          manifest.travel_source=source;
+          manifest.travel_revision=Math.max(0,Number(manifest.travel_revision)||0)+1;
+          manifest.visual_proof=false;
+          delete manifest.proof_number;
+          manifest.files=files;
+          fs.writeFileSync(manifestPath,JSON.stringify(manifest));
+          console.log(`Manifest prepared version=${manifest.version} files=${files.length} travel_revision=${manifest.travel_revision}`);
+          NODE
+
+          ROOT="$ROOT" node <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          const crypto=require('crypto');
+          const root=process.env.ROOT;
+          const m=JSON.parse(fs.readFileSync(path.join(root,'ota/manifest.json'),'utf8'));
+          if(m.base!=='8d1aaaee6f28b974a8c8b3ff213beb1318ec7405') throw new Error('Installed APK OTA base changed');
+          if(m.version!=='a0c814918d99ec67f3c188e9200caa16bf228e8e') throw new Error('Unexpected OTA version');
+          if('proof_number' in m) throw new Error('Temporary proof metadata survived');
+          if(!m.files.some(x=>x.path==='src/features/apps/travel-flagship-runtime-v8.js')) throw new Error('Travel v8 runtime absent from manifest');
+          for(const entry of m.files){
+            const full=path.join(root,'ota/files',entry.path);
+            const data=fs.readFileSync(full);
+            const hash=crypto.createHash('sha256').update(data).digest('hex');
+            if(hash!==entry.sha256||data.length!==entry.size) throw new Error(`Hash/size mismatch ${entry.path}`);
+          }
+          console.log(`PASS — ${m.files.length} OTA files hash/size verified; runtime present; proof badge removed.`);
+          NODE
+
+          git fetch origin nexusnova-ota-public
+          LATEST="$(git rev-parse origin/nexusnova-ota-public)"
+          test "$LATEST" = "$EXPECTED_OTA_HEAD" || {
+            echo "OTA branch changed during staging: expected $EXPECTED_OTA_HEAD got $LATEST" >&2
+            exit 1
+          }
+
+          cd "$ROOT"
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota
+          git diff --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m "release: activate verified Travel fullscreen OTA $SOURCE_SHA"
+          git push origin HEAD:nexusnova-ota-public
+
+      - name: Verify live raw OTA after publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 4
+          BASE_URL='https://raw.githubusercontent.com/fahadsoomro123/nexusnova-website/nexusnova-ota-public/ota'
+          curl -fsSL --retry 4 "$BASE_URL/manifest.json?check=$GITHUB_RUN_ID" -o /tmp/live-manifest.json
+          curl -fsSL --retry 4 "$BASE_URL/files/index.html?check=$GITHUB_RUN_ID" -o /tmp/live-index.html
+          curl -fsSL --retry 4 "$BASE_URL/files/src/features/apps/travel-suite.js?check=$GITHUB_RUN_ID" -o /tmp/live-travel-suite.js
+          curl -fsSL --retry 4 "$BASE_URL/files/src/features/apps/travel-flagship-runtime-v8.js?check=$GITHUB_RUN_ID" -o /tmp/live-travel-v8.js
+          node <<'NODE'
+          const fs=require('fs'),crypto=require('crypto'),path=require('path');
+          const m=JSON.parse(fs.readFileSync('/tmp/live-manifest.json','utf8'));
+          if(m.base!=='8d1aaaee6f28b974a8c8b3ff213beb1318ec7405') throw new Error('Live base mismatch');
+          if(m.version!=='a0c814918d99ec67f3c188e9200caa16bf228e8e') throw new Error(`Live version stale: ${m.version}`);
+          if(m.travel_source!==m.version) throw new Error('Live Travel source mismatch');
+          if('proof_number' in m) throw new Error('Live temporary proof metadata survived');
+          const critical=new Map([
+            ['index.html','/tmp/live-index.html'],
+            ['src/features/apps/travel-suite.js','/tmp/live-travel-suite.js'],
+            ['src/features/apps/travel-flagship-runtime-v8.js','/tmp/live-travel-v8.js']
+          ]);
+          for(const [p,file] of critical){
+            const e=m.files.find(x=>x.path===p);if(!e)throw new Error(`Live manifest missing ${p}`);
+            const d=fs.readFileSync(file);const h=crypto.createHash('sha256').update(d).digest('hex');
+            if(h!==e.sha256||d.length!==e.size)throw new Error(`Live verification mismatch ${p}`);
+          }
+          NODE
+          grep -Fq 'travel-flagship-runtime-v8.js?ota=travel-v8' /tmp/live-index.html
+          for marker in 'nn-ota-badge' 'OTA_STATE_KEY' 'OTA_RELEASE_ID' 'updateOtaBadge' 'stampTravelRevision' 'data-ota-badge'; do
+            ! grep -Fq "$marker" /tmp/live-travel-suite.js
+          done
+          node --check /tmp/live-travel-v8.js
+          echo 'PASS — live OTA is compatible, fullscreen runtime is delivered, and temporary green Travel badge is gone.'

@@ -2,8 +2,10 @@ name: NexusNova Premium Social 5x Daily
 
 on:
   schedule:
+    # Exact premium slots in Pakistan time (UTC+5): 08:30, 11:30, 14:30, 17:30, 20:30.
+    - cron: '30 3,6,9,12,15 * * *'
     # Recovery heartbeat every 30 minutes during Pakistan posting hours.
-    # The resolver publishes ONLY the earliest due slot not successfully delivered today.
+    # The resolver publishes ONLY the earliest due slot not fully delivered today.
     - cron: '10,40 3-15 * * *'
     - cron: '10 16 * * *'
   workflow_dispatch:
@@ -12,6 +14,13 @@ on:
         description: 'Campaign slot 1-5 (blank = recover earliest due missing slot)'
         required: false
         type: string
+  workflow_run:
+    # Independent safety net: the hourly traffic watcher is already running on GitHub-hosted runners.
+    # If this workflow's own schedule is delayed/missed, its completion wakes the same idempotent resolver.
+    workflows:
+      - NexusNova Meaningful Traffic Watch
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -35,6 +44,8 @@ jobs:
       BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'
       FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
       FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
       POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
 
     steps:
@@ -49,6 +60,8 @@ jobs:
         env:
           MANUAL_SLOT: ${{ github.event.inputs.slot }}
         run: |
+          git fetch origin main
+          git show origin/main:assets/data/premium-social-published.json > /tmp/remote-premium-social-published.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-published.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import datetime, json, os
           from pathlib import Path
@@ -63,8 +76,10 @@ jobs:
               4: datetime.time(17, 30),
               5: datetime.time(20, 30),
           }
+          expected = {'x', 'facebook', 'instagram', 'telegram'}
+          core = {'x', 'facebook', 'instagram'}
 
-          delivery_path = Path('assets/data/premium-social-published.json')
+          delivery_path = Path('/tmp/remote-premium-social-published.json')
           try:
               doc = json.loads(delivery_path.read_text(encoding='utf-8')) if delivery_path.exists() else {}
           except Exception:
@@ -73,16 +88,29 @@ jobs:
           if not isinstance(rows, list):
               rows = []
 
-          posted_today = set()
+          platform_state = {}
           for row in rows:
               try:
-                  slot = int(row.get('slot', 0))
+                  row_slot = int(row.get('slot', 0))
                   stamp = str(row.get('published_at') or '')
                   dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
-                  if dt.date() == today and slot in due_times and int(row.get('successful_destinations', 0)) > 0:
-                      posted_today.add(slot)
+                  if dt.date() != today or row_slot not in due_times:
+                      continue
+                  outcomes = row.get('outcomes') if isinstance(row.get('outcomes'), list) else []
+                  ok_platforms = {
+                      str(item.get('platform') or '')
+                      for item in outcomes
+                      if bool(item.get('ok'))
+                  }
+                  platform_state[row_slot] = platform_state.get(row_slot, set()) | ok_platforms
               except Exception:
                   continue
+
+          posted_today = {slot for slot, ok in platform_state.items() if expected.issubset(ok)}
+          telegram_only_slots = {
+              slot for slot, ok in platform_state.items()
+              if core.issubset(ok) and 'telegram' not in ok
+          }
 
           raw = (os.getenv('MANUAL_SLOT') or '').strip()
           slot = None
@@ -93,7 +121,7 @@ jobs:
               except Exception:
                   requested = 1
               if requested in posted_today:
-                  reason = f'manual slot {requested} already delivered today'
+                  reason = f'manual slot {requested} already fully delivered today'
               else:
                   slot = requested
                   reason = f'manual slot {requested}'
@@ -102,12 +130,14 @@ jobs:
               missing = [s for s in due if s not in posted_today]
               if missing:
                   slot = min(missing)
-                  reason = f'recover earliest due missing delivery; due={due}; delivered={sorted(posted_today)}'
+                  reason = f'recover earliest due incomplete delivery; due={due}; fully_delivered={sorted(posted_today)}'
               else:
-                  reason = f'nothing due/missing; due={due}; delivered={sorted(posted_today)}'
+                  reason = f'nothing due/missing; due={due}; fully_delivered={sorted(posted_today)}'
 
+          telegram_only = bool(slot and slot in telegram_only_slots)
           print(f"should_run={'true' if slot else 'false'}")
           print(f"slot={slot or 0}")
+          print(f"telegram_only={'true' if telegram_only else 'false'}")
           print(f"reason={reason}")
           print(f"pkt_now={now.isoformat()}")
           PY
@@ -125,27 +155,30 @@ jobs:
           python-version: '3.12'
 
       - name: Install image dependency
-        if: steps.slot.outputs.should_run == 'true'
+        if: steps.slot.outputs.should_run == 'true' && steps.slot.outputs.telegram_only != 'true'
         run: python -m pip install --disable-pip-version-check pillow
 
       - name: Compile premium social code
         if: steps.slot.outputs.should_run == 'true'
         run: |
-          python -m py_compile .github/scripts/ai_provider.py
-          python -m py_compile .github/scripts/buffer_publish.py
           python -m py_compile .github/scripts/distribute_update.py
-          python -m py_compile .github/scripts/premium_social_campaign.py
-          python -m py_compile .github/scripts/premium_social_resilient.py
-          python -m py_compile .github/scripts/publish_premium_social.py
+          python -m py_compile .github/scripts/premium_telegram_publish.py
+          if [ "${{ steps.slot.outputs.telegram_only }}" != "true" ]; then
+            python -m py_compile .github/scripts/ai_provider.py
+            python -m py_compile .github/scripts/buffer_publish.py
+            python -m py_compile .github/scripts/premium_social_campaign.py
+            python -m py_compile .github/scripts/premium_social_resilient.py
+            python -m py_compile .github/scripts/publish_premium_social.py
+          fi
 
       - name: Generate trend-aware premium creative
-        if: steps.slot.outputs.should_run == 'true'
+        if: steps.slot.outputs.should_run == 'true' && steps.slot.outputs.telegram_only != 'true'
         env:
           SOCIAL_SLOT: ${{ steps.slot.outputs.slot }}
         run: python .github/scripts/premium_social_resilient.py
 
       - name: Quality gate
-        if: steps.slot.outputs.should_run == 'true'
+        if: steps.slot.outputs.should_run == 'true' && steps.slot.outputs.telegram_only != 'true'
         shell: bash
         run: |
           python - <<'PY'
@@ -182,6 +215,7 @@ jobs:
           PKT = datetime.timezone(datetime.timedelta(hours=5))
           today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
           slot = int(os.environ['SLOT'])
+          expected = {'x', 'facebook', 'instagram', 'telegram'}
           path = Path('/tmp/remote-premium-social-published.json')
           duplicate = False
           try:
@@ -192,7 +226,15 @@ jobs:
               try:
                   stamp = str(row.get('published_at') or '')
                   dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
-                  if dt.date() == today and int(row.get('slot', 0)) == slot and int(row.get('successful_destinations', 0)) > 0:
+                  if dt.date() != today or int(row.get('slot', 0)) != slot:
+                      continue
+                  outcomes = row.get('outcomes') if isinstance(row.get('outcomes'), list) else []
+                  ok_platforms = {
+                      str(item.get('platform') or '')
+                      for item in outcomes
+                      if bool(item.get('ok'))
+                  }
+                  if expected.issubset(ok_platforms):
                       duplicate = True
                       break
               except Exception:
@@ -202,17 +244,17 @@ jobs:
 
       - name: Stop duplicate safely
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate == 'true'
-        run: echo 'Another serialized run already delivered this slot today; skipping duplicate.'
+        run: echo 'Another serialized run already fully delivered this slot today; skipping duplicate.'
 
       - name: Publish creative to website
-        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true' && steps.slot.outputs.telegram_only != 'true'
         shell: bash
         run: |
           git config user.name 'nexusnova-social[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/generated/premium-social-slot-${{ steps.slot.outputs.slot }}.jpg assets/data/premium-social-history.json
           if [ -d assets/generated/ai-social-library ]; then git add assets/generated/ai-social-library/; fi
-          if [ -n "$(git status --porcelain)" ]; then
+          if ! git diff --cached --quiet; then
             git commit -m "automation: premium social slot ${{ steps.slot.outputs.slot }} ${GITHUB_RUN_ID}"
             git pull --rebase origin main
             git push origin HEAD:main
@@ -220,9 +262,23 @@ jobs:
             echo 'No generated social asset change to publish.'
           fi
 
-      - name: Publish to X, Facebook and Instagram
+      - name: Sync latest delivery ledger
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
+        shell: bash
+        run: |
+          git fetch origin main
+          git show origin/main:assets/data/premium-social-published.json > assets/data/premium-social-published.json 2>/dev/null || echo '{"version":1,"posts":[]}' > assets/data/premium-social-published.json
+
+      - name: Publish to X, Facebook and Instagram
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true' && steps.slot.outputs.telegram_only != 'true'
         run: python .github/scripts/publish_premium_social.py
+
+      - name: Publish to Telegram channel
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
+        env:
+          SOCIAL_SLOT: ${{ steps.slot.outputs.slot }}
+          TELEGRAM_RECOVERY_ONLY: ${{ steps.slot.outputs.telegram_only }}
+        run: python .github/scripts/premium_telegram_publish.py
 
       - name: Commit confirmed delivery ledger
         if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
@@ -231,13 +287,31 @@ jobs:
           git config user.name 'nexusnova-social[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/data/premium-social-published.json
-          if [ -n "$(git status --porcelain -- assets/data/premium-social-published.json)" ]; then
+          if ! git diff --cached --quiet; then
             git commit -m "automation: confirm social delivery slot ${{ steps.slot.outputs.slot }} ${GITHUB_RUN_ID}"
             git pull --rebase origin main
             git push origin HEAD:main
           else
             echo 'No new confirmed delivery ledger change.'
           fi
+
+      - name: Require Telegram delivery
+        if: steps.slot.outputs.should_run == 'true' && steps.dedupe.outputs.duplicate != 'true'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('premium-telegram-report.json')
+          if not path.exists():
+              raise SystemExit('Telegram delivery report missing')
+          report = json.loads(path.read_text(encoding='utf-8'))
+          if not report.get('configured'):
+              raise SystemExit('Telegram destination is not configured')
+          if not report.get('ok'):
+              raise SystemExit(f"Telegram delivery failed: {report.get('detail','unknown error')}")
+          print('Telegram delivery verified:', report.get('detail'))
+          PY
 
       - name: Summary
         if: always()
@@ -247,6 +321,7 @@ jobs:
           echo "PKT resolver time: ${{ steps.slot.outputs.pkt_now }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Resolver: ${{ steps.slot.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Slot: ${{ steps.slot.outputs.slot }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Telegram-only recovery: ${{ steps.slot.outputs.telegram_only }}" >> "$GITHUB_STEP_SUMMARY"
           if [ -f premium-social-publish.json ]; then
             echo '### Campaign' >> "$GITHUB_STEP_SUMMARY"
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
@@ -254,9 +329,15 @@ jobs:
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ -f premium-social-report.json ]; then
-            echo '### Distribution' >> "$GITHUB_STEP_SUMMARY"
+            echo '### X / Facebook / Instagram distribution' >> "$GITHUB_STEP_SUMMARY"
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
             cat premium-social-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -f premium-telegram-report.json ]; then
+            echo '### Telegram distribution' >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat premium-telegram-report.json >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -268,6 +349,7 @@ jobs:
           path: |
             premium-social-publish.json
             premium-social-report.json
+            premium-telegram-report.json
             assets/data/premium-social-published.json
           if-no-files-found: ignore
           retention-days: 14

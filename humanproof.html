@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NexusNova HumanProof — Live Human Approval for Sensitive Actions</title>
+<meta name="description" content="NexusNova HumanProof adds live human approval to sensitive digital actions with exact-action binding, verification links, API integration and auditable receipt architecture.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#050a12">
+<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NexusNova Tools">
+<meta property="og:title" content="NexusNova HumanProof — Verified Action">
+<meta property="og:description" content="Put a live human approval step in front of sensitive digital actions.">
+<meta property="og:url" content="https://nexusnovatools.com/humanproof.html">
+<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NexusNova HumanProof — Verified Action">
+<meta name="twitter:description" content="Live human approval for sensitive digital actions.">
+<meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+<link rel="stylesheet" href="assets/css/humanproof.css?v=20260909-1">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"WebPage",
+      "@id":"https://nexusnovatools.com/humanproof.html#webpage",
+      "url":"https://nexusnovatools.com/humanproof.html",
+      "name":"NexusNova HumanProof — Live Human Approval for Sensitive Actions",
+      "description":"A live human approval layer for sensitive digital actions with exact-action binding and auditable verification receipt architecture.",
+      "isPartOf":{"@type":"WebSite","name":"NexusNova Tools","url":"https://nexusnovatools.com/"}
+    },
+    {
+      "@type":"SoftwareApplication",
+      "@id":"https://nexusnovatools.com/humanproof.html#software",
+      "name":"NexusNova HumanProof",
+      "applicationCategory":"SecurityApplication",
+      "operatingSystem":"Web",
+      "url":"https://nexusnovatools.com/humanproof.html",
+      "description":"Human verification and verified-action software for sensitive digital workflows.",
+      "publisher":{"@type":"Organization","name":"NexusNova Tools","url":"https://nexusnovatools.com/"}
+    },
+    {
+      "@type":"BreadcrumbList",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},
+        {"@type":"ListItem","position":2,"name":"HumanProof","item":"https://nexusnovatools.com/humanproof.html"}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<nav class="nav">
+  <div class="wrap navin">
+    <a class="brand" href="/"><div class="mark">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>VERIFIED ACTION</small></div></a>
+    <div class="navlinks">
+      <a href="#how">How it works</a><a href="#business">Business</a><a href="#developers">Developers</a><a href="#security">Security</a>
+      <a class="navcta" href="#live-verification">Live Verification</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<section class="hero">
+  <div class="wrap heroGrid">
+    <div>
+      <span class="eyebrow"><i class="dot"></i> HUMAN APPROVAL FOR HIGH-RISK ACTIONS</span>
+      <h1><span class="grad">Trust the action.</span><br>Not just the screen.</h1>
+      <p class="lead">NexusNova HumanProof is a live-human approval layer for sensitive digital actions. Confirm a real person is present, bind approval to the exact action, and build an auditable verification record around the decision.</p>
+      <div class="ctaRow"><a class="btn primary" href="#live-verification">Start Live Verification</a><a class="btn secondary" href="#business">Business Access</a></div>
+      <div class="trust"><span>Live human response</span><span>Exact-action binding architecture</span><span>Privacy-first browser flow</span></div>
+    </div>
+
+    <div class="verifyShell" id="live-verification">
+      <div class="verifyTop"><span>LIVE VERIFICATION</span><span class="live">● CAMERA READY</span></div>
+      <div class="camera" id="camera">
+        <video id="v" autoplay playsinline muted></video>
+        <canvas id="c"></canvas>
+        <div class="camState" id="state">SYSTEM STANDBY</div>
+        <div class="camPrompt"><small>LIVE RESPONSE CHECK</small><b id="prompt">Ready when you are.</b></div>
+      </div>
+      <div class="verifyMeta"><span>SEQUENCE PROGRESS</span><strong id="progress">0%</strong></div>
+      <div class="verifyControls">
+        <button class="verifyStart" id="start" type="button">START VERIFICATION</button>
+        <button class="verifyReset" id="reset" type="button">RESET</button>
+      </div>
+      <div class="ok" id="ok">Live response completed. Production-grade signed receipts are issued only through activated HumanProof business integrations.</div>
+      <div class="err" id="err"></div>
+      <div class="notice">This public flow is an evaluation surface for the live camera interaction. It does not identify you by name and does not issue a production verification receipt.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">How it works</span><h2>One human. One action. One verifiable approval.</h2><p>The user experience stays short while the product architecture keeps the action context attached to the approval flow.</p></div>
+  <div class="grid3">
+    <article class="card"><span class="num">01 • PRESENT</span><h3>Verify a live human</h3><p>The camera flow asks for short natural responses and checks live facial motion before the approval can continue.</p></article>
+    <article class="card"><span class="num">02 • BIND</span><h3>Bind the exact action</h3><p>The approval is associated with a specific operation such as a deploy, refund, export, account recovery or high-value transaction.</p></article>
+    <article class="card"><span class="num">03 • RECEIPT</span><h3>Return auditable proof</h3><p>A production integration is designed to return a signed receipt containing the action reference, result, timing and proof metadata.</p></article>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">Why HumanProof</span><h2>Built for moments where a normal click is not enough.</h2><p>HumanProof focuses on the action being approved, not on turning every workflow into a full identity check.</p></div>
+  <div class="featureGrid">
+    <div class="feature"><b>AI-agent approvals</b><p>Require a live human before an autonomous agent performs a sensitive external action.</p></div>
+    <div class="feature"><b>Admin & production controls</b><p>Add human approval before deleting production data, rotating keys, changing permissions or deploying critical changes.</p></div>
+    <div class="feature"><b>Account recovery</b><p>Add a stronger live-human step before high-risk recovery or ownership changes.</p></div>
+    <div class="feature"><b>Financial & marketplace actions</b><p>Confirm conscious human approval before withdrawals, refunds, payouts or remote deal acceptance.</p></div>
+  </div>
+</div></section>
+
+<section class="section" id="business"><div class="wrap business">
+  <div class="sectionHead"><span class="kicker">Business class</span><h2>Paid production access for personal, business and enterprise workflows.</h2><p>Real production verification is not offered as a free unlimited service. The public camera flow is for evaluation; production access is activated separately.</p></div>
+  <div class="plans">
+    <div class="plan"><h3>Personal</h3><p>For individuals who need paid verification requests for important remote actions.</p><ul><li>Paid verification credits</li><li>Shareable verification requests</li><li>Receipt history roadmap</li><li>Trusted-device roadmap</li></ul><a class="btn secondary" href="mailto:nexusnovatools@gmail.com?subject=HumanProof%20Personal%20Access">Request Personal Access</a></div>
+    <div class="plan pop"><span class="tag">CORE BUSINESS</span><h3>Business</h3><p>For apps, SaaS products, marketplaces and AI systems that need human approval inside a workflow.</p><ul><li>Verification links</li><li>Web SDK / widget</li><li>REST API integration model</li><li>Audit & receipt logs</li><li>Usage-based commercial access</li></ul><a class="btn primary" href="mailto:nexusnovatools@gmail.com?subject=HumanProof%20Business%20Access">Request Business Access</a></div>
+    <div class="plan"><h3>Enterprise</h3><p>For higher-volume and security-sensitive organizations with custom governance and integration requirements.</p><ul><li>Team access</li><li>Custom integration</li><li>Security review support</li><li>Invoice / contract billing</li><li>Volume terms</li></ul><a class="btn secondary" href="mailto:nexusnovatools@gmail.com?subject=HumanProof%20Enterprise%20Access">Contact Enterprise</a></div>
+  </div>
+</div></section>
+
+<section class="section" id="developers"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">Developers</span><h2>Add human approval without rebuilding your workflow.</h2><p>The intended integration model supports verification links for fast deployment, a web SDK for embedded flows and a REST API for product-controlled orchestration.</p></div>
+  <div class="transparency"><strong>Integration status</strong><p>The API shape below is illustrative while production backend hardening is underway. It is not a public unauthenticated endpoint.</p></div>
+  <div class="code">POST /v1/verified-actions
+{
+  "action": "production.deploy",
+  "resource": "checkout-service",
+  "requested_by": "agent_42",
+  "callback_url": "https://example.com/humanproof/callback"
+}
+
+→ production integration returns a verification URL + action reference</div>
+</div></section>
+
+<section class="section" id="security"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">Security & privacy</span><h2>Keep the complexity behind a simple user flow.</h2><p>The live browser interaction uses on-device face landmark analysis. A hardened production system needs additional replay resistance, device or passkey proof, nonce handling, action hashes, backend-signed receipts, abuse controls, monitoring and independent security review.</p></div>
+  <div class="featureGrid">
+    <div class="feature"><b>Short camera interaction</b><p>The interface is designed around brief live verification moments rather than long recording sessions.</p></div>
+    <div class="feature"><b>Replay-aware architecture</b><p>Randomized challenges, timing checks, nonce binding and device signals form part of the security direction.</p></div>
+    <div class="feature"><b>Action-specific proof</b><p>The goal is not only “a human was present,” but “a human approved this exact action.”</p></div>
+    <div class="feature"><b>No identity claim by default</b><p>HumanProof is positioned around presence and conscious approval, not automatic real-world identity claims.</p></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">Use cases</span><h2>One approval layer across many sensitive workflows.</h2></div>
+  <div class="useGrid">
+    <div class="use"><b>AI agents</b><span>Require human presence before irreversible agent actions.</span></div>
+    <div class="use"><b>SaaS admin</b><span>Protect permissions, exports, deletions and security settings.</span></div>
+    <div class="use"><b>Fintech</b><span>Add human approval before sensitive transfers or withdrawals.</span></div>
+    <div class="use"><b>Marketplaces</b><span>Confirm a real person before high-value remote acceptance or release.</span></div>
+    <div class="use"><b>Developer tools</b><span>Gate production deploys, destructive commands and secret rotation.</span></div>
+    <div class="use"><b>Account recovery</b><span>Strengthen high-risk recovery and ownership-change flows.</span></div>
+    <div class="use"><b>Enterprise approvals</b><span>Create auditable human confirmation for governed actions.</span></div>
+    <div class="use"><b>Consent workflows</b><span>Capture a live approval step tied to a specific consent event.</span></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">What HumanProof is — and is not</span><h2>Clear claims matter in security products.</h2></div>
+  <div class="transparency"><strong>Current public capability</strong><p>The page provides a working browser camera interaction with live facial-motion challenges. It is not bank-grade identity verification, does not identify a person by legal name, and does not yet expose a public production receipt API. Paid production access depends on the hardened backend and onboarding path.</p></div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">FAQ</span><h2>HumanProof, explained simply.</h2></div>
+  <div class="faq">
+    <details><summary>Is HumanProof face recognition?</summary><p>No. The product concept is to prove that a live human consciously approved a specific action. It does not need to identify that person by name.</p></details>
+    <details><summary>Does the public flow equal production-grade liveness?</summary><p>No. It is a live browser interaction and evaluation surface. Production security requires stronger anti-replay and anti-injection controls, backend verification logic, monitoring and independent security review.</p></details>
+    <details><summary>Can a business integrate HumanProof without a separate app?</summary><p>Yes. The commercial integration direction is verification links, an embedded web SDK/widget and a REST API.</p></details>
+    <details><summary>Is production verification free?</summary><p>No. The business model is paid production verification. Public evaluation can be used to understand the interaction without receiving a production receipt.</p></details>
+    <details><summary>Does HumanProof move or hold money?</summary><p>No. HumanProof is designed as an approval and verification layer. A bank, wallet, marketplace or app remains responsible for the underlying transaction.</p></details>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap final">
+  <span class="kicker">NexusNova HumanProof</span>
+  <h2>Put a real human back in the approval loop.</h2>
+  <p>Verify presence. Bind the action. Return proof.</p>
+  <div class="ctaRow" style="justify-content:center"><a class="btn primary" href="#live-verification">Start Live Verification</a><a class="btn secondary" href="mailto:nexusnovatools@gmail.com?subject=HumanProof%20Business%20Access">Request Business Access</a></div>
+</div></section>
+</main>
+
+<footer class="footer"><div class="wrap footerin">
+  <span>© NexusNova Tools • HumanProof Verified Action</span>
+  <div class="footerlinks"><a href="/">Home</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a><a href="tools.html">Tools</a></div>
+</div></footer>
+
+<script type="module" src="assets/js/humanproof-live.js?v=20260909-1"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+name: NexusNova OTA 8 Emergency Stabilize
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/travel-ota8-stabilize.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-travel-ota-release
+  cancel-in-progress: false
+
+jobs:
+  stabilize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      OTA_BRANCH: nexusnova-ota-public
+      SAFE_OTA5_COMMIT: e6b3cd715ec5faeec455d30c5f7fe48388c7d80e
+      SAFE_TRAVEL_SOURCE: 1d42d66a4c18cc8744ea08cc8237796814fc6b62
+      OTA_REPO: fahadsoomro123/nexusnova-website
+    steps:
+      - name: Checkout cumulative OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Verify rollback source and current OTA state
+        run: |
+          set -euo pipefail
+          git cat-file -e "${SAFE_OTA5_COMMIT}^{commit}"
+          python3 - <<'PY'
+          import json
+          m=json.load(open('ota/manifest.json'))
+          assert m.get('schema') == 2
+          assert int(m.get('travel_revision',0)) >= 7
+          paths={x['path'] for x in m.get('files',[])}
+          required={
+            'index.html',
+            'src/features/apps/travel-suite.js',
+            'src/features/apps/travel-integrations.js',
+            'src/features/apps/travel-edge-client.js',
+            'src/features/apps/travel-edge-config.js',
+            'src/features/apps/travel-ground.js',
+          }
+          assert required <= paths
+          print('Current OTA state verified:', m.get('travel_revision'), m.get('version'))
+          PY
+
+      - name: Restore known-safe OTA 5 Travel shell only
+        run: |
+          set -euo pipefail
+          restore=(
+            index.html
+            assets/travel/reference-from-exact.webp.b64
+            assets/travel/reference-hero-right.webp.b64
+            assets/travel/reference-to-exact.webp.b64
+            src/features/apps/travel-edge-client.js
+            src/features/apps/travel-edge-config.js
+            src/features/apps/travel-ground.js
+            src/features/apps/travel-integrations.js
+            src/features/apps/travel-suite.js
+          )
+          for rel in "${restore[@]}"; do
+            mkdir -p "ota/files/$(dirname "$rel")"
+            git show "${SAFE_OTA5_COMMIT}:ota/files/${rel}" > "ota/files/${rel}"
+          done
+
+          # Keep the stabilization revision visible without changing Travel behavior.
+          sed -i "s/const TRAVEL_OTA_REVISION = 5;/const TRAVEL_OTA_REVISION = 8;/" ota/files/src/features/apps/travel-integrations.js
+
+          # Emergency isolation: these post-OTA5 global overrides must not ride with Travel.
+          rm -f \
+            ota/files/src/features/apps/travel-flagship-runtime-v8.js \
+            ota/files/src/main.js \
+            ota/files/src/nova-drive-history-v1.js \
+            ota/files/src/nova-vehicle-premium-ui.js
+
+          grep -q "TRAVEL_OTA_REVISION = 8" ota/files/src/features/apps/travel-integrations.js
+          if grep -q "travel-flagship-runtime-v8" ota/files/index.html; then
+            echo 'Unsafe V8 global runtime still referenced by index'; exit 1
+          fi
+
+      - name: Commit stabilized runtime files first
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A ota/files
+          if git diff --cached --quiet; then
+            echo 'No runtime changes to stabilize'; exit 1
+          fi
+          git commit -m 'ota: isolate Travel from global Nova shell'
+          git push origin "HEAD:${OTA_BRANCH}"
+          echo "RUNTIME_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Build OTA 8 manifest without global overrides
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin "$OTA_BRANCH"
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          p=Path('ota/manifest.json')
+          m=json.loads(p.read_text())
+          preserve=[]
+          for item in m.get('files',[]):
+              path=item['path']
+              if path.startswith('src/features/apps/ai-photo-'):
+                  preserve.append(dict(item))
+
+          desired=[
+              'assets/travel/reference-from-exact.webp.b64',
+              'assets/travel/reference-hero-right.webp.b64',
+              'assets/travel/reference-to-exact.webp.b64',
+              'index.html',
+              'src/features/apps/travel-edge-client.js',
+              'src/features/apps/travel-edge-config.js',
+              'src/features/apps/travel-ground.js',
+              'src/features/apps/travel-integrations.js',
+              'src/features/apps/travel-suite.js',
+          ]
+          by={x['path']:x for x in preserve}
+          for rel in desired:
+              data=Path('ota/files',rel).read_bytes()
+              by[rel]={'path':rel,'sha256':hashlib.sha256(data).hexdigest(),'size':len(data)}
+
+          version=os.environ['RUNTIME_COMMIT']
+          m['version']=version
+          m['source']=os.environ['SAFE_TRAVEL_SOURCE']
+          m['travel_source']=os.environ['SAFE_TRAVEL_SOURCE']
+          m['proof_number']='8'
+          m['travel_revision']=8
+          m['visual_proof']=False
+          m['files']=[by[k] for k in sorted(by)]
+          p.write_text(json.dumps(m,separators=(',',':')))
+
+          banned={
+              'src/features/apps/travel-flagship-runtime-v8.js',
+              'src/main.js',
+              'src/nova-drive-history-v1.js',
+              'src/nova-vehicle-premium-ui.js',
+          }
+          paths={x['path'] for x in m['files']}
+          assert not (paths & banned), paths & banned
+          assert m.get('ai_photo_source'), 'AI Photo OTA state missing'
+          print('OTA 8 manifest entries:', len(m['files']))
+          PY
+
+      - name: Commit manifest LAST
+        run: |
+          set -euo pipefail
+          git add ota/manifest.json
+          git diff --cached --exit-code && { echo 'Manifest did not change'; exit 1; } || true
+          git commit -m 'ota: publish Travel stabilization revision 8'
+          git push origin "HEAD:${OTA_BRANCH}"
+
+      - name: Verify repository and live OTA 8
+        run: |
+          set -euo pipefail
+          git fetch origin "$OTA_BRANCH"
+          git show "origin/${OTA_BRANCH}:ota/manifest.json" > /tmp/repo-manifest.json
+          python3 - <<'PY'
+          import hashlib,json,subprocess,os
+          m=json.load(open('/tmp/repo-manifest.json'))
+          assert int(m['travel_revision'])==8 and str(m['proof_number'])=='8'
+          assert m['version']==os.environ['RUNTIME_COMMIT']
+          banned={'src/features/apps/travel-flagship-runtime-v8.js','src/main.js','src/nova-drive-history-v1.js','src/nova-vehicle-premium-ui.js'}
+          by={x['path']:x for x in m['files']}
+          assert not (set(by)&banned)
+          for rel,item in by.items():
+              data=subprocess.check_output(['git','show',f"origin/{os.environ['OTA_BRANCH']}:ota/files/{rel}"])
+              assert hashlib.sha256(data).hexdigest()==item['sha256'], rel
+              assert len(data)==item['size'], rel
+          print('Repository OTA 8 hash/size verification PASS')
+          PY
+
+          raw="https://raw.githubusercontent.com/${OTA_REPO}/${OTA_BRANCH}"
+          for attempt in 1 2 3 4 5; do
+            if curl -fL --retry 2 "${raw}/ota/manifest.json?stabilize=${GITHUB_RUN_ID}-${attempt}" -o /tmp/live.json && \
+               python3 -c "import json; m=json.load(open('/tmp/live.json')); assert int(m['travel_revision'])==8 and str(m['proof_number'])=='8' and m['version']=='${RUNTIME_COMMIT}'"; then
+              break
+            fi
+            test "$attempt" != 5 || { echo 'Live OTA 8 manifest did not converge'; exit 1; }
+            sleep 5
+          done
+          echo 'OTA 8 EMERGENCY STABILIZATION LIVE PASS'

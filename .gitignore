@@ -6,3 +6,11 @@
 # Keep temporary/test Android builds out of the website repository.
 downloads/*TEST*.apk
 downloads/*TEST*.sha256
+
+# Generated CI/audit artifacts. Workflows recreate and upload these; they must
+# not dirty the repository or block bot rebases/commits.
+site-quality-report.json
+site-quality-report.txt
+deep-site-audit.json
+deep-site-audit.txt
+quality-artifacts/
