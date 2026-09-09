@@ -1,0 +1,136 @@
+/* HumanProof 360 hero stage — Emerald Mist visual language */
+.nn-proof-360-holder{
+  position:relative;
+  flex:1;
+  min-height:285px;
+  margin:18px 0 12px;
+  border:1px solid rgba(31,94,77,.12);
+  border-radius:28px 44px 28px 44px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 18%,rgba(88,214,163,.28),transparent 32%),
+    radial-gradient(circle at 85% 20%,rgba(185,166,255,.26),transparent 34%),
+    radial-gradient(circle at 70% 84%,rgba(248,216,239,.36),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.92),rgba(239,252,244,.82));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 18px 42px rgba(46,97,79,.09);
+}
+.nn-proof-360-holder::before,
+.nn-proof-360-holder::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  pointer-events:none;
+  border:1px solid rgba(31,94,77,.11);
+  border-radius:50%;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
+.nn-proof-360-holder::before{width:72%;aspect-ratio:1}
+.nn-proof-360-holder::after{width:52%;aspect-ratio:1;border-style:dashed;border-color:rgba(155,140,229,.22)}
+#nnHumanProof360{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  display:block;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+.nn-proof-360-scan{
+  position:absolute;
+  z-index:3;
+  left:8%;
+  right:8%;
+  top:11%;
+  height:2px;
+  pointer-events:none;
+  opacity:.72;
+  background:linear-gradient(90deg,transparent,#58d6a3,#b9a6ff,#f0a7d1,transparent);
+  box-shadow:0 0 18px rgba(88,214,163,.45);
+  animation:nnHpScan 8s ease-in-out infinite;
+}
+.nn-proof-360-load{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  color:#3f7d68;
+  background:linear-gradient(145deg,rgba(248,255,250,.92),rgba(249,247,255,.88));
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em;
+  text-align:center;
+  transition:opacity .28s ease,visibility .28s ease;
+}
+.nn-proof-360-load.is-hidden{opacity:0;visibility:hidden}
+.nn-proof-360-status{
+  position:absolute;
+  z-index:4;
+  left:14px;
+  top:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 9px;
+  border:1px solid rgba(31,94,77,.12);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(12px);
+  color:#3f7564;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.1em;
+}
+.nn-proof-360-status::before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#58d6a3;
+  box-shadow:0 0 0 4px rgba(88,214,163,.12);
+}
+.nn-proof-360-meta{
+  position:absolute;
+  z-index:4;
+  right:14px;
+  bottom:12px;
+  color:#6b837b;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.nn-proof-attribution{
+  margin-top:2px;
+  color:#80938c;
+  font-size:7px;
+  letter-spacing:.04em;
+  line-height:1.35;
+}
+.nn-proof-attribution a{text-decoration:underline;text-underline-offset:2px}
+.nn-proof-360-holder.is-error #nnHumanProof360,
+.nn-proof-360-holder.is-error .nn-proof-360-scan{display:none}
+
+@keyframes nnHpScan{
+  0%,8%{top:12%;opacity:.28}
+  48%,54%{top:86%;opacity:.92}
+  92%,100%{top:12%;opacity:.38}
+}
+
+@media(max-width:980px){
+  .nn-proof-360-holder{min-height:320px}
+}
+@media(max-width:720px){
+  .nn-proof-360-holder{min-height:250px;margin:12px 0 10px;border-radius:24px 34px 24px 34px}
+  .nn-proof-360-status{left:10px;top:10px;font-size:7px}
+  .nn-proof-360-meta{right:10px;bottom:9px;font-size:7px}
+}
+@media(max-width:520px){
+  .nn-proof-360-holder{min-height:220px}
+}
+@media(prefers-reduced-motion:reduce){
+  .nn-proof-360-scan{animation:none;top:50%;opacity:.22}
+}
