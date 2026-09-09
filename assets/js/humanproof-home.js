@@ -75,7 +75,9 @@
         </div>
       </div>`;
 
-    oldHero.replaceWith(hero);
+    // HumanProof becomes the flagship first impression without deleting or rewriting
+    // the existing NexusNova tools hero/search. The original homepage continues intact.
+    oldHero.insertAdjacentElement('beforebegin',hero);
     hero.insertAdjacentElement('afterend',promo);
 
     if(!document.getElementById('humanproof-home-schema')){
