@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Mixed Metal Credential Preview</title>
+<meta name="theme-color" content="#eaf8ef">
+<style>
+:root{
+  --emerald:#0f8f67;
+  --emerald2:#0a6f55;
+  --mint:#a9f0cf;
+  --mint2:#dff8ea;
+  --lilac:#c9b7ff;
+  --violet:#7e67c8;
+  --rose:#f3a8be;
+  --rose2:#d97d9e;
+  --pearl:#fffaf0;
+  --gold:#d6a83a;
+  --goldHi:#f8df87;
+  --goldDeep:#8a5f13;
+  --ink:#17483b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:
+ radial-gradient(circle at 15% 15%,rgba(169,240,207,.48),transparent 26%),
+ radial-gradient(circle at 82% 18%,rgba(201,183,255,.42),transparent 27%),
+ radial-gradient(circle at 72% 85%,rgba(243,168,190,.33),transparent 28%),
+ linear-gradient(145deg,#f8fff9 0%,#fffaf3 48%,#f4efff 100%);color:var(--ink)}
+body{display:grid;place-items:center;padding:34px 14px;overflow-x:hidden}
+.stage{width:min(980px,100%);perspective:1600px}
+.note{text-align:center;margin-bottom:20px;font-size:10px;letter-spacing:.16em;font-weight:900;color:#557067}
+.note span{display:inline-block;padding:8px 11px;border:1px solid rgba(32,105,82,.16);border-radius:999px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px rgba(255,255,255,.9)}
+.stack{position:relative;width:min(860px,95vw);aspect-ratio:85.6/53.98;margin:auto;transform-style:preserve-3d;transform:rotateX(5deg) rotateY(-7deg) rotateZ(-.8deg)}
+.stack:before,.stack:after{content:"";position:absolute;inset:0;border-radius:5.8%/9%;pointer-events:none}
+.stack:before{transform:translate3d(0,12px,-9px);background:linear-gradient(135deg,#9b711c,#7b5613 42%,#ad7d20 68%,#6f4c11);box-shadow:0 30px 46px rgba(61,54,38,.28)}
+.stack:after{transform:translate3d(0,6px,-4px);background:linear-gradient(90deg,#e8c65e,#a97816,#f0d477 65%,#9e7119)}
+.card{position:absolute;inset:0;z-index:2;border-radius:5.8%/9%;overflow:hidden;border:1px solid rgba(255,236,157,.92);background:
+ linear-gradient(118deg,rgba(255,255,255,.42),transparent 16% 49%,rgba(255,255,255,.2) 63%,transparent 74%),
+ radial-gradient(circle at 17% 12%,rgba(222,255,238,.90),transparent 27%),
+ radial-gradient(circle at 82% 15%,rgba(216,204,255,.82),transparent 30%),
+ radial-gradient(circle at 80% 82%,rgba(247,180,202,.68),transparent 34%),
+ radial-gradient(circle at 24% 78%,rgba(86,190,147,.42),transparent 32%),
+ linear-gradient(135deg,#d8f8e7 0%,#95dfbf 24%,#d7c9ff 49%,#f2adc4 73%,#fff4d9 100%);
+ box-shadow:inset 0 2px 1px rgba(255,255,255,.92),inset 0 -5px 9px rgba(92,70,49,.18),inset 3px 0 9px rgba(255,255,255,.35),0 10px 30px rgba(85,70,50,.20)}
+.card:before{content:"";position:absolute;inset:2.25%;border-radius:4.9%/8%;border:2px solid transparent;background:linear-gradient(130deg,var(--goldHi),var(--goldDeep) 32%,var(--goldHi) 56%,#a57519 78%,var(--goldHi)) border-box;-webkit-mask:linear-gradient(#000 0 0) padding-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.92;filter:drop-shadow(0 1px 0 rgba(255,255,255,.45))}
+.card:after{content:"";position:absolute;left:-22%;top:-30%;width:95%;height:36%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.48),transparent);transform:rotate(-8deg);filter:blur(2px);pointer-events:none}
+.texture{position:absolute;inset:0;opacity:.18;pointer-events:none;background-image:radial-gradient(circle,rgba(40,93,74,.28) .5px,transparent .8px);background-size:6px 6px;mask-image:linear-gradient(90deg,transparent,black 16%,black 84%,transparent)}
+.wave{position:absolute;right:-13%;top:-4%;width:65%;height:108%;border:1px solid rgba(212,164,53,.34);border-radius:50%;transform:rotate(-16deg);box-shadow:0 0 0 10px rgba(255,255,255,.07),0 0 0 24px rgba(126,103,200,.05);pointer-events:none}
+.top{position:absolute;z-index:3;left:5.4%;right:5.4%;top:8%;display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:clamp(31px,4.5vw,45px);aspect-ratio:1;border-radius:24%;display:grid;place-items:center;font-weight:1000;font-size:clamp(16px,2.5vw,25px);color:#f9efbf;background:linear-gradient(145deg,#c7a13c,#8d6518 48%,#e9c75e);border:1px solid rgba(255,238,159,.85);box-shadow:inset 1px 1px 1px rgba(255,248,205,.9),inset -2px -2px 3px rgba(91,61,7,.30),0 2px 2px rgba(70,54,25,.18);text-shadow:0 1px rgba(82,56,11,.55)}
+.brand strong{display:block;font-size:clamp(9px,1.45vw,14px);letter-spacing:.12em;color:#245b49;text-shadow:0 1px rgba(255,255,255,.65)}
+.brand small{display:block;margin-top:3px;font-size:clamp(5px,.72vw,7px);letter-spacing:.20em;font-weight:900;color:#6d6a82}
+.demo{font-size:clamp(5px,.74vw,7px);line-height:1.35;letter-spacing:.14em;font-weight:1000;text-align:right;color:#8a641b;text-shadow:0 1px rgba(255,255,255,.65)}
+.main{position:absolute;z-index:3;left:5.7%;top:28%;width:58%}
+.kicker{font-size:clamp(6px,.9vw,9px);letter-spacing:.18em;font-weight:1000;color:#55786c}
+.title{margin-top:4px;font-size:clamp(28px,5.45vw,58px);line-height:.84;letter-spacing:-.055em;font-weight:1000;text-transform:uppercase;background:linear-gradient(180deg,#f9e7a5 0%,#b88a25 27%,#7b5714 48%,#f2d46b 70%,#8e6518 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 1px 0 rgba(255,251,223,.94)) drop-shadow(0 2px 0 rgba(99,70,17,.36)) drop-shadow(0 4px 3px rgba(74,64,46,.18))}
+.title span{font-size:.68em;letter-spacing:-.035em}
+.status{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:5px 9px;border-radius:999px;border:1px solid rgba(27,117,86,.28);background:linear-gradient(180deg,rgba(233,255,243,.62),rgba(102,197,158,.16));font-size:clamp(5px,.84vw,8px);letter-spacing:.13em;font-weight:1000;color:#17694e;box-shadow:inset 0 1px rgba(255,255,255,.75),0 1px 1px rgba(58,86,76,.12)}
+.status i{width:6px;height:6px;border-radius:50%;background:#0c8a60;box-shadow:0 0 0 2px rgba(135,237,193,.30)}
+.action{position:absolute;z-index:3;left:5.7%;bottom:21%;width:58%;border-top:1px solid rgba(68,113,97,.22);padding-top:8px}
+.action small{display:block;font-size:clamp(5px,.72vw,7px);letter-spacing:.16em;font-weight:1000;color:#6f7088}
+.action b{display:block;margin-top:4px;font-size:clamp(9px,1.45vw,14px);letter-spacing:.01em;color:#245044;text-shadow:0 1px rgba(255,255,255,.75)}
+.meta{position:absolute;z-index:3;left:5.7%;right:39%;bottom:8.5%;display:grid;grid-template-columns:1.2fr 1fr;gap:10px}
+.meta div{border-top:1px solid rgba(84,111,102,.18);padding-top:5px}.meta small{display:block;font-size:clamp(4px,.62vw,6px);letter-spacing:.13em;font-weight:1000;color:#78748f}.meta b{display:block;margin-top:2px;font-size:clamp(6px,.93vw,9px);color:#285448}
+.qrzone{position:absolute;z-index:4;right:5.5%;top:25%;width:28%;display:grid;justify-items:center}
+.qrframe{position:relative;width:min(100%,165px);aspect-ratio:1;padding:8.5%;border-radius:12%;background:linear-gradient(145deg,#f5de8a,#a97818 44%,#f2d872 70%,#8f671b);border:1px solid rgba(255,239,175,.72);box-shadow:inset 2px 2px 2px rgba(255,252,223,.68),inset -3px -3px 5px rgba(89,60,11,.25),0 5px 10px rgba(65,70,62,.16)}
+.qrframe:before,.qrframe:after{content:"";position:absolute;inset:4.5%;border:1px solid rgba(255,239,173,.62);border-radius:9%}.qrframe:after{inset:7.5%;border-color:rgba(77,109,95,.20)}
+#qr{position:relative;z-index:2;width:100%;height:100%;display:grid;place-items:center;padding:4%;border-radius:6%;background:linear-gradient(145deg,#f8fff9,#f7f0ff);overflow:hidden;box-shadow:inset 0 1px 3px rgba(45,77,67,.14)}
+#qr canvas,#qr img{display:block!important;width:100%!important;height:100%!important;image-rendering:pixelated}
+.scan{margin-top:6px;font-size:clamp(5px,.74vw,7px);letter-spacing:.18em;font-weight:1000;color:#7b5a1c;text-shadow:0 1px rgba(255,255,255,.8)}
+.seal{position:absolute;z-index:4;right:4.6%;bottom:8%;width:13%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;background:conic-gradient(from 35deg,#0f8f67,#c9b7ff,#f3a8be,#f1d36e,#0f8f67);border:2px solid #d8ad3f;box-shadow:inset 0 0 0 4px rgba(255,255,255,.24),inset 0 0 0 6px rgba(94,68,17,.11),0 3px 5px rgba(61,70,62,.18)}
+.seal:before{content:"✓";display:grid;place-items:center;width:48%;aspect-ratio:1;border-radius:50%;font-size:clamp(9px,1.8vw,18px);font-weight:1000;color:#fff6ce;background:linear-gradient(145deg,#c39a30,#8c6418);box-shadow:inset 1px 1px 1px rgba(255,248,205,.68),inset -2px -2px 3px rgba(81,56,12,.22)}
+.seal span{position:absolute;bottom:12%;font-size:clamp(3.5px,.52vw,5px);letter-spacing:.08em;font-weight:1000;color:#704f17}
+.slogan{position:absolute;z-index:3;right:20%;bottom:10%;font-family:Georgia,serif;font-style:italic;font-weight:800;font-size:clamp(6px,.95vw,10px);color:#745a31;text-shadow:0 1px rgba(255,255,255,.84)}
+.caption{text-align:center;margin-top:28px;font-size:11px;color:#64736d;line-height:1.55}
+@media(max-width:560px){body{padding:28px 7px}.stage{perspective:1000px}.stack{width:96vw;transform:rotateX(3deg) rotateY(-3deg)}.top{left:5%;right:5%;top:7.5%}.main{left:5%;top:27%;width:58%}.action{left:5%;bottom:20%;width:58%}.meta{left:5%;right:39%;bottom:8%}.qrzone{right:5%;width:29%;top:27%}.slogan{right:20%;bottom:9%}.seal{right:4.3%;bottom:7.5%}}
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="note"><span>DESIGN PREVIEW • NOT A LIVE HUMANPROOF RECEIPT</span></div>
+  <div class="stack" aria-label="Mixed metal HumanProof credential preview">
+    <article class="card">
+      <div class="texture"></div><div class="wave"></div>
+      <header class="top">
+        <div class="brand"><div class="mark">N</div><div><strong>NEXUSNOVA HUMANPROOF</strong><small>VERIFIED ACTION • MIXED METAL CREDENTIAL</small></div></div>
+        <div class="demo">STATIC FLAGSHIP CONCEPT<br>DEMO CREDENTIAL</div>
+      </header>
+
+      <section class="main">
+        <div class="kicker">LIVE HUMAN • EXACT ACTION • ISSUED PROOF</div>
+        <div class="title">HumanProof<br><span>Verified</span></div>
+        <div class="status"><i></i> LIVE HUMAN CONFIRMED</div>
+      </section>
+
+      <section class="action">
+        <small>EXACT APPROVED ACTION</small>
+        <b>Production deploy approval #4821</b>
+      </section>
+
+      <section class="meta">
+        <div><small>VERIFICATION ID</small><b>DEMO-HP-MIX-4821</b></div>
+        <div><small>ISSUED</small><b>09 SEP 2026 • 23:24 PKT</b></div>
+      </section>
+
+      <aside class="qrzone">
+        <div class="qrframe"><div id="qr" aria-label="Demo HumanProof verification QR"></div></div>
+        <div class="scan">SCAN TO VERIFY</div>
+      </aside>
+
+      <div class="seal"><span>VERIFIED</span></div>
+      <div class="slogan">Trust the action. Not just the screen.</div>
+    </article>
+  </div>
+  <div class="caption">Credit/debit-card proportions • Emerald + Mint + Lilac + Rose body • raised gold-metal frame and accents • demo QR.</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  const host=document.getElementById('qr');
+  function draw(){
+    if(!window.QRCode){host.textContent='QR';return;}
+    new QRCode(host,{text:'https://nexusnovatools.com/humanproof/?demo=DEMO-HP-MIX-4821',width:220,height:220,colorDark:'#17694e',colorLight:'#fbfff9',correctLevel:QRCode.CorrectLevel.H});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',draw);else draw();
+})();
+</script>
+</body>
+</html>
