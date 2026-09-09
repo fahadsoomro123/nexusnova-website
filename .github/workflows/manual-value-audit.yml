@@ -28,6 +28,17 @@ jobs:
         shell: bash
         run: |
           cat manual-value-audit.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Build reviewer source snapshot
+        shell: bash
+        run: |
+          mkdir -p reviewer-source/articles reviewer-source/guides reviewer-source/tech reviewer-source/assets/js reviewer-source/assets/css
+          cp -f -- *.html reviewer-source/ 2>/dev/null || true
+          cp -f -- articles/*.html reviewer-source/articles/ 2>/dev/null || true
+          cp -f -- guides/*.html reviewer-source/guides/ 2>/dev/null || true
+          cp -f -- tech/*.html reviewer-source/tech/ 2>/dev/null || true
+          cp -f -- assets/js/*.js reviewer-source/assets/js/ 2>/dev/null || true
+          cp -f -- assets/css/*.css reviewer-source/assets/css/ 2>/dev/null || true
+          cp -f -- sitemap*.xml robots.txt ads.txt reviewer-source/ 2>/dev/null || true
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
@@ -35,4 +46,5 @@ jobs:
           path: |
             manual-value-audit.json
             manual-value-audit.md
+            reviewer-source/
           retention-days: 30
