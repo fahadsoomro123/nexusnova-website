@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Image Compressor — Compact Tool Preview v1</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f8fffb}#preview{width:100%;height:100%;border:0;display:block;opacity:0;transition:opacity .12s linear}</style>
+</head>
+<body>
+<iframe id="preview" title="Image Compressor compact tool preview" src="image-compressor.html?v=20260910-compact-preview"></iframe>
+<script>
+const frame=document.getElementById('preview');
+frame.addEventListener('load',()=>{
+  const d=frame.contentDocument;if(!d)return;
+  const style=d.createElement('style');
+  style.textContent=`
+    body{background:linear-gradient(180deg,#f7fff9,#fffdf8)!important}
+    .site-header{position:sticky!important;top:0!important;backdrop-filter:blur(14px);background:rgba(255,255,255,.88)!important}
+    .page-hero{padding:28px 0 14px!important}.page-hero h1{margin:.35rem 0!important;font-size:clamp(32px,5vw,54px)!important}.page-hero p{max-width:780px!important;margin:.4rem 0 .7rem!important}
+    main>.section{padding:12px 0!important}.tool-card{padding:20px!important;border-radius:22px!important;box-shadow:0 16px 40px rgba(28,100,76,.08)!important}
+    .compact-detail{padding:10px 0 22px!important}.compact-detail .article{max-width:960px!important;border:1px solid rgba(34,119,93,.13);border-radius:22px;background:rgba(255,255,255,.78);padding:22px 24px!important;box-shadow:0 14px 42px rgba(42,104,85,.06)}
+    .compact-detail h2{font-size:clamp(22px,3vw,31px);margin:0 0 8px}.compact-detail h3{font-size:17px;margin:18px 0 6px}.compact-detail p{line-height:1.67;margin:8px 0;color:#516d64}.compact-detail .mini-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}.compact-detail .mini{border:1px solid rgba(34,119,93,.12);border-radius:14px;padding:13px 14px;background:#fbfffd}.compact-detail .mini b{display:block;margin-bottom:5px}.compact-detail ul{margin:7px 0 0;padding-left:18px}.compact-detail li{margin:5px 0;color:#536f66;line-height:1.5}.compact-detail .related{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.compact-detail .related a{padding:8px 10px;border:1px solid rgba(34,119,93,.13);border-radius:11px;background:white;text-decoration:none;font-weight:700;font-size:12px}
+    .site-footer{margin-top:0!important;padding-top:18px!important}.footer-console{padding-top:10px!important}.footer-copy{max-width:440px!important}
+    @media(max-width:720px){.compact-detail .mini-grid{grid-template-columns:1fr}.compact-detail .article{padding:16px!important}.tool-card{padding:16px!important}.page-hero{padding-top:20px!important}}
+  `;d.head.appendChild(style);
+
+  const main=d.querySelector('main');
+  const sections=[...main.querySelectorAll(':scope > section.section')];
+  if(sections.length>=3){
+    sections.slice(1).forEach(s=>s.remove());
+    const sec=d.createElement('section');sec.className='section compact-detail';
+    sec.innerHTML=`<div class="container article">
+      <h2>Compress images without guessing what changes</h2>
+      <p>This tool decodes a JPG, PNG or WebP in your browser, redraws it at the dimensions you choose, then exports a new JPEG or WebP file at the selected quality. Lower dimensions usually reduce file size more efficiently than extreme quality reduction when the original image is much larger than the final display size.</p>
+      <div class="mini-grid">
+        <div class="mini"><b>How to use it</b><ol><li>Choose the original image.</li><li>Set width and height, or keep the original dimensions.</li><li>Keep aspect ratio enabled unless you intentionally want to change the image shape.</li><li>Select JPEG or WebP and choose a quality level.</li><li>Run compression, compare the preview, then download only if the result still looks acceptable.</li></ol></div>
+        <div class="mini"><b>Worked example</b><p>A 4000 px-wide phone photo used in a 1200 px website card usually benefits more from resizing near the real display width before reducing quality. Compare the final file at normal viewing size rather than judging only from an extreme zoom.</p></div>
+      </div>
+      <h3>Compression vs resizing</h3>
+      <p>Compression changes how image data is stored; resizing changes the pixel dimensions. They solve different problems. Screenshots, text and line art need closer inspection because blurred edges and compression artifacts are easier to notice than in many photographs.</p>
+      <h3>Privacy and limitations</h3>
+      <ul><li>The selected file is processed locally in the browser by this tool; it does not need to be uploaded to a NexusNova server.</li><li>Keep the original as a master copy because repeated lossy exports can compound quality loss.</li><li>Check transparency, text readability, gradients, faces and sharp edges after export.</li><li>Some metadata or colour information can change during browser export depending on the source and format.</li><li>For archival, legal, medical or other high-stakes image workflows, preserve the original and verify the required format separately.</li></ul>
+      <h3>Related help</h3>
+      <div class="related"><a href="articles/compress-images-for-web.html">Compress images for the web</a><a href="png-to-jpg.html">PNG to JPG</a><a href="jpg-to-png.html">JPG to PNG</a><a href="webp-to-jpg.html">WebP to JPG</a><a href="image-tools.html">All image tools</a></div>
+    </div>`;
+    main.appendChild(sec);
+  }
+  d.title='Image Compressor — Compact Tool Preview v1';
+  frame.style.opacity='1';
+});
+</script>
+</body>
+</html>
