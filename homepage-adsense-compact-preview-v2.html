@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova — AdSense Compact Homepage Preview v2</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f6fff9}#preview{width:100%;height:100%;border:0;display:block;opacity:0;transition:opacity .12s linear}</style>
+</head>
+<body>
+<iframe id="preview" title="NexusNova compact homepage preview v2" src="homepage-humanproof-compact-preview-v1.html?v=9dbce35"></iframe>
+<script>
+const frame=document.getElementById('preview');
+frame.addEventListener('load',()=>{
+  const d=frame.contentDocument;if(!d)return;
+  const style=d.createElement('style');
+  style.textContent=`
+    .hero{padding:34px 0 18px!important}.grid{gap:34px!important}.proof-shell{min-height:450px!important}.proof-card{min-height:400px!important}
+    .featured{padding:8px 0 12px!important}.eco{padding:8px 0 24px!important}
+    .hp-detail{padding:8px 0 14px}.hp-detail .panel{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.72);box-shadow:0 14px 42px rgba(42,104,85,.07);padding:22px 24px}
+    .hp-detail h2{margin:6px 0 8px;font-size:clamp(24px,3vw,36px);letter-spacing:-.035em}.hp-detail p{margin:0;color:var(--muted);line-height:1.62;font-size:13px}
+    .hp-steps,.hp-compare,.hp-core{display:grid;gap:9px;margin-top:14px}.hp-steps{grid-template-columns:repeat(3,1fr)}.hp-compare{grid-template-columns:repeat(5,1fr)}.hp-core{grid-template-columns:repeat(4,1fr)}
+    .hp-step,.hp-cmp,.hp-coreitem{border:1px solid var(--line);border-radius:14px;background:#fbfffd;padding:12px 13px}.hp-step b,.hp-cmp b,.hp-coreitem b{display:block;font-size:11px}.hp-step span,.hp-cmp span,.hp-coreitem span{display:block;margin-top:4px;color:#69857c;font-size:9px;line-height:1.45}
+    .hp-cmp:last-child{background:linear-gradient(135deg,rgba(73,193,151,.13),rgba(166,139,232,.13))}.hp-use{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.hp-use span{padding:7px 9px;border-radius:999px;border:1px solid var(--line);background:white;font-size:9px;font-weight:800;color:#4d7267}
+    .qualityline{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:10px!important}.eco-row{grid-template-columns:repeat(4,1fr)!important}
+    @media(max-width:900px){.hp-compare{grid-template-columns:1fr 1fr}.hp-core{grid-template-columns:1fr 1fr}.hp-steps{grid-template-columns:1fr}.proof-shell{min-height:430px!important}}
+    @media(max-width:560px){.hero{padding:24px 0 14px!important}.hp-detail .panel{padding:16px}.hp-compare,.hp-core{grid-template-columns:1fr 1fr}.eco-row{grid-template-columns:1fr 1fr!important}}
+  `;d.head.appendChild(style);
+
+  const featured=d.querySelector('.featured');
+  if(featured) featured.outerHTML=`
+    <section class="hp-detail"><div class="wrap"><div class="panel">
+      <div class="tag">WHY HUMANPROOF EXISTS</div>
+      <h2>A real human should approve the exact sensitive action.</h2>
+      <p>Passwords, OTPs and face matching solve different problems. HumanProof is designed for the moment a system needs evidence that a live human consciously approved one specific action — for example a production deploy, account recovery, data deletion, refund or high-value withdrawal.</p>
+      <div class="hp-steps">
+        <div class="hp-step"><b>01 • Live challenge</b><span>Short randomized camera response checks live human presence.</span></div>
+        <div class="hp-step"><b>02 • Bind the action</b><span>The approval flow stays attached to the exact operation being requested.</span></div>
+        <div class="hp-step"><b>03 • Issue proof after confirmation</b><span>A production receipt is issued only after the required server and payment checks succeed.</span></div>
+      </div>
+      <div class="hp-compare">
+        <div class="hp-cmp"><b>Password</b><span>Shows knowledge of a secret.</span></div>
+        <div class="hp-cmp"><b>OTP</b><span>Shows access to a device or SIM.</span></div>
+        <div class="hp-cmp"><b>Face match</b><span>Can compare identity, not conscious action approval.</span></div>
+        <div class="hp-cmp"><b>CAPTCHA</b><span>Separates many bots from humans for routine access.</span></div>
+        <div class="hp-cmp"><b>HumanProof</b><span>Targets live human presence plus exact-action approval.</span></div>
+      </div>
+      <div class="hp-core">
+        <div class="hp-coreitem"><b>Action binding</b><span>Approval context is tied to the operation.</span></div>
+        <div class="hp-coreitem"><b>Replay-aware design</b><span>Random challenge, timing and nonce architecture.</span></div>
+        <div class="hp-coreitem"><b>Privacy-first</b><span>No legal-identity claim by default.</span></div>
+        <div class="hp-coreitem"><b>Signed receipt direction</b><span>Auditable proof for production integrations.</span></div>
+      </div>
+      <div class="hp-use"><span>AI-agent approvals</span><span>Admin changes</span><span>Recovery</span><span>Deploy / delete</span><span>Refunds</span><span>Crypto / financial approvals</span></div>
+      <p class="qualityline"><strong>Clear limitation:</strong> the public camera experience is an evaluation surface. It must not be treated as legal identity verification or as a production-grade receipt until the hardened backend flow confirms the result.</p>
+    </div></div></section>`;
+
+  const eco=d.querySelector('.eco');
+  if(eco) eco.innerHTML=`<div class="wrap"><div class="eco-row">
+    <a href="humanproof.html"><b>HumanProof</b><span>Full product explanation, live evaluation and security limits.</span></a>
+    <a href="tools.html"><b>Tools</b><span>Focused browser utilities with task-specific instructions and examples.</span></a>
+    <a href="live.html"><b>LIVE</b><span>Fresh references with source and freshness notes.</span></a>
+    <a href="articles.html"><b>Guides & Articles →</b><span>Original practical explanations that support the tools.</span></a>
+  </div></div>`;
+
+  const top=d.querySelector('.proof-top');if(top){const spans=top.querySelectorAll('span');if(spans[1])spans[1].textContent='LIVE HUMAN STEP';}
+  d.title='NexusNova — AdSense Compact Homepage Preview v2';
+  frame.style.opacity='1';
+});
+</script>
+</body>
+</html>
