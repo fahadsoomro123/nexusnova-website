@@ -6,4 +6,16 @@
 
 <!-- NEXUSNOVA_FINAL_REVIEW_VALUE -->
 <section class="section"><div class="container article"><h2>CIDR results describe address ranges, not network reachability</h2><p>A CIDR calculation can identify the network range, mask and address boundaries for the entered prefix. It does not prove that a host exists, accepts traffic or is reachable through firewalls, routing rules, NAT or provider filtering.</p><p>Use the result when planning or checking IPv4 ranges, then verify the actual network configuration separately. Avoid assuming that every numerically valid address in a range is assignable in every environment.</p></div></section>
+<!-- NEXUSNOVA_COMPACT_TOOL_GUIDE_START -->
+<section class="section" data-nexusnova-tool-guide><div class="container article">
+<h2>IPv4 CIDR &amp; subnet calculator: clear guide for real use</h2>
+<p>The IPv4 CIDR &amp; Subnet Calculator works out address-range information from an IPv4 address and prefix length. It is useful for planning networks, checking subnet boundaries and understanding which addresses fall inside a CIDR block.</p>
+<h3>How to use IPv4 CIDR &amp; subnet calculator</h3>
+<ol><li>Enter the exact hostname, domain, address or URL expected by IPv4 CIDR &amp; subnet calculator; a typo can make a healthy service look broken.</li><li>Run IPv4 CIDR &amp; subnet calculator and record the returned value together with the time of the check so later changes can be compared properly.</li><li>Confirm any important finding from IPv4 CIDR &amp; subnet calculator with the authoritative DNS, hosting, certificate or network source before changing production configuration.</li></ol>
+<h3>Practical example</h3>
+<p>For a /24 network, the calculator can show the network range that shares the first 24 address bits. Use the result to verify whether two IPv4 addresses belong to the same numerical subnet before configuring a device or firewall rule.</p>
+<h3>Limits, privacy and checks</h3>
+<p>A valid CIDR range does not prove that every address is usable, assigned or reachable. Routing, reserved addresses, NAT, cloud-provider rules and firewall policy can change real connectivity, so verify the actual network configuration separately.</p>
+</div></section>
+<!-- NEXUSNOVA_COMPACT_TOOL_GUIDE_END -->
 </main><footer class="site-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span></div></footer><script src="assets/js/ip-cidr-calculator.js" defer></script><script src="assets/js/main.js" defer></script></body></html>
