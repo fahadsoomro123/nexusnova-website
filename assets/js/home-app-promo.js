@@ -1,95 +1,11 @@
 (()=>{
-  'use strict';
-  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  if(page!=='index.html'||document.querySelector('.nn-home-app-promo')) return;
-
-  const miningShot='assets/images/nvx-mining-real-420.webp?v=20260902-3';
-  const section=document.createElement('section');
-  section.className='nn-home-app-promo';
-  section.dataset.homeAppPromo='';
-  section.setAttribute('aria-label','NexusNova Web Mining feature');
-  section.innerHTML=`
-    <div class="container">
-      <div class="nn-home-mining-showcase">
-        <div class="nn-home-mining-copy">
-          <span class="nn-home-mining-kicker">NEXUSNOVA FEATURE // WEB MINING</span>
-          <h2>NVX mining.<span>Live on the web.</span></h2>
-          <p>Open your real 24-hour NVX mining session in the secure NexusNova Web App. Firebase-linked, server-synced and manual.</p>
-          <div class="nn-home-mining-trust" aria-label="Mining trust details">
-            <span>FIREBASE-LINKED</span><span>SERVER-SYNCED</span><span>MANUAL 24H SESSION</span>
-          </div>
-          <div class="nn-home-mining-actions">
-            <a class="primary" href="account.html">OPEN WEB MINING →</a>
-            <a href="account.html#earn-nvx-title">How NVX Mining Works</a>
-          </div>
-          <p class="nn-home-mining-disclosure">Real NexusNova mining session screenshot. Balance, rate and session values shown belong to that live session and vary by account and session.</p>
-        </div>
-        <div class="nn-home-mining-visual" aria-label="Real NexusNova NVX mining screen">
-          <div class="nn-tactical-device">
-            <i class="nn-tactical-bolt b1"></i><i class="nn-tactical-bolt b2"></i><i class="nn-tactical-bolt b3"></i><i class="nn-tactical-bolt b4"></i>
-            <div class="nn-tactical-screen">
-              <img src="${miningShot}" width="420" height="864" loading="eager" fetchpriority="high" decoding="async" alt="Real NexusNova NVX mining screen showing a live manual 24-hour server-synced mining session">
-            </div>
-            <span class="nn-tactical-live"><i></i> SERVER SYNCED</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="nn-home-app-shell">
-        <div class="nn-home-app-copy">
-          <span class="nn-home-app-kicker">NEXUSNOVA APP + WEB MINING</span>
-          <h2>57+ smart tools.<span>One connected NexusNova account.</span></h2>
-          <p>Use the NexusNova Android app or secure website Web App with the same Firebase-linked identity. NVX mining is available on the website too, with manual 24-hour sessions and real account state.</p>
-          <div class="nn-home-app-points">
-            <div class="nn-home-app-point"><strong>57+</strong><small>TOOLS & UTILITIES</small></div>
-            <div class="nn-home-app-point"><strong>WEB</strong><small>FIREBASE-LINKED MINING</small></div>
-            <div class="nn-home-app-point"><strong>24H</strong><small>MANUAL MINING SESSION</small></div>
-          </div>
-          <div class="nn-home-app-actions"><a href="account.html">Open Web App + NVX Mining →</a><a href="app.html">Explore Android App</a><a href="register.html?mode=register">Create account</a></div>
-          <div class="nn-home-app-socials" aria-label="Official NexusNova social profiles">
-            <a class="x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on X"><svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"/></svg></a>
-            <a class="fb" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on Facebook"><svg viewBox="0 0 24 24"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"/></svg></a>
-            <a class="ig" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on Instagram"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.9" r="1" class="dot"/></svg></a>
-            <a class="tg" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="NexusNova on Telegram"><svg viewBox="0 0 24 24"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5ZM9.2 13l8.9-5.6c.4-.2.8-.1.5.2l-7.4 6.7-.3 3.3L9.2 13Z"/></svg></a>
-            <span>OFFICIAL NEXUSNOVA CHANNELS</span>
-          </div>
-        </div>
-
-        <div class="nn-home-phone-stage" aria-label="Two NexusNova mobile previews">
-          <div class="nn-home-phone tools" aria-label="Nova Hub tools preview">
-            <div class="nn-home-phone-screen">
-              <div class="nn-home-phone-top"><div><small>NEXUSNOVA OS</small><strong>Nova Hub</strong></div><span class="nn-home-phone-online">● ONLINE</span></div>
-              <div class="nn-home-phone-title"><strong>Your tools</strong><span>12 of 57+</span></div>
-              <div class="nn-home-phone-grid">
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/profile.webp" alt="Profile"><b>Profile</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/notes.webp" alt="Notes"><b>Notes</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/todo.webp" alt="To-Do"><b>To-Do</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/calculator.webp" alt="Calculator"><b>Calc</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/unit-converter.webp" alt="Converter"><b>Convert</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/expenses.webp" alt="Expenses"><b>Expenses</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/pomodoro.webp" alt="Focus"><b>Focus</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/bmi.webp" alt="BMI"><b>BMI</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/tip.webp" alt="Tip"><b>Tip</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/world-clock.webp" alt="World Clock"><b>Clock</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/qr.webp" alt="QR Tools"><b>QR</b></div>
-                <div class="nn-home-phone-tool"><img src="ota/files/assets/icons/nova-hub/weather.webp" alt="Weather"><b>Weather</b></div>
-              </div>
-              <div class="nn-home-phone-dock"><span class="active">Hub</span><span>AI</span><span>Wallet</span><span>Profile</span></div>
-            </div>
-          </div>
-
-          <div class="nn-home-phone mining real-mining" aria-label="Real NexusNova NVX mining preview">
-            <div class="nn-home-phone-screen nn-real-mining-screen">
-              <img src="${miningShot}" width="420" height="864" loading="lazy" decoding="async" alt="Real NexusNova mining session screen in the mobile preview">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>`;
-
-  const hero=document.querySelector('.nn-command-hero');
-  const quickAccess=document.querySelector('.command-dock-wrap');
-  if(hero) hero.insertAdjacentElement('afterend',section);
-  else if(quickAccess) quickAccess.insertAdjacentElement('beforebegin',section);
-  else document.querySelector('main')?.prepend(section);
+'use strict';
+const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+if(page!=='index.html'||document.querySelector('[data-humanproof-home]'))return;
+const style=document.createElement('style');style.dataset.humanproofHome='';style.textContent=`
+.nn-command-hero.nn-hp-home{padding:72px 0 50px;background:radial-gradient(circle at 80% 10%,rgba(128,91,255,.14),transparent 28%),radial-gradient(circle at 12% 24%,rgba(72,226,255,.07),transparent 28%),linear-gradient(180deg,#030812,#07131d);color:#eef9ff;overflow:hidden}.nn-hp-grid{display:grid;grid-template-columns:minmax(0,1.03fr) minmax(360px,.97fr);gap:42px;align-items:center}.nn-hp-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid rgba(105,232,255,.17);border-radius:999px;background:rgba(70,220,255,.05);color:#82eff8;font-size:10px;font-weight:850;letter-spacing:.12em}.nn-hp-eyebrow i{width:6px;height:6px;border-radius:50%;background:#78f0cf;box-shadow:0 0 14px #78f0cf}.nn-hp-copy h1{margin:20px 0 18px;font-size:clamp(42px,6vw,78px);line-height:.98;letter-spacing:-.05em;color:#f2fbff}.nn-hp-copy h1 span{background:linear-gradient(95deg,#f7fdff 6%,#82efff 46%,#a68dff 83%);-webkit-background-clip:text;background-clip:text;color:transparent}.nn-hp-copy p{max-width:710px;color:#9bb0c0;font-size:17px;line-height:1.7}.nn-hp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:23px}.nn-hp-btn{display:inline-flex;align-items:center;justify-content:center;min-height:47px;padding:0 17px;border-radius:13px;text-decoration:none!important;font-weight:850;font-size:13px}.nn-hp-btn.primary{color:#041019;background:linear-gradient(135deg,#57e1ef,#8a80f6);box-shadow:0 12px 30px rgba(77,219,255,.14)}.nn-hp-btn.secondary{color:#d7e8f2;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025)}.nn-hp-trust{display:flex;gap:17px;flex-wrap:wrap;margin-top:23px;color:#7d95a8;font-size:10px}.nn-hp-trust span:before{content:'✓';color:#78f0cf;margin-right:7px}.nn-hp-visual{position:relative;min-height:510px;border:1px solid rgba(108,231,255,.16);border-radius:28px;padding:12px;background:linear-gradient(150deg,rgba(12,28,45,.98),rgba(4,12,21,.99));box-shadow:0 34px 95px rgba(0,0,0,.34);overflow:hidden}.nn-hp-visual-top{display:flex;justify-content:space-between;padding:6px 5px 10px;color:#718ba0;font-size:9px;letter-spacing:.12em}.nn-hp-visual-top b{color:#7ff0d2}.nn-hp-v20{position:absolute;left:10px;right:10px;top:44px;bottom:34px;border-radius:22px;overflow:hidden;background:#03080f;border:1px solid rgba(89,231,255,.15)}#nnHpCanvas{display:block;width:100%;height:100%}.nn-hp-load{position:absolute;inset:0;display:grid;place-items:center;color:#78eafa;font-size:10px;letter-spacing:.12em;background:#03080f;z-index:3}.nn-hp-load.hide{display:none}.nn-hp-scan{position:absolute;left:3%;right:3%;height:2px;top:5%;background:linear-gradient(90deg,transparent,#60efff,#a079ff,#60efff,transparent);box-shadow:0 0 14px rgba(96,239,255,.8);animation:nnHpScan 18s ease-in-out infinite;pointer-events:none}.nn-hp-v20 small{position:absolute;left:0;right:0;bottom:13px;text-align:center;color:#6f8ba0;letter-spacing:.16em;font-size:8px}.nn-hp-visual-foot{position:absolute;left:24px;right:24px;bottom:11px;display:flex;justify-content:space-between;color:#657f94;font-size:8px;letter-spacing:.1em}.nn-hp-featured{padding:18px 0 28px;background:#050b13}.nn-hp-ad{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:27px 29px;border:1px solid rgba(105,231,255,.16);border-radius:24px;background:radial-gradient(circle at 88% 50%,rgba(137,103,255,.14),transparent 34%),linear-gradient(140deg,#091827,#06101b);box-shadow:0 22px 62px rgba(0,0,0,.22)}.nn-hp-ad .tag{color:#75e8f5;font-size:10px;font-weight:900;letter-spacing:.14em}.nn-hp-ad h2{margin:8px 0 10px;color:#f3fbff!important;font-size:clamp(29px,4vw,46px);line-height:1.04;letter-spacing:-.035em;text-shadow:0 0 20px rgba(99,232,255,.08)}.nn-hp-ad p{max-width:760px;margin:0;color:#91a8b8;line-height:1.65}.nn-hp-badge{min-width:190px;padding:16px;border-radius:18px;border:1px solid rgba(106,231,255,.16);background:rgba(3,12,21,.62)}.nn-hp-badge small{display:block;color:#71899c;font-size:8px;letter-spacing:.13em}.nn-hp-badge b{display:block;margin:6px 0;color:#87f2ff;font-size:18px}.nn-hp-attrib{margin:8px 0 0;text-align:right;color:#6f8294;font-size:8px}.nn-hp-attrib a{color:inherit;text-decoration:underline}@keyframes nnHpScan{0%,7%{top:5%;opacity:.35}49%,51%{top:91%;opacity:1}93%,100%{top:5%;opacity:.45}}@media(max-width:900px){.nn-hp-grid,.nn-hp-ad{grid-template-columns:1fr}.nn-hp-visual{min-height:500px}.nn-hp-badge{min-width:0}}@media(max-width:560px){.nn-command-hero.nn-hp-home{padding:50px 0 34px}.nn-hp-copy h1{font-size:42px}.nn-hp-copy p{font-size:15px}.nn-hp-visual{min-height:470px}.nn-hp-ad{padding:22px 18px}}
+`;document.head.appendChild(style);
+const hero=document.querySelector('.nn-command-hero');if(!hero)return;hero.classList.add('nn-hp-home');hero.dataset.humanproofHome='';hero.innerHTML=`<div class="container nn-hp-grid"><div class="nn-hp-copy"><span class="nn-hp-eyebrow"><i></i>NEXUSNOVA FLAGSHIP SECURITY LAYER</span><h1>Trust the action. <span>Not just the screen.</span></h1><p>NexusNova HumanProof adds a live human approval layer to sensitive digital actions. Confirm a real person is present, bind approval to the exact action, and build an auditable verification record around the decision.</p><div class="nn-hp-actions"><a class="nn-hp-btn primary" href="humanproof.html">Explore HumanProof →</a><a class="nn-hp-btn secondary" href="humanproof.html#live-verification">Start Live Verification</a><a class="nn-hp-btn secondary" href="tools.html">Browse Tools</a></div><div class="nn-hp-trust"><span>Live human response</span><span>Exact-action binding architecture</span><span>Privacy-first flow</span></div></div><div class="nn-hp-visual" aria-label="HumanProof 360 degree 3D head"><div class="nn-hp-visual-top"><span>HUMANPROOF • VERIFIED ACTION</span><b>LIVE PRODUCT</b></div><div class="nn-hp-v20"><canvas id="nnHpCanvas"></canvas><div class="nn-hp-load" id="nnHpLoad">LOADING 3D HUMAN SCAN…</div><div class="nn-hp-scan"></div><small>HEAD ONLY // REAL 3D MESH // 360°</small></div><div class="nn-hp-visual-foot"><span>360° HUMAN SCAN</span><span>NO INNER SCROLL</span></div></div></div>`;
+const promo=document.createElement('section');promo.className='nn-hp-featured';promo.innerHTML=`<div class="container"><div class="nn-hp-ad"><div><div class="tag">FEATURED • NEXUSNOVA HUMANPROOF</div><h2>Human approval for high-risk digital actions.</h2><p>Built for AI-agent approvals, admin changes, account recovery, refunds, deployments, data export, crypto withdrawals and other sensitive workflows where “someone clicked” is not enough.</p><div class="nn-hp-actions"><a class="nn-hp-btn primary" href="humanproof.html#business">See Business Platform →</a><a class="nn-hp-btn secondary" href="humanproof.html#live-verification">Start Live Verification</a></div></div><div><div class="nn-hp-badge"><small>PRODUCT LINE</small><b>VERIFIED ACTION</b><small>PERSONAL • BUSINESS • ENTERPRISE</small></div><p class="nn-hp-attrib">3D head: Lee Perry-Smith, CC BY 3.0</p></div></div></div>`;hero.insertAdjacentElement('afterend',promo);
+(async()=>{try{const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js');const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js');const canvas=document.getElementById('nnHpCanvas'),load=document.getElementById('nnHpLoad'),holder=canvas.parentElement,renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setClearColor(0x03080f,1);const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(27,1,.01,100);cam.position.set(0,.03,4.8);const rig=new THREE.Group();scene.add(rig);const mats=[];const shader=()=>new THREE.ShaderMaterial({wireframe:true,transparent:true,depthTest:true,depthWrite:false,uniforms:{uTime:{value:0}},vertexShader:'varying vec3 vPos;varying vec3 vNormal;void main(){vPos=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'uniform float uTime;varying vec3 vPos;varying vec3 vNormal;void main(){float x=clamp(vPos.x*.14+.5,0.,1.);vec3 a=mix(vec3(.33,.95,1.),vec3(.37,.56,1.),smoothstep(0.,.5,x));vec3 b=mix(vec3(.61,.43,1.),vec3(.94,.39,.86),smoothstep(.5,1.,x));vec3 col=mix(a,b,smoothstep(.42,.78,x));float f=.72+.28*abs(vNormal.z);float p=.94+.06*sin(uTime*.55+vPos.y*.5);gl_FragColor=vec4(col*f*p,.94);}'});new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb',g=>{const src=g.scene.children[0],geo=src.geometry.clone();geo.computeBoundingBox();const box=geo.boundingBox,size=new THREE.Vector3(),center=new THREE.Vector3();box.getSize(size);box.getCenter(center);geo.translate(-center.x,-center.y+size.y*.03,-center.z);rig.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0x03080f,side:THREE.DoubleSide})));const m=shader();mats.push(m);const wire=new THREE.Mesh(geo,m);wire.scale.setScalar(1.002);rig.add(wire);rig.scale.setScalar(2.48/Math.max(size.x,size.y));load.classList.add('hide')},undefined,()=>{load.textContent='3D HEAD LOAD FAILED'});function resize(){const r=holder.getBoundingClientRect();renderer.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}new ResizeObserver(resize).observe(holder);const clock=new THREE.Clock();function frame(){requestAnimationFrame(frame);const t=clock.getElapsedTime();rig.rotation.y=t/48*Math.PI*2;rig.position.y=Math.sin(t*.32)*.012;mats.forEach(m=>m.uniforms.uTime.value=t);renderer.render(scene,cam)}resize();frame()}catch(e){console.warn('[HumanProof 3D]',e)}})();
 })();
