@@ -59,7 +59,7 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
       let src=null;g.scene.traverse(n=>{if(!src&&n.isMesh&&n.geometry)src=n});if(!src)throw new Error('mesh missing');
       const geo=src.geometry.clone();geo.computeBoundingBox();
       const size=new THREE.Vector3(),center=new THREE.Vector3();geo.boundingBox.getSize(size);geo.boundingBox.getCenter(center);
-      geo.translate(-center.x,-center.y+size.y*.03,-center.z);
+      geo.translate(-center.x,-center.y+size.y*.08,-center.z);
 
       /* Invisible depth shell: keeps the visual hollow, but blocks the far-side face
          from showing through when the back of the head is facing the viewer. */
@@ -78,7 +78,7 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
 
       const m=wire();mats.push(m);
       const wm=new THREE.Mesh(geo,m);wm.scale.setScalar(1.0015);wm.renderOrder=1;rig.add(wm);
-      rig.scale.setScalar(2.62/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
+      rig.scale.setScalar(2.82/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
     },undefined,()=>load.textContent='3D HUMAN SCAN UNAVAILABLE');
     const resize=()=>{const r=holder.getBoundingClientRect();renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()};
     new ResizeObserver(resize).observe(holder);resize();
