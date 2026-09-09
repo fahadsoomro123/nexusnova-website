@@ -1,0 +1,91 @@
+name: NexusNova Tool Depth Remediation V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/tool_depth_remediation_v2.py'
+      - '.github/workflows/tool-depth-remediation-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deepen-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Sync latest main
+        run: git pull --rebase origin main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile remediation
+        run: python -m py_compile .github/scripts/tool_depth_remediation_v2.py
+      - name: Apply compact full-detail tool guides
+        run: python .github/scripts/tool_depth_remediation_v2.py
+      - name: Run strict manual value audit
+        run: python .github/scripts/manual_value_audit.py
+      - name: Enforce targeted tool-value gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.util, json
+          from pathlib import Path
+
+          spec=importlib.util.spec_from_file_location('depth','.github/scripts/tool_depth_remediation_v2.py')
+          mod=importlib.util.module_from_spec(spec)
+          assert spec.loader is not None
+          spec.loader.exec_module(mod)
+          targets=set(mod.CONTENT)
+          report=json.loads(Path('manual-value-audit.json').read_text(encoding='utf-8'))
+          bad_types={'thin_tool','missing_howto','missing_example','missing_limits','repeated_template_sentence','near_duplicate_main_content'}
+          bad=[]
+          for item in report.get('findings',[]):
+              if item.get('type') not in bad_types:
+                  continue
+              touched=set()
+              if item.get('path'):
+                  touched.add(item['path'])
+              touched.update(item.get('paths') or [])
+              if touched & targets:
+                  bad.append(item)
+          if bad:
+              raise SystemExit('Targeted tool-value findings remain: '+json.dumps(bad[:30],ensure_ascii=False))
+          for name in targets:
+              text=Path(name).read_text(encoding='utf-8')
+              if text.count(mod.START)!=1 or text.count(mod.END)!=1:
+                  raise SystemExit(f'Guide marker integrity failed for {name}')
+          print(f'Targeted compact full-detail gate: PASS for {len(targets)} tool pages')
+          PY
+      - name: Run existing structural audits
+        run: |
+          python .github/scripts/site_quality_audit.py
+          python .github/scripts/adsense_readiness_audit.py
+      - name: Commit verified tool pages only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(sed '/^[[:space:]]*$/d' tool-depth-remediation-changed-files.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No tool-depth changes required.'
+            exit 0
+          fi
+          git config user.name 'nexusnova-content-guard[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for file in "${files[@]}"; do git add -- "$file"; done
+          git commit -m 'content: deepen compact tool pages for AdSense review'
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              echo 'Verified tool-depth remediation pushed to main.'
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            sleep $((attempt * 3))
+          done
+          exit 1
