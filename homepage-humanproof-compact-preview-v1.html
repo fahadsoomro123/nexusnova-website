@@ -23,7 +23,7 @@ footer{padding:22px 0 28px;border-top:1px solid var(--line)}.foot{display:flex;a
 <body>
 <header><div class="wrap"><div class="nav-shell"><a class="brand" href="/"><span class="mark">N</span><span><strong>NEXUSNOVA TOOLS</strong><small>TOOLS • HUMANPROOF • LIVE</small></span></a><button class="menu" id="menu" aria-label="Open navigation">☰</button><nav class="nav" id="nav"><a href="humanproof.html">HumanProof</a><a href="live.html">LIVE</a><a href="labs.html">Labs</a><a href="tools.html">Tools</a><a class="primary" href="humanproof.html#live-verification">Start verification</a></nav></div></div></header>
 <main>
-<section class="hero"><div class="wrap grid"><div><span class="eyebrow"><i></i>NEXUSNOVA FLAGSHIP SECURITY LAYER</span><h1>Trust the action. <span class="accent">Not just the screen.</span></h1><p class="lead">NexusNova HumanProof adds a live human approval layer to sensitive digital actions. Confirm a real person is present, bind approval to the exact action, and build an auditable verification record around the decision.</p><div class="actions"><a class="btn primary" href="humanproof.html#live-verification">Start Live Verification</a><a class="btn" href="humanproof.html">Explore HumanProof</a><a class="btn" href="tools.html">Browse Tools</a></div><div class="trust"><span>Live human response</span><span>Exact-action binding architecture</span><span>Privacy-first flow</span></div></div><div class="proof-shell"><div class="proof-card"><div class="proof-top"><span>HUMANPROOF • VERIFIED ACTION</span><span>LIVE PRODUCT</span></div><div class="scanbox" id="scanbox"><canvas id="hp360" aria-hidden="true"></canvas><div class="load" id="load">LOADING 3D HUMAN SCAN…</div><div class="scanline"></div><span class="mesh-pill">HOLLOW 3D MESH • SURFACE OCCLUSION</span><span class="spin-pill">360° ROTATION</span></div><div class="proof-labels"><span>LIVE HUMAN STEP</span><span>ACTION BOUND</span><span>PRIVATE BY DESIGN</span></div><a class="proof-caption" href="humanproof.html">Trust the action. Not just the screen. →</a><div class="attrib">3D head: Lee Perry-Smith • CC BY 3.0</div></div></div></div></section>
+<section class="hero"><div class="wrap grid"><div><span class="eyebrow"><i></i>NEXUSNOVA FLAGSHIP SECURITY LAYER</span><h1>Trust the action. <span class="accent">Not just the screen.</span></h1><p class="lead">NexusNova HumanProof adds a live human approval layer to sensitive digital actions. Confirm a real person is present, bind approval to the exact action, and build an auditable verification record around the decision.</p><div class="actions"><a class="btn primary" href="humanproof.html#live-verification">Start Live Verification</a><a class="btn" href="humanproof.html">Explore HumanProof</a><a class="btn" href="tools.html">Browse Tools</a></div><div class="trust"><span>Live human response</span><span>Exact-action binding architecture</span><span>Privacy-first flow</span></div></div><div class="proof-shell"><div class="proof-card"><div class="proof-top"><span>HUMANPROOF • VERIFIED ACTION</span><span>LIVE PRODUCT</span></div><div class="scanbox" id="scanbox"><canvas id="hp360" aria-hidden="true"></canvas><div class="load" id="load">LOADING 3D HUMAN SCAN…</div><div class="scanline"></div><span class="mesh-pill">HEAD-ONLY HOLLOW 3D MESH</span><span class="spin-pill">360° ROTATION</span></div><div class="proof-labels"><span>LIVE HUMAN STEP</span><span>ACTION BOUND</span><span>PRIVATE BY DESIGN</span></div><a class="proof-caption" href="humanproof.html">Trust the action. Not just the screen. →</a><div class="attrib">3D head: Lee Perry-Smith • CC BY 3.0</div></div></div></div></section>
 <section class="featured"><div class="wrap"><div class="featurebar"><div><div class="tag">FEATURED • NEXUSNOVA HUMANPROOF</div><h2>Human approval for high-risk digital actions.</h2><p>Built for AI-agent approvals, admin changes, account recovery, refunds, deployments, data export, crypto withdrawals and other sensitive workflows where “someone clicked” is not enough.</p></div><div class="verified-line"><small>PRODUCT LINE</small><b>VERIFIED ACTION</b><span>PERSONAL • BUSINESS • ENTERPRISE</span></div></div></div></section>
 <section class="eco"><div class="wrap"><div class="eco-row"><a href="humanproof.html"><b>HumanProof</b><span>Live-human approval for sensitive actions.</span></a><a href="live.html"><b>LIVE</b><span>Fresh references with sources and context.</span></a><a href="labs.html"><b>Labs</b><span>Experimental NexusNova experiences.</span></a><a href="tools.html"><b>All Tools →</b><span>Full utility library lives on its own page.</span></a></div></div></section>
 </main>
@@ -51,18 +51,19 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
       side:THREE.FrontSide,
       depthTest:true,
       depthWrite:false,
-      uniforms:{uTime:{value:0}},
+      uniforms:{uTime:{value:0},uCutY:{value:-999}},
       vertexShader:'varying vec3 vPos;varying vec3 vNormal;void main(){vPos=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-      fragmentShader:'uniform float uTime;varying vec3 vPos;varying vec3 vNormal;void main(){float x=clamp(vPos.x*.15+.5,0.,1.);float y=clamp(vPos.y*.11+.52,0.,1.);vec3 emerald=vec3(.20,.66,.49);vec3 mint=vec3(.35,.84,.64);vec3 lilac=vec3(.65,.57,.91);vec3 rose=vec3(.81,.50,.68);vec3 left=mix(emerald,mint,smoothstep(.0,.52,x));vec3 right=mix(lilac,rose,smoothstep(.5,1.,x));vec3 col=mix(left,right,smoothstep(.40,.78,x));col=mix(col,vec3(.90,1.0,.82),smoothstep(.72,1.,y)*.16);float edge=.80+.20*abs(vNormal.z);float pulse=.96+.04*sin(uTime*.55+vPos.y*.55);gl_FragColor=vec4(col*edge*pulse,.92);}'
+      fragmentShader:'uniform float uTime;uniform float uCutY;varying vec3 vPos;varying vec3 vNormal;void main(){if(vPos.y<uCutY)discard;float x=clamp(vPos.x*.15+.5,0.,1.);float y=clamp(vPos.y*.11+.52,0.,1.);vec3 emerald=vec3(.20,.66,.49);vec3 mint=vec3(.35,.84,.64);vec3 lilac=vec3(.65,.57,.91);vec3 rose=vec3(.81,.50,.68);vec3 left=mix(emerald,mint,smoothstep(.0,.52,x));vec3 right=mix(lilac,rose,smoothstep(.5,1.,x));vec3 col=mix(left,right,smoothstep(.40,.78,x));col=mix(col,vec3(.90,1.0,.82),smoothstep(.72,1.,y)*.16);float edge=.80+.20*abs(vNormal.z);float pulse=.96+.04*sin(uTime*.55+vPos.y*.55);gl_FragColor=vec4(col*edge*pulse,.92);}'
     });
     new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb',g=>{
       let src=null;g.scene.traverse(n=>{if(!src&&n.isMesh&&n.geometry)src=n});if(!src)throw new Error('mesh missing');
       const geo=src.geometry.clone();geo.computeBoundingBox();
       const size=new THREE.Vector3(),center=new THREE.Vector3();geo.boundingBox.getSize(size);geo.boundingBox.getCenter(center);
       geo.translate(-center.x,-center.y+size.y*.08,-center.z);
+      const cutY=-size.y*.14;
 
-      /* Invisible depth shell: keeps the visual hollow, but blocks the far-side face
-         from showing through when the back of the head is facing the viewer. */
+      /* Invisible depth shell preserves correct front/back occlusion while the
+         visible shader clips away chest and lower-neck geometry. */
       const depthMat=new THREE.MeshBasicMaterial({
         colorWrite:false,
         depthWrite:true,
@@ -76,14 +77,14 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
       depthShell.renderOrder=0;
       rig.add(depthShell);
 
-      const m=wire();mats.push(m);
+      const m=wire();m.uniforms.uCutY.value=cutY;mats.push(m);
       const wm=new THREE.Mesh(geo,m);wm.scale.setScalar(1.0015);wm.renderOrder=1;rig.add(wm);
-      rig.scale.setScalar(2.45/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
+      rig.scale.setScalar(2.76/Math.max(size.x,size.y));rig.rotation.x=-.035;rig.position.y=.045;load.classList.add('hide');
     },undefined,()=>load.textContent='3D HUMAN SCAN UNAVAILABLE');
     const resize=()=>{const r=holder.getBoundingClientRect();renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()};
     new ResizeObserver(resize).observe(holder);resize();
     const clock=new THREE.Clock();let raf=0;
-    const frame=()=>{raf=requestAnimationFrame(frame);const t=clock.getElapsedTime();rig.rotation.y=(t/12)*Math.PI*2;rig.position.y=Math.sin(t*.55)*.012;mats.forEach(m=>m.uniforms.uTime.value=t);renderer.render(scene,camera)};
+    const frame=()=>{raf=requestAnimationFrame(frame);const t=clock.getElapsedTime();rig.rotation.y=(t/12)*Math.PI*2;rig.position.y=.045+Math.sin(t*.55)*.008;mats.forEach(m=>m.uniforms.uTime.value=t);renderer.render(scene,camera)};
     frame();
     addEventListener('pagehide',()=>{cancelAnimationFrame(raf);renderer.dispose();mats.forEach(m=>m.dispose())},{once:true});
   }catch(e){load.textContent='3D HUMAN SCAN UNAVAILABLE';console.warn('[HumanProof compact preview]',e)}
