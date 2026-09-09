@@ -78,7 +78,7 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
 
       const m=wire();mats.push(m);
       const wm=new THREE.Mesh(geo,m);wm.scale.setScalar(1.0015);wm.renderOrder=1;rig.add(wm);
-      rig.scale.setScalar(2.82/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
+      rig.scale.setScalar(2.45/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
     },undefined,()=>load.textContent='3D HUMAN SCAN UNAVAILABLE');
     const resize=()=>{const r=holder.getBoundingClientRect();renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()};
     new ResizeObserver(resize).observe(holder);resize();
