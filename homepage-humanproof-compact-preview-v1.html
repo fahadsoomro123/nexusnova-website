@@ -48,21 +48,34 @@ const menu=document.getElementById('menu'),nav=document.getElementById('nav');me
     const wire=()=>new THREE.ShaderMaterial({
       wireframe:true,
       transparent:true,
-      side:THREE.DoubleSide,
-      depthTest:false,
+      side:THREE.FrontSide,
+      depthTest:true,
       depthWrite:false,
-      blending:THREE.NormalBlending,
       uniforms:{uTime:{value:0}},
       vertexShader:'varying vec3 vPos;varying vec3 vNormal;void main(){vPos=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-      fragmentShader:'uniform float uTime;varying vec3 vPos;varying vec3 vNormal;void main(){float x=clamp(vPos.x*.15+.5,0.,1.);float y=clamp(vPos.y*.11+.52,0.,1.);vec3 emerald=vec3(.20,.66,.49);vec3 mint=vec3(.35,.84,.64);vec3 lilac=vec3(.65,.57,.91);vec3 rose=vec3(.81,.50,.68);vec3 left=mix(emerald,mint,smoothstep(.0,.52,x));vec3 right=mix(lilac,rose,smoothstep(.5,1.,x));vec3 col=mix(left,right,smoothstep(.40,.78,x));col=mix(col,vec3(.90,1.0,.82),smoothstep(.72,1.,y)*.16);float edge=.78+.22*abs(vNormal.z);float pulse=.95+.05*sin(uTime*.55+vPos.y*.55);gl_FragColor=vec4(col*edge*pulse,.88);}'
+      fragmentShader:'uniform float uTime;varying vec3 vPos;varying vec3 vNormal;void main(){float x=clamp(vPos.x*.15+.5,0.,1.);float y=clamp(vPos.y*.11+.52,0.,1.);vec3 emerald=vec3(.20,.66,.49);vec3 mint=vec3(.35,.84,.64);vec3 lilac=vec3(.65,.57,.91);vec3 rose=vec3(.81,.50,.68);vec3 left=mix(emerald,mint,smoothstep(.0,.52,x));vec3 right=mix(lilac,rose,smoothstep(.5,1.,x));vec3 col=mix(left,right,smoothstep(.40,.78,x));col=mix(col,vec3(.90,1.0,.82),smoothstep(.72,1.,y)*.16);float edge=.80+.20*abs(vNormal.z);float pulse=.96+.04*sin(uTime*.55+vPos.y*.55);gl_FragColor=vec4(col*edge*pulse,.92);}'
     });
     new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb',g=>{
       let src=null;g.scene.traverse(n=>{if(!src&&n.isMesh&&n.geometry)src=n});if(!src)throw new Error('mesh missing');
       const geo=src.geometry.clone();geo.computeBoundingBox();
       const size=new THREE.Vector3(),center=new THREE.Vector3();geo.boundingBox.getSize(size);geo.boundingBox.getCenter(center);
-      geo.translate(-center.x,-center.y-size.y*.10,-center.z);
+      geo.translate(-center.x,-center.y-size.y*.15,-center.z);
+
+      const depthMat=new THREE.MeshBasicMaterial({
+        colorWrite:false,
+        depthWrite:true,
+        depthTest:true,
+        side:THREE.FrontSide,
+        polygonOffset:true,
+        polygonOffsetFactor:1,
+        polygonOffsetUnits:1
+      });
+      const depthShell=new THREE.Mesh(geo,depthMat);
+      depthShell.renderOrder=0;
+      rig.add(depthShell);
+
       const m=wire();mats.push(m);
-      const wm=new THREE.Mesh(geo,m);wm.scale.setScalar(1.002);rig.add(wm);
+      const wm=new THREE.Mesh(geo,m);wm.scale.setScalar(1.0015);wm.renderOrder=1;rig.add(wm);
       rig.scale.setScalar(2.88/Math.max(size.x,size.y));rig.rotation.x=-.035;load.classList.add('hide');
     },undefined,()=>load.textContent='3D HUMAN SCAN UNAVAILABLE');
     const resize=()=>{const r=holder.getBoundingClientRect();renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()};
