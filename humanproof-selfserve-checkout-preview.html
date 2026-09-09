@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Self-Serve Checkout Preview</title>
+<meta name="theme-color" content="#050a12">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050a12;color:#edf8ff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}.wrap{width:min(1080px,calc(100% - 28px));margin:auto}.top{padding:18px 0;border-bottom:1px solid rgba(255,255,255,.07);background:#07111b}.brand{font-weight:900;letter-spacing:.08em}.brand small{display:block;color:#6f8ba0;font-size:9px;margin-top:4px}.hero{padding:54px 0 70px;background:radial-gradient(circle at 80% 12%,rgba(126,93,255,.16),transparent 30%),linear-gradient(180deg,#040912,#081520)}.status{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid rgba(95,237,203,.22);border-radius:999px;color:#82f0d4;background:rgba(80,220,180,.06);font-size:10px;font-weight:900;letter-spacing:.11em}.status i{width:7px;height:7px;border-radius:50%;background:#76efcb;box-shadow:0 0 14px #76efcb}.hero h1{margin:18px 0 9px;font-size:clamp(36px,6vw,64px);line-height:1;letter-spacing:-.045em}.hero p{max-width:720px;color:#91a8b8;line-height:1.65}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-top:30px}.card{border:1px solid rgba(103,231,255,.15);border-radius:24px;background:linear-gradient(145deg,rgba(10,25,40,.98),rgba(5,13,23,.98));box-shadow:0 28px 80px rgba(0,0,0,.28);padding:24px}.card h2{margin:0 0 6px;font-size:24px}.muted{color:#7891a5;font-size:13px;line-height:1.55}.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}.method{border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:14px;background:rgba(255,255,255,.025);cursor:pointer;color:#dcecf5;font-weight:800}.method.active{border-color:rgba(96,235,255,.55);background:rgba(73,214,246,.08);box-shadow:0 0 0 1px rgba(96,235,255,.12) inset}.paybox{border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px;background:#050d16}.row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.055)}.row:last-child{border-bottom:0}.lab{color:#6f879b;font-size:11px;font-weight:800}.val{font-weight:850;word-break:break-all}.copy{border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.03);color:#bfeaf4;padding:8px 10px;font-weight:800;cursor:pointer}.ref{margin-top:18px}.ref label{display:block;color:#7f98aa;font-size:11px;font-weight:800;margin-bottom:7px}.ref input{width:100%;height:48px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:#06101a;color:#fff;padding:0 13px;outline:none}.cta{width:100%;margin-top:12px;height:50px;border:0;border-radius:13px;background:linear-gradient(135deg,#57e1ef,#8a80f6);color:#031018;font-weight:950;cursor:pointer}.note{margin-top:11px;color:#71899a;font-size:11px;line-height:1.5}.sideTitle{color:#7cebdc;font-size:10px;font-weight:900;letter-spacing:.13em}.steps{display:grid;gap:12px;margin-top:16px}.step{padding:15px;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025)}.step b{display:block;margin-bottom:4px}.step span{color:#7f97a9;font-size:12px;line-height:1.5}.warn{margin-top:16px;padding:14px;border-radius:14px;border:1px solid rgba(255,194,96,.22);background:rgba(255,174,61,.055);color:#c4a77b;font-size:11px;line-height:1.55}.result{display:none;margin-top:14px;padding:13px 14px;border-radius:13px;border:1px solid rgba(110,236,205,.24);background:rgba(82,225,188,.06);color:#8ef1d6;font-size:12px;font-weight:800}.preview{margin-top:18px;text-align:center;color:#60788a;font-size:9px;letter-spacing:.14em}@media(max-width:760px){.grid{grid-template-columns:1fr}.methods{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr auto}.lab{grid-column:1/-1}.card{padding:18px}.hero{padding-top:38px}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap brand">NEXUSNOVA HUMANPROOF<small>VERIFIED ACTION • SELF-SERVE CHECKOUT PREVIEW</small></div></div>
+<main class="hero"><div class="wrap">
+<span class="status"><i></i>HUMAN PRESENCE CONFIRMED</span>
+<h1>Complete payment.<br>Unlock your verified action.</h1>
+<p>Verification ke baad user isi screen par payment method choose karega. Email par payment request bhejne ki zaroorat nahi hogi.</p>
+<div class="grid">
+<section class="card">
+<h2>Pay securely</h2><div class="muted">Choose a receiving method, transfer the required amount, then enter your transaction/reference ID.</div>
+<div class="methods"><button class="method active" data-method="easypaisa">EasyPaisa</button><button class="method" data-method="ubl">UBL Bank</button></div>
+<div class="paybox" id="paybox"></div>
+<div class="ref"><label for="ref">TRANSACTION / REFERENCE ID</label><input id="ref" autocomplete="off" placeholder="Enter transfer reference after payment"></div>
+<button class="cta" id="continue">I'VE PAID — CONTINUE</button>
+<div class="note">Amount/plan pricing abhi intentionally lock nahi ki gayi. Final pricing tumhari approval ke baad add hogi.</div>
+<div class="result" id="result">Payment reference captured. Production me yahan server-side payment confirmation chalegi; confirmation ke baghair receipt/API key issue nahi hogi.</div>
+</section>
+<aside class="card">
+<div class="sideTitle">WHAT HAPPENS NEXT</div>
+<div class="steps"><div class="step"><b>1. HumanProof complete</b><span>Live-human challenge complete hote hi checkout open.</span></div><div class="step"><b>2. Payment on same page</b><span>EasyPaisa ya UBL details copy karke transfer. No payment email loop.</span></div><div class="step"><b>3. Server confirmation</b><span>Payment provider/merchant confirmation milne ke baad status paid.</span></div><div class="step"><b>4. Instant entitlement</b><span>Personal: verified receipt. Business/Enterprise: receipt + dashboard/API entitlement according to paid plan.</span></div></div>
+<div class="warn"><b>Important:</b> normal bank/EasyPaisa transfer ko browser khud trustworthy tareeqe se verify nahi kar sakta. Automatic API-key activation ke liye merchant/gateway webhook ya bank/payment API chahiye. Preview fake “payment successful” claim nahi karta.</div>
+</aside>
+</div>
+<div class="preview">NOINDEX PREVIEW • PRODUCTION HUMANPROOF UNCHANGED</div>
+</div></main>
+<script>
+const methods={easypaisa:{name:'EasyPaisa',title:'FAHAD HUSSAIN',iban:'PK93TMFB0000000015291198'},ubl:{name:'UBL Bank',title:'FAHAD HUSSAIN',iban:'PK46UNIL0109000324792142'}};
+let current='easypaisa';const box=document.getElementById('paybox');
+function render(){const m=methods[current];box.innerHTML=`<div class="row"><span class="lab">METHOD</span><span class="val">${m.name}</span><span></span></div><div class="row"><span class="lab">ACCOUNT TITLE</span><span class="val">${m.title}</span><button class="copy" data-copy="${m.title}">COPY</button></div><div class="row"><span class="lab">IBAN</span><span class="val">${m.iban}</span><button class="copy" data-copy="${m.iban}">COPY</button></div>`;box.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);const old=b.textContent;b.textContent='COPIED';setTimeout(()=>b.textContent=old,1200)}catch(e){}})}
+document.querySelectorAll('.method').forEach(b=>b.onclick=()=>{current=b.dataset.method;document.querySelectorAll('.method').forEach(x=>x.classList.toggle('active',x===b));render()});
+document.getElementById('continue').onclick=()=>{const v=document.getElementById('ref').value.trim();if(!v){document.getElementById('ref').focus();return}document.getElementById('result').style.display='block'};render();
+</script>
+</body></html>
