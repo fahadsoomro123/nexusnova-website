@@ -29,3 +29,33 @@ new MutationObserver(records=>{
     }
   }
 }).observe(document.documentElement,{childList:true,subtree:true});
+
+const OTA23_ID='nx-hub-ota-proof-23';
+function showOta23HubProof(){
+  if(document.getElementById(OTA23_ID))return;
+  const badge=document.createElement('div');
+  badge.id=OTA23_ID;
+  badge.textContent='NOVA HUB · OTA 23 LIVE';
+  Object.assign(badge.style,{
+    position:'fixed',
+    top:'calc(env(safe-area-inset-top, 0px) + 10px)',
+    right:'10px',
+    zIndex:'2147483647',
+    padding:'8px 11px',
+    borderRadius:'999px',
+    background:'#ffd826',
+    color:'#111',
+    font:'900 11px/1 system-ui,-apple-system,Segoe UI,sans-serif',
+    letterSpacing:'.45px',
+    boxShadow:'0 5px 18px rgba(0,0,0,.42)',
+    border:'1px solid rgba(255,255,255,.78)',
+    pointerEvents:'none'
+  });
+  document.body.appendChild(badge);
+  setTimeout(()=>badge.remove(),60000);
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',showOta23HubProof,{once:true});
+}else{
+  showOta23HubProof();
+}
