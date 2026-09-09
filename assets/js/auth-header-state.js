@@ -3,20 +3,22 @@
 
   // Homepage HumanProof flagship bootstrap. main.js loads this module on every page,
   // so keep the bootstrap before the auth-marker early return and guard it to Home only.
+  // Loader markers are intentionally different from the mounted-section marker used
+  // inside humanproof-home.js, otherwise the loader can mistake itself for the hero.
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   if(page==='index.html'&&typeof document?.querySelector==='function'&&document.head){
-    if(!document.querySelector('link[data-humanproof-home]')){
+    if(!document.querySelector('link[data-humanproof-loader]')){
       const style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='assets/css/humanproof-home.css?v=20260909-1';
-      style.dataset.humanproofHome='';
+      style.href='assets/css/humanproof-home.css?v=20260909-2';
+      style.dataset.humanproofLoader='';
       document.head.appendChild(style);
     }
-    if(!document.querySelector('script[data-humanproof-home]')){
+    if(!document.querySelector('script[data-humanproof-loader]')){
       const script=document.createElement('script');
-      script.src='assets/js/humanproof-home.js?v=20260909-1';
+      script.src='assets/js/humanproof-home.js?v=20260909-2';
       script.defer=true;
-      script.dataset.humanproofHome='';
+      script.dataset.humanproofLoader='';
       document.head.appendChild(script);
     }
   }
