@@ -7,8 +7,10 @@
   if(!canvas||!holder||!load)return;
 
   try{
-    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js');
-    const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js');
+    // esm.sh rewrites GLTFLoader's internal `three` dependency to a browser-safe URL,
+    // avoiding bare-module failures in ordinary static GitHub Pages HTML.
+    const THREE=await import('https://esm.sh/three@0.180.0');
+    const {GLTFLoader}=await import('https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js');
 
     const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
