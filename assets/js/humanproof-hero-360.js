@@ -1,4 +1,4 @@
-// NexusNova HumanProof hero — head-only geometry with responsive standard camera framing.
+// NexusNova HumanProof hero — approved sci-fi mesh treatment with responsive standard camera framing.
 // 3D head source: Lee Perry-Smith model used by three.js examples (CC BY 3.0).
 (async()=>{
   const canvas=document.getElementById('nnHumanProof360');
@@ -21,8 +21,21 @@
     const rig=new THREE.Group();
     scene.add(rig);
 
+    // Approved preview lighting: emerald core, violet rim and magenta accent.
+    const key=new THREE.PointLight(0x62f3bf,18,8);
+    key.position.set(-2.3,1.8,3);
+    scene.add(key);
+    const rim=new THREE.PointLight(0xb58cff,13,7);
+    rim.position.set(2.2,1.0,2);
+    scene.add(rim);
+    const accent=new THREE.PointLight(0xe55aaa,7,7);
+    accent.position.set(0,-1,2.5);
+    scene.add(accent);
+    scene.add(new THREE.AmbientLight(0xffffff,2.1));
+
     let modelMetrics=null;
-    const materials=[];
+    const shaderMaterials=[];
+    const disposableMaterials=[];
 
     const trimGeometry=(sourceGeo,cutY)=>{
       const source=sourceGeo.toNonIndexed();
@@ -41,44 +54,46 @@
       return geometry;
     };
 
-    const wireMaterial=(alpha=.96)=>new THREE.ShaderMaterial({
-      wireframe:true,
-      transparent:true,
-      depthTest:true,
-      depthWrite:false,
-      blending:alpha<.5?THREE.AdditiveBlending:THREE.NormalBlending,
-      uniforms:{uTime:{value:0},uAlpha:{value:alpha}},
-      vertexShader:`
-        varying vec3 vPos;
-        varying vec3 vNormal;
-        void main(){
-          vPos=position;
-          vNormal=normalize(normalMatrix*normal);
-          gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
-        }
-      `,
-      fragmentShader:`
-        uniform float uTime;
-        uniform float uAlpha;
-        varying vec3 vPos;
-        varying vec3 vNormal;
-        void main(){
-          float x=clamp(vPos.x*.14+.50,0.,1.);
-          float y=clamp(vPos.y*.10+.50,0.,1.);
-          vec3 emerald=vec3(.18,.60,.45);
-          vec3 mint=vec3(.34,.84,.64);
-          vec3 lilac=vec3(.65,.57,.91);
-          vec3 rose=vec3(.82,.50,.68);
-          vec3 a=mix(emerald,mint,smoothstep(.0,.50,x));
-          vec3 b=mix(lilac,rose,smoothstep(.50,1.,x));
-          vec3 col=mix(a,b,smoothstep(.42,.78,x));
-          col=mix(col,vec3(.90,1.0,.82),smoothstep(.72,1.,y)*.14);
-          float facing=.72+.28*abs(vNormal.z);
-          float pulse=.96+.04*sin(uTime*.55+y*5.0);
-          gl_FragColor=vec4(col*facing*pulse,uAlpha);
-        }
-      `
-    });
+    const sciWireMaterial=(alpha=.98)=>{
+      const material=new THREE.ShaderMaterial({
+        wireframe:true,
+        transparent:true,
+        depthTest:true,
+        depthWrite:false,
+        blending:alpha<.35?THREE.AdditiveBlending:THREE.NormalBlending,
+        uniforms:{uTime:{value:0},uAlpha:{value:alpha}},
+        vertexShader:`
+          varying vec3 vPos;
+          varying vec3 vNormal;
+          void main(){
+            vPos=position;
+            vNormal=normalize(normalMatrix*normal);
+            gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+          }
+        `,
+        fragmentShader:`
+          uniform float uTime;
+          uniform float uAlpha;
+          varying vec3 vPos;
+          varying vec3 vNormal;
+          void main(){
+            float x=clamp(vPos.x*.22+.50,0.,1.);
+            float y=clamp(vPos.y*.17+.50,0.,1.);
+            vec3 emerald=vec3(.05,.95,.62);
+            vec3 violet=vec3(.52,.26,1.0);
+            vec3 magenta=vec3(1.0,.14,.62);
+            vec3 col=mix(emerald,violet,smoothstep(.28,.72,x));
+            col=mix(col,magenta,smoothstep(.68,1.,x)*.75);
+            float pulse=.84+.16*sin(uTime*1.7+y*7.0);
+            float fresnel=.65+.55*pow(1.-abs(vNormal.z),1.8);
+            gl_FragColor=vec4(col*pulse*fresnel,uAlpha);
+          }
+        `
+      });
+      shaderMaterials.push(material);
+      disposableMaterials.push(material);
+      return material;
+    };
 
     const fitCamera=()=>{
       const rect=canvas.getBoundingClientRect();
@@ -91,14 +106,10 @@
         const vFov=THREE.MathUtils.degToRad(camera.fov);
         const tanV=Math.tan(vFov/2);
         const tanH=tanV*camera.aspect;
-
-        // Standard product-viewer composition: the subject owns most of the frame,
-        // while preserving safe margins through a full 360-degree Y rotation.
         const fill=width<=520?.78:width<=980?.77:.80;
         const distanceV=modelMetrics.halfHeight/(tanV*fill);
         const distanceH=modelMetrics.halfTurnWidth/(tanH*fill);
         const distance=Math.max(distanceV,distanceH)*1.025;
-
         camera.position.set(0,.015,distance);
         camera.near=Math.max(.01,distance-modelMetrics.radius*2.1);
         camera.far=distance+modelMetrics.radius*3.2;
@@ -125,13 +136,12 @@
         const size0=new THREE.Vector3();
         box0.getSize(size0);
 
-        // Keep the complete cranium, face and useful neck while removing the wide
-        // shoulder base that previously made the real head look tiny in wide layouts.
+        // Preserve the approved head-only cut and standard responsive framing.
         const geometry=trimGeometry(geometry0,box0.min.y+size0.y*.30);
+        geometry0.dispose();
         geometry.computeBoundingBox();
-        const box=geometry.boundingBox;
         const center=new THREE.Vector3();
-        box.getCenter(center);
+        geometry.boundingBox.getCenter(center);
         geometry.translate(-center.x,-center.y,-center.z);
         geometry.scale(1.045,1,.965);
         geometry.computeBoundingBox();
@@ -145,26 +155,42 @@
           radius:(geometry.boundingSphere?.radius||1)
         };
 
-        // Opaque pearl shell hides back-side wires and preserves solid head depth.
-        const shell=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
-          color:0xf1fff7,
+        const shellMaterial=new THREE.MeshPhysicalMaterial({
+          color:0xeafff5,
+          roughness:.22,
+          metalness:.08,
+          transmission:.06,
+          transparent:true,
+          opacity:.80,
+          clearcoat:1,
+          clearcoatRoughness:.18,
           side:THREE.DoubleSide,
           depthWrite:true,
           depthTest:true
-        }));
-        rig.add(shell);
+        });
+        disposableMaterials.push(shellMaterial);
+        rig.add(new THREE.Mesh(geometry,shellMaterial));
 
-        const wire=wireMaterial(.96);
-        materials.push(wire);
-        const wireMesh=new THREE.Mesh(geometry,wire);
-        wireMesh.scale.setScalar(1.0017);
-        rig.add(wireMesh);
+        const wire=new THREE.Mesh(geometry,sciWireMaterial(.98));
+        wire.scale.setScalar(1.002);
+        rig.add(wire);
 
-        const glow=wireMaterial(.16);
-        materials.push(glow);
-        const glowMesh=new THREE.Mesh(geometry,glow);
-        glowMesh.scale.setScalar(1.006);
-        rig.add(glowMesh);
+        const glow=new THREE.Mesh(geometry,sciWireMaterial(.20));
+        glow.scale.setScalar(1.010);
+        rig.add(glow);
+
+        const pointsMaterial=new THREE.PointsMaterial({
+          color:0xb46cff,
+          size:.006,
+          transparent:true,
+          opacity:.24,
+          depthWrite:false,
+          blending:THREE.AdditiveBlending
+        });
+        disposableMaterials.push(pointsMaterial);
+        const points=new THREE.Points(geometry,pointsMaterial);
+        points.scale.setScalar(1.013);
+        rig.add(points);
 
         rig.scale.setScalar(1);
         rig.rotation.set(0,0,0);
@@ -197,7 +223,7 @@
         const t=clock.getElapsedTime();
         rig.rotation.y=reduced?-.18:(t/48)*Math.PI*2;
         rig.position.y=reduced?0:Math.sin(t*.32)*.012;
-        materials.forEach(material=>material.uniforms.uTime.value=t);
+        shaderMaterials.forEach(material=>material.uniforms.uTime.value=t);
         renderer.render(scene,camera);
       }
       timer=window.setTimeout(draw,frameDelay);
@@ -215,7 +241,8 @@
       observer.disconnect();
       visibilityObserver.disconnect();
       renderer.dispose();
-      materials.forEach(material=>material.dispose());
+      disposableMaterials.forEach(material=>material.dispose());
+      rig.traverse(node=>{if(node.geometry)node.geometry.dispose();});
     },{once:true});
   }catch(error){
     console.warn('[HumanProof 360]',error);
