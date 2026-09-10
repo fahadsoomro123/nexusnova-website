@@ -14,6 +14,36 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
 .tool-card>h3{padding-right:68px}
 .tool-card>.nn-tool-symbol{position:absolute;top:20px;right:20px;margin:0}
 
+/* Fahad final visual polish — equal cards, readable social handles, clean footer. */
+.article-grid{grid-auto-rows:1fr!important;align-items:stretch!important}
+.article-grid>.article-card{grid-column:span 6!important;height:100%!important;min-height:190px!important;box-sizing:border-box!important}
+.category-grid{grid-auto-rows:1fr!important;align-items:stretch!important}
+.category-grid>.category-card{grid-column:span 4!important;height:100%!important;box-sizing:border-box!important}
+.home-tools{grid-auto-rows:1fr!important;align-items:stretch!important}
+.home-tools>.home-tool{grid-column:span 4!important;height:100%!important;box-sizing:border-box!important}
+.popular-grid{grid-auto-rows:1fr!important;align-items:stretch!important}
+.popular-grid>.popular-card{height:100%!important;box-sizing:border-box!important}
+
+/* Footer social labels were designed for the old dark palette. Keep the 3D icons,
+   but make every platform/handle label clearly readable on the current light UI. */
+.site-footer .footer-title[data-social-links]+.footer-links a::after{
+  color:#17483a!important;
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(34,119,93,.17)!important;
+  box-shadow:0 8px 22px rgba(42,104,85,.09),inset 0 1px 0 rgba(255,255,255,.96)!important;
+  opacity:1!important;
+  text-shadow:none!important;
+  font-weight:850!important;
+}
+.site-footer .footer-title[data-social-links]{color:#17483a!important}
+
+/* User-approved cleaner surface: remove the two bottom-right floating controls. */
+.nn-privacy-choice,.nn-consent,.nova-assistant-button,.nova-assistant-panel{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+@media(max-width:920px){
+  .category-grid>.category-card{grid-column:span 6!important}
+  .home-tools>.home-tool{grid-column:span 6!important}
+}
 @media(max-width:720px){
   /* The hero glow is decorative. Removing it on small screens prevents the
      absolute pseudo-element from registering as a layout shift in Lighthouse. */
@@ -21,5 +51,8 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
   #local-clock{min-height:4.75em}
   .tool-card>h3{padding-right:60px}
   .tool-card>.nn-tool-symbol{top:16px;right:16px}
+}
+@media(max-width:680px){
+  .article-grid>.article-card,.category-grid>.category-card,.home-tools>.home-tool{grid-column:1!important;min-height:170px!important}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nn-reveal,.nn-reveal.nn-visible{opacity:1;transform:none;transition:none}}
