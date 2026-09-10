@@ -1,6 +1,6 @@
-import './travel-phone-layout-v30.js';
+import './travel-phone-layout-v31.js';
 
-// V30 is the only effective phone-height owner. Older layout modules must not be re-imported here.
+// V31 is the only effective phone-height owner. Older layout modules must not be re-imported here.
 // NexusNova Travel v10 route-exit isolation.
 // Travel intentionally locks the document while its fullscreen shell is mounted.
 // Physical Android proof showed that stale Travel state can survive a route exit
@@ -17,8 +17,8 @@ const GLOBAL_CLASSES = Object.freeze([
   'nn-travel-v14-keyboard',
   'nn-travel-v15-keyboard',
   'nn-travel-v17-route-edit',
-  'nn-travel-v30-active',
-  'nn-travel-v30-keyboard'
+  'nn-travel-v31-active',
+  'nn-travel-v31-keyboard'
 ]);
 const ROOT_CLASSES = Object.freeze([
   'nn-v8-results-open',
