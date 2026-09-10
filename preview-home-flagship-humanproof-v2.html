@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova Flagship HumanProof Homepage Preview V2</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#f6fff9;overflow:hidden}
+iframe{display:block;width:100%;height:100%;border:0;opacity:0;transition:opacity .12s ease}
+iframe.ready{opacity:1}
+</style>
+</head>
+<body>
+<iframe id="preview" src="preview-home-flagship-humanproof-v1.html?v=4afb13f" title="NexusNova HumanProof homepage preview V2"></iframe>
+<script>
+const frame=document.getElementById('preview');
+frame.addEventListener('load',()=>{
+  const d=frame.contentDocument;
+  if(!d)return;
+  const style=d.createElement('style');
+  style.textContent=`
+    html,body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+    .wrap{width:min(1180px,calc(100% - 32px))!important}
+    .header{padding:14px 0 6px!important}
+    .nav{min-height:62px!important;padding:8px 12px 8px 14px!important;border-radius:21px!important}
+    .brandmark{width:38px!important;border-radius:12px!important;font-size:20px!important}
+    .brandcopy strong{font-size:13px!important;font-weight:800!important}
+    .links{gap:4px!important}
+    .links a{padding:9px 10px!important;border-radius:11px!important;font-size:11px!important;font-weight:700!important}
+
+    .hero{padding:34px 0 30px!important}
+    .hero-grid{grid-template-columns:minmax(0,.96fr) minmax(460px,1.04fr)!important;gap:34px!important;align-items:center!important}
+    .kicker{font-size:9px!important;letter-spacing:.13em!important;font-weight:800!important}
+    .kicker:before{width:22px!important}
+    .hero h1{max-width:560px!important;margin:15px 0 14px!important;font-size:clamp(44px,4.35vw,64px)!important;line-height:.96!important;letter-spacing:-.045em!important;font-weight:800!important}
+    .hero-copy{max-width:560px!important;font-size:15.5px!important;line-height:1.55!important}
+    .actions{gap:9px!important;margin-top:20px!important}
+    .btn{min-height:45px!important;padding:0 19px!important;border-radius:13px!important;font-size:12px!important;font-weight:800!important}
+    .trustline{gap:14px!important;margin-top:14px!important;font-size:9.5px!important;font-weight:700!important}
+    .commandbar{max-width:555px!important;margin-top:18px!important;padding:7px 7px 7px 16px!important;border-radius:16px!important}
+    .commandbar span{font-size:12.5px!important}
+    .commandbar b{min-width:110px!important;padding:11px!important;border-radius:11px!important;font-size:10.5px!important}
+
+    .visual-shell{min-height:500px!important;padding:27px!important;border-radius:34px!important}
+    .proof-card{min-height:444px!important;padding:19px 19px 16px!important;border-radius:25px!important}
+    .proof-top{font-size:9px!important;letter-spacing:.11em!important}
+    .proof-holder{height:344px!important;margin-top:12px!important;border-radius:22px!important}
+    .proof-status,.proof-meta{font-size:7px!important;letter-spacing:.1em!important}
+    .proof-status{left:14px!important;top:14px!important;padding:7px 9px!important}
+    .proof-meta{right:14px!important;bottom:13px!important}
+    .proof-labels{gap:6px!important;margin-top:9px!important}
+    .proof-labels span{padding:6px 8px!important;font-size:6.5px!important;letter-spacing:.09em!important}
+    .proof-caption{margin-top:7px!important;font-size:10.5px!important}
+    .proof-attribution{font-size:6.5px!important}
+
+    .receipt-section{padding:42px 0 60px!important}
+    .section-head{grid-template-columns:1fr 1.08fr!important;gap:34px!important;align-items:end!important;margin-bottom:22px!important}
+    .section-head h2{max-width:500px!important;margin:8px 0 0!important;font-size:clamp(32px,3.15vw,45px)!important;line-height:1.04!important;letter-spacing:-.035em!important;font-weight:800!important}
+    .section-head p{font-size:14px!important;line-height:1.58!important}
+    .sample-warning{padding:7px 10px!important;font-size:7.5px!important;letter-spacing:.12em!important}
+    .cert-note{margin-bottom:13px!important;font-size:8px!important;letter-spacing:.14em!important}
+    .cert-note span{padding:7px 10px!important}
+    .cert-stack{width:min(720px,78vw)!important;transform:rotateX(2deg) rotateY(-3deg) rotateZ(-.15deg)!important;filter:drop-shadow(0 22px 28px rgba(63,63,44,.17))!important}
+    .receipt-footnote{max-width:760px!important;margin:18px auto 0!important;font-size:12px!important;line-height:1.55!important}
+
+    @media(max-width:900px){
+      .wrap{width:min(760px,calc(100% - 24px))!important}
+      .links{display:none!important}
+      .hero{padding:25px 0 24px!important}
+      .hero-grid{grid-template-columns:1fr!important;gap:23px!important}
+      .hero h1{max-width:620px!important;font-size:clamp(40px,7.4vw,50px)!important;line-height:.98!important}
+      .hero-copy{max-width:650px!important}
+      .visual-shell{min-height:0!important;padding:18px!important;border-radius:28px!important}
+      .proof-card{min-height:414px!important}
+      .proof-holder{height:316px!important}
+      .receipt-section{padding:36px 0 52px!important}
+      .section-head{grid-template-columns:1fr!important;gap:11px!important;margin-bottom:20px!important}
+      .section-head h2{max-width:600px!important;font-size:34px!important;line-height:1.07!important}
+      .cert-stack{width:min(660px,92vw)!important;transform:none!important}
+    }
+
+    @media(max-width:560px){
+      .wrap{width:calc(100% - 20px)!important}
+      .header{padding:10px 0 4px!important}
+      .nav{min-height:56px!important;border-radius:18px!important}
+      .brandmark{width:34px!important;font-size:17px!important}
+      .brandcopy strong{font-size:12px!important}
+      .brandcopy small{font-size:6px!important}
+      .hero{padding:20px 0 20px!important}
+      .kicker{font-size:8px!important}
+      .hero h1{margin:12px 0 12px!important;font-size:clamp(34px,9.6vw,40px)!important;line-height:1!important;letter-spacing:-.035em!important}
+      .hero-copy{font-size:14.5px!important;line-height:1.52!important}
+      .actions{margin-top:16px!important}
+      .btn{min-height:43px!important;padding:0 14px!important;font-size:11.5px!important;border-radius:12px!important}
+      .trustline{font-size:8.5px!important;gap:10px!important}
+      .commandbar{margin-top:15px!important}
+      .visual-shell{padding:11px!important;border-radius:23px!important}
+      .proof-card{min-height:388px!important;padding:13px!important;border-radius:20px!important}
+      .proof-holder{height:296px!important;border-radius:18px!important}
+      .proof-top{font-size:8px!important}
+      .receipt-section{padding:32px 0 46px!important}
+      .section-head h2{font-size:29px!important;line-height:1.08!important}
+      .section-head p{font-size:13.5px!important}
+      .cert-note{font-size:7px!important}
+      .cert-stack{width:94vw!important}
+    }
+  `;
+  d.head.appendChild(style);
+  d.title='NexusNova Flagship HumanProof Homepage Preview V2';
+  frame.classList.add('ready');
+});
+</script>
+</body>
+</html>
