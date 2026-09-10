@@ -1,9 +1,9 @@
-/* HumanProof 360 hero stage — locked V20 framing in Emerald Mist */
+/* HumanProof 360 hero stage — responsive full-frame Emerald Mist presentation */
 .nn-proof-360-holder{
   position:relative;
-  flex:1;
-  min-height:430px;
-  margin:18px 0 12px;
+  flex:1 1 auto;
+  min-height:0;
+  margin:16px 0 10px;
   border:1px solid rgba(31,94,77,.12);
   border-radius:28px 44px 28px 44px;
   overflow:hidden;
@@ -26,26 +26,21 @@
   top:50%;
   transform:translate(-50%,-50%);
 }
-.nn-proof-360-holder::before{width:72%;aspect-ratio:1}
-.nn-proof-360-holder::after{width:52%;aspect-ratio:1;border-style:dashed;border-color:rgba(155,140,229,.22)}
+.nn-proof-360-holder::before{width:min(72%,360px);aspect-ratio:1}
+.nn-proof-360-holder::after{width:min(52%,260px);aspect-ratio:1;border-style:dashed;border-color:rgba(155,140,229,.22)}
 
-/* V20 used a portrait head viewer inside a larger presentation shell. */
+/* The 3D viewer now owns the whole available HumanProof frame. No nested portrait crop. */
 .nn-proof-360-viewer{
   position:absolute;
   z-index:2;
-  left:50%;
-  top:52%;
-  transform:translate(-50%,-50%);
-  width:min(74%,410px);
-  aspect-ratio:.86;
+  inset:0;
+  width:100%;
+  height:100%;
   overflow:hidden;
-  border:1px solid rgba(31,94,77,.16);
-  border-radius:22px;
+  border-radius:inherit;
   background:
-    radial-gradient(circle at 50% 43%,rgba(88,214,163,.14),transparent 50%),
-    radial-gradient(circle at 72% 72%,rgba(185,166,255,.12),transparent 44%),
-    rgba(249,255,251,.78);
-  box-shadow:0 0 36px rgba(88,214,163,.10),0 0 58px rgba(185,166,255,.08),inset 0 1px 0 rgba(255,255,255,.92);
+    radial-gradient(circle at 50% 43%,rgba(88,214,163,.12),transparent 50%),
+    radial-gradient(circle at 72% 72%,rgba(185,166,255,.10),transparent 44%);
 }
 #nnHumanProof360{
   position:absolute;
@@ -140,8 +135,7 @@
 }
 
 @media(max-width:980px){
-  .nn-proof-360-holder{min-height:470px}
-  .nn-proof-360-viewer{width:min(70%,390px)}
+  .nn-proof-360-holder{min-height:0}
 }
 
 @media(max-width:720px){
@@ -168,22 +162,25 @@
   .nn-home .nn-flagship-copy .hero-actions .btn{min-height:42px!important;padding:0 10px!important;font-size:11px!important;flex:none!important}
   .nn-home .nn-flagship-copy .hero-actions .btn:first-child{grid-column:1/-1}
   .nn-home .nn-flagship-copy .micro-status{display:none!important}
-  .nn-proof-360-holder{min-height:455px;margin:8px 0 9px;border-radius:26px 36px 26px 36px}
-  .nn-proof-360-viewer{width:min(72%,330px);top:51%}
+  .nn-proof-360-holder{min-height:0;margin:8px 0 9px;border-radius:22px 30px 22px 30px}
   .nn-proof-360-status{left:9px;top:9px;font-size:7px;padding:6px 8px}
   .nn-proof-360-meta{right:9px;bottom:8px;font-size:7px}
 }
 
 @media(max-width:520px){
   .nn-home .nn-flagship-copy h1{font-size:clamp(33px,9.7vw,39px)!important}
-  .nn-proof-360-holder{min-height:430px}
-  .nn-proof-360-viewer{width:min(74%,300px)}
+  .nn-home .nn-flagship-stage{min-height:370px!important}
+  .nn-home .nn-proof-card{inset:18px 12px 18px 14px!important;padding:14px!important}
+  .nn-home .nn-proof-360-holder{margin:10px 0 0!important;min-height:0!important}
+  .nn-home .nn-proof-labels,.nn-home .nn-proof-caption,.nn-home .nn-proof-attribution{display:none!important}
+  .nn-proof-360-holder::before{width:min(76%,260px)}
+  .nn-proof-360-holder::after{width:min(56%,190px)}
 }
 
 @media(max-width:390px){
   .nn-home .nn-flagship-copy .hero-actions{grid-template-columns:1fr!important}
   .nn-home .nn-flagship-copy .hero-actions .btn:first-child{grid-column:auto}
-  .nn-proof-360-holder{min-height:410px}
+  .nn-home .nn-flagship-stage{min-height:350px!important}
 }
 
 @media(prefers-reduced-motion:reduce){
