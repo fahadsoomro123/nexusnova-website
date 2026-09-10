@@ -1,8 +1,8 @@
-/* HumanProof 360 hero stage — Emerald Mist visual language */
+/* HumanProof 360 hero stage — locked V20 framing in Emerald Mist */
 .nn-proof-360-holder{
   position:relative;
   flex:1;
-  min-height:285px;
+  min-height:430px;
   margin:18px 0 12px;
   border:1px solid rgba(31,94,77,.12);
   border-radius:28px 44px 28px 44px;
@@ -28,6 +28,25 @@
 }
 .nn-proof-360-holder::before{width:72%;aspect-ratio:1}
 .nn-proof-360-holder::after{width:52%;aspect-ratio:1;border-style:dashed;border-color:rgba(155,140,229,.22)}
+
+/* V20 used a portrait head viewer inside a larger presentation shell. */
+.nn-proof-360-viewer{
+  position:absolute;
+  z-index:2;
+  left:50%;
+  top:52%;
+  transform:translate(-50%,-50%);
+  width:min(74%,410px);
+  aspect-ratio:.86;
+  overflow:hidden;
+  border:1px solid rgba(31,94,77,.16);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(88,214,163,.14),transparent 50%),
+    radial-gradient(circle at 72% 72%,rgba(185,166,255,.12),transparent 44%),
+    rgba(249,255,251,.78);
+  box-shadow:0 0 36px rgba(88,214,163,.10),0 0 58px rgba(185,166,255,.08),inset 0 1px 0 rgba(255,255,255,.92);
+}
 #nnHumanProof360{
   position:absolute;
   inset:0;
@@ -40,9 +59,9 @@
 .nn-proof-360-scan{
   position:absolute;
   z-index:3;
-  left:8%;
-  right:8%;
-  top:11%;
+  left:2%;
+  right:2%;
+  top:8%;
   height:2px;
   pointer-events:none;
   opacity:.72;
@@ -58,7 +77,7 @@
   place-items:center;
   padding:20px;
   color:#3f7d68;
-  background:linear-gradient(145deg,rgba(248,255,250,.92),rgba(249,247,255,.88));
+  background:linear-gradient(145deg,rgba(248,255,250,.96),rgba(249,247,255,.93));
   font-size:10px;
   font-weight:900;
   letter-spacing:.14em;
@@ -69,15 +88,15 @@
 .nn-proof-360-status{
   position:absolute;
   z-index:4;
-  left:14px;
-  top:14px;
+  left:12px;
+  top:12px;
   display:inline-flex;
   align-items:center;
   gap:7px;
   padding:7px 9px;
   border:1px solid rgba(31,94,77,.12);
   border-radius:999px;
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.78);
   backdrop-filter:blur(12px);
   color:#3f7564;
   font-size:8px;
@@ -95,8 +114,8 @@
 .nn-proof-360-meta{
   position:absolute;
   z-index:4;
-  right:14px;
-  bottom:12px;
+  right:12px;
+  bottom:10px;
   color:#6b837b;
   font-size:8px;
   font-weight:850;
@@ -115,22 +134,58 @@
 .nn-proof-360-holder.is-error .nn-proof-360-scan{display:none}
 
 @keyframes nnHpScan{
-  0%,8%{top:12%;opacity:.28}
-  48%,54%{top:86%;opacity:.92}
-  92%,100%{top:12%;opacity:.38}
+  0%,8%{top:8%;opacity:.28}
+  48%,54%{top:90%;opacity:.92}
+  92%,100%{top:8%;opacity:.38}
 }
 
 @media(max-width:980px){
-  .nn-proof-360-holder{min-height:320px}
+  .nn-proof-360-holder{min-height:470px}
+  .nn-proof-360-viewer{width:min(70%,390px)}
 }
+
 @media(max-width:720px){
-  .nn-proof-360-holder{min-height:250px;margin:12px 0 10px;border-radius:24px 34px 24px 34px}
-  .nn-proof-360-status{left:10px;top:10px;font-size:7px}
-  .nn-proof-360-meta{right:10px;bottom:9px;font-size:7px}
+  .nn-home .nn-flagship-hero{padding-top:24px!important;padding-bottom:18px!important}
+  .nn-home .nn-flagship-grid{grid-template-columns:1fr!important;gap:18px!important}
+  .nn-home .nn-flagship-copy>.kicker{display:none!important}
+  .nn-home .nn-flagship-copy h1{
+    margin:0 0 12px!important;
+    max-width:none!important;
+    font-size:clamp(34px,10vw,42px)!important;
+    line-height:.98!important;
+    letter-spacing:-.05em!important;
+  }
+  .nn-home .nn-flagship-copy .hero-copy{
+    margin:0 0 14px!important;
+    max-width:none!important;
+    font-size:14px!important;
+    line-height:1.55!important;
+  }
+  .nn-home .nn-flagship-copy .home-search{margin-top:0!important;border-radius:16px!important;padding:5px!important}
+  .nn-home .nn-flagship-copy .home-search input{min-height:42px!important;padding:9px 11px!important;font-size:13px!important}
+  .nn-home .nn-flagship-copy .home-search .btn{min-height:42px!important;padding:0 13px!important;font-size:12px!important}
+  .nn-home .nn-flagship-copy .hero-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:10px!important}
+  .nn-home .nn-flagship-copy .hero-actions .btn{min-height:42px!important;padding:0 10px!important;font-size:11px!important;flex:none!important}
+  .nn-home .nn-flagship-copy .hero-actions .btn:first-child{grid-column:1/-1}
+  .nn-home .nn-flagship-copy .micro-status{display:none!important}
+  .nn-proof-360-holder{min-height:455px;margin:8px 0 9px;border-radius:26px 36px 26px 36px}
+  .nn-proof-360-viewer{width:min(72%,330px);top:51%}
+  .nn-proof-360-status{left:9px;top:9px;font-size:7px;padding:6px 8px}
+  .nn-proof-360-meta{right:9px;bottom:8px;font-size:7px}
 }
+
 @media(max-width:520px){
-  .nn-proof-360-holder{min-height:220px}
+  .nn-home .nn-flagship-copy h1{font-size:clamp(33px,9.7vw,39px)!important}
+  .nn-proof-360-holder{min-height:430px}
+  .nn-proof-360-viewer{width:min(74%,300px)}
 }
+
+@media(max-width:390px){
+  .nn-home .nn-flagship-copy .hero-actions{grid-template-columns:1fr!important}
+  .nn-home .nn-flagship-copy .hero-actions .btn:first-child{grid-column:auto}
+  .nn-proof-360-holder{min-height:410px}
+}
+
 @media(prefers-reduced-motion:reduce){
   .nn-proof-360-scan{animation:none;top:50%;opacity:.22}
 }
