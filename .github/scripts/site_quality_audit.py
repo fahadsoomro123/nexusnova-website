@@ -157,6 +157,7 @@ def main() -> None:
     indexable = 0
     mapped = 0
     theme_covered = 0
+    indexable_theme_covered = 0
     titles: dict[str, list[str]] = {}
     canonicals: dict[str, list[str]] = {}
 
@@ -201,7 +202,9 @@ def main() -> None:
         )
         if has_theme:
             theme_covered += 1
-        elif rel not in SKIP_HTML:
+            if is_indexable:
+                indexable_theme_covered += 1
+        elif is_indexable:
             severe.append(f'{rel}: missing canonical NexusNova theme coverage')
 
         title = parser.clean_title
@@ -229,8 +232,8 @@ def main() -> None:
                     severe.append(f'{rel}: canonical mismatch: {parser.canonical} != {canonical_expected}')
                 if not in_sitemap:
                     severe.append(f'{rel}: indexable canonical missing from sitemap set: {parser.canonical}')
-        elif parser.canonical and parser.canonical in sitemap_urls:
-            severe.append(f'{rel}: noindex page is present in sitemap: {parser.canonical}')
+        elif canonical_expected in sitemap_urls:
+            severe.append(f'{rel}: noindex page URL is present in sitemap: {canonical_expected}')
 
         if parser.h1_count != 1 and rel not in {'register.html'}:
             warnings.append(f'{rel}: H1 count is {parser.h1_count}, expected 1')
@@ -297,6 +300,7 @@ def main() -> None:
         'site': SITE,
         'html_pages_scanned': len(pages),
         'theme_covered': theme_covered,
+        'indexable_theme_covered': indexable_theme_covered,
         'indexable_pages': indexable,
         'indexable_pages_in_sitemaps': mapped,
         'sitemap_files': sitemap_files,
@@ -310,14 +314,15 @@ def main() -> None:
     report = [
         'NEXUSNOVA FULL WEBSITE MAP + SEO AUDIT',
         f'HTML pages scanned: {len(pages)}',
-        f'Pages with canonical premium theme coverage: {theme_covered}/{len(pages)}',
+        f'Indexable pages with canonical premium theme coverage: {indexable_theme_covered}/{indexable}',
+        f'All HTML pages with theme coverage (including noindex previews): {theme_covered}/{len(pages)}',
         f'Indexable pages: {indexable}',
         f'Indexable pages mapped in sitemap set: {mapped}/{indexable}',
         f'Sitemap files scanned: {len(sitemap_files)}',
         f'Unique sitemap URLs: {len(sitemap_urls)}',
         f'Severe findings: {len(severe)}',
         f'Warnings: {len(warnings)}',
-        'Scope note: ota/, downloads/ and local nexusnova-dev-ai/ payloads are excluded from public-site SEO checks.',
+        'Scope note: ota/, downloads/ and local nexusnova-dev-ai/ payloads are excluded from public-site SEO checks. Noindex preview pages are scanned for structural defects but do not have to use the production visual theme.',
         '',
         'SEVERE FINDINGS',
         *(severe or ['None']),
