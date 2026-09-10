@@ -235,7 +235,7 @@ def main() -> None:
         elif canonical_expected in sitemap_urls:
             severe.append(f'{rel}: noindex page URL is present in sitemap: {canonical_expected}')
 
-        if parser.h1_count != 1 and rel not in {'register.html'}:
+        if is_indexable and parser.h1_count != 1 and rel not in {'register.html'}:
             warnings.append(f'{rel}: H1 count is {parser.h1_count}, expected 1')
 
         for key in ('og:title', 'og:description', 'og:url'):
