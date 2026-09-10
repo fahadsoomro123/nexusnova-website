@@ -1,4 +1,4 @@
-// NexusNova HumanProof hero — locked V20 head-only geometry in Emerald Mist.
+// NexusNova HumanProof hero — head-only geometry with responsive full-frame camera fitting.
 // 3D head source: Lee Perry-Smith model used by three.js examples (CC BY 3.0).
 (async()=>{
   const canvas=document.getElementById('nnHumanProof360');
@@ -18,11 +18,12 @@
 
     const scene=new THREE.Scene();
     const camera=new THREE.PerspectiveCamera(27,1,.01,100);
-    camera.position.set(0,.03,4.8);
     const rig=new THREE.Group();
     scene.add(rig);
 
+    let modelRadius=0;
     const materials=[];
+
     const trimGeometry=(sourceGeo,cutY)=>{
       const source=sourceGeo.toNonIndexed();
       const position=source.getAttribute('position');
@@ -79,12 +80,38 @@
       `
     });
 
+    const fitCamera=()=>{
+      const rect=canvas.getBoundingClientRect();
+      const width=Math.max(1,Math.round(rect.width));
+      const height=Math.max(1,Math.round(rect.height));
+      renderer.setSize(width,height,false);
+      camera.aspect=width/height;
+
+      if(modelRadius>0){
+        const verticalFov=THREE.MathUtils.degToRad(camera.fov);
+        const horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*camera.aspect);
+        const limitingFov=Math.min(verticalFov,horizontalFov);
+        const padding=width<=520?1.07:1.09;
+        const distance=(modelRadius*padding)/Math.sin(limitingFov/2);
+        camera.position.set(0,.02,distance);
+        camera.near=Math.max(.01,distance-modelRadius*2.25);
+        camera.far=distance+modelRadius*3;
+      }else{
+        camera.position.set(0,.02,4.8);
+      }
+      camera.updateProjectionMatrix();
+    };
+
     new GLTFLoader().load(
       'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb',
       gltf=>{
         let source=null;
         gltf.scene.traverse(node=>{if(!source&&node.isMesh&&node.geometry)source=node;});
-        if(!source)throw new Error('No mesh in HumanProof head model');
+        if(!source){
+          load.textContent='3D HUMAN SCAN UNAVAILABLE';
+          holder.classList.add('is-error');
+          return;
+        }
 
         const geometry0=source.geometry.clone();
         geometry0.computeBoundingBox();
@@ -92,18 +119,18 @@
         const size0=new THREE.Vector3();
         box0.getSize(size0);
 
-        // Locked V20 rule: remove the lower ~22.5% so neck/shoulders cannot return.
+        // Remove the lower neck/shoulder region while keeping the complete face and cranium.
         const geometry=trimGeometry(geometry0,box0.min.y+size0.y*.225);
         geometry.computeBoundingBox();
         const box=geometry.boundingBox;
-        const size=new THREE.Vector3();
         const center=new THREE.Vector3();
-        box.getSize(size);
         box.getCenter(center);
         geometry.translate(-center.x,-center.y,-center.z);
         geometry.scale(1.045,1,.965);
+        geometry.computeBoundingSphere();
+        modelRadius=(geometry.boundingSphere?.radius||1)*1.012;
 
-        // Opaque pearl shell hides back-side wires, matching the locked V20 depth behavior.
+        // Opaque pearl shell hides back-side wires and preserves solid head depth.
         const shell=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
           color:0xf1fff7,
           side:THREE.DoubleSide,
@@ -124,12 +151,9 @@
         glowMesh.scale.setScalar(1.006);
         rig.add(glowMesh);
 
-        const trimmedBox=new THREE.Box3().setFromObject(rig);
-        const trimmedSize=new THREE.Vector3();
-        trimmedBox.getSize(trimmedSize);
-        rig.scale.setScalar(2.55/Math.max(trimmedSize.x,trimmedSize.y));
+        rig.scale.setScalar(1);
         rig.rotation.set(0,0,0);
-
+        fitCamera();
         load.classList.add('is-hidden');
         holder.classList.add('is-ready');
       },
@@ -141,24 +165,16 @@
       }
     );
 
-    const resize=()=>{
-      const rect=canvas.getBoundingClientRect();
-      const width=Math.max(1,Math.round(rect.width));
-      const height=Math.max(1,Math.round(rect.height));
-      renderer.setSize(width,height,false);
-      camera.aspect=width/height;
-      camera.updateProjectionMatrix();
-    };
-    const observer=new ResizeObserver(resize);
+    const observer=new ResizeObserver(fitCamera);
     observer.observe(canvas);
-    resize();
+    fitCamera();
 
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const clock=new THREE.Clock();
     let visible=true;
     let timer=0;
     let disposed=false;
-    const frameDelay=reduced?700:67; // ~15fps instead of a permanent 60fps loop.
+    const frameDelay=reduced?700:67;
 
     const draw=()=>{
       if(disposed)return;
