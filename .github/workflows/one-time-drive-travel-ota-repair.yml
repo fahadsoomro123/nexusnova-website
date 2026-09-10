@@ -1,0 +1,128 @@
+name: One-time Drive + Travel OTA repair
+
+on:
+  push:
+    branches:
+      - nexusnova-ota-public
+    paths:
+      - .github/workflows/one-time-drive-travel-ota-repair.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout OTA branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Clone canonical Android source
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/nexusnova-app
+          git clone --depth 1 --branch main https://github.com/fahadsoomro123/nexusnova-app.git /tmp/nexusnova-app
+
+      - name: Copy exact Travel and Drive runtime files
+        run: |
+          set -euo pipefail
+          SOURCE=/tmp/nexusnova-app/fresh-rebuild
+          files=(
+            index.html
+            src/features/apps/travel-phone-layout-v31.js
+            src/features/apps/travel-phone-interaction-v28.js
+            src/features/apps/travel-phone-interaction-v28-native-select-fix.js
+            src/features/apps/travel-exit-isolation-v10.js
+            src/features/apps/travel-clean-ui-v27.js
+            src/core/drive-track-persistence.js
+            src/features/apps/premium-drive-native-v2.js
+            src/nova-drive-history-v2.js
+            src/nova-drive-history-v2-hotfix.js
+            src/nova-drive-route-recovery-v18.js
+          )
+          for rel in "${files[@]}"; do
+            test -f "$SOURCE/$rel"
+            mkdir -p "ota/files/$(dirname "$rel")"
+            cp "$SOURCE/$rel" "ota/files/$rel"
+            cmp -s "$SOURCE/$rel" "ota/files/$rel"
+          done
+
+      - name: Generate atomic OTA manifest
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib, subprocess, datetime
+
+          manifest_path = pathlib.Path('ota/manifest.json')
+          manifest = json.loads(manifest_path.read_text())
+          source_sha = subprocess.check_output(['git','-C','/tmp/nexusnova-app','rev-parse','HEAD'], text=True).strip()
+          paths = [
+              'index.html',
+              'src/features/apps/travel-phone-layout-v31.js',
+              'src/features/apps/travel-phone-interaction-v28.js',
+              'src/features/apps/travel-phone-interaction-v28-native-select-fix.js',
+              'src/features/apps/travel-exit-isolation-v10.js',
+              'src/features/apps/travel-clean-ui-v27.js',
+              'src/core/drive-track-persistence.js',
+              'src/features/apps/premium-drive-native-v2.js',
+              'src/nova-drive-history-v2.js',
+              'src/nova-drive-history-v2-hotfix.js',
+              'src/nova-drive-route-recovery-v18.js',
+          ]
+          entries = []
+          for rel in paths:
+              data = pathlib.Path('ota/files', rel).read_bytes()
+              entries.append({'path':rel, 'sha256':hashlib.sha256(data).hexdigest(), 'size':len(data)})
+
+          # Keep the existing APK compatibility base so already-installed phones
+          # can accept this repair. Only the overlay version/source changes.
+          manifest.update({
+              'schema': 2,
+              'version': source_sha,
+              'source': source_sha,
+              'travel_revision': 31,
+              'files': entries,
+              'visual_proof': True,
+              'drive_source': source_sha,
+              'travel_source': source_sha,
+              'proof_number': '32',
+              'diagnostic': 'travel-v31-fullscreen-drive-route-recovery-v18',
+              'generatedAt': datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z'),
+          })
+          manifest_path.write_text(json.dumps(manifest, separators=(',', ':')) + '\n')
+          PY
+
+      - name: Verify manifest files and hashes
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          m=json.loads(pathlib.Path('ota/manifest.json').read_text())
+          assert m['schema']==2 and len(m['version'])==40 and len(m['files'])>=1
+          assert any(x['path']=='index.html' for x in m['files'])
+          assert any(x['path']=='src/nova-drive-route-recovery-v18.js' for x in m['files'])
+          assert any(x['path']=='src/features/apps/travel-phone-layout-v31.js' for x in m['files'])
+          for x in m['files']:
+              p=pathlib.Path('ota/files',x['path'])
+              data=p.read_bytes()
+              assert len(data)==x['size'], x['path']
+              assert hashlib.sha256(data).hexdigest()==x['sha256'], x['path']
+          print('OTA manifest verified:', m['version'], 'base', m['base'])
+          PY
+
+      - name: Commit OTA repair
+        run: |
+          set -euo pipefail
+          git config user.name "NexusNova OTA"
+          git config user.email "actions@users.noreply.github.com"
+          git add ota/manifest.json ota/files
+          if git diff --cached --quiet; then
+            echo "OTA files already current."
+          else
+            git commit -m "ota: publish Travel fullscreen + Drive route recovery [skip ci]"
+            git push origin HEAD:nexusnova-ota-public
+          fi
