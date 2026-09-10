@@ -1,4 +1,4 @@
-// NexusNova HumanProof hero — head-only geometry with responsive full-frame camera fitting.
+// NexusNova HumanProof hero — head-only geometry with responsive standard camera framing.
 // 3D head source: Lee Perry-Smith model used by three.js examples (CC BY 3.0).
 (async()=>{
   const canvas=document.getElementById('nnHumanProof360');
@@ -17,11 +17,11 @@
     renderer.outputColorSpace=THREE.SRGBColorSpace;
 
     const scene=new THREE.Scene();
-    const camera=new THREE.PerspectiveCamera(27,1,.01,100);
+    const camera=new THREE.PerspectiveCamera(29,1,.01,100);
     const rig=new THREE.Group();
     scene.add(rig);
 
-    let modelRadius=0;
+    let modelMetrics=null;
     const materials=[];
 
     const trimGeometry=(sourceGeo,cutY)=>{
@@ -87,17 +87,23 @@
       renderer.setSize(width,height,false);
       camera.aspect=width/height;
 
-      if(modelRadius>0){
-        const verticalFov=THREE.MathUtils.degToRad(camera.fov);
-        const horizontalFov=2*Math.atan(Math.tan(verticalFov/2)*camera.aspect);
-        const limitingFov=Math.min(verticalFov,horizontalFov);
-        const padding=width<=520?1.07:1.09;
-        const distance=(modelRadius*padding)/Math.sin(limitingFov/2);
-        camera.position.set(0,.02,distance);
-        camera.near=Math.max(.01,distance-modelRadius*2.25);
-        camera.far=distance+modelRadius*3;
+      if(modelMetrics){
+        const vFov=THREE.MathUtils.degToRad(camera.fov);
+        const tanV=Math.tan(vFov/2);
+        const tanH=tanV*camera.aspect;
+
+        // Standard product-viewer composition: the subject owns most of the frame,
+        // while preserving safe margins through a full 360-degree Y rotation.
+        const fill=width<=520?.78:width<=980?.77:.80;
+        const distanceV=modelMetrics.halfHeight/(tanV*fill);
+        const distanceH=modelMetrics.halfTurnWidth/(tanH*fill);
+        const distance=Math.max(distanceV,distanceH)*1.025;
+
+        camera.position.set(0,.015,distance);
+        camera.near=Math.max(.01,distance-modelMetrics.radius*2.1);
+        camera.far=distance+modelMetrics.radius*3.2;
       }else{
-        camera.position.set(0,.02,4.8);
+        camera.position.set(0,.015,4.8);
       }
       camera.updateProjectionMatrix();
     };
@@ -119,16 +125,25 @@
         const size0=new THREE.Vector3();
         box0.getSize(size0);
 
-        // Remove the lower neck/shoulder region while keeping the complete face and cranium.
-        const geometry=trimGeometry(geometry0,box0.min.y+size0.y*.225);
+        // Keep the complete cranium, face and useful neck while removing the wide
+        // shoulder base that previously made the real head look tiny in wide layouts.
+        const geometry=trimGeometry(geometry0,box0.min.y+size0.y*.30);
         geometry.computeBoundingBox();
         const box=geometry.boundingBox;
         const center=new THREE.Vector3();
         box.getCenter(center);
         geometry.translate(-center.x,-center.y,-center.z);
         geometry.scale(1.045,1,.965);
+        geometry.computeBoundingBox();
         geometry.computeBoundingSphere();
-        modelRadius=(geometry.boundingSphere?.radius||1)*1.012;
+
+        const fittedSize=new THREE.Vector3();
+        geometry.boundingBox.getSize(fittedSize);
+        modelMetrics={
+          halfHeight:fittedSize.y*.5,
+          halfTurnWidth:Math.max(fittedSize.x,fittedSize.z)*.5,
+          radius:(geometry.boundingSphere?.radius||1)
+        };
 
         // Opaque pearl shell hides back-side wires and preserves solid head depth.
         const shell=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
