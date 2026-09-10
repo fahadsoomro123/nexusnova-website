@@ -27,22 +27,38 @@ jobs:
           rm -rf /tmp/nexusnova-app
           git clone --depth 1 --branch main https://github.com/fahadsoomro123/nexusnova-app.git /tmp/nexusnova-app
 
-      - name: Copy exact Travel and Drive runtime files
+      - name: Copy single-owner Travel and Drive runtime
         run: |
           set -euo pipefail
           SOURCE=/tmp/nexusnova-app/fresh-rebuild
           files=(
             index.html
             src/features/apps/travel-phone-layout-v31.js
+            src/features/apps/travel-phone-layout-v32.js
             src/features/apps/travel-phone-interaction-v28.js
             src/features/apps/travel-phone-interaction-v28-native-select-fix.js
             src/features/apps/travel-exit-isolation-v10.js
             src/features/apps/travel-clean-ui-v27.js
             src/core/drive-track-persistence.js
             src/features/apps/premium-drive-native-v2.js
+            src/nova-vehicle-premium-ui.js
+            src/nova-drive-gold-maptiler-v14-ui.js
+            src/nova-drive-gold-maptiler-v14.css
+            src/nova-drive-vector-map-v16.js
+            src/nova-drive-history-archive-v16.js
+            src/nova-drive-route-recovery-v18.js
+            src/nova-drive-gold-maptiler-v14-production.js
+            src/nova-drive-visible-route-v19.js
+            src/nova-drive-private-tracker-v15.js
+            src/nova-drive-auto-arm-v15.js
+            src/nova-drive-recover-premium-v17.js
             src/nova-drive-history-v2.js
             src/nova-drive-history-v2-hotfix.js
-            src/nova-drive-route-recovery-v18.js
+            src/nova-drive-final-approved-v5.js
+            src/nova-drive-final-v7-fit.js
+            assets/styles/nova-drive-final-approved-v5.css
+            assets/styles/nova-drive-final-v6-corrections.css
+            assets/styles/nova-drive-final-v7-fit.css
           )
           for rel in "${files[@]}"; do
             test -f "$SOURCE/$rel"
@@ -63,34 +79,48 @@ jobs:
           paths = [
               'index.html',
               'src/features/apps/travel-phone-layout-v31.js',
+              'src/features/apps/travel-phone-layout-v32.js',
               'src/features/apps/travel-phone-interaction-v28.js',
               'src/features/apps/travel-phone-interaction-v28-native-select-fix.js',
               'src/features/apps/travel-exit-isolation-v10.js',
               'src/features/apps/travel-clean-ui-v27.js',
               'src/core/drive-track-persistence.js',
               'src/features/apps/premium-drive-native-v2.js',
+              'src/nova-vehicle-premium-ui.js',
+              'src/nova-drive-gold-maptiler-v14-ui.js',
+              'src/nova-drive-gold-maptiler-v14.css',
+              'src/nova-drive-vector-map-v16.js',
+              'src/nova-drive-history-archive-v16.js',
+              'src/nova-drive-route-recovery-v18.js',
+              'src/nova-drive-gold-maptiler-v14-production.js',
+              'src/nova-drive-visible-route-v19.js',
+              'src/nova-drive-private-tracker-v15.js',
+              'src/nova-drive-auto-arm-v15.js',
+              'src/nova-drive-recover-premium-v17.js',
               'src/nova-drive-history-v2.js',
               'src/nova-drive-history-v2-hotfix.js',
-              'src/nova-drive-route-recovery-v18.js',
+              'src/nova-drive-final-approved-v5.js',
+              'src/nova-drive-final-v7-fit.js',
+              'assets/styles/nova-drive-final-approved-v5.css',
+              'assets/styles/nova-drive-final-v6-corrections.css',
+              'assets/styles/nova-drive-final-v7-fit.css',
           ]
           entries = []
           for rel in paths:
               data = pathlib.Path('ota/files', rel).read_bytes()
               entries.append({'path':rel, 'sha256':hashlib.sha256(data).hexdigest(), 'size':len(data)})
 
-          # Keep the existing APK compatibility base so already-installed phones
-          # can accept this repair. Only the overlay version/source changes.
           manifest.update({
               'schema': 2,
               'version': source_sha,
               'source': source_sha,
-              'travel_revision': 31,
+              'travel_revision': 32,
               'files': entries,
-              'visual_proof': True,
+              'visual_proof': False,
               'drive_source': source_sha,
               'travel_source': source_sha,
-              'proof_number': '32',
-              'diagnostic': 'travel-v31-fullscreen-drive-route-recovery-v18',
+              'proof_number': '33',
+              'diagnostic': 'single-owner-travel-v32-drive-goldv14-visible-route-v19',
               'generatedAt': datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z'),
           })
           manifest_path.write_text(json.dumps(manifest, separators=(',', ':')) + '\n')
@@ -102,16 +132,25 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, pathlib
           m=json.loads(pathlib.Path('ota/manifest.json').read_text())
-          assert m['schema']==2 and len(m['version'])==40 and len(m['files'])>=1
-          assert any(x['path']=='index.html' for x in m['files'])
-          assert any(x['path']=='src/nova-drive-route-recovery-v18.js' for x in m['files'])
-          assert any(x['path']=='src/features/apps/travel-phone-layout-v31.js' for x in m['files'])
+          assert m['schema']==2 and len(m['version'])==40 and len(m['files'])>=20
+          required={
+              'index.html',
+              'src/features/apps/travel-phone-layout-v31.js',
+              'src/features/apps/travel-phone-layout-v32.js',
+              'src/features/apps/travel-exit-isolation-v10.js',
+              'src/nova-vehicle-premium-ui.js',
+              'src/nova-drive-vector-map-v16.js',
+              'src/nova-drive-route-recovery-v18.js',
+              'src/nova-drive-visible-route-v19.js',
+          }
+          got={x['path'] for x in m['files']}
+          assert required <= got, sorted(required-got)
           for x in m['files']:
               p=pathlib.Path('ota/files',x['path'])
               data=p.read_bytes()
               assert len(data)==x['size'], x['path']
               assert hashlib.sha256(data).hexdigest()==x['sha256'], x['path']
-          print('OTA manifest verified:', m['version'], 'base', m['base'])
+          print('OTA manifest verified:', m['version'], 'base', m.get('base'))
           PY
 
       - name: Commit OTA repair
@@ -123,6 +162,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "OTA files already current."
           else
-            git commit -m "ota: publish Travel fullscreen + Drive route recovery [skip ci]"
+            git commit -m "ota: publish single-owner Travel + Drive cleanup [skip ci]"
             git push origin HEAD:nexusnova-ota-public
           fi
