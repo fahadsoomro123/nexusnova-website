@@ -1,6 +1,6 @@
-import './travel-phone-layout-v31.js';
-
-// V31 is the only effective phone-height owner. Older layout modules must not be re-imported here.
+// Do not import travel-phone-layout-v31 here. index.html loads v31 as the final
+// Travel module; importing it early from this guard makes ES module caching skip
+// that final execution and allows older layout CSS to override the phone layout.
 // NexusNova Travel v10 route-exit isolation.
 // Travel intentionally locks the document while its fullscreen shell is mounted.
 // Physical Android proof showed that stale Travel state can survive a route exit

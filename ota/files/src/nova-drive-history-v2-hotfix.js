@@ -11,6 +11,14 @@ function installStyle() {
        through the four existing summary cards, not a new bar over the gauge. */
     .nxh2-dashboard-tabs{display:none!important}
 
+    /* The early v2 coordinate hitboxes were crop-sensitive on physical phones.
+       Use the real rendered analytics cards as the click targets instead. */
+    .nx-history-entry-v2{display:none!important;pointer-events:none!important}
+    [data-approved-drive-view] [data-approved-today],
+    [data-approved-drive-view] [data-approved-week],
+    [data-approved-drive-view] [data-approved-month],
+    [data-approved-drive-view] [data-approved-history]{pointer-events:auto!important;cursor:pointer!important;-webkit-tap-highlight-color:transparent}
+
     /* History is a sibling fixed viewport. Hide the other approved canvases only
        while History is open so no Drive/Tracker layers bleed through. */
     .nx-approved-drive.is-history-open>.nx-approved-view[data-approved-drive-view],
@@ -52,6 +60,33 @@ function patch(ui) {
 
   // Remove the dashboard overlay injected by the early v2 implementation.
   ui.querySelector('[data-h2-dashboard-tabs]')?.remove();
+  ui.querySelectorAll('.nx-history-entry-v2').forEach(node => node.remove());
+
+  // Bind History to the actual four summary cards. This survives every approved
+  // phone crop/scale because the clickable element is the card value itself.
+  const drive = ui.querySelector('[data-approved-drive-view]');
+  const historyEntries = [
+    ['[data-approved-today]', 'today', 'Open today Drive History'],
+    ['[data-approved-week]', 'week', 'Open this week Drive History'],
+    ['[data-approved-month]', 'month', 'Open this month Drive History'],
+    ['[data-approved-history]', 'history', 'Open all Drive History']
+  ];
+  historyEntries.forEach(([selector, filter, label]) => {
+    const card = drive?.querySelector(selector);
+    if (!(card instanceof HTMLElement)) return;
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', label);
+    const open = event => {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      window.NexusNovaDriveHistory?.open?.(filter);
+    };
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') open(event);
+    });
+  });
 
   const makeHit = (kind, label, handler) => {
     const button = document.createElement('button');
@@ -80,7 +115,12 @@ function patch(ui) {
 }
 
 function scan(root = document) {
-  if (root instanceof HTMLElement && root.matches('[data-nx-approved]')) patch(root);
+  if (root instanceof HTMLElement) {
+    const ui = root.matches('[data-nx-approved]')
+      ? root
+      : root.closest?.('[data-nx-approved]');
+    if (ui) patch(ui);
+  }
   root.querySelectorAll?.('[data-nx-approved]').forEach(patch);
 }
 
