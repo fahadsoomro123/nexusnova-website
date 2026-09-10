@@ -12,6 +12,7 @@ on:
       - 'sitemap*.xml'
       - 'robots.txt'
       - '.github/scripts/deep_site_audit.py'
+      - '.github/scripts/deep_site_audit_strict.py'
       - '.github/workflows/deep-site-quality.yml'
   pull_request:
     branches: [main]
@@ -22,6 +23,7 @@ on:
       - 'sitemap*.xml'
       - 'robots.txt'
       - '.github/scripts/deep_site_audit.py'
+      - '.github/scripts/deep_site_audit_strict.py'
       - '.github/workflows/deep-site-quality.yml'
   workflow_dispatch:
 
@@ -41,8 +43,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run deep public-site audit
-        run: python .github/scripts/deep_site_audit.py
+      - name: Run strict deep public-site audit
+        run: python .github/scripts/deep_site_audit_strict.py
 
       - name: Add report to summary
         if: always()
