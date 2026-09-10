@@ -21,14 +21,14 @@
     const rig=new THREE.Group();
     scene.add(rig);
 
-    // Approved preview lighting: emerald core, violet rim and magenta accent.
-    const key=new THREE.PointLight(0x62f3bf,18,8);
+    // Approved preview lighting: cyan core, indigo rim and violet accent.
+    const key=new THREE.PointLight(0x22d3ee,18,8);
     key.position.set(-2.3,1.8,3);
     scene.add(key);
-    const rim=new THREE.PointLight(0xb58cff,13,7);
+    const rim=new THREE.PointLight(0x6558ff,13,7);
     rim.position.set(2.2,1.0,2);
     scene.add(rim);
-    const accent=new THREE.PointLight(0xe55aaa,7,7);
+    const accent=new THREE.PointLight(0x8b5cf6,8,7);
     accent.position.set(0,-1,2.5);
     scene.add(accent);
     scene.add(new THREE.AmbientLight(0xffffff,2.1));
@@ -79,11 +79,11 @@
           void main(){
             float x=clamp(vPos.x*.22+.50,0.,1.);
             float y=clamp(vPos.y*.17+.50,0.,1.);
-            vec3 emerald=vec3(.05,.95,.62);
-            vec3 violet=vec3(.52,.26,1.0);
-            vec3 magenta=vec3(1.0,.14,.62);
-            vec3 col=mix(emerald,violet,smoothstep(.28,.72,x));
-            col=mix(col,magenta,smoothstep(.68,1.,x)*.75);
+            vec3 cyan=vec3(.03,.66,.84);
+            vec3 indigo=vec3(.40,.35,1.0);
+            vec3 violet=vec3(.55,.36,.96);
+            vec3 col=mix(cyan,indigo,smoothstep(.28,.72,x));
+            col=mix(col,violet,smoothstep(.68,1.,x)*.75);
             float pulse=.84+.16*sin(uTime*1.7+y*7.0);
             float fresnel=.65+.55*pow(1.-abs(vNormal.z),1.8);
             gl_FragColor=vec4(col*pulse*fresnel,uAlpha);
@@ -156,7 +156,7 @@
         };
 
         const shellMaterial=new THREE.MeshPhysicalMaterial({
-          color:0xeafff5,
+          color:0xf0f5ff,
           roughness:.22,
           metalness:.08,
           transmission:.06,
@@ -180,7 +180,7 @@
         rig.add(glow);
 
         const pointsMaterial=new THREE.PointsMaterial({
-          color:0xb46cff,
+          color:0x8b5cf6,
           size:.006,
           transparent:true,
           opacity:.24,
