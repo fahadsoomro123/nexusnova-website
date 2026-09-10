@@ -1,6 +1,6 @@
-import './travel-phone-layout-v17.js';
+import './travel-phone-layout-v29.js';
 
-// V17 dock-anchored layout is loaded here so full Travel QA exercises the exact production dependency chain.
+// V29 is the only effective phone-height owner. Older layout modules must not be re-imported here.
 // NexusNova Travel v10 route-exit isolation.
 // Travel intentionally locks the document while its fullscreen shell is mounted.
 // Physical Android proof showed that stale Travel state can survive a route exit
@@ -16,7 +16,9 @@ const GLOBAL_CLASSES = Object.freeze([
   'nn-travel-v8-editing',
   'nn-travel-v14-keyboard',
   'nn-travel-v15-keyboard',
-  'nn-travel-v17-route-edit'
+  'nn-travel-v17-route-edit',
+  'nn-travel-v29-active',
+  'nn-travel-v29-keyboard'
 ]);
 const ROOT_CLASSES = Object.freeze([
   'nn-v8-results-open',
@@ -33,7 +35,9 @@ const ROOT_PROPERTIES = Object.freeze([
   '--nn-v14-frame-height',
   '--nn-v15-frame-height',
   '--nn-v17-frame-height',
-  '--nn-v17-root-height'
+  '--nn-v17-root-height',
+  '--nn-v29-frame-height',
+  '--nn-v29-root-height'
 ]);
 const SCREEN_CLASSES = Object.freeze([
   'nn-travel-reference-shell',
