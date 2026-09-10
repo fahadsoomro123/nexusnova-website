@@ -10,6 +10,14 @@
   text-shadow:none!important;
 }
 
+/* Homepage status indicators use cyan rather than the legacy green success color. */
+.nn-home .micro-status i,
+.nn-home .footer-online i,
+.nn-home .nn-proof-360-status::before{
+  background:#0c789e!important;
+  box-shadow:0 0 0 4px rgba(12,120,158,.12)!important;
+}
+
 /* Compact sample receipt — deliberately impossible to mistake for issued proof. */
 .nn-hp-sample{padding:10px 0 24px}
 .nn-hp-sample-shell{
