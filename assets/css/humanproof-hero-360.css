@@ -1,18 +1,18 @@
-/* HumanProof 360 hero stage — responsive full-frame Emerald Mist presentation */
+/* HumanProof 360 hero stage — responsive full-frame Indigo / Cyan presentation */
 .nn-proof-360-holder{
   position:relative;
   flex:1 1 auto;
   min-height:0;
   margin:16px 0 10px;
-  border:1px solid rgba(31,94,77,.12);
+  border:1px solid rgba(38,51,93,.12);
   border-radius:28px 44px 28px 44px;
   overflow:hidden;
   background:
-    radial-gradient(circle at 15% 18%,rgba(88,214,163,.28),transparent 32%),
-    radial-gradient(circle at 85% 20%,rgba(185,166,255,.26),transparent 34%),
-    radial-gradient(circle at 70% 84%,rgba(248,216,239,.36),transparent 30%),
-    linear-gradient(145deg,rgba(255,255,255,.92),rgba(239,252,244,.82));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 18px 42px rgba(46,97,79,.09);
+    radial-gradient(circle at 15% 18%,rgba(45,190,225,.20),transparent 32%),
+    radial-gradient(circle at 85% 20%,rgba(101,88,255,.20),transparent 34%),
+    radial-gradient(circle at 70% 84%,rgba(132,83,214,.16),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.94),rgba(241,244,255,.88));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 18px 42px rgba(45,55,110,.09);
 }
 .nn-proof-360-holder::before,
 .nn-proof-360-holder::after{
@@ -20,16 +20,16 @@
   position:absolute;
   z-index:1;
   pointer-events:none;
-  border:1px solid rgba(31,94,77,.11);
+  border:1px solid rgba(38,51,93,.11);
   border-radius:50%;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
 }
 .nn-proof-360-holder::before{width:min(72%,360px);aspect-ratio:1}
-.nn-proof-360-holder::after{width:min(52%,260px);aspect-ratio:1;border-style:dashed;border-color:rgba(155,140,229,.22)}
+.nn-proof-360-holder::after{width:min(52%,260px);aspect-ratio:1;border-style:dashed;border-color:rgba(101,88,255,.22)}
 
-/* The 3D viewer now owns the whole available HumanProof frame. No nested portrait crop. */
+/* The 3D viewer owns the whole available HumanProof frame. */
 .nn-proof-360-viewer{
   position:absolute;
   z-index:2;
@@ -39,8 +39,8 @@
   overflow:hidden;
   border-radius:inherit;
   background:
-    radial-gradient(circle at 50% 43%,rgba(88,214,163,.12),transparent 50%),
-    radial-gradient(circle at 72% 72%,rgba(185,166,255,.10),transparent 44%);
+    radial-gradient(circle at 50% 43%,rgba(45,190,225,.10),transparent 50%),
+    radial-gradient(circle at 72% 72%,rgba(101,88,255,.10),transparent 44%);
 }
 #nnHumanProof360{
   position:absolute;
@@ -60,8 +60,8 @@
   height:2px;
   pointer-events:none;
   opacity:.72;
-  background:linear-gradient(90deg,transparent,#58d6a3,#b9a6ff,#f0a7d1,transparent);
-  box-shadow:0 0 18px rgba(88,214,163,.45);
+  background:linear-gradient(90deg,transparent,#0c789e,#6558ff,#744bd8,transparent);
+  box-shadow:0 0 18px rgba(101,88,255,.34);
   animation:nnHpScan 8s ease-in-out infinite;
 }
 .nn-proof-360-load{
@@ -71,8 +71,8 @@
   display:grid;
   place-items:center;
   padding:20px;
-  color:#3f7d68;
-  background:linear-gradient(145deg,rgba(248,255,250,.96),rgba(249,247,255,.93));
+  color:#4d5a75;
+  background:linear-gradient(145deg,rgba(249,251,255,.96),rgba(247,246,255,.93));
   font-size:10px;
   font-weight:900;
   letter-spacing:.14em;
@@ -89,11 +89,11 @@
   align-items:center;
   gap:7px;
   padding:7px 9px;
-  border:1px solid rgba(31,94,77,.12);
+  border:1px solid rgba(38,51,93,.12);
   border-radius:999px;
-  background:rgba(255,255,255,.78);
+  background:rgba(255,255,255,.82);
   backdrop-filter:blur(12px);
-  color:#3f7564;
+  color:#36415d;
   font-size:8px;
   font-weight:900;
   letter-spacing:.1em;
@@ -103,15 +103,15 @@
   width:6px;
   height:6px;
   border-radius:50%;
-  background:#58d6a3;
-  box-shadow:0 0 0 4px rgba(88,214,163,.12);
+  background:#0c789e;
+  box-shadow:0 0 0 4px rgba(12,120,158,.12);
 }
 .nn-proof-360-meta{
   position:absolute;
   z-index:4;
   right:12px;
   bottom:10px;
-  color:#6b837b;
+  color:#5c6780;
   font-size:8px;
   font-weight:850;
   letter-spacing:.11em;
@@ -119,7 +119,7 @@
 }
 .nn-proof-attribution{
   margin-top:2px;
-  color:#80938c;
+  color:#737d95;
   font-size:7px;
   letter-spacing:.04em;
   line-height:1.35;
