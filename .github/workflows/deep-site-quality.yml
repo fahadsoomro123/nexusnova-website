@@ -3,7 +3,16 @@ name: NexusNova Deep Site Quality
 on:
   push:
     branches:
+      - main
       - deep-site-audit-fix-20260903
+    paths:
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'sitemap*.xml'
+      - 'robots.txt'
+      - '.github/scripts/deep_site_audit.py'
+      - '.github/workflows/deep-site-quality.yml'
   pull_request:
     branches: [main]
     paths:
