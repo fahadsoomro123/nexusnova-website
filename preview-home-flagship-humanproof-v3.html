@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof Homepage Preview V3</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#fbfdfb;overflow:hidden}
+iframe{display:block;width:100%;height:100%;border:0;opacity:0;transition:opacity .14s ease}
+iframe.ready{opacity:1}
+</style>
+</head>
+<body>
+<iframe id="preview" src="preview-home-flagship-humanproof-v1.html?v=4afb13f" title="NexusNova HumanProof homepage preview V3"></iframe>
+<script>
+const frame=document.getElementById('preview');
+frame.addEventListener('load',()=>{
+  const d=frame.contentDocument;
+  if(!d)return;
+
+  d.title='NexusNova HumanProof Homepage Preview V3';
+
+  const brandStrong=d.querySelector('.brandcopy strong');
+  const brandSmall=d.querySelector('.brandcopy small');
+  if(brandStrong)brandStrong.textContent='NEXUSNOVA';
+  if(brandSmall)brandSmall.textContent='TOOLS • HUMANPROOF';
+
+  const links=d.querySelector('.links');
+  if(links)links.innerHTML='<a class="active" href="#">Home</a><a href="#nn-tools-index">Tools</a><a href="#nn-proof">HumanProof</a><a href="#nn-ecosystem">App</a><a href="#">Articles</a><a class="sign" href="#">Sign in</a>';
+
+  const kicker=d.querySelector('.kicker');
+  const heroCopy=d.querySelector('.hero-copy');
+  const actions=d.querySelector('.actions');
+  const trust=d.querySelector('.trustline');
+  const command=d.querySelector('.commandbar');
+  if(kicker)kicker.textContent='HUMANPROOF / VERIFIED ACTION';
+  if(heroCopy)heroCopy.textContent='A deliberate live-human step for sensitive digital actions, bound to the exact action without turning every flow into identity verification.';
+  if(actions)actions.innerHTML='<a class="btn primary" href="#nn-proof">Verify an action</a><a class="btn" href="#nn-tools-index">Explore tools</a>';
+  if(trust)trust.innerHTML='<span><i></i>Live human step</span><span><i></i>Exact-action bound</span><span><i></i>Privacy first</span>';
+  if(command)command.innerHTML='<span>Need a practical browser tool?</span><b>Browse the index →</b>';
+
+  const hero=d.querySelector('.hero');
+  const receipt=d.querySelector('.receipt-section');
+  if(hero)hero.id='nn-proof';
+  if(receipt)receipt.id='nn-credential';
+
+  const index=d.createElement('section');
+  index.className='nn-index';
+  index.id='nn-tools-index';
+  index.innerHTML=`
+    <div class="wrap">
+      <div class="nn-section-intro">
+        <div><span class="nn-mono">NEXUSNOVA / TOOL INDEX</span><h2>Useful tools, arranged like an index.</h2></div>
+        <p>Jump straight to the kind of utility you need. The full catalogue stays on the Tools page; the homepage only surfaces the main paths.</p>
+      </div>
+      <div class="nn-index-list">
+        <a href="#"><span>01</span><strong>AI & Writing</strong><em>assist, rewrite, summarize</em><b>↗</b></a>
+        <a href="#"><span>02</span><strong>Calculators</strong><em>daily, finance, health</em><b>↗</b></a>
+        <a href="#"><span>03</span><strong>PDF & Documents</strong><em>practical document utilities</em><b>↗</b></a>
+        <a href="#"><span>04</span><strong>Converters</strong><em>units, formats, quick conversions</em><b>↗</b></a>
+        <a href="#"><span>05</span><strong>Live & Local</strong><em>fresh context and local utilities</em><b>↗</b></a>
+        <a href="#"><span>06</span><strong>Utility & Privacy</strong><em>focused everyday tools</em><b>↗</b></a>
+      </div>
+    </div>`;
+  if(hero)hero.insertAdjacentElement('afterend',index);
+
+  const sectionHead=receipt&&receipt.querySelector('.section-head');
+  if(sectionHead){
+    const warning=sectionHead.querySelector('.sample-warning');
+    const h2=sectionHead.querySelector('h2');
+    const p=sectionHead.querySelector('p');
+    if(warning)warning.textContent='HUMANPROOF / SAMPLE CREDENTIAL';
+    if(h2)h2.textContent='A verified action should leave something worth keeping.';
+    if(p)p.textContent='The approved V11 credential stays visually intact here as a safe sample. It is not a live result, and no official credential should exist before successful verification, payment and trusted server confirmation.';
+  }
+
+  const ecosystem=d.createElement('section');
+  ecosystem.className='nn-ecosystem';
+  ecosystem.id='nn-ecosystem';
+  ecosystem.innerHTML=`
+    <div class="wrap">
+      <div class="nn-section-intro compact">
+        <div><span class="nn-mono">ONE NEXUSNOVA</span><h2>Tools when you need them. Trust when it matters.</h2></div>
+        <p>Browser utilities, the NexusNova Android app and HumanProof sit inside one practical ecosystem instead of competing for attention on the homepage.</p>
+      </div>
+      <div class="nn-eco-grid">
+        <a href="#"><span class="nn-eco-no">01</span><div><strong>Online Tools</strong><small>Fast browser utilities for everyday work.</small></div><b>Explore →</b></a>
+        <a href="#"><span class="nn-eco-no">02</span><div><strong>NexusNova App</strong><small>Your compact Android utility hub.</small></div><b>Open →</b></a>
+        <a href="#nn-proof"><span class="nn-eco-no">03</span><div><strong>HumanProof</strong><small>Conscious approval bound to the exact action.</small></div><b>Learn →</b></a>
+      </div>
+    </div>`;
+  if(receipt)receipt.insertAdjacentElement('afterend',ecosystem);
+
+  const footer=d.createElement('footer');
+  footer.className='nn-footer';
+  footer.innerHTML='<div class="wrap"><strong>NEXUSNOVA</strong><span>Free online tools • AI utilities • Android app • HumanProof</span><small>nexusnovatools.com</small></div>';
+  const main=d.querySelector('main');
+  if(main)main.insertAdjacentElement('afterend',footer);
+
+  const style=d.createElement('style');
+  style.textContent=`
+    :root{--paper:#fbfdfb!important;--ink:#1f5e4d!important;--muted:#647b73!important;--line:rgba(31,94,77,.14)!important}
+    html{scroll-behavior:smooth}
+    body{background:radial-gradient(circle at 73% 14%,rgba(185,166,255,.12),transparent 26%),radial-gradient(circle at 15% 23%,rgba(88,214,163,.11),transparent 25%),#fbfdfb!important;color:#1f5e4d!important}
+    body:before{display:none!important}
+    .wrap{width:min(1180px,calc(100% - 40px))!important}
+
+    .header{padding:0!important;border-bottom:1px solid rgba(31,94,77,.10)!important;background:rgba(251,253,251,.90)!important;backdrop-filter:blur(18px)!important}
+    .nav{min-height:66px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;gap:24px!important}
+    .brand{gap:9px!important}
+    .brandmark{width:31px!important;border-radius:10px!important;font-size:15px!important;font-weight:900!important;box-shadow:none!important}
+    .brandcopy strong{font-size:12px!important;letter-spacing:.06em!important;font-weight:850!important}
+    .brandcopy small{font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:6.5px!important;letter-spacing:.15em!important;font-weight:700!important}
+    .links{gap:1px!important}
+    .links a{padding:9px 10px!important;border-radius:8px!important;font-size:11.5px!important;font-weight:650!important;color:#60776f!important}
+    .links a.active{background:transparent!important;color:#1f5e4d!important;box-shadow:inset 0 -1px 0 #58d6a3!important}
+    .links a.sign{margin-left:8px!important;border:1px solid rgba(31,94,77,.16)!important;background:transparent!important}
+
+    .hero{padding:54px 0 48px!important}
+    .hero:before{display:none!important}
+    .hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr)!important;gap:54px!important;align-items:center!important}
+    .copy{padding:8px 0!important}
+    .kicker,.nn-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace!important;font-size:9px!important;line-height:1!important;letter-spacing:.15em!important;font-weight:750!important;color:#5e786f!important;text-transform:uppercase!important}
+    .kicker:before{width:18px!important;background:#58d6a3!important}
+    .hero h1{max-width:650px!important;margin:18px 0 18px!important;font-family:"Helvetica Neue",Inter,Arial,sans-serif!important;font-size:clamp(50px,4.65vw,60px)!important;line-height:1.015!important;letter-spacing:-.045em!important;font-weight:720!important;color:#1d5949!important}
+    .hero h1 span{display:block!important;background:linear-gradient(90deg,#2ca879 0%,#55cba5 42%,#8d82dc 75%,#c876a1 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+    .hero-copy{max-width:570px!important;font-size:15.5px!important;line-height:1.62!important;color:#627970!important}
+    .actions{gap:8px!important;margin-top:22px!important}
+    .btn{min-height:43px!important;padding:0 17px!important;border-radius:10px!important;font-size:11.5px!important;font-weight:750!important;box-shadow:none!important}
+    .btn.primary{background:#245f50!important;box-shadow:none!important}
+    .trustline{gap:16px!important;margin-top:15px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:8.5px!important;font-weight:650!important;color:#748a82!important}
+    .trustline i{width:5px!important;height:5px!important;box-shadow:none!important}
+    .commandbar{max-width:520px!important;margin-top:20px!important;padding:0!important;border:0!important;border-top:1px solid rgba(31,94,77,.13)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;min-height:45px!important}
+    .commandbar span{font-size:12px!important;color:#7a8d86!important}
+    .commandbar b{min-width:auto!important;padding:0!important;border-radius:0!important;background:transparent!important;color:#245f50!important;font-size:10px!important}
+
+    .visual-shell{min-height:452px!important;padding:13px!important;border-radius:25px!important;border:1px solid rgba(31,94,77,.10)!important;background:radial-gradient(circle at 20% 10%,rgba(88,214,163,.28),transparent 30%),radial-gradient(circle at 86% 14%,rgba(185,166,255,.27),transparent 32%),radial-gradient(circle at 82% 88%,rgba(240,139,187,.12),transparent 30%),rgba(255,255,255,.58)!important;box-shadow:0 18px 50px rgba(45,88,73,.08)!important}
+    .visual-shell:before,.visual-shell:after{display:none!important}
+    .proof-card{min-height:424px!important;padding:16px!important;border-radius:19px!important;background:rgba(255,255,255,.74)!important;box-shadow:none!important}
+    .proof-top{font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:7.5px!important;letter-spacing:.1em!important;font-weight:750!important}
+    .proof-holder{height:326px!important;margin-top:11px!important;border-radius:16px!important;background:radial-gradient(circle at 38% 45%,rgba(88,214,163,.12),transparent 30%),radial-gradient(circle at 71% 38%,rgba(185,166,255,.13),transparent 32%),rgba(255,255,255,.32)!important}
+    .proof-status,.proof-meta{font-size:6px!important;letter-spacing:.09em!important}
+    .proof-status{left:11px!important;top:11px!important;padding:6px 8px!important}
+    .proof-status:before{width:6px!important;height:6px!important;margin-right:5px!important;box-shadow:none!important}
+    .proof-meta{right:11px!important;bottom:10px!important}
+    .proof-labels{gap:5px!important;margin-top:8px!important}
+    .proof-labels span{padding:5px 7px!important;font-size:5.8px!important}
+    .proof-caption{margin-top:6px!important;font-size:9.5px!important}
+    .proof-attribution{font-size:5.8px!important}
+
+    .nn-index{padding:54px 0 62px;border-top:1px solid rgba(31,94,77,.09);border-bottom:1px solid rgba(31,94,77,.09);background:rgba(255,255,255,.42)}
+    .nn-section-intro{display:grid;grid-template-columns:.92fr 1.08fr;gap:70px;align-items:end;margin-bottom:27px}
+    .nn-section-intro h2{max-width:540px;margin:10px 0 0;font-family:"Helvetica Neue",Inter,Arial,sans-serif;font-size:clamp(31px,3.1vw,40px);line-height:1.08;letter-spacing:-.035em;font-weight:690;color:#205b4c}
+    .nn-section-intro p{max-width:520px;margin:0;color:#677d75;font-size:14px;line-height:1.65}
+    .nn-index-list{border-top:1px solid rgba(31,94,77,.16)}
+    .nn-index-list a{display:grid;grid-template-columns:52px 1fr 1.1fr 30px;gap:16px;align-items:center;min-height:62px;border-bottom:1px solid rgba(31,94,77,.12);text-decoration:none;color:#245f50;transition:padding .2s ease,background .2s ease}
+    .nn-index-list a:hover{padding-left:8px;background:rgba(88,214,163,.045)}
+    .nn-index-list span,.nn-index-list em{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;letter-spacing:.06em;color:#80928c;font-style:normal}
+    .nn-index-list strong{font-size:15px;font-weight:690;letter-spacing:-.01em}
+    .nn-index-list b{font-size:14px;font-weight:500;text-align:right}
+
+    .receipt-section{padding:58px 0 66px!important;background:linear-gradient(180deg,rgba(246,255,249,.45),rgba(250,248,255,.32))!important}
+    .section-head{grid-template-columns:.92fr 1.08fr!important;gap:70px!important;align-items:end!important;margin-bottom:24px!important}
+    .sample-warning{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:8.5px!important;letter-spacing:.15em!important;font-weight:750!important;color:#617a71!important}
+    .section-head h2{max-width:540px!important;margin:10px 0 0!important;font-family:"Helvetica Neue",Inter,Arial,sans-serif!important;font-size:clamp(31px,3.1vw,40px)!important;line-height:1.08!important;letter-spacing:-.035em!important;font-weight:690!important}
+    .section-head p{max-width:530px!important;font-size:14px!important;line-height:1.65!important;color:#677d75!important}
+    .cert-note{margin-bottom:14px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:7px!important;letter-spacing:.11em!important}
+    .cert-note span{padding:6px 9px!important;box-shadow:none!important}
+    .cert-stack{width:min(680px,72vw)!important;transform:rotateX(1.5deg) rotateY(-2deg) rotateZ(-.1deg)!important;filter:drop-shadow(0 18px 24px rgba(63,63,44,.14))!important}
+    .cert-caption{max-width:720px!important;margin:17px auto 0!important;font-size:11.5px!important;line-height:1.55!important;color:#778981!important}
+
+    .nn-ecosystem{padding:58px 0 68px;background:#fbfdfb}
+    .nn-section-intro.compact{margin-bottom:24px}
+    .nn-eco-grid{border-top:1px solid rgba(31,94,77,.15)}
+    .nn-eco-grid a{display:grid;grid-template-columns:54px 1fr auto;gap:16px;align-items:center;min-height:78px;border-bottom:1px solid rgba(31,94,77,.12);text-decoration:none;color:#245f50}
+    .nn-eco-no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;color:#83948e}
+    .nn-eco-grid strong{display:block;font-size:16px;font-weight:700}
+    .nn-eco-grid small{display:block;margin-top:4px;font-size:12px;color:#788a84}
+    .nn-eco-grid b{font-size:10px;font-weight:700}
+
+    .nn-footer{border-top:1px solid rgba(31,94,77,.12);padding:24px 0 28px;background:#f8fbf9}
+    .nn-footer .wrap{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center}
+    .nn-footer strong{font-size:11px;letter-spacing:.08em}
+    .nn-footer span,.nn-footer small{font-size:10px;color:#7b8d86}
+    .nn-footer small{text-align:right}
+
+    @media(max-width:900px){
+      .wrap{width:min(760px,calc(100% - 28px))!important}
+      .links a:not(.sign){display:none!important}
+      .hero{padding:40px 0 38px!important}
+      .hero-grid{grid-template-columns:1fr!important;gap:28px!important}
+      .hero h1{max-width:660px!important;font-size:clamp(43px,7vw,52px)!important}
+      .visual-shell{width:100%!important;max-width:620px!important;margin:auto!important}
+      .nn-section-intro,.section-head{grid-template-columns:1fr!important;gap:12px!important}
+      .nn-section-intro p,.section-head p{max-width:650px!important}
+      .cert-stack{width:min(650px,91vw)!important;transform:none!important}
+    }
+
+    @media(max-width:560px){
+      .wrap{width:calc(100% - 20px)!important}
+      .nav{min-height:58px!important}
+      .brandmark{width:29px!important}
+      .brandcopy strong{font-size:11px!important}
+      .brandcopy small{display:none!important}
+      .links .sign{padding:7px 9px!important;font-size:10px!important}
+      .hero{padding:30px 0 30px!important}
+      .hero h1{margin:14px 0 14px!important;font-size:clamp(36px,10.3vw,40px)!important;line-height:1.03!important;letter-spacing:-.035em!important}
+      .hero-copy{font-size:14px!important;line-height:1.58!important}
+      .actions{margin-top:18px!important}
+      .btn{min-height:41px!important;padding:0 13px!important;font-size:11px!important}
+      .trustline{gap:9px!important;font-size:7.5px!important}
+      .commandbar{margin-top:16px!important}
+      .visual-shell{padding:9px!important;border-radius:20px!important}
+      .proof-card{min-height:348px!important;padding:11px!important;border-radius:16px!important}
+      .proof-holder{height:270px!important;border-radius:14px!important}
+      .proof-top{font-size:6.5px!important}
+      .proof-labels{display:none!important}
+      .proof-caption{font-size:8.5px!important}
+      .nn-index,.receipt-section,.nn-ecosystem{padding:40px 0 46px!important}
+      .nn-section-intro{margin-bottom:18px!important}
+      .nn-section-intro h2,.section-head h2{font-size:29px!important;line-height:1.1!important}
+      .nn-section-intro p,.section-head p{font-size:13px!important;line-height:1.6!important}
+      .nn-index-list a{grid-template-columns:32px 1fr 22px;gap:10px;min-height:58px}
+      .nn-index-list em{display:none}
+      .nn-index-list strong{font-size:14px}
+      .cert-stack{width:95vw!important}
+      .cert-note{font-size:6px!important;letter-spacing:.07em!important}
+      .cert-caption{font-size:10.5px!important;padding:0 4px!important}
+      .nn-eco-grid a{grid-template-columns:32px 1fr;gap:10px;min-height:72px}
+      .nn-eco-grid b{display:none}
+      .nn-footer .wrap{grid-template-columns:1fr;gap:7px}
+      .nn-footer small{text-align:left}
+    }
+  `;
+  d.head.appendChild(style);
+  frame.classList.add('ready');
+});
+</script>
+</body>
+</html>
