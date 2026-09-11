@@ -3,6 +3,8 @@ from pathlib import Path
 import re
 import xml.etree.ElementTree as ET
 
+ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
+
 ROOT = Path(__file__).resolve().parent
 TODAY = '2026-09-11'
 
@@ -91,9 +93,10 @@ def prune_sitemaps(noindex):
             rel=loc.text.removeprefix('https://nexusnovatools.com/').split('#')[0] or 'index.html'
             if rel in noindex:
                 root.remove(url); removed+=1
-        if removed:
-            ET.indent(tree,space='  ')
-            tree.write(p,encoding='utf-8',xml_declaration=True)
+        # Always normalize to the default sitemap namespace (never ns0:loc).
+        ET.indent(tree,space='  ')
+        tree.write(p,encoding='utf-8',xml_declaration=True)
+        if removed or 'ns0:' in p.read_text(encoding='utf-8'):
             changed.append((p.name,removed))
     # One canonical discovery sitemap avoids duplicated sitemap families.
     index='''<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap><loc>https://nexusnovatools.com/sitemap.xml</loc></sitemap>\n</sitemapindex>\n'''
