@@ -1,0 +1,191 @@
+name: NexusNova Zero Warning AdSense Polish Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/adsense-zero-warning-polish-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply remaining audit fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import xml.etree.ElementTree as ET
+
+          R=Path('.')
+          TODAY='2026-09-11'
+          changed=[]
+
+          def save(rel,text):
+              p=R/rel
+              old=p.read_text(encoding='utf-8')
+              if text != old:
+                  p.write_text(text,encoding='utf-8')
+                  changed.append(rel)
+
+          placeholder='<section class="section"><div class="container article"><h2>How this category is organized</h2><h2>Trust and privacy</h2></div></section>'
+          hub_sections={
+            'pdf-tools.html': '''<section class="section"><div class="container article"><h2>How this category is organized</h2><p>Choose the PDF tool by the change you need to make. Merge combines complete documents, Split extracts selected pages, JPG to PDF packages images as document pages, and Text to PDF turns written content into a simple printable file. Resume and invoice tools create new documents rather than modifying an existing PDF, so keeping those tasks separate makes the expected output easier to understand and verify.</p><h2>Trust and privacy</h2><p>Document files can contain names, addresses, signatures and other sensitive information. NexusNova PDF utilities are designed around browser-focused processing where the individual tool supports it, but you should still read the page-specific privacy note and keep the original file until the result has been checked. Open the finished PDF, confirm page order and readability, and use an appropriate device and sharing method for confidential documents.</p></div></section>''',
+            'image-tools.html': '''<section class="section"><div class="container article"><h2>How this category is organized</h2><p>Use resizing when pixel dimensions need to change, compression when file size is the main problem, format conversion when compatibility matters, OCR when readable text must be extracted, and metadata cleanup when you want a fresh copy without common embedded EXIF or GPS details. The CCTV and paper-size tools solve narrower tasks and state their own limits on the relevant page.</p><h2>Trust and privacy</h2><p>Image processing can affect transparency, text edges, colour, detail and metadata, so keep the original before making a delivery copy. Browser-focused tools reduce unnecessary file movement where supported, but each tool can have different library or format requirements. Check the page-specific notes, inspect the exported image at normal zoom, and avoid treating enhancement or OCR output as recovered information that was never present in the source.</p></div></section>''',
+            'productivity-tools.html': '''<section class="section"><div class="container article"><h2>How this category is organized</h2><p>This category groups small tools around a practical next action: compare meeting times, draft a resume or invoice, structure a prompt, keep a quick local note, measure typing performance, or create a direct WhatsApp link. They are intentionally separate so a user can choose one focused workflow instead of opening a large dashboard for a simple task.</p><h2>Trust and privacy</h2><p>Storage and output behaviour varies by tool. A local note depends on the current browser and device, while a resume or invoice may be printed or saved as a file and a meeting planner depends on correct time-zone data. Review the tool-specific privacy and limitation notes, save important outputs outside the browser when needed, and independently verify dates, times or business details when an error could cause a missed meeting or incorrect document.</p></div></section>''',
+            'pakistan-tools.html': '''<section class="section"><div class="container article"><h2>How this category is organized</h2><p>Pakistan Tools groups calculations and references that depend on local context: salaried-person tax, residential electricity estimates, Zakat, prayer times and public holidays. Each task has different inputs and authorities, so the category links to focused pages rather than presenting one combined result. The relevant calculator should state its period, method, assumptions or source notes close to the result.</p><h2>Trust and privacy</h2><p>Rates, tariff slabs, tax rules and officially announced dates can change. Use the calculator for transparent arithmetic and planning, then confirm current rules with the relevant official authority before a payment, filing or other consequential decision. Prayer-time and Qibla calculations also depend on location and calculation settings. Keep sensitive financial inputs on a trusted device, and do not treat a convenience calculator as an official bill, tax assessment, religious ruling or government notice.</p></div></section>'''
+          }
+          for rel,new_section in hub_sections.items():
+              s=(R/rel).read_text(encoding='utf-8')
+              if new_section not in s:
+                  if placeholder not in s:
+                      raise SystemExit(f'Expected category placeholder not found in {rel}')
+                  s=s.replace(placeholder,new_section,1)
+              s=re.sub(r'"dateModified":"2026-09-(?:03|05)"',f'"dateModified":"{TODAY}"',s,count=1)
+              save(rel,s)
+
+          # HumanProof SEO lengths: keep meaning, remove avoidable length warnings.
+          rel='humanproof.html'
+          s=(R/rel).read_text(encoding='utf-8')
+          old_title='NexusNova HumanProof — Live Human Verification, Pricing & Business Access'
+          new_title='NexusNova HumanProof — Live Human Verification & Pricing'
+          old_desc='NexusNova HumanProof adds live-human approval to sensitive digital actions with exact-action binding, auditable digital receipts and affordable launch pricing for personal, business and enterprise use.'
+          new_desc='NexusNova HumanProof adds live-human approval, exact-action binding and auditable digital receipts to sensitive digital actions, with transparent launch pricing.'
+          s=s.replace(f'<title>{old_title}</title>',f'<title>{new_title}</title>')
+          s=s.replace(f'<meta name="description" content="{old_desc}">',f'<meta name="description" content="{new_desc}">')
+          s=s.replace(f'"name":"{old_title}"',f'"name":"{new_title}"')
+          save(rel,s)
+
+          policy_data={
+            'cancellation-policy.html': {
+              'title':'Cancellation Policy — NexusNova HumanProof',
+              'desc':'Cancellation terms for NexusNova HumanProof personal, business and enterprise digital verification services.',
+              'extra':'''<h2>Before requesting cancellation</h2><p>Check whether the paid verification has already started and, for a business credit pack, whether any purchased credits have been used. Those facts affect which cancellation rule applies. Keep the order reference and purchase date available so support can identify the transaction without asking for sensitive payment credentials. A cancellation request is reviewed against the purchase state and the terms shown here; sending a request does not require you to disclose a password, full card number or one-time verification code.</p>'''
+            },
+            'refund-policy.html': {
+              'title':'Refund Policy — NexusNova HumanProof',
+              'desc':'Refund terms for NexusNova HumanProof digital verification services, duplicate charges, failed fulfilment and eligible unused business credits.',
+              'extra':'''<h2>Information that helps a refund review</h2><p>Keep the order reference, purchase date, plan name, charged amount and a short description of what happened. Screenshots of an error can be useful when they do not expose passwords, full card numbers, one-time codes or other secrets. NexusNova can then distinguish a duplicate charge or technical fulfilment problem from an already completed digital service. A refund request is reviewed against the transaction and service state rather than being approved automatically from a browser message alone.</p>'''
+            },
+            'digital-delivery-policy.html': {
+              'title':'Digital Delivery Policy — NexusNova HumanProof',
+              'desc':'Digital delivery and fulfilment terms for NexusNova HumanProof verification services and business verification credits.',
+              'extra':'''<h2>Keep your delivery reference</h2><p>Because HumanProof is delivered digitally, the order reference and verified account or contact details are the practical record used to trace fulfilment. If a payment confirmation appears before access is visible, avoid repeating the purchase until the transaction state has been checked. Support can review the order reference and status without needing your password, full card number or one-time code.</p>'''
+            }
+          }
+          for rel,d in policy_data.items():
+              s=(R/rel).read_text(encoding='utf-8')
+              # Keep existing canonical and policy body, add complete share metadata.
+              if '<meta property="og:type"' not in s:
+                  canonical=f'https://nexusnovatools.com/{rel}'
+                  social=(
+                    f'<meta property="og:type" content="website">\n'
+                    f'<meta property="og:site_name" content="NexusNova Tools">\n'
+                    f'<meta property="og:title" content="{d["title"]}">\n'
+                    f'<meta property="og:description" content="{d["desc"]}">\n'
+                    f'<meta property="og:url" content="{canonical}">\n'
+                    f'<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">\n'
+                    f'<meta name="twitter:card" content="summary">\n'
+                    f'<meta name="twitter:title" content="{d["title"]}">\n'
+                    f'<meta name="twitter:description" content="{d["desc"]}">\n'
+                    f'<meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">\n'
+                  )
+                  marker='<link rel="canonical" href="'+canonical+'"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">\n'
+                  if marker not in s: raise SystemExit(f'Canonical marker not found in {rel}')
+                  s=s.replace(marker,marker+social,1)
+              # Align the visible meta description where refund wording was improved.
+              s=re.sub(r'<meta name="description" content="[^"]+">',f'<meta name="description" content="{d["desc"]}">',s,count=1)
+              if d['extra'] not in s:
+                  marker='<h2>Questions</h2>' if rel=='refund-policy.html' else ('<h2>How to cancel</h2>' if rel=='cancellation-policy.html' else '<h2>Delivery problems</h2>')
+                  if marker not in s: raise SystemExit(f'Insertion marker missing in {rel}')
+                  s=s.replace(marker,d['extra']+marker,1)
+              s=s.replace('<small>TOOLS • HUMANPROOF • LIVE</small>','<small>TOOLS • HUMANPROOF • GUIDES</small>')
+              if 'assets/js/main.js' not in s:
+                  s=s.replace('</body>','<script src="assets/js/main.js" defer></script>\n</body>',1)
+              save(rel,s)
+
+          # Main sitemap must cover every indexable canonical surfaced by strict audits.
+          rel='sitemap.xml'
+          sm=(R/rel).read_text(encoding='utf-8')
+          extra_urls=[
+            'https://nexusnovatools.com/cancellation-policy.html',
+            'https://nexusnovatools.com/digital-delivery-policy.html',
+            'https://nexusnovatools.com/refund-policy.html',
+            'https://nexusnovatools.com/meta-tag-generator.html',
+          ]
+          for loc in extra_urls:
+              if f'<loc>{loc}</loc>' not in sm:
+                  block=f'  <url>\n    <loc>{loc}</loc>\n    <lastmod>{TODAY}</lastmod>\n  </url>\n'
+                  sm=sm.replace('</urlset>',block+'</urlset>',1)
+              else:
+                  sm=re.sub(rf'(<loc>{re.escape(loc)}</loc>\s*<lastmod>)[^<]+',rf'\g<1>{TODAY}',sm,count=1)
+          save(rel,sm)
+
+          ET.parse(R/'sitemap.xml')
+          print('Changed files:',len(changed))
+          for rel in changed: print(' -',rel)
+          PY
+
+      - name: Require zero local AdSense reviewer warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python adsense_reviewer_audit.py
+          python - <<'PY'
+          import json
+          data=json.load(open('adsense-reviewer-audit.json',encoding='utf-8'))
+          s=data.get('summary',{})
+          b=int(s.get('blockers',0) or 0); w=int(s.get('warnings',0) or 0)
+          print('AdSense reviewer local:',s)
+          if b or w:
+              raise SystemExit(f'Need 0 blockers/0 warnings; got {b}/{w}')
+          PY
+
+      - name: Require zero full-site static findings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .github/scripts/site_quality_audit.py
+          python - <<'PY'
+          import json
+          data=json.load(open('site-quality-report.json',encoding='utf-8'))
+          severe=data.get('severe',[]); warnings=data.get('warnings',[])
+          if severe or warnings:
+              print('SEVERE:'); [print(' -',x) for x in severe]
+              print('WARNINGS:'); [print(' -',x) for x in warnings]
+              raise SystemExit(f'{len(severe)} severe / {len(warnings)} warnings remain')
+          print('Full-site static audit: 0 severe / 0 warnings')
+          PY
+
+      - name: Require strict deep audit clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .github/scripts/deep_site_audit_strict.py
+
+      - name: Commit verified fixes and remove one-off workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-adsense[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/adsense-zero-warning-polish-once.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'seo: clear final AdSense and site-quality warnings'
+          git pull --rebase origin main
+          git push origin main
