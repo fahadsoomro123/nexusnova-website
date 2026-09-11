@@ -2,46 +2,45 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {pathToFileURL}=require('node:url');
 
 const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const json=file=>JSON.parse(read(file));
 
 test('gold conversion math uses troy ounce and tola mass constants correctly',async()=>{
-  const moduleUrl=pathToFileURL(path.join(root,'.github/scripts/live_gold_math.mjs')).href;
-  const {deriveGoldPkr,TROY_OUNCE_GRAMS,TOLA_GRAMS}=await import(moduleUrl);
-  assert.equal(TROY_OUNCE_GRAMS,31.1034768);
-  assert.equal(TOLA_GRAMS,11.6638038);
-  const result=deriveGoldPkr(4000,280);
-  assert.equal(result.per_tola_24k,420000);
-  assert.equal(result.per_tola_22k,385000);
-  assert.equal(result.per_10g_24k,360088.36);
-  assert.equal(result.per_gram_24k,36008.84);
+  const source=read('.github/scripts/live_gold_math.mjs');
+  assert.match(source,/31\.1034768/);
+  assert.match(source,/11\.6638038/);
+  const mod=await import(`../.github/scripts/live_gold_math.mjs?test=${Date.now()}`);
+  const quote=mod.computeGoldReferences({xauUsd:2400,usdPkr:280});
+  assert.equal(Math.round(quote.usdPerGram*100)/100,77.16);
+  assert.equal(Math.round(quote.pkrPerTola24k),251963);
+  assert.equal(Math.round(quote.pkrPerTola22k),230966);
 });
 
 test('browser gold renderer reads only the cached local dataset',()=>{
   const client=read('assets/js/live-gold.js');
-  assert.match(client,/assets\/data\/live-gold\.json/);
-  assert.doesNotMatch(client,/api\.gold-api\.com/);
-  assert.doesNotMatch(client,/frankfurter\.dev/);
+  assert.match(client,/assets\/data\/gold-latest\.json/);
+  assert.doesNotMatch(client,/metals-api|goldapi|fetch\([^)]*https?:\/\//i);
 });
 
 test('gold page clearly separates international conversion from Pakistan Sarafa board rates',()=>{
   const page=read('gold-rates.html');
-  assert.match(page,/kept separate from local Sarafa board rates/i);
-  assert.match(page,/Pakistan Sarafa board rate/i);
-  assert.match(page,/does not label an international conversion as the Pakistan Sarafa Bazaar rate/i);
-  assert.match(page,/upstream gold timestamp/i);
+  assert.match(page,/International reference/);
+  assert.match(page,/Pakistan local Sarafa quote/);
+  assert.match(page,/not a jeweller quote/i);
 });
 
 test('gold updater selects a dedicated Sarafa API but keeps local quote fail-closed until server key and response validation',()=>{
   const updater=read('.github/scripts/update_live_gold.mjs');
-  const seed=JSON.parse(read('assets/data/live-gold.json'));
-  assert.match(updater,/https:\/\/api\.gold-api\.com\/price\/XAU/);
-  assert.match(updater,/deriveGoldPkr/);
-  assert.match(updater,/Sarafa\.pk Developer API/);
-  assert.match(updater,/https:\/\/api\.sarafa\.pk/);
-  assert.equal(seed.local_sarafa.status,'source_ready_key_required');
+  assert.match(updater,/SARAFAPK_API_KEY/);
+  assert.match(updater,/api\.sarafa\.pk\/api\/gold-rate/);
+  assert.match(updater,/computeGoldReferences/);
+  assert.match(updater,/parseSarafaPayload/);
+  assert.match(updater,/PK\/PAK|Pakistan|PKR/i);
+  assert.match(updater,/if\(!res\.ok\)throw new Error/);
+  const seed=json('assets/data/gold-latest.json');
+  assert.equal(seed.local_sarafa.status,'pending_source');
   assert.equal(seed.local_sarafa.source.name,'Sarafa.pk Developer API');
   assert.match(seed.local_sarafa.message,/server-side Sarafa\.pk API key/i);
   assert.equal(seed.local_sarafa.per_tola_24k,undefined);
@@ -53,11 +52,12 @@ test('browser exposes selected Sarafa source without publishing an invented loca
   assert.match(client,/localSource\.url/);
 });
 
-test('shared navigation exposes LIVE while gold stays out of search discovery during remediation',()=>{
+test('primary AdSense reviewer navigation keeps LIVE out while the noindex LIVE hub remains directly usable',()=>{
   const main=read('assets/js/main.js');
   const sitemap=read('sitemap-live.xml');
   const hub=read('live.html');
-  assert.match(main,/\['live\.html','LIVE'\]/);
+  assert.doesNotMatch(main,/\['live\.html','LIVE'\]/);
+  assert.match(main,/\['gaming\.html','Gaming'\]/);
   assert.doesNotMatch(sitemap,/https:\/\/nexusnovatools\.com\/gold-rates\.html/);
   assert.match(read('gold-rates.html'),/<meta name="robots" content="noindex, follow">/);
   assert.match(hub,/href="gold-rates\.html"/);
