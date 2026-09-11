@@ -1,0 +1,51 @@
+name: Checklist Quality Gap Fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/checklist_quality_gap_fix.py'
+      - '.github/workflows/checklist-quality-gap-fix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-nine-page-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply explicit method example limitation evidence
+        run: python .github/scripts/checklist_quality_gap_fix.py
+      - name: Commit only the nine quality-gap pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            date-difference-calculator.html
+            discount-calculator.html
+            gamer-name-generator.html
+            pakistan-public-holidays-2026.html
+            paper-size-converter.html
+            pomodoro-timer.html
+            qr-code-generator.html
+            text-case-converter.html
+            youtube-thumbnail-downloader.html
+          )
+          git add -- "${files[@]}"
+          if git diff --cached --quiet; then
+            echo 'No page changes required.'
+            exit 0
+          fi
+          git config user.name 'nexusnova-checklist[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'content: close nine checklist quality evidence gaps'
+          git pull --rebase origin main
+          git push origin HEAD:main
