@@ -221,11 +221,12 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 ## Final live verification — 11 September 2026
 
 - GitHub Pages deployment verified on the custom domain.
-- Internal link crawl: 4,010 references checked, 0 broken.
+- Internal link crawl after final hub cleanup: 3,998 references checked, 0 broken.
 - Automated repository suite: 166/166 tests passed.
 - Main sitemap: 100 focused indexable URLs; no noindexed URL remains in it.
 - Repeated `NEXUSNOVA_COMPACT_TOOL_GUIDE` markers remaining: 0.
 - Duplicate sitemap title findings: 0.
+- Long paragraphs repeated across 3 or more indexable pages: 0.
 - Approved 3D HumanProof stage and approved V11 sample credential preserved.
 - SAMPLE, NOT VERIFIED, NO LIVE PROOF and NOT ISSUED states verified.
 - Privacy-choice and Ask NOVA floating controls are hidden.
