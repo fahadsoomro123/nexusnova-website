@@ -129,8 +129,7 @@ async function createCheckout(request, env) {
         amount: plan.amount,
         metadata: {
           order_id: orderId,
-          source: 'nexusnova-humanproof',
-          plan: planKey
+          source: 'nexusnova-humanproof'
         },
         include_fees: false
       })
