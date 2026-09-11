@@ -1,25 +1,139 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>HumanProof Checkout — NexusNova</title>
 <meta name="description" content="Review your NexusNova HumanProof plan, digital delivery terms and payment policies before secure Safepay checkout.">
-<meta name="robots" content="noindex,follow"><meta name="theme-color" content="#f7f9ff">
-<link rel="canonical" href="https://nexusnovatools.com/humanproof-checkout.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/compact-2026.css?v=20260911-indigo4"><link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260911-1">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#f7f9ff">
+<link rel="canonical" href="https://nexusnovatools.com/humanproof-checkout.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260911-indigo4">
+<link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260911-1">
 <style>
 #payButton{transition:transform .14s ease,box-shadow .18s ease,filter .18s ease,opacity .18s ease;background:linear-gradient(135deg,#6558ff,#0c789e 52%,#744bd8)!important;color:#fff!important}
-#payButton:not(:disabled):hover{transform:translateY(-2px);filter:brightness(.96) saturate(1.08);box-shadow:0 14px 30px rgba(82,76,190,.28)!important;background:linear-gradient(135deg,#5d50ef,#0a7196 52%,#6b43ca)!important}
-#payButton:not(:disabled):active{transform:translateY(1px) scale(.992);filter:brightness(.88);box-shadow:0 5px 12px rgba(82,76,190,.20)!important;background:linear-gradient(135deg,#5145d7,#096480 52%,#5c39b6)!important}
-#payButton:disabled,#payButton:disabled:hover,#payButton:disabled:active{background:linear-gradient(135deg,#6558ff,#0c789e 52%,#744bd8)!important;color:rgba(255,255,255,.94)!important;opacity:.72!important;transform:none!important;filter:saturate(.78)!important;box-shadow:0 8px 20px rgba(82,76,190,.13)!important;cursor:not-allowed!important}
+#payButton:not(:disabled):hover{transform:translateY(-2px);filter:brightness(.96) saturate(1.08);box-shadow:0 14px 30px rgba(82,76,190,.28)!important}
+#payButton:not(:disabled):active{transform:translateY(1px) scale(.992);filter:brightness(.88)}
+#payButton:disabled{opacity:.58!important;transform:none!important;cursor:not-allowed!important}
+.hp-test-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(101,88,255,.22);border-radius:999px;background:rgba(101,88,255,.08);font-size:12px;font-weight:800;letter-spacing:.04em;color:#493ec9;margin:0 0 12px}.hp-test-badge:before{content:"";width:7px;height:7px;border-radius:50%;background:#6558ff}
+.hp-pay-error{color:#a51d2d!important;font-weight:700}.hp-pay-ready{color:#246749!important;font-weight:700}
 @media(prefers-reduced-motion:reduce){#payButton{transition:none}}
 </style>
 </head>
 <body>
 <header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>TOOLS • HUMANPROOF • LIVE</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="humanproof.html#pricing">Pricing</a><a href="contact.html">Support</a></nav></div></header>
-<main class="hp-commerce-main"><div class="hp-commerce-wrap"><a class="hp-commerce-back" href="humanproof.html#pricing">← Change plan</a><div class="hp-commerce-head"><div><span class="hp-commerce-kicker">SECURE DIGITAL CHECKOUT</span><h2>Review your HumanProof order.</h2></div><p>Pricing, delivery, refund and cancellation information stays visible before payment.</p></div><div class="hp-commerce-order"><section class="hp-commerce-summary" aria-labelledby="order-title"><span class="hp-commerce-launch">ORDER SUMMARY</span><h1 id="order-title" style="font-size:30px;margin:10px 0 5px">HumanProof <span id="planName">Personal</span></h1><p class="hp-commerce-muted" id="planCopy">One production HumanProof verified action and digital receipt.</p><div class="hp-commerce-summaryrow"><span>Plan</span><strong id="planNameRow">Personal</strong></div><div class="hp-commerce-summaryrow"><span>Included</span><strong id="planIncluded">1 verified action</strong></div><div class="hp-commerce-summaryrow"><span>Currency</span><strong>USD</strong></div><div class="hp-commerce-summaryrow"><span>Total</span><strong id="planPrice">$0.99</strong></div><div class="hp-commerce-summaryrow"><span>Delivery</span><strong>Digital only</strong></div><label class="hp-commerce-check"><input id="agree" type="checkbox"><span>I have reviewed the <a href="terms.html">Terms</a>, <a href="privacy.html">Privacy Policy</a>, <a href="refund-policy.html">Refund Policy</a>, <a href="cancellation-policy.html">Cancellation Policy</a> and <a href="digital-delivery-policy.html">Digital Delivery Policy</a>.</span></label><div class="hp-commerce-paybox"><h3>Safepay checkout</h3><p class="hp-commerce-muted">The website checkout structure is ready, but a real Safepay payment session must be created by a secure server using the merchant's Safepay credentials. No API secret is stored in this page.</p><button class="btn btn-primary" id="payButton" type="button" disabled style="width:100%">Safepay activation pending</button><p id="payHelp" class="hp-commerce-muted" style="margin:8px 0 0">For review safety, this build does not simulate or falsely mark a payment as successful.</p></div></section><aside><div class="hp-commerce-status"><strong>What happens after payment?</strong><p>After Safepay confirms a real transaction to the trusted NexusNova backend, the order receives a server-confirmed payment state. Personal customers can continue to the paid HumanProof verification. Business orders receive the applicable credit allocation or integration access as available.</p></div><div class="hp-commerce-status" style="margin-top:10px"><strong>Order confirmation</strong><p>A production confirmation page must use server-validated payment data, not a browser-only query parameter. That prevents a customer from creating a fake “paid” result by editing a URL.</p></div><div class="hp-commerce-status" style="margin-top:10px"><strong>Merchant support</strong><p>NexusNova Tools<br><a href="mailto:nexusnovatools@gmail.com">nexusnovatools@gmail.com</a><br><a href="contact.html">Customer support & contact</a></p></div></aside></div></div>
-<section class="hp-commerce-section"><div class="hp-commerce-wrap"><div class="hp-commerce-grid4"><div class="hp-commerce-policy"><b>Refund Policy</b><p>Duplicate charges, eligible failed fulfilment and unused qualifying business packs.</p><a href="refund-policy.html">Read policy →</a></div><div class="hp-commerce-policy"><b>Cancellation</b><p>One-time launch purchases with clear pre-fulfilment cancellation rules.</p><a href="cancellation-policy.html">Read policy →</a></div><div class="hp-commerce-policy"><b>Digital Delivery</b><p>No physical shipping. HumanProof orders and results are digital.</p><a href="digital-delivery-policy.html">Read policy →</a></div><div class="hp-commerce-policy"><b>Privacy</b><p>Read how NexusNova describes browser processing, accounts and service data.</p><a href="privacy.html">Read privacy policy →</a></div></div></div></section>
+
+<main class="hp-commerce-main">
+<div class="hp-commerce-wrap">
+<a class="hp-commerce-back" href="humanproof.html#pricing">← Change plan</a>
+<div class="hp-commerce-head"><div><span class="hp-commerce-kicker">SECURE DIGITAL CHECKOUT</span><h2>Review your HumanProof order.</h2></div><p>Pricing, delivery, refund and cancellation information stays visible before payment.</p></div>
+
+<div class="hp-commerce-order">
+<section class="hp-commerce-summary" aria-labelledby="order-title">
+<div class="hp-test-badge">SAFEpay SANDBOX • TEST MODE</div>
+<span class="hp-commerce-launch">ORDER SUMMARY</span>
+<h1 id="order-title" style="font-size:30px;margin:10px 0 5px">HumanProof <span id="planName">Personal</span></h1>
+<p class="hp-commerce-muted" id="planCopy">One production HumanProof verified action and digital receipt.</p>
+<div class="hp-commerce-summaryrow"><span>Plan</span><strong id="planNameRow">Personal</strong></div>
+<div class="hp-commerce-summaryrow"><span>Included</span><strong id="planIncluded">1 verified action</strong></div>
+<div class="hp-commerce-summaryrow"><span>Currency</span><strong>USD</strong></div>
+<div class="hp-commerce-summaryrow"><span>Total</span><strong id="planPrice">$1.00</strong></div>
+<div class="hp-commerce-summaryrow"><span>Delivery</span><strong>Digital only</strong></div>
+
+<label class="hp-commerce-check"><input id="agree" type="checkbox"><span>I have reviewed the <a href="terms.html">Terms</a>, <a href="privacy.html">Privacy Policy</a>, <a href="refund-policy.html">Refund Policy</a>, <a href="cancellation-policy.html">Cancellation Policy</a> and <a href="digital-delivery-policy.html">Digital Delivery Policy</a>.</span></label>
+
+<div class="hp-commerce-paybox">
+<h3>Safepay secure checkout</h3>
+<p class="hp-commerce-muted">This checkout creates the payment session on the NexusNova server. Safepay credentials are never stored in this web page.</p>
+<button class="btn btn-primary" id="payButton" type="button" disabled style="width:100%">Accept policies to continue</button>
+<p id="payHelp" class="hp-commerce-muted" style="margin:8px 0 0">Sandbox / Test Mode is active for Safepay due-diligence testing. No live production charge is being claimed on this page.</p>
+</div>
+</section>
+
+<aside>
+<div class="hp-commerce-status"><strong>What happens after payment?</strong><p>Safepay returns you to NexusNova after checkout. NexusNova then checks the Safepay tracker from its server before showing a confirmed payment state.</p></div>
+<div class="hp-commerce-status" style="margin-top:10px"><strong>HumanProof delivery</strong><p>A browser redirect alone never creates a HumanProof result. Production issuance requires trusted server-side payment confirmation and the applicable HumanProof verification flow.</p></div>
+<div class="hp-commerce-status" style="margin-top:10px"><strong>Merchant support</strong><p>NexusNova Tools<br><a href="mailto:nexusnovatools@gmail.com">nexusnovatools@gmail.com</a><br><a href="contact.html">Customer support & contact</a></p></div>
+</aside>
+</div>
+</div>
+
+<section class="hp-commerce-section"><div class="hp-commerce-wrap"><div class="hp-commerce-grid4">
+<div class="hp-commerce-policy"><b>Refund Policy</b><p>Duplicate charges, eligible failed fulfilment and unused qualifying business packs.</p><a href="refund-policy.html">Read policy →</a></div>
+<div class="hp-commerce-policy"><b>Cancellation</b><p>One-time launch purchases with clear pre-fulfilment cancellation rules.</p><a href="cancellation-policy.html">Read policy →</a></div>
+<div class="hp-commerce-policy"><b>Digital Delivery</b><p>No physical shipping. HumanProof orders and results are digital.</p><a href="digital-delivery-policy.html">Read policy →</a></div>
+<div class="hp-commerce-policy"><b>Privacy</b><p>Read how NexusNova describes browser processing, accounts and service data.</p><a href="privacy.html">Read privacy policy →</a></div>
+</div></div></section>
 </main>
-<footer class="site-footer"><div class="container"><div class="hp-commerce-footerlinks"><a href="humanproof.html#pricing">Pricing</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund-policy.html">Refund</a><a href="contact.html">Contact</a></div><div class="footer-bottom"><span>© NexusNova Tools</span><span>Secure checkout architecture • No client-side payment secrets</span></div></div></footer>
-<script>(()=>{const plans={personal:{name:'Personal',price:'$0.99',included:'1 verified action',copy:'One production HumanProof verified action and digital receipt.'},starter:{name:'Business Starter',price:'$9.99',included:'100 verification credits',copy:'Launch pack for startups and small teams testing HumanProof workflows.'},growth:{name:'Business Growth',price:'$24.99',included:'500 verification credits',copy:'Higher-volume launch pack for growing products and repeated approval workflows.'}};const key=new URLSearchParams(location.search).get('plan')||'personal';const p=plans[key]||plans.personal;document.getElementById('planName').textContent=p.name;document.getElementById('planNameRow').textContent=p.name;document.getElementById('planIncluded').textContent=p.included;document.getElementById('planPrice').textContent=p.price;document.getElementById('planCopy').textContent=p.copy;const agree=document.getElementById('agree');const btn=document.getElementById('payButton');agree.addEventListener('change',()=>{btn.textContent='Safepay activation pending';btn.disabled=true})})();</script>
-</body></html>
+
+<footer class="site-footer"><div class="container"><div class="hp-commerce-footerlinks"><a href="humanproof.html#pricing">Pricing</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund-policy.html">Refund</a><a href="contact.html">Contact</a></div><div class="footer-bottom"><span>© NexusNova Tools</span><span>Secure server-side Safepay checkout • No client-side payment secrets</span></div></div></footer>
+
+<script>
+(()=>{
+  const WORKER='https://nexusnova-safepay.fahadsoomro123.workers.dev';
+  const plans={
+    personal:{name:'Personal',price:'$1.00',included:'1 verified action',copy:'One production HumanProof verified action and digital receipt.'},
+    starter:{name:'Business Starter',price:'$9.99',included:'100 verification credits',copy:'Launch pack for startups and small teams testing HumanProof workflows.'},
+    growth:{name:'Business Growth',price:'$24.99',included:'500 verification credits',copy:'Higher-volume launch pack for growing products and repeated approval workflows.'}
+  };
+
+  const requested=new URLSearchParams(location.search).get('plan')||'personal';
+  const key=plans[requested]?requested:'personal';
+  const p=plans[key];
+  document.getElementById('planName').textContent=p.name;
+  document.getElementById('planNameRow').textContent=p.name;
+  document.getElementById('planIncluded').textContent=p.included;
+  document.getElementById('planPrice').textContent=p.price;
+  document.getElementById('planCopy').textContent=p.copy;
+
+  const agree=document.getElementById('agree');
+  const btn=document.getElementById('payButton');
+  const help=document.getElementById('payHelp');
+  let busy=false;
+
+  function syncButton(){
+    if(busy)return;
+    btn.disabled=!agree.checked;
+    btn.textContent=agree.checked?'Pay securely with Safepay':'Accept policies to continue';
+  }
+
+  agree.addEventListener('change',syncButton);
+  syncButton();
+
+  btn.addEventListener('click',async()=>{
+    if(!agree.checked||busy)return;
+    busy=true;
+    btn.disabled=true;
+    btn.textContent='Creating secure checkout…';
+    help.className='hp-commerce-muted';
+    help.textContent='Connecting securely to Safepay Sandbox…';
+
+    try{
+      const response=await fetch(WORKER+'/api/safepay/create-checkout',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({plan:key})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.checkout_url){
+        const code=data.error||('http_'+response.status);
+        throw new Error(code);
+      }
+      help.className='hp-commerce-muted hp-pay-ready';
+      help.textContent='Secure checkout created. Redirecting to Safepay…';
+      location.assign(data.checkout_url);
+    }catch(error){
+      console.error('Safepay checkout error',error);
+      busy=false;
+      btn.disabled=false;
+      btn.textContent='Try Safepay again';
+      help.className='hp-commerce-muted hp-pay-error';
+      help.textContent='Safepay checkout could not start. Please try again. If it continues, contact NexusNova support.';
+    }
+  });
+})();
+</script>
+</body>
+</html>
