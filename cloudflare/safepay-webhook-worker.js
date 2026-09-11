@@ -181,13 +181,9 @@ async function createCheckout(request, env) {
     return json({ ok: false, error: 'passport_token_missing' }, 502, cors);
   }
 
-  const redirectUrl = new URL('https://nexusnovatools.com/humanproof-payment-success.html');
-  redirectUrl.searchParams.set('order_id', orderId);
-  redirectUrl.searchParams.set('plan', planKey);
-
-  const cancelUrl = new URL('https://nexusnovatools.com/humanproof-payment-cancelled.html');
-  cancelUrl.searchParams.set('order_id', orderId);
-  cancelUrl.searchParams.set('plan', planKey);
+  // Keep these URLs free of their own query string. Safepay appends tracker/order data.
+  const redirectUrl = 'https://nexusnovatools.com/humanproof-payment-success.html';
+  const cancelUrl = 'https://nexusnovatools.com/humanproof-payment-cancelled.html';
 
   const checkoutUrl = new URL(checkoutHost);
   checkoutUrl.searchParams.set('environment', environment);
@@ -195,8 +191,8 @@ async function createCheckout(request, env) {
   checkoutUrl.searchParams.set('tracker', tracker);
   checkoutUrl.searchParams.set('source', 'hosted');
   checkoutUrl.searchParams.set('order_id', orderId);
-  checkoutUrl.searchParams.set('redirect_url', redirectUrl.toString());
-  checkoutUrl.searchParams.set('cancel_url', cancelUrl.toString());
+  checkoutUrl.searchParams.set('redirect_url', redirectUrl);
+  checkoutUrl.searchParams.set('cancel_url', cancelUrl);
 
   console.log(JSON.stringify({
     event: 'checkout.created',
@@ -252,20 +248,53 @@ async function paymentStatus(request, env) {
     return json({ ok: false, error: 'status_lookup_failed', status: response.status }, 502, cors);
   }
 
-  const remoteTracker = data?.data?.tracker || data?.tracker || {};
-  const state = remoteTracker?.state || null;
-  const client = remoteTracker?.client || null;
+  // Safepay Reporter responses have appeared in more than one envelope shape.
+  // Accept only known server-returned fields; never trust browser state.
+  const candidate =
+    data?.data?.tracker ||
+    data?.data?.payment ||
+    data?.data ||
+    data?.tracker ||
+    data?.payment ||
+    data ||
+    {};
+
+  const state =
+    candidate?.state ||
+    candidate?.status ||
+    data?.data?.state ||
+    data?.state ||
+    null;
+
+  const client =
+    candidate?.client ||
+    candidate?.merchant_api_key ||
+    data?.data?.client ||
+    data?.data?.merchant_api_key ||
+    data?.client ||
+    data?.merchant_api_key ||
+    null;
 
   if (env.SAFEPAY_PUBLIC_KEY && client && client !== env.SAFEPAY_PUBLIC_KEY) {
     console.error('Safepay payment status merchant mismatch');
     return json({ ok: false, error: 'merchant_mismatch' }, 403, cors);
   }
 
+  const paid = state === 'TRACKER_ENDED' || state === 'PAID' || state === 'COMPLETED';
+
+  console.log(JSON.stringify({
+    event: 'payment.status',
+    tracker,
+    state,
+    paid,
+    environment
+  }));
+
   return json({
     ok: true,
     tracker,
     state,
-    paid: state === 'TRACKER_ENDED',
+    paid,
     environment
   }, 200, cors);
 }
