@@ -186,3 +186,5 @@
 @media(prefers-reduced-motion:reduce){
   .nn-proof-360-scan{animation:none;top:50%;opacity:.22}
 }
+.nn-proof-360-holder.is-paused .nn-proof-360-load{cursor:pointer}
+.nn-proof-360-holder.is-paused .nn-proof-360-viewer::before{content:"";position:absolute;left:50%;top:48%;width:clamp(96px,32%,180px);aspect-ratio:.78;transform:translate(-50%,-50%);border:1px solid rgba(34,211,238,.34);border-radius:46% 46% 43% 43% / 38% 38% 56% 56%;background:radial-gradient(circle at 50% 42%,rgba(99,88,255,.18),transparent 54%),repeating-linear-gradient(0deg,transparent 0 9px,rgba(34,211,238,.12) 10px 11px);box-shadow:0 0 34px rgba(99,88,255,.16);pointer-events:none}
