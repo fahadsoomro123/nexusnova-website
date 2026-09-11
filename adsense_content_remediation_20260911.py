@@ -64,7 +64,8 @@ def add_noindex(rel: str):
     p=ROOT/rel
     if not p.exists(): return False
     text=p.read_text(encoding='utf-8')
-    if re.search(r'<meta[^>]+name=["\']robots["\'][^>]+noindex', text, re.I): return False
+    robots=re.compile(r'\s*<meta\b(?=[^>]*\bname=["\']robots["\'])[^>]*>', re.I)
+    text=robots.sub('', text)
     meta='<meta name="robots" content="noindex, follow">'
     if '</title>' in text: text=text.replace('</title>', '</title>'+meta, 1)
     elif '<head>' in text: text=text.replace('<head>', '<head>'+meta, 1)
