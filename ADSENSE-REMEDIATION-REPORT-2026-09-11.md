@@ -229,7 +229,7 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 - Approved 3D HumanProof stage and approved V11 sample credential preserved.
 - SAMPLE, NOT VERIFIED, NO LIVE PROOF and NOT ISSUED states verified.
 - Privacy-choice and Ask NOVA floating controls are hidden.
-- Mobile WebGL/model initialization moved behind user action; desktop starts during idle time.
+- WebGL/model initialization moved behind one user action on mobile and desktop, while the lightweight approved scan silhouette remains immediately visible.
 - Google PageSpeed mobile after optimization: Performance 98, Best Practices 100 and SEO 100. FCP 1.1 s, LCP 1.2 s, TBT 0 ms, CLS 0.007. The one reported ARIA issue was then corrected.
 
 ## Re-review verdict
