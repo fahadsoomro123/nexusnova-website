@@ -216,3 +216,22 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 - HumanProof production security, paid issuance and receipt APIs are not represented as complete until a trusted backend is activated and independently reviewed.
 - Indexable tool/article quality should be sampled manually after deployment; broken links, rendered mobile/desktop layout and Lighthouse results must be recorded from the live GitHub Pages build.
 - Do not request AdSense review until deployment and live QA are complete and the owner gives final approval.
+
+
+## Final live verification — 11 September 2026
+
+- GitHub Pages deployment verified on the custom domain.
+- Internal link crawl: 4,010 references checked, 0 broken.
+- Automated repository suite: 166/166 tests passed.
+- Main sitemap: 100 focused indexable URLs; no noindexed URL remains in it.
+- Repeated `NEXUSNOVA_COMPACT_TOOL_GUIDE` markers remaining: 0.
+- Duplicate sitemap title findings: 0.
+- Approved 3D HumanProof stage and approved V11 sample credential preserved.
+- SAMPLE, NOT VERIFIED, NO LIVE PROOF and NOT ISSUED states verified.
+- Privacy-choice and Ask NOVA floating controls are hidden.
+- Mobile WebGL/model initialization moved behind user action; desktop starts during idle time.
+- Google PageSpeed mobile after optimization: Performance 98, Best Practices 100 and SEO 100. FCP 1.1 s, LCP 1.2 s, TBT 0 ms, CLS 0.007. The one reported ARIA issue was then corrected.
+
+## Re-review verdict
+
+**READY AFTER OWNER APPROVAL.** Known scaled boilerplate, duplicate discovery intent, weak trend/news footprint, HumanProof claim clarity, sitemap conflicts, broken links and mobile-performance blockers have been remediated. This is an internal readiness verdict, not an AdSense approval guarantee. Allow Google time to recrawl the changed URLs and submit only when the owner decides to proceed.
