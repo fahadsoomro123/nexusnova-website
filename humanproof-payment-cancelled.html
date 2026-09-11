@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HumanProof Payment Cancelled — NexusNova</title>
+<meta name="description" content="Return to NexusNova HumanProof after a cancelled Safepay checkout.">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#f7f9ff">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260911-indigo4">
+<link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260911-1">
+<style>.hp-result-wrap{max-width:720px;margin:0 auto;padding:60px 18px 80px}.hp-result-card{background:#fff;border:1px solid rgba(69,78,130,.14);border-radius:24px;padding:30px;box-shadow:0 18px 50px rgba(42,53,110,.08)}.hp-result-badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:rgba(101,88,255,.09);color:#493ec9;font-size:12px;font-weight:800;letter-spacing:.04em}.hp-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • CHECKOUT</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
+<main class="hp-result-wrap"><section class="hp-result-card"><span class="hp-result-badge">SAFEpay SANDBOX • TEST MODE</span><h1 style="margin:14px 0 8px">Payment not completed.</h1><p class="hp-commerce-muted">The Safepay checkout was cancelled or closed before completion. No HumanProof result or business credits have been issued.</p><p class="hp-commerce-muted">You can safely return to checkout and try again. No browser-only redirect is treated as proof of payment.</p><div class="hp-result-actions"><a class="btn btn-primary" id="retry" href="humanproof-checkout.html?plan=personal">Try checkout again</a><a class="btn" href="humanproof.html#pricing">View pricing</a><a class="btn" href="contact.html">Contact support</a></div></section></main>
+<footer class="site-footer"><div class="container"><div class="hp-commerce-footerlinks"><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="refund-policy.html">Refund</a><a href="cancellation-policy.html">Cancellation</a><a href="digital-delivery-policy.html">Digital Delivery</a></div><div class="footer-bottom"><span>© NexusNova Tools</span><span>No payment completed</span></div></div></footer>
+<script>(()=>{const plan=new URLSearchParams(location.search).get('plan');if(['personal','starter','growth'].includes(plan)){document.getElementById('retry').href='humanproof-checkout.html?plan='+encodeURIComponent(plan)}})();</script>
+</body>
+</html>
