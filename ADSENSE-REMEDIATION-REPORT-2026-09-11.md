@@ -230,7 +230,7 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 - SAMPLE, NOT VERIFIED, NO LIVE PROOF and NOT ISSUED states verified.
 - Privacy-choice and Ask NOVA floating controls are hidden.
 - WebGL/model initialization moved behind one user action on mobile and desktop, while the lightweight approved scan silhouette remains immediately visible.
-- Google PageSpeed mobile after optimization: Performance 98, Best Practices 100 and SEO 100. FCP 1.1 s, LCP 1.2 s, TBT 0 ms, CLS 0.007. The one reported ARIA issue was then corrected.
+- Final Google PageSpeed: mobile Performance 100, Accessibility 100, Best Practices 100 and SEO 100; desktop Performance 98, Accessibility 100, Best Practices 100 and SEO 100. Mobile FCP 1.0 s, LCP 1.1 s, TBT 30 ms and CLS 0.007; desktop FCP/LCP 0.3 s, TBT 120 ms and CLS 0.022.
 
 ## Re-review verdict
 
