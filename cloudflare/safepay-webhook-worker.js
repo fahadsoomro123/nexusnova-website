@@ -266,7 +266,7 @@ async function paymentStatus(request, env) {
     data?.state ||
     null;
 
-  const client =
+  const clientValue =
     candidate?.client ||
     candidate?.merchant_api_key ||
     data?.data?.client ||
@@ -275,7 +275,12 @@ async function paymentStatus(request, env) {
     data?.merchant_api_key ||
     null;
 
-  if (env.SAFEPAY_PUBLIC_KEY && client && client !== env.SAFEPAY_PUBLIC_KEY) {
+  // Reporter returns client as an object in the current API, e.g. { token, api_key }.
+  const clientKey = typeof clientValue === 'string'
+    ? clientValue
+    : (clientValue?.api_key || clientValue?.apiKey || null);
+
+  if (env.SAFEPAY_PUBLIC_KEY && clientKey && clientKey !== env.SAFEPAY_PUBLIC_KEY) {
     console.error('Safepay payment status merchant mismatch');
     return json({ ok: false, error: 'merchant_mismatch' }, 403, cors);
   }
