@@ -1,0 +1,171 @@
+name: NexusNova Public Artifact Hygiene Fix Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/public-artifact-hygiene-fix-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move internal engineering assets under Pages-excluded .github
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          R=Path('.')
+          script_names=[
+            'adsense_final_remediation.py',
+            'adsense_reviewer_audit.py',
+            'check_internal_links.py',
+            'generate_adsense_remediation_report.py',
+            'site_quality_inventory.py',
+          ]
+          report_names=[
+            'ADSENSE-REMEDIATION-REPORT-2026-09-11.md',
+            'NEXUSNOVA-ADSENSE-READINESS-PROOF-MANIFEST-2026-09-11.md',
+            'WEB-MASTER-CHECKLIST.md',
+            'adsense-reviewer-audit.json',
+          ]
+          (R/'.github/scripts').mkdir(parents=True,exist_ok=True)
+          (R/'.github/reports').mkdir(parents=True,exist_ok=True)
+
+          mapping={}
+          for name in script_names:
+              src=R/name
+              if src.exists():
+                  dst=R/'.github/scripts'/name
+                  subprocess.run(['git','mv',src.as_posix(),dst.as_posix()],check=True)
+                  mapping[name]=dst.as_posix()
+          for name in report_names:
+              src=R/name
+              if src.exists():
+                  dst=R/'.github/reports'/name
+                  subprocess.run(['git','mv',src.as_posix(),dst.as_posix()],check=True)
+                  mapping[name]=dst.as_posix()
+
+          dir_mapping={
+            'cloudflare/':'.github/cloudflare/',
+            'nexusnova-dev-ai/':'.github/nexusnova-dev-ai/',
+          }
+          for old,new in dir_mapping.items():
+              src=R/old.rstrip('/')
+              dst=R/new.rstrip('/')
+              if src.exists():
+                  dst.parent.mkdir(parents=True,exist_ok=True)
+                  subprocess.run(['git','mv',src.as_posix(),dst.as_posix()],check=True)
+
+          # Rewrite tracked textual references to the new repo-internal locations.
+          mappings={**mapping,**dir_mapping}
+          text_ext={'.yml','.yaml','.json','.js','.cjs','.mjs','.py','.md','.txt','.html','.xml','.toml','.css'}
+          tracked=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          for rel in tracked:
+              p=R/rel
+              if not p.is_file() or (p.suffix.lower() not in text_ext and p.name!='package.json'):
+                  continue
+              try:
+                  text=p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              new=text
+              for old,dst in mappings.items():
+                  new=new.replace(old,dst)
+              if new!=text:
+                  p.write_text(new,encoding='utf-8')
+
+          # Root-scanning Python tools now live in .github/scripts; keep their project root at repo root.
+          for name in script_names:
+              p=R/'.github/scripts'/name
+              if not p.exists(): continue
+              text=p.read_text(encoding='utf-8')
+              old='Path(__file__).resolve().parent'
+              if old in text:
+                  text=text.replace(old,'Path(__file__).resolve().parents[2]')
+              p.write_text(text,encoding='utf-8')
+
+          # Durable guard: these engineering files must never return to the Pages-published root.
+          guard=R/'.github/scripts/public_artifact_guard.py'
+          guard.write_text('''from pathlib import Path\n\nROOT = Path(__file__).resolve().parents[2]\nerrors = []\nfor p in sorted(ROOT.glob("*.py")):\n    errors.append(f"root Python file is Pages-deployable: {p.name}")\nfor rel in [\n    "ADSENSE-REMEDIATION-REPORT-2026-09-11.md",\n    "NEXUSNOVA-ADSENSE-READINESS-PROOF-MANIFEST-2026-09-11.md",\n    "WEB-MASTER-CHECKLIST.md",\n    "adsense-reviewer-audit.json",\n    "OWNER-CONTROL-CENTER.md",\n    "adsense_content_remediation_20260911.py",\n    "cloudflare",\n    "nexusnova-dev-ai",\n]:\n    if (ROOT / rel).exists():\n        errors.append(f"internal engineering path is Pages-deployable: {rel}")\nif errors:\n    print("\\n".join(f"ERROR: {x}" for x in errors))\n    raise SystemExit(f"{len(errors)} public-artifact hygiene issue(s) remain")\nprint("Public artifact hygiene: PASS — internal scripts/reports/backend source are outside Pages root.")\n''',encoding='utf-8')
+
+          # Make the main full-site quality gate enforce this permanently.
+          wf=R/'.github/workflows/site-quality-audit.yml'
+          text=wf.read_text(encoding='utf-8')
+          marker='      - name: Scan full site map, SEO and internal links\n        run: python .github/scripts/site_quality_audit.py\n'
+          addition=marker+'\n      - name: Guard public Pages artifact hygiene\n        run: python .github/scripts/public_artifact_guard.py\n'
+          if 'Guard public Pages artifact hygiene' not in text:
+              if marker not in text:
+                  raise SystemExit('site-quality-audit insertion marker not found')
+              text=text.replace(marker,addition,1)
+              wf.write_text(text,encoding='utf-8')
+
+          print('Moved internal scripts:',len([x for x in script_names if (R/'.github/scripts'/x).exists()]))
+          print('Moved internal reports:',len([x for x in report_names if (R/'.github/reports'/x).exists()]))
+          print('Moved backend/dev directories:',', '.join(x.rstrip('/') for x in dir_mapping.values()))
+          PY
+
+      - name: Validate JavaScript and backend source paths
+        run: npm run check
+
+      - name: Run repository tests
+        run: npm test
+
+      - name: Run public artifact guard
+        run: python .github/scripts/public_artifact_guard.py
+
+      - name: Run AdSense reviewer audit after relocation
+        run: python .github/scripts/adsense_reviewer_audit.py
+
+      - name: Run static site quality audit after relocation
+        run: python .github/scripts/site_quality_audit.py
+
+      - name: Run strict deep site audit after relocation
+        run: python .github/scripts/deep_site_audit_strict.py
+
+      - name: Require clean audit summaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          checks=[]
+          p=Path('.github/reports/adsense-reviewer-audit.json')
+          if not p.exists():
+              raise SystemExit('Relocated AdSense audit output missing')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          s=data.get('summary',{})
+          checks.append(('adsense blockers',int(s.get('blockers',0) or 0)))
+          checks.append(('adsense warnings',int(s.get('warnings',0) or 0)))
+          q=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          checks.append(('site severe',len(q.get('severe',[]))))
+          checks.append(('site warnings',len(q.get('warnings',[]))))
+          bad=[f'{k}={v}' for k,v in checks if v]
+          if bad: raise SystemExit('Audit not clean: '+', '.join(bad))
+          print('All relocation quality gates clean:',checks)
+          PY
+
+      - name: Commit hygiene fix and remove temporary workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'nexusnova-hygiene[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -f .github/workflows/public-artifact-hygiene-audit-once.yml .github/workflows/public-artifact-hygiene-fix-once.yml
+          git add -A
+          git commit -m 'security: keep internal engineering files out of Pages artifact'
+          git pull --rebase origin main
+          git push origin main
