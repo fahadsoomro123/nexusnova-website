@@ -1,16 +1,17 @@
 // NexusNova HumanProof hero — approved sci-fi mesh treatment with responsive standard camera framing.
 // 3D head source: Lee Perry-Smith model used by three.js examples (CC BY 3.0).
-(async()=>{
+(()=>{
   const canvas=document.getElementById('nnHumanProof360');
   const holder=document.querySelector('[data-hp-360-holder]');
   const load=document.getElementById('nnHumanProof360Load');
   if(!canvas||!holder||!load)return;
 
+  const compactViewport=window.matchMedia('(max-width:720px)').matches;
+  const boot=async()=>{
   try{
     const THREE=await import('https://esm.sh/three@0.180.0');
     const {GLTFLoader}=await import('https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js');
 
-    const compactViewport=window.matchMedia('(max-width:720px)').matches;
     const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,compactViewport?1.25:1.5));
     renderer.setClearColor(0x000000,0);
@@ -248,5 +249,31 @@
     console.warn('[HumanProof 360]',error);
     load.textContent='3D HUMAN SCAN UNAVAILABLE';
     holder.classList.add('is-error');
+  }
+  };
+
+  if(compactViewport){
+    // Mobile keeps the approved scan stage but moves expensive WebGL/model work
+    // behind an explicit user action so it cannot block initial content or input.
+    load.textContent='TAP TO LOAD 3D HUMAN SCAN';
+    load.setAttribute('role','button');
+    load.setAttribute('tabindex','0');
+    holder.classList.add('is-paused');
+    let started=false;
+    const start=()=>{
+      if(started)return;
+      started=true;
+      holder.classList.remove('is-paused');
+      load.removeAttribute('role');
+      load.removeAttribute('tabindex');
+      load.textContent='LOADING 360° HUMAN SCAN…';
+      boot();
+    };
+    load.addEventListener('click',start,{once:true});
+    load.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();start()}},{once:true});
+  }else if('requestIdleCallback' in window){
+    requestIdleCallback(()=>boot(),{timeout:1800});
+  }else{
+    setTimeout(()=>boot(),500);
   }
 })();
