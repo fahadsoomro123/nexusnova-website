@@ -12,36 +12,41 @@ test('gold conversion math uses troy ounce and tola mass constants correctly',as
   assert.match(source,/31\.1034768/);
   assert.match(source,/11\.6638038/);
   const mod=await import(`../.github/scripts/live_gold_math.mjs?test=${Date.now()}`);
-  const quote=mod.computeGoldReferences({xauUsd:2400,usdPkr:280});
-  assert.equal(Math.round(quote.usdPerGram*100)/100,77.16);
-  assert.equal(Math.round(quote.pkrPerTola24k),251963);
-  assert.equal(Math.round(quote.pkrPerTola22k),230966);
+  const quote=mod.deriveGoldPkr(2400,280);
+  assert.equal(quote.per_gram_24k,21605.3);
+  assert.equal(quote.per_tola_24k,252000);
+  assert.equal(quote.per_tola_22k,231000);
+  assert.equal(quote.troy_ounce_grams,31.1034768);
+  assert.equal(quote.tola_grams,11.6638038);
 });
 
-test('browser gold renderer reads only the cached local dataset',()=>{
+test('browser gold renderer reads only NexusNova cached gold datasets',()=>{
   const client=read('assets/js/live-gold.js');
-  assert.match(client,/assets\/data\/gold-latest\.json/);
-  assert.doesNotMatch(client,/metals-api|goldapi|fetch\([^)]*https?:\/\//i);
+  assert.match(client,/assets\/data\/live-gold\.json/);
+  assert.match(client,/assets\/data\/live-gold-history\.json/);
+  assert.doesNotMatch(client,/fetch\([^)]*https?:\/\//i);
 });
 
 test('gold page clearly separates international conversion from Pakistan Sarafa board rates',()=>{
   const page=read('gold-rates.html');
-  assert.match(page,/International reference/);
-  assert.match(page,/Pakistan local Sarafa quote/);
-  assert.match(page,/not a jeweller quote/i);
+  assert.match(page,/INTERNATIONAL REFERENCE/i);
+  assert.match(page,/Pakistan Sarafa board rate/i);
+  assert.match(page,/not a guaranteed jeweller, bullion dealer or Sarafa Bazaar transaction price/i);
+  assert.match(page,/not label an international conversion as the Pakistan Sarafa Bazaar rate/i);
 });
 
-test('gold updater selects a dedicated Sarafa API but keeps local quote fail-closed until server key and response validation',()=>{
+test('gold updater records the selected Sarafa source but keeps local quote fail-closed until credential integration',()=>{
   const updater=read('.github/scripts/update_live_gold.mjs');
-  assert.match(updater,/SARAFAPK_API_KEY/);
-  assert.match(updater,/api\.sarafa\.pk\/api\/gold-rate/);
-  assert.match(updater,/computeGoldReferences/);
-  assert.match(updater,/parseSarafaPayload/);
-  assert.match(updater,/PK\/PAK|Pakistan|PKR/i);
-  assert.match(updater,/if\(!res\.ok\)throw new Error/);
-  const seed=json('assets/data/gold-latest.json');
-  assert.equal(seed.local_sarafa.status,'pending_source');
+  assert.match(updater,/deriveGoldPkr/);
+  assert.match(updater,/source_ready_key_required/);
+  assert.match(updater,/api\.sarafa\.pk/);
+  assert.match(updater,/X-API-Key required/);
+  assert.match(updater,/not publishing its local quote until a server-side Sarafa\.pk API key is configured/i);
+  const seed=json('assets/data/live-gold.json');
+  assert.equal(seed.local_sarafa.status,'source_ready_key_required');
   assert.equal(seed.local_sarafa.source.name,'Sarafa.pk Developer API');
+  assert.equal(seed.local_sarafa.source.api_base,'https://api.sarafa.pk');
+  assert.match(seed.local_sarafa.source.endpoint,/public-rates\/gold\/cities/);
   assert.match(seed.local_sarafa.message,/server-side Sarafa\.pk API key/i);
   assert.equal(seed.local_sarafa.per_tola_24k,undefined);
 });
