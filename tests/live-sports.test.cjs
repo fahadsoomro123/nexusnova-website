@@ -39,6 +39,7 @@ test('SportScore attribution stays visible and dofollow',()=>{
   assert.match(html,/Powered by/);
 });
 
-test('sports page is discoverable in live sitemap',()=>{
-  assert.match(sitemap,/https:\/\/nexusnovatools\.com\/sports-live\.html/);
+test('sports page stays usable but out of search discovery during remediation',()=>{
+  assert.doesNotMatch(sitemap,/https:\/\/nexusnovatools\.com\/sports-live\.html/);
+  assert.match(html,/<meta name="robots" content="noindex, follow">/);
 });

@@ -9,11 +9,11 @@ function expectSitemap(url) {
   assert.match(index, new RegExp(`<loc>${url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>`));
 }
 
-test('central sitemap index includes core discovery sitemaps', () => {
+test('central sitemap index exposes only the canonical discovery sitemap', () => {
   expectSitemap('https://nexusnovatools.com/sitemap.xml');
-  expectSitemap('https://nexusnovatools.com/sitemap-new-tools.xml');
-  expectSitemap('https://nexusnovatools.com/sitemap-live.xml');
-  expectSitemap('https://nexusnovatools.com/sitemap-recent.xml');
+  assert.doesNotMatch(index, /sitemap-new-tools\.xml/);
+  assert.doesNotMatch(index, /sitemap-live\.xml/);
+  assert.doesNotMatch(index, /sitemap-recent\.xml/);
 });
 
 test('robots advertises the central sitemap index', () => {

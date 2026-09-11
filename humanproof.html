@@ -137,6 +137,23 @@
 → production integration returns a verification URL + action reference</div>
 </div></section>
 
+<section class="section" id="why-humanproof"><div class="wrap">
+  <div class="sectionHead"><span class="kicker">Why choose NexusNova HumanProof?</span><h2>Use the control that matches the question you need answered.</h2><p>HumanProof is not a replacement for every login or identity control. Its narrower purpose is to add evidence that a live human consciously approved one precisely described action.</p></div>
+  <div class="featureGrid">
+    <div class="feature"><b>Password</b><p>Evidence that someone knows a reusable secret. It does not show live presence or what action the person intended to approve.</p></div>
+    <div class="feature"><b>OTP</b><p>Evidence of access to a phone, email inbox or authenticator. Malware, forwarding or social engineering can separate that code from the action shown to the user.</p></div>
+    <div class="feature"><b>CAPTCHA</b><p>A bot-abuse filter for a web interaction. It is not an approval record and normally does not bind a human decision to a specific high-risk operation.</p></div>
+    <div class="feature"><b>Face match</b><p>A comparison between a face and a reference image. It addresses identity similarity, not whether the person understood and approved the exact action now being requested.</p></div>
+    <div class="feature"><b>NexusNova HumanProof</b><p>Combines a live-human response with conscious approval of the displayed action and an action-bound receipt architecture. It does not establish legal identity.</p></div>
+  </div>
+  <div class="grid3">
+    <article class="card"><span class="num">ACTION BINDING</span><h3>Hash the exact request</h3><p>A production integration should bind a nonce and stable action reference—including the material amount, destination or operation—to the approval. Any material change requires a new approval.</p></article>
+    <article class="card"><span class="num">PRIVACY FIRST</span><h3>Collect only what the proof needs</h3><p>The current browser interaction performs face-landmark analysis on the device. A production deployment should document retention, minimize biometric data, and avoid presenting liveness as legal identity.</p></article>
+    <article class="card"><span class="num">SERVER CONFIRMED</span><h3>Issue only after trusted checks</h3><p>The browser animation alone cannot issue a result. A production receipt must follow the paid flow, server validation and backend signing; failed, abandoned or altered requests remain unverified.</p></article>
+  </div>
+  <div class="transparency"><strong>Realistic limitation</strong><p>No liveness check is 100% secure or automatically deepfake-proof. Camera quality, accessibility needs, presentation attacks, compromised devices and implementation mistakes can affect results. HumanProof should be one risk-control layer alongside replay protection, rate limits, device or passkey signals, monitoring and human escalation.</p></div>
+</div></section>
+
 <section class="section" id="security"><div class="wrap">
   <div class="sectionHead"><span class="kicker">Security & privacy</span><h2>Keep the complexity behind a simple user flow.</h2><p>The live browser interaction uses on-device face landmark analysis. A hardened production system needs additional replay resistance, device or passkey proof, nonce handling, action hashes, backend-signed receipts, abuse controls, monitoring and independent security review.</p></div>
   <div class="featureGrid">

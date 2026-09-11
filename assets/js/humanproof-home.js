@@ -108,7 +108,8 @@
       const GLTFLoader=loaderMod.GLTFLoader;
 
       const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
       renderer.setClearColor(0x03080f,1);
       renderer.outputColorSpace=THREE.SRGBColorSpace;
 
@@ -169,17 +170,30 @@
       };
       const ro=new ResizeObserver(resize);ro.observe(canvas.parentElement);resize();
       const clock=new THREE.Clock();
-      let raf=0;
-      const animate=()=>{
+      let raf=0,running=false,visible=true,lastFrame=0;
+      const frameInterval=reducedMotion.matches?1000:50;
+      const animate=(now=0)=>{
+        if(!running)return;
         raf=requestAnimationFrame(animate);
+        if(now-lastFrame<frameInterval)return;
+        lastFrame=now;
         const t=clock.getElapsedTime();
         rig.rotation.y=(t/48)*Math.PI*2;
-        rig.position.y=Math.sin(t*.32)*.012;
+        rig.position.y=reducedMotion.matches?0:Math.sin(t*.32)*.012;
         for(const s of shaders)s.uniforms.uTime.value=t;
         renderer.render(scene,camera3);
       };
-      animate();
-      addEventListener('pagehide',()=>{cancelAnimationFrame(raf);ro.disconnect();renderer.dispose()},{once:true});
+      const sync=()=>{
+        const shouldRun=visible&&!document.hidden;
+        if(shouldRun&&!running){running=true;clock.start();raf=requestAnimationFrame(animate);}
+        else if(!shouldRun&&running){running=false;cancelAnimationFrame(raf);clock.stop();}
+      };
+      const io=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??true;sync();},{rootMargin:'80px'});
+      io.observe(canvas);
+      document.addEventListener('visibilitychange',sync);
+      reducedMotion.addEventListener?.('change',()=>location.reload(),{once:true});
+      sync();
+      addEventListener('pagehide',()=>{running=false;cancelAnimationFrame(raf);io.disconnect();ro.disconnect();renderer.dispose()},{once:true});
     }catch(e){
       console.warn('[HumanProof V20]',e);
       loading.innerHTML='<div class="hp-home-fallback">360° scan unavailable on this browser.<br>HumanProof content remains available below.</div>';

@@ -53,11 +53,12 @@ test('browser exposes selected Sarafa source without publishing an invented loca
   assert.match(client,/localSource\.url/);
 });
 
-test('shared navigation exposes NexusNova LIVE and gold is indexed in the LIVE sitemap',()=>{
+test('shared navigation exposes LIVE while gold stays out of search discovery during remediation',()=>{
   const main=read('assets/js/main.js');
   const sitemap=read('sitemap-live.xml');
   const hub=read('live.html');
   assert.match(main,/\['live\.html','LIVE'\]/);
-  assert.match(sitemap,/https:\/\/nexusnovatools\.com\/gold-rates\.html/);
+  assert.doesNotMatch(sitemap,/https:\/\/nexusnovatools\.com\/gold-rates\.html/);
+  assert.match(read('gold-rates.html'),/<meta name="robots" content="noindex, follow">/);
   assert.match(hub,/href="gold-rates\.html"/);
 });

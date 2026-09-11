@@ -43,10 +43,6 @@
     ad_personalization:'denied'
   });
 
-  const shouldAutoEnableAnalytics=()=>{
-    try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}
-  };
-
   const mountChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
     const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
@@ -69,7 +65,7 @@
     reopen.className='nn-privacy-choice';
     reopen.textContent='Privacy choices';
     reopen.setAttribute('aria-label','Open analytics privacy choices');
-    document.body.appendChild(reopen);
+    reopen.hidden=true;
 
     const hide=()=>{banner.hidden=true};
     banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics();hide()});
@@ -77,12 +73,12 @@
     reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
 
     const choice=readChoice();
-    if(choice==='granted'||(!choice&&shouldAutoEnableAnalytics())){loadAnalytics();hide()}
+    if(choice==='granted'){loadAnalytics();hide()}
     else if(choice==='denied'){denyAnalytics();hide()}
   };
 
   const initialChoice=readChoice();
-  if(initialChoice==='granted'||(!initialChoice&&shouldAutoEnableAnalytics()))loadAnalytics();
+  if(initialChoice==='granted')loadAnalytics();
   else denyAnalytics();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
   else mountChoices();
