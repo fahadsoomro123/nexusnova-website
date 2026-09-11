@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BASE_SHA = "d33551f2ab6dc7d370350d656e26165738f455e6"  # exact parent of the 2026-09-11 checklist remediation commit
 SITE = "https://nexusnovatools.com/"
 UA = "NexusNovaFullSiteVerification/2026-09-11 (+https://nexusnovatools.com/)"
+# Re-run marker after explicit nine-page Section C evidence fixes.
 
 A_NOINDEX = [
     "account.html","app.html","aqi-live.html",
