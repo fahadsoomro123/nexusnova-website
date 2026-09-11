@@ -252,10 +252,10 @@
   }
   };
 
-  if(compactViewport){
-    // Mobile keeps the approved scan stage but moves expensive WebGL/model work
-    // behind an explicit user action so it cannot block initial content or input.
-    load.textContent='TAP TO LOAD 3D HUMAN SCAN';
+  {
+    // Keep the approved scan stage immediately visible, while moving expensive
+    // WebGL/model work behind one explicit action on every device.
+    load.textContent=compactViewport?'TAP TO LOAD 3D HUMAN SCAN':'CLICK TO LOAD 3D HUMAN SCAN';
     load.setAttribute('role','button');
     load.setAttribute('tabindex','0');
     holder.classList.add('is-paused');
@@ -271,9 +271,5 @@
     };
     load.addEventListener('click',start,{once:true});
     load.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();start()}},{once:true});
-  }else if('requestIdleCallback' in window){
-    requestIdleCallback(()=>boot(),{timeout:1800});
-  }else{
-    setTimeout(()=>boot(),500);
   }
 })();
