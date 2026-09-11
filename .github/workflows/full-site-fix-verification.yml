@@ -1,0 +1,63 @@
+name: Full Site Fix Verification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/full_site_fix_verification.py'
+      - '.github/workflows/full-site-fix-verification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-165-page-checklist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run 165-page source + live verification
+        id: audit
+        continue-on-error: true
+        run: python .github/scripts/full_site_fix_verification.py
+
+      - name: Publish evidence in job summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f NEXUSNOVA-FULL-SITE-FIX-PROOF.md ]; then
+            cat NEXUSNOVA-FULL-SITE-FIX-PROOF.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Evidence report was not generated.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload page-by-page evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-full-site-fix-proof-${{ github.run_id }}
+          path: |
+            NEXUSNOVA-FULL-SITE-FIX-PROOF.md
+            full-site-fix-verification.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce final verdict
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.audit.outcome }}" != "success" ]; then
+            echo 'Full-site verification failed. See evidence artifact and job summary.' >&2
+            exit 1
+          fi
+          echo 'PASS: all non-negotiable checklist checks passed.'
