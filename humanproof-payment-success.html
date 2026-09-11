@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HumanProof Payment Confirmation — NexusNova</title>
+<meta name="description" content="Safepay checkout return and server-verified payment status for NexusNova HumanProof.">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#f7f9ff">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260911-indigo4">
+<link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260911-1">
+<style>
+.hp-result-wrap{max-width:760px;margin:0 auto;padding:54px 18px 72px}.hp-result-card{background:#fff;border:1px solid rgba(69,78,130,.14);border-radius:24px;padding:28px;box-shadow:0 18px 50px rgba(42,53,110,.08)}.hp-result-badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:rgba(101,88,255,.09);color:#493ec9;font-size:12px;font-weight:800;letter-spacing:.04em}.hp-result-state{margin:18px 0;padding:18px;border-radius:16px;background:#f5f7ff;border:1px solid rgba(101,88,255,.14)}.hp-result-state strong{display:block;font-size:19px;margin-bottom:5px}.hp-result-meta{display:grid;gap:8px;margin:18px 0}.hp-result-meta div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid rgba(69,78,130,.1)}.hp-result-meta code{font-size:12px;overflow-wrap:anywhere;text-align:right}.hp-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.hp-confirmed{background:#effaf4;border-color:#b9e6cd}.hp-confirmed strong{color:#17623c}.hp-error{background:#fff4f4;border-color:#efcaca}.hp-error strong{color:#9a2230}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • PAYMENT STATUS</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
+<main class="hp-result-wrap">
+<section class="hp-result-card">
+<span class="hp-result-badge">SAFEpay SANDBOX • TEST MODE</span>
+<h1 style="margin:14px 0 8px">Checking your Safepay payment…</h1>
+<p class="hp-commerce-muted">Safepay has returned you to NexusNova. This page checks the tracker from the NexusNova server before showing a confirmed state.</p>
+<div id="stateBox" class="hp-result-state"><strong id="stateTitle">Verifying payment</strong><span id="stateCopy">Waiting for Safepay server status…</span></div>
+<div class="hp-result-meta">
+<div><span>Order</span><code id="orderId">—</code></div>
+<div><span>Tracker</span><code id="trackerId">Waiting for redirect data…</code></div>
+<div><span>Environment</span><strong>Sandbox / Test</strong></div>
+</div>
+<p class="hp-commerce-muted">A browser redirect by itself never creates a paid HumanProof result. Payment status is checked server-side, and signed Safepay webhooks remain enabled for payment events.</p>
+<div class="hp-result-actions"><a class="btn btn-primary" href="humanproof.html">Return to HumanProof</a><a class="btn" href="contact.html">Contact support</a></div>
+</section>
+</main>
+<footer class="site-footer"><div class="container"><div class="hp-commerce-footerlinks"><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="refund-policy.html">Refund</a><a href="cancellation-policy.html">Cancellation</a><a href="digital-delivery-policy.html">Digital Delivery</a></div><div class="footer-bottom"><span>© NexusNova Tools</span><span>Server-checked Safepay status</span></div></div></footer>
+<script>
+(()=>{
+  const WORKER='https://nexusnova-safepay.fahadsoomro123.workers.dev';
+  const qs=new URLSearchParams(location.search);
+  const orderId=qs.get('order_id')||'—';
+  const tracker=qs.get('tracker')||'';
+  const stateBox=document.getElementById('stateBox');
+  const stateTitle=document.getElementById('stateTitle');
+  const stateCopy=document.getElementById('stateCopy');
+  document.getElementById('orderId').textContent=orderId;
+  document.getElementById('trackerId').textContent=tracker||'Tracker not returned';
+
+  if(!tracker){
+    stateBox.classList.add('hp-error');
+    stateTitle.textContent='Tracker not available';
+    stateCopy.textContent='Safepay did not return a tracker in this browser URL. No paid state is being claimed.';
+    return;
+  }
+
+  let attempts=0;
+  async function check(){
+    attempts+=1;
+    try{
+      const r=await fetch(WORKER+'/api/safepay/payment-status?tracker='+encodeURIComponent(tracker),{cache:'no-store'});
+      const data=await r.json().catch(()=>({}));
+      if(r.ok&&data.paid===true){
+        stateBox.classList.remove('hp-error');
+        stateBox.classList.add('hp-confirmed');
+        stateTitle.textContent='Sandbox payment confirmed';
+        stateCopy.textContent='Safepay reports this tracker as TRACKER_ENDED. This is a Sandbox/Test Mode transaction for integration and due-diligence testing.';
+        return;
+      }
+      if(r.ok&&attempts<10){
+        stateTitle.textContent='Payment processing';
+        stateCopy.textContent='Safepay state: '+(data.state||'pending')+'. Checking again…';
+        setTimeout(check,2000);
+        return;
+      }
+      stateBox.classList.add('hp-error');
+      stateTitle.textContent='Payment not confirmed yet';
+      stateCopy.textContent=r.ok?'Safepay has not reported TRACKER_ENDED yet. No paid HumanProof result has been issued.':'NexusNova could not verify this tracker from Safepay. No paid state is being claimed.';
+    }catch(e){
+      if(attempts<5){setTimeout(check,2000);return;}
+      stateBox.classList.add('hp-error');
+      stateTitle.textContent='Status check unavailable';
+      stateCopy.textContent='The server status check could not complete. No paid state is being claimed.';
+    }
+  }
+  check();
+})();
+</script>
+</body>
+</html>
