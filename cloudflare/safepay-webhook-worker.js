@@ -28,12 +28,12 @@ function timingSafeEqualText(a, b) {
   return diff === 0;
 }
 
-async function verifySafepayWebhook(payload, signature, secret) {
-  if (!payload?.data || !signature || !secret) return false;
+async function verifySafepayWebhook(rawBody, signature, secret) {
+  if (!rawBody || !signature || !secret) return false;
 
-  // Safepay's standard webhook SDKs sign the JSON-encoded `data` object with
-  // HMAC-SHA512 using the dashboard's shared webhook secret.
-  const signedData = JSON.stringify(payload.data);
+  // Safepay standard payment webhooks sign the RAW HTTP request body using
+  // HMAC-SHA512 and the endpoint shared webhook secret. Do not parse or
+  // re-serialize the JSON before verification because that changes bytes.
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
@@ -41,9 +41,10 @@ async function verifySafepayWebhook(payload, signature, secret) {
     false,
     ['sign']
   );
-  const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(signedData));
+  const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
   const expected = hex(digest);
-  return timingSafeEqualText(expected.toLowerCase(), signature.trim().toLowerCase());
+  const provided = signature.trim().toLowerCase().replace(/^sha512=/, '');
+  return timingSafeEqualText(expected.toLowerCase(), provided);
 }
 
 export default {
@@ -73,13 +74,6 @@ export default {
     }
 
     const rawBody = await request.text();
-    let payload;
-    try {
-      payload = JSON.parse(rawBody);
-    } catch {
-      return json({ ok: false, error: 'invalid_json' }, 400);
-    }
-
     const signature = request.headers.get('x-sfpy-signature');
     if (!signature) {
       console.error('Missing X-SFPY-SIGNATURE');
@@ -88,7 +82,7 @@ export default {
 
     let validSignature = false;
     try {
-      validSignature = await verifySafepayWebhook(payload, signature, env.SAFEPAY_WEBHOOK_SECRET);
+      validSignature = await verifySafepayWebhook(rawBody, signature, env.SAFEPAY_WEBHOOK_SECRET);
     } catch (error) {
       console.error('Safepay signature verification error', error);
       return json({ ok: false, error: 'signature_verification_error' }, 500);
@@ -97,6 +91,13 @@ export default {
     if (!validSignature) {
       console.error('Safepay webhook signature mismatch');
       return json({ ok: false, error: 'invalid_signature' }, 401);
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      return json({ ok: false, error: 'invalid_json' }, 400);
     }
 
     if (env.SAFEPAY_PUBLIC_KEY && payload?.merchant_api_key !== env.SAFEPAY_PUBLIC_KEY) {
