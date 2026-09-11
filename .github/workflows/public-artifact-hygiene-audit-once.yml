@@ -1,0 +1,86 @@
+name: NexusNova Public Artifact Hygiene Audit Once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/public-artifact-hygiene-audit-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Inventory publicly deployable engineering files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          R=Path('.')
+          print('=== ROOT PYTHON FILES ===')
+          for p in sorted(R.glob('*.py')):
+              print(p.as_posix())
+          print('\n=== ROOT MARKDOWN FILES ===')
+          for p in sorted(R.glob('*.md')):
+              print(p.as_posix())
+          print('\n=== ROOT INTERNAL JSON CANDIDATES ===')
+          for name in ['adsense-reviewer-audit.json','site-quality-report.json','deep-site-audit-report.json']:
+              if (R/name).exists(): print(name)
+          print('\n=== INTERNAL DIRECTORY CANDIDATES ===')
+          for name in ['tests','cloudflare','nexusnova-dev-ai','docs']:
+              p=R/name
+              if p.exists():
+                  files=sum(1 for x in p.rglob('*') if x.is_file())
+                  print(f'{name}/ ({files} files)')
+
+          print('\n=== ACTIVE REFERENCES TO ROOT PYTHON FILES ===')
+          tracked=subprocess.check_output(['git','ls-files'],text=True).splitlines()
+          text_ext={'.yml','.yaml','.json','.js','.cjs','.mjs','.py','.md','.txt','.html','.xml','.toml'}
+          root_py=[p.as_posix() for p in R.glob('*.py')]
+          for target in sorted(root_py):
+              refs=[]
+              for rel in tracked:
+                  if rel==target or rel.startswith('.git/'): continue
+                  p=R/rel
+                  if not p.is_file() or (p.suffix.lower() not in text_ext and p.name!='package.json'): continue
+                  try: text=p.read_text(encoding='utf-8')
+                  except Exception: continue
+                  if target in text or Path(target).name in text:
+                      refs.append(rel)
+              print(f'{target}: {len(refs)} refs')
+              for r in refs[:40]: print('  -',r)
+
+          print('\n=== PYTHON PATH ASSUMPTIONS ===')
+          needles=['__file__','Path.cwd','os.getcwd','cwd()','ROOT =','REPO_ROOT','PROJECT_ROOT']
+          for rel in sorted(root_py):
+              text=(R/rel).read_text(encoding='utf-8',errors='ignore')
+              hits=[n for n in needles if n in text]
+              print(rel, '::', ', '.join(hits) if hits else 'none')
+              for i,line in enumerate(text.splitlines(),1):
+                  if any(n in line for n in ['__file__','ROOT =','REPO_ROOT','PROJECT_ROOT']):
+                      print(f'  {i}: {line[:220]}')
+
+          print('\n=== REFERENCES TO INTERNAL DIRECTORIES ===')
+          for target in ['tests/','cloudflare/','nexusnova-dev-ai/','docs/']:
+              refs=[]
+              for rel in tracked:
+                  if rel.startswith(target): continue
+                  p=R/rel
+                  if not p.is_file() or (p.suffix.lower() not in text_ext and p.name!='package.json'): continue
+                  try: text=p.read_text(encoding='utf-8')
+                  except Exception: continue
+                  if target in text:
+                      refs.append(rel)
+              print(f'{target}: {len(refs)} refs')
+              for r in refs[:80]: print('  -',r)
+          PY
