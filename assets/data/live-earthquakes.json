@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-12T16:54:59.156Z",
+  "generated_at": "2026-09-12T19:07:38.161Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,68 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-12T16:54:39.000Z",
+  "feed_generated_at": "2026-09-12T19:07:10.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 55,
+  "source_count": 56,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "nc75434347",
+      "magnitude": 2.9,
+      "place": "4 km W of Cobb, CA",
+      "time": "2026-09-12T18:39:21.810Z",
+      "updated": "2026-09-12T18:51:00.863Z",
+      "depth_km": 1.1,
+      "coordinates": {
+        "lat": 38.8212,
+        "lon": -122.7645
+      },
+      "significance": 130,
+      "felt": 2,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75434347",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000th16",
+      "magnitude": 4.8,
+      "place": "17 km WSW of Lixoúri, Greece",
+      "time": "2026-09-12T17:51:45.718Z",
+      "updated": "2026-09-12T19:02:33.157Z",
+      "depth_km": 34,
+      "coordinates": {
+        "lat": 38.1387,
+        "lon": 20.2555
+      },
+      "significance": 356,
+      "felt": 5,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000th16",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr2026255005",
+      "magnitude": 3.56,
+      "place": "74 km NNE of Cruz Bay, U.S. Virgin Islands",
+      "time": "2026-09-12T16:51:23.250Z",
+      "updated": "2026-09-12T17:26:45.365Z",
+      "depth_km": 8,
+      "coordinates": {
+        "lat": 18.9743,
+        "lon": -64.5933
+      },
+      "significance": 195,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr2026255005",
+      "pakistan_region": false
+    },
     {
       "id": "us7000th0h",
       "magnitude": 4.7,
@@ -38,6 +95,25 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000th0h",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026schwrz",
+      "magnitude": 3.3,
+      "place": "Rat Islands, Aleutian Islands, Alaska",
+      "time": "2026-09-12T15:08:27.740Z",
+      "updated": "2026-09-12T16:56:28.538Z",
+      "depth_km": 17.8,
+      "coordinates": {
+        "lat": 50.138,
+        "lon": 177.174
+      },
+      "significance": 168,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026schwrz",
       "pakistan_region": false
     },
     {
@@ -387,14 +463,14 @@
       "magnitude": 3.36,
       "place": "9 km SW of Brentwood, CA",
       "time": "2026-09-12T07:25:55.470Z",
-      "updated": "2026-09-12T16:28:48.653Z",
+      "updated": "2026-09-12T18:42:58.127Z",
       "depth_km": 17.9,
       "coordinates": {
         "lat": 37.8728,
         "lon": -121.8003
       },
-      "significance": 251,
-      "felt": 227,
+      "significance": 253,
+      "felt": 234,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -881,14 +957,14 @@
       "magnitude": 2.9,
       "place": "5 km N of Stroud, Oklahoma",
       "time": "2026-09-11T23:27:37.039Z",
-      "updated": "2026-09-12T04:46:44.118Z",
+      "updated": "2026-09-12T18:07:08.430Z",
       "depth_km": 7.6,
       "coordinates": {
         "lat": 35.7968,
         "lon": -96.6525
       },
       "significance": 132,
-      "felt": 7,
+      "felt": 8,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -1007,63 +1083,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tgrg",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tgqf",
-      "magnitude": 4.4,
-      "place": "158 km W of Merizo Village, Guam",
-      "time": "2026-09-11T18:59:48.017Z",
-      "updated": "2026-09-11T19:15:22.040Z",
-      "depth_km": 197,
-      "coordinates": {
-        "lat": 12.9968,
-        "lon": 143.2346
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tgqf",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tgqb",
-      "magnitude": 4.4,
-      "place": "132 km E of Noda, Japan",
-      "time": "2026-09-11T18:53:32.548Z",
-      "updated": "2026-09-11T19:26:12.040Z",
-      "depth_km": 32.4,
-      "coordinates": {
-        "lat": 40.1316,
-        "lon": 143.3706
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tgqb",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tgq0",
-      "magnitude": 4.2,
-      "place": "25 km NW of Sarupathar, India",
-      "time": "2026-09-11T17:56:20.821Z",
-      "updated": "2026-09-11T18:17:42.040Z",
-      "depth_km": 123.2,
-      "coordinates": {
-        "lat": 26.3827,
-        "lon": 96.6409
-      },
-      "significance": 271,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tgq0",
       "pakistan_region": false
     }
   ]
