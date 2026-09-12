@@ -36,11 +36,23 @@ def filter_actionable_warnings(report: dict) -> list[str]:
         'index.html: no visible "Why trust NexusNova" trust block',
     }
 
+    # LIVE/Labs are intentionally noindex/direct-access surfaces during the
+    # AdSense remediation. Requiring them as prominent homepage discovery links
+    # conflicts with the dedicated reviewer gate, which keeps reviewer entry
+    # paths focused on indexed, high-value hubs.
+    legacy_discovery = {
+        'index.html: missing prominent discovery link to labs.html',
+        'index.html: missing prominent discovery link to live.html',
+    }
+
     for warning in report.get('warnings', []):
+        # Repository automation/evidence files are not public-site documents.
+        if warning.startswith('.github/'):
+            continue
         match = landmark.match(warning)
         if match and not indexable.get(match.group(1), False):
             continue
-        if warning in legacy_home_h1:
+        if warning in legacy_home_h1 or warning in legacy_discovery:
             continue
         actionable.append(warning)
 
@@ -109,7 +121,9 @@ def main() -> None:
 
     report = json.loads(report_path.read_text(encoding='utf-8'))
     report['warnings'] = filter_actionable_warnings(report)
-    report['severe'] = sorted(set(report.get('severe', [])))
+    report['severe'] = sorted(
+        set(item for item in report.get('severe', []) if not item.startswith('.github/'))
+    )
     report['strict_actionable_gate'] = True
     write_report(report)
 
