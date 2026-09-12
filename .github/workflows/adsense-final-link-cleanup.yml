@@ -1,0 +1,115 @@
+name: One-time AdSense Internal Link Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/adsense-final-link-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repoint indexed pages away from legacy noindex hubs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          import posixpath, re
+
+          root = Path('.')
+          skip_dirs = {'.git','.github','node_modules','vendor','ota','downloads','nexusnova-dev-ai'}
+          target_map = {
+              'trending-tools.html': 'tools.html',
+              'gaming.html': 'categories.html',
+              'daily-tools-directory.html': 'tools.html',
+              'new-tools.html': 'tools.html',
+              'tech.html': 'articles.html',
+              'smart-tools.html': 'tools.html',
+              'humanproof-pricing.html': 'humanproof.html#pricing',
+              'popular-tools.html': 'tools.html',
+              'live.html': 'pakistan-tools.html',
+              'labs.html': 'categories.html',
+          }
+
+          href_re = re.compile(r'''(?P<prefix>\bhref\s*=\s*)(?P<q>["'])(?P<href>.*?)(?P=q)''', re.I)
+          changed_files = 0
+          changed_links = 0
+
+          def is_indexable(text):
+              m = re.search(r'<meta\s+name=["\']robots["\'][^>]*content=["\']([^"\']+)', text, re.I)
+              return not (m and 'noindex' in m.group(1).lower())
+
+          def resolve_target(source_rel, href):
+              parts = urlsplit(href)
+              if parts.scheme or parts.netloc or not parts.path:
+                  return None
+              source_dir = posixpath.dirname(source_rel)
+              return posixpath.normpath(posixpath.join(source_dir, parts.path))
+
+          def replacement_for(source_rel, href):
+              target = resolve_target(source_rel, href)
+              if target not in target_map:
+                  return None
+              dest = target_map[target]
+              dest_path, sep, dest_frag = dest.partition('#')
+              source_dir = posixpath.dirname(source_rel) or '.'
+              rel = posixpath.relpath(dest_path, source_dir)
+              return rel + (('#' + dest_frag) if sep else '')
+
+          pages=[]
+          for p in root.rglob('*.html'):
+              if any(part in skip_dirs for part in p.parts):
+                  continue
+              pages.append(p)
+
+          for p in sorted(pages):
+              rel = p.as_posix()
+              text = p.read_text(encoding='utf-8', errors='replace')
+              if not is_indexable(text):
+                  continue
+              local_count = 0
+              def repl(m):
+                  nonlocal_count = replacement_for(rel, m.group('href'))
+                  nonlocal local_count
+                  if nonlocal_count is None:
+                      return m.group(0)
+                  local_count += 1
+                  return f"{m.group('prefix')}{m.group('q')}{nonlocal_count}{m.group('q')}"
+              new = href_re.sub(repl, text)
+
+              # Keep breadcrumb/schema destinations aligned with the clickable path.
+              for old, dest in target_map.items():
+                  old_abs = 'https://nexusnovatools.com/' + old
+                  dest_abs = 'https://nexusnovatools.com/' + dest
+                  hits = new.count(old_abs)
+                  if hits:
+                      new = new.replace(old_abs, dest_abs)
+                      local_count += hits
+
+              if new != text:
+                  p.write_text(new, encoding='utf-8')
+                  changed_files += 1
+                  changed_links += local_count
+                  print(f'{rel}: {local_count} reviewer-path reference(s) repointed')
+
+          print(f'Changed files: {changed_files}')
+          print(f'Repointed references: {changed_links}')
+          if changed_files == 0:
+              raise SystemExit('No link cleanup changes were produced; refusing empty cleanup run.')
+          PY
+
+          git config user.name 'NexusNova AdSense Cleanup'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- '*.html' 'articles/*.html' 'guides/*.html' 'tech/*.html'
+          git diff --cached --check
+          git commit -m 'adsense: repoint indexed pages from noindex legacy hubs'
+          git push origin HEAD:main
