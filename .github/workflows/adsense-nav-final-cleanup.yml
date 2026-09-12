@@ -1,0 +1,58 @@
+name: One-time AdSense Navigation Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/adsense-nav-final-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Keep homepage reviewer paths indexable and high-value
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+
+          old_nav = '<a href="guides.html">Guides</a><a href="gaming.html">Gaming</a><a class="nn-nav-auth nn-nav-signin"'
+          new_nav = '<a href="guides.html">Guides</a><a class="nn-nav-auth nn-nav-signin"'
+          if text.count(old_nav) != 1:
+              raise SystemExit(f'Expected exactly one Gaming nav marker, found {text.count(old_nav)}')
+          text = text.replace(old_nav, new_nav, 1)
+
+          old_copy = 'Free browser tools, transparent live-data references, HumanProof and practical technology guidance.'
+          new_copy = 'Free browser tools, HumanProof, Pakistan utilities and practical technology guidance.'
+          if text.count(old_copy) != 1:
+              raise SystemExit(f'Expected exactly one footer copy marker, found {text.count(old_copy)}')
+          text = text.replace(old_copy, new_copy, 1)
+
+          old_links = '<a href="tools.html">Tools</a><a href="humanproof.html">HumanProof</a><a href="live.html">LIVE reference hub</a><a href="labs.html">Labs</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a>'
+          new_links = '<a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="humanproof.html">HumanProof</a><a href="pakistan-tools.html">Pakistan Tools</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a>'
+          if text.count(old_links) != 1:
+              raise SystemExit(f'Expected exactly one reviewer footer link set, found {text.count(old_links)}')
+          text = text.replace(old_links, new_links, 1)
+
+          p.write_text(text, encoding='utf-8')
+          PY
+
+          git config user.name 'NexusNova AdSense Cleanup'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No homepage changes required.'
+            exit 0
+          fi
+          git commit -m 'adsense: keep homepage navigation on indexed value paths'
+          git push origin HEAD:main
