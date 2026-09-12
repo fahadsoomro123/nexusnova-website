@@ -76,14 +76,15 @@ jobs:
               text = p.read_text(encoding='utf-8', errors='replace')
               if not is_indexable(text):
                   continue
-              local_count = 0
+              local_count = [0]
+
               def repl(m):
-                  nonlocal_count = replacement_for(rel, m.group('href'))
-                  nonlocal local_count
-                  if nonlocal_count is None:
+                  replacement = replacement_for(rel, m.group('href'))
+                  if replacement is None:
                       return m.group(0)
-                  local_count += 1
-                  return f"{m.group('prefix')}{m.group('q')}{nonlocal_count}{m.group('q')}"
+                  local_count[0] += 1
+                  return f"{m.group('prefix')}{m.group('q')}{replacement}{m.group('q')}"
+
               new = href_re.sub(repl, text)
 
               # Keep breadcrumb/schema destinations aligned with the clickable path.
@@ -93,13 +94,13 @@ jobs:
                   hits = new.count(old_abs)
                   if hits:
                       new = new.replace(old_abs, dest_abs)
-                      local_count += hits
+                      local_count[0] += hits
 
               if new != text:
                   p.write_text(new, encoding='utf-8')
                   changed_files += 1
-                  changed_links += local_count
-                  print(f'{rel}: {local_count} reviewer-path reference(s) repointed')
+                  changed_links += local_count[0]
+                  print(f'{rel}: {local_count[0]} reviewer-path reference(s) repointed')
 
           print(f'Changed files: {changed_files}')
           print(f'Repointed references: {changed_links}')
