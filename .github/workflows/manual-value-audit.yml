@@ -48,3 +48,16 @@ jobs:
             manual-value-audit.md
             reviewer-source/
           retention-days: 30
+      - name: Enforce zero blockers and high findings
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          data=json.load(open('manual-value-audit.json',encoding='utf-8'))
+          summary=data.get('summary',{})
+          blockers=int(summary.get('blockers',0) or 0)
+          high=int(summary.get('high',0) or 0)
+          print(f"Manual value gate: {summary.get('status')} — {blockers} blocker(s), {high} high finding(s), {summary.get('warnings',0)} warning(s)")
+          if blockers or high:
+              raise SystemExit('Manual value audit requires remediation before AdSense resubmission.')
+          PY
