@@ -1,0 +1,55 @@
+name: Repair GA4 consent controls
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repair consent control
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/main.js')
+          s=p.read_text(encoding='utf-8')
+          old="""    const footerLinks=document.querySelector('.site-footer .footer-links');
+          if(footerLinks) footerLinks.appendChild(reopen);
+          else {reopen.classList.add('nn-privacy-choice-fallback');document.body.appendChild(reopen)}
+
+          const hide=()=>{banner.hidden=true};"""
+          new="""    reopen.classList.add('nn-privacy-choice-fallback');
+          reopen.hidden=true;
+          document.body.appendChild(reopen);
+
+          const hide=()=>{banner.hidden=true;reopen.hidden=false};"""
+          if old not in s:
+              raise SystemExit('target consent block not found')
+          s=s.replace(old,new,1)
+          old2="""    reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});"""
+          new2="""    reopen.addEventListener('click',()=>{banner.hidden=false;reopen.hidden=true;banner.querySelector('button')?.focus()});"""
+          if old2 not in s:
+              raise SystemExit('target reopen handler not found')
+          s=s.replace(old2,new2,1)
+          old3="""    if(choice==='granted'){loadAnalytics(true);hide()}
+          else if(choice==='denied'){denyAnalytics();loadAnalytics();hide()}"""
+          new3="""    if(choice==='granted'){loadAnalytics(true);hide()}
+          else if(choice==='denied'){denyAnalytics();loadAnalytics();hide()}"""
+          if old3 not in s:
+              raise SystemExit('target choice block not found')
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit repair and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/repair-ga4-consent.yml
+          git add assets/js/main.js .github/workflows/repair-ga4-consent.yml
+          git commit -m 'fix: restore GA4 privacy controls'
+          git push
