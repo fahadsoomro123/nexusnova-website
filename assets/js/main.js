@@ -17,8 +17,8 @@
   const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
   const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}};
   let analyticsLoaded=false;
-  const loadAnalytics=()=>{
-    window.gtag('consent','update',{
+  const loadAnalytics=(grantAnalytics=false)=>{
+    if(grantAnalytics)window.gtag('consent','update',{
       analytics_storage:'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
@@ -58,7 +58,7 @@
     banner.id='nexusnova-analytics-consent';
     banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Optional analytics settings');
-    banner.innerHTML=`<p><strong>Optional analytics</strong><br>NexusNova can use Google Analytics to measure website traffic. You can allow or decline optional analytics at any time. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow analytics</button><button type="button" data-consent-deny>No thanks</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    banner.innerHTML=`<p><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
     const reopen=document.createElement('button');
@@ -72,19 +72,19 @@
     else {reopen.classList.add('nn-privacy-choice-fallback');document.body.appendChild(reopen)}
 
     const hide=()=>{banner.hidden=true};
-    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics();hide()});
-    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();hide()});
+    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
+    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
     banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
     reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
 
     const choice=readChoice();
-    if(choice==='granted'){loadAnalytics();hide()}
-    else if(choice==='denied'){denyAnalytics();hide()}
+    if(choice==='granted'){loadAnalytics(true);hide()}
+    else if(choice==='denied'){denyAnalytics();loadAnalytics();hide()}
   };
 
   const initialChoice=readChoice();
-  if(initialChoice==='granted')loadAnalytics();
-  else denyAnalytics();
+  if(initialChoice==='granted')loadAnalytics(true);
+  else {denyAnalytics();loadAnalytics();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
   else mountChoices();
 })();
