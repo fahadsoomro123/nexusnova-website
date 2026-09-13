@@ -1,11 +1,19 @@
 (()=>{
+  const styleId='nexusnova-privacy-bridge-style';
+  const ensureStyle=()=>{
+    if(document.getElementById(styleId))return;
+    const style=document.createElement('style');
+    style.id=styleId;
+    style.textContent='.nn-privacy-choice-fallback{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}#nexusnova-analytics-consent[hidden]{display:none!important}';
+    (document.head||document.documentElement).appendChild(style);
+  };
+
   const setup=()=>{
+    ensureStyle();
+    document.querySelectorAll('.nn-privacy-choice-fallback').forEach(node=>node.remove());
     const banner=document.getElementById('nexusnova-analytics-consent');
-    const floating=document.querySelector('.nn-privacy-choice-fallback');
-    if(floating)floating.remove();
     if(!banner)return false;
 
-    // No sticky consent UI: keep normal visitors on the page.
     banner.hidden=true;
     banner.setAttribute('role','dialog');
     banner.setAttribute('aria-modal','true');
@@ -39,13 +47,10 @@
       footer.appendChild(link);
     }
 
-    banner.querySelector('[data-consent-allow]')?.addEventListener('click',close);
-    banner.querySelector('[data-consent-deny]')?.addEventListener('click',close);
-    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',close);
     return true;
   };
 
-  const boot=()=>setup()||setTimeout(setup,250);
+  const boot=()=>setup();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 
