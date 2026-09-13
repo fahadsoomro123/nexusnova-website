@@ -49,7 +49,7 @@
     const base=inSubdir?'../':'';
     const style=document.createElement('style');
     style.dataset.nexusnovaConsentStyle='';
-    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{position:fixed;right:14px;bottom:14px;z-index:9998;border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
     document.head.appendChild(style);
 
     const banner=document.createElement('div');
@@ -69,7 +69,7 @@
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls',banner.id);
     reopen.classList.add('nn-privacy-choice-fallback');
-    reopen.hidden=true;
+    reopen.hidden=false;
     document.body.appendChild(reopen);
 
     const hide=()=>{banner.hidden=true;reopen.hidden=false};
