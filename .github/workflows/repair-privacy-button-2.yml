@@ -1,0 +1,45 @@
+name: Repair privacy button 2
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-privacy-button-2.yml'
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch main.js safely
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/main.js')
+          s=p.read_text()
+          a="reopen.classList.add('nn-privacy-choice-fallback');\n    reopen.hidden=true;"
+          b="reopen.classList.add('nn-privacy-choice-fallback');\n    reopen.hidden=false;"
+          if a not in s:
+            raise SystemExit('button target not found')
+          s=s.replace(a,b,1)
+          a2=".nn-privacy-choice-fallback{position:fixed;right:14px;bottom:14px;z-index:9998;"
+          b2=".nn-privacy-choice-fallback{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;"
+          if a2 not in s:
+            raise SystemExit('style target not found')
+          s=s.replace(a2,b2,1)
+          p.write_text(s)
+          print('patched', len(s), 'bytes')
+          PY
+      - name: Verify full main.js preserved
+        run: |
+          test "$(wc -c < assets/js/main.js)" -gt 10000
+          grep -q "measurementId='G-YLPFKWSS12'" assets/js/main.js
+          grep -q "reopen.hidden=false" assets/js/main.js
+          grep -q "z-index:2147483647!important" assets/js/main.js
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/js/main.js
+          git commit -m 'Fix privacy button visibility' || exit 0
+          git push
