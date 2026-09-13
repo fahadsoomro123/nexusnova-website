@@ -15,7 +15,7 @@
   window.gtag('js',new Date());
 
   const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_) {}};
   let analyticsLoaded=false;
   const loadAnalytics=(grantAnalytics=false)=>{
     if(grantAnalytics)window.gtag('consent','update',{
@@ -49,34 +49,24 @@
     const base=inSubdir?'../':'';
     const style=document.createElement('style');
     style.dataset.nexusnovaConsentStyle='';
-    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
     document.head.appendChild(style);
 
     const banner=document.createElement('div');
     banner.className='nn-consent';
     banner.dataset.nexusnovaConsent='';
     banner.id='nexusnova-analytics-consent';
-    banner.setAttribute('role','region');
+    banner.hidden=true;
+    banner.setAttribute('role','dialog');
+    banner.setAttribute('aria-modal','true');
     banner.setAttribute('aria-label','Optional analytics settings');
     banner.innerHTML=`<p><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
-    const reopen=document.createElement('button');
-    reopen.type='button';
-    reopen.className='nn-privacy-choice';
-    reopen.textContent='Privacy & Analytics Settings';
-    reopen.setAttribute('aria-label','Open analytics privacy choices');
-    reopen.title='Privacy choices';
-    reopen.setAttribute('aria-controls',banner.id);
-    reopen.classList.add('nn-privacy-choice-fallback');
-    reopen.hidden=false;
-    document.body.appendChild(reopen);
-
-    const hide=()=>{banner.hidden=true;reopen.hidden=false};
-    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
-    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
-    banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
-    reopen.addEventListener('click',()=>{banner.hidden=false;reopen.hidden=true;banner.querySelector('button')?.focus()});
+    const hide=()=>{banner.hidden=true};
+    banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
+    banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
+    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
 
     const choice=readChoice();
     if(choice==='granted'){loadAnalytics(true);hide()}
@@ -168,7 +158,7 @@
     paper:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h4M9 12h7M9 16h7"/>',
     money:'<circle cx="12" cy="12" r="9"/><path d="M15.2 8.8c-.8-.7-1.8-1-3-1-1.6 0-2.8.8-2.8 2s1 1.8 2.8 2.2 2.8 1 2.8 2.2-1.2 2-2.9 2c-1.2 0-2.3-.4-3.2-1.2M12 6.2v11.6"/>',
     calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 9h18M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/>',
-    convert:'<path d="M5 7h12l-3-3M19 17H7l3 3"/><path d="m17 4 3 3-3 3M7 14l-3 3 3 3"/>',
+    convert:'<path d="M5 7h12l-3-3M19 17H7l3 3"/><path d="m17 4 3 3-3 3M7 14l-4 3 3 3"/>',
     database:'<ellipse cx="12" cy="5" rx="7.5" ry="3"/><path d="M4.5 5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5M4.5 11v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/>',
     dice:'<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/>',
     resume:'<path d="M6 3h12v18H6z"/><circle cx="10" cy="9" r="2"/><path d="M7.8 14c.7-1.4 1.5-2 2.2-2s1.5.6 2.2 2M14 8h2M14 11h2M9 17h7"/>',
