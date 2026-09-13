@@ -21,6 +21,10 @@ test('GA4 stays off by default and loads only after explicit analytics consent',
   assert.match(text, /analyticsScript\.onload=\(\)=>window\.gtag\('config',measurementId,\{/);
   assert.doesNotMatch(text, /send_page_view:false/);
   assert.match(text, /data-consent-allow/);
+  assert.match(text, /Privacy & Analytics Settings/);
+  assert.match(text, /const footerLinks=document\.querySelector\('\.site-footer \.footer-links'\)/);
+  assert.match(text, /footerLinks\.appendChild\(reopen\)/);
+  assert.match(text, /reopen\.addEventListener\('click',\(\)=>\{banner\.hidden=false/);
   assert.match(text, /saveChoice\('granted'\);loadAnalytics\(\)/);
   assert.match(text, /if\(initialChoice==='granted'\)loadAnalytics\(\)/);
   assert.doesNotMatch(text, /setTimeout\(load,8000\)/);
