@@ -1,4 +1,6 @@
 (()=>{
+  let ready=false;
+
   const setup=()=>{
     const banner=document.getElementById('nexusnova-analytics-consent');
     const footer=document.querySelector('.site-footer .footer-bottom')||document.querySelector('.site-footer .footer-console');
@@ -18,8 +20,12 @@
       link.dataset.nexusnovaPrivacySettingsLink='1';
       link.setAttribute('aria-label','Open Privacy and Analytics settings');
       link.setAttribute('aria-haspopup','dialog');
-      link.style.cssText='margin-left:12px;text-decoration:underline;font-size:12px;opacity:.78;cursor:pointer;color:inherit;pointer-events:auto;position:relative;z-index:5';
+      link.style.cssText='display:inline-block;margin-left:12px;text-decoration:underline;font-size:12px;opacity:.78;cursor:pointer;color:inherit;pointer-events:auto!important;position:relative;z-index:2147483647;touch-action:manipulation';
       footer.appendChild(link);
+    }
+    if(!ready){
+      ready=true;
+      document.addEventListener('click',open,true);
     }
     return true;
   };
@@ -40,17 +46,20 @@
   };
 
   const closeOnHash=()=>{
-    if(location.hash==='#privacy-analytics-settings'){
-      const banner=document.getElementById('nexusnova-analytics-consent');
-      if(banner){banner.hidden=false;banner.removeAttribute('hidden');}
+    if(location.hash!=='#privacy-analytics-settings') return;
+    const banner=document.getElementById('nexusnova-analytics-consent');
+    if(banner){
+      banner.hidden=false;
+      banner.removeAttribute('hidden');
     }
   };
 
   const boot=()=>{
     if(setup()){
-      document.addEventListener('click',open,true);
       closeOnHash();
+      return;
     }
+    window.setTimeout(boot,100);
   };
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
