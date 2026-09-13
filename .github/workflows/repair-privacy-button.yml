@@ -1,0 +1,53 @@
+name: Repair privacy control
+on:
+  push:
+    paths:
+      - '.github/workflows/repair-privacy-button.yml'
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch consent control without touching other JS
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/main.js')
+          s=p.read_text(encoding='utf-8')
+          old="""    reopen.classList.add('nn-privacy-choice-fallback');
+    reopen.hidden=true;
+    document.body.appendChild(reopen);
+
+    const hide=()=>{banner.hidden=true;reopen.hidden=false};
+    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});"""
+          new="""    reopen.classList.add('nn-privacy-choice-fallback');
+    reopen.hidden=false;
+    document.body.appendChild(reopen);
+
+    const hide=()=>{banner.hidden=true;reopen.hidden=false};
+    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});"""
+          if old not in s: raise SystemExit('privacy block not found')
+          s=s.replace(old,new,1)
+          old2="""    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{position:fixed;right:14px;bottom:14px;z-index:9998;border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';"""
+          new2="""    style.textContent='.nn-consent{position:fixed!important;left:16px!important;right:16px!important;bottom:72px!important;z-index:2147483646!important;max-width:560px!important;margin:auto!important;padding:12px 14px!important;border:1px solid #cbd5e1!important;border-radius:14px!important;background:#fff!important;color:#111827!important;box-shadow:0 10px 30px rgba(15,23,42,.16)!important;font:13px/1.4 system-ui,sans-serif!important}.nn-consent[hidden]{display:none!important}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;border:1px solid #cbd5e1!important;border-radius:999px!important;padding:9px 13px!important;background:#fff!important;color:#111827!important;font:700 13px system-ui,sans-serif!important;box-shadow:0 8px 24px rgba(15,23,42,.14)!important}@media(max-width:640px){.nn-consent{left:10px!important;right:10px!important;bottom:62px!important}.nn-privacy-choice-fallback{right:10px!important;bottom:10px!important;font-size:12px!important;padding:8px 11px!important}}';"""
+          if old2 not in s: raise SystemExit('privacy style not found')
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify targeted change
+        run: |
+          grep -q "reopen.hidden=false" assets/js/main.js
+          grep -q "z-index:2147483647!important" assets/js/main.js
+          test "$(grep -o "})();" assets/js/main.js | wc -l)" -ge 4
+      - name: Commit and remove repair workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/main.js
+          git commit -m "Fix privacy button visibility" || true
+          git rm .github/workflows/repair-privacy-button.yml
+          git commit -m "Remove temporary privacy repair workflow"
+          git push
