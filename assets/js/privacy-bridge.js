@@ -22,6 +22,7 @@
       link.setAttribute('aria-haspopup','dialog');
       link.style.cssText='display:inline-block;margin-left:12px;text-decoration:underline;font-size:12px;opacity:.78;cursor:pointer;color:inherit;pointer-events:auto!important;position:relative;z-index:2147483647;touch-action:manipulation';
       footer.appendChild(link);
+      link.addEventListener('click',open);
     }
     if(!ready){
       ready=true;
