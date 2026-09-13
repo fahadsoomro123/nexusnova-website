@@ -68,15 +68,15 @@
     reopen.setAttribute('aria-label','Open analytics privacy choices');
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls',banner.id);
-    const footerLinks=document.querySelector('.site-footer .footer-links');
-    if(footerLinks) footerLinks.appendChild(reopen);
-    else {reopen.classList.add('nn-privacy-choice-fallback');document.body.appendChild(reopen)}
+    reopen.classList.add('nn-privacy-choice-fallback');
+    reopen.hidden=true;
+    document.body.appendChild(reopen);
 
-    const hide=()=>{banner.hidden=true};
+    const hide=()=>{banner.hidden=true;reopen.hidden=false};
     banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
     banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
     banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
-    reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
+    reopen.addEventListener('click',()=>{banner.hidden=false;reopen.hidden=true;banner.querySelector('button')?.focus()});
 
     const choice=readChoice();
     if(choice==='granted'){loadAnalytics(true);hide()}
