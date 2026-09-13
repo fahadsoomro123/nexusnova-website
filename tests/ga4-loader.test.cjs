@@ -2,6 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
+test('public HumanProof page uses the shared consent and analytics bootstrap', () => {
+  const text = fs.readFileSync('humanproof.html', 'utf8');
+  assert.match(text, /<script src="assets\/js\/main\.js" defer><\/script>/);
+});
+
 test('GA4 stays off by default and loads only after explicit analytics consent', () => {
   const text = fs.readFileSync('assets/js/main.js', 'utf8');
   assert.match(text, /const measurementId='G-YLPFKWSS12';/);
@@ -13,6 +18,8 @@ test('GA4 stays off by default and loads only after explicit analytics consent',
   assert.match(text, /ad_personalization:'denied'/);
   assert.match(text, /const loadAnalytics=\(\)=>\{/);
   assert.match(text, /analyticsScript\.src=`https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=/);
+  assert.match(text, /analyticsScript\.onload=\(\)=>window\.gtag\('config',measurementId,\{/);
+  assert.doesNotMatch(text, /send_page_view:false/);
   assert.match(text, /data-consent-allow/);
   assert.match(text, /saveChoice\('granted'\);loadAnalytics\(\)/);
   assert.match(text, /if\(initialChoice==='granted'\)loadAnalytics\(\)/);
