@@ -1,0 +1,82 @@
+name: Privacy slim fix
+on:
+  push:
+    paths:
+      - '.github/workflows/privacy-slim-fix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch privacy UX
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/main.js')
+          s=p.read_text()
+          old="  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});\n  else mountChoices();\n})();"
+          new="""  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
+  else mountChoices();
+
+  const installSlimPrivacy=()=>{
+    const banner=document.getElementById('nexusnova-analytics-consent');
+    const floating=document.querySelector('.nn-privacy-choice-fallback');
+    if(!banner)return;
+    if(floating)floating.remove();
+    banner.hidden=true;
+    banner.setAttribute('role','dialog');
+    banner.setAttribute('aria-modal','true');
+    banner.style.setProperty('position','fixed','important');
+    banner.style.setProperty('left','50%','important');
+    banner.style.setProperty('right','auto','important');
+    banner.style.setProperty('top','50%','important');
+    banner.style.setProperty('bottom','auto','important');
+    banner.style.setProperty('transform','translate(-50%,-50%)','important');
+    banner.style.setProperty('width','min(92vw,520px)','important');
+    banner.style.setProperty('max-width','520px','important');
+    banner.style.setProperty('z-index','2147483647','important');
+    banner.style.setProperty('box-sizing','border-box','important');
+    const copy=banner.querySelector('p');
+    if(copy)copy.innerHTML='<strong>Privacy & Analytics</strong><br>Choose whether to allow detailed Google Analytics. Advertising and personalization remain off.';
+    const host=document.querySelector('.site-footer .footer-bottom')||document.querySelector('.site-footer .footer-console');
+    if(host&&!host.querySelector('[data-nexusnova-privacy-settings-link]')){
+      const link=document.createElement('a');
+      link.href='#privacy-analytics-settings';
+      link.textContent='Privacy & Analytics';
+      link.dataset.nexusnovaPrivacySettingsLink='';
+      link.style.cssText='margin-left:12px;text-decoration:underline;font-size:12px;opacity:.8;cursor:pointer';
+      link.addEventListener('click',e=>{e.preventDefault();banner.hidden=false;banner.style.setProperty('display','block','important');banner.querySelector('[data-consent-allow]')?.focus()});
+      host.appendChild(link);
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installSlimPrivacy,{once:true});
+  else installSlimPrivacy();
+})();"""
+          if old not in s:
+            raise SystemExit('main.js target not found')
+          p.write_text(s.replace(old,new,1))
+          Path('assets/js/privacy-bridge.js').write_text("// Privacy controls are managed by main.js. Sticky banner bridge intentionally disabled.\n")
+          PY
+      - name: Verify
+        run: |
+          grep -q "installSlimPrivacy" assets/js/main.js
+          ! grep -q "boot();" assets/js/privacy-bridge.js
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/js/main.js assets/js/privacy-bridge.js
+          git commit -m 'Replace sticky privacy prompt with footer settings' || exit 0
+          git push
+      - name: Remove temporary workflow
+        if: always()
+        run: |
+          git rm .github/workflows/privacy-slim-fix.yml || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Remove temporary privacy fix workflow' || true
+          git push || true
