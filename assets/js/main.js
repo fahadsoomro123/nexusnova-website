@@ -66,6 +66,7 @@
     reopen.className='nn-privacy-choice';
     reopen.textContent='Privacy & Analytics Settings';
     reopen.setAttribute('aria-label','Open analytics privacy choices');
+    reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls',banner.id);
     const footerLinks=document.querySelector('.site-footer .footer-links');
     if(footerLinks) footerLinks.appendChild(reopen);
