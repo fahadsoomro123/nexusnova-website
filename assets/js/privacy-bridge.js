@@ -1,6 +1,4 @@
 (()=>{
-  let ready=false;
-
   const setup=()=>{
     const banner=document.getElementById('nexusnova-analytics-consent');
     const footer=document.querySelector('.site-footer .footer-bottom')||document.querySelector('.site-footer .footer-console');
@@ -22,28 +20,27 @@
       link.setAttribute('aria-haspopup','dialog');
       link.style.cssText='display:inline-block;margin-left:12px;text-decoration:underline;font-size:12px;opacity:.78;cursor:pointer;color:inherit;pointer-events:auto!important;position:relative;z-index:2147483647;touch-action:manipulation';
       footer.appendChild(link);
-      link.addEventListener('click',open);
     }
-    if(!ready){
-      ready=true;
-      document.addEventListener('click',open,true);
-    }
+
+    link.onclick=open;
     return true;
   };
 
   const open=event=>{
-    const link=event.target.closest?.('[data-nexusnova-privacy-settings-link]');
-    if(!link) return;
-    event.preventDefault();
+    event?.preventDefault();
     const banner=document.getElementById('nexusnova-analytics-consent');
-    if(!banner) return;
+    if(!banner) return false;
+
     banner.hidden=false;
     banner.removeAttribute('hidden');
     banner.removeAttribute('aria-hidden');
-    banner.style.removeProperty('display');
-    banner.style.removeProperty('pointer-events');
+    banner.style.setProperty('display','block','important');
+    banner.style.setProperty('visibility','visible','important');
+    banner.style.setProperty('opacity','1','important');
+    banner.style.setProperty('pointer-events','auto','important');
     history.replaceState(null,'','#privacy-analytics-settings');
     banner.querySelector('[data-consent-allow]')?.focus();
+    return false;
   };
 
   const closeOnHash=()=>{
@@ -52,6 +49,11 @@
     if(banner){
       banner.hidden=false;
       banner.removeAttribute('hidden');
+      banner.removeAttribute('aria-hidden');
+      banner.style.setProperty('display','block','important');
+      banner.style.setProperty('visibility','visible','important');
+      banner.style.setProperty('opacity','1','important');
+      banner.style.setProperty('pointer-events','auto','important');
     }
   };
 
