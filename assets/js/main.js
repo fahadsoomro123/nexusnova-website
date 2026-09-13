@@ -17,8 +17,8 @@
   const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
   const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}};
   let analyticsLoaded=false;
-  const loadAnalytics=()=>{
-    window.gtag('consent','update',{
+  const loadAnalytics=(grantAnalytics=false)=>{
+    if(grantAnalytics)window.gtag('consent','update',{
       analytics_storage:'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
@@ -49,37 +49,43 @@
     const base=inSubdir?'../':'';
     const style=document.createElement('style');
     style.dataset.nexusnovaConsentStyle='';
-    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;max-width:780px;margin:auto;padding:16px 18px;border:1px solid #cbd5e1;border-radius:18px;background:#fff;color:#111827;box-shadow:0 18px 55px rgba(15,23,42,.22);font:14px/1.45 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 12px}.nn-consent-actions{display:flex;gap:8px;flex-wrap:wrap}.nn-consent button,.nn-privacy-choice{border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{position:fixed;right:14px;bottom:14px;z-index:9998;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:10px}.nn-privacy-choice{right:10px;bottom:10px}}';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-privacy-choice{cursor:pointer}.nn-privacy-choice-fallback{position:fixed;right:14px;bottom:14px;z-index:9998;border:1px solid #cbd5e1;border-radius:999px;padding:9px 13px;background:#fff;color:#111827;font:700 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.14)}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
     document.head.appendChild(style);
 
     const banner=document.createElement('div');
     banner.className='nn-consent';
     banner.dataset.nexusnovaConsent='';
-    banner.setAttribute('role','dialog');
-    banner.setAttribute('aria-label','Analytics privacy choice');
-    banner.innerHTML=`<p><strong>Optional analytics</strong><br>NexusNova can use Google Analytics to measure website traffic. You can allow or decline optional analytics at any time. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow analytics</button><button type="button" data-consent-deny>No thanks</button></div>`;
+    banner.id='nexusnova-analytics-consent';
+    banner.setAttribute('role','region');
+    banner.setAttribute('aria-label','Optional analytics settings');
+    banner.innerHTML=`<p><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
     const reopen=document.createElement('button');
     reopen.type='button';
     reopen.className='nn-privacy-choice';
-    reopen.textContent='Privacy choices';
+    reopen.textContent='Privacy & Analytics Settings';
     reopen.setAttribute('aria-label','Open analytics privacy choices');
-    reopen.hidden=true;
+    reopen.title='Privacy choices';
+    reopen.setAttribute('aria-controls',banner.id);
+    const footerLinks=document.querySelector('.site-footer .footer-links');
+    if(footerLinks) footerLinks.appendChild(reopen);
+    else {reopen.classList.add('nn-privacy-choice-fallback');document.body.appendChild(reopen)}
 
     const hide=()=>{banner.hidden=true};
-    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics();hide()});
-    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();hide()});
+    banner.querySelector('[data-consent-allow]').addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
+    banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
+    banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
     reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
 
     const choice=readChoice();
-    if(choice==='granted'){loadAnalytics();hide()}
-    else if(choice==='denied'){denyAnalytics();hide()}
+    if(choice==='granted'){loadAnalytics(true);hide()}
+    else if(choice==='denied'){denyAnalytics();loadAnalytics();hide()}
   };
 
   const initialChoice=readChoice();
-  if(initialChoice==='granted')loadAnalytics();
-  else denyAnalytics();
+  if(initialChoice==='granted')loadAnalytics(true);
+  else {denyAnalytics();loadAnalytics();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
   else mountChoices();
 })();
