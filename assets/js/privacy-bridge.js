@@ -43,25 +43,8 @@
     return false;
   };
 
-  const closeOnHash=()=>{
-    if(location.hash!=='#privacy-analytics-settings') return;
-    const banner=document.getElementById('nexusnova-analytics-consent');
-    if(banner){
-      banner.hidden=false;
-      banner.removeAttribute('hidden');
-      banner.removeAttribute('aria-hidden');
-      banner.style.setProperty('display','block','important');
-      banner.style.setProperty('visibility','visible','important');
-      banner.style.setProperty('opacity','1','important');
-      banner.style.setProperty('pointer-events','auto','important');
-    }
-  };
-
   const boot=()=>{
-    if(setup()){
-      closeOnHash();
-      return;
-    }
+    if(setup()) return;
     window.setTimeout(boot,100);
   };
 
