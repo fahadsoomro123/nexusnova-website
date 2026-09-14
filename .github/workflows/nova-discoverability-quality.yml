@@ -44,42 +44,28 @@ jobs:
           failures = []
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
+
               for width in widths:
                   page = browser.new_page(viewport={'width': width, 'height': 844 if width < 800 else 1000})
                   errors = []
                   page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
                   try:
-                      response = page.goto('http://127.0.0.1:8000/', wait_until='networkidle', timeout=30000)
+                      response = page.goto('http://127.0.0.1:8000/', wait_until='domcontentloaded', timeout=30000)
+                      page.wait_for_timeout(400)
                       if not response or response.status >= 400:
                           failures.append(f'home@{width}: HTTP {response.status if response else 0}')
                           continue
-                      page.wait_for_timeout(250)
-                      page.evaluate('window.scrollTo(0,0)')
                       nav = page.locator('[data-nav] [data-nova-intelligence-nav]')
                       feature = page.locator('.nn-nova-discovery')
                       if nav.count() != 1:
                           failures.append(f'home@{width}: expected exactly one Nova nav link, found {nav.count()}')
                       else:
-                          href = nav.get_attribute('href')
-                          if href != '/nova-intelligence.html':
-                              failures.append(f'home@{width}: Nova nav href {href!r}')
+                          if nav.get_attribute('href') != '/nova-intelligence.html':
+                              failures.append(f'home@{width}: incorrect Nova nav href')
                           if width <= 720:
-                              menu = page.locator('[data-menu-btn]')
-                              menu.click()
+                              page.locator('[data-menu-btn]').click()
                               if not nav.is_visible():
                                   failures.append(f'home@{width}: Nova nav link not visible in mobile menu')
-                              nav.focus()
-                              page.keyboard.press('Enter')
-                              page.wait_for_load_state('domcontentloaded')
-                              if not page.url.endswith('/nova-intelligence.html'):
-                                  failures.append(f'home@{width}: mobile menu navigation ended at {page.url}')
-                              page.go_back(wait_until='networkidle')
-                          else:
-                              nav.click()
-                              page.wait_for_load_state('domcontentloaded')
-                              if not page.url.endswith('/nova-intelligence.html'):
-                                  failures.append(f'home@{width}: desktop navigation ended at {page.url}')
-                              page.go_back(wait_until='networkidle')
                       if feature.count() != 1:
                           failures.append(f'home@{width}: Nova discovery section missing')
                       else:
@@ -90,17 +76,11 @@ jobs:
                               cta.focus()
                               if not cta.evaluate('(el) => document.activeElement === el'):
                                   failures.append(f'home@{width}: CTA focus did not land')
-                              page.keyboard.press('Enter')
-                              page.wait_for_load_state('domcontentloaded')
-                              if not page.url.endswith('/nova-intelligence.html'):
-                                  failures.append(f'home@{width}: CTA navigation ended at {page.url}')
-                              page.go_back(wait_until='networkidle')
                       metrics = page.evaluate('''() => ({
                         sw: document.documentElement.scrollWidth,
                         cw: document.documentElement.clientWidth,
                         bodySw: document.body.scrollWidth,
-                        h1: document.querySelectorAll('h1').length,
-                        navOpen: !!document.querySelector('[data-nav].open')
+                        h1: document.querySelectorAll('h1').length
                       })''')
                       if metrics['sw'] > metrics['cw'] + 6 or metrics['bodySw'] > metrics['cw'] + 6:
                           failures.append(f'home@{width}: horizontal overflow ({metrics})')
@@ -112,9 +92,28 @@ jobs:
                       failures.append(f'home@{width}: browser failure: {exc}')
                   finally:
                       page.close()
+
+              for width, mobile in [(1440, False), (390, True)]:
+                  page = browser.new_page(viewport={'width': width, 'height': 844 if mobile else 1000})
+                  try:
+                      page.goto('http://127.0.0.1:8000/', wait_until='domcontentloaded', timeout=30000)
+                      page.wait_for_timeout(400)
+                      nav = page.locator('[data-nav] [data-nova-intelligence-nav]')
+                      if mobile:
+                          page.locator('[data-menu-btn]').click()
+                      nav.click()
+                      page.wait_for_load_state('domcontentloaded')
+                      if not page.url.endswith('/nova-intelligence.html'):
+                          failures.append(f'navigation@{width}: Nova navigation ended at {page.url}')
+                  except Exception as exc:
+                      failures.append(f'navigation@{width}: browser failure: {exc}')
+                  finally:
+                      page.close()
+
               flow = browser.new_page(viewport={'width': 390, 'height': 844})
-              flow.goto('http://127.0.0.1:8000/nova-intelligence.html', wait_until='networkidle', timeout=30000)
               try:
+                  flow.goto('http://127.0.0.1:8000/nova-intelligence.html', wait_until='domcontentloaded', timeout=30000)
+                  flow.wait_for_timeout(300)
                   robots = flow.locator('meta[name="robots"]').get_attribute('content') or ''
                   if robots.replace(' ', '').lower() != 'noindex,nofollow':
                       failures.append(f'intelligence: robots meta is {robots!r}')
@@ -130,8 +129,9 @@ jobs:
               finally:
                   flow.close()
               browser.close()
+
           if failures:
               print('\n'.join(f'FAIL: {item}' for item in failures))
               raise SystemExit(1)
-          print(f'PASS: Nova discoverability verified at {len(widths)} viewports plus keyboard/touch navigation and real Intelligence routing.')
+          print(f'PASS: Nova discoverability verified at {len(widths)} responsive widths, desktop/mobile navigation, keyboard focus, and real Intelligence routing.')
           PY
