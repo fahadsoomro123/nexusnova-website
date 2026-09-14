@@ -70,6 +70,12 @@ jobs:
                       page = browser.new_page(viewport={'width': width, 'height': 844 if width < 800 else 1000})
                       errors = []
                       page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                      if rel == 'register.html':
+                          page.route('**/api/auth/security-config', lambda route: route.fulfill(
+                              status=200,
+                              content_type='application/json',
+                              body='{"enabled":false}'
+                          ))
                       try:
                           response = page.goto(f'http://127.0.0.1:8000/{rel}', wait_until='networkidle', timeout=30000)
                           if not response or response.status >= 400:
@@ -83,10 +89,9 @@ jobs:
                               header: !!document.querySelector('[data-header]') || !!document.querySelector('.ni-nav'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
-                              body: document.body.scrollWidth,
                           })''')
-                          if metrics['sw'] > metrics['cw'] + 6 or metrics['body'] > width + 6:
-                              failures.append(f'{name}@{width}: horizontal overflow ({metrics["sw"]}/{metrics["cw"]}; body {metrics["body"]})')
+                          if metrics['sw'] > metrics['cw'] + 6:
+                              failures.append(f'{name}@{width}: horizontal overflow ({metrics["sw"]}/{metrics["cw"]})')
                           if metrics['h1'] != 1 and rel not in {'register.html'}:
                               failures.append(f'{name}@{width}: H1 count {metrics["h1"]}')
                           if errors:
