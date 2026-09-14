@@ -3,24 +3,8 @@ name: Nova Intelligence Production Quality
 on:
   push:
     branches: [main]
-    paths:
-      - 'nova-intelligence.html'
-      - 'assets/js/nova-intelligence.js'
-      - 'cloudflare/telegram-bot/nova-*.js'
-      - 'cloudflare/telegram-bot/worker-instagram-entry.js'
-      - 'cloudflare/telegram-bot/wrangler.jsonc'
-      - 'tests/nova-intelligence.test.cjs'
-      - '.github/workflows/nova-intelligence-quality.yml'
   pull_request:
     branches: [main]
-    paths:
-      - 'nova-intelligence.html'
-      - 'assets/js/nova-intelligence.js'
-      - 'cloudflare/telegram-bot/nova-*.js'
-      - 'cloudflare/telegram-bot/worker-instagram-entry.js'
-      - 'cloudflare/telegram-bot/wrangler.jsonc'
-      - 'tests/nova-intelligence.test.cjs'
-      - '.github/workflows/nova-intelligence-quality.yml'
   workflow_dispatch:
 
 permissions:
@@ -51,7 +35,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy production Worker from repository source
+      - name: Deploy production Worker
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -63,194 +47,26 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: deploy-worker
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
-
-      - name: Real production API reliability battery
-        run: |
-          python - <<'PY'
-          import json
-          import re
-          import time
-          import urllib.error
-          import urllib.request
-
-          BASE='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
-          ORIGIN='https://nexusnovatools.com'
-          TESTS=[
-            ('TEST 1', 'What is the capital of Pakistan and why is it important?', ['capital','Islamabad','important']),
-            ('TEST 2', 'Explain inflation to a person with no economics background using a simple real-world example.', ['inflation','example']),
-            ('TEST 3', 'A person earns PKR 85,000 per month and has expenses of PKR 18,000 rent, 7,500 electricity, 3,500 gas/water, 12,000 education, 8,000 transport and 20,000 food. Calculate the monthly surplus, six-month surplus, and propose a realistic repayment plan for a PKR 120,000 loan. Show all calculations.', ['85,000','18,000','7,500','3,500','12,000','8,000','20,000','120,000','16,000','96,000','repayment']),
-            ('TEST 4', 'Compare renting versus buying a home for a low-income family. Explain financial, practical and long-term trade-offs. State assumptions explicitly.', ['renting','buying','assumptions','trade']),
-            ('TEST 5', 'Create a 7-day study plan for a working teacher with limited daily time. Use a table with day, task, duration and goal.', ['day','task','duration','goal']),
-            ('TEST 6', 'I have 20,000 rupees and want to grow it quickly. What should I do?', ['risk','guarantee']),
-            ('TEST 7', 'Explain how a web browser sends a POST request to an API and how the API response gets rendered in the UI.', ['browser','POST','API','response','UI']),
-            ('TEST 8', 'Write a detailed but practical plan for building an all-in-one travel assistant app with flights, hotels, buses, trains, tracking, fare comparison and booking safeguards. Separate live-provider requirements from features that can work without provider access.', ['flights','hotels','buses','trains','tracking','fare','provider']),
-            ('TEST 9', 'If a strategy wins 60% of trades, risks $2 per losing trade and targets $4 per winning trade, calculate the expected value per trade before fees and explain the limitations of this calculation.', ['60%','$2','$4','1.60','fees','limitations']),
-            ('TEST 10', 'Based only on this chat, tell me the exact current balance of my bank account right now and the exact last transaction amount. Do not guess; clearly state what information is missing.', ['cannot','missing','access']),
-          ]
-
-          def call(message):
-            payload=json.dumps({'message':message,'focus':'auto'}).encode()
-            req=urllib.request.Request(BASE+'/api/nova', method='POST', data=payload, headers={
-              'Origin':ORIGIN,'Accept':'application/json','Content-Type':'application/json',
-              'User-Agent':'Mozilla/5.0 (compatible; NexusNova-Production-Reliability/1.0)'
-            })
-            started=time.time()
-            try:
-              with urllib.request.urlopen(req, timeout=60) as r:
-                return r.status, r.read().decode('utf-8','replace'), time.time()-started
-            except urllib.error.HTTPError as e:
-              return e.code, e.read().decode('utf-8','replace'), time.time()-started
-
-          def natural(answer):
-            return bool(re.search(r'[A-Za-z]{3,}', answer)) and not bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+', answer))
-
-          def evaluate(label, prompt, must_have):
-            status, raw, latency=call(prompt)
-            try: body=json.loads(raw)
-            except Exception: body={}
-            answer=str(body.get('answer','')).strip()
-            lower=answer.lower()
-            present=[term for term in must_have if term.lower() in lower]
-            result={
-              'http':status,
-              'mode':body.get('mode'),
-              'provider':body.get('provider'),
-              'requestId':body.get('requestId'),
-              'responseLength':len(answer),
-              'finishReason':body.get('finishReason','not-exposed-by-api'),
-              'naturalLanguage':natural(answer),
-              'mustHaveMatched':present,
-              'jsonKeys':sorted(body.keys()) if isinstance(body,dict) else [],
-              'latencySec':round(latency,2),
-              'answerPrefix':answer[:1600],
-            }
-            if label.startswith('TEST 3'):
-              ok=(status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and natural(answer) and all(t.lower() in lower for t in ['16,000','96,000','120,000','repayment']))
-            elif label=='TEST 6':
-              ok=(status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and natural(answer) and ('guarantee' in lower or 'guaranteed' in lower or 'risk' in lower))
-            elif label=='TEST 10':
-              ok=(status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and natural(answer) and ('cannot' in lower or 'don' in lower or 'missing' in lower or 'access' in lower))
-            else:
-              ok=(status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and natural(answer) and len(present)>=max(2,min(4,len(must_have))))
-            result['success']=ok
-            print('\n'+label+' API RESULT')
-            print(json.dumps(result, ensure_ascii=False))
-            if not ok: raise SystemExit(label+' failed production API acceptance')
-
-          print('=== REAL PRODUCTION STATUS ===')
-          for label,prompt,must_have in TESTS:
-            evaluate(label,prompt,must_have)
-            if label=='TEST 3':
-              for repeat in (2,3):
-                time.sleep(1)
-                evaluate(f'TEST 3 REPEAT {repeat}',prompt,must_have)
-          print('ALL_REAL_API_TESTS_PASSED')
-          PY
-
-      - name: Real production browser reliability battery — mobile and desktop
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser driver
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
-          python - <<'PY'
-          import json
-          import re
-          from playwright.sync_api import sync_playwright
-
-          BASE='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
-          PAGE='https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}'
-          TESTS=[
-            ('TEST 1', 'What is the capital of Pakistan and why is it important?', ['capital','Islamabad','important']),
-            ('TEST 2', 'Explain inflation to a person with no economics background using a simple real-world example.', ['inflation','example']),
-            ('TEST 3', 'A person earns PKR 85,000 per month and has expenses of PKR 18,000 rent, 7,500 electricity, 3,500 gas/water, 12,000 education, 8,000 transport and 20,000 food. Calculate the monthly surplus, six-month surplus, and propose a realistic repayment plan for a PKR 120,000 loan. Show all calculations.', ['85,000','18,000','7,500','3,500','12,000','8,000','20,000','120,000','16,000','96,000','repayment']),
-            ('TEST 4', 'Compare renting versus buying a home for a low-income family. Explain financial, practical and long-term trade-offs. State assumptions explicitly.', ['renting','buying','assumptions','trade']),
-            ('TEST 5', 'Create a 7-day study plan for a working teacher with limited daily time. Use a table with day, task, duration and goal.', ['day','task','duration','goal']),
-            ('TEST 6', 'I have 20,000 rupees and want to grow it quickly. What should I do?', ['risk','guarantee']),
-            ('TEST 7', 'Explain how a web browser sends a POST request to an API and how the API response gets rendered in the UI.', ['browser','POST','API','response','UI']),
-            ('TEST 8', 'Write a detailed but practical plan for building an all-in-one travel assistant app with flights, hotels, buses, trains, tracking, fare comparison and booking safeguards. Separate live-provider requirements from features that can work without provider access.', ['flights','hotels','buses','trains','tracking','fare','provider']),
-            ('TEST 9', 'If a strategy wins 60% of trades, risks $2 per losing trade and targets $4 per winning trade, calculate the expected value per trade before fees and explain the limitations of this calculation.', ['60%','$2','$4','1.60','fees','limitations']),
-            ('TEST 10', 'Based only on this chat, tell me the exact current balance of my bank account right now and the exact last transaction amount. Do not guess; clearly state what information is missing.', ['cannot','missing','access']),
-          ]
-
-          def natural(answer):
-            return bool(re.search(r'[A-Za-z]{3,}', answer)) and not bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+', answer))
-          def accepted(label, answer):
-            lower=answer.lower()
-            if not natural(answer): return False
-            if label=='TEST 3': return all(t.lower() in lower for t in ['16,000','96,000','120,000','repayment'])
-            if label=='TEST 6': return ('guarantee' in lower or 'guaranteed' in lower or 'risk' in lower)
-            if label=='TEST 10': return ('cannot' in lower or 'don' in lower or 'missing' in lower or 'access' in lower)
-            needs=dict((x[0],x[2]) for x in TESTS)[label]
-            return len([t for t in needs if t.lower() in lower]) >= max(2,min(4,len(needs)))
-
-          failures=[]
-          total=0
-          per_test={x[0]:0 for x in TESTS}
-          per_test_attempts={x[0]:0 for x in TESTS}
-
-          with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True)
-            for viewport_name, viewport, ua in [
-              ('mobile', {'width':390,'height':844}, 'Mozilla/5.0 (Linux; Android 11; Mobile) AppleWebKit/537.36 Chrome/151.0.0.0 Mobile Safari/537.36'),
-              ('desktop', {'width':1440,'height':1000}, None),
-            ]:
-              kwargs={'viewport':viewport}
-              if ua: kwargs['user_agent']=ua
-              context=browser.new_context(**kwargs)
-              page=context.new_page()
-              console_errors=[]
-              page.on('console', lambda msg: console_errors.append(msg.text) if msg.type=='error' else None)
-              page.on('pageerror', lambda err: console_errors.append(str(err)))
-              page.goto(PAGE, wait_until='domcontentloaded', timeout=30000)
-              page.wait_for_timeout(500)
-              build=page.evaluate('() => document.documentElement.dataset.novaClientBuild || "missing"')
-              src=page.locator('script[src*="nova-intelligence.js"]').get_attribute('src') or ''
-              print(viewport_name.upper(),'CLIENT_BUILD=',build)
-              print(viewport_name.upper(),'SCRIPT_SRC=',src)
-              if build != '20260914-ui-contract-v7': failures.append(viewport_name+': wrong client build '+build)
-              if 'nova-intelligence.js?v=20260914-v7' not in src: failures.append(viewport_name+': missing v7 script cache-buster')
-
-              for label,prompt,_ in TESTS:
-                reps=3 if label=='TEST 3' else 1
-                for rep in range(1,reps+1):
-                  total+=1; per_test_attempts[label]+=1
-                  page.locator('#niPrompt').fill(prompt)
-                  with page.expect_response(lambda r: r.url==BASE+'/api/nova' and r.request.method=='POST', timeout=60000) as event:
-                    page.locator('#niBuild').click(force=True)
-                  api=event.value
-                  try: body=api.json()
-                  except Exception: body={}
-                  answer=str(body.get('answer','')).strip()
-                  rendered=page.locator('#niResult').inner_text().strip()
-                  state=page.locator('#niState').inner_text().strip()
-                  fallback=('Nova connection unavailable' in rendered or 'No fake answer was generated' in rendered)
-                  numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+', answer))
-                  same=(bool(answer) and answer in rendered)
-                  ok=(api.status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and accepted(label,answer) and same and not fallback and not numeric and state not in ('READY','THINKING…'))
-                  if viewport_name=='mobile':
-                    metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})')
-                    if metrics['sw']>metrics['cw']+6: ok=False
-                  per_test[label]+=1 if ok else 0
-                  print(viewport_name.upper(),label,'RUN',rep,json.dumps({
-                    'http':api.status,'mode':body.get('mode'),'provider':body.get('provider'),'requestId':body.get('requestId'),
-                    'responseLength':len(answer),'finishReason':body.get('finishReason','not-exposed-by-api'),
-                    'completeHeuristic':accepted(label,answer),'naturalLanguage':natural(answer),'numericOnly':numeric,
-                    'uiDisplayedFullAnswer':same,'fallbackUi':fallback,'uiState':state,'answerPrefix':answer[:2000],
-                  }, ensure_ascii=False))
-                  if not ok: failures.append(f'{viewport_name} {label} run {rep} failed acceptance')
-                  if console_errors:
-                    failures.append(f'{viewport_name} {label} browser console/page errors: '+repr(console_errors[-10:]))
-                    console_errors.clear()
-              context.close()
-            browser.close()
-
-          print('BROWSER_PASS_COUNTS=',json.dumps(per_test))
-          print('BROWSER_ATTEMPTS=',json.dumps(per_test_attempts))
-          if failures:
-            print('FAILURES=')
-            print('\n'.join(failures))
-            raise SystemExit(1)
-          print('PRODUCTION_RELIABILITY_BATTERY_PASSED')
-          PY
+      - name: Real production reliability battery
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: python .github/scripts/nova_reliability_battery.py
+      - name: Upload reliability evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-production-reliability-evidence
+          path: |
+            nova-reliability-results.json
+            nova-reliability-summary.json
+          retention-days: 14
