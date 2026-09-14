@@ -1,6 +1,7 @@
 (() => {
   'use strict';
 
+  const CLIENT_BUILD = '20260914-ui-contract-v6';
   const API_URL = window.NOVA_API_URL || 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova';
   const HISTORY_KEY = 'nexusnova:nova-context:v2';
   const MAX_HISTORY = 8;
@@ -13,6 +14,8 @@
   const exampleButtons = [...document.querySelectorAll('[data-example]')];
   let busy = false;
   let activeMode = 'auto';
+
+  document.documentElement.dataset.novaClientBuild = CLIENT_BUILD;
 
   function updateProductCopy() {
     const lead = document.querySelector('.ni-hero-lead');
@@ -123,6 +126,13 @@
     setState('RECOVERED');
   }
 
+  function normalizeResponse(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    const candidate = payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data) ? payload.data : payload;
+    const answer = String(candidate.answer || '').trim();
+    return { ...candidate, answer };
+  }
+
   async function ask() {
     if (busy) return;
     const message = String(prompt?.value || '').trim();
@@ -131,15 +141,16 @@
     setState(activeMode === 'auto' ? 'THINKING…' : `THINKING • ${activeMode.toUpperCase()}…`);
     try {
       const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message, context: readHistory(), focus: activeMode }) });
-      const data = await response.json().catch(() => null);
-      const hasUsablePayload = Boolean(data && typeof data === 'object' && (
-        String(data.answer || '').trim() ||
+      const payload = await response.json().catch(() => null);
+      const data = normalizeResponse(payload);
+      const hasUsablePayload = Boolean(data && (
+        data.answer ||
         String(data.nextStep || '').trim() ||
         data.action?.href ||
         (Array.isArray(data.suggestedTools) && data.suggestedTools.length) ||
         (Array.isArray(data.sources) && data.sources.length)
       ));
-      if (!response.ok || !hasUsablePayload || data.ok === false) throw new Error('nova-response-unavailable');
+      if (!response.ok || !hasUsablePayload || data?.ok === false || data?.mode === 'limit') throw new Error('nova-response-unavailable');
       record('user', message); record('assistant', data.answer || data.nextStep || 'Nova completed the request.'); render(data);
     } catch (_) { renderFailure('Nova could not reach its secure reasoning service right now. No fake answer was generated.'); }
     finally { busy = false; buildButton?.removeAttribute('disabled'); }
