@@ -7,6 +7,7 @@ on:
       - 'nova-intelligence.html'
       - 'assets/js/nova-intelligence.js'
       - 'cloudflare/telegram-bot/nova-*.js'
+      - 'cloudflare/telegram-bot/worker-instagram-entry.js'
       - 'cloudflare/telegram-bot/wrangler.jsonc'
       - 'tests/nova-intelligence.test.cjs'
   push:
@@ -15,6 +16,7 @@ on:
       - 'nova-intelligence.html'
       - 'assets/js/nova-intelligence.js'
       - 'cloudflare/telegram-bot/nova-*.js'
+      - 'cloudflare/telegram-bot/worker-instagram-entry.js'
       - 'cloudflare/telegram-bot/wrangler.jsonc'
       - 'tests/nova-intelligence.test.cjs'
   workflow_dispatch:
@@ -35,7 +37,7 @@ jobs:
         run: npm test
       - name: Worker syntax
         run: |
-          node --check cloudflare/telegram-bot/nova-entry.js
+          node --check cloudflare/telegram-bot/worker-instagram-entry.js
           node --check cloudflare/telegram-bot/nova-provider.js
           node --check cloudflare/telegram-bot/nova-tools.js
           node --check cloudflare/telegram-bot/nova-runtime.js
