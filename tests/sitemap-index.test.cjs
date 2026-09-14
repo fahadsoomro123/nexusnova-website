@@ -17,8 +17,8 @@ test('central sitemap index exposes every non-empty public sitemap', () => {
   expectSitemap('https://nexusnovatools.com/humanproof-sitemap.xml');
   expectSitemap('https://nexusnovatools.com/sitemap-new-tools.xml');
   expectSitemap('https://nexusnovatools.com/sitemap-recent.xml');
+  expectSitemap('https://nexusnovatools.com/sitemap-autopilot.xml');
   assert.doesNotMatch(index, /sitemap-humanproof\.xml/);
-  assert.doesNotMatch(index, /sitemap-autopilot\.xml/);
   assert.doesNotMatch(index, /sitemap-content-2026-08-26\.xml/);
   assert.doesNotMatch(index, /sitemap-live\.xml/);
 });
