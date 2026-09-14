@@ -104,6 +104,44 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Production transport diagnostics
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+          import urllib.error
+
+          base='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
+          origin='https://nexusnovatools.com'
+          def probe(method, path, body=None):
+            data=None if body is None else json.dumps(body).encode()
+            req=urllib.request.Request(base+path, method=method, data=data, headers={
+              'Origin': origin,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Request-Method': 'POST' if method == 'OPTIONS' else '',
+              'Access-Control-Request-Headers': 'content-type' if method == 'OPTIONS' else ''
+            })
+            try:
+              with urllib.request.urlopen(req, timeout=30) as r:
+                text=r.read().decode('utf-8','replace')
+                print(method, path, 'HTTP', r.status)
+                print('ACAO=', r.headers.get('Access-Control-Allow-Origin'))
+                print('ACAM=', r.headers.get('Access-Control-Allow-Methods'))
+                print('ACAH=', r.headers.get('Access-Control-Allow-Headers'))
+                print('BODY=', text[:6000])
+            except urllib.error.HTTPError as e:
+              text=e.read().decode('utf-8','replace')
+              print(method, path, 'HTTP', e.code)
+              print('ACAO=', e.headers.get('Access-Control-Allow-Origin'))
+              print('ACAM=', e.headers.get('Access-Control-Allow-Methods'))
+              print('ACAH=', e.headers.get('Access-Control-Allow-Headers'))
+              print('BODY=', text[:6000])
+          print('=== SAFE PRODUCTION TRANSPORT DIAGNOSTICS ===')
+          probe('GET','/api/nova/status')
+          probe('OPTIONS','/api/nova')
+          probe('POST','/api/nova',{'message':'Explain compound interest in one friendly sentence.','focus':'general'})
+          PY
       - name: Production API and browser QA
         run: |
           python -m pip install --disable-pip-version-check playwright
@@ -117,12 +155,15 @@ jobs:
             try:
               page.goto('https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
               page.wait_for_timeout(500)
+              print('PAGE_URL=', page.url)
+              print('PAGE_ORIGIN=', page.evaluate('() => location.origin'))
               robots=(page.locator('meta[name="robots"]').get_attribute('content') or '').replace(' ','').lower()
               if robots!='noindex,nofollow': failures.append(f'robots={robots}')
               page.locator('#niPrompt').fill('Explain black holes like I am 12.')
               page.locator('#niBuild').click()
               page.wait_for_timeout(20000)
               text=page.locator('#niResult').inner_text()
+              print('UI_RESULT=', text[:6000])
               bad=['request too broad','unsupported query','something went wrong','http 500','json parse error','api timeout','uncaught promise','nova could not complete that request right now','nova is temporarily unavailable','nova hit a temporary processing problem']
               if any(item in text.lower() for item in bad): failures.append('user-visible technical/dead-end error')
               if not text.strip(): failures.append('empty Nova response')
@@ -133,6 +174,7 @@ jobs:
                 const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova/status');
                 return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), body:await r.json()};
               }""")
+              print('BROWSER_STATUS=', status)
               if status['status']!=200: failures.append(f'nova status http={status["status"]}')
               if status['allowOrigin']!='https://nexusnovatools.com': failures.append(f'nova status ACAO={status["allowOrigin"]}')
               if not status['body'].get('ok'): failures.append('Nova status endpoint not ok')
@@ -140,11 +182,12 @@ jobs:
               if not status['body'].get('providers',{}).get('gemini'): failures.append('Gemini is not configured in production Worker')
 
               preflight=page.evaluate("""async () => {
-                const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova/status',{
+                const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova',{
                   method:'OPTIONS', headers:{'Access-Control-Request-Method':'GET','Access-Control-Request-Headers':'content-type'}
                 });
                 return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), methods:r.headers.get('access-control-allow-methods'), headers:r.headers.get('access-control-allow-headers')};
               }""")
+              print('BROWSER_OPTIONS=', preflight)
               if preflight['status']!=204: failures.append(f'OPTIONS http={preflight["status"]}')
               if preflight['allowOrigin']!='https://nexusnovatools.com': failures.append(f'OPTIONS ACAO={preflight["allowOrigin"]}')
               if 'POST' not in (preflight['methods'] or ''): failures.append(f'OPTIONS methods={preflight["methods"]}')
@@ -157,6 +200,7 @@ jobs:
                 });
                 return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), body:await r.json()};
               }""")
+              print('BROWSER_POST=', result)
               if result['status']!=200: failures.append(f'nova api http={result["status"]}')
               if result['allowOrigin']!='https://nexusnovatools.com': failures.append(f'nova api ACAO={result["allowOrigin"]}')
               if not result['body'].get('ok'): failures.append('nova api returned non-ok')
