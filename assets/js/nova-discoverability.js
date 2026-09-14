@@ -4,12 +4,20 @@
   if(!isHome)return;
 
   const mountStyles=()=>{
-    if(document.querySelector('link[data-nova-discoverability-style]'))return;
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='/assets/css/nova-discoverability.css?v=20260914-1';
-    link.dataset.novaDiscoverabilityStyle='';
-    document.head.appendChild(link);
+    if(!document.querySelector('link[data-nova-discoverability-style]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='/assets/css/nova-discoverability.css?v=20260914-1';
+      link.dataset.novaDiscoverabilityStyle='';
+      document.head.appendChild(link);
+    }
+    if(!document.querySelector('link[data-nova-responsive-fix]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='/assets/css/nova-discoverability-responsive-fix.css?v=20260914-1';
+      link.dataset.novaResponsiveFix='';
+      document.head.appendChild(link);
+    }
   };
 
   const mountNav=()=>{
