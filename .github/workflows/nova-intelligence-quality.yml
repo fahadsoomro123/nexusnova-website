@@ -1,0 +1,132 @@
+name: Nova Intelligence Production Quality
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nova-intelligence.html'
+      - 'assets/js/nova-intelligence.js'
+      - 'cloudflare/telegram-bot/nova-*.js'
+      - 'cloudflare/telegram-bot/wrangler.jsonc'
+      - 'tests/nova-intelligence.test.cjs'
+  push:
+    branches: [main]
+    paths:
+      - 'nova-intelligence.html'
+      - 'assets/js/nova-intelligence.js'
+      - 'cloudflare/telegram-bot/nova-*.js'
+      - 'cloudflare/telegram-bot/wrangler.jsonc'
+      - 'tests/nova-intelligence.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Repository tests
+        run: npm test
+      - name: Worker syntax
+        run: |
+          node --check cloudflare/telegram-bot/nova-entry.js
+          node --check cloudflare/telegram-bot/nova-provider.js
+          node --check cloudflare/telegram-bot/nova-tools.js
+          node --check cloudflare/telegram-bot/nova-runtime.js
+          node --check assets/js/nova-intelligence.js
+      - name: Browser QA
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nova-http.log 2>&1 &
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          api='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova'
+          widths=[360,375,390,412,430,768,1024,1280,1440]
+          failures=[]
+          with sync_playwright() as p:
+            browser=p.chromium.launch(headless=True)
+            for width in widths:
+              page=browser.new_page(viewport={'width':width,'height':900})
+              errors=[]
+              page.on('console', lambda msg: errors.append(msg.text) if msg.type=='error' else None)
+              def route_handler(route):
+                route.fulfill(status=200,content_type='application/json',body='{"ok":true,"mode":"answer","answer":"Nova test response: arbitrary natural language was accepted.","requestId":"test","provider":"test"}')
+              page.route(api, route_handler)
+              try:
+                page.goto('http://127.0.0.1:8000/nova-intelligence.html',wait_until='domcontentloaded',timeout=30000)
+                page.wait_for_timeout(200)
+                if page.locator('#niPrompt').count()!=1: failures.append(f'prompt@{width}: missing')
+                prompt=page.locator('#niPrompt'); prompt.fill('Explain a difficult concept in simple words with an example.')
+                page.locator('#niBuild').click(); page.wait_for_timeout(250)
+                text=page.locator('#niResult').inner_text()
+                if 'Nova test response' not in text: failures.append(f'flow@{width}: mocked response not rendered')
+                metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})')
+                if metrics['sw']>metrics['cw']+6: failures.append(f'overflow@{width}: {metrics}')
+                if errors: failures.append(f'console@{width}: {errors}')
+                if 'too broad for this preview router' in page.content().lower(): failures.append(f'legacy-preview-copy@{width}')
+              except Exception as exc: failures.append(f'browser@{width}: {exc}')
+              finally: page.close()
+            browser.close()
+          if failures:
+            print('\n'.join(failures)); raise SystemExit(1)
+          print('PASS: Nova source/browser QA across 9 responsive widths with arbitrary natural-language flow.')
+          PY
+
+  production-quality:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Production API and browser QA
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          failures=[]
+          with sync_playwright() as p:
+            browser=p.chromium.launch(headless=True)
+            page=browser.new_page(viewport={'width':390,'height':844})
+            try:
+              page.goto('https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
+              page.wait_for_timeout(500)
+              robots=(page.locator('meta[name="robots"]').get_attribute('content') or '').replace(' ','').lower()
+              if robots!='noindex,nofollow': failures.append(f'robots={robots}')
+              page.locator('#niPrompt').fill('Explain black holes like I am 12.')
+              page.locator('#niBuild').click()
+              page.wait_for_timeout(20000)
+              text=page.locator('#niResult').inner_text()
+              bad=['request too broad','unsupported query','something went wrong','http 500','json parse error','api timeout','uncaught promise']
+              if any(item in text.lower() for item in bad): failures.append('user-visible technical/dead-end error')
+              if not text.strip(): failures.append('empty Nova response')
+              metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})')
+              if metrics['sw']>metrics['cw']+6: failures.append(f'production overflow: {metrics}')
+            except Exception as exc: failures.append(f'production browser: {exc}')
+            finally: page.close()
+
+            probe=browser.new_page()
+            try:
+              status=probe.evaluate("async () => { const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova/status',{headers:{Origin:'https://nexusnovatools.com'}}); return {status:r.status, body:await r.json()}; }")
+              if status['status']!=200: failures.append(f'nova status http={status["status"]}')
+              elif not status['body'].get('aiConfigured'): failures.append('AI provider is not configured in production Worker')
+              elif not status['body'].get('ok'): failures.append('Nova status endpoint not ok')
+
+              result=probe.evaluate("async () => { const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova',{method:'POST',headers:{'Content-Type':'application/json','Origin':'https://nexusnovatools.com'},body:JSON.stringify({message:'Write one friendly sentence explaining compound interest.'})}); return {status:r.status,body:await r.json()}; }")
+              if result['status']!=200: failures.append(f'nova api http={result["status"]}')
+              if not result['body'].get('ok'): failures.append('nova api returned non-ok')
+              if not str(result['body'].get('answer','')).strip(): failures.append('nova api returned empty answer')
+            except Exception as exc: failures.append(f'production api: {exc}')
+            finally: probe.close()
+            browser.close()
+          if failures:
+            print('\n'.join(failures)); raise SystemExit(1)
+          print('PASS: production Nova status, arbitrary prompt response, noindex, no overflow and no dead-end technical error.')
+          PY
