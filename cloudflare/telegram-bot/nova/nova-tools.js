@@ -86,7 +86,6 @@ function safeArithmetic(expression) {
   for (const token of out) { if (typeof token === 'number') { stack.push(token); continue; } const right = stack.pop(), left = stack.pop(); if (!Number.isFinite(left) || !Number.isFinite(right)) return NaN; const value = token === '+' ? left + right : token === '-' ? left - right : token === '*' ? left * right : token === '/' ? (right === 0 ? NaN : left / right) : token === '%' ? (right === 0 ? NaN : left % right) : Math.pow(left, right); if (!Number.isFinite(value) || Math.abs(value) > 1e15) return NaN; stack.push(value); }
   return stack.length === 1 ? stack[0] : NaN;
 }
-
 function tokenize(expression) {
   const normalized = expression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').replace(/,/g, '').replace(/\s+/g, '');
   const tokens = []; let index = 0;

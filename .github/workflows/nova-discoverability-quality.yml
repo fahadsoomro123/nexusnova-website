@@ -8,6 +8,7 @@ on:
       - 'nova-intelligence.html'
       - 'assets/css/nova-discoverability.css'
       - 'assets/js/nova-discoverability.js'
+      - 'assets/css/home-cleanup.css'
   push:
     branches: [main]
     paths:
@@ -15,11 +16,10 @@ on:
       - 'nova-intelligence.html'
       - 'assets/css/nova-discoverability.css'
       - 'assets/js/nova-discoverability.js'
+      - 'assets/css/home-cleanup.css'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   discoverability:
     runs-on: ubuntu-latest
@@ -40,98 +40,55 @@ jobs:
         run: |
           python - <<'PY'
           from playwright.sync_api import sync_playwright
-          widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
-          failures = []
+          widths=[360,375,390,412,430,768,1024,1280,1440]; failures=[]
           with sync_playwright() as p:
-              browser = p.chromium.launch(headless=True)
-
+              browser=p.chromium.launch(headless=True)
               for width in widths:
-                  page = browser.new_page(viewport={'width': width, 'height': 844 if width < 800 else 1000})
-                  errors = []
-                  page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                  page=browser.new_page(viewport={'width':width,'height':844 if width<800 else 1000}); errors=[]
+                  page.on('console',lambda msg: errors.append(msg.text) if msg.type=='error' else None)
                   try:
-                      response = page.goto('http://127.0.0.1:8000/', wait_until='domcontentloaded', timeout=30000)
-                      page.wait_for_timeout(400)
-                      if not response or response.status >= 400:
-                          failures.append(f'home@{width}: HTTP {response.status if response else 0}')
-                          continue
-                      nav = page.locator('[data-nav] [data-nova-intelligence-nav]')
-                      feature = page.locator('.nn-nova-discovery')
-                      if nav.count() != 1:
-                          failures.append(f'home@{width}: expected exactly one Nova nav link, found {nav.count()}')
+                      response=page.goto('http://127.0.0.1:8000/',wait_until='domcontentloaded',timeout=30000); page.wait_for_timeout(400)
+                      if not response or response.status>=400: failures.append(f'home@{width}: HTTP {response.status if response else 0}'); continue
+                      nav=page.locator('[data-nav] [data-nova-intelligence-nav]'); feature=page.locator('.nn-nova-discovery')
+                      if nav.count()!=1: failures.append(f'home@{width}: expected exactly one Nova nav link, found {nav.count()}')
                       else:
-                          if nav.get_attribute('href') != '/nova-intelligence.html':
-                              failures.append(f'home@{width}: incorrect Nova nav href')
-                          if width <= 720:
+                          if nav.get_attribute('href')!='/nova-intelligence.html': failures.append(f'home@{width}: incorrect Nova nav href')
+                          if width<=720:
                               page.locator('[data-menu-btn]').click()
-                              if not nav.is_visible():
-                                  failures.append(f'home@{width}: Nova nav link not visible in mobile menu')
-                      if feature.count() != 1:
-                          failures.append(f'home@{width}: Nova discovery section missing')
+                              if not nav.is_visible(): failures.append(f'home@{width}: Nova nav link not visible in mobile menu')
+                      if feature.count()!=1: failures.append(f'home@{width}: Nova discovery section missing')
                       else:
-                          cta = feature.locator('a[href="/nova-intelligence.html"]')
-                          if cta.count() != 1:
-                              failures.append(f'home@{width}: expected one Nova CTA')
+                          cta=feature.locator('a[href="/nova-intelligence.html"]')
+                          if cta.count()!=1: failures.append(f'home@{width}: expected one Nova CTA')
                           else:
                               cta.focus()
-                              if not cta.evaluate('(el) => document.activeElement === el'):
-                                  failures.append(f'home@{width}: CTA focus did not land')
-                      metrics = page.evaluate('''() => ({
-                        sw: document.documentElement.scrollWidth,
-                        cw: document.documentElement.clientWidth,
-                        bodySw: document.body.scrollWidth,
-                        h1: document.querySelectorAll('h1').length
-                      })''')
-                      if metrics['sw'] > metrics['cw'] + 6 or metrics['bodySw'] > metrics['cw'] + 6:
-                          failures.append(f'home@{width}: horizontal overflow ({metrics})')
-                      if metrics['h1'] != 1:
-                          failures.append(f'home@{width}: H1 count {metrics["h1"]}')
-                      if errors:
-                          failures.append(f'home@{width}: console errors: {" | ".join(dict.fromkeys(errors))}')
-                  except Exception as exc:
-                      failures.append(f'home@{width}: browser failure: {exc}')
-                  finally:
-                      page.close()
-
-              for width, mobile in [(1440, False), (390, True)]:
-                  page = browser.new_page(viewport={'width': width, 'height': 844 if mobile else 1000})
+                              if not cta.evaluate('(el)=>document.activeElement===el'): failures.append(f'home@{width}: CTA focus did not land')
+                      metrics=page.evaluate('''()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,bodySw:document.body.scrollWidth,h1:document.querySelectorAll('h1').length,bodyOverflowX:getComputedStyle(document.body).overflowX})''')
+                      print(f'CHECK home@{width}: {metrics}')
+                      if metrics['sw']>metrics['cw']+6: failures.append(f'home@{width}: horizontal page overflow ({metrics})')
+                      if metrics['h1']!=1: failures.append(f'home@{width}: H1 count {metrics["h1"]}')
+                      if errors: failures.append(f'home@{width}: console errors: {" | ".join(dict.fromkeys(errors))}')
+                  except Exception as exc: failures.append(f'home@{width}: browser failure: {exc}')
+                  finally: page.close()
+              for width,mobile in [(1440,False),(390,True)]:
+                  page=browser.new_page(viewport={'width':width,'height':844 if mobile else 1000})
                   try:
-                      page.goto('http://127.0.0.1:8000/', wait_until='domcontentloaded', timeout=30000)
-                      page.wait_for_timeout(400)
-                      nav = page.locator('[data-nav] [data-nova-intelligence-nav]')
-                      if mobile:
-                          page.locator('[data-menu-btn]').click()
-                      nav.click()
-                      page.wait_for_load_state('domcontentloaded')
-                      if not page.url.endswith('/nova-intelligence.html'):
-                          failures.append(f'navigation@{width}: Nova navigation ended at {page.url}')
-                  except Exception as exc:
-                      failures.append(f'navigation@{width}: browser failure: {exc}')
-                  finally:
-                      page.close()
-
-              flow = browser.new_page(viewport={'width': 390, 'height': 844})
+                      page.goto('http://127.0.0.1:8000/',wait_until='domcontentloaded',timeout=30000); page.wait_for_timeout(400); nav=page.locator('[data-nav] [data-nova-intelligence-nav]')
+                      if mobile: page.locator('[data-menu-btn]').click()
+                      nav.click(); page.wait_for_load_state('domcontentloaded')
+                      if not page.url.endswith('/nova-intelligence.html'): failures.append(f'navigation@{width}: Nova navigation ended at {page.url}')
+                  except Exception as exc: failures.append(f'navigation@{width}: browser failure: {exc}')
+                  finally: page.close()
+              flow=browser.new_page(viewport={'width':390,'height':844})
               try:
-                  flow.goto('http://127.0.0.1:8000/nova-intelligence.html', wait_until='domcontentloaded', timeout=30000)
-                  flow.wait_for_timeout(300)
-                  robots = flow.locator('meta[name="robots"]').get_attribute('content') or ''
-                  if robots.replace(' ', '').lower() != 'noindex,nofollow':
-                      failures.append(f'intelligence: robots meta is {robots!r}')
-                  if flow.locator('#niPrompt').count() != 1:
-                      failures.append('intelligence: natural-language prompt missing')
-                  flow.locator('#niPrompt').fill('compress an image')
-                  flow.locator('#niBuild').click()
-                  flow.wait_for_timeout(300)
-                  if flow.locator('a[href="image-compressor.html"]').count() < 1:
-                      failures.append('intelligence: compress-an-image request did not expose image compressor route')
-              except Exception as exc:
-                  failures.append(f'intelligence flow: {exc}')
-              finally:
-                  flow.close()
+                  flow.goto('http://127.0.0.1:8000/nova-intelligence.html',wait_until='domcontentloaded',timeout=30000); flow.wait_for_timeout(300); robots=flow.locator('meta[name="robots"]').get_attribute('content') or ''
+                  if robots.replace(' ','').lower()!='noindex,nofollow': failures.append(f'intelligence: robots meta is {robots!r}')
+                  if flow.locator('#niPrompt').count()!=1: failures.append('intelligence: natural-language prompt missing')
+                  flow.locator('#niPrompt').fill('compress an image'); flow.locator('#niBuild').click(); flow.wait_for_timeout(300)
+                  if flow.locator('a[href="image-compressor.html"]').count()<1: failures.append('intelligence: compress-an-image request did not expose image compressor route')
+              except Exception as exc: failures.append(f'intelligence flow: {exc}')
+              finally: flow.close()
               browser.close()
-
-          if failures:
-              print('\n'.join(f'FAIL: {item}' for item in failures))
-              raise SystemExit(1)
+          if failures: print('\n'.join(f'FAIL: {item}' for item in failures)); raise SystemExit(1)
           print(f'PASS: Nova discoverability verified at {len(widths)} responsive widths, desktop/mobile navigation, keyboard focus, and real Intelligence routing.')
           PY

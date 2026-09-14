@@ -1,7 +1,7 @@
 import workerEntry from './worker-entry.js';
 import { instagramAccountRequest } from './instagram-account-v2.js';
 import { createInstagramAuthorization, validateInstagramLinkRequest } from './instagram-oauth-state.js';
-import { runNova, novaStatus } from './nova-runtime.js';
+import { runNova, novaStatus } from './nova/nova-runtime.js';
 
 const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
 const INSTAGRAM_START_PATH = '/api/instagram/start';
@@ -26,7 +26,7 @@ export default {
         return jsonResponse(request, result.body || { ok: result.ok }, result.status);
       } catch (error) {
         console.error('Unhandled Nova route error:', error instanceof Error ? error.message : 'Unknown error');
-        return jsonResponse(request, { ok: true, mode: 'limit', answer: 'Nova is temporarily unavailable. No unverified result was shown.', nextStep: 'Please retry or open a relevant NexusNova tool.' }, 200);
+        return jsonResponse(request, { ok: true, mode: 'limit', answer: 'Nova is temporarily unavailable. No unverified result was shown.', nextStep: 'Please retry or open a relevant NexusNOVA tool.' }, 200);
       }
     }
 
