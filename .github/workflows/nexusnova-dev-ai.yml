@@ -33,13 +33,16 @@ jobs:
           python -m py_compile nexusnova-dev-ai/workspaces_v6.py
           python -m py_compile nexusnova-dev-ai/work_runtime_v6.py
           python -m py_compile nexusnova-dev-ai/work_intelligence_v6.py
-      - name: Import V2, V6 Ultimate and Work MAX modules
+          python -m py_compile nexusnova-dev-ai/pro_tools_v7.py
+          python -m py_compile nexusnova-dev-ai/mobile_gateway_v7.py
+      - name: Import V2, V6 Ultimate, Work MAX and V7 Pro MAX modules
         run: |
           cd nexusnova-dev-ai
           python - <<'PY'
           import agent, mobile_gateway, power_engine
           import mobile_gateway_v6, mobile_gateway_work_v6, power_engine_v6, project_tools_v6, git_tools_v6, specialists_v6
           import workspaces_v6, work_runtime_v6, work_intelligence_v6
+          import pro_tools_v7, mobile_gateway_v7
           assert power_engine.VERSION == '2.0.0'
           assert mobile_gateway.VERSION == '2.0.0'
           assert power_engine_v6.VERSION == '6.0.0'
@@ -52,14 +55,18 @@ jobs:
           assert project_tools_v6.VERSION == '6.0.0'
           assert git_tools_v6.VERSION == '6.0.0'
           assert specialists_v6.VERSION.endswith('ultimate')
-          names={x['function']['name'] for x in mobile_gateway_work_v6.all_specs()}
-          for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe','work_open','work_context','work_task','work_note','work_set_instructions','work_save_file','work_read_file','work_save_artifact'):
+          assert pro_tools_v7.VERSION == '7.0.0-pro-tools'
+          assert mobile_gateway_v7.VERSION == '7.0.0-pro-max'
+          names={x['function']['name'] for x in mobile_gateway_v7.all_specs()}
+          for required in ('project_context','scaffold_app','run_build','export_project_zip','git_commit_safe','work_open','work_context','work_task','work_note','work_set_instructions','work_save_file','work_read_file','work_save_artifact','deep_research','knowledge_search','analyze_data'):
               assert required in names, required
           assert 'git_commit' not in names
-          allowed=mobile_gateway_work_v6.mode_tool_names('work')
-          for required in ('work_open','work_context','work_task','work_note','work_save_artifact','work_save_file','work_read_file','web_search','write_file','run_build'):
+          allowed=mobile_gateway_v7.mode_tool_names('work')
+          for required in ('work_open','work_context','work_task','work_note','work_save_artifact','work_save_file','work_read_file','web_search','write_file','run_build','deep_research','knowledge_search','analyze_data'):
               assert required in allowed, required
-          print('NOVA AI V6 Ultimate + Work MAX imports/tool policy OK')
+          assert 'deep_research' in mobile_gateway_v7.mode_tool_names('research')
+          assert 'analyze_data' in mobile_gateway_v7.mode_tool_names('research')
+          print('NOVA AI V7 Pro MAX imports/tool policy OK')
           PY
       - name: Verify V6 routing and specialists
         run: |
@@ -121,6 +128,26 @@ jobs:
               assert rt.stats()['completed']==1
               print('NOVA Work MAX background runtime OK')
           PY
+      - name: Verify V7 local retrieval and data analysis
+        run: |
+          cd nexusnova-dev-ai
+          python - <<'PY'
+          import tempfile
+          from pathlib import Path
+          import agent, pro_tools_v7 as p
+          with tempfile.TemporaryDirectory() as td:
+              root=Path(td)
+              (root/'auth_notes.md').write_text('Telegram Firebase authentication profile linking and token validation',encoding='utf-8')
+              (root/'sample.csv').write_text('name,score\nA,10\nB,20\nC,30\n',encoding='utf-8')
+              ws=agent.Workspace(td)
+              k=p.knowledge_search(ws,'telegram firebase auth linking',8)
+              assert k['ok'] and k['results'] and k['results'][0]['path']=='auth_notes.md',k
+              d=p.analyze_data(ws,'sample.csv',100)
+              assert d['ok'] and d['kind']=='csv',d
+              score=[x for x in d['columns'] if x['name']=='score'][0]
+              assert score['type']=='number' and score['mean']==20.0,score
+              print('V7 retrieval/data tools OK')
+          PY
       - name: Verify required files
         run: |
           test -f nexusnova-dev-ai/SYSTEM_PROMPT.md
@@ -136,10 +163,21 @@ jobs:
           test -f nexusnova-dev-ai/work_runtime_v6.py
           test -f nexusnova-dev-ai/work_intelligence_v6.py
           test -f nexusnova-dev-ai/mobile_gateway_work_v6.py
+          test -f nexusnova-dev-ai/pro_tools_v7.py
+          test -f nexusnova-dev-ai/mobile_gateway_v7.py
+          test -f nexusnova-dev-ai/START_NOVA_AI_V7.bat
+          test -f nexusnova-dev-ai/README_V7.md
       - name: Package NOVA AI V6 Ultimate Work MAX
         uses: actions/upload-artifact@v4
         with:
           name: NexusNova-Dev-AI-V6-Ultimate-Work-MAX
+          path: nexusnova-dev-ai/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Package NOVA AI V7 Pro MAX
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusNova-Dev-AI-V7-Pro-MAX
           path: nexusnova-dev-ai/
           if-no-files-found: error
           retention-days: 30
