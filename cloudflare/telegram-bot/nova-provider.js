@@ -75,12 +75,12 @@ async function callGemini(config, prompt, attempts) {
   if (primary) return primary;
 
   const lastAttempt = attempts.at(-1);
-  const lastPrimaryWasRateLimited = lastAttempt?.provider === 'gemini' && lastAttempt?.reason === 'http-429';
+  const lastPrimaryWasRateLimited = lastAttempt?.provider === 'gemini' && lastAttempt?.model === config.geminiModel && lastAttempt?.reason === 'http-429';
   const fallbackModel = config.geminiFallbackModel;
   if (!fallbackModel || fallbackModel === config.geminiModel || !lastPrimaryWasRateLimited) return null;
 
   attempts.push({ provider: 'gemini', model: fallbackModel, ok: false, reason: 'fallback-after-429' });
-  return callGeminiModel(config, prompt, attempts, fallbackModel, [15_000, 15_000], 2);
+  return callGeminiModel(config, prompt, attempts, fallbackModel, [12_000], 1);
 }
 
 async function callGeminiModel(config, prompt, attempts, model, timeouts, maxAttempts) {
