@@ -1,5 +1,5 @@
 import base from './worker-instagram-entry.js';
-import { handleNovaRequest, novaStatus } from './nova-orchestrator.js';
+import { runNova, novaStatus } from './nova-runtime.js';
 
 const NOVA_PATH = '/api/nova';
 const NOVA_STATUS_PATH = '/api/nova/status';
@@ -10,11 +10,11 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === NOVA_PATH || url.pathname === NOVA_STATUS_PATH) {
       if (request.method === 'OPTIONS') return novaCors(request, new Response(null, { status: 204 }));
-      if (request.method === 'GET' && url.pathname === NOVA_STATUS_PATH) return novaJson(novaStatus(env), 200, request);
+      if (request.method === 'GET' && url.pathname === NOVA_STATUS_PATH) return novaJson(await novaStatus(env), 200, request);
       if (request.method === 'POST' && url.pathname === NOVA_PATH) {
         try {
-          const result = await runNovaSafely(request, env);
-          return novaJson(result.body, result.status, request, result.headers);
+          const result = await runNova(request, env);
+          return novaJson(result.body, result.status, request);
         } catch (error) {
           console.error('Nova edge failure', { type: error?.name || 'Error' });
           return novaJson({ ok: true, mode: 'limit', answer: 'Nova is temporarily unavailable. No unverified result was shown.', nextStep: 'Please retry or open a relevant NexusNova tool.' }, 200, request);
@@ -25,11 +25,6 @@ export default {
     return base.fetch(request, env, ctx);
   }
 };
-
-async function runNovaSafely(request, env) {
-  const result = await handleNovaRequest(request, env);
-  return { status: result.status, body: result.body || { ok: result.ok } };
-}
 
 function novaCors(request, response) {
   const headers = new Headers(response.headers);
