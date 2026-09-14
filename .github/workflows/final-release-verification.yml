@@ -98,7 +98,7 @@ jobs:
                               page.wait_for_timeout(100)
                               if page.locator('#niState').inner_text() != 'ACTION':
                                   failures.append(f'{surface}@{width}: response state did not render ACTION')
-                              if page.locator('#niResult a[href="currency-rates.html"]').count() != 1:
+                              if page.locator('#niResult a[href="/currency-rates.html"]').count() != 1:
                                   failures.append(f'{surface}@{width}: currency action missing')
                               if 'Currency Rates' not in page.locator('#niResult').inner_text():
                                   failures.append(f'{surface}@{width}: response text missing')
