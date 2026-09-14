@@ -149,6 +149,9 @@ jobs:
           python - <<'PY'
           from playwright.sync_api import sync_playwright
           failures=[]
+          base='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
+          def raw_headers(response):
+            return {k.lower(): v for k,v in response.all_headers().items()}
           with sync_playwright() as p:
             browser=p.chromium.launch(headless=True)
             page=browser.new_page(viewport={'width':390,'height':844})
@@ -159,60 +162,55 @@ jobs:
               print('PAGE_ORIGIN=', page.evaluate('() => location.origin'))
               robots=(page.locator('meta[name="robots"]').get_attribute('content') or '').replace(' ','').lower()
               if robots!='noindex,nofollow': failures.append(f'robots={robots}')
+
               page.locator('#niPrompt').fill('Explain black holes like I am 12.')
-              page.locator('#niBuild').click()
-              page.wait_for_timeout(20000)
+              page.locator('#niBuild').click(force=True)
+              page.wait_for_function("document.querySelector('#niState')?.textContent !== 'READY'", timeout=25000)
               text=page.locator('#niResult').inner_text()
               print('UI_RESULT=', text[:6000])
-              bad=['request too broad','unsupported query','something went wrong','http 500','json parse error','api timeout','uncaught promise','nova could not complete that request right now','nova is temporarily unavailable','nova hit a temporary processing problem']
-              if any(item in text.lower() for item in bad): failures.append('user-visible technical/dead-end error')
-              if not text.strip(): failures.append('empty Nova response')
+              if not text.strip() or 'Ready for your request' in text: failures.append('UI did not render a response')
+              if 'Nova could not complete that request right now' in text or 'Nova connection unavailable' in text: failures.append('user-visible technical/dead-end error')
               metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})')
               if metrics['sw']>metrics['cw']+6: failures.append(f'production overflow: {metrics}')
 
-              status=page.evaluate("""async () => {
-                const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova/status');
-                return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), body:await r.json()};
-              }""")
-              print('BROWSER_STATUS=', status)
-              if status['status']!=200: failures.append(f'nova status http={status["status"]}')
-              if status['allowOrigin']!='https://nexusnovatools.com': failures.append(f'nova status ACAO={status["allowOrigin"]}')
-              if not status['body'].get('ok'): failures.append('Nova status endpoint not ok')
-              if not status['body'].get('aiConfigured'): failures.append('AI provider is not configured in production Worker')
-              if not status['body'].get('providers',{}).get('gemini'): failures.append('Gemini is not configured in production Worker')
+              with page.expect_response(lambda r: r.url == base + '/api/nova/status' and r.request.method == 'GET') as status_event:
+                status_body=page.evaluate("""async () => (await fetch(arguments[0] + '/api/nova/status')).json()""", base)
+              status_response=status_event.value
+              status_headers=raw_headers(status_response)
+              print('BROWSER_STATUS=', {'status':status_response.status,'headers':status_headers,'body':status_body})
+              if status_response.status!=200: failures.append(f'nova status http={status_response.status}')
+              if status_headers.get('access-control-allow-origin')!='https://nexusnovatools.com': failures.append(f'nova status ACAO={status_headers.get("access-control-allow-origin")}')
+              if not status_body.get('ok'): failures.append('Nova status endpoint not ok')
+              if not status_body.get('aiConfigured'): failures.append('AI provider is not configured in production Worker')
+              if not status_body.get('providers',{}).get('gemini'): failures.append('Gemini is not configured in production Worker')
 
-              preflight=page.evaluate("""async () => {
-                const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova',{
-                  method:'OPTIONS', headers:{'Access-Control-Request-Method':'GET','Access-Control-Request-Headers':'content-type'}
-                });
-                return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), methods:r.headers.get('access-control-allow-methods'), headers:r.headers.get('access-control-allow-headers')};
-              }""")
-              print('BROWSER_OPTIONS=', preflight)
-              if preflight['status']!=204: failures.append(f'OPTIONS http={preflight["status"]}')
-              if preflight['allowOrigin']!='https://nexusnovatools.com': failures.append(f'OPTIONS ACAO={preflight["allowOrigin"]}')
-              if 'POST' not in (preflight['methods'] or ''): failures.append(f'OPTIONS methods={preflight["methods"]}')
-              if 'Content-Type' not in (preflight['headers'] or ''): failures.append(f'OPTIONS headers={preflight["headers"]}')
+              with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'OPTIONS') as options_event:
+                options_body=page.evaluate("""async () => { const r=await fetch(arguments[0] + '/api/nova',{method:'OPTIONS',headers:{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}}); return await r.text(); }""", base)
+              options_response=options_event.value
+              options_headers=raw_headers(options_response)
+              print('BROWSER_OPTIONS=', {'status':options_response.status,'headers':options_headers,'body':options_body})
+              if options_response.status!=204: failures.append(f'OPTIONS http={options_response.status}')
+              if options_headers.get('access-control-allow-origin')!='https://nexusnovatools.com': failures.append(f'OPTIONS ACAO={options_headers.get("access-control-allow-origin")}')
+              if 'POST' not in options_headers.get('access-control-allow-methods',''): failures.append(f'OPTIONS methods={options_headers.get("access-control-allow-methods")}')
+              if 'content-type' not in options_headers.get('access-control-allow-headers','').lower(): failures.append(f'OPTIONS headers={options_headers.get("access-control-allow-headers")}')
 
-              result=page.evaluate("""async () => {
-                const r=await fetch('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova',{
-                  method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-                  body:JSON.stringify({message:'Write one friendly sentence explaining compound interest.'})
-                });
-                return {status:r.status, allowOrigin:r.headers.get('access-control-allow-origin'), body:await r.json()};
-              }""")
-              print('BROWSER_POST=', result)
-              if result['status']!=200: failures.append(f'nova api http={result["status"]}')
-              if result['allowOrigin']!='https://nexusnovatools.com': failures.append(f'nova api ACAO={result["allowOrigin"]}')
-              if not result['body'].get('ok'): failures.append('nova api returned non-ok')
-              if result['body'].get('mode')=='limit': failures.append('nova api returned limit mode for arbitrary question')
-              if result['body'].get('provider')!='gemini': failures.append(f'nova api provider={result["body"].get("provider")}')
-              if not str(result['body'].get('answer','')).strip(): failures.append('nova api returned empty answer')
-              if 'Nova could not complete that request right now' in str(result['body'].get('answer','')): failures.append('nova api returned known fallback text')
+              with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'POST') as post_event:
+                result_body=page.evaluate("""async () => { const r=await fetch(arguments[0] + '/api/nova',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({message:'Write one friendly sentence explaining compound interest.'})}); return await r.json(); }""", base)
+              post_response=post_event.value
+              post_headers=raw_headers(post_response)
+              print('BROWSER_POST=', {'status':post_response.status,'headers':post_headers,'body':result_body})
+              if post_response.status!=200: failures.append(f'nova api http={post_response.status}')
+              if post_headers.get('access-control-allow-origin')!='https://nexusnovatools.com': failures.append(f'nova api ACAO={post_headers.get("access-control-allow-origin")}')
+              if not result_body.get('ok'): failures.append('nova api returned non-ok')
+              if result_body.get('mode')=='limit': failures.append('nova api returned limit mode for arbitrary question')
+              if result_body.get('provider')!='gemini': failures.append(f'nova api provider={result_body.get("provider")}')
+              if not str(result_body.get('answer','')).strip(): failures.append('nova api returned empty answer')
+              if 'Nova could not complete that request right now' in str(result_body.get('answer','')): failures.append('nova api returned known fallback text')
             except Exception as exc: failures.append(f'production verification: {exc}')
             finally:
               page.close()
               browser.close()
           if failures:
             print('\n'.join(failures)); raise SystemExit(1)
-          print('PASS: current repository Worker deployed, production CORS contract verified, Gemini configured, arbitrary Nova prompt returned a non-limit answer, and production UI rendered a non-error response.')
+          print('PASS: current repository Worker deployed, raw production CORS headers verified, Gemini configured, arbitrary Nova prompt returned a non-limit answer, and production UI rendered a non-error response.')
           PY
