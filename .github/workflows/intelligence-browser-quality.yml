@@ -5,15 +5,13 @@ on:
     branches: [main]
     paths:
       - 'nova-intelligence.html'
-      - 'assets/js/nova-intelligence.js'
-      - 'assets/css/nova-intelligence.css'
+      - 'assets/nova/**'
       - '.github/workflows/intelligence-browser-quality.yml'
   push:
     branches: [main]
     paths:
       - 'nova-intelligence.html'
-      - 'assets/js/nova-intelligence.js'
-      - 'assets/css/nova-intelligence.css'
+      - 'assets/nova/**'
       - '.github/workflows/intelligence-browser-quality.yml'
   workflow_dispatch:
 
@@ -48,7 +46,6 @@ jobs:
       - name: Verify Intelligence desktop/mobile journeys
         run: |
           python - <<'PY'
-          from pathlib import Path
           from playwright.sync_api import sync_playwright
 
           URL = 'http://127.0.0.1:8000/nova-intelligence.html'
@@ -78,26 +75,13 @@ jobs:
                   overflow = page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth + 6')
                   check(not overflow, f'{mode}: horizontal overflow detected')
 
-                  page.locator('[data-example]').filter(has_text='Currency').click()
-                  page.locator('#niBuild').click()
-                  check('LIVE REQUIRED' in page.locator('#niState').inner_text(), f'{mode}: currency did not enter LIVE REQUIRED state')
-                  check('Data honesty' in page.locator('#niResult').inner_text(), f'{mode}: currency honesty guidance missing')
-                  check(page.locator('#niResult a[href="currency-rates.html"]').count() == 1, f'{mode}: currency action link missing')
+                  # Verify the examples that the current Nova UI actually exposes.
+                  for label in ['Explain', 'Write', 'Calculate', 'Discover']:
+                      check(page.locator('[data-example]').filter(has_text=label).count() == 1, f'{mode}: {label} example missing')
 
-                  page.locator('[data-example]').filter(has_text='Travel').click()
+                  page.locator('[data-example]').filter(has_text='Discover').click()
                   page.locator('#niBuild').click()
-                  check('GUIDED' in page.locator('#niState').inner_text(), f'{mode}: travel did not enter GUIDED state')
-                  check('Travel limitation' in page.locator('#niResult').inner_text(), f'{mode}: travel limitation missing')
-
-                  page.locator('[data-example]').filter(has_text='Compare').click()
-                  page.locator('#niBuild').click()
-                  check('GUIDED' in page.locator('#niState').inner_text(), f'{mode}: compare did not enter GUIDED state')
-                  check('Comparison limitation' in page.locator('#niResult').inner_text(), f'{mode}: comparison limitation missing')
-
-                  page.locator('[data-example]').filter(has_text='Tool finder').click()
-                  page.locator('#niBuild').click()
-                  check('ROUTED' in page.locator('#niState').inner_text(), f'{mode}: tool finder did not route')
-                  check(page.locator('#niResult a[href="merge-pdf.html"]').count() == 1, f'{mode}: merge PDF action link missing')
+                  check(page.locator('#niResult').inner_text().strip() != '', f'{mode}: discover example produced empty result')
 
                   page.locator('[data-mode="compare"]').click()
                   check(page.locator('[data-mode="compare"]').get_attribute('aria-pressed') == 'true', f'{mode}: compare mode aria-pressed not updated')
@@ -105,10 +89,16 @@ jobs:
                   check(page.locator('#niPrompt').input_value() != '', f'{mode}: Surprise Me produced empty prompt')
                   check(page.locator('#niResult').inner_text().strip() != '', f'{mode}: Surprise Me produced empty result')
 
+                  # Exercise the real deterministic handoff path exposed by the UI.
                   page.locator('#niPrompt').fill('I want to compress a photo')
                   page.locator('#niPrompt').press('Control+Enter')
                   check('ROUTED' in page.locator('#niState').inner_text(), f'{mode}: keyboard build did not route image request')
                   check(page.locator('#niResult a[href="image-compressor.html"]').count() == 1, f'{mode}: image compressor action link missing')
+
+                  page.locator('#niPrompt').fill('I need a PDF merged')
+                  page.locator('#niBuild').click()
+                  check('ROUTED' in page.locator('#niState').inner_text(), f'{mode}: PDF request did not route')
+                  check(page.locator('#niResult a[href="merge-pdf.html"]').count() == 1, f'{mode}: merge PDF action link missing')
 
                   if console_errors:
                       errors.append(f'{mode}: console errors: {" | ".join(dict.fromkeys(console_errors))}')
@@ -121,5 +111,5 @@ jobs:
           if errors:
               print('\n'.join(f'FAIL: {item}' for item in errors))
               raise SystemExit(1)
-          print('PASS: Intelligence desktop/mobile browser journeys completed with zero findings.')
+          print('PASS: Intelligence desktop/mobile journeys completed with zero findings.')
           PY
