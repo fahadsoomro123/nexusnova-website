@@ -1,6 +1,6 @@
 // Nova runtime: response bodies intentionally use the { ok, mode, answer, ... } contract.
 // Keep this file deploy-triggered when production Worker configuration changes.
-import { enforceAuthThrottle } from './auth-abuse.js';
+import { enforceNovaThrottle } from './nova-abuse.js';
 import { askAi, searchWeb } from './nova-provider.js';
 import { executeToolCall, publicToolCatalog } from './nova-tools.js';
 
@@ -27,7 +27,7 @@ export async function runNova(request, env) {
   const requestId = crypto.randomUUID();
   const startedAt = Date.now();
   if (request.headers.get('Origin') !== 'https://nexusnovatools.com') return { ok: false, status: 403, body: { code: 'permission-denied', error: 'Request origin is not allowed.' } };
-  const throttle = await enforceAuthThrottle(request).catch(() => ({ allowed: true }));
+  const throttle = await enforceNovaThrottle(request).catch(() => ({ allowed: true }));
   if (!throttle.allowed) return { ok: false, status: 429, body: { code: 'too-many-requests', error: 'Nova is receiving many requests. Please try again shortly.' } };
 
   let body;
