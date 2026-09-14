@@ -6,4 +6,4 @@
 /* Old long homepage grids stay crawlable on their dedicated pages; the homepage itself is intentionally compact. */
 .nn-home .home-tools>.home-tool:nth-child(n+7){display:none!important}
 .nn-home .command-dock-wrap{display:none!important}
-@media(max-width:980px){.nn-labs-shell{grid-template-columns:1fr}}@media(max-width:720px){.nn-labs-shell{padding:20px;border-radius:26px}.nn-labs-cards{grid-template-columns:1fr}.nn-lab-mini{min-height:auto}.nn-home .hero-actions .btn{flex:1 1 100%}}
+@media(max-width:980px){.nn-labs-shell{grid-template-columns:1fr}}@media(max-width:720px){.nn-labs-shell{padding:20px;border-radius:26px}.nn-labs-cards{grid-template-columns:1fr}.nn-lab-mini{min-height:auto}.nn-home .hero-actions .btn{flex:1 1 100%}.nn-home .nn-flagship-grid{grid-template-columns:1fr!important;min-width:0!important}.nn-home .nn-flagship-stage{min-width:0!important;max-width:100%!important}.nn-home .nn-proof-card{min-width:0!important;max-width:100%!important}.nn-home .nn-proof-360-holder{min-width:0!important;max-width:100%!important}}
