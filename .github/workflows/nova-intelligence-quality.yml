@@ -26,9 +26,10 @@ jobs:
       - name: Worker syntax
         run: |
           node --check cloudflare/telegram-bot/worker-instagram-entry.js
-          node --check cloudflare/telegram-bot/nova-provider.js
-          node --check cloudflare/telegram-bot/nova-tools.js
-          node --check cloudflare/telegram-bot/nova-runtime.js
+          node --check cloudflare/telegram-bot/nova/nova-provider.js
+          node --check cloudflare/telegram-bot/nova/nova-tools.js
+          node --check cloudflare/telegram-bot/nova/nova-runtime.js
+          node --check cloudflare/telegram-bot/nova/nova-abuse.js
 
   deploy-worker:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -70,4 +71,5 @@ jobs:
           path: |
             nova-reliability-results.json
             nova-reliability-summary.json
+            nova-evidence/*.png
           retention-days: 14
