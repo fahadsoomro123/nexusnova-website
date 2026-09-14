@@ -1,10 +1,11 @@
 (() => {
   'use strict';
 
-  const CLIENT_BUILD = '20260914-ui-contract-v6';
+  const CLIENT_BUILD = '20260914-ui-contract-v7';
   const API_URL = window.NOVA_API_URL || 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova';
   const HISTORY_KEY = 'nexusnova:nova-context:v2';
   const MAX_HISTORY = 8;
+  const MAX_VISIBLE_ANSWER_CHARS = 12000;
   const prompt = document.getElementById('niPrompt');
   const result = document.getElementById('niResult');
   const buildButton = document.getElementById('niBuild');
@@ -46,7 +47,7 @@
     try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-MAX_HISTORY))); } catch (_) {}
   };
   const record = (role, content) => {
-    const clean = String(content || '').trim().slice(0, 3000);
+    const clean = String(content || '').trim().slice(0, MAX_VISIBLE_ANSWER_CHARS);
     if (!clean) return;
     const history = readHistory(); history.push({ role, content: clean }); writeHistory(history);
   };
@@ -76,7 +77,7 @@
   function render(data) {
     result.replaceChildren();
     const group = el('div', 'ni-understood');
-    addCard(group, 'Nova', String(data.answer || 'Nova did not return a safe response.').trim().slice(0, 8000));
+    addCard(group, 'Nova', String(data.answer || 'Nova did not return a safe response.').trim().slice(0, MAX_VISIBLE_ANSWER_CHARS));
 
     if (data.action?.href) {
       const href = safeInternalLink(data.action.href);
