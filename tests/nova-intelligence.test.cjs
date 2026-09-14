@@ -12,7 +12,7 @@ test('Nova frontend uses the secure orchestration API and bounded session contex
   assert.match(source, /workers\.dev\/api\/nova/);
   assert.match(source, /sessionStorage/);
   assert.match(source, /slice\(-MAX_HISTORY\)/);
-  assert.match(source, /function requestContext\s*\(\)/);
+  assert.match(source, /requestContext\s*=\s*\(\)\s*=>/);
   assert.match(source, /MAX_CONTEXT_CHARS\s*=\s*9000/);
   assert.match(source, /context:\s*requestContext\(\)/);
   assert.doesNotMatch(source, /request too broad for this preview router/i);
@@ -61,13 +61,5 @@ test('Nova production HTML preserves noindex and contains the working prompt sur
 });
 
 test('Nova worker files pass Node syntax parsing', () => {
-  for (const file of [
-    'assets/js/nova-intelligence.js',
-    'cloudflare/telegram-bot/nova-provider.js',
-    'cloudflare/telegram-bot/nova-tools.js',
-    'cloudflare/telegram-bot/nova-runtime.js',
-    'cloudflare/telegram-bot/worker-instagram-entry.js'
-  ]) {
-    execFileSync(process.execPath, ['--check', path.join(root, file)], { stdio: 'pipe' });
-  }
+  for (const file of ['assets/js/nova-intelligence.js','cloudflare/telegram-bot/nova-provider.js','cloudflare/telegram-bot/nova-tools.js','cloudflare/telegram-bot/nova-runtime.js','cloudflare/telegram-bot/worker-instagram-entry.js']) execFileSync(process.execPath, ['--check', path.join(root, file)], { stdio: 'pipe' });
 });
