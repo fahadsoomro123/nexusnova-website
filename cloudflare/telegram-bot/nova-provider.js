@@ -81,7 +81,7 @@ async function callGemini(config, prompt, attempts) {
       const parsed = parseStructuredJson(text);
       if (parsed) return { ok: true, plan: parsed };
       attempts.push({ provider: 'gemini', ok: false, reason: 'invalid-structured-output' });
-    } catch (error) { attempts.push({ provider: 'gemini', ok: false, reason: classifyNetworkError(error) }); }
+    } catch (error) { attempts.push({ provider: 'gemini', ok: false, reason: classifyNetworkError(error), detail: safeErrorDetail(error) }); }
   }
   return null;
 }
@@ -95,7 +95,7 @@ async function callOpenAI(config, prompt, attempts) {
     const parsed = parseStructuredJson(text);
     if (!parsed) { attempts.push({ provider: 'openai', ok: false, reason: 'invalid-structured-output' }); return null; }
     return { ok: true, plan: parsed };
-  } catch (error) { attempts.push({ provider: 'openai', ok: false, reason: classifyNetworkError(error) }); return null; }
+  } catch (error) { attempts.push({ provider: 'openai', ok: false, reason: classifyNetworkError(error), detail: safeErrorDetail(error) }); return null; }
 }
 
 function parseStructuredJson(text) {
@@ -116,5 +116,13 @@ async function fetchWithTimeout(resource, init = {}, timeoutMs = DEFAULT_LIMITS.
   try { return await fetch(resource, { ...init, signal: controller.signal, redirect: 'error' }); } finally { clearTimeout(timer); }
 }
 function classifyNetworkError(error) { return String(error?.name || '').toLowerCase().includes('abort') ? 'timeout' : 'network-error'; }
+function safeErrorDetail(error) {
+  const name = cleanText(error?.name, 40);
+  const message = cleanText(error?.message, 160);
+  const cause = error?.cause;
+  const causeCode = cleanText(cause?.code || cause?.name, 40);
+  const causeMessage = cleanText(cause?.message, 160);
+  return [name, message, causeCode, causeMessage].filter(Boolean).join(' | ').slice(0, 320) || 'unknown-network-error';
+}
 function cleanText(value, max) { return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
 function safeHttpUrl(value) { try { const url = new URL(String(value || '')); return url.protocol === 'https:' || url.protocol === 'http:' ? url.href.slice(0, 1500) : ''; } catch (_) { return ''; } }
