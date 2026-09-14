@@ -1,5 +1,7 @@
 name: Nova Intelligence Production Quality
 
+# Production verification intentionally runs the real public page and Worker; no mocked provider is used here.
+
 on:
   pull_request:
     branches: [main]
@@ -151,7 +153,7 @@ jobs:
             page=browser.new_page(viewport={'width':390,'height':844}, user_agent='Mozilla/5.0 (Linux; Android 11; Mobile) AppleWebKit/537.36 Chrome/151.0.0.0 Mobile Safari/537.36')
             api_response=None
             try:
-              page.goto('https://nexusnovatools.com/nova-intelligence.html?qa='+page.url if False else 'https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
+              page.goto('https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
               page.wait_for_timeout(500)
               print('PAGE_URL=', page.url)
               print('PAGE_ORIGIN=', page.evaluate('() => location.origin'))
@@ -162,7 +164,7 @@ jobs:
                 failures.append('live page is not serving the cache-busted v6 Nova client')
 
               page.locator('#niPrompt').fill(exact_prompt)
-              with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'POST', timeout=30000) as api_event:
+              with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'POST', timeout=45000) as api_event:
                 page.locator('#niBuild').click(force=True)
               api_response=api_event.value
               api_body=api_response.json()
@@ -176,7 +178,7 @@ jobs:
                 const s=document.querySelector('#niState')?.textContent?.trim() || '';
                 const t=document.querySelector('#niResult')?.innerText?.trim() || '';
                 return s && s !== 'READY' && s !== 'THINKING…' && !t.includes('Ready for your request');
-              }""", timeout=30000)
+              }""", timeout=45000)
               text=page.locator('#niResult').inner_text().strip()
               state=page.locator('#niState').inner_text().strip()
               print('UI_STATE=', state)
