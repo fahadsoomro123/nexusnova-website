@@ -72,16 +72,29 @@ function buildPrompt(messages, toolCatalog, focus) {
 async function callGemini(config, prompt, attempts) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}:generateContent`;
   const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2_500 } };
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
+  const timeouts = [8_000, 5_000, 5_000];
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetchWithTimeout(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.geminiKey }, body: JSON.stringify(body) }, attempt === 1 ? 12_000 : 8_000);
+      const response = await fetchWithTimeout(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.geminiKey }, body: JSON.stringify(body) }, timeouts[attempt]);
       const data = await response.json().catch(() => null);
-      if (!response.ok) { attempts.push({ provider: 'gemini', ok: false, reason: `http-${response.status}` }); if (![408, 429, 500, 502, 503, 504].includes(response.status)) return null; continue; }
+      if (!response.ok) {
+        const reason = `http-${response.status}`;
+        attempts.push({ provider: 'gemini', ok: false, reason });
+        if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === 2) return null;
+        await sleep(400 * 2 ** attempt);
+        continue;
+      }
       const text = (data?.candidates || []).flatMap(candidate => candidate?.content?.parts || []).map(part => part?.text || '').join('\n');
       const parsed = parseStructuredJson(text);
       if (parsed) return { ok: true, plan: parsed };
       attempts.push({ provider: 'gemini', ok: false, reason: 'invalid-structured-output' });
-    } catch (error) { attempts.push({ provider: 'gemini', ok: false, reason: classifyNetworkError(error), detail: safeErrorDetail(error) }); }
+      if (attempt < 2) { await sleep(400 * 2 ** attempt); continue; }
+    } catch (error) {
+      const reason = classifyNetworkError(error);
+      attempts.push({ provider: 'gemini', ok: false, reason, detail: safeErrorDetail(error) });
+      if (attempt === 2) return null;
+      await sleep(400 * 2 ** attempt);
+    }
   }
   return null;
 }
@@ -115,6 +128,7 @@ async function fetchWithTimeout(resource, init = {}, timeoutMs = DEFAULT_LIMITS.
   const timer = setTimeout(() => controller.abort('timeout'), timeoutMs);
   try { return await fetch(resource, { ...init, signal: controller.signal, redirect: 'follow' }); } finally { clearTimeout(timer); }
 }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 function classifyNetworkError(error) { return String(error?.name || '').toLowerCase().includes('abort') ? 'timeout' : 'network-error'; }
 function safeErrorDetail(error) {
   const name = cleanText(error?.name, 40);
