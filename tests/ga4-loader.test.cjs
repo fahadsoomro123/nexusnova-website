@@ -28,7 +28,7 @@ test('GA4 uses denied-storage basic measurement by default and detailed analytic
   assert.match(text, /loadAnalytics\(true\)/);
   assert.match(text, /loadAnalytics\(\)/);
   assert.match(text, /data-consent-dismiss/);
-  assert.match(text, /banner\.querySelector\('\[data-consent-dismiss\]'\)\?\.addEventListener\('click',hide\)/);
+  assert.match(text, /banner\.querySelector\('\[data-consent-dismiss\]'\)\.addEventListener\('click',hide\)/);
   assert.match(text, /banner\.setAttribute\('role','region'\)/);
   assert.doesNotMatch(text, /banner\.setAttribute\('role','dialog'\)/);
   assert.match(text, /bottom:72px/);
