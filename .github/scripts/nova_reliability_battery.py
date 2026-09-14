@@ -31,7 +31,7 @@ def complete(label,a):
  return True
 
 def api_call(prompt):
- req=urllib.request.Request(BASE+'/api/nova',method='POST',data=json.dumps({'message':prompt,'focus':'auto'}).encode(),headers={'Origin':'https://nexusnovatools.com','Accept':'application/json','Content-Type':'application/json','User-Agent':'NexusNova-Reliability/3.0'})
+ req=urllib.request.Request(BASE+'/api/nova',method='POST',data=json.dumps({'message':prompt,'focus':'auto'}).encode(),headers={'Origin':'https://nexusnovatools.com','Accept':'application/json','Content-Type':'application/json','User-Agent':'NexusNova-Reliability/4.0'})
  started=time.time()
  try:
   with urllib.request.urlopen(req,timeout=75) as r: return r.status,r.read().decode('utf-8','replace'),time.time()-started
@@ -44,10 +44,10 @@ def record(status,raw,label):
  return {'http':status,'mode':body.get('mode'),'provider':body.get('provider'),'requestId':body.get('requestId'),'responseLength':len(a),'finishReason':body.get('finishReason','not-exposed-by-api'),'complete':complete(label,a),'naturalLanguage':natural(a),'unexplainedTruncation':bool(a.endswith('...') or a.endswith('…')),'numericOnly':numeric,'answerPrefix':a[:3500],'jsonKeys':sorted(body.keys())}
 
 results={'api':{},'browser':{'mobile':{},'desktop':{}}}
-for label,prompt in TESTS.items():
+for label,prompt_text in TESTS.items():
  results['api'][label]=[]
  for rep in range(1,4 if label=='TEST 3' else 2):
-  s,r,lat=api_call(prompt); item=record(s,r,label); item['latencySec']=round(lat,2); item['success']=s==200 and item['mode']=='answer' and item['provider']=='gemini' and item['complete'] and not item['numericOnly']; results['api'][label].append(item); print('API',label,'RUN',rep,json.dumps(item,ensure_ascii=False))
+  s,r,lat=api_call(prompt_text); item=record(s,r,label); item['latencySec']=round(lat,2); item['success']=s==200 and item['mode']=='answer' and item['provider']=='gemini' and item['complete'] and not item['numericOnly']; results['api'][label].append(item); print('API',label,'RUN',rep,json.dumps(item,ensure_ascii=False))
 
 browser_errors=[]
 with sync_playwright() as p:
@@ -61,13 +61,20 @@ with sync_playwright() as p:
   build=page.evaluate('() => document.documentElement.dataset.novaClientBuild || "missing"'); src=page.locator('script[src*="nova-intelligence.js"]').get_attribute('src') or ''
   print(name.upper(),'CLIENT_BUILD=',build); print(name.upper(),'SCRIPT_SRC=',src)
   results['browser'][name]['_page']={'clientBuild':build,'scriptSrc':src}
-  for label,prompt in TESTS.items():
+  for label,prompt_text in TESTS.items():
    results['browser'][name][label]=[]
    for rep in range(1,4 if label=='TEST 3' else 2):
+    page.evaluate('() => sessionStorage.clear()')
     try:
-     page.locator('#niPrompt').fill(prompt)
+     page.locator('#niPrompt').fill(prompt_text)
      with page.expect_response(lambda r:r.url==BASE+'/api/nova' and r.request.method=='POST',timeout=90000) as ev: page.locator('#niBuild').click(force=True)
-     api=ev.value; body=api.json(); a=str(body.get('answer','')).strip(); rendered=page.locator('#niResult').inner_text().strip(); state=page.locator('#niState').inner_text().strip(); metrics=page.evaluate('() => ({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})') if name=='mobile' else {}
+     api=ev.value; body=api.json(); a=str(body.get('answer','')).strip()
+     if a:
+      try: page.wait_for_function('(expected) => { const r=document.querySelector("#niResult"); return !!r && r.innerText.includes(expected); }', a, timeout=15000)
+      except Exception: pass
+     try: page.wait_for_function('() => { const s=document.querySelector("#niState"); return s && !["READY","THINKING…"].includes(s.innerText.trim()); }', timeout=5000)
+     except Exception: pass
+     rendered=page.locator('#niResult').inner_text().strip(); state=page.locator('#niState').inner_text().strip(); metrics=page.evaluate('() => ({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})') if name=='mobile' else {}
      fallback='Nova connection unavailable' in rendered or 'No fake answer was generated' in rendered; numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+',a)); same=bool(a and a in rendered)
      item={'http':api.status,'mode':body.get('mode'),'provider':body.get('provider'),'requestId':body.get('requestId'),'responseLength':len(a),'finishReason':body.get('finishReason','not-exposed-by-api'),'complete':complete(label,a),'naturalLanguage':natural(a),'unexplainedTruncation':bool(a.endswith('...') or a.endswith('…')),'numericOnly':numeric,'uiDisplayedFullAnswer':same,'fallbackUi':fallback,'uiState':state,'consoleErrors':errs[-10:],'mobileViewport':metrics,'answerPrefix':a[:3500]}
      item['success']=api.status==200 and body.get('mode')=='answer' and body.get('provider')=='gemini' and item['complete'] and same and not fallback and not numeric and state not in ('READY','THINKING…') and (not metrics or metrics['scrollWidth']<=metrics['clientWidth']+6)
