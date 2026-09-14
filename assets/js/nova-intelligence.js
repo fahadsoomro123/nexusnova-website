@@ -132,7 +132,14 @@
     try {
       const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message, context: readHistory(), focus: activeMode }) });
       const data = await response.json().catch(() => null);
-      if (!response.ok || !data || data.ok !== true) throw new Error('nova-response-unavailable');
+      const hasUsablePayload = Boolean(data && typeof data === 'object' && (
+        String(data.answer || '').trim() ||
+        String(data.nextStep || '').trim() ||
+        data.action?.href ||
+        (Array.isArray(data.suggestedTools) && data.suggestedTools.length) ||
+        (Array.isArray(data.sources) && data.sources.length)
+      ));
+      if (!response.ok || !hasUsablePayload || data.ok === false) throw new Error('nova-response-unavailable');
       record('user', message); record('assistant', data.answer || data.nextStep || 'Nova completed the request.'); render(data);
     } catch (_) { renderFailure('Nova could not reach its secure reasoning service right now. No fake answer was generated.'); }
     finally { busy = false; buildButton?.removeAttribute('disabled'); }
