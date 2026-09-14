@@ -1,3 +1,5 @@
+// Nova runtime: response bodies intentionally use the { ok, mode, answer, ... } contract.
+// Keep this file deploy-triggered when production Worker configuration changes.
 import { enforceAuthThrottle } from './auth-abuse.js';
 import { askAi, searchWeb } from './nova-provider.js';
 import { executeToolCall, publicToolCatalog } from './nova-tools.js';
