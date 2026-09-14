@@ -4,6 +4,7 @@ export function providerConfig(env) {
   return {
     geminiKey: String(env.GEMINI_API_KEY || '').trim(),
     geminiModel: String(env.GEMINI_MODEL || 'gemini-3.8-flash').trim(),
+    geminiFallbackModel: String(env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite').trim(),
     openaiKey: String(env.OPENAI_API_KEY || '').trim(),
     openaiModel: String(env.OPENAI_MODEL || 'gpt-5.6-luna').trim(),
     searchKey: String(env.BRAVE_SEARCH_API_KEY || '').trim(),
@@ -70,17 +71,29 @@ function buildPrompt(messages, toolCatalog, focus) {
 }
 
 async function callGemini(config, prompt, attempts) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}:generateContent`;
+  const primary = await callGeminiModel(config, prompt, attempts, config.geminiModel, [25_000, 25_000, 25_000], 3);
+  if (primary) return primary;
+
+  const lastAttempt = attempts.at(-1);
+  const lastPrimaryWasRateLimited = lastAttempt?.provider === 'gemini' && lastAttempt?.reason === 'http-429';
+  const fallbackModel = config.geminiFallbackModel;
+  if (!fallbackModel || fallbackModel === config.geminiModel || !lastPrimaryWasRateLimited) return null;
+
+  attempts.push({ provider: 'gemini', model: fallbackModel, ok: false, reason: 'fallback-after-429' });
+  return callGeminiModel(config, prompt, attempts, fallbackModel, [15_000, 15_000], 2);
+}
+
+async function callGeminiModel(config, prompt, attempts, model, timeouts, maxAttempts) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: 'application/json',
       maxOutputTokens: 2_500,
-      thinkingConfig: { thinkingLevel: 'low' }
+      thinkingConfig: { thinkingLevel: model === 'gemini-3.5-flash-lite' ? 'minimal' : 'low' }
     }
   };
-  const timeouts = [25_000, 25_000, 25_000];
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const startedAt = Date.now();
     try {
       const response = await fetchWithTimeout(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.geminiKey }, body: JSON.stringify(body) }, timeouts[attempt]);
@@ -88,20 +101,20 @@ async function callGemini(config, prompt, attempts) {
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         const reason = `http-${response.status}`;
-        attempts.push({ provider: 'gemini', ok: false, reason, latencyMs, statusText: cleanText(response.statusText, 80), responseClass: classifyGeminiResponse(data) });
-        if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === 2) return null;
+        attempts.push({ provider: 'gemini', model, ok: false, reason, latencyMs, statusText: cleanText(response.statusText, 80), responseClass: classifyGeminiResponse(data) });
+        if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === maxAttempts - 1) return null;
         await sleep(500 * 2 ** attempt);
         continue;
       }
       const text = (data?.candidates || []).flatMap(candidate => candidate?.content?.parts || []).map(part => part?.text || '').join('\n');
       const parsed = parseStructuredJson(text);
       if (parsed) return { ok: true, plan: parsed };
-      attempts.push({ provider: 'gemini', ok: false, reason: 'invalid-structured-output', latencyMs, responseClass: 'successful-http-invalid-json' });
-      if (attempt < 2) { await sleep(500 * 2 ** attempt); continue; }
+      attempts.push({ provider: 'gemini', model, ok: false, reason: 'invalid-structured-output', latencyMs, responseClass: 'successful-http-invalid-json' });
+      if (attempt < maxAttempts - 1) { await sleep(500 * 2 ** attempt); continue; }
     } catch (error) {
       const reason = classifyNetworkError(error);
-      attempts.push({ provider: 'gemini', ok: false, reason, latencyMs: Date.now() - startedAt, detail: safeErrorDetail(error) });
-      if (attempt === 2) return null;
+      attempts.push({ provider: 'gemini', model, ok: false, reason, latencyMs: Date.now() - startedAt, detail: safeErrorDetail(error) });
+      if (attempt === maxAttempts - 1) return null;
       await sleep(500 * 2 ** attempt);
     }
   }
