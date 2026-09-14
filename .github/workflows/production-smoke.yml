@@ -8,6 +8,8 @@ on:
       - '.github/workflows/production-smoke.yml'
       - 'index.html'
       - 'nova-intelligence.html'
+      - 'assets/css/nova-discoverability.css'
+      - 'assets/js/nova-discoverability.js'
       - 'humanproof.html'
       - 'live.html'
       - 'sports-live.html'
@@ -68,6 +70,11 @@ jobs:
               && grep -Fq 'NexusNova HumanProof' <<<"$home" \
               && grep -Fq 'id="trust"' <<<"$home" \
               && grep -Fq 'humanproof.html#live-verification' <<<"$home" \
+              && grep -Fq 'Nova Intelligence' <<<"$home" \
+              && grep -Fq 'href="/nova-intelligence.html"' <<<"$home" \
+              && grep -Fq 'Try Nova Intelligence →' <<<"$home" \
+              && grep -Fq 'Tell Nova what you need.' <<<"$home" \
+              && grep -Fq 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' <<<"$home" \
               && grep -Fq '<meta name="robots" content="noindex,nofollow">' <<<"$intelligence" \
               && grep -Fq 'UNDERSTAND → ROUTE → ACT' <<<"$intelligence" \
               && grep -Fq 'NexusNova Intelligence — Product Preview' <<<"$intelligence" \
@@ -81,12 +88,12 @@ jobs:
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' <<<"$ocr" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' <<<"$invoice" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf"; then
-              echo 'Current flagship, Intelligence, HumanProof, trust and tool markers are deployed.'
+              echo 'Current homepage Nova discoverability, flagship, Intelligence, HumanProof, trust and tool markers are deployed.'
               exit 0
             fi
             sleep 5
           done
-          echo 'Production did not expose the expected current flagship, Intelligence, HumanProof, trust and tool markers.' >&2
+          echo 'Production did not expose the expected homepage Nova discoverability or current flagship, Intelligence, HumanProof, trust and tool markers.' >&2
           exit 1
 
       - name: Verify important production routes
