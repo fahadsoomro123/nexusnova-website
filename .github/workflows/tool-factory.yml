@@ -33,13 +33,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile factory
-        run: python -m py_compile .github/scripts/tool_factory.py .github/scripts/ai_provider.py
+        run: |
+          python -m py_compile .github/scripts/tool_factory.py .github/scripts/ai_provider.py
+          python .github/scripts/test_ai_provider.py
       - name: Run deterministic factory self-test
         run: python .github/scripts/tool_factory.py --self-test
       - name: Live AI provider fallback smoke test
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-3.6-flash
+          GEMINI_MODEL: gemini-2.5-flash
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: |
@@ -62,7 +64,7 @@ jobs:
     env:
       TOOL_IDEA: ${{ inputs.tool_idea }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: gemini-3.6-flash
+      GEMINI_MODEL: gemini-2.5-flash
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
       GH_TOKEN: ${{ github.token }}
