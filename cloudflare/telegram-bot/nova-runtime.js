@@ -55,12 +55,35 @@ export async function runNova(request, env) {
       return { ok: true, status: 200, body: { requestId, ...fallback, provider: 'native-fallback' } };
     }
 
-    console.info('Nova outcome', { requestId, provider: null, mode: 'limit', fallback: ai.reason || 'capability-limitation', latencyMs: Date.now() - startedAt });
-    return { ok: true, status: 200, body: { requestId, mode: 'limit', answer: ai.reason === 'provider-not-configured' ? 'Nova’s secure AI connection is not configured yet. I can still open a real NexusNova tool when one matches your request, but I will not pretend an AI answer happened.' : 'Nova could not complete that request right now. No unverified result was shown. Please retry or use a relevant NexusNova tool.', suggestedTools: HANDOFFS.slice(0, 6).map(item => ({ label: item.label, href: item.href })), nextStep: 'Retry the request or describe the result you need in one sentence.' } };
+    const diagnostic = safeProviderDiagnostic(ai);
+    console.info('Nova outcome', { requestId, provider: null, mode: 'limit', fallback: ai.reason || 'capability-limitation', providerAttempts: diagnostic.attempts, latencyMs: Date.now() - startedAt });
+    return {
+      ok: true,
+      status: 200,
+      body: {
+        requestId,
+        mode: 'limit',
+        answer: ai.reason === 'provider-not-configured' ? 'Nova’s secure AI connection is not configured yet. I can still open a real NexusNova tool when one matches your request, but I will not pretend an AI answer happened.' : 'Nova could not complete that request right now. No unverified result was shown. Please retry or use a relevant NexusNova tool.',
+        suggestedTools: HANDOFFS.slice(0, 6).map(item => ({ label: item.label, href: item.href })),
+        nextStep: 'Retry the request or describe the result you need in one sentence.',
+        providerFailure: diagnostic.reason,
+        providerAttempts: diagnostic.attempts
+      }
+    };
   } catch (error) {
-    console.error('Nova orchestration failure', { requestId, reason: failureClass(error) });
-    return { ok: true, status: 200, body: { requestId, mode: 'limit', answer: 'Nova hit a temporary processing problem. No unverified result was shown.', suggestedTools: HANDOFFS.slice(0, 6).map(item => ({ label: item.label, href: item.href })), nextStep: 'Retry once; if the problem continues, open the closest NexusNova tool directly.' } };
+    const reason = failureClass(error);
+    console.error('Nova orchestration failure', { requestId, reason });
+    return { ok: true, status: 200, body: { requestId, mode: 'limit', answer: 'Nova hit a temporary processing problem. No unverified result was shown.', suggestedTools: HANDOFFS.slice(0, 6).map(item => ({ label: item.label, href: item.href })), nextStep: 'Retry once; if the problem continues, open the closest NexusNova tool directly.', providerFailure: reason, providerAttempts: [] } };
   }
+}
+
+function safeProviderDiagnostic(ai) {
+  const attempts = Array.isArray(ai?.attempts) ? ai.attempts.slice(0, 4).map(item => ({
+    provider: String(item?.provider || '').slice(0, 32),
+    ok: Boolean(item?.ok),
+    reason: String(item?.reason || '').slice(0, 64)
+  })) : [];
+  return { reason: String(ai?.reason || 'unknown').slice(0, 64), attempts };
 }
 
 async function executePlan(plan, env, messages, focus) {
