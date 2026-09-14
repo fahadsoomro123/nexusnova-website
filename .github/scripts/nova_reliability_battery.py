@@ -68,13 +68,22 @@ with sync_playwright() as p:
   src=page.locator('script[src*="nova-ui.js"]').get_attribute('src') or ''
   css=page.locator('link[href*="nova-intelligence.css"]').get_attribute('href') or ''
   empty=page.locator('#niResult').inner_text().strip(); results['browser'][name]={'_page':{'scriptSrc':src,'cssHref':css,'emptyStateText':empty},'viewport':vp}
+  page.screenshot(path=f'nova-evidence/{name}-empty.png',full_page=True)
   for label,prompt_text in TESTS.items():
    results['browser'][name][label]=[]
    for rep in range(1,(4 if label=='TEST 3' else 2)):
-    page.evaluate('() => sessionStorage.clear()')
+    page.evaluate('() => sessionStorage.clear()'); errs.clear()
     try:
      page.locator('#niPrompt').fill(prompt_text)
-     with page.expect_response(lambda r:r.url==BASE+'/api/nova' and r.request.method=='POST',timeout=100000) as ev: page.locator('#niBuild').click(force=True)
+     page.locator('#niBuild').click(force=True)
+     page.locator('#niState').wait_for(state='visible',timeout=5000)
+     with page.expect_response(lambda r:r.url==BASE+'/api/nova' and r.request.method=='POST',timeout=100000) as ev: pass
+    except Exception:
+     try:
+      with page.expect_response(lambda r:r.url==BASE+'/api/nova' and r.request.method=='POST',timeout=100000) as ev: pass
+     except Exception: ev=None
+    try:
+     if ev is None: raise RuntimeError('production API response not observed')
      api=ev.value; body=api.json(); a=str(body.get('answer','')).strip(); honest=limitation(label,a.lower())
      if a:
       try: page.wait_for_function('(expected) => { const r=document.querySelector("#niResult"); return !!r && r.innerText.includes(expected); }', a, timeout=20000)
@@ -88,6 +97,7 @@ with sync_playwright() as p:
     except Exception as e:
      item={'http':None,'mode':None,'provider':None,'requestId':None,'responseLength':0,'finishReason':'unavailable','complete':False,'naturalLanguage':False,'honestLimitation':False,'unexplainedTruncation':False,'numericOnly':False,'uiDisplayedFullAnswer':False,'fallbackUi':False,'uiState':'unknown','consoleErrors':errs[-10:],'viewport':{},'error':str(e),'success':False}
     results['browser'][name][label].append(item); print('BROWSER',name,label,'RUN',rep,json.dumps(item,ensure_ascii=False))
+    if label=='TEST 1' and rep==1: page.screenshot(path=f'nova-evidence/{name}-completed.png',full_page=True)
     if errs: browser_errors.extend([name+':'+e for e in errs]); errs.clear()
   ctx.close()
  browser.close()
