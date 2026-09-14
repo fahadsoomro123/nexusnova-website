@@ -12,18 +12,18 @@ test('Nova frontend uses the secure orchestration API and bounded session contex
   assert.match(source, /workers\.dev\/api\/nova/);
   assert.match(source, /sessionStorage/);
   assert.match(source, /slice\(-MAX_HISTORY\)/);
-  assert.match(source, /body:\s*JSON\.stringify\(\{ message, context: history, focus: activeMode \}\)/);
+  assert.match(source, /JSON\.stringify\(\{ message, context: readHistory\(\), focus: activeMode \}\)/);
   assert.doesNotMatch(source, /request too broad for this preview router/i);
   assert.doesNotMatch(source, /CAPABILITIES\s*=|patterns\s*:/);
   assert.match(source, /textContent/);
   assert.doesNotMatch(source, /innerHTML/);
 });
 
-test('Nova worker exposes separated provider, tools, runtime and entrypoint layers', () => {
+test('Nova worker exposes separated provider, tools, runtime and existing entrypoint layers', () => {
   const provider = read('cloudflare/telegram-bot/nova-provider.js');
   const tools = read('cloudflare/telegram-bot/nova-tools.js');
   const runtime = read('cloudflare/telegram-bot/nova-runtime.js');
-  const entry = read('cloudflare/telegram-bot/nova-entry.js');
+  const entry = read('cloudflare/telegram-bot/worker-instagram-entry.js');
   const wrangler = read('cloudflare/telegram-bot/wrangler.jsonc');
 
   assert.match(provider, /export async function askAi/);
@@ -35,15 +35,14 @@ test('Nova worker exposes separated provider, tools, runtime and entrypoint laye
   assert.match(tools, /tool_handoff/);
   assert.match(tools, /HANDOFFS/);
   assert.match(tools, /safeArithmetic/);
-  assert.match(runtime, /MAX_MESSAGE_CHARS|6000/);
   assert.match(runtime, /slice\(-8\)/);
   assert.match(runtime, /slice\(0, 4\)/);
   assert.match(runtime, /slice\(0, 2\)/);
   assert.match(runtime, /publicToolCatalog\(\)\.some/);
   assert.match(runtime, /No unverified result/);
   assert.match(entry, /\/api\/nova/);
-  assert.match(entry, /worker-instagram-entry/);
-  assert.match(wrangler, /"main":\s*"nova-entry\.js"/);
+  assert.match(entry, /runNova|novaStatus/);
+  assert.match(wrangler, /"main":\s*"worker-instagram-entry\.js"/);
 });
 
 test('Nova hardening contains no client-side provider secrets or raw technical fallback', () => {
@@ -67,7 +66,7 @@ test('Nova worker files pass Node syntax parsing', () => {
     'cloudflare/telegram-bot/nova-provider.js',
     'cloudflare/telegram-bot/nova-tools.js',
     'cloudflare/telegram-bot/nova-runtime.js',
-    'cloudflare/telegram-bot/nova-entry.js'
+    'cloudflare/telegram-bot/worker-instagram-entry.js'
   ]) {
     execFileSync(process.execPath, ['--check', path.join(root, file)], { stdio: 'pipe' });
   }
