@@ -1,0 +1,102 @@
+name: NexusNova Final Main-Head Verification
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact main HEAD
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax validation
+        run: npm run check
+
+      - name: Full repository tests
+        run: npm test
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Strict deep public-site audit
+        run: python .github/scripts/deep_site_audit_strict.py
+
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Final desktop/mobile regression
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+
+          surfaces = [
+              'index.html', 'tools.html', 'image-compressor.html', 'calculator.html',
+              'articles.html', 'guides.html', 'register.html', 'privacy.html', 'nova-intelligence.html'
+          ]
+          widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
+          failures = []
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              for surface in surfaces:
+                  for width in widths:
+                      page = browser.new_page(viewport={'width': width, 'height': 844 if width < 800 else 1000})
+                      console_errors = []
+                      page.on('console', lambda msg: console_errors.append(msg.text) if msg.type == 'error' else None)
+                      try:
+                          response = page.goto(f'http://127.0.0.1:8000/{surface}', wait_until='domcontentloaded', timeout=30000)
+                          # The local server is started below, so this branch is reached only after the server step.
+                          if not response or response.status >= 400:
+                              failures.append(f'{surface}@{width}: HTTP {response.status if response else 0}')
+                              continue
+                          page.wait_for_timeout(300)
+                          if page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth + 6'):
+                              failures.append(f'{surface}@{width}: horizontal overflow')
+                          if surface != 'register.html' and page.locator('h1').count() != 1:
+                              failures.append(f'{surface}@{width}: H1 count {page.locator("h1").count()}')
+                          if surface == 'nova-intelligence.html':
+                              if page.locator('#niPrompt').count() != 1:
+                                  failures.append(f'{surface}@{width}: workspace missing')
+                              page.locator('[data-example]').filter(has_text='Currency').click()
+                              page.locator('#niBuild').click()
+                              if 'LIVE REQUIRED' not in page.locator('#niState').inner_text():
+                                  failures.append(f'{surface}@{width}: currency routing failed')
+                              if page.locator('#niResult a[href="currency-rates.html"]').count() != 1:
+                                  failures.append(f'{surface}@{width}: currency action missing')
+                          if console_errors:
+                              failures.append(f'{surface}@{width}: console errors: {" | ".join(dict.fromkeys(console_errors))}')
+                      except Exception as exc:
+                          failures.append(f'{surface}@{width}: {exc}')
+                      finally:
+                          page.close()
+              browser.close()
+
+          if failures:
+              print('\n'.join(f'FAIL: {item}' for item in failures))
+              raise SystemExit(1)
+          print(f'PASS: {len(surfaces) * len(widths)} final main-head desktop/mobile regression checks passed.')
+          PY
+
+      - name: Start local server for browser regression
+        shell: bash
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-final-server.log 2>&1 &
+          sleep 2
