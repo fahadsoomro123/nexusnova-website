@@ -71,29 +71,38 @@ function buildPrompt(messages, toolCatalog, focus) {
 
 async function callGemini(config, prompt, attempts) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.geminiModel)}:generateContent`;
-  const body = { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2_500 } };
-  const timeouts = [8_000, 5_000, 5_000];
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      maxOutputTokens: 2_500,
+      thinkingConfig: { thinkingLevel: 'low' }
+    }
+  };
+  const timeouts = [25_000, 25_000, 25_000];
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    const startedAt = Date.now();
     try {
       const response = await fetchWithTimeout(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.geminiKey }, body: JSON.stringify(body) }, timeouts[attempt]);
+      const latencyMs = Date.now() - startedAt;
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         const reason = `http-${response.status}`;
-        attempts.push({ provider: 'gemini', ok: false, reason });
+        attempts.push({ provider: 'gemini', ok: false, reason, latencyMs, statusText: cleanText(response.statusText, 80), responseClass: classifyGeminiResponse(data) });
         if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === 2) return null;
-        await sleep(400 * 2 ** attempt);
+        await sleep(500 * 2 ** attempt);
         continue;
       }
       const text = (data?.candidates || []).flatMap(candidate => candidate?.content?.parts || []).map(part => part?.text || '').join('\n');
       const parsed = parseStructuredJson(text);
       if (parsed) return { ok: true, plan: parsed };
-      attempts.push({ provider: 'gemini', ok: false, reason: 'invalid-structured-output' });
-      if (attempt < 2) { await sleep(400 * 2 ** attempt); continue; }
+      attempts.push({ provider: 'gemini', ok: false, reason: 'invalid-structured-output', latencyMs, responseClass: 'successful-http-invalid-json' });
+      if (attempt < 2) { await sleep(500 * 2 ** attempt); continue; }
     } catch (error) {
       const reason = classifyNetworkError(error);
-      attempts.push({ provider: 'gemini', ok: false, reason, detail: safeErrorDetail(error) });
+      attempts.push({ provider: 'gemini', ok: false, reason, latencyMs: Date.now() - startedAt, detail: safeErrorDetail(error) });
       if (attempt === 2) return null;
-      await sleep(400 * 2 ** attempt);
+      await sleep(500 * 2 ** attempt);
     }
   }
   return null;
@@ -130,6 +139,16 @@ async function fetchWithTimeout(resource, init = {}, timeoutMs = DEFAULT_LIMITS.
 }
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 function classifyNetworkError(error) { return String(error?.name || '').toLowerCase().includes('abort') ? 'timeout' : 'network-error'; }
+function classifyGeminiResponse(data) {
+  const status = cleanText(data?.error?.status, 80);
+  const message = cleanText(data?.error?.message, 180).toLowerCase();
+  if (status === 'RESOURCE_EXHAUSTED' || /quota|rate.?limit|resource exhausted/.test(message)) return 'quota-or-rate-limit';
+  if (status === 'UNAVAILABLE' || /temporarily unavailable|unavailable|overloaded/.test(message)) return 'upstream-unavailable';
+  if (status === 'INVALID_ARGUMENT' || /invalid argument|unsupported|malformed/.test(message)) return 'invalid-request';
+  if (status === 'UNAUTHENTICATED' || /api key|authentication|unauthenticated/.test(message)) return 'authentication';
+  if (status === 'PERMISSION_DENIED' || /permission denied|permission/.test(message)) return 'permission';
+  return status || 'provider-error';
+}
 function safeErrorDetail(error) {
   const name = cleanText(error?.name, 40);
   const message = cleanText(error?.message, 160);
