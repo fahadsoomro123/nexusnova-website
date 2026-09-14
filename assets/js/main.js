@@ -49,7 +49,7 @@
     const base=inSubdir?'../':'';
     const style=document.createElement('style');
     style.dataset.nexusnovaConsentStyle='';
-    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-consent-reopen{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
     document.head.appendChild(style);
 
     const banner=document.createElement('div');
@@ -57,16 +57,26 @@
     banner.dataset.nexusnovaConsent='';
     banner.id='nexusnova-analytics-consent';
     banner.hidden=true;
-    banner.setAttribute('role','dialog');
-    banner.setAttribute('aria-modal','true');
+    banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Optional analytics settings');
-    banner.innerHTML=`<p><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
     const hide=()=>{banner.hidden=true};
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
     banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
-    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
+    banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
+
+    const reopen=document.createElement('button');
+    reopen.type='button';
+    reopen.className='nn-consent-reopen';
+    reopen.textContent='Privacy choices';
+    reopen.title='Privacy choices';
+    reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
+    const footerLinks=document.querySelector('.site-footer .footer-links');
+    if(footerLinks) footerLinks.appendChild(reopen);
+    else document.body.appendChild(reopen);
+    reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('[data-consent-allow]')?.focus()});
 
     const choice=readChoice();
     if(choice==='granted'){loadAnalytics(true);hide()}

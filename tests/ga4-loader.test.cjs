@@ -35,7 +35,7 @@ test('GA4 uses denied-storage basic measurement by default and detailed analytic
   assert.match(text, /Privacy & Analytics Settings/);
   assert.match(text, /reopen\.title='Privacy choices'/);
   assert.match(text, /const footerLinks=document\.querySelector\('\.site-footer \.footer-links'\)/);
-  assert.match(text, /footerLinks\.appendChild\(reopen\)/);
+  assert.match(text, /footerLinks\) footerLinks\.appendChild\(reopen\)/);
   assert.match(text, /reopen\.addEventListener\('click',\(\)=>\{banner\.hidden=false/);
   assert.match(text, /saveChoice\('granted'\);loadAnalytics\(true\)/);
   assert.match(text, /if\(initialChoice==='granted'\)loadAnalytics\(true\)/);
