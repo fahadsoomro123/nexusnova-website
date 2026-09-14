@@ -28,133 +28,25 @@
 }
 .nn-proof-360-holder::before{width:min(72%,360px);aspect-ratio:1}
 .nn-proof-360-holder::after{width:min(52%,260px);aspect-ratio:1;border-style:dashed;border-color:rgba(101,88,255,.22)}
-
-/* The 3D viewer owns the whole available HumanProof frame. */
-.nn-proof-360-viewer{
-  position:absolute;
-  z-index:2;
-  inset:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  border-radius:inherit;
-  background:
-    radial-gradient(circle at 50% 43%,rgba(45,190,225,.10),transparent 50%),
-    radial-gradient(circle at 72% 72%,rgba(101,88,255,.10),transparent 44%);
-}
-#nnHumanProof360{
-  position:absolute;
-  inset:0;
-  z-index:2;
-  display:block;
-  width:100%;
-  height:100%;
-  pointer-events:none;
-}
-.nn-proof-360-scan{
-  position:absolute;
-  z-index:3;
-  left:2%;
-  right:2%;
-  top:8%;
-  height:2px;
-  pointer-events:none;
-  opacity:.72;
-  background:linear-gradient(90deg,transparent,#0c789e,#6558ff,#744bd8,transparent);
-  box-shadow:0 0 18px rgba(101,88,255,.34);
-  animation:nnHpScan 8s ease-in-out infinite;
-}
-.nn-proof-360-load{
-  position:absolute;
-  inset:0;
-  z-index:4;
-  display:grid;
-  place-items:center;
-  padding:20px;
-  color:#4d5a75;
-  background:linear-gradient(145deg,rgba(249,251,255,.96),rgba(247,246,255,.93));
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.14em;
-  text-align:center;
-  transition:opacity .28s ease,visibility .28s ease;
-}
+.nn-proof-360-viewer{position:absolute;z-index:2;inset:0;width:100%;height:100%;overflow:hidden;border-radius:inherit;background:radial-gradient(circle at 50% 43%,rgba(45,190,225,.10),transparent 50%),radial-gradient(circle at 72% 72%,rgba(101,88,255,.10),transparent 44%)}
+#nnHumanProof360{position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;pointer-events:none}
+.nn-proof-360-scan{position:absolute;z-index:3;left:2%;right:2%;top:8%;height:2px;pointer-events:none;opacity:.72;background:linear-gradient(90deg,transparent,#0c789e,#6558ff,#744bd8,transparent);box-shadow:0 0 18px rgba(101,88,255,.34);animation:nnHpScan 8s ease-in-out infinite}
+.nn-proof-360-load{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:20px;color:#4d5a75;background:linear-gradient(145deg,rgba(249,251,255,.96),rgba(247,246,255,.93));font-size:10px;font-weight:900;letter-spacing:.14em;text-align:center;transition:opacity .28s ease,visibility .28s ease}
 .nn-proof-360-load.is-hidden{opacity:0;visibility:hidden}
-.nn-proof-360-status{
-  position:absolute;
-  z-index:4;
-  left:12px;
-  top:12px;
-  display:inline-flex;
-  align-items:center;
-  gap:7px;
-  padding:7px 9px;
-  border:1px solid rgba(38,51,93,.12);
-  border-radius:999px;
-  background:rgba(255,255,255,.82);
-  backdrop-filter:blur(12px);
-  color:#36415d;
-  font-size:8px;
-  font-weight:900;
-  letter-spacing:.1em;
-}
-.nn-proof-360-status::before{
-  content:"";
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#0c789e;
-  box-shadow:0 0 0 4px rgba(12,120,158,.12);
-}
-.nn-proof-360-meta{
-  position:absolute;
-  z-index:4;
-  right:12px;
-  bottom:10px;
-  color:#5c6780;
-  font-size:8px;
-  font-weight:850;
-  letter-spacing:.11em;
-  text-transform:uppercase;
-}
-.nn-proof-attribution{
-  margin-top:2px;
-  color:#737d95;
-  font-size:7px;
-  letter-spacing:.04em;
-  line-height:1.35;
-}
+.nn-proof-360-status{position:absolute;z-index:4;left:12px;top:12px;display:inline-flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(38,51,93,.12);border-radius:999px;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);color:#36415d;font-size:8px;font-weight:900;letter-spacing:.1em}
+.nn-proof-360-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#0c789e;box-shadow:0 0 0 4px rgba(12,120,158,.12)}
+.nn-proof-360-meta{position:absolute;z-index:4;right:12px;bottom:10px;color:#5c6780;font-size:8px;font-weight:850;letter-spacing:.11em;text-transform:uppercase}
+.nn-proof-attribution{margin-top:2px;color:#737d95;font-size:7px;letter-spacing:.04em;line-height:1.35}
 .nn-proof-attribution a{text-decoration:underline;text-underline-offset:2px}
-.nn-proof-360-holder.is-error #nnHumanProof360,
-.nn-proof-360-holder.is-error .nn-proof-360-scan{display:none}
-
-@keyframes nnHpScan{
-  0%,8%{top:8%;opacity:.28}
-  48%,54%{top:90%;opacity:.92}
-  92%,100%{top:8%;opacity:.38}
-}
-
-@media(max-width:980px){
-  .nn-proof-360-holder{min-height:0}
-}
-
+.nn-proof-360-holder.is-error #nnHumanProof360,.nn-proof-360-holder.is-error .nn-proof-360-scan{display:none}
+@keyframes nnHpScan{0%,8%{top:8%;opacity:.28}48%,54%{top:90%;opacity:.92}92%,100%{top:8%;opacity:.38}}
+@media(max-width:980px){.nn-proof-360-holder{min-height:0}}
 @media(max-width:720px){
   .nn-home .nn-flagship-hero{padding-top:24px!important;padding-bottom:18px!important}
   .nn-home .nn-flagship-grid{grid-template-columns:1fr!important;gap:18px!important}
   .nn-home .nn-flagship-copy>.kicker{display:none!important}
-  .nn-home .nn-flagship-copy h1{
-    margin:0 0 12px!important;
-    max-width:none!important;
-    font-size:clamp(34px,10vw,42px)!important;
-    line-height:.98!important;
-    letter-spacing:-.05em!important;
-  }
-  .nn-home .nn-flagship-copy .hero-copy{
-    margin:0 0 14px!important;
-    max-width:none!important;
-    font-size:14px!important;
-    line-height:1.55!important;
-  }
+  .nn-home .nn-flagship-copy h1{margin:0 0 12px!important;max-width:none!important;font-size:clamp(34px,10vw,42px)!important;line-height:.98!important;letter-spacing:-.05em!important}
+  .nn-home .nn-flagship-copy .hero-copy{margin:0 0 14px!important;max-width:none!important;font-size:14px!important;line-height:1.55!important}
   .nn-home .nn-flagship-copy .home-search{margin-top:0!important;border-radius:16px!important;padding:5px!important}
   .nn-home .nn-flagship-copy .home-search input{min-height:42px!important;padding:9px 11px!important;font-size:13px!important}
   .nn-home .nn-flagship-copy .home-search .btn{min-height:42px!important;padding:0 13px!important;font-size:12px!important}
@@ -166,7 +58,6 @@
   .nn-proof-360-status{left:9px;top:9px;font-size:7px;padding:6px 8px}
   .nn-proof-360-meta{right:9px;bottom:8px;font-size:7px}
 }
-
 @media(max-width:520px){
   .nn-home .nn-flagship-copy h1{font-size:clamp(33px,9.7vw,39px)!important}
   .nn-home .nn-flagship-stage{min-height:370px!important}
@@ -176,15 +67,13 @@
   .nn-proof-360-holder::before{width:min(76%,260px)}
   .nn-proof-360-holder::after{width:min(56%,190px)}
 }
-
 @media(max-width:390px){
   .nn-home .nn-flagship-copy .hero-actions{grid-template-columns:1fr!important}
   .nn-home .nn-flagship-copy .hero-actions .btn:first-child{grid-column:auto}
   .nn-home .nn-flagship-stage{min-height:350px!important}
 }
-
-@media(prefers-reduced-motion:reduce){
-  .nn-proof-360-scan{animation:none;top:50%;opacity:.22}
-}
+@media(prefers-reduced-motion:reduce){.nn-proof-360-scan{animation:none;top:50%;opacity:.22}}
 .nn-proof-360-holder.is-paused .nn-proof-360-load{cursor:pointer}
 .nn-proof-360-holder.is-paused .nn-proof-360-viewer::before{content:"";position:absolute;left:50%;top:48%;width:clamp(96px,32%,180px);aspect-ratio:.78;transform:translate(-50%,-50%);border:1px solid rgba(34,211,238,.34);border-radius:46% 46% 43% 43% / 38% 38% 56% 56%;background:radial-gradient(circle at 50% 42%,rgba(99,88,255,.18),transparent 54%),repeating-linear-gradient(0deg,transparent 0 9px,rgba(34,211,238,.12) 10px 11px);box-shadow:0 0 34px rgba(99,88,255,.16);pointer-events:none}
+/* Mobile containment: the V11 credential contains transformed decorative layers that must never widen the document. */
+@media(max-width:620px){html:has(body.nn-home){overflow-x:clip}body.nn-home{width:100%;max-width:100vw;overflow-x:clip}.nn-home .cert-stage,.nn-home .cert-stack{max-width:100%;overflow-x:clip}.nn-home .cert-card{max-width:100%;}}

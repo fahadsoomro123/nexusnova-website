@@ -64,6 +64,7 @@
   .cert-stack{width:min(820px,94vw)}
 }
 @media(max-width:720px){
+  .nn-home .nn-flagship-grid{grid-template-columns:1fr!important}
   .nn-home .nn-flagship-stage{min-height:390px;border-radius:30px}
   .nn-home .nn-proof-card{inset:24px 14px 26px 16px;padding:15px}
   .nn-home .nn-proof-360-holder{min-height:250px!important;margin:10px 0 8px!important}
@@ -71,7 +72,8 @@
   .nn-v11-sample{padding:12px 0 26px}
   .nn-v11-head{gap:12px;margin-bottom:18px}
   .nn-v11-head h2{font-size:30px}
-  .cert-stack{width:94vw;transform:rotateX(2deg) rotateY(-2.5deg) rotateZ(-.2deg)}
+  .cert-stage{overflow:clip}
+  .cert-stack{width:94vw;max-width:100%;transform:rotateX(2deg) rotateY(-2.5deg) rotateZ(-.2deg)}
   .cert-note{font-size:7px;letter-spacing:.11em;margin-bottom:12px}
   .cert-caption{margin-top:20px;font-size:10px;padding:0 8px}
 }
@@ -80,6 +82,7 @@
   .nn-home .nn-proof-card{inset:18px 12px 18px 14px!important;padding:14px!important}
   .nn-home .nn-proof-360-holder{min-height:245px!important;margin:10px 0 0!important}
   .nn-home .nn-proof-labels,.nn-home .nn-proof-caption,.nn-home .nn-proof-attribution{display:none!important}
-  .cert-stack{width:95vw;transform:none;filter:drop-shadow(0 22px 28px rgba(63,63,44,.18))}
+  .cert-stage{overflow:clip}
+  .cert-stack{width:95vw;max-width:100%;transform:none;filter:drop-shadow(0 22px 28px rgba(63,63,44,.18))}
   .cert-stack:before{transform:translate3d(0,10px,-8px)}.cert-stack:after{transform:translate3d(0,5px,-4px)}
 }
