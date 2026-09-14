@@ -27,26 +27,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Install Playwright Chromium
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
-
       - name: Start local site
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-discoverability-http.log 2>&1 &
           sleep 2
           curl --fail --silent http://127.0.0.1:8000/ >/dev/null
-
       - name: Verify Nova discoverability, responsive layout and real flow
         run: |
           python - <<'PY'
           from playwright.sync_api import sync_playwright
-
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
-
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True)
               for width in widths:
@@ -60,9 +55,8 @@ jobs:
                           continue
                       page.wait_for_timeout(250)
                       page.evaluate('window.scrollTo(0,0)')
-
                       nav = page.locator('[data-nav] [data-nova-intelligence-nav]')
-                      feature = page.locator('[data-nova-discovery]')
+                      feature = page.locator('.nn-nova-discovery')
                       if nav.count() != 1:
                           failures.append(f'home@{width}: expected exactly one Nova nav link, found {nav.count()}')
                       else:
@@ -86,7 +80,6 @@ jobs:
                               if not page.url.endswith('/nova-intelligence.html'):
                                   failures.append(f'home@{width}: desktop navigation ended at {page.url}')
                               page.go_back(wait_until='networkidle')
-
                       if feature.count() != 1:
                           failures.append(f'home@{width}: Nova discovery section missing')
                       else:
@@ -95,14 +88,13 @@ jobs:
                               failures.append(f'home@{width}: expected one Nova CTA')
                           else:
                               cta.focus()
-                              if page.evaluate('document.activeElement === arguments[0]', cta.element_handle()) is not True:
+                              if not cta.evaluate('(el) => document.activeElement === el'):
                                   failures.append(f'home@{width}: CTA focus did not land')
-                              cta.press('Enter')
+                              page.keyboard.press('Enter')
                               page.wait_for_load_state('domcontentloaded')
                               if not page.url.endswith('/nova-intelligence.html'):
                                   failures.append(f'home@{width}: CTA navigation ended at {page.url}')
                               page.go_back(wait_until='networkidle')
-
                       metrics = page.evaluate('''() => ({
                         sw: document.documentElement.scrollWidth,
                         cw: document.documentElement.clientWidth,
@@ -120,7 +112,6 @@ jobs:
                       failures.append(f'home@{width}: browser failure: {exc}')
                   finally:
                       page.close()
-
               flow = browser.new_page(viewport={'width': 390, 'height': 844})
               flow.goto('http://127.0.0.1:8000/nova-intelligence.html', wait_until='networkidle', timeout=30000)
               try:
@@ -139,7 +130,6 @@ jobs:
               finally:
                   flow.close()
               browser.close()
-
           if failures:
               print('\n'.join(f'FAIL: {item}' for item in failures))
               raise SystemExit(1)
