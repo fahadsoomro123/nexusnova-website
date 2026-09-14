@@ -1,0 +1,125 @@
+name: NexusNova Intelligence Browser Quality
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nova-intelligence.html'
+      - 'assets/js/nova-intelligence.js'
+      - 'assets/css/nova-intelligence.css'
+      - '.github/workflows/intelligence-browser-quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'nova-intelligence.html'
+      - 'assets/js/nova-intelligence.js'
+      - 'assets/css/nova-intelligence.css'
+      - '.github/workflows/intelligence-browser-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  intelligence-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-intelligence-http.log 2>&1 &
+          echo $! > /tmp/nexusnova-intelligence-http.pid
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8000/nova-intelligence.html >/dev/null
+
+      - name: Verify Intelligence desktop/mobile journeys
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from playwright.sync_api import sync_playwright
+
+          URL = 'http://127.0.0.1:8000/nova-intelligence.html'
+          errors = []
+
+          def check(condition, message):
+              if not condition:
+                  errors.append(message)
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              for mode, width, height in [('desktop', 1440, 1000), ('mobile', 390, 844)]:
+                  page = browser.new_page(viewport={'width': width, 'height': height})
+                  console_errors = []
+                  page.on('console', lambda msg: console_errors.append(msg.text) if msg.type == 'error' else None)
+                  page.goto(URL, wait_until='networkidle', timeout=30000)
+                  page.wait_for_timeout(250)
+
+                  check(page.locator('h1').count() == 1, f'{mode}: expected one H1')
+                  check(page.locator('meta[name="robots"][content="noindex,nofollow"]').count() == 1, f'{mode}: preview robots guard missing')
+                  check(page.locator('#niPrompt').count() == 1, f'{mode}: prompt missing')
+                  check(page.locator('#niBuild').count() == 1, f'{mode}: build button missing')
+                  check(page.locator('#niSurprise').count() == 1, f'{mode}: surprise button missing')
+                  check(page.locator('[data-mode]').count() == 5, f'{mode}: workspace modes incomplete')
+                  check(page.locator('[data-example]').count() == 4, f'{mode}: example prompts incomplete')
+
+                  overflow = page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth + 6')
+                  check(not overflow, f'{mode}: horizontal overflow detected')
+
+                  page.locator('[data-example]').filter(has_text='Currency').click()
+                  page.locator('#niBuild').click()
+                  check('LIVE REQUIRED' in page.locator('#niState').inner_text(), f'{mode}: currency did not enter LIVE REQUIRED state')
+                  check('Data honesty' in page.locator('#niResult').inner_text(), f'{mode}: currency honesty guidance missing')
+                  check(page.locator('#niResult a[href="currency-rates.html"]').count() == 1, f'{mode}: currency action link missing')
+
+                  page.locator('[data-example]').filter(has_text='Travel').click()
+                  page.locator('#niBuild').click()
+                  check('GUIDED' in page.locator('#niState').inner_text(), f'{mode}: travel did not enter GUIDED state')
+                  check('Travel limitation' in page.locator('#niResult').inner_text(), f'{mode}: travel limitation missing')
+
+                  page.locator('[data-example]').filter(has_text='Compare').click()
+                  page.locator('#niBuild').click()
+                  check('GUIDED' in page.locator('#niState').inner_text(), f'{mode}: compare did not enter GUIDED state')
+                  check('Comparison limitation' in page.locator('#niResult').inner_text(), f'{mode}: comparison limitation missing')
+
+                  page.locator('[data-example]').filter(has_text='Tool finder').click()
+                  page.locator('#niBuild').click()
+                  check('ROUTED' in page.locator('#niState').inner_text(), f'{mode}: tool finder did not route')
+                  check(page.locator('#niResult a[href="merge-pdf.html"]').count() == 1, f'{mode}: merge PDF action link missing')
+
+                  page.locator('[data-mode="compare"]').click()
+                  check(page.locator('[data-mode="compare"]').get_attribute('aria-pressed') == 'true', f'{mode}: compare mode aria-pressed not updated')
+                  page.locator('#niSurprise').click()
+                  check(page.locator('#niPrompt').input_value() != '', f'{mode}: Surprise Me produced empty prompt')
+                  check(page.locator('#niResult').inner_text().strip() != '', f'{mode}: Surprise Me produced empty result')
+
+                  page.locator('#niPrompt').fill('I want to compress a photo')
+                  page.locator('#niPrompt').press('Control+Enter')
+                  check('ROUTED' in page.locator('#niState').inner_text(), f'{mode}: keyboard build did not route image request')
+                  check(page.locator('#niResult a[href="image-compressor.html"]').count() == 1, f'{mode}: image compressor action link missing')
+
+                  if console_errors:
+                      errors.append(f'{mode}: console errors: {" | ".join(dict.fromkeys(console_errors))}')
+
+                  page.screenshot(path=f'/tmp/intelligence-{mode}.png', full_page=True)
+                  page.close()
+
+              browser.close()
+
+          if errors:
+              print('\n'.join(f'FAIL: {item}' for item in errors))
+              raise SystemExit(1)
+          print('PASS: Intelligence desktop/mobile browser journeys completed with zero findings.')
+          PY
