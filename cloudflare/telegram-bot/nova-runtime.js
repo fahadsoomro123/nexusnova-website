@@ -63,7 +63,7 @@ export async function runNova(request, env) {
       body: {
         requestId,
         mode: 'limit',
-        answer: ai.reason === 'provider-not-configured' ? 'Nova’s secure AI connection is not configured yet. I can still open a real NexusNova tool when one matches your request, but I will not pretend an AI answer happened.' : 'Nova could not complete that request right now. No unverified result was shown. Please retry or use a relevant NexusNova tool.',
+        answer: ai.reason === 'provider-not-configured' ? 'Nova’s secure AI connection is not configured yet. I can still open a real NexusNOVA tool when one matches your request, but I will not pretend an AI answer happened.' : 'Nova could not complete that request right now. No unverified result was shown. Please retry or use a relevant NexusNova tool.',
         suggestedTools: HANDOFFS.slice(0, 6).map(item => ({ label: item.label, href: item.href })),
         nextStep: 'Retry the request or describe the result you need in one sentence.',
         providerFailure: diagnostic.reason,
@@ -81,7 +81,8 @@ function safeProviderDiagnostic(ai) {
   const attempts = Array.isArray(ai?.attempts) ? ai.attempts.slice(0, 4).map(item => ({
     provider: String(item?.provider || '').slice(0, 32),
     ok: Boolean(item?.ok),
-    reason: String(item?.reason || '').slice(0, 64)
+    reason: String(item?.reason || '').slice(0, 64),
+    detail: String(item?.detail || '').slice(0, 320)
   })) : [];
   return { reason: String(ai?.reason || 'unknown').slice(0, 64), attempts };
 }
