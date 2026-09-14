@@ -113,7 +113,7 @@ function validatePlan(plan) {
 async function fetchWithTimeout(resource, init = {}, timeoutMs = DEFAULT_LIMITS.timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort('timeout'), timeoutMs);
-  try { return await fetch(resource, { ...init, signal: controller.signal, redirect: 'error' }); } finally { clearTimeout(timer); }
+  try { return await fetch(resource, { ...init, signal: controller.signal, redirect: 'follow' }); } finally { clearTimeout(timer); }
 }
 function classifyNetworkError(error) { return String(error?.name || '').toLowerCase().includes('abort') ? 'timeout' : 'network-error'; }
 function safeErrorDetail(error) {
