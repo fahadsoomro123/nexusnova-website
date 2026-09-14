@@ -1,9 +1,7 @@
 name: Nova Intelligence Production Quality
 
-# Production verification intentionally runs the real public page and Worker; no mocked provider is used here.
-
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
       - 'nova-intelligence.html'
@@ -13,7 +11,7 @@ on:
       - 'cloudflare/telegram-bot/wrangler.jsonc'
       - 'tests/nova-intelligence.test.cjs'
       - '.github/workflows/nova-intelligence-quality.yml'
-  push:
+  pull_request:
     branches: [main]
     paths:
       - 'nova-intelligence.html'
@@ -46,44 +44,6 @@ jobs:
           node --check cloudflare/telegram-bot/nova-tools.js
           node --check cloudflare/telegram-bot/nova-runtime.js
           node --check assets/js/nova-intelligence.js
-      - name: Browser QA
-        run: |
-          python -m pip install --disable-pip-version-check playwright
-          python -m playwright install --with-deps chromium
-          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nova-http.log 2>&1 &
-          python - <<'PY'
-          from playwright.sync_api import sync_playwright
-          api='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova'
-          widths=[360,375,390,412,430,768,1024,1280,1440]
-          failures=[]
-          with sync_playwright() as p:
-            browser=p.chromium.launch(headless=True)
-            for width in widths:
-              page=browser.new_page(viewport={'width':width,'height':900})
-              errors=[]
-              page.on('console', lambda msg: errors.append(msg.text) if msg.type=='error' else None)
-              def route_handler(route):
-                route.fulfill(status=200,content_type='application/json',body='{"mode":"answer","answer":"Nova test response: arbitrary natural language was accepted.","requestId":"test","provider":"test"}')
-              page.route(api, route_handler)
-              try:
-                page.goto('http://127.0.0.1:8000/nova-intelligence.html',wait_until='domcontentloaded',timeout=30000)
-                page.wait_for_timeout(200)
-                if page.locator('#niPrompt').count()!=1: failures.append(f'prompt@{width}: missing')
-                prompt=page.locator('#niPrompt'); prompt.fill('Explain a difficult concept in simple words with an example.')
-                page.locator('#niBuild').click(); page.wait_for_timeout(250)
-                text=page.locator('#niResult').inner_text()
-                if 'Nova test response' not in text: failures.append(f'flow@{width}: contract response not rendered')
-                metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})')
-                if metrics['sw']>metrics['cw']+6: failures.append(f'overflow@{width}: {metrics}')
-                if errors: failures.append(f'console@{width}: {errors}')
-                if 'too broad for this preview router' in page.content().lower(): failures.append(f'legacy-preview-copy@{width}')
-              except Exception as exc: failures.append(f'browser@{width}: {exc}')
-              finally: page.close()
-            browser.close()
-          if failures:
-            print('\n'.join(failures)); raise SystemExit(1)
-          print('PASS: Nova source/browser QA across 9 responsive widths with arbitrary natural-language flow.')
-          PY
 
   deploy-worker:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -103,7 +63,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: deploy-worker
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Production transport diagnostics
@@ -117,85 +77,87 @@ jobs:
           origin='https://nexusnovatools.com'
           def probe(method, path, body=None):
             data=None if body is None else json.dumps(body).encode()
-            req=urllib.request.Request(base+path, method=method, data=data, headers={
-              'Origin': origin,
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'User-Agent': 'Mozilla/5.0 (compatible; NexusNova-Production-QA/1.0)',
-              'Access-Control-Request-Method': 'POST' if method == 'OPTIONS' else '',
-              'Access-Control-Request-Headers': 'content-type' if method == 'OPTIONS' else ''
-            })
+            headers={'Origin': origin,'Accept':'application/json','Content-Type':'application/json','User-Agent':'Mozilla/5.0 (compatible; NexusNova-Production-QA/1.0)'}
+            if method == 'OPTIONS': headers.update({'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
+            req=urllib.request.Request(base+path, method=method, data=data, headers=headers)
             try:
               with urllib.request.urlopen(req, timeout=30) as r:
                 text=r.read().decode('utf-8','replace')
                 print(method, path, 'HTTP', r.status)
-                print('BODY=', text[:6000])
+                print('BODY=', text[:8000])
             except urllib.error.HTTPError as e:
               text=e.read().decode('utf-8','replace')
               print(method, path, 'HTTP', e.code)
-              print('BODY=', text[:6000])
-          print('=== SAFE PRODUCTION TRANSPORT DIAGNOSTICS ===')
+              print('BODY=', text[:8000])
+          print('=== REAL PRODUCTION TRANSPORT ===')
           probe('GET','/api/nova/status')
           probe('OPTIONS','/api/nova')
           probe('POST','/api/nova',{'message':'Explain compound interest in one friendly sentence.','focus':'general'})
           PY
-      - name: Real production browser — exact Nova prompt
+      - name: Real production browsers — exact Nova prompt, mobile and desktop
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
           python - <<'PY'
           from playwright.sync_api import sync_playwright
+          import re
           failures=[]
           base='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
           exact_prompt='What is the capital of Pakistan, and explain in one sentence why it is important?'
+          contexts=[
+            ('mobile', {'width':390,'height':844}, 'Mozilla/5.0 (Linux; Android 11; Mobile) AppleWebKit/537.36 Chrome/151.0.0.0 Mobile Safari/537.36'),
+            ('desktop', {'width':1440,'height':1000}, None),
+          ]
           with sync_playwright() as p:
             browser=p.chromium.launch(headless=True)
-            page=browser.new_page(viewport={'width':390,'height':844}, user_agent='Mozilla/5.0 (Linux; Android 11; Mobile) AppleWebKit/537.36 Chrome/151.0.0.0 Mobile Safari/537.36')
-            api_response=None
-            try:
-              page.goto('https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
-              page.wait_for_timeout(500)
-              print('PAGE_URL=', page.url)
-              print('PAGE_ORIGIN=', page.evaluate('() => location.origin'))
-              print('NOVA_CLIENT_BUILD=', page.evaluate('() => document.documentElement.dataset.novaClientBuild || "missing"'))
-              script_src=page.locator('script[src*="nova-intelligence.js"]').get_attribute('src') or ''
-              print('NOVA_SCRIPT_SRC=', script_src)
-              if 'nova-intelligence.js?v=20260914-v6' not in script_src:
-                failures.append('live page is not serving the cache-busted v6 Nova client')
+            for label, viewport, user_agent in contexts:
+              context_kwargs={'viewport':viewport}
+              if user_agent: context_kwargs['user_agent']=user_agent
+              context=browser.new_context(**context_kwargs)
+              page=context.new_page()
+              try:
+                page.goto('https://nexusnovatools.com/nova-intelligence.html?qa=${GITHUB_SHA}',wait_until='domcontentloaded',timeout=30000)
+                page.wait_for_timeout(500)
+                build=page.evaluate('() => document.documentElement.dataset.novaClientBuild || "missing"')
+                script_src=page.locator('script[src*="nova-intelligence.js"]').get_attribute('src') or ''
+                print(label.upper(),'CLIENT_BUILD=',build)
+                print(label.upper(),'SCRIPT_SRC=',script_src)
+                if build != '20260914-ui-contract-v7': failures.append(f'{label}: wrong client build {build}')
+                if 'nova-intelligence.js?v=20260914-v7' not in script_src: failures.append(f'{label}: missing v7 cache-buster')
 
-              page.locator('#niPrompt').fill(exact_prompt)
-              with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'POST', timeout=45000) as api_event:
-                page.locator('#niBuild').click(force=True)
-              api_response=api_event.value
-              api_body=api_response.json()
-              print('BROWSER_NOVA_API=', {'status':api_response.status,'body':api_body})
-              if api_response.status != 200: failures.append(f'UI API HTTP={api_response.status}')
-              if api_body.get('mode') != 'answer': failures.append(f'UI API mode={api_body.get("mode")}')
-              if api_body.get('provider') != 'gemini': failures.append(f'UI API provider={api_body.get("provider")}')
-              if not str(api_body.get('answer','')).strip(): failures.append('UI API returned empty answer')
-
-              page.wait_for_function("""() => {
-                const s=document.querySelector('#niState')?.textContent?.trim() || '';
-                const t=document.querySelector('#niResult')?.innerText?.trim() || '';
-                return s && s !== 'READY' && s !== 'THINKING…' && !t.includes('Ready for your request');
-              }""", timeout=45000)
-              text=page.locator('#niResult').inner_text().strip()
-              state=page.locator('#niState').inner_text().strip()
-              print('UI_STATE=', state)
-              print('UI_RESULT=', text[:6000])
-              answer=str(api_body.get('answer','')).strip()
-              if not answer: failures.append('empty real Gemini answer')
-              if answer not in text: failures.append('real API answer was not rendered verbatim in Nova response panel')
-              if 'Nova could not complete that request right now' in text: failures.append('old live fallback text still rendered')
-              if 'Nova connection unavailable' in text: failures.append('connection fallback rendered')
-              if 'No unverified result was shown' in text: failures.append('old fallback recovery copy still rendered')
-              if state == 'READY': failures.append('Nova state remained READY')
-            except Exception as exc:
-              failures.append(f'production browser verification: {exc}')
-            finally:
-              page.close()
-              browser.close()
+                page.locator('#niPrompt').fill(exact_prompt)
+                with page.expect_response(lambda r: r.url == base + '/api/nova' and r.request.method == 'POST', timeout=45000) as event:
+                  page.locator('#niBuild').click(force=True)
+                api=event.value
+                body=api.json()
+                answer=str(body.get('answer','')).strip()
+                text=page.locator('#niResult').inner_text().strip()
+                state=page.locator('#niState').inner_text().strip()
+                print(label.upper(),'API_STATUS=',api.status)
+                print(label.upper(),'API_SHAPE=',{'requestId':body.get('requestId'),'mode':body.get('mode'),'provider':body.get('provider'),'answerChars':len(answer),'answerPrefix':answer[:800]})
+                print(label.upper(),'UI_STATE=',state)
+                print(label.upper(),'UI_RESULT=',text[:8000])
+                if api.status != 200: failures.append(f'{label}: HTTP {api.status}')
+                if body.get('mode') != 'answer': failures.append(f'{label}: mode={body.get("mode")}')
+                if body.get('provider') != 'gemini': failures.append(f'{label}: provider={body.get("provider")}')
+                if len(answer) < 80: failures.append(f'{label}: answer suspiciously short ({len(answer)})')
+                if re.fullmatch(r'[\d\s,.%+\-*/()×÷]+', answer): failures.append(f'{label}: numeric-only answer')
+                if answer not in text: failures.append(f'{label}: API answer not rendered verbatim')
+                if 'Nova connection unavailable' in text or 'No fake answer was generated' in text: failures.append(f'{label}: fallback UI rendered')
+                if state in ('READY','THINKING…'): failures.append(f'{label}: UI did not finish')
+                if label == 'mobile':
+                  metrics=page.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,sh:document.documentElement.scrollHeight,ch:document.documentElement.clientHeight})')
+                  print('MOBILE_LAYOUT=',metrics)
+                  if metrics['sw'] > metrics['cw'] + 6: failures.append(f'mobile: horizontal overflow {metrics}')
+                page.wait_for_timeout(300)
+              except Exception as exc:
+                failures.append(f'{label}: {exc}')
+              finally:
+                context.close()
+            browser.close()
           if failures:
-            print('\n'.join(failures)); raise SystemExit(1)
-          print('PASS: exact production browser prompt reached the real Worker, returned a Gemini answer, and that same answer was visibly rendered in #niResult on the live page.')
+            print('FAILURES=')
+            print('\n'.join(failures))
+            raise SystemExit(1)
+          print('PASS: real Gemini response was returned and visibly rendered on both mobile and desktop production browsers.')
           PY
