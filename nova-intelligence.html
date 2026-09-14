@@ -4,24 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="NexusNova Intelligence is a private product preview for a guided workspace that maps natural-language goals to useful NexusNova capabilities.">
+<meta name="description" content="NexusNova Intelligence is a general-purpose assistant layer for natural-language questions, connected tools, live search when available, and useful next-step guidance.">
 <meta name="theme-color" content="#07111f">
-<title>NexusNova Intelligence — Product Preview</title>
-<link rel="stylesheet" href="assets/css/nova-intelligence.css?v=20260914-v3">
+<title>NexusNova Intelligence — General-Purpose Assistant</title>
+<link rel="stylesheet" href="assets/css/nova-intelligence.css?v=20260914-v4">
 </head>
 <body>
 <header class="ni-nav">
   <div class="ni-nav-inner">
-    <a class="ni-brand" href="/" aria-label="NexusNova Tools home">
-      <span class="ni-logo" aria-hidden="true">N</span>
-      <span><strong>NEXUSNOVA</strong><small>INTELLIGENCE PREVIEW</small></span>
-    </a>
-    <nav class="ni-nav-links" aria-label="Preview navigation">
-      <a href="#workspace">Workspace</a>
-      <a href="#capabilities">Capabilities</a>
-      <a href="#how">How it works</a>
-    </nav>
-    <a class="ni-nav-cta" href="#workspace">Try the workspace</a>
+    <a class="ni-brand" href="/" aria-label="NexusNova Tools home"><span class="ni-logo" aria-hidden="true">N</span><span><strong>NEXUSNOVA</strong><small>GENERAL INTELLIGENCE</small></span></a>
+    <nav class="ni-nav-links" aria-label="Intelligence navigation"><a href="#workspace">Ask Nova</a><a href="#capabilities">Capabilities</a><a href="#how">How it works</a></nav>
+    <a class="ni-nav-cta" href="#workspace">Ask Nova</a>
   </div>
 </header>
 
@@ -29,196 +22,59 @@
   <section class="ni-hero">
     <div class="ni-shell ni-hero-grid">
       <div class="ni-hero-copy">
-        <span class="ni-kicker">GUIDED INTELLIGENCE • PRODUCT PREVIEW</span>
-        <h1>Describe the job.<br><em>Find the right next step.</em></h1>
-        <p class="ni-hero-lead">NexusNova Intelligence is designed to turn a natural-language goal into a clear, useful workflow: understand the request, map it to a NexusNova capability, show what is needed, and hand the user to the right tool.</p>
-        <div class="ni-actions">
-          <a class="ni-primary" href="#workspace">Build a workspace →</a>
-          <a class="ni-secondary" href="#capabilities">Explore capabilities</a>
-        </div>
-        <div class="ni-proof-row" aria-label="Preview principles">
-          <span><b>Transparent</b><small>Preview states are labeled.</small></span>
-          <span><b>Actionable</b><small>Results lead to a real next step.</small></span>
-          <span><b>Browser-first</b><small>No app install is required for this preview.</small></span>
-        </div>
+        <span class="ni-kicker">GENERAL-PURPOSE INTELLIGENCE</span>
+        <h1>Tell Nova what you need.<br><em>It finds the useful path.</em></h1>
+        <p class="ni-hero-lead">NexusNova Intelligence is a general-purpose assistant layer. Describe what you are trying to accomplish and Nova can reason about the request, use a connected NexusNova capability, check live sources when available, ask for missing details, or explain the safest next step.</p>
+        <div class="ni-actions"><a class="ni-primary" href="#workspace">Ask Nova →</a><a class="ni-secondary" href="#capabilities">Explore capabilities</a></div>
+        <div class="ni-proof-row" aria-label="Intelligence principles"><span><b>Understands intent</b><small>Natural language is the interface.</small></span><span><b>Uses real capability</b><small>Connected tools are allowlisted.</small></span><span><b>Fails honestly</b><small>No fake results or live claims.</small></span></div>
       </div>
-      <div class="ni-visual" aria-label="Illustration of the NexusNova Intelligence routing loop">
-        <div class="ni-orbit orbit-a" aria-hidden="true"></div>
-        <div class="ni-orbit orbit-b" aria-hidden="true"></div>
-        <div class="ni-core">
-          <span class="ni-core-pulse" aria-hidden="true"></span>
-          <strong>NEXUSNOVA</strong>
-          <small>UNDERSTAND → ROUTE → ACT</small>
-        </div>
-        <span class="ni-node n1">Intent</span>
-        <span class="ni-node n2">Capability</span>
-        <span class="ni-node n3">Inputs</span>
-        <span class="ni-node n4">Action</span>
-      </div>
+      <div class="ni-visual" aria-label="Nova Intelligence orchestration loop"><div class="ni-orbit orbit-a" aria-hidden="true"></div><div class="ni-orbit orbit-b" aria-hidden="true"></div><div class="ni-core"><span class="ni-core-pulse" aria-hidden="true"></span><strong>NOVA</strong><small>UNDERSTAND → DECIDE → ACT → VERIFY</small></div><span class="ni-node n1">Intent</span><span class="ni-node n2">Tools</span><span class="ni-node n3">Evidence</span><span class="ni-node n4">Answer</span></div>
     </div>
   </section>
 
   <section class="ni-section ni-workspace-section" id="workspace">
     <div class="ni-shell">
-      <div class="ni-section-head">
-        <div>
-          <span class="ni-kicker">THE WORKSPACE</span>
-          <h2>Tell Nova what you are trying to accomplish.</h2>
-        </div>
-        <p>This preview uses deterministic local routing. It does not claim to be a live AI service, and it does not fabricate live rates, travel inventory, search results or provider data.</p>
-      </div>
-
+      <div class="ni-section-head"><div><span class="ni-kicker">ASK NOVA</span><h2>Describe the goal in your own words.</h2></div><p>Nova is not limited to the examples shown here. It can handle ordinary questions, writing, translation, calculations, troubleshooting, tool discovery, current-information requests and follow-up conversation when the required capability is actually connected.</p></div>
       <div class="ni-workspace">
         <section class="ni-panel ni-input-panel" aria-labelledby="workspace-title">
           <div class="sr-only" id="workspace-title">NexusNova Intelligence workspace</div>
-          <div class="ni-mode-label">Focus</div>
-          <div class="ni-modes" role="group" aria-label="Workspace focus">
-            <button type="button" data-mode="auto" aria-pressed="true">Auto</button>
-            <button type="button" data-mode="travel" aria-pressed="false">Travel</button>
-            <button type="button" data-mode="tools" aria-pressed="false">Tools</button>
-            <button type="button" data-mode="compare" aria-pressed="false">Compare</button>
-            <button type="button" data-mode="general" aria-pressed="false">General</button>
-          </div>
-
-          <label class="ni-field-label" for="niPrompt">Your goal</label>
-          <textarea id="niPrompt" rows="7" spellcheck="true">I need to reduce an image file size without making it difficult to read.</textarea>
-
-          <div class="ni-example-row">
-            <span>Examples</span>
-            <div class="ni-example-buttons">
-              <button type="button" data-example="Convert 1250 USD to PKR and EUR using current rates.">Currency</button>
-              <button type="button" data-example="Plan a 5-day trip to Istanbul and show me what information I still need.">Travel</button>
-              <button type="button" data-example="I have two options. Help me compare the trade-offs.">Compare</button>
-              <button type="button" data-example="Which NexusNova tool should I use to merge several PDF files?">Tool finder</button>
-            </div>
-          </div>
-
-          <div class="ni-input-actions">
-            <button class="ni-primary ni-build" id="niBuild" type="button">Build my workspace ✦</button>
-            <button class="ni-ghost" id="niSurprise" type="button">Surprise me</button>
-          </div>
-          <p class="ni-shortcut">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> or <kbd>⌘</kbd> + <kbd>Enter</kbd> to build.</p>
+          <div class="ni-mode-label">Focus hint</div>
+          <div class="ni-modes" role="group" aria-label="Optional focus hint"><button type="button" data-mode="auto" aria-pressed="true">Auto</button><button type="button" data-mode="travel" aria-pressed="false">Travel</button><button type="button" data-mode="tools" aria-pressed="false">Tools</button><button type="button" data-mode="compare" aria-pressed="false">Compare</button><button type="button" data-mode="general" aria-pressed="false">General</button></div>
+          <label class="ni-field-label" for="niPrompt">Your request</label>
+          <textarea id="niPrompt" rows="7" spellcheck="true" aria-describedby="ni-prompt-help">Explain compound interest to a beginner with a simple example.</textarea>
+          <p class="ni-prompt-help" id="ni-prompt-help">Write naturally. Examples below are demonstrations, not commands you must match.</p>
+          <div class="ni-example-row"><span>Try a direction</span><div class="ni-example-buttons"><button type="button" data-example="Explain black holes like I am 12.">Explain</button><button type="button" data-example="Write a professional email asking for leave.">Write</button><button type="button" data-example="Bhai 27 ko 14 se multiply karo.">Calculate</button><button type="button" data-example="What can NexusNova do?">Discover</button></div></div>
+          <div class="ni-input-actions"><button class="ni-primary ni-build" id="niBuild" type="button">Ask Nova ✦</button><button class="ni-ghost" id="niSurprise" type="button">Surprise me</button></div>
+          <p class="ni-shortcut">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> or <kbd>⌘</kbd> + <kbd>Enter</kbd> to send.</p>
         </section>
-
         <section class="ni-panel ni-result-panel" aria-labelledby="result-title">
-          <div class="ni-result-header">
-            <div>
-              <span class="ni-mode-label">Workspace output</span>
-              <h3 id="result-title">What NexusNova understood</h3>
-            </div>
-            <span class="ni-state-badge" id="niState">PREVIEW</span>
-          </div>
-          <div id="niResult" class="ni-result" role="status" aria-live="polite" aria-atomic="true">
-            <div class="ni-empty-state">
-              <span class="ni-empty-icon" aria-hidden="true">✦</span>
-              <strong>Ready when you are.</strong>
-              <p>Build the workspace to see intent, relevant capabilities, required inputs and a clear next action.</p>
-            </div>
-          </div>
+          <div class="ni-result-header"><div><span class="ni-mode-label">Response</span><h3 id="result-title">Nova response</h3></div><span class="ni-state-badge" id="niState">READY</span></div>
+          <div id="niResult" class="ni-result" role="status" aria-live="polite" aria-atomic="true"></div>
         </section>
       </div>
     </div>
   </section>
 
-  <section class="ni-section" id="capabilities">
-    <div class="ni-shell">
-      <div class="ni-section-head">
-        <div>
-          <span class="ni-kicker">CONNECTED CAPABILITIES</span>
-          <h2>Useful parts of the platform, connected by intent.</h2>
-        </div>
-        <p>Each route below points to an existing NexusNova tool or to a transparent “not connected yet” state when the repository does not provide a production capability for that task.</p>
-      </div>
-      <div class="ni-capability-grid">
-        <a class="ni-capability" href="image-compressor.html">
-          <span class="ni-cap-icon" aria-hidden="true">▧</span>
-          <strong>Image Compressor</strong>
-          <span>Reduce common image file sizes in a dedicated browser tool.</span>
-          <small>Open tool →</small>
-        </a>
-        <a class="ni-capability" href="merge-pdf.html">
-          <span class="ni-cap-icon" aria-hidden="true">▤</span>
-          <strong>PDF workflows</strong>
-          <span>Merge documents and move from a goal to a concrete file task.</span>
-          <small>Open tool →</small>
-        </a>
-        <a class="ni-capability" href="currency-rates.html">
-          <span class="ni-cap-icon" aria-hidden="true">₿</span>
-          <strong>Currency context</strong>
-          <span>Use the live-rate surface when a conversion depends on current data.</span>
-          <small>Open live module →</small>
-        </a>
-        <a class="ni-capability" href="discount-calculator.html">
-          <span class="ni-cap-icon" aria-hidden="true">%</span>
-          <strong>Price calculations</strong>
-          <span>Calculate discounts with explicit inputs instead of guessed totals.</span>
-          <small>Open calculator →</small>
-        </a>
-        <a class="ni-capability" href="ai-token-calculator.html">
-          <span class="ni-cap-icon" aria-hidden="true">AI</span>
-          <strong>AI token planning</strong>
-          <span>Estimate token counts for prompt and context planning.</span>
-          <small>Open calculator →</small>
-        </a>
-        <a class="ni-capability" href="qr-code-scanner.html">
-          <span class="ni-cap-icon" aria-hidden="true">⌁</span>
-          <strong>QR scanning</strong>
-          <span>Decode a QR image and review the resulting link before opening it.</span>
-          <small>Open tool →</small>
-        </a>
-      </div>
+  <section class="ni-section" id="capabilities"><div class="ni-shell"><div class="ni-section-head"><div><span class="ni-kicker">CONNECTED CAPABILITIES</span><h2>Real NexusNova functions Nova can hand you to.</h2></div><p>Where a dedicated browser tool exists, Nova can route you to it. Native server actions are separately validated and bounded; live search is only used when a real search provider is configured.</p></div>
+    <div class="ni-capability-grid">
+      <a class="ni-capability" href="image-compressor.html"><span class="ni-cap-icon" aria-hidden="true">▧</span><strong>Image Compressor</strong><span>Reduce image file size in the dedicated browser tool.</span><small>Open tool →</small></a>
+      <a class="ni-capability" href="merge-pdf.html"><span class="ni-cap-icon" aria-hidden="true">▤</span><strong>PDF workflows</strong><span>Merge documents with the real file-processing surface.</span><small>Open tool →</small></a>
+      <a class="ni-capability" href="currency-rates.html"><span class="ni-cap-icon" aria-hidden="true">₿</span><strong>Currency context</strong><span>Use the current-rate surface when freshness matters.</span><small>Open live module →</small></a>
+      <a class="ni-capability" href="weather-live.html"><span class="ni-cap-icon" aria-hidden="true">◌</span><strong>Weather</strong><span>Open the weather capability rather than inventing a forecast.</span><small>Open live module →</small></a>
+      <a class="ni-capability" href="network-tools.html"><span class="ni-cap-icon" aria-hidden="true">⌁</span><strong>Network tools</strong><span>Use the platform's real network utility collection.</span><small>Open tool hub →</small></a>
+      <a class="ni-capability" href="resume-builder.html"><span class="ni-cap-icon" aria-hidden="true">CV</span><strong>Resume Builder</strong><span>Move writing goals into the dedicated document workflow.</span><small>Open tool →</small></a>
     </div>
-  </section>
+  </div></section>
 
-  <section class="ni-section" id="how">
-    <div class="ni-shell">
-      <div class="ni-section-head">
-        <div>
-          <span class="ni-kicker">HOW THE PRODUCT SHOULD BEHAVE</span>
-          <h2>Intelligence is a router, not a fake answer generator.</h2>
-        </div>
-        <p>The durable architecture keeps intent detection, capability discovery, inputs, result presentation and actions separate so real providers can be added without changing the user model.</p>
-      </div>
-
-      <div class="ni-architecture">
-        <article><span>01</span><strong>Understand</strong><p>Read the user's goal and identify signals such as currency, image, PDF, travel or comparison work.</p></article>
-        <article><span>02</span><strong>Route</strong><p>Select the most relevant existing capability and explain why it fits.</p></article>
-        <article><span>03</span><strong>Collect</strong><p>Show missing information and avoid inventing values for required inputs.</p></article>
-        <article><span>04</span><strong>Act</strong><p>Open the real tool or clearly state when a provider connection is still required.</p></article>
-      </div>
-
-      <div class="ni-trust-grid">
-        <article class="ni-trust-card">
-          <span class="ni-kicker">DATA STATUS</span>
-          <h3>Know what is live.</h3>
-          <p>Current-rate, weather, travel inventory and other changing information must carry their real source and timestamp in production. This preview does not simulate those values.</p>
-        </article>
-        <article class="ni-trust-card">
-          <span class="ni-kicker">USER VALUE</span>
-          <h3>Know what to do next.</h3>
-          <p>A useful result is not a decorative card. It should tell the user which tool to open, which input is missing, or what limitation blocks the requested action.</p>
-        </article>
-      </div>
-
-      <details class="ni-faq">
-        <summary>What can this preview do today?</summary>
-        <p>It can classify a natural-language goal into a small set of deterministic NexusNova capability routes, show the detected intent, identify likely missing inputs, and link to existing tools. It does not call an AI model or a live provider.</p>
-      </details>
-      <details class="ni-faq">
-        <summary>Why keep this page no-index?</summary>
-        <p>This is a product preview rather than a public search destination. Keeping it no-index avoids treating a concept surface as an SEO landing page before its production integrations and content are complete.</p>
-      </details>
-    </div>
-  </section>
+  <section class="ni-section" id="how"><div class="ni-shell"><div class="ni-section-head"><div><span class="ni-kicker">HOW NOVA WORKS</span><h2>One assistant layer, multiple safe ways forward.</h2></div><p>Nova keeps intent understanding, provider calls, capability selection, execution and response formatting separate. That lets the system grow without turning the interface into a giant command list.</p></div>
+    <div class="ni-architecture"><article><span>01</span><strong>Understand</strong><p>Interpret arbitrary natural language, including informal phrasing, Roman Urdu, mixed language and typos.</p></article><article><span>02</span><strong>Decide</strong><p>Choose between a direct answer, a real NexusNova capability, web search, multiple steps, clarification or an honest limitation.</p></article><article><span>03</span><strong>Act + verify</strong><p>Execute only allowlisted tools and treat returned data as evidence rather than instructions.</p></article><article><span>04</span><strong>Respond</strong><p>Give the user an answer, result, source-backed synthesis, clarification or useful recovery path—never a raw technical failure.</p></article></div>
+    <div class="ni-trust-grid"><article class="ni-trust-card"><span class="ni-kicker">NO FAKE INTELLIGENCE</span><h3>Truthful by construction.</h3><p>Nova never claims a live search, provider response, price, travel result, citation or completed action unless the connected system actually supplied it.</p></article><article class="ni-trust-card"><span class="ni-kicker">BOUNDED + PRIVATE</span><h3>Useful without hoarding context.</h3><p>Conversation context is bounded in the browser session. Requests, retries, tool calls and output size are capped to reduce abuse and runaway cost.</p></article></div>
+    <details class="ni-faq"><summary>What can Nova handle?</summary><p>General questions, explanations, writing and rewriting, translation, calculations, troubleshooting, tool discovery, current-information requests, planning, comparisons and follow-up questions can all enter through the same natural-language interface. The actual answer depends on the configured provider and connected capabilities.</p></details>
+    <details class="ni-faq"><summary>What happens when an integration is unavailable?</summary><p>Nova does not fabricate the missing result. It can retry or switch provider when configured, use a native NexusNova capability, ask for a missing detail, or explain the limitation with a useful next step.</p></details>
+  </div></section>
 </main>
 
-<footer class="ni-footer">
-  <div class="ni-shell ni-footer-grid">
-    <div><strong>NexusNova Intelligence</strong><span>Private product preview • no live provider claims</span></div>
-    <nav aria-label="Footer navigation"><a href="/">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="guides.html">Guides</a></nav>
-  </div>
-</footer>
-
-<script src="assets/js/nova-intelligence.js?v=20260914-v3"></script>
+<footer class="ni-footer"><div class="ni-shell ni-footer-grid"><div><strong>NexusNova Intelligence</strong><span>General-purpose assistant layer • noindex product surface</span></div><nav aria-label="Footer navigation"><a href="/">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="guides.html">Guides</a></nav></div></footer>
+<script src="assets/js/nova-intelligence.js?v=20260914-v4"></script>
 </body>
 </html>
