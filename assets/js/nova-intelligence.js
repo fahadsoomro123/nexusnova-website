@@ -1,150 +1,197 @@
 (() => {
-  "use strict";
+  'use strict';
 
-  const prompt = document.getElementById("niPrompt");
-  const result = document.getElementById("niResult");
-  const buildButton = document.getElementById("niBuild");
-  const surpriseButton = document.getElementById("niSurprise");
-  const stateBadge = document.getElementById("niState");
-  const modeButtons = [...document.querySelectorAll("[data-mode]")];
-  const exampleButtons = [...document.querySelectorAll("[data-example]")];
+  const API_URL = window.NOVA_API_URL || 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/nova';
+  const HISTORY_KEY = 'nexusnova:nova-context:v2';
+  const MAX_HISTORY = 8;
+  const prompt = document.getElementById('niPrompt');
+  const result = document.getElementById('niResult');
+  const buildButton = document.getElementById('niBuild');
+  const surpriseButton = document.getElementById('niSurprise');
+  const stateBadge = document.getElementById('niState');
+  const modeButtons = [...document.querySelectorAll('[data-mode]')];
+  const exampleButtons = [...document.querySelectorAll('[data-example]')];
+  let busy = false;
+  let activeMode = 'auto';
 
-  const CAPABILITIES = Object.freeze([
-    { id:"image", label:"Image compression", description:"Reduce common image file sizes in a dedicated browser tool.", href:"image-compressor.html", action:"Open Image Compressor", mode:"tools", patterns:["compress image","reduce image","smaller image","image file size","compress a photo","shrink image"], status:"connected", note:"The repository contains a dedicated Image Compressor tool." },
-    { id:"pdf", label:"PDF merge", description:"Combine several PDF files into one document.", href:"merge-pdf.html", action:"Open Merge PDF", mode:"tools", patterns:["merge pdf","combine pdf","join pdf","pdf files","pdf document"], status:"connected", note:"The repository contains a dedicated Merge PDF tool." },
-    { id:"currency", label:"Currency rates", description:"Use the live currency-rate surface when current conversion data is required.", href:"currency-rates.html", action:"Open Currency Rates", mode:"travel", patterns:["usd","eur","aed","pkr","gbp","currency","exchange rate","convert money","convert ","forex rate"], status:"live-required", note:"A production answer should use the current rate source and show its timestamp; this preview does not invent a rate." },
-    { id:"discount", label:"Discount calculator", description:"Calculate a final price and savings from explicit inputs.", href:"discount-calculator.html", action:"Open Discount Calculator", mode:"tools", patterns:["discount","sale price","savings","off the price"], status:"connected", note:"The repository contains a dedicated Discount & Savings Calculator." },
-    { id:"tokens", label:"AI Token Calculator", description:"Estimate token counts for prompt and context planning.", href:"ai-token-calculator.html", action:"Open AI Token Calculator", mode:"tools", patterns:["token","tokens","context window","prompt length","ai prompt"], status:"connected", note:"The repository contains a dedicated AI Token Calculator." },
-    { id:"qr", label:"QR Code Scanner", description:"Decode a QR code from an image and review the result before opening it.", href:"qr-code-scanner.html", action:"Open QR Code Scanner", mode:"tools", patterns:["qr code","qr","scan qr","barcode"], status:"connected", note:"The repository contains a dedicated QR Code Scanner." },
-    { id:"calculator", label:"Calculator", description:"Handle general arithmetic with the existing NexusNova calculator.", href:"calculator.html", action:"Open Calculator", mode:"tools", patterns:["calculate","calculator","arithmetic","math","percentage"], status:"connected", note:"The repository contains a general-purpose calculator." },
-    { id:"travel", label:"Travel planning", description:"Structure a travel request, then hand off to the real data surfaces available in NexusNova.", href:"currency-rates.html", action:"Open a travel data module", mode:"travel", patterns:["travel","trip","flight","hotel","itinerary","istanbul","dubai","baku","holiday"], status:"partial", note:"The preview can structure the request, but it does not provide live flight or hotel inventory." },
-    { id:"compare", label:"Comparison workflow", description:"Clarify the options and criteria before choosing a winner.", href:"tools.html", action:"Return to tools", mode:"compare", patterns:["compare","versus"," vs ","trade-off","tradeoffs","which is better","choose between"], status:"guided", note:"There is no dedicated comparison engine in the repository yet; the safe state is guided comparison, not a fabricated verdict." }
-  ]);
-
-  let activeMode = "auto";
-
-  function normalize(value) { return String(value || "").toLowerCase().replace(/\s+/g, " ").trim(); }
-
-  function scoreCapability(capability, query) {
-    let score = 0;
-    for (const pattern of capability.patterns) if (query.includes(pattern)) score += pattern.length > 5 ? 3 : 2;
-    if (activeMode !== "auto" && capability.mode === activeMode) score += 2;
-    if (activeMode === "general" && capability.id !== "compare") score -= 1;
-    return score;
-  }
-
-  function route(query) {
-    const candidates = CAPABILITIES.map((capability) => ({ capability, score: scoreCapability(capability, query) }))
-      .filter((item) => item.score > 0).sort((a, b) => b.score - a.score);
-    if (activeMode === "compare" && candidates.every((item) => item.capability.id !== "compare")) {
-      candidates.unshift({ capability: CAPABILITIES.find((item) => item.id === "compare"), score: 2 });
+  const readHistory = () => {
+    try {
+      const value = JSON.parse(sessionStorage.getItem(HISTORY_KEY) || '[]');
+      return Array.isArray(value) ? value.slice(-MAX_HISTORY) : [];
+    } catch (_) {
+      return [];
     }
-    if (!candidates.length) return { capability:null, candidates:[], confidence:"needs-clarification" };
-    const top = candidates[0];
-    return { capability:top.capability, candidates:candidates.slice(0,3).map((item) => item.capability), confidence:top.score >= 5 ? "strong" : "possible" };
+  };
+  const writeHistory = history => {
+    try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-MAX_HISTORY))); } catch (_) {}
+  };
+  const record = (role, content) => {
+    const clean = String(content || '').trim().slice(0, 3000);
+    if (!clean) return;
+    const history = readHistory();
+    history.push({ role, content: clean });
+    writeHistory(history);
+  };
+
+  function setState(text, className = '') {
+    if (!stateBadge) return;
+    stateBadge.textContent = text;
+    stateBadge.className = `ni-state-badge ${className}`.trim();
   }
 
-  function detectSignals(query, capability) {
-    const signals = [];
-    if (/\b(usd|eur|aed|pkr|gbp)\b/.test(query)) signals.push("currency codes");
-    if (/\b\d+(?:\.\d+)?\b/.test(query)) signals.push("numeric input");
-    if (/image|photo|picture|jpg|png|webp/.test(query)) signals.push("image task");
-    if (/pdf|document/.test(query)) signals.push("document task");
-    if (/travel|trip|flight|hotel|itinerary/.test(query)) signals.push("travel task");
-    if (/compare|versus|\bvs\b|trade-off|tradeoffs/.test(query)) signals.push("comparison");
-    if (/qr|barcode/.test(query)) signals.push("QR task");
-    if (capability) signals.push(capability.label.toLowerCase());
-    return [...new Set(signals)].slice(0,5);
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
   }
 
-  function missingInputs(query, capability) {
-    if (!capability) return ["What are you trying to accomplish?", "What should the result contain?"];
-    switch (capability.id) {
-      case "currency": return [ /\b\d/.test(query) ? null : "amount", /\b(usd|eur|aed|pkr|gbp)\b/.test(query) ? null : "source and target currencies" ].filter(Boolean);
-      case "travel": return [ /from|departure|starting in|origin/.test(query) ? null : "origin", /to |destination|travelling to|traveling to/.test(query) ? null : "destination", /day|days|date|dates|week|weeks/.test(query) ? null : "trip dates or duration", /budget|cost|price|spend/.test(query) ? null : "budget or comfort level" ].filter(Boolean);
-      case "compare": return [ /compare|versus|\bvs\b|between/.test(query) ? null : "the options to compare", /budget|cost|price|speed|quality|feature|features|battery|size|performance|trade-off|tradeoffs/.test(query) ? null : "the main decision criterion" ].filter(Boolean);
-      case "image": case "pdf": case "qr": return /file|image|photo|pdf|document|scan/.test(query) ? [] : ["the file or source material"];
-      default: return [];
-    }
-  }
-
-  function createEl(tag, className, text) {
-    const el = document.createElement(tag);
-    if (className) el.className = className;
-    if (text !== undefined) el.textContent = text;
-    return el;
-  }
-
-  function addCard(parent, heading, body, className = "") {
-    const card = createEl("div", `ni-result-card ${className}`.trim());
-    card.append(createEl("h4", "", heading), createEl("p", "", body));
+  function addCard(parent, title, body) {
+    const card = el('div', 'ni-result-card');
+    card.append(el('h4', '', title), el('p', '', body));
     parent.append(card);
     return card;
   }
 
-  function render(rawQuery) {
-    const normalized = normalize(rawQuery);
-    const group = createEl("div", "ni-understood");
-    const routed = route(normalized);
-    if (!normalized) {
-      addCard(group, "Tell Nova the goal", "Start with the task you need to finish. For example: “I need to merge three PDF files.”");
-      result.replaceChildren(group); stateBadge.textContent = "NEEDS INPUT"; return;
+  function safeInternalLink(value) {
+    try {
+      const url = new URL(String(value || ''), location.origin);
+      return url.origin === location.origin ? url.pathname + url.search + url.hash : '';
+    } catch (_) { return ''; }
+  }
+
+  function render(data) {
+    result.replaceChildren();
+    const group = el('div', 'ni-understood');
+    addCard(group, 'Nova', String(data.answer || 'I could not produce a safe response.').trim().slice(0, 8000));
+
+    if (data.action?.href) {
+      const href = safeInternalLink(data.action.href);
+      if (href) {
+        const action = el('div', 'ni-result-card ni-action-card');
+        action.append(el('h4', '', 'Recommended next step'));
+        const row = el('div', 'ni-action-row');
+        const link = document.createElement('a');
+        link.className = 'ni-action-link';
+        link.href = href;
+        link.textContent = String(data.action.label || 'Open NexusNova tool').slice(0, 160);
+        row.append(link);
+        action.append(row);
+        group.append(action);
+      }
     }
-    addCard(group, "Your request", normalized);
-    if (!routed.capability) {
-      addCard(group, "What NexusNova understood", "The request is too broad for this preview router. Add the task, file type, or desired outcome and Nova can narrow the next step.");
-      addCard(group, "Try this", "“I need to compress a JPG,” “Compare two options,” or “Convert 1250 USD to PKR.”");
-      stateBadge.textContent = "CLARIFY"; result.replaceChildren(group); return;
+
+    if (Array.isArray(data.suggestedTools) && data.suggestedTools.length) {
+      const card = el('div', 'ni-result-card');
+      card.append(el('h4', '', 'Useful NexusNova options'));
+      const row = el('div', 'ni-action-row');
+      data.suggestedTools.slice(0, 6).forEach(item => {
+        const href = safeInternalLink(item?.href);
+        if (!href) return;
+        const link = document.createElement('a');
+        link.className = 'ni-action-link';
+        link.href = href;
+        link.textContent = String(item?.label || 'Open tool').slice(0, 160);
+        row.append(link);
+      });
+      card.append(row);
+      group.append(card);
     }
-    const cap = routed.capability;
-    const signalCard = addCard(group, "Likely intent", `${cap.label} • ${routed.confidence === "strong" ? "strong route" : "possible route"}`);
-    const tags = createEl("div", "ni-tags");
-    detectSignals(normalized, cap).forEach((signal) => tags.append(createEl("span", "ni-tag", signal)));
-    signalCard.append(tags);
-    if (routed.candidates.length > 1) addCard(group, "Other plausible routes", routed.candidates.slice(1).map((item) => item.label).join(" • "));
-    const missing = missingInputs(normalized, cap);
-    addCard(group, "What is needed", missing.length ? `Before a real result can be produced, the workflow still needs: ${missing.join(", ")}.` : "The preview has enough information to hand the request to the selected capability.");
 
-    const action = createEl("div", "ni-result-card ni-action-card");
-    action.append(createEl("h4", "", "Recommended next step"));
-    action.append(createEl("p", "", `${cap.note} ${cap.status === "live-required" ? "Any live answer must show the source and timestamp." : ""}`.trim()));
-    const status = createEl("div", "ni-status-line");
-    status.append(createEl("span", "ni-status-dot"));
-    status.append(createEl("span", "", cap.status === "connected" ? "Connected capability" : cap.status === "partial" ? "Partially connected" : cap.status === "live-required" ? "Live data required" : "Guided workflow"));
-    action.append(status);
-    const actionRow = createEl("div", "ni-action-row");
-    const link = document.createElement("a"); link.className = "ni-action-link"; link.href = cap.href; link.textContent = cap.action; actionRow.append(link); action.append(actionRow);
-    group.append(action);
+    if (Array.isArray(data.sources) && data.sources.length) {
+      const sourceCard = el('div', 'ni-result-card');
+      sourceCard.append(el('h4', '', 'Sources'));
+      data.sources.slice(0, 8).forEach(source => {
+        try {
+          const url = new URL(String(source?.url || ''));
+          if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+          const link = document.createElement('a');
+          link.className = 'ni-source-link';
+          link.href = url.href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = String(source?.title || url.hostname).slice(0, 180);
+          sourceCard.append(link);
+        } catch (_) {}
+      });
+      if (sourceCard.querySelector('a')) group.append(sourceCard);
+    }
 
-    if (cap.id === "travel") addCard(group, "Travel limitation", "This preview can structure a travel request, but it does not have a live flight or hotel provider connection. It intentionally avoids inventing prices, availability or weather.");
-    if (cap.id === "compare") addCard(group, "Comparison limitation", "No dedicated comparison engine is connected here yet. A production version should collect the options and criteria, then show evidence for each trade-off rather than inventing a score.");
-    if (cap.id === "currency") addCard(group, "Data honesty", "No exchange rate is displayed in this preview. Current currency conversion should come from the repository's live-rate surface with a timestamp and source.");
+    if (data.nextStep) addCard(group, 'Next step', String(data.nextStep).slice(0, 1200));
+    result.append(group);
+    setState(data.mode === 'clarify' ? 'CLARIFY' : data.mode === 'search' ? 'CHECKED' : data.mode === 'tool' ? 'ACTION' : 'DONE');
+  }
 
-    stateBadge.textContent = cap.status === "connected" ? "ROUTED" : cap.status === "live-required" ? "LIVE REQUIRED" : "GUIDED";
-    result.replaceChildren(group);
+  function renderFailure(message) {
+    result.replaceChildren();
+    const group = el('div', 'ni-understood');
+    addCard(group, 'Nova is unavailable', message);
+    addCard(group, 'Try this', 'Retry once. You can also use the connected NexusNova tools below without waiting for an AI response.');
+    setState('RECOVERED');
+    const history = readHistory();
+    if (history.length) writeHistory(history);
+  }
+
+  async function ask() {
+    if (busy) return;
+    const message = String(prompt?.value || '').trim();
+    if (!message) {
+      result.replaceChildren();
+      addCard(result, 'Tell Nova what you need', 'Describe the goal in your own words. Nova can handle normal questions, writing, explanations, current-information requests and NexusNova tool discovery.');
+      setState('NEEDS INPUT');
+      prompt?.focus();
+      return;
+    }
+
+    busy = true;
+    buildButton?.setAttribute('disabled', 'disabled');
+    setState(activeMode === 'auto' ? 'THINKING…' : `THINKING • ${activeMode.toUpperCase()}…`);
+    const history = readHistory();
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ message, context: history, focus: activeMode })
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data || data.ok !== true) throw new Error('nova-response-unavailable');
+      record('user', message);
+      record('assistant', data.answer || data.nextStep || 'Nova completed the request.');
+      render(data);
+    } catch (_) {
+      renderFailure('Nova could not reach its secure reasoning service right now. No fake answer was generated.');
+    } finally {
+      busy = false;
+      buildButton?.removeAttribute('disabled');
+    }
   }
 
   function setMode(mode) {
-    activeMode = mode;
-    modeButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === mode)));
-    render(prompt.value);
+    activeMode = mode || 'auto';
+    modeButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === activeMode)));
+    if (prompt && activeMode !== 'auto') prompt.setAttribute('data-focus', activeMode);
   }
 
   function surprise() {
     const options = [
-      "Which NexusNova tool should I use to merge several PDF files?",
-      "I need to reduce an image file size without losing useful quality.",
-      "Convert 1250 USD to PKR and EUR using current rates.",
-      "I have two options. Help me compare the trade-offs."
+      'Explain black holes like I am 12.',
+      'Write a professional email asking for leave.',
+      'Why is my website loading slowly?',
+      'Bhai 27 ko 14 se multiply karo.',
+      'What can NexusNova do?'
     ];
-    const next = options[Math.floor(Math.random() * options.length)];
-    prompt.value = next; render(next); prompt.focus();
+    prompt.value = options[Math.floor(Math.random() * options.length)];
+    prompt.focus();
+    ask();
   }
 
-  modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode)));
-  exampleButtons.forEach((button) => button.addEventListener("click", () => { prompt.value = button.dataset.example || ""; render(prompt.value); prompt.focus(); }));
-  buildButton?.addEventListener("click", () => render(prompt.value));
-  surpriseButton?.addEventListener("click", surprise);
-  prompt?.addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); render(prompt.value); } });
-  render(prompt?.value || "");
+  modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+  exampleButtons.forEach(button => button.addEventListener('click', () => { prompt.value = button.dataset.example || ''; prompt.focus(); }));
+  buildButton?.addEventListener('click', ask);
+  surpriseButton?.addEventListener('click', surprise);
+  prompt?.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); ask(); }
+  });
+
+  renderFailure('Ready. Tell Nova what you are trying to accomplish, and it will choose the safest useful path.');
 })();
