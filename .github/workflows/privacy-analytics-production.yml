@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/privacy-analytics-production.yml'
       - 'assets/js/main.js'
-      - 'assets/js/privacy-bridge.js'
+      - 'assets/js/site-main.js'
       - 'assets/js/tool-analytics.js'
       - 'privacy.html'
       - 'index.html'
@@ -16,7 +16,8 @@ permissions:
   contents: read
 
 env:
-  PRIVACY_QA_VERSION: '20260915-3'
+  GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
+  GA4_QA_VERSION: '20260915-auto-ga4-v1'
 
 jobs:
   verify:
@@ -25,141 +26,118 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inspect Cloudflare Web Analytics configuration
-        env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          response="$(curl --fail --silent --show-error \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list?order_by=host" \
-            -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H 'Content-Type: application/json')"
-          printf '%s' "$response" > cloudflare-rum-api.json
-          python - <<'PY'
-          import json
-          data=json.load(open('cloudflare-rum-api.json'))
-          if not data.get('success'):
-              raise SystemExit('Cloudflare RUM list API failed')
-          matches=[]
-          for site in data.get('result') or []:
-              for rule in site.get('rules') or []:
-                  if (rule.get('host') or '').lower()=='nexusnovatools.com' and rule.get('is_paused') is not True:
-                      matches.append(site); break
-          state={'host':'nexusnovatools.com','configured':bool(matches)}
-          if matches:
-              s=matches[0]
-              state.update({'site_tag_present':bool(s.get('site_tag')),'snippet_present':bool(s.get('snippet')),'auto_install':bool(s.get('auto_install'))})
-          json.dump(state,open('cloudflare-rum-status.json','w'),indent=2)
-          print(json.dumps(state,indent=2))
-          PY
-
-      - name: Install browser driver
+      - name: Install browser and GA4 API dependencies
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install Playwright
+      - name: Install dependencies
         run: |
-          python -m pip install --disable-pip-version-check playwright
+          python -m pip install --disable-pip-version-check playwright google-auth requests
           python -m playwright install --with-deps chromium
 
-      - name: Verify real production consent behavior
+      - name: Run source GA4 contract tests
+        run: node --test tests/ga4-loader.test.cjs
+
+      - name: Verify fresh production visitors receive automatic GA4
         env:
-          QA_VERSION: ${{ env.PRIVACY_QA_VERSION }}
+          GA4_MEASUREMENT_ID: ${{ env.GA4_MEASUREMENT_ID }}
+          GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          QA_VERSION: ${{ env.GA4_QA_VERSION }}
         run: |
-          cat > /tmp/privacy_analytics_probe.py <<'PY'
+          cat > /tmp/ga4_production_probe.py <<'PY'
           import json
+          import os
+          import time
           from pathlib import Path
+          from urllib.parse import parse_qs, urlparse
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
           from playwright.sync_api import sync_playwright
 
           URL='https://nexusnovatools.com/'
-          REPORT=Path('privacy-analytics-production.json')
-          results={}
+          MEASUREMENT_ID=os.environ['GA4_MEASUREMENT_ID']
+          PROPERTY_ID=os.environ.get('GA4_PROPERTY_ID','').strip()
+          REPORT=Path('ga4-production-verification.json')
+          viewports=[('390x844',390,844),('412x915',412,915),('1280x800',1280,800)]
+          pages=['/','/tools.html','/categories.html']
+          results=[]
 
-          def case(p, width, height, label):
-              browser=p.chromium.launch(headless=True)
-              context=browser.new_context(viewport={'width':width,'height':height})
-              page=context.new_page()
-              requests=[]; errors=[]
-              page.on('request', lambda req: requests.append(req.url))
+          def inspect_page(page, path, label, width, height):
+              requests_seen=[]; errors=[]
+              page.on('request', lambda req: requests_seen.append(req.url))
               page.on('pageerror', lambda err: errors.append(str(err)))
               page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
-              page.goto(URL+f'?privacy_qa={label}', wait_until='domcontentloaded', timeout=30000)
-              page.wait_for_timeout(2000)
-              before=page.evaluate('''() => ({
+              page.goto(URL.lstrip('/') + path + '?ga4_qa=' + os.environ['QA_VERSION'] + '&ga4_view=' + label, wait_until='domcontentloaded', timeout=30000)
+              page.wait_for_timeout(2500)
+              info=page.evaluate('''() => ({
                 gtag: typeof window.gtag === 'function',
-                ga4Script: [...document.scripts].map(s=>s.src).find(s=>s.includes('googletagmanager.com/gtag/js')) || '',
-                cfScript: [...document.scripts].map(s=>s.src).find(s=>s.includes('cloudflareinsights.com/beacon')) || '',
-                consent: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='consent').slice(0,8),
-                cookies: document.cookie,
-                choice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
-                bannerVisible: !!document.querySelector('#nexusnova-analytics-consent:not([hidden])'),
-                bannerButtons: [...document.querySelectorAll('#nexusnova-analytics-consent button')].map(x=>x.textContent.trim())
+                gaScript: [...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).map(s=>s.src),
+                gaConfigCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='config').length,
+                gaJsCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='js').length,
+                consentBanner: !!document.querySelector('#nexusnova-analytics-consent'),
+                allowButton: !!document.querySelector('[data-consent-allow]'),
+                consentText: document.body.innerText.includes('Allow detailed analytics'),
+                path: location.pathname,
+                title: document.title,
+                overflow: {sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
               })''')
-              denied_ga=[u for u in requests if 'google-analytics.com/g/collect' in u]
-              denied_cf=[u for u in requests if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
-              page.get_by_role('button', name='Keep basic measurement').click()
-              page.wait_for_timeout(500)
-              afterBasic=page.evaluate("() => ({choice:localStorage.getItem('nexusnova_analytics_consent_v1')||'',cookies:document.cookie})")
-              page.get_by_role('button', name='Privacy choices').click()
-              page.get_by_role('button', name='Allow detailed analytics').click()
-              page.wait_for_timeout(1700)
-              afterGrant=page.evaluate('''() => ({
-                choice:localStorage.getItem('nexusnova_analytics_consent_v1')||'',
-                cookies:document.cookie,
-                gaCookies:document.cookie.split(';').map(x=>x.trim().split('=')[0]).filter(x=>x==='_ga'||x.startsWith('_ga_'))
-              })''')
-              granted_ga=[u for u in requests if 'google-analytics.com/g/collect' in u]
-              metrics=page.evaluate('''() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})''')
-              results[label]={
-                'viewport':[width,height], 'before':before,
-                'deniedGa4CollectRequests':len(denied_ga),
-                'deniedCloudflareRumRequests':len(denied_cf),
-                'afterBasic':afterBasic,
-                'afterGrant':afterGrant,
-                'ga4CollectRequestsAfterGrant':len(granted_ga),
-                'overflow':metrics, 'errors':errors[:20]
-              }
-              context.close();browser.close()
+              collect=[]
+              for url in requests_seen:
+                  if 'google-analytics.com/g/collect' not in url: continue
+                  q=parse_qs(urlparse(url).query)
+                  if q.get('tid',[''])[0]==MEASUREMENT_ID:
+                      collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'dt':q.get('dt',[''])[0]})
+              pageviews=[x for x in collect if x['en']=='page_view']
+              row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20]}
+              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and not info['consentBanner'] and not info['allowButton'] and not info['consentText'] and len(pageviews)>=1 and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
+              return row
 
           with sync_playwright() as p:
-              case(p,390,844,'mobile-390-first')
-              case(p,412,915,'mobile-412-first')
-              case(p,1280,800,'desktop-1280-first')
-              case(p,390,844,'mobile-390-second-fresh')
-          REPORT.write_text(json.dumps(results,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+              browser=p.chromium.launch(headless=True)
+              for vp_label,w,h in viewports:
+                  context=browser.new_context(viewport={'width':w,'height':h})
+                  page=context.new_page()
+                  for path in pages:
+                      row=inspect_page(page,path,vp_label,w,h)
+                      results.append(row)
+                  context.close()
+              browser.close()
+
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID)}
+          if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
+              creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
+              creds.refresh(Request())
+              endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
+              payload={'dimensions':[{'name':'eventName'},{'name':'pagePath'}],'metrics':[{'name':'activeUsers'}],'limit':25}
+              deadline=time.time()+150
+              while time.time()<deadline:
+                  rt['attempts']+=1
+                  response=requests.post(endpoint,headers={'Authorization':f'Bearer {creds.token}','Content-Type':'application/json'},json=payload,timeout=20)
+                  if response.ok:
+                      data=response.json();rt['rows']=data.get('rows',[]);rt['propertyIdPresent']=True
+                      for r in rt['rows']:
+                          dims=[x.get('dimensionValues',[{}])[0].get('value','') for x in [r]] if False else [x.get('value','') for x in r.get('dimensionValues',[])]
+                          if len(dims)>=2 and dims[0]=='page_view' and dims[1] in ('','/','/tools.html','/categories.html'):
+                              rt['success']=True;break
+                  if rt['success']:break
+                  time.sleep(10)
+              if not rt.get('rows'):rt['rows']=[]
+
+          report={'measurementId':MEASUREMENT_ID,'viewports':[x[0] for x in viewports],'browser':results,'realtime':rt}
+          REPORT.write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
           print(REPORT.read_text())
+          assert all(x['success'] for x in results), 'Browser GA4 acceptance failed'
+          assert rt['success'], 'GA4 Realtime did not observe a page_view in the existing property'
           PY
-          python /tmp/privacy_analytics_probe.py
+          python /tmp/ga4_production_probe.py
 
-      - name: Validate privacy evidence (GA4 consent; RUM reported separately)
-        run: |
-          python - <<'PY'
-          import json
-          d=json.load(open('privacy-analytics-production.json'))
-          assert set(d)=={'mobile-390-first','mobile-412-first','desktop-1280-first','mobile-390-second-fresh'}
-          for label,row in d.items():
-            assert row['before']['gtag'] is True, label
-            assert row['before']['ga4Script'], label
-            assert all(x not in row['before']['cookies'].lower() for x in ('_ga=', '_ga_')), label
-            assert row['before']['bannerVisible'] is True, label
-            assert row['afterBasic']['choice']=='denied', label
-            assert all(x not in row['afterBasic']['cookies'].lower() for x in ('_ga=', '_ga_')), label
-            assert row['afterGrant']['choice']=='granted', label
-            assert row['ga4CollectRequestsAfterGrant'] >= 1, label
-            assert row['overflow']['sw'] <= row['overflow']['cw'] + 6, label
-            assert not row['errors'], label
-          print('PASS: consent-aware GA4 browser behavior verified across mobile/desktop fresh sessions')
-          PY
-
-      - name: Upload production evidence
+      - name: Upload real GA4 production evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: privacy-analytics-production-evidence-${{ github.run_id }}
-          path: |
-            privacy-analytics-production.json
-            cloudflare-rum-status.json
+          name: ga4-production-verification-${{ github.run_id }}
+          path: ga4-production-verification.json
           retention-days: 14
