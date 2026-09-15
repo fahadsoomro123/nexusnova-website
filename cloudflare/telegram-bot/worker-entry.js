@@ -3,6 +3,7 @@ import { disposableEmailRisk, enforceAuthThrottle } from './auth-abuse.js';
 import { accountEligibilityRequest } from './account-eligibility.js';
 import { attachReferralRequest } from './referral-api.js';
 import { miningSessionRequest } from './mining-api.js';
+import { novaRequest } from './nova-runtime.js';
 
 const AVATAR_PATH = '/api/telegram/avatar';
 const AUTH_CONFIG_PATH = '/api/auth/security-config';
@@ -18,11 +19,19 @@ const AVATAR_TTL_SECONDS = 5 * 60;
 const MAX_AVATAR_FUTURE_SECONDS = 10 * 60;
 const MAX_AUTH_BODY_BYTES = 4096;
 const MAX_TURNSTILE_TOKEN_LENGTH = 2048;
+const NOVA_PATH = '/api/nova';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const secureApiPath = url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/') || url.pathname.startsWith('/api/referral/') || url.pathname.startsWith('/api/mining/');
+
+    if (url.pathname === NOVA_PATH || url.pathname === `${NOVA_PATH}/status`) {
+      return novaRequest(
+        new Request(request, { headers: request.headers, method: request.method }),
+        env
+      );
+    }
 
     if (secureApiPath && request.method === 'OPTIONS') {
       return authCors(request, new Response(null, { status: 204 }));
