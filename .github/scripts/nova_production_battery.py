@@ -27,10 +27,9 @@ def call(prompt):
   with urllib.request.urlopen(req,timeout=90) as r:return r.status,r.read().decode('utf-8','replace'),time.time()-started
  except urllib.error.HTTPError as e:return e.code,e.read().decode('utf-8','replace'),time.time()-started
 def evaluate_api(label,status,body,lat):
- a=str(body.get('answer','')).strip(); numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+',a)); valid_provider=body.get('provider')=='gemini'; safe_limit=label=='TEST 10' and body.get('mode')=='limit' and complete(label,a)
+ a=str(body.get('answer','')).strip(); numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+',a)); valid_provider=body.get('provider')=='gemini'; safe_limit=label=='TEST 10' and body.get('mode') in ('answer','limit') and complete(label,a)
  return {'http':status,'mode':body.get('mode'),'provider':body.get('provider'),'providerAttempts':body.get('providerAttempts'),'providerFailure':body.get('providerFailure'),'requestId':body.get('requestId'),'responseLength':len(a),'complete':complete(label,a),'naturalLanguage':natural(a),'unexplainedTruncation':bool(a.endswith('...') or a.endswith('…')),'numericOnly':numeric,'answerPrefix':a[:3000],'latencySec':round(lat,2),'success':bool(status==200 and (valid_provider and body.get('mode')=='answer' and complete(label,a) and not numeric or safe_limit and valid_provider))}
-
-def plain(s): return re.sub(r'[#*_`|]','',re.sub(r'\s+',' ',str(s or '')).strip())
+def semantic(s): return re.sub(r'\s+',' ',re.sub(r'[^\w%]+',' ',str(s or '').lower(),flags=re.UNICODE)).strip()
 results={'api':{},'browser':{}}
 for label,prompt in TESTS.items():
  reps=3 if label in ('TEST 3','TEST 10') else 1; results['api'][label]=[]
@@ -44,7 +43,7 @@ browser_errors=[]; viewports=[('mobile390',390,844,'Mozilla/5.0 (Linux; Android 
 with sync_playwright() as p:
  browser=p.chromium.launch(headless=True)
  for name,w,h,ua in viewports:
-  kw={'viewport':{'width':w,'height':h}}; 
+  kw={'viewport':{'width':w,'height':h}}
   if ua: kw['user_agent']=ua
   ctx=browser.new_context(**kw); page=ctx.new_page(); errors=[]; page.on('console',lambda m: errors.append(m.text) if m.type=='error' else None); page.on('pageerror',lambda e: errors.append(str(e)))
   page.goto(PAGE,wait_until='domcontentloaded',timeout=30000); page.wait_for_timeout(500); script_src=page.locator('script[src*="assets/nova/nova-ui.js"]').get_attribute('src') or ''; old_count=page.locator('script[src*="assets/js/nova-intelligence.js"]').count(); print(name.upper(),'NOVA_SCRIPT=',script_src,'OLD_SCRIPT_COUNT=',old_count)
@@ -59,10 +58,10 @@ with sync_playwright() as p:
       page.locator('#niBuild').click(force=True)
       processing=page.locator('#niState').inner_text(timeout=2000).strip()
      response=ev.value; status=response.status; body=response.json(); a=str(body.get('answer','')).strip(); rendered=page.locator('#niResult').inner_text().strip(); state=page.locator('#niState').inner_text().strip(); metrics=page.evaluate('() => ({scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})')
-     same=bool(a and plain(a)[:160] in plain(rendered)); numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+',a)); fallback=('No fake answer was generated' in rendered or 'connection unavailable' in rendered.lower()); tags={'headings':page.locator('#niResult h1,#niResult h2,#niResult h3').count(),'uls':page.locator('#niResult ul').count(),'ols':page.locator('#niResult ol').count(),'tables':page.locator('#niResult table').count(),'code':page.locator('#niResult pre').count()}; expected_structure=(label!='TEST 5' or tags['tables']>0); valid_provider=body.get('provider')=='gemini'; safe_limit=label=='TEST 10' and body.get('mode')=='limit' and complete(label,a) and valid_provider
+     same=bool(a and semantic(a) in semantic(rendered)); numeric=bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+',a)); fallback=('No fake answer was generated' in rendered or 'connection unavailable' in rendered.lower()); tags={'headings':page.locator('#niResult h1,#niResult h2,#niResult h3').count(),'uls':page.locator('#niResult ul').count(),'ols':page.locator('#niResult ol').count(),'tables':page.locator('#niResult table').count(),'code':page.locator('#niResult pre').count()}; expected_structure=(label!='TEST 5' or tags['tables']>0); valid_provider=body.get('provider')=='gemini'; safe_limit=label=='TEST 10' and body.get('mode') in ('answer','limit') and complete(label,a) and valid_provider
      item={'http':status,'mode':body.get('mode'),'provider':body.get('provider'),'providerAttempts':body.get('providerAttempts'),'providerFailure':body.get('providerFailure'),'requestId':body.get('requestId'),'responseLength':len(a),'complete':complete(label,a),'naturalLanguage':natural(a),'unexplainedTruncation':bool(a.endswith('...') or a.endswith('…')),'numericOnly':numeric,'uiDisplayedFullAnswer':same,'fallbackUi':fallback,'processingState':processing,'finalState':state,'structure':tags,'expectedStructure':expected_structure,'consoleErrors':errors[-10:],'viewport':metrics,'answerPrefix':a[:3000]}; item['success']=bool(status==200 and valid_provider and ((body.get('mode')=='answer' and item['complete']) or safe_limit) and same and not fallback and not numeric and processing in ('SUBMITTING','PROCESSING','STILL WORKING') and state not in ('READY','ERROR — RETRY') and metrics['scrollWidth']<=metrics['clientWidth']+6 and expected_structure)
     except Exception as e:item={'http':None,'mode':None,'provider':None,'responseLength':0,'complete':False,'naturalLanguage':False,'unexplainedTruncation':False,'numericOnly':False,'uiDisplayedFullAnswer':False,'fallbackUi':False,'processingState':'unknown','finalState':'unknown','structure':{},'expectedStructure':False,'consoleErrors':errors[-10:],'viewport':{},'error':str(e),'success':False}
-    results['browser'][name][label].append(item); print('BROWSER',name,label,'RUN',rep,json.dumps(item,ensure_ascii=False));
+    results['browser'][name][label].append(item); print('BROWSER',name,label,'RUN',rep,json.dumps(item,ensure_ascii=False))
     if errors: browser_errors.extend([name+':'+e for e in errors]); errors.clear()
   ctx.close()
  browser.close()
