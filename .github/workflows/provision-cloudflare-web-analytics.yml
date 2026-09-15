@@ -1,0 +1,129 @@
+name: Provision Cloudflare Web Analytics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provision-cloudflare-web-analytics.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provision or reuse nexusnovatools.com RUM site and inject beacon
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CF_API_TOKEN:-}" || -z "${CF_ACCOUNT_ID:-}" ]]; then
+            echo 'Cloudflare credentials are unavailable.' >&2
+            exit 1
+          fi
+
+          headers=(-H "Authorization: Bearer ${CF_API_TOKEN}" -H 'Content-Type: application/json')
+          list="$(curl --fail --silent --show-error \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list?order_by=host" \
+            "${headers[@]}")"
+
+          python - <<'PY' "$list" > /tmp/rum-state.json
+          import json,sys
+          data=json.loads(sys.argv[1])
+          if not data.get('success'):
+              raise SystemExit('Cloudflare RUM list failed')
+          sites=data.get('result') or []
+          match=None
+          for site in sites:
+              for rule in site.get('rules') or []:
+                  if (rule.get('host') or '').lower() == 'nexusnovatools.com' and rule.get('is_paused') is not True:
+                      match=site
+                      break
+              if match: break
+          print(json.dumps(match or {}))
+          PY
+
+          site="$(cat /tmp/rum-state.json)"
+          if [[ "$site" == '{}' ]]; then
+            echo 'No active RUM site found; creating one.'
+            created="$(curl --fail --silent --show-error \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info" \
+              -X POST "${headers[@]}" \
+              --data '{"auto_install":false,"host":"nexusnovatools.com"}')"
+            echo "$created" > /tmp/rum-created.json
+            python - <<'PY'
+          import json
+          data=json.load(open('/tmp/rum-created.json'))
+          if not data.get('success'):
+              raise SystemExit('Cloudflare RUM creation failed: '+json.dumps(data.get('errors')))
+          print(data['result']['site_tag'])
+          PY
+            site="$created"
+          fi
+
+          python - <<'PY' "$site" > /tmp/rum-snippet.txt
+          import json,sys
+          data=json.loads(sys.argv[1])
+          result=data.get('result') or {}
+          snippet=result.get('snippet') or ''
+          if not snippet:
+              raise SystemExit('Cloudflare RUM site has no snippet')
+          print(snippet)
+          PY
+
+          python - <<'PY'
+          import html, re
+          from pathlib import Path
+          snippet=Path('/tmp/rum-snippet.txt').read_text().strip()
+          # Keep the provider token in the browser-only beacon as intended by Cloudflare Web Analytics.
+          js=Path('assets/js/main.js')
+          text=js.read_text(encoding='utf-8')
+          if 'data-cf-beacon' not in text:
+              marker="  const measurementId='G-YLPFKWSS12';"
+              injection="  const cfRumBeacon=" + repr(snippet) + ";\n  if(!document.querySelector('script[data-nexusnova-cf-rum]')){\n    const cfScript=document.createElement('script');\n    cfScript.type='module';\n    cfScript.src='https://static.cloudflareinsights.com/beacon.min.js';\n    const m=cfRumBeacon.match(/data-cf-beacon='([^']+)'/);\n    if(m){cfScript.dataset.cfBeacon=m[1];cfScript.dataset.nexusnovaCfRum='';document.head.appendChild(cfScript)}\n  }\n"
+              if marker not in text:
+                  raise SystemExit('main.js injection marker not found')
+              text=text.replace(marker,marker+'\n'+injection,1)
+              js.write_text(text,encoding='utf-8')
+
+          Path('cloudflare-rum-snippet.txt').write_text(snippet+'\n',encoding='utf-8')
+          PY
+
+          if ! git diff --quiet -- assets/js/main.js cloudflare-rum-snippet.txt; then
+            git config user.name 'nexusnova-automation'
+            git config user.email 'actions@users.noreply.github.com'
+            git add assets/js/main.js cloudflare-rum-snippet.txt
+            git commit -m 'feat(analytics): enable Cloudflare Web Analytics baseline'
+            git push
+          else
+            echo 'RUM beacon already present; no commit required.'
+          fi
+
+      - name: Verify provisioned RUM site
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list?order_by=host" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H 'Content-Type: application/json')"
+          python - <<'PY' "$response"
+          import json,sys
+          data=json.loads(sys.argv[1])
+          sites=data.get('result') or []
+          matches=[s for s in sites if any((r.get('host') or '').lower()=='nexusnovatools.com' and r.get('is_paused') is not True for r in (s.get('rules') or []))]
+          if not matches:
+              raise SystemExit('No active Cloudflare Web Analytics site for nexusnovatools.com')
+          print('Cloudflare Web Analytics site verified for nexusnovatools.com')
+          print('site_tag=' + str(matches[0].get('site_tag','')))
+          print('snippet_present=' + str(bool(matches[0].get('snippet'))))
+          PY
