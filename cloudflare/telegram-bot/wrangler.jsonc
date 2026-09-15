@@ -5,5 +5,13 @@
   "compatibility_date": "2026-08-25",
   "build": {
     "command": "node ensure-webhook.mjs"
-  }
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "NOVA_PROVIDER_GATE", "class_name": "NovaProviderGate" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["NovaProviderGate"] }
+  ]
 }
