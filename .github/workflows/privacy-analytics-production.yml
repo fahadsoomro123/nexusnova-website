@@ -15,6 +15,9 @@ on:
 permissions:
   contents: read
 
+env:
+  PRIVACY_QA_VERSION: '20260915-2'
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -66,9 +69,11 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Verify production consent mode and privacy baseline
+        env:
+          QA_VERSION: ${{ env.PRIVACY_QA_VERSION }}
         run: |
           cat > /tmp/privacy_analytics_probe.py <<'PY'
-          import json, re, time
+          import json
           from pathlib import Path
           from playwright.sync_api import sync_playwright
 
@@ -85,43 +90,43 @@ jobs:
               page.on('pageerror', lambda err: errors.append(str(err)))
               page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
               page.goto(URL+'?privacy_qa='+label, wait_until='domcontentloaded', timeout=30000)
-              page.wait_for_timeout(2200)
+              page.wait_for_timeout(2500)
               before=page.evaluate('''() => ({
                 cookies: document.cookie,
                 ga4Script: [...document.scripts].map(s=>s.src).find(s=>s.includes('googletagmanager.com/gtag/js')) || '',
                 cfScript: [...document.scripts].map(s=>s.src).find(s=>s.includes('cloudflareinsights.com/beacon')) || '',
-                consentLayer: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='consent').slice(0,5),
-                ga4Config: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='config').slice(0,5),
+                consentLayer: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='consent').slice(0,8).map(x=>x.slice(0,4)),
+                ga4Config: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='config').slice(0,8).map(x=>x.slice(0,3)),
                 consentChoice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
                 gtagPresent: typeof window.gtag === 'function'
               })''')
-              denied_urls=[u for u in network if any(x in u for x in ('google-analytics.com/g/collect','googletagmanager.com/gtag/js','cloudflareinsights.com/beacon','/cdn-cgi/rum'))]
-              page.reload(wait_until='domcontentloaded', timeout=30000)
-              page.wait_for_timeout(1600)
-              deny_click=page.get_by_role('button', name='Keep basic measurement')
-              if deny_click.count():
-                  deny_click.click()
+              denied_collect=[u for u in network if 'google-analytics.com/g/collect' in u]
+              denied_cf=[u for u in network if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
+              denied_ga4_scripts=[u for u in network if 'googletagmanager.com/gtag/js' in u]
+              page.get_by_role('button', name='Keep basic measurement').click()
               page.wait_for_timeout(700)
               denied_choice=page.evaluate("() => localStorage.getItem('nexusnova_analytics_consent_v1') || ''")
-              allow=page.get_by_role('button', name='Privacy choices')
-              if allow.count():
-                  allow.click(); page.get_by_role('button', name='Allow detailed analytics').click()
-              page.wait_for_timeout(1700)
+              page.get_by_role('button', name='Privacy choices').click()
+              page.get_by_role('button', name='Allow detailed analytics').click()
+              page.wait_for_timeout(1800)
               after=page.evaluate('''() => ({
                 cookies: document.cookie,
                 consentChoice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
                 gaCookies: document.cookie.split(';').map(x=>x.trim().split('=')[0]).filter(x=>x==='_ga'||x.startsWith('_ga_'))
               })''')
-              grant_urls=[u for u in network if 'google-analytics.com/g/collect' in u]
+              granted_collect=[u for u in network if 'google-analytics.com/g/collect' in u]
               cf_urls=[u for u in network if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
               metrics=page.evaluate('''() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})''')
               results[label]={
-                'viewport':[width,height], 'before':before,
-                'deniedSignalRequests':denied_urls[:30],
+                'viewport':[width,height],
+                'before':before,
+                'deniedGa4ScriptRequests':len(denied_ga4_scripts),
+                'deniedGa4CollectRequests':len(denied_collect),
+                'deniedCloudflareRumRequests':len(denied_cf),
                 'deniedChoiceStored':denied_choice,
                 'afterGrant':after,
-                'ga4CollectRequestsAfterGrant':len(grant_urls),
-                'cloudflareRumRequestsObserved':len(cf_urls),
+                'ga4CollectRequestsAfterGrant':len(granted_collect),
+                'cloudflareRumRequestsTotal':len(cf_urls),
                 'overflow':metrics,
                 'errors':errors[:20]
               }
@@ -145,7 +150,8 @@ jobs:
             assert row['before']['gtagPresent'] is True, label
             assert row['before']['ga4Script'], label
             assert all(x not in row['before']['cookies'].lower() for x in ('_ga=', '_ga_')), label
-            assert 'denied' in str(row['before']['consentLayer']).lower(), label
+            assert row['deniedGa4ScriptRequests'] >= 1, label
+            assert row['deniedChoiceStored']=='denied', label
             assert row['afterGrant']['consentChoice']=='granted', label
             assert row['ga4CollectRequestsAfterGrant'] >= 1, label
             assert row['overflow']['sw'] <= row['overflow']['cw'] + 6, label
@@ -156,6 +162,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: privacy-analytics-production-evidence
+          name: privacy-analytics-production-evidence-${{ github.run_id }}
           path: privacy-analytics-production.json
           retention-days: 14
