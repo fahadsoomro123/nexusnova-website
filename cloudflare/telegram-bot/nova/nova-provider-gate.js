@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
-const SLOT_INTERVAL_MS = 5_000;
+const SLOT_INTERVAL_MS = 8_000;
 const SLOT_KEY = 'nextGeminiSlot';
 
 export class NovaProviderGate extends DurableObject {
