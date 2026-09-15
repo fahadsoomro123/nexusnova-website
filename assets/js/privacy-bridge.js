@@ -1,7 +1,10 @@
 (()=>{
   'use strict';
   const CONSENT_ID='nexusnova-analytics-consent';
+  const CONSENT_KEY='nexusnova_analytics_consent_v1';
   const REOPEN_SELECTOR='[data-nexusnova-privacy-settings-link]';
+
+  const readChoice=()=>{try{return localStorage.getItem(CONSENT_KEY)||''}catch(_){return ''}};
 
   const boot=()=>{
     const banner=document.getElementById(CONSENT_ID);
@@ -30,10 +33,10 @@
       banner.querySelector('[data-consent-allow]')?.focus();
     });
 
-    banner.addEventListener('close',()=>{
-      banner.hidden=true;
-      banner.setAttribute('aria-hidden','true');
-    });
+    if(!readChoice()){
+      banner.hidden=false;
+      banner.setAttribute('aria-hidden','false');
+    }
 
     document.documentElement.classList.add('nexusnova-privacy-ui-ready');
   };
