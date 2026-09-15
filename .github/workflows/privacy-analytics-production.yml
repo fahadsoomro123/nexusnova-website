@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  PRIVACY_QA_VERSION: '20260915-2'
+  PRIVACY_QA_VERSION: '20260915-3'
 
 jobs:
   verify:
@@ -25,38 +25,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure Cloudflare Web Analytics baseline
+      - name: Inspect Cloudflare Web Analytics configuration
         env:
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${CF_API_TOKEN:-}" || -z "${CF_ACCOUNT_ID:-}" ]]; then
-            echo "Cloudflare credentials unavailable in Actions." >&2
-            exit 1
-          fi
-          list="$(curl --fail --silent --show-error \
+          response="$(curl --fail --silent --show-error \
             "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/rum/site_info/list?order_by=host" \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H "Content-Type: application/json")"
-          python - <<'PY' "$list"
-          import json,sys
-          data=json.loads(sys.argv[1])
+            -H 'Content-Type: application/json')"
+          printf '%s' "$response" > cloudflare-rum-api.json
+          python - <<'PY'
+          import json
+          data=json.load(open('cloudflare-rum-api.json'))
           if not data.get('success'):
-              raise SystemExit('Cloudflare RUM list failed')
-          sites=data.get('result') or []
-          matches=[s for s in sites if any((r.get('host') or '').lower()=='nexusnovatools.com' for r in (s.get('rules') or []))]
-          if not matches:
-              print('RUM_SITE=ABSENT')
-              raise SystemExit(2)
-          s=matches[0]
-          print('RUM_SITE=PRESENT')
-          print('RUM_AUTO_INSTALL=' + str(bool(s.get('auto_install'))).upper())
-          print('RUM_PAUSED=' + str(bool(s.get('is_paused'))).upper())
-          print('RUM_SITE_TAG_PRESENT=' + str(bool(s.get('site_tag'))).upper())
+              raise SystemExit('Cloudflare RUM list API failed')
+          matches=[]
+          for site in data.get('result') or []:
+              for rule in site.get('rules') or []:
+                  if (rule.get('host') or '').lower()=='nexusnovatools.com' and rule.get('is_paused') is not True:
+                      matches.append(site); break
+          state={'host':'nexusnovatools.com','configured':bool(matches)}
+          if matches:
+              s=matches[0]
+              state.update({'site_tag_present':bool(s.get('site_tag')),'snippet_present':bool(s.get('snippet')),'auto_install':bool(s.get('auto_install'))})
+          json.dump(state,open('cloudflare-rum-status.json','w'),indent=2)
+          print(json.dumps(state,indent=2))
           PY
-        continue-on-error: true
 
       - name: Install browser driver
         uses: actions/setup-python@v5
@@ -68,7 +65,7 @@ jobs:
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
 
-      - name: Verify production consent mode and privacy baseline
+      - name: Verify real production consent behavior
         env:
           QA_VERSION: ${{ env.PRIVACY_QA_VERSION }}
         run: |
@@ -81,81 +78,80 @@ jobs:
           REPORT=Path('privacy-analytics-production.json')
           results={}
 
-          def run_case(p, width, height, label):
+          def case(p, width, height, label):
               browser=p.chromium.launch(headless=True)
               context=browser.new_context(viewport={'width':width,'height':height})
               page=context.new_page()
-              network=[]; errors=[]
-              page.on('request', lambda req: network.append(req.url))
+              requests=[]; errors=[]
+              page.on('request', lambda req: requests.append(req.url))
               page.on('pageerror', lambda err: errors.append(str(err)))
               page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
-              page.goto(URL+'?privacy_qa='+label, wait_until='domcontentloaded', timeout=30000)
-              page.wait_for_timeout(2500)
+              page.goto(URL+f'?privacy_qa={label}', wait_until='domcontentloaded', timeout=30000)
+              page.wait_for_timeout(2000)
               before=page.evaluate('''() => ({
-                cookies: document.cookie,
+                gtag: typeof window.gtag === 'function',
                 ga4Script: [...document.scripts].map(s=>s.src).find(s=>s.includes('googletagmanager.com/gtag/js')) || '',
                 cfScript: [...document.scripts].map(s=>s.src).find(s=>s.includes('cloudflareinsights.com/beacon')) || '',
-                consentLayer: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='consent').slice(0,8).map(x=>x.slice(0,4)),
-                ga4Config: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='config').slice(0,8).map(x=>x.slice(0,3)),
-                consentChoice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
-                gtagPresent: typeof window.gtag === 'function'
+                consent: (window.dataLayer||[]).map(x=>Array.from(x||[])).filter(x=>String(x[0]||'')==='consent').slice(0,8),
+                cookies: document.cookie,
+                choice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
+                bannerVisible: !!document.querySelector('#nexusnova-analytics-consent:not([hidden])'),
+                bannerButtons: [...document.querySelectorAll('#nexusnova-analytics-consent button')].map(x=>x.textContent.trim())
               })''')
-              denied_collect=[u for u in network if 'google-analytics.com/g/collect' in u]
-              denied_cf=[u for u in network if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
-              denied_ga4_scripts=[u for u in network if 'googletagmanager.com/gtag/js' in u]
+              denied_ga=[u for u in requests if 'google-analytics.com/g/collect' in u]
+              denied_cf=[u for u in requests if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
               page.get_by_role('button', name='Keep basic measurement').click()
-              page.wait_for_timeout(700)
-              denied_choice=page.evaluate("() => localStorage.getItem('nexusnova_analytics_consent_v1') || ''")
+              page.wait_for_timeout(500)
+              afterBasic=page.evaluate("() => ({choice:localStorage.getItem('nexusnova_analytics_consent_v1')||'',cookies:document.cookie})")
               page.get_by_role('button', name='Privacy choices').click()
               page.get_by_role('button', name='Allow detailed analytics').click()
-              page.wait_for_timeout(1800)
-              after=page.evaluate('''() => ({
-                cookies: document.cookie,
-                consentChoice: localStorage.getItem('nexusnova_analytics_consent_v1') || '',
-                gaCookies: document.cookie.split(';').map(x=>x.trim().split('=')[0]).filter(x=>x==='_ga'||x.startsWith('_ga_'))
+              page.wait_for_timeout(1700)
+              afterGrant=page.evaluate('''() => ({
+                choice:localStorage.getItem('nexusnova_analytics_consent_v1')||'',
+                cookies:document.cookie,
+                gaCookies:document.cookie.split(';').map(x=>x.trim().split('=')[0]).filter(x=>x==='_ga'||x.startsWith('_ga_'))
               })''')
-              granted_collect=[u for u in network if 'google-analytics.com/g/collect' in u]
-              cf_urls=[u for u in network if 'cloudflareinsights.com/beacon' in u or '/cdn-cgi/rum' in u]
+              granted_ga=[u for u in requests if 'google-analytics.com/g/collect' in u]
               metrics=page.evaluate('''() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})''')
               results[label]={
-                'viewport':[width,height],
-                'before':before,
-                'deniedGa4ScriptRequests':len(denied_ga4_scripts),
-                'deniedGa4CollectRequests':len(denied_collect),
+                'viewport':[width,height], 'before':before,
+                'deniedGa4CollectRequests':len(denied_ga),
                 'deniedCloudflareRumRequests':len(denied_cf),
-                'deniedChoiceStored':denied_choice,
-                'afterGrant':after,
-                'ga4CollectRequestsAfterGrant':len(granted_collect),
-                'cloudflareRumRequestsTotal':len(cf_urls),
-                'overflow':metrics,
-                'errors':errors[:20]
+                'afterBasic':afterBasic,
+                'afterGrant':afterGrant,
+                'ga4CollectRequestsAfterGrant':len(granted_ga),
+                'overflow':metrics, 'errors':errors[:20]
               }
-              context.close(); browser.close()
+              context.close();browser.close()
 
           with sync_playwright() as p:
-              run_case(p,390,844,'mobile-390')
-              run_case(p,1280,800,'desktop-1280')
-          REPORT.write_text(json.dumps(results, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+              case(p,390,844,'mobile-390-first')
+              case(p,412,915,'mobile-412-first')
+              case(p,1280,800,'desktop-1280-first')
+              case(p,390,844,'mobile-390-second-fresh')
+          REPORT.write_text(json.dumps(results,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
           print(REPORT.read_text())
           PY
           python /tmp/privacy_analytics_probe.py
 
-      - name: Validate production evidence contract
+      - name: Validate privacy evidence (GA4 consent; RUM reported separately)
         run: |
           python - <<'PY'
           import json
           d=json.load(open('privacy-analytics-production.json'))
-          assert set(d)=={'mobile-390','desktop-1280'}
+          assert set(d)=={'mobile-390-first','mobile-412-first','desktop-1280-first','mobile-390-second-fresh'}
           for label,row in d.items():
-            assert row['before']['gtagPresent'] is True, label
+            assert row['before']['gtag'] is True, label
             assert row['before']['ga4Script'], label
             assert all(x not in row['before']['cookies'].lower() for x in ('_ga=', '_ga_')), label
-            assert row['deniedGa4ScriptRequests'] >= 1, label
-            assert row['deniedChoiceStored']=='denied', label
-            assert row['afterGrant']['consentChoice']=='granted', label
+            assert row['before']['bannerVisible'] is True, label
+            assert row['afterBasic']['choice']=='denied', label
+            assert all(x not in row['afterBasic']['cookies'].lower() for x in ('_ga=', '_ga_')), label
+            assert row['afterGrant']['choice']=='granted', label
             assert row['ga4CollectRequestsAfterGrant'] >= 1, label
             assert row['overflow']['sw'] <= row['overflow']['cw'] + 6, label
-          print('PASS: production consent/GA4 browser contract verified')
+            assert not row['errors'], label
+          print('PASS: consent-aware GA4 browser behavior verified across mobile/desktop fresh sessions')
           PY
 
       - name: Upload production evidence
@@ -163,5 +159,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: privacy-analytics-production-evidence-${{ github.run_id }}
-          path: privacy-analytics-production.json
+          path: |
+            privacy-analytics-production.json
+            cloudflare-rum-status.json
           retention-days: 14
