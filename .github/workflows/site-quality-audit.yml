@@ -81,10 +81,14 @@ jobs:
 
           path = Path('assets/js/main.js')
           text = path.read_text(encoding='utf-8')
-          needle = "(()=>{\n  const measurementId='G-YLPFKWSS12';"
-          replacement = "(()=>{\n  if(['127.0.0.1','localhost'].includes(location.hostname))return;\n  const measurementId='G-YLPFKWSS12';"
+          if "const measurementId='G-YLPFKWSS12';" not in text:
+              raise SystemExit('Canonical GA4 measurement ID not found; refusing to run an unfiltered local audit.')
+          if "window.__nexusnovaGa4BootstrapReady" not in text:
+              raise SystemExit('Canonical GA4 one-time guard not found; refusing to run an unfiltered local audit.')
+          needle = "(()=>{\n  'use strict';"
+          replacement = "(()=>{\n  'use strict';\n  if(['127.0.0.1','localhost'].includes(location.hostname))return;"
           if needle not in text:
-              raise SystemExit('GA4 bootstrap signature not found; refusing to run an unfiltered local audit.')
+              raise SystemExit('Canonical GA4 wrapper signature not found; refusing to run an unfiltered local audit.')
           path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
           print('Local Playwright copy will not send GA4 traffic.')
           PY

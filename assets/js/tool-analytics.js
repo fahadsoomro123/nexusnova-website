@@ -1,10 +1,7 @@
 (()=>{
   'use strict';
-  const consentKey='nexusnova_analytics_consent_v1';
   const tool=(location.pathname.split('/').pop()||'home').replace(/\.html$/i,'');
-  const allowed=()=>{
-    try{return localStorage.getItem(consentKey)==='granted'&&typeof window.gtag==='function'}catch(_){return false}
-  };
+  const allowed=()=>typeof window.gtag==='function';
   const send=(name,action)=>{
     if(!allowed())return;
     window.gtag('event',name,{tool,action});
