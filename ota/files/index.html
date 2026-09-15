@@ -53,34 +53,84 @@
   <link rel="stylesheet" href="./assets/styles/batch4-tools-17-20-fullscreen.css?review=batch4-17-20-v1">
   <link rel="stylesheet" href="./assets/styles/ai-photo-route-fullscreen.css?ota=ai-photo-structural-v1">
   <style id="nx-vault-v14-shell-fix">
-    html.nx-vault-premium-active body,html.nx-vault-premium-active body .nx-app,html.nx-vault-premium-active body .nx-app .nx-stage,html.nx-vault-simple-active body,html.nx-vault-simple-active body .nx-app,html.nx-vault-simple-active body .nx-app .nx-stage,html.nx-vault-living-active body,html.nx-vault-living-active body .nx-app,html.nx-vault-living-active body .nx-app .nx-stage{background:#04111c!important}
-    html.nx-vault-premium-active body .nx-app .nx-stage,html.nx-vault-simple-active body .nx-app .nx-stage,html.nx-vault-living-active body .nx-app .nx-stage{min-height:100dvh!important;height:100dvh!important;padding:0!important;overflow:hidden!important}
-    html.nx-vault-premium-active body .nx-app .nx-stage .nx-screen.nx-vault-premium-screen,html.nx-vault-simple-active body .nx-app .nx-stage .nx-screen.nx-vault-simple-screen,html.nx-vault-living-active body .nx-app .nx-stage .nx-screen.nx-vault-living-screen{height:calc(100dvh - 82px)!important;min-height:calc(100dvh - 82px)!important;max-height:calc(100dvh - 82px)!important;margin:0!important;overflow:hidden!important;background:#04111c!important}
-    html.nx-vault-premium-active #nxEmergencySosButton,html.nx-vault-premium-active #nxEmergencySosEdit,html.nx-vault-simple-active #nxEmergencySosButton,html.nx-vault-simple-active #nxEmergencySosEdit,html.nx-vault-living-active #nxEmergencySosButton,html.nx-vault-living-active #nxEmergencySosEdit{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+    html.nx-vault-premium-active body,
+    html.nx-vault-premium-active body .nx-app,
+    html.nx-vault-premium-active body .nx-app .nx-stage,
+    html.nx-vault-simple-active body,
+    html.nx-vault-simple-active body .nx-app,
+    html.nx-vault-simple-active body .nx-app .nx-stage,
+    html.nx-vault-living-active body,
+    html.nx-vault-living-active body .nx-app,
+    html.nx-vault-living-active body .nx-app .nx-stage {
+      background:#04111c!important;
+    }
+    html.nx-vault-premium-active body .nx-app .nx-stage,
+    html.nx-vault-simple-active body .nx-app .nx-stage,
+    html.nx-vault-living-active body .nx-app .nx-stage {
+      min-height:100dvh!important;
+      height:100dvh!important;
+      padding:0!important;
+      overflow:hidden!important;
+    }
+    html.nx-vault-premium-active body .nx-app .nx-stage .nx-screen.nx-vault-premium-screen,
+    html.nx-vault-simple-active body .nx-app .nx-stage .nx-screen.nx-vault-simple-screen,
+    html.nx-vault-living-active body .nx-app .nx-stage .nx-screen.nx-vault-living-screen {
+      height:calc(100dvh - 82px)!important;
+      min-height:calc(100dvh - 82px)!important;
+      max-height:calc(100dvh - 82px)!important;
+      margin:0!important;
+      overflow:hidden!important;
+      background:#04111c!important;
+    }
+    html.nx-vault-premium-active #nxEmergencySosButton,
+    html.nx-vault-premium-active #nxEmergencySosEdit,
+    html.nx-vault-simple-active #nxEmergencySosButton,
+    html.nx-vault-simple-active #nxEmergencySosEdit,
+    html.nx-vault-living-active #nxEmergencySosButton,
+    html.nx-vault-living-active #nxEmergencySosEdit {
+      display:none!important;
+      visibility:hidden!important;
+      opacity:0!important;
+      pointer-events:none!important;
+    }
   </style>
 </head>
 <body>
   <div id="nx-app" class="nx-app" aria-live="polite">
     <main id="nx-stage" class="nx-stage" tabindex="-1"></main>
-    <button id="nx-mine-brand-portal" type="button" aria-label="Open nexusnovatools.com in Nova Browser"><span class="nx-mine-brand__lamp" aria-hidden="true"></span><span class="nx-mine-brand__mark" aria-hidden="true">N</span><span class="nx-mine-brand__copy"><small>NEXUSNOVA NETWORK / WEB PORTAL</small><strong>NEXUSNOVA <em>TOOLS</em></strong><span>nexusnovatools.com</span></span><span class="nx-mine-brand__cta">OPEN <b aria-hidden="true">›</b></span></button>
-    <nav class="nx-dock" aria-label="Primary navigation" hidden><button class="nx-dock__item" type="button" data-route="mine" aria-label="Open Mine"></button><button class="nx-dock__item" type="button" data-route="hub" aria-label="Open Nova Hub"></button></nav>
+    <button id="nx-mine-brand-portal" type="button" aria-label="Open nexusnovatools.com in Nova Browser">
+      <span class="nx-mine-brand__lamp" aria-hidden="true"></span>
+      <span class="nx-mine-brand__mark" aria-hidden="true">N</span>
+      <span class="nx-mine-brand__copy">
+        <small>NEXUSNOVA NETWORK / WEB PORTAL</small>
+        <strong>NEXUSNOVA <em>TOOLS</em></strong>
+        <span>nexusnovatools.com</span>
+      </span>
+      <span class="nx-mine-brand__cta">OPEN <b aria-hidden="true">›</b></span>
+    </button>
+    <nav class="nx-dock" aria-label="Primary navigation" hidden>
+      <button class="nx-dock__item" type="button" data-route="mine" aria-label="Open Mine"></button>
+      <button class="nx-dock__item" type="button" data-route="hub" aria-label="Open Nova Hub"></button>
+    </nav>
   </div>
   <noscript>NexusNova requires JavaScript.</noscript>
-  <script>
-  (()=>{
-    const placeholder=()=>{const s=document.getElementById('nx-stage');if(!s)return;s.dataset.route='travel-unavailable';s.innerHTML='<section class="nx-screen" aria-label="Travel unavailable"><div style="min-height:60vh;display:grid;place-items:center;padding:32px;text-align:center"><div><h1 style="margin:0 0 10px;font-size:24px">NEXUSNOVA TRAVEL</h1><p style="margin:0;opacity:.72">Travel is currently unavailable while the new Travel experience is rebuilt.</p></div></div></section>'};
-    document.addEventListener('click',e=>{const b=e.target?.closest?.('[data-app-id="travel"]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();placeholder()},true);
-    const guard=()=>{const s=document.getElementById('nx-stage');if(!s)return;const legacy=s.querySelector('.nxf-travel,[data-smart-travel-context],[data-search],[data-calendar],[data-rescue],[data-flight]');if(legacy||s.dataset.route==='travel')placeholder()};
-    new MutationObserver(guard).observe(document.documentElement,{subtree:true,childList:true});
-    setInterval(()=>{const api=window.NexusNovaFresh;if(api&&typeof api.openApp==='function'&&!api.__cleanTravelReset){const original=api.openApp.bind(api);api.openApp=id=>{if(id==='travel'){placeholder();return true}return original(id)};api.__cleanTravelReset=true}guard()},250);
-  })();
-  </script>
   <script type="module" src="./src/features/apps/security-lock-suite.js"></script>
   <script type="module" src="./src/dock-scroll-v2.js"></script>
   <script type="module" src="./src/nova57-stage-compat.js"></script>
   <script type="module" src="./src/nova57-human-response.js"></script>
   <script type="module" src="./src/mine-raster-skin-loader.js"></script>
   <script type="module" src="./src/main.js?ota=nv16"></script>
+  <script type="module" src="./src/features/apps/travel-flagship-runtime-v8.js?ota=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-exit-isolation-v10.js?ota=travel-v29-single-owner"></script>
+  <script type="module" src="./src/features/apps/travel-hyper3d-layout-v21.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-hyper3d-hd-v23.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-hyper3d-flagship-v25.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-passenger-popover-v26.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-clean-ui-v27.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-phone-interaction-v28.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-phone-interaction-v28-native-select-fix.js?bundle=travel-v28-main"></script>
+  <script type="module" src="./src/features/apps/travel-result-details-v1.js?ota=travel-map-runtime-v2"></script>
+  <script type="module" src="./src/features/apps/travel-phone-layout-v31.js?ota=travel-v31-proof36"></script>
   <script type="module" src="./src/features/apps/profile-fullscreen-v1.js?ota=profile-v1"></script>
   <script type="module" src="./src/features/apps/notes-fullscreen-v1.js?ota=notes-v1"></script>
   <script type="module" src="./src/features/apps/todo-fullscreen-v1.js?ota=todo-v1"></script>
@@ -94,5 +144,11 @@
   <script type="module" src="./src/nova-vehicle-premium-ui.js?ota=drive-realworld-v13-main"></script>
   <script type="module" src="./src/nova-drive-final-approved-v5.js?ota=drive-final-master-v2"></script>
   <script type="module" src="./src/nova-drive-final-v7-fit.js?ota=drive-final-master-v4"></script>
+  <!-- Native Android App Check OTA sync marker. -->
+  <!-- Mine reference raster v2 activates only after every component is verified present. -->
+  <!-- True pre-dashboard direct Gemini runtime 2026-08-29. -->
+  <!-- OTA republish marker: verified Mine branding after crash-safe raster loader. -->
+  <!-- Nova Vault v14: living core, live inventory, single-screen OTA route. -->
+  <!-- v14 release marker: 2026-08-31 living-vault -->
 </body>
 </html>
