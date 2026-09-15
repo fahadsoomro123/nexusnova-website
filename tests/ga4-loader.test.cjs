@@ -35,7 +35,7 @@ test('legacy site shell retains all non-analytics site behavior in one canonical
 
 test('tool analytics events are not blocked by the old consent gate', () => {
   const text = fs.readFileSync('assets/js/tool-analytics.js', 'utf8');
-  assert.match(text, /const allowed=\(\)=>\{[\s\S]*typeof window\.gtag==='function'/);
+  assert.match(text, /const allowed=\(\)=>typeof window\.gtag==='function';/);
   assert.doesNotMatch(text, /localStorage\.getItem\(consentKey\)==='granted'/);
 });
 
