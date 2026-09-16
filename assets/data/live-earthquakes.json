@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-16T01:17:31.343Z",
+  "generated_at": "2026-09-16T06:36:39.249Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,17 +16,112 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-16T01:17:17.000Z",
+  "feed_generated_at": "2026-09-16T06:36:37.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 39,
+  "source_count": 38,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "us7000ths9",
+      "magnitude": 5,
+      "place": "281 km SSE of Dunhuang, China",
+      "time": "2026-09-16T05:52:03.328Z",
+      "updated": "2026-09-16T06:11:28.040Z",
+      "depth_km": 10.5,
+      "coordinates": {
+        "lat": 37.7078,
+        "lon": 95.4963
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ths9",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thrz",
+      "magnitude": 5,
+      "place": "60 km SSW of Ocós, Guatemala",
+      "time": "2026-09-16T03:45:03.456Z",
+      "updated": "2026-09-16T04:02:44.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 14.0287,
+        "lon": -92.4543
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thrz",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71531888",
+      "magnitude": 2.89,
+      "place": "18 km W of Rincón, Puerto Rico",
+      "time": "2026-09-16T02:09:41.730Z",
+      "updated": "2026-09-16T02:37:26.820Z",
+      "depth_km": 8.2,
+      "coordinates": {
+        "lat": 18.3332,
+        "lon": -67.4272
+      },
+      "significance": 128,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531888",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75436337",
+      "magnitude": 2.67,
+      "place": "3 km ESE of Santa Rosa, CA",
+      "time": "2026-09-16T01:40:30.630Z",
+      "updated": "2026-09-16T06:22:08.090Z",
+      "depth_km": 9.1,
+      "coordinates": {
+        "lat": 38.4332,
+        "lon": -122.6718
+      },
+      "significance": 153,
+      "felt": 160,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75436337",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thrm",
+      "magnitude": 4.5,
+      "place": "45 km NNW of Duaca, Venezuela",
+      "time": "2026-09-16T01:37:17.171Z",
+      "updated": "2026-09-16T02:21:22.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 10.6842,
+        "lon": -69.2782
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thrm",
+      "pakistan_region": false
+    },
     {
       "id": "aka2026siodpj",
       "magnitude": 2.7,
       "place": "35 km W of Anchor Point, Alaska",
       "time": "2026-09-16T00:14:58.438Z",
-      "updated": "2026-09-16T00:18:59.380Z",
+      "updated": "2026-09-16T04:03:45.040Z",
       "depth_km": 82.1,
       "coordinates": {
         "lat": 59.777,
@@ -45,7 +140,7 @@
       "magnitude": 3.3,
       "place": "76 km NNE of Vieques, Puerto Rico",
       "time": "2026-09-16T00:05:41.730Z",
-      "updated": "2026-09-16T00:25:29.760Z",
+      "updated": "2026-09-16T03:47:00.040Z",
       "depth_km": 6.6,
       "coordinates": {
         "lat": 19.0657,
@@ -62,13 +157,13 @@
     {
       "id": "us7000thr6",
       "magnitude": 4.7,
-      "place": "159 km N of Caluula, Somalia",
-      "time": "2026-09-15T23:46:59.295Z",
-      "updated": "2026-09-16T00:10:55.040Z",
+      "place": "161 km N of Caluula, Somalia",
+      "time": "2026-09-15T23:46:59.464Z",
+      "updated": "2026-09-16T03:36:36.040Z",
       "depth_km": 10,
       "coordinates": {
-        "lat": 13.4116,
-        "lon": 50.7312
+        "lat": 13.4261,
+        "lon": 50.7581
       },
       "significance": 340,
       "felt": 0,
@@ -76,6 +171,82 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thr6",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thr4",
+      "magnitude": 4.5,
+      "place": "17 km WNW of Palora, Ecuador",
+      "time": "2026-09-15T23:45:06.518Z",
+      "updated": "2026-09-16T03:32:08.040Z",
+      "depth_km": 155.8,
+      "coordinates": {
+        "lat": -1.6157,
+        "lon": -78.094
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thr4",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026sijhmm",
+      "magnitude": 3.7,
+      "place": "Rat Islands, Aleutian Islands, Alaska",
+      "time": "2026-09-15T21:49:29.205Z",
+      "updated": "2026-09-16T04:42:10.407Z",
+      "depth_km": 56,
+      "coordinates": {
+        "lat": 51.471,
+        "lon": 178.905
+      },
+      "significance": 211,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sijhmm",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thq4",
+      "magnitude": 2.7,
+      "place": "2 km NNW of Las Nutrias, New Mexico",
+      "time": "2026-09-15T21:10:12.184Z",
+      "updated": "2026-09-16T03:19:57.439Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 34.4946,
+        "lon": -106.7832
+      },
+      "significance": 113,
+      "felt": 3,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thq4",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thq1",
+      "magnitude": 4.7,
+      "place": "89 km NE of Yonakuni, Japan",
+      "time": "2026-09-15T21:00:35.404Z",
+      "updated": "2026-09-16T03:01:52.040Z",
+      "depth_km": 11.5,
+      "coordinates": {
+        "lat": 25.0376,
+        "lon": 123.6247
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thq1",
       "pakistan_region": false
     },
     {
@@ -444,14 +615,14 @@
       "magnitude": 3.18,
       "place": "21 km SSW of Ucluelet, Canada",
       "time": "2026-09-15T09:30:51.090Z",
-      "updated": "2026-09-15T23:56:59.432Z",
+      "updated": "2026-09-16T02:41:10.443Z",
       "depth_km": 5,
       "coordinates": {
         "lat": 48.7563,
         "lon": -125.6192
       },
-      "significance": 160,
-      "felt": 16,
+      "significance": 161,
+      "felt": 17,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -539,14 +710,14 @@
       "magnitude": 3.28,
       "place": "17 km WSW of Petrolia, CA",
       "time": "2026-09-15T07:18:06.510Z",
-      "updated": "2026-09-15T19:01:20.607Z",
+      "updated": "2026-09-16T05:16:56.712Z",
       "depth_km": 9,
       "coordinates": {
         "lat": 40.2935,
         "lon": -124.485
       },
       "significance": 166,
-      "felt": 1,
+      "felt": 2,
       "alert": null,
       "status": "automatic",
       "tsunami": false,
@@ -570,196 +741,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026shfxpv",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531828",
-      "magnitude": 2.86,
-      "place": "5 km E of La Parguera, Puerto Rico",
-      "time": "2026-09-15T06:21:48.340Z",
-      "updated": "2026-09-15T12:02:50.946Z",
-      "depth_km": 13.2,
-      "coordinates": {
-        "lat": 17.9715,
-        "lon": -66.9962
-      },
-      "significance": 126,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531828",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thjr",
-      "magnitude": 4.8,
-      "place": "289 km WSW of Tual, Indonesia",
-      "time": "2026-09-15T06:07:52.712Z",
-      "updated": "2026-09-15T06:26:55.040Z",
-      "depth_km": 83.8,
-      "coordinates": {
-        "lat": -6.6349,
-        "lon": 130.3422
-      },
-      "significance": 354,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thjr",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026shcitc",
-      "magnitude": 4,
-      "place": "92 km SSW of Unalaska, Alaska",
-      "time": "2026-09-15T05:21:25.310Z",
-      "updated": "2026-09-15T15:22:44.495Z",
-      "depth_km": 18.4,
-      "coordinates": {
-        "lat": 53.099,
-        "lon": -167.028
-      },
-      "significance": 246,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026shcitc",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thjj",
-      "magnitude": 4.8,
-      "place": "229 km E of Tadine, New Caledonia",
-      "time": "2026-09-15T04:52:26.905Z",
-      "updated": "2026-09-15T05:36:44.040Z",
-      "depth_km": 98.7,
-      "coordinates": {
-        "lat": -21.5813,
-        "lon": 170.0923
-      },
-      "significance": 354,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thjj",
-      "pakistan_region": false
-    },
-    {
-      "id": "uu80156956",
-      "magnitude": 3.39,
-      "place": "3 km NNW of Little America, Wyoming",
-      "time": "2026-09-15T04:33:06.610Z",
-      "updated": "2026-09-15T13:54:33.248Z",
-      "depth_km": -3.4,
-      "coordinates": {
-        "lat": 41.5695,
-        "lon": -109.8742
-      },
-      "significance": 177,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/uu80156956",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531818",
-      "magnitude": 3.36,
-      "place": "9 km SE of Cruz Bay, U.S. Virgin Islands",
-      "time": "2026-09-15T03:44:35.270Z",
-      "updated": "2026-09-15T04:32:35.190Z",
-      "depth_km": 125.5,
-      "coordinates": {
-        "lat": 18.2642,
-        "lon": -64.7423
-      },
-      "significance": 174,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531818",
-      "pakistan_region": false
-    },
-    {
-      "id": "nc75435897",
-      "magnitude": 2.58,
-      "place": "7 km E of Hydesville, CA",
-      "time": "2026-09-15T03:36:20.190Z",
-      "updated": "2026-09-15T04:42:21.706Z",
-      "depth_km": 24.2,
-      "coordinates": {
-        "lat": 40.56,
-        "lon": -124.0117
-      },
-      "significance": 103,
-      "felt": 3,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75435897",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sgwfzt",
-      "magnitude": 3.4,
-      "place": "Rat Islands, Aleutian Islands, Alaska",
-      "time": "2026-09-15T02:18:18.520Z",
-      "updated": "2026-09-15T03:27:35.346Z",
-      "depth_km": 20,
-      "coordinates": {
-        "lat": 50.267,
-        "lon": 177.929
-      },
-      "significance": 178,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sgwfzt",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sguzuv",
-      "magnitude": 3,
-      "place": "134 km SW of Adak, Alaska",
-      "time": "2026-09-15T01:41:14.994Z",
-      "updated": "2026-09-15T20:04:51.558Z",
-      "depth_km": 14.6,
-      "coordinates": {
-        "lat": 50.963,
-        "lon": -177.898
-      },
-      "significance": 138,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sguzuv",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sguoxw",
-      "magnitude": 3.1,
-      "place": "257 km SSW of Adak, Alaska",
-      "time": "2026-09-15T01:27:54.696Z",
-      "updated": "2026-09-15T03:24:48.820Z",
-      "depth_km": 20,
-      "coordinates": {
-        "lat": 49.931,
-        "lon": -178.637
-      },
-      "significance": 148,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sguoxw",
       "pakistan_region": false
     }
   ]
