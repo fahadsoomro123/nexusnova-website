@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-17T20:21:36.859Z",
+  "generated_at": "2026-09-17T23:00:59.773Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,49 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-17T20:21:19.000Z",
+  "feed_generated_at": "2026-09-17T23:00:53.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 33,
+  "source_count": 30,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "tx2026sjbtxd",
+      "magnitude": 2.7,
+      "place": "55 km SSW of Whites City, New Mexico",
+      "time": "2026-09-17T21:28:03.994Z",
+      "updated": "2026-09-17T21:40:08.309Z",
+      "depth_km": 4.3,
+      "coordinates": {
+        "lat": 31.696,
+        "lon": -104.539
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026sjbtxd",
+      "pakistan_region": false
+    },
+    {
+      "id": "ci41334231",
+      "magnitude": 3.08823882840527,
+      "place": "4 km SSE of Compton, CA",
+      "time": "2026-09-17T20:32:30.020Z",
+      "updated": "2026-09-17T22:59:14.926Z",
+      "depth_km": 13.2,
+      "coordinates": {
+        "lat": 33.8648,
+        "lon": -118.209
+      },
+      "significance": 299,
+      "felt": 490,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41334231",
+      "pakistan_region": false
+    },
     {
       "id": "us7000ti5b",
       "magnitude": 4.9,
@@ -178,14 +216,14 @@
       "magnitude": 6.5,
       "place": "165 km W of Nikolski, Alaska",
       "time": "2026-09-17T14:19:53.164Z",
-      "updated": "2026-09-17T18:29:58.240Z",
+      "updated": "2026-09-17T22:05:03.276Z",
       "depth_km": 111.7,
       "coordinates": {
         "lat": 52.7648,
         "lon": -171.2949
       },
-      "significance": 652,
-      "felt": 6,
+      "significance": 653,
+      "felt": 8,
       "alert": "green",
       "status": "reviewed",
       "tsunami": true,
@@ -216,14 +254,14 @@
       "magnitude": 4.2,
       "place": "37 km ENE of Nelson, Canada",
       "time": "2026-09-17T12:31:37.057Z",
-      "updated": "2026-09-17T18:57:17.990Z",
+      "updated": "2026-09-17T22:59:06.451Z",
       "depth_km": 10,
       "coordinates": {
         "lat": 49.6652,
         "lon": -116.8318
       },
-      "significance": 310,
-      "felt": 96,
+      "significance": 311,
+      "felt": 99,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -551,101 +589,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531968",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thxx",
-      "magnitude": 4.2,
-      "place": "3 km NNE of Gostagayevskaya, Russia",
-      "time": "2026-09-16T22:31:16.831Z",
-      "updated": "2026-09-17T14:23:43.117Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 45.0513,
-        "lon": 37.5188
-      },
-      "significance": 272,
-      "felt": 3,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thxx",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531948",
-      "magnitude": 3.44,
-      "place": "117 km N of Charlotte Amalie, U.S. Virgin Islands",
-      "time": "2026-09-16T22:12:43.820Z",
-      "updated": "2026-09-16T23:28:15.480Z",
-      "depth_km": 18.4,
-      "coordinates": {
-        "lat": 19.3862,
-        "lon": -65.136
-      },
-      "significance": 182,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531948",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thxt",
-      "magnitude": 2.9,
-      "place": "5 km SSW of Assaria, Kansas",
-      "time": "2026-09-16T21:50:57.961Z",
-      "updated": "2026-09-17T17:09:04.499Z",
-      "depth_km": 9.7,
-      "coordinates": {
-        "lat": 38.6386,
-        "lon": -97.6344
-      },
-      "significance": 137,
-      "felt": 18,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thxt",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thxm",
-      "magnitude": 4.7,
-      "place": "27 km SW of Sipí, Colombia",
-      "time": "2026-09-16T20:55:00.902Z",
-      "updated": "2026-09-16T22:07:23.040Z",
-      "depth_km": 51.5,
-      "coordinates": {
-        "lat": 4.46,
-        "lon": -76.8006
-      },
-      "significance": 340,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thxm",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thxg",
-      "magnitude": 4.9,
-      "place": "191 km ESE of Kimbe, Papua New Guinea",
-      "time": "2026-09-16T20:21:24.970Z",
-      "updated": "2026-09-16T20:37:30.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": -6.1072,
-        "lon": 151.7775
-      },
-      "significance": 369,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thxg",
       "pakistan_region": false
     }
   ]
