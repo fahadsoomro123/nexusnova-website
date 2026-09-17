@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-16T22:59:37.398Z",
+  "generated_at": "2026-09-17T01:19:34.865Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,24 +16,81 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-16T22:59:37.000Z",
+  "feed_generated_at": "2026-09-17T01:18:37.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 31,
+  "source_count": 30,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "pr71531968",
+      "magnitude": 3.05,
+      "place": "69 km NE of Cruz Bay, U.S. Virgin Islands",
+      "time": "2026-09-17T00:43:36.530Z",
+      "updated": "2026-09-17T00:56:47.510Z",
+      "depth_km": 24.3,
+      "coordinates": {
+        "lat": 18.8318,
+        "lon": -64.4005
+      },
+      "significance": 143,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531968",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thxx",
+      "magnitude": 4.2,
+      "place": "3 km NNE of Gostagayevskaya, Russia",
+      "time": "2026-09-16T22:31:16.831Z",
+      "updated": "2026-09-16T23:44:46.941Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 45.0513,
+        "lon": 37.5188
+      },
+      "significance": 272,
+      "felt": 2,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thxx",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71531948",
+      "magnitude": 3.44,
+      "place": "117 km N of Charlotte Amalie, U.S. Virgin Islands",
+      "time": "2026-09-16T22:12:43.820Z",
+      "updated": "2026-09-16T23:28:15.480Z",
+      "depth_km": 18.4,
+      "coordinates": {
+        "lat": 19.3862,
+        "lon": -65.136
+      },
+      "significance": 182,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531948",
+      "pakistan_region": false
+    },
     {
       "id": "us7000thxt",
       "magnitude": 2.9,
       "place": "5 km SSW of Assaria, Kansas",
       "time": "2026-09-16T21:50:57.961Z",
-      "updated": "2026-09-16T22:50:38.098Z",
+      "updated": "2026-09-17T00:55:36.404Z",
       "depth_km": 9.7,
       "coordinates": {
         "lat": 38.6386,
         "lon": -97.6344
       },
-      "significance": 135,
-      "felt": 14,
+      "significance": 136,
+      "felt": 15,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -140,14 +197,14 @@
       "magnitude": 5.1,
       "place": "77 km SSW of San Jose Village, Northern Mariana Islands",
       "time": "2026-09-16T18:06:40.886Z",
-      "updated": "2026-09-16T22:16:43.443Z",
+      "updated": "2026-09-17T00:16:52.027Z",
       "depth_km": 110.8,
       "coordinates": {
         "lat": 14.2866,
         "lon": 145.4729
       },
       "significance": 403,
-      "felt": 8,
+      "felt": 9,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -197,14 +254,14 @@
       "magnitude": 5,
       "place": "5 km NE of Mitsukaidō, Japan",
       "time": "2026-09-16T15:07:38.245Z",
-      "updated": "2026-09-16T22:53:40.768Z",
+      "updated": "2026-09-17T00:47:46.827Z",
       "depth_km": 77.3,
       "coordinates": {
         "lat": 36.0556,
         "lon": 140.0207
       },
-      "significance": 403,
-      "felt": 48,
+      "significance": 406,
+      "felt": 55,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -532,82 +589,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thrm",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026siodpj",
-      "magnitude": 2.7,
-      "place": "35 km W of Anchor Point, Alaska",
-      "time": "2026-09-16T00:14:58.438Z",
-      "updated": "2026-09-16T04:03:45.040Z",
-      "depth_km": 82.1,
-      "coordinates": {
-        "lat": 59.777,
-        "lon": -152.466
-      },
-      "significance": 112,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026siodpj",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531853",
-      "magnitude": 3.3,
-      "place": "76 km NNE of Vieques, Puerto Rico",
-      "time": "2026-09-16T00:05:41.730Z",
-      "updated": "2026-09-16T03:47:00.040Z",
-      "depth_km": 6.6,
-      "coordinates": {
-        "lat": 19.0657,
-        "lon": -65.5608
-      },
-      "significance": 168,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531853",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thr6",
-      "magnitude": 4.7,
-      "place": "161 km N of Caluula, Somalia",
-      "time": "2026-09-15T23:46:59.464Z",
-      "updated": "2026-09-16T03:36:36.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 13.4261,
-        "lon": 50.7581
-      },
-      "significance": 340,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thr6",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thr4",
-      "magnitude": 4.5,
-      "place": "17 km WNW of Palora, Ecuador",
-      "time": "2026-09-15T23:45:06.518Z",
-      "updated": "2026-09-16T03:32:08.040Z",
-      "depth_km": 155.8,
-      "coordinates": {
-        "lat": -1.6157,
-        "lon": -78.094
-      },
-      "significance": 312,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thr4",
       "pakistan_region": false
     }
   ]
