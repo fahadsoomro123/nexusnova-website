@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-09-16T07:39:11.255247Z",
+  "generated_at": "2026-09-17T07:35:38.323861Z",
   "items": [
     {
       "title": "Stable Channel Update for Desktop",
@@ -9,7 +9,7 @@
       "category": "Security",
       "published": "2026-09-15T20:13:26Z",
       "summary": "The Stable channel has been updated to 153.0.8010.47/.48 for Windows and Mac and 153.0.8010.47 for Linux, which will roll out over the coming days/weeks. A full list of changes in this build is available in the Log Security Fixes and Rewards Note: Access to bu",
-      "score": 51
+      "score": 49
     },
     {
       "title": "Chrome for Android Update",
@@ -18,15 +18,33 @@
       "category": "Security",
       "published": "2026-09-16T00:30:00Z",
       "summary": "Hi, everyone! We've just released Chrome 153 (153.0.8010.47) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
-      "score": 33
+      "score": 31
     },
     {
-      "title": "Extended Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/09/extended-stable-update-for-desktop_01936140552.html",
+      "title": "Early Stable Update for Desktop",
+      "url": "https://chromereleases.googleblog.com/2026/09/early-stable-update-for-desktop_096324202.html",
       "source": "Chrome Releases",
       "category": "Browser",
-      "published": "2026-09-15T20:29:39Z",
-      "summary": "The Extended Stable channel has been updated to 152.0.7977.130 for Windows and Mac which will roll out over the coming days/weeks. A full list of changes in this build is available in the log . Interested in switching release channels? Find out how here . If y",
+      "published": "2026-09-16T23:09:00Z",
+      "summary": "The Stable channel has been updated to 154.0.8037.44/.45 for Windows. as part of our early stable release to a small percentage of users. A full list of changes in this build is available in the log . You can find more details about early Stable releases here ",
+      "score": 23
+    },
+    {
+      "title": "Copilot budget increase requests are generally available",
+      "url": "https://github.blog/changelog/2026-09-16-copilot-budget-increase-requests-are-generally-available",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-09-16T20:17:18Z",
+      "summary": "Previously, when a member used all the Copilot AI credits available to them, they were blocked from Copilot features that consume credits. This release adds a flow for them to… The post Copilot budget increase requests are generally available appeared first on",
+      "score": 23
+    },
+    {
+      "title": "Chrome Beta for Android Update",
+      "url": "https://chromereleases.googleblog.com/2026/09/chrome-beta-for-android-update_0279595226.html",
+      "source": "Chrome Releases",
+      "category": "Browser",
+      "published": "2026-09-16T18:28:32Z",
+      "summary": "Hi everyone! We've just released Chrome Beta 155 (155.0.8059.4) for Android. It's now available on Google Play . You can see a partial list of the changes in the Git log . For details on new features, check out the Chromium blog , and for details on web platfo",
       "score": 23
     },
     {
@@ -39,40 +57,22 @@
       "score": 22
     },
     {
-      "title": "GitHub Copilot weekly releases — September 7",
-      "url": "https://github.blog/changelog/2026-09-10-github-copilot-weekly-releases-september-7",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-09-10T22:55:07Z",
-      "summary": "This week, GitHub Copilot introduces Jira integration in Copilot app and adaptive model orchestration with Project HydraFusion in Copilot CLI. We also introduced new agent automation in Visual Studio Code… The post GitHub Copilot weekly releases — September 7 ",
-      "score": 22
-    },
-    {
-      "title": "Chrome Dev for Android Update",
-      "url": "https://chromereleases.googleblog.com/2026/09/chrome-dev-for-android-update_0255795644.html",
-      "source": "Chrome Releases",
-      "category": "Browser",
-      "published": "2026-09-14T17:13:33Z",
-      "summary": "Hi everyone! We've just released Chrome Dev 155 (155.0.8056.0) for Android. It's now available on Google Play . You can see a partial list of the changes in the Git log . For details on new features, check out the Chromium blog , and for details on web platfor",
-      "score": 21
-    },
-    {
-      "title": "Give every teammate and agent the right level of access to your Workers",
-      "url": "https://blog.cloudflare.com/workers-granular-authorization/",
-      "source": "Cloudflare Blog",
-      "category": "Developer",
-      "published": "2026-09-15T13:00:00Z",
-      "summary": "You can now scope access to individual Workers and assign narrower Developer Platform roles, so teammates, CI tokens, and agents get only the access they need to debug, deploy, or monitor safely.",
-      "score": 17
-    },
-    {
-      "title": "SHA-1 in HTTPS on GitHub sunset",
-      "url": "https://github.blog/changelog/2026-09-15-sha-1-in-https-on-github-sunset",
+      "title": "Automate SSO authorization for classic PATs and SSH keys",
+      "url": "https://github.blog/changelog/2026-09-16-automate-sso-authorization-for-classic-pats-and-ssh-keys",
       "source": "GitHub Changelog",
       "category": "Developer",
-      "published": "2026-09-15T16:47:20Z",
-      "summary": "Previously we announced we would be disabling SHA-1 in HTTPS for GitHub on September 15th, 2026. Following the planned schedule, GitHub has disabled SHA-1 in HTTPS for github.com and partner… The post SHA-1 in HTTPS on GitHub sunset appeared first on The GitHu",
-      "score": 16
+      "published": "2026-09-16T20:20:16Z",
+      "summary": "Enterprise admins can now automate SSO authorization for existing classic personal access tokens (PATs) and SSH keys for organizations in GitHub Enterprise Cloud, replacing manual per-organization authorization by your developers.… The post Automate SSO author",
+      "score": 19
+    },
+    {
+      "title": "SCIM user responses now include a profileUrl attribute",
+      "url": "https://github.blog/changelog/2026-09-16-scim-user-responses-now-include-a-profileurl-attribute",
+      "source": "GitHub Changelog",
+      "category": "Developer",
+      "published": "2026-09-16T20:19:58Z",
+      "summary": "SCIM user responses from GitHub now include the standard profileUrl attribute defined by RFC 7643, containing the absolute URL of the GitHub account linked to the external identity. Previously, matching… The post SCIM user responses now include a profileUrl at",
+      "score": 19
     }
   ],
   "top_stories": [
@@ -83,7 +83,7 @@
       "category": "Security",
       "published": "2026-09-15T20:13:26Z",
       "summary": "The Stable channel has been updated to 153.0.8010.47/.48 for Windows and Mac and 153.0.8010.47 for Linux, which will roll out over the coming days/weeks. A full list of changes in this build is available in the Log Security Fixes and Rewards Note: Access to bu",
-      "score": 51
+      "score": 49
     },
     {
       "title": "Chrome for Android Update",
@@ -92,21 +92,21 @@
       "category": "Security",
       "published": "2026-09-16T00:30:00Z",
       "summary": "Hi, everyone! We've just released Chrome 153 (153.0.8010.47) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
-      "score": 33
+      "score": 31
     },
     {
-      "title": "Extended Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/09/extended-stable-update-for-desktop_01936140552.html",
+      "title": "Early Stable Update for Desktop",
+      "url": "https://chromereleases.googleblog.com/2026/09/early-stable-update-for-desktop_096324202.html",
       "source": "Chrome Releases",
       "category": "Browser",
-      "published": "2026-09-15T20:29:39Z",
-      "summary": "The Extended Stable channel has been updated to 152.0.7977.130 for Windows and Mac which will roll out over the coming days/weeks. A full list of changes in this build is available in the log . Interested in switching release channels? Find out how here . If y",
+      "published": "2026-09-16T23:09:00Z",
+      "summary": "The Stable channel has been updated to 154.0.8037.44/.45 for Windows. as part of our early stable release to a small percentage of users. A full list of changes in this build is available in the log . You can find more details about early Stable releases here ",
       "score": 23
     }
   ],
   "tool_of_day": {
-    "title": "AI Token Calculator",
-    "url": "ai-token-calculator.html",
-    "summary": "Estimate prompt and context-window token size."
+    "title": "Image Metadata Remover",
+    "url": "image-metadata-remover.html",
+    "summary": "Create a clean image copy without common EXIF/GPS metadata."
   }
 }
