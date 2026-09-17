@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-17T01:19:34.865Z",
+  "generated_at": "2026-09-17T06:35:12.074Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,106 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-17T01:18:37.000Z",
+  "feed_generated_at": "2026-09-17T06:34:17.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 30,
+  "source_count": 29,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "us7000thz3",
+      "magnitude": 5.3,
+      "place": "155 km SSE of Hihifo, Tonga",
+      "time": "2026-09-17T04:06:53.528Z",
+      "updated": "2026-09-17T04:24:31.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -17.3232,
+        "lon": -173.4476
+      },
+      "significance": 432,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thz3",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026skrfhp",
+      "magnitude": 2.6,
+      "place": "129 km NW of Arctic Village, Alaska",
+      "time": "2026-09-17T03:46:09.884Z",
+      "updated": "2026-09-17T03:50:48.489Z",
+      "depth_km": 3.5,
+      "coordinates": {
+        "lat": 69.001,
+        "lon": -147.609
+      },
+      "significance": 104,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026skrfhp",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75437042",
+      "magnitude": 2.62,
+      "place": "21 km E of Alum Rock, CA",
+      "time": "2026-09-17T03:07:43.040Z",
+      "updated": "2026-09-17T05:42:23.485Z",
+      "depth_km": 6.3,
+      "coordinates": {
+        "lat": 37.3352,
+        "lon": -121.5952
+      },
+      "significance": 106,
+      "felt": 2,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75437042",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026skodhl",
+      "magnitude": 2.5,
+      "place": "63 km SE of Ugashik, Alaska",
+      "time": "2026-09-17T02:13:51.814Z",
+      "updated": "2026-09-17T04:06:24.040Z",
+      "depth_km": 101.8,
+      "coordinates": {
+        "lat": 57.137,
+        "lon": -156.613
+      },
+      "significance": 96,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026skodhl",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000thyk",
+      "magnitude": 4.4,
+      "place": "18 km SW of Sipí, Colombia",
+      "time": "2026-09-17T01:12:49.502Z",
+      "updated": "2026-09-17T03:40:38.040Z",
+      "depth_km": 58.8,
+      "coordinates": {
+        "lat": 4.5449,
+        "lon": -76.7654
+      },
+      "significance": 298,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thyk",
+      "pakistan_region": false
+    },
     {
       "id": "pr71531968",
       "magnitude": 3.05,
@@ -83,14 +178,14 @@
       "magnitude": 2.9,
       "place": "5 km SSW of Assaria, Kansas",
       "time": "2026-09-16T21:50:57.961Z",
-      "updated": "2026-09-17T00:55:36.404Z",
+      "updated": "2026-09-17T02:59:45.795Z",
       "depth_km": 9.7,
       "coordinates": {
         "lat": 38.6386,
         "lon": -97.6344
       },
-      "significance": 136,
-      "felt": 15,
+      "significance": 137,
+      "felt": 17,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -140,14 +235,14 @@
       "magnitude": 5,
       "place": "29 km WSW of Sipí, Colombia",
       "time": "2026-09-16T20:12:52.070Z",
-      "updated": "2026-09-16T21:01:47.697Z",
+      "updated": "2026-09-17T03:38:45.180Z",
       "depth_km": 59,
       "coordinates": {
         "lat": 4.5241,
         "lon": -76.8772
       },
       "significance": 385,
-      "felt": 3,
+      "felt": 4,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -197,14 +292,14 @@
       "magnitude": 5.1,
       "place": "77 km SSW of San Jose Village, Northern Mariana Islands",
       "time": "2026-09-16T18:06:40.886Z",
-      "updated": "2026-09-17T00:16:52.027Z",
+      "updated": "2026-09-17T06:16:54.071Z",
       "depth_km": 110.8,
       "coordinates": {
         "lat": 14.2866,
         "lon": 145.4729
       },
       "significance": 403,
-      "felt": 9,
+      "felt": 10,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -254,14 +349,14 @@
       "magnitude": 5,
       "place": "5 km NE of Mitsukaidō, Japan",
       "time": "2026-09-16T15:07:38.245Z",
-      "updated": "2026-09-17T00:47:46.827Z",
+      "updated": "2026-09-17T05:28:43.199Z",
       "depth_km": 77.3,
       "coordinates": {
         "lat": 36.0556,
         "lon": 140.0207
       },
-      "significance": 406,
-      "felt": 55,
+      "significance": 409,
+      "felt": 64,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -387,14 +482,14 @@
       "magnitude": 5.1,
       "place": "172 km ESE of Saipan, Northern Mariana Islands",
       "time": "2026-09-16T08:37:00.012Z",
-      "updated": "2026-09-16T20:47:10.140Z",
+      "updated": "2026-09-17T02:47:02.383Z",
       "depth_km": 10,
       "coordinates": {
         "lat": 14.3886,
         "lon": 147.1141
       },
-      "significance": 400,
-      "felt": 1,
+      "significance": 401,
+      "felt": 2,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -444,14 +539,14 @@
       "magnitude": 3.79,
       "place": "20 km WSW of Gerlach, Nevada",
       "time": "2026-09-16T07:17:25.899Z",
-      "updated": "2026-09-16T19:27:29.849Z",
+      "updated": "2026-09-17T03:27:33.503Z",
       "depth_km": 7,
       "coordinates": {
         "lat": 40.6069,
         "lon": -119.5899
       },
       "significance": 223,
-      "felt": 6,
+      "felt": 7,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -475,120 +570,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thsp",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thse",
-      "magnitude": 4.6,
-      "place": "23 km SW of Sipí, Colombia",
-      "time": "2026-09-16T06:18:06.190Z",
-      "updated": "2026-09-16T06:45:35.040Z",
-      "depth_km": 71,
-      "coordinates": {
-        "lat": 4.495,
-        "lon": -76.7822
-      },
-      "significance": 326,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thse",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000ths9",
-      "magnitude": 5,
-      "place": "281 km SSE of Dunhuang, China",
-      "time": "2026-09-16T05:52:03.328Z",
-      "updated": "2026-09-16T06:11:28.040Z",
-      "depth_km": 10.5,
-      "coordinates": {
-        "lat": 37.7078,
-        "lon": 95.4963
-      },
-      "significance": 385,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ths9",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thrz",
-      "magnitude": 5,
-      "place": "60 km SSW of Ocós, Guatemala",
-      "time": "2026-09-16T03:45:03.456Z",
-      "updated": "2026-09-16T04:02:44.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 14.0287,
-        "lon": -92.4543
-      },
-      "significance": 385,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thrz",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531888",
-      "magnitude": 2.89,
-      "place": "18 km W of Rincón, Puerto Rico",
-      "time": "2026-09-16T02:09:41.730Z",
-      "updated": "2026-09-16T02:37:26.820Z",
-      "depth_km": 8.2,
-      "coordinates": {
-        "lat": 18.3332,
-        "lon": -67.4272
-      },
-      "significance": 128,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531888",
-      "pakistan_region": false
-    },
-    {
-      "id": "nc75436337",
-      "magnitude": 2.67,
-      "place": "3 km ESE of Santa Rosa, CA",
-      "time": "2026-09-16T01:40:30.630Z",
-      "updated": "2026-09-16T22:11:44.229Z",
-      "depth_km": 9.1,
-      "coordinates": {
-        "lat": 38.4332,
-        "lon": -122.6718
-      },
-      "significance": 156,
-      "felt": 170,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75436337",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thrm",
-      "magnitude": 4.5,
-      "place": "45 km NNW of Duaca, Venezuela",
-      "time": "2026-09-16T01:37:17.171Z",
-      "updated": "2026-09-16T02:21:22.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 10.6842,
-        "lon": -69.2782
-      },
-      "significance": 312,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thrm",
       "pakistan_region": false
     }
   ]
