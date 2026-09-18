@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-18T21:43:11.780Z",
+  "generated_at": "2026-09-18T23:38:14.395Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,7 +16,7 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-18T21:42:19.000Z",
+  "feed_generated_at": "2026-09-18T23:37:19.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
   "source_count": 59,
   "pakistan_region_events": [
@@ -61,11 +61,106 @@
   ],
   "worldwide_events": [
     {
+      "id": "us7000tigd",
+      "magnitude": 5.5,
+      "place": "Kermadec Islands region",
+      "time": "2026-09-18T23:18:28.306Z",
+      "updated": "2026-09-18T23:36:13.040Z",
+      "depth_km": 94.1,
+      "coordinates": {
+        "lat": -27.8581,
+        "lon": -177.2286
+      },
+      "significance": 465,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tigd",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71532753",
+      "magnitude": 2.59,
+      "place": "4 km WSW of Guánica, Puerto Rico",
+      "time": "2026-09-18T22:28:10.830Z",
+      "updated": "2026-09-18T22:46:36.820Z",
+      "depth_km": 7.3,
+      "coordinates": {
+        "lat": 17.9577,
+        "lon": -66.951
+      },
+      "significance": 103,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71532753",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71532738",
+      "magnitude": 2.46,
+      "place": "5 km SW of Guánica, Puerto Rico",
+      "time": "2026-09-18T22:15:41.970Z",
+      "updated": "2026-09-18T22:42:04.870Z",
+      "depth_km": 6.9,
+      "coordinates": {
+        "lat": 17.9452,
+        "lon": -66.9482
+      },
+      "significance": 93,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71532738",
+      "pakistan_region": false
+    },
+    {
+      "id": "ci41334847",
+      "magnitude": 2.53,
+      "place": "11 km N of Fillmore, CA",
+      "time": "2026-09-18T21:30:38.790Z",
+      "updated": "2026-09-18T22:15:39.460Z",
+      "depth_km": 26.6,
+      "coordinates": {
+        "lat": 34.5017,
+        "lon": -118.9118
+      },
+      "significance": 98,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41334847",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr2026261003",
+      "magnitude": 3.73,
+      "place": "30 km SSW of Boca de Yuma, Dominican Republic",
+      "time": "2026-09-18T21:26:40.700Z",
+      "updated": "2026-09-18T22:18:37.434Z",
+      "depth_km": 128,
+      "coordinates": {
+        "lat": 18.113,
+        "lon": -68.7021
+      },
+      "significance": 214,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr2026261003",
+      "pakistan_region": false
+    },
+    {
       "id": "pr71532618",
       "magnitude": 3.01,
       "place": "4 km WSW of Guánica, Puerto Rico",
       "time": "2026-09-18T19:28:33.210Z",
-      "updated": "2026-09-18T20:15:39.330Z",
+      "updated": "2026-09-18T22:07:05.117Z",
       "depth_km": 7,
       "coordinates": {
         "lat": 17.9498,
@@ -271,19 +366,19 @@
     },
     {
       "id": "hv75039542",
-      "magnitude": 2.46,
+      "magnitude": 2.49,
       "place": "10 km S of Waimea, Hawaii",
-      "time": "2026-09-18T17:03:28.910Z",
-      "updated": "2026-09-18T19:41:37.371Z",
-      "depth_km": -0.6,
+      "time": "2026-09-18T17:03:29.020Z",
+      "updated": "2026-09-18T22:35:39.625Z",
+      "depth_km": 0.1,
       "coordinates": {
-        "lat": 19.9308,
-        "lon": -155.6785
+        "lat": 19.9295,
+        "lon": -155.6833
       },
-      "significance": 94,
+      "significance": 96,
       "felt": 4,
       "alert": null,
-      "status": "automatic",
+      "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75039542",
       "pakistan_region": false
@@ -362,25 +457,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tid4",
-      "pakistan_region": false
-    },
-    {
-      "id": "hv75039527",
-      "magnitude": 2.49,
-      "place": "13 km ESE of Pāhala, Hawaii",
-      "time": "2026-09-18T16:20:28.140Z",
-      "updated": "2026-09-18T19:42:03.838Z",
-      "depth_km": 27.4,
-      "coordinates": {
-        "lat": 19.1355,
-        "lon": -155.3668
-      },
-      "significance": 95,
-      "felt": 1,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75039527",
       "pakistan_region": false
     },
     {
@@ -464,14 +540,14 @@
       "magnitude": 3.6,
       "place": "5 km NW of Black Eagle, Montana",
       "time": "2026-09-18T13:40:42.979Z",
-      "updated": "2026-09-18T21:23:29.122Z",
+      "updated": "2026-09-18T23:29:03.912Z",
       "depth_km": 27.7,
       "coordinates": {
         "lat": 47.5572,
         "lon": -111.3244
       },
-      "significance": 254,
-      "felt": 161,
+      "significance": 256,
+      "felt": 167,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -521,14 +597,14 @@
       "magnitude": 4.8,
       "place": "5 km SW of Guánica, Puerto Rico",
       "time": "2026-09-18T13:19:35.140Z",
-      "updated": "2026-09-18T20:14:17.912Z",
+      "updated": "2026-09-18T22:10:01.705Z",
       "depth_km": 7,
       "coordinates": {
         "lat": 17.9391,
         "lon": -66.9455
       },
       "significance": 403,
-      "felt": 82,
+      "felt": 83,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -613,19 +689,19 @@
     },
     {
       "id": "hv75039357",
-      "magnitude": 2.81,
+      "magnitude": 2.95,
       "place": "4 km S of Pāhala, Hawaii",
-      "time": "2026-09-18T11:19:52.800Z",
-      "updated": "2026-09-18T11:27:48.040Z",
-      "depth_km": 10.2,
+      "time": "2026-09-18T11:19:52.780Z",
+      "updated": "2026-09-18T22:09:54.580Z",
+      "depth_km": 13.6,
       "coordinates": {
-        "lat": 19.1647,
-        "lon": -155.4862
+        "lat": 19.164,
+        "lon": -155.484
       },
-      "significance": 121,
+      "significance": 134,
       "felt": 0,
       "alert": null,
-      "status": "automatic",
+      "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75039357",
       "pakistan_region": false
@@ -666,25 +742,6 @@
       "status": "automatic",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026snavuk",
-      "pakistan_region": false
-    },
-    {
-      "id": "hv75039342",
-      "magnitude": 2.67,
-      "place": "2 km WSW of Pāhala, Hawaii",
-      "time": "2026-09-18T10:27:35.610Z",
-      "updated": "2026-09-18T10:31:10.190Z",
-      "depth_km": 28.6,
-      "coordinates": {
-        "lat": 19.1915,
-        "lon": -155.5032
-      },
-      "significance": 110,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75039342",
       "pakistan_region": false
     },
     {
@@ -1122,63 +1179,6 @@
       "status": "automatic",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026smfeoh",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr2026260000",
-      "magnitude": 3.66,
-      "place": "26 km SW of Boca de Yuma, Dominican Republic",
-      "time": "2026-09-17T23:33:25.160Z",
-      "updated": "2026-09-18T02:32:29.040Z",
-      "depth_km": 147,
-      "coordinates": {
-        "lat": 18.2058,
-        "lon": -68.7766
-      },
-      "significance": 206,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr2026260000",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026smepok",
-      "magnitude": 2.8,
-      "place": "10 km SE of Anchorage, Alaska",
-      "time": "2026-09-17T23:27:25.566Z",
-      "updated": "2026-09-18T03:01:55.301Z",
-      "depth_km": 7.7,
-      "coordinates": {
-        "lat": 61.148,
-        "lon": -149.771
-      },
-      "significance": 127,
-      "felt": 26,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026smepok",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000ti67",
-      "magnitude": 4.2,
-      "place": "59 km NE of María Elena, Chile",
-      "time": "2026-09-17T22:11:41.970Z",
-      "updated": "2026-09-18T01:58:48.040Z",
-      "depth_km": 82.7,
-      "coordinates": {
-        "lat": -21.9554,
-        "lon": -69.2656
-      },
-      "significance": 271,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ti67",
       "pakistan_region": false
     }
   ]
