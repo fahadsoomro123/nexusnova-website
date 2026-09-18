@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-17T23:00:59.773Z",
+  "generated_at": "2026-09-18T01:18:19.962Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,49 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-17T23:00:53.000Z",
+  "feed_generated_at": "2026-09-18T01:18:17.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 30,
+  "source_count": 31,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "aka2026smfeoh",
+      "magnitude": 2.7,
+      "place": "80 km ENE of Ouzinkie, Alaska",
+      "time": "2026-09-17T23:44:40.392Z",
+      "updated": "2026-09-18T00:31:26.040Z",
+      "depth_km": 13.1,
+      "coordinates": {
+        "lat": 58.256,
+        "lon": -151.297
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026smfeoh",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026smepok",
+      "magnitude": 2.8,
+      "place": "10 km SE of Anchorage, Alaska",
+      "time": "2026-09-17T23:27:25.566Z",
+      "updated": "2026-09-18T01:08:51.149Z",
+      "depth_km": 7.7,
+      "coordinates": {
+        "lat": 61.148,
+        "lon": -149.771
+      },
+      "significance": 126,
+      "felt": 23,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026smepok",
+      "pakistan_region": false
+    },
     {
       "id": "tx2026sjbtxd",
       "magnitude": 2.7,
@@ -41,18 +79,37 @@
       "pakistan_region": false
     },
     {
+      "id": "us7000ti5y",
+      "magnitude": 4.7,
+      "place": "24 km SW of Sipí, Colombia",
+      "time": "2026-09-17T21:10:25.572Z",
+      "updated": "2026-09-17T23:58:57.546Z",
+      "depth_km": 57.8,
+      "coordinates": {
+        "lat": 4.5211,
+        "lon": -76.8219
+      },
+      "significance": 340,
+      "felt": 2,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ti5y",
+      "pakistan_region": false
+    },
+    {
       "id": "ci41334231",
-      "magnitude": 3.08823882840527,
+      "magnitude": 2.94,
       "place": "4 km SSE of Compton, CA",
-      "time": "2026-09-17T20:32:30.020Z",
-      "updated": "2026-09-17T22:59:14.926Z",
+      "time": "2026-09-17T20:32:29.830Z",
+      "updated": "2026-09-18T00:52:11.642Z",
       "depth_km": 13.2,
       "coordinates": {
-        "lat": 33.8648,
-        "lon": -118.209
+        "lat": 33.8647,
+        "lon": -118.2075
       },
-      "significance": 299,
-      "felt": 490,
+      "significance": 288,
+      "felt": 499,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -551,44 +608,6 @@
       "status": "automatic",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026skodhl",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000thyk",
-      "magnitude": 4.4,
-      "place": "18 km SW of Sipí, Colombia",
-      "time": "2026-09-17T01:12:49.502Z",
-      "updated": "2026-09-17T03:40:38.040Z",
-      "depth_km": 58.8,
-      "coordinates": {
-        "lat": 4.5449,
-        "lon": -76.7654
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thyk",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71531968",
-      "magnitude": 3.05,
-      "place": "69 km NE of Cruz Bay, U.S. Virgin Islands",
-      "time": "2026-09-17T00:43:36.530Z",
-      "updated": "2026-09-17T00:56:47.510Z",
-      "depth_km": 24.3,
-      "coordinates": {
-        "lat": 18.8318,
-        "lon": -64.4005
-      },
-      "significance": 143,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71531968",
       "pakistan_region": false
     }
   ]
