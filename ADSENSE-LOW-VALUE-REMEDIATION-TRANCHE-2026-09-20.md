@@ -27,13 +27,17 @@ These pages are retained for existing links but are now `noindex,follow` and poi
 - merge-pdf.html -> document-workbench.html
 - password-generator.html -> password-security-workbench.html
 
+## Homepage focus
+
+The homepage was refocused from a HumanProof-led presentation to a tools-first proposition. HumanProof is now described as a separate NexusNova product rather than the primary purpose of the tools site.
+
 ## Information architecture change
 
 `tools.html` no longer presents a long wall of small utilities. It now presents five workflow workbenches first, followed by a smaller set of specialist utilities. The copy explains why the library is being consolidated and distinguishes browser-local processing from blanket security claims.
 
 ## Index surface
 
-The branch sitemap now contains **52 URLs**. The previous remediation branch contained 55 URLs. Nine single-purpose pages were removed from the sitemap and six workbench pages were added.
+The branch sitemap now contains **52 URLs**. The homepage and Tools hub now lead with the six workflow workbenches and the smaller specialist-tool set. The previous remediation branch contained 55 URLs. Nine single-purpose pages were removed from the sitemap and six workbench pages were added.
 
 ## Verification status
 
