@@ -27,69 +27,58 @@ jobs:
           ROOT = Path('.')
           SITEMAP = ROOT / 'sitemap.xml'
 
-          KEEP_EXACT = {
+          KEEP = {
               'index.html',
-              'tools.html',
-              'categories.html',
-              'calculator-tools.html',
-              'image-tools.html',
-              'pdf-tools.html',
-              'productivity-tools.html',
-              'developer-tools.html',
-              'network-tools.html',
-              'pakistan-tools.html',
-              'articles.html',
-              'guides.html',
-              'about.html',
-              'editorial-policy.html',
-              'editorial-team.html',
-              'tool-methodology.html',
-              'privacy.html',
-              'terms.html',
-              'contact.html',
-              'disclaimer.html',
-              'faq.html',
-              'percentage-calculator.html',
-              'age-calculator.html',
-              'date-difference-calculator.html',
-              'unit-converter.html',
-              'word-counter.html',
-              'password-generator.html',
-              'image-compressor.html',
-              'image-to-text-ocr.html',
-              'merge-pdf.html',
-              'ai-prompt-builder.html',
-              'dns-lookup.html',
-              'decision-matrix-calculator.html',
+              'tools.html','categories.html','calculator-tools.html','image-tools.html',
+              'pdf-tools.html','productivity-tools.html','developer-tools.html',
+              'network-tools.html','pakistan-tools.html','articles.html','guides.html',
+              'about.html','editorial-policy.html','editorial-team.html','tool-methodology.html',
+              'privacy.html','terms.html','contact.html','disclaimer.html','faq.html',
+              'percentage-calculator.html','age-calculator.html','date-difference-calculator.html',
+              'unit-converter.html','word-counter.html','password-generator.html',
+              'image-compressor.html','image-to-text-ocr.html','merge-pdf.html',
+              'ai-prompt-builder.html','dns-lookup.html','decision-matrix-calculator.html',
               'paper-size-in-pixels.html',
           }
 
           def keep(path):
-              if path in KEEP_EXACT:
-                  return True
-              if path.startswith('articles/') or path.startswith('guides/'):
-                  return True
-              return False
+              return path in KEEP or path.startswith('articles/') or path.startswith('guides/')
 
-          sitemap = SITEMAP.read_text(encoding='utf-8')
-          urls = re.findall(r'<loc>https://nexusnovatools\\.com/([^<]*)</loc>', sitemap)
+          root = ET.parse(SITEMAP)
+          ns = {'sm':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls = []
+          for node in root.getroot().findall('sm:url', ns):
+              loc = node.find('sm:loc', ns)
+              if loc is not None and loc.text:
+                  urls.append(loc.text.replace('https://nexusnovatools.com/','',1) or 'index.html')
 
           changed = []
           for rel in urls:
-              rel = rel or 'index.html'
               if keep(rel):
                   continue
               path = ROOT / rel
-              if not path.exists() or path.suffix.lower() != '.html':
+              if not path.is_file() or path.suffix.lower() != '.html':
                   continue
               raw = path.read_text(encoding='utf-8', errors='ignore')
-              if re.search(r'<meta\\b[^>]*name=["\']robots["\'][^>]*>', raw, flags=re.I):
-                  updated = re.sub(
-                      r'(<meta\\b[^>]*name=["\']robots["\'][^>]*content=["\'])[^"\']*(["\'])',
-                      r'\\1noindex,follow,max-image-preview:large\\2',
-                      raw, count=1, flags=re.I
-                  )
-              else:
+              pattern = re.compile(r'<meta\\s+([^>]*?)>', re.I)
+              found = False
+              def meta_repl(match):
+                  nonlocal found
+                  attrs = match.group(1)
+                  if not re.search(r'\\bname=["\\']robots["\\']', attrs, re.I):
+                      return match.group(0)
+                  found = True
+                  if re.search(r'\\bcontent=["\\'][^"\\']*["\\']', attrs, re.I):
+                      attrs = re.sub(
+                          r'(\\bcontent=["\\'])[^"\\']*(["\\'])',
+                          r'\\1noindex,follow,max-image-preview:large\\2',
+                          attrs, count=1, flags=re.I
+                      )
+                  else:
+                      attrs += ' content="noindex,follow,max-image-preview:large"'
+                  return '<meta ' + attrs + '>'
+              updated = pattern.sub(meta_repl, raw, count=50)
+              if not found:
                   updated = re.sub(
                       r'(<head\\b[^>]*>)',
                       r'\\1<meta name="robots" content="noindex,follow,max-image-preview:large">',
@@ -99,46 +88,36 @@ jobs:
                   path.write_text(updated, encoding='utf-8')
                   changed.append(rel)
 
-          root = ET.fromstring(SITEMAP.read_text(encoding='utf-8'))
-          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-          for url in list(root.findall('sm:url', ns)):
-              loc = url.find('sm:loc', ns)
-              if loc is None:
-                  continue
-              rel = (loc.text or '').replace('https://nexusnovatools.com/', '', 1)
+          for node in list(root.getroot().findall('sm:url', ns)):
+              loc = node.find('sm:loc', ns)
+              rel = (loc.text or '').replace('https://nexusnovatools.com/','',1) if loc is not None else ''
               if not keep(rel):
-                  root.remove(url)
-          ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
-          ET.ElementTree(root).write(SITEMAP, encoding='utf-8', xml_declaration=True)
+                  root.getroot().remove(node)
 
-          robots = ROOT / 'robots.txt'
-          robots.write_text(
+          ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
+          root.write(SITEMAP, encoding='utf-8', xml_declaration=True)
+
+          (ROOT / 'robots.txt').write_text(
               'User-agent: *\\nAllow: /\\n\\n'
-              '# Canonical sitemap discovery\\n'
               'Sitemap: https://nexusnovatools.com/sitemap.xml\\n',
               encoding='utf-8'
           )
 
-          report = ROOT / 'ADSENSE-LOW-VALUE-REMEDIATION-STARTED-2026-09-20.md'
-          kept = sorted([x for x in urls if keep(x or 'index.html')])
-          report.write_text(
-              '# NexusNova Tools - AdSense Low-Value Content Remediation (20 September 2026)\\n\\n'
-              'This branch reduces the search index surface to a deliberately reviewed set while deeper editorial content is expanded.\\n\\n'
-              'Sitemap URLs before this pass: %d\\n'
-              'Tool/utility pages changed to noindex,follow: %d\\n'
-              'Sitemap URLs retained: %d\\n'
-              'Retained article/guide folders: articles/ and guides/.\\n'
-              'Retained trust pages: About, Editorial Policy, Editorial Team, Methodology, Privacy, Terms, Contact, Disclaimer.\\n'
-              'Removed duplicate sitemap-index discovery from robots.txt.\\n\\n'
-              '## Why\\n\\n'
-              'The current AdSense rejection explicitly identifies Low value content. The previous 11 September internal audit proved removal of one repeated guide marker, but it did not prove that the remaining indexable inventory was sufficiently original and useful. The current sitemap had expanded beyond that audit classification, and many tool pages still relied on short utility descriptions or repeated remediation structures.\\n\\n'
-              '## Guardrail\\n\\n'
-              'No guarantee of AdSense approval is implied. This is an evidence-driven reduction of the index surface so the remaining public content can be deepened and reviewed before another request.\\n'
-              % (len(urls), len(changed), len(kept)),
+          kept = [x for x in urls if keep(x)]
+          (ROOT / 'ADSENSE-LOW-VALUE-REMEDIATION-STARTED-2026-09-20.md').write_text(
+              '# NexusNova Tools - AdSense Low-Value Content Remediation\\n\\n'
+              'Started 20 September 2026.\\n\\n'
+              f'- Sitemap URLs before this pass: {len(urls)}\\n'
+              f'- HTML pages changed to noindex,follow: {len(changed)}\\n'
+              f'- Sitemap URLs retained: {len(kept)}\\n'
+              '- Article and guide folders retained for deeper editorial review.\\n'
+              '- Duplicate sitemap discovery was removed from robots.txt.\\n\\n'
+              'This is an evidence-driven reduction of index surface after the current AdSense rejection identified Low value content. It is not an approval guarantee and review should not be requested until live deployment, manual content review, and recrawl are complete.\\n',
               encoding='utf-8'
           )
 
-          print('changed=%d retained_sitemap=%d' % (len(changed), len(kept)))
+          print(f'changed={len(changed)} retained={len(kept)}')
+
           PY
 
       - name: Commit remediation
