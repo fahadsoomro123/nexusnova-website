@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-09-18T07:22:13.914646Z",
+  "generated_at": "2026-09-19T07:18:11.584743Z",
   "items": [
     {
       "title": "Stable Channel Update for Desktop",
@@ -9,7 +9,7 @@
       "category": "Security",
       "published": "2026-09-15T20:13:26Z",
       "summary": "The Stable channel has been updated to 153.0.8010.47/.48 for Windows and Mac and 153.0.8010.47 for Linux, which will roll out over the coming days/weeks. A full list of changes in this build is available in the Log Security Fixes and Rewards Note: Access to bu",
-      "score": 49
+      "score": 47
     },
     {
       "title": "Chrome for Android Update",
@@ -18,7 +18,7 @@
       "category": "Security",
       "published": "2026-09-17T23:25:23Z",
       "summary": "Hi, everyone! We've just released Chrome 153 (153.0.8010.52) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
-      "score": 33
+      "score": 31
     },
     {
       "title": "Agentic CLI customizations now in the usage metrics API",
@@ -27,16 +27,43 @@
       "category": "AI",
       "published": "2026-09-17T21:08:50Z",
       "summary": "GitHub Copilot expands existing CLI report coverage with agentic activity metrics for skills, custom agents, Model Context Protocol (MCP) servers, slash commands, and plugins. What’s new The fields appear in… The post Agentic CLI customizations now in the usag",
-      "score": 29
+      "score": 27
     },
     {
-      "title": "Extended Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/09/extended-stable-update-for-desktop_0130771745.html",
+      "title": "Upcoming deprecation of selected GitHub Copilot models in mid-October",
+      "url": "https://github.blog/changelog/2026-09-18-upcoming-deprecation-of-selected-github-copilot-models-in-mid-october",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-09-18T19:00:00Z",
+      "summary": "We will deprecate the following models across all GitHub Copilot experiences (including Copilot Chat, inline edits, ask and agent modes, and code completions) on October 19th, 2026: Model Deprecation date… The post Upcoming deprecation of selected GitHub Copil",
+      "score": 26
+    },
+    {
+      "title": "Chrome Dev for Android Update",
+      "url": "https://chromereleases.googleblog.com/2026/09/chrome-dev-for-android-update_01287307620.html",
       "source": "Chrome Releases",
       "category": "Browser",
-      "published": "2026-09-17T20:03:37Z",
-      "summary": "The Extended Stable channel has been updated to 152.0.7977.134 for Windows and Mac which will roll out over the coming days/weeks. A full list of changes in this build is available in the log . Interested in switching release channels? Find out how here . If y",
+      "published": "2026-09-18T16:58:32Z",
+      "summary": "Hi everyone! We've just released Chrome Dev 156 (156.0.8063.0) for Android. It's now available on Google Play . You can see a partial list of the changes in the Git log . For details on new features, check out the Chromium blog , and for details on web platfor",
       "score": 23
+    },
+    {
+      "title": "Chrome Dev for Desktop Update",
+      "url": "https://chromereleases.googleblog.com/2026/09/chrome-dev-for-desktop-update_01634269358.html",
+      "source": "Chrome Releases",
+      "category": "Browser",
+      "published": "2026-09-18T16:43:32Z",
+      "summary": "The Dev channel has been updated to 156.0.8063.3 for Windows, Mac and Linux. A partial list of changes is available in the Git log . Interested in switching release channels? Find out how . If you find a new issue, please let us know by filing a bug . The comm",
+      "score": 23
+    },
+    {
+      "title": "Manage the code coverage ruleset condition with the REST API",
+      "url": "https://github.blog/changelog/2026-09-18-manage-the-code-coverage-ruleset-condition-with-the-rest-api",
+      "source": "GitHub Changelog",
+      "category": "Developer",
+      "published": "2026-09-18T19:23:49Z",
+      "summary": "You can now use the generally available REST API to manage the Restrict code coverage repository ruleset option, in addition to the existing UI support. This ruleset lets you enforce… The post Manage the code coverage ruleset condition with the REST API appear",
+      "score": 22
     },
     {
       "title": "Ubuntu 26 generally available and latest migration",
@@ -45,33 +72,6 @@
       "category": "Developer",
       "published": "2026-09-17T16:27:16Z",
       "summary": "The Ubuntu 26.04 runner image for GitHub Actions is now out of public preview and fully supported for production workflows on both x64 and arm64. As part of this release,… The post Ubuntu 26 generally available and latest migration appeared first on The GitHub",
-      "score": 23
-    },
-    {
-      "title": "Workflow execution protections in GitHub Actions generally available",
-      "url": "https://github.blog/changelog/2026-09-17-workflow-execution-protections-in-github-actions-generally-available",
-      "source": "GitHub Changelog",
-      "category": "Developer",
-      "published": "2026-09-17T15:45:26Z",
-      "summary": "Workflow execution protections for GitHub Actions, previously in public preview, are now generally available for GitHub Enterprise, organizations, and repositories. Execution protections let you define an allowlist that controls who… The post Workflow executio",
-      "score": 23
-    },
-    {
-      "title": "Early Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/09/early-stable-update-for-desktop_096324202.html",
-      "source": "Chrome Releases",
-      "category": "Browser",
-      "published": "2026-09-16T23:09:00Z",
-      "summary": "The Stable channel has been updated to 154.0.8037.44/.45 for Windows. as part of our early stable release to a small percentage of users. A full list of changes in this build is available in the log . You can find more details about early Stable releases here ",
-      "score": 21
-    },
-    {
-      "title": "Copilot budget increase requests are generally available",
-      "url": "https://github.blog/changelog/2026-09-16-copilot-budget-increase-requests-are-generally-available",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-09-16T20:17:18Z",
-      "summary": "Previously, when a member used all the Copilot AI credits available to them, they were blocked from Copilot features that consume credits. This release adds a flow for them to… The post Copilot budget increase requests are generally available appeared first on",
       "score": 21
     }
   ],
@@ -83,7 +83,7 @@
       "category": "Security",
       "published": "2026-09-15T20:13:26Z",
       "summary": "The Stable channel has been updated to 153.0.8010.47/.48 for Windows and Mac and 153.0.8010.47 for Linux, which will roll out over the coming days/weeks. A full list of changes in this build is available in the Log Security Fixes and Rewards Note: Access to bu",
-      "score": 49
+      "score": 47
     },
     {
       "title": "Chrome for Android Update",
@@ -92,7 +92,7 @@
       "category": "Security",
       "published": "2026-09-17T23:25:23Z",
       "summary": "Hi, everyone! We've just released Chrome 153 (153.0.8010.52) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
-      "score": 33
+      "score": 31
     },
     {
       "title": "Agentic CLI customizations now in the usage metrics API",
@@ -101,7 +101,7 @@
       "category": "AI",
       "published": "2026-09-17T21:08:50Z",
       "summary": "GitHub Copilot expands existing CLI report coverage with agentic activity metrics for skills, custom agents, Model Context Protocol (MCP) servers, slash commands, and plugins. What’s new The fields appear in… The post Agentic CLI customizations now in the usag",
-      "score": 29
+      "score": 27
     }
   ],
   "tool_of_day": {
