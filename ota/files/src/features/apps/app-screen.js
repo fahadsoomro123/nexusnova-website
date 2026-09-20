@@ -69,12 +69,12 @@ async function loadRendererBag(path, exportName) {
 }
 
 async function resolveRenderer(id) {
-  // AI Video Studio is a flagship route and must not depend on the larger
-  // Premium Studio bundle resolving first. Load it directly from the OTA layer.
+  // Flagship video route loads directly so a broken/slow aggregate renderer
+  // bundle cannot fall back to the generic migration screen.
   if (id === 'ai-video-studio') {
     try {
       const module = await import('./ai-video-studio-flagship.js');
-      if (module?.renderAiVideoStudio) return module.renderAiVideoStudio;
+      if (typeof module?.renderAiVideoStudio === 'function') return module.renderAiVideoStudio;
     } catch (error) {
       console.warn('[NexusNova Fresh] direct AI Video Studio flagship load failed:', error);
     }
