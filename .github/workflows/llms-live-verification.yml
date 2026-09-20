@@ -63,11 +63,10 @@ jobs:
 
       - name: Wait for GitHub Pages to publish the exact file
         shell: bash
-        env:
-          EXPECTED_SHA: ${{ hashFiles('llms.txt') }}
         run: |
           set -euo pipefail
           mkdir -p llms-evidence
+          EXPECTED_SHA="$(sha256sum llms.txt | awk '{print $1}')"
 
           LIVE_URL="https://nexusnovatools.com/llms.txt?nn_live_audit=${GITHUB_SHA}"
           success=0
