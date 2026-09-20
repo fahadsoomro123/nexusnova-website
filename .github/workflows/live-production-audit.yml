@@ -8,6 +8,7 @@ on:
       - '.github/workflows/production-smoke.yml'
       - 'index.html'
       - 'assets/js/main.js'
+      - 'robots.txt'
   push:
     branches: [main]
     paths:
@@ -140,7 +141,7 @@ jobs:
               url='https://www.googleapis.com/pagespeedonline/v5/runPagespeed?'+urllib.parse.urlencode({
                   'url':target,
                   'strategy':strategy,
-                  'category':'performance',
+                  'category':strategy == 'mobile' ? 'performance' : 'seo',
               })
               try:
                   req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.1'})
