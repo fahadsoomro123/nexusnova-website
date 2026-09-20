@@ -76,6 +76,7 @@ jobs:
       - name: Disable GA4 network only in local audit copy
         shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
           
           path = Path('assets/js/main.js')
