@@ -37,17 +37,19 @@ The homepage was refocused from a HumanProof-led presentation to a tools-first p
 
 ## Index surface
 
-The branch sitemap now contains **52 URLs**. The homepage and Tools hub now lead with the six workflow workbenches and the smaller specialist-tool set. The previous remediation branch contained 55 URLs. Nine single-purpose pages were removed from the sitemap and six workbench pages were added.
+The branch sitemap now contains **45 URLs** after a second consolidation pass. The homepage and Tools hub now lead with the six workflow workbenches and the smaller specialist-tool set. The previous remediation branch contained 55 URLs. Nine single-purpose pages were removed from the sitemap and six workbench pages were added.
 
 ## Verification status
 
 Verified directly in the GitHub branch:
 - PR #170 remains open and unmerged.
-- Current PR head: `d3c37ed6f3e20c74c82ed1f5060902c058ea5529`.
-- Six new workbench files are present in the PR.
-- The sitemap was updated after the new workbench additions.
-- The nine consolidated pages now contain `noindex,follow` directives.
-- `tools.html` links to the new workbench pages rather than the consolidated pages.
+- The current sitemap contains **45 URLs**.
+- Six flagship workbench pages are present in the sitemap: document, image publishing, calculation, writing, AI workflow and password security.
+- A seventh developer workbench was added for JSON, Base64, URL components, UUID and SHA-256.
+- Nine commodity tool pages are noindex and point to their broader workbench.
+- Eight thin category/listing surfaces are noindex and removed from the canonical sitemap: developer-tools, categories, PDF tools, image tools, calculator tools, productivity tools, Pakistan tools and network tools.
+- The homepage is tools-first and no longer presents HumanProof as the primary site purpose.
+- Inline JavaScript syntax checks passed for all six flagship workbenches.
 
 Not yet claimed:
 - Google AdSense approval.
@@ -55,4 +57,4 @@ Not yet claimed:
 - Search Console performance changes.
 - A complete live rendered crawl.
 
-The live website must be checked after deployment before a new AdSense review request.
+The exact branch must be deployed and then checked as a rendered production site before another AdSense review request.
