@@ -84,7 +84,10 @@ jobs:
           import json
           from pathlib import Path
 
-          data=json.loads(Path('live-performance/report.json').read_text(encoding='utf-8'))
+          reports=sorted(Path('live-performance').glob('report*.json'))
+          if not reports:
+              raise SystemExit('Lighthouse JSON report was not produced')
+          data=json.loads(reports[0].read_text(encoding='utf-8'))
           categories=data.get('categories',{})
 
           scores={
