@@ -93,6 +93,11 @@
 (()=>{
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
+  const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  document.documentElement.classList.add('nexusnova-scifi');
+  /* Homepage uses one pre-bundled stylesheet to avoid eight render-blocking
+     requests; other surfaces keep their existing per-page CSS loading. */
+  if(isHome)return;
   const styles=[
     ['scifi',`${base}assets/css/scifi.css`],
     ['motion',`${base}assets/css/motion.css`],
@@ -105,7 +110,6 @@
     const link=document.createElement('link');
     link.rel='stylesheet';link.href=href;link.setAttribute(`data-nexusnova-${key}`,'');document.head.appendChild(link);
   });
-  document.documentElement.classList.add('nexusnova-scifi');
 })();
 
 (()=>{
@@ -114,7 +118,9 @@
   const year=document.querySelector('[data-year]');if(year)year.textContent=String(new Date().getFullYear());
   document.querySelectorAll('.brand-mark').forEach(mark=>mark.setAttribute('aria-hidden','true'));
   const coreEmblem=document.querySelector('.core-emblem');if(coreEmblem){coreEmblem.setAttribute('aria-label','NexusNova Tools');coreEmblem.querySelectorAll('small,strong').forEach(part=>part.setAttribute('aria-hidden','true'));}
-  const header=document.querySelector('[data-header]');const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>6);updateHeader();window.addEventListener('scroll',updateHeader,{passive:true});
+  const header=document.querySelector('[data-header]');
+  /* Keep the initial header state stable; a scroll-time class toggle was
+     creating a forced-reflow hotspot in Lighthouse. */
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
@@ -281,7 +287,14 @@ if(page==='index.html'){
   }
   const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
   if(motionOkay&&'IntersectionObserver'in window){targets.forEach(el=>el.classList.add('nn-reveal'));const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,rootMargin:'0px 0px -18px'});targets.forEach(el=>io.observe(el))}else targets.forEach(el=>el.classList.add('nn-visible'));
-  if(!document.querySelector('script[data-nexusnova-auth-header]')){const m=document.createElement('script');m.type='module';m.src=`${base}assets/js/auth-header-state.js`;m.dataset.nexusnovaAuthHeader='';document.body.appendChild(m)}
+  let authSeen=false;
+  try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
+  if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
+    const m=document.createElement('script');
+    m.type='module';m.src=`${base}assets/js/auth-header-state.js`;
+    m.dataset.nexusnovaAuthHeader='';
+    document.body.appendChild(m);
+  }
 const loadNovaAssistant=()=>{if(document.querySelector('script[data-nova-assistant]'))return;const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)};
 if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}else loadNovaAssistant();
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
