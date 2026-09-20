@@ -1,0 +1,63 @@
+name: Build Video OTA Manifest
+
+on:
+  push:
+    branches: [nexusnova-ota-public]
+    paths:
+      - '.github/workflows/ota-build-manifest-on-video.yml'
+      - 'ota/files/index.html'
+      - 'ota/files/src/features/apps/premium-studio-suite.js'
+      - 'ota/files/src/features/apps/ai-video-studio-flagship.js'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+      - name: Build clean baseline-matched manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin nexusnova-ota-public
+          test -s ota/files/index.html
+          test -s ota/files/src/features/apps/premium-studio-suite.js
+          test -s ota/files/src/features/apps/ai-video-studio-flagship.js
+          node <<'NODE'
+          const fs=require('fs'),crypto=require('crypto');
+          const root='ota/files';
+          const rel=[
+            'index.html',
+            'src/features/apps/premium-studio-suite.js',
+            'src/features/apps/ai-video-studio-flagship.js'
+          ];
+          const files=rel.map(path=>{
+            const b=fs.readFileSync(root+'/'+path);
+            return {path,sha256:crypto.createHash('sha256').update(b).digest('hex'),size:b.length};
+          });
+          const m={
+            schema:2,
+            base:'b8aa3393af20235fb70cf771f7bc7f84b05ebbf3',
+            version:process.env.GITHUB_SHA,
+            ota_badge:'OTA2',
+            ota_badge_status:'ACTIVE',
+            diagnostic:'1.0.41-travel-icon-only-ota-baseline-video-flagship',
+            source_commit:'96d61f6a126933811417d1c75b2198fa636ba236',
+            visual_proof:false,
+            files
+          };
+          fs.writeFileSync('ota/manifest.json',JSON.stringify(m));
+          console.log(JSON.stringify(m,null,2));
+          NODE
+          git config user.name 'NexusNova OTA Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ota/manifest.json
+          git diff --cached --check
+          git commit -m "ota(video): publish baseline-matched OTA2" || true
+          git push origin HEAD:nexusnova-ota-public
