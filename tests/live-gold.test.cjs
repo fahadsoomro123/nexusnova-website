@@ -57,13 +57,15 @@ test('browser exposes selected Sarafa source without publishing an invented loca
   assert.match(client,/localSource\.url/);
 });
 
-test('primary navigation restores Live Trackers with the working tracker endpoints',()=>{
+test('primary navigation uses one clean LIVE dashboard link',()=>{
   const siteShell=read('assets/js/site-main.js');
   const hub=read('live.html');
-  assert.match(siteShell,/Live Trackers/);
-  assert.match(siteShell,/fuel-rates\.html/);
-  assert.match(siteShell,/gold-rates\.html/);
-  assert.match(siteShell,/sports-live\.html/);
+  assert.match(siteShell,/\['live\.html','🔴 LIVE'\]/);
+  assert.doesNotMatch(siteShell,/Live Trackers/);
+  assert.doesNotMatch(siteShell,/nn-nav-dropdown/);
+  assert.doesNotMatch(siteShell,/fuel-rates\.html/);
+  assert.doesNotMatch(siteShell,/gold-rates\.html/);
+  assert.doesNotMatch(siteShell,/sports-live\.html/);
   assert.match(siteShell,/\['gaming\.html','Gaming'\]/);
   assert.match(hub,/href="fuel-rates\.html"/);
   assert.match(hub,/href="gold-rates\.html"/);
