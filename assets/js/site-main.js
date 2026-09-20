@@ -120,7 +120,7 @@
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['gaming.html','Gaming']
+      ['index.html','Home'],['tools.html','Tools'],['articles.html','Articles'],['guides.html','Guides']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
@@ -233,8 +233,8 @@ if(page==='index.html'){
     ['whatsapp-link-generator.html','WhatsApp Link Generator','whatsapp wa me chat message business link'],
     ['timezone-meeting-planner.html','Timezone Meeting Planner','timezone world time meeting pakistan dubai london new york'],
     ['ai-vram-calculator.html','AI VRAM Calculator','ai gpu vram llm parameters memory quantization'],
-    ['image-compressor.html','Image Compressor','compress jpg png webp image smaller'],
-    ['image-resizer.html','Image Resizer','resize image width height pixels'],
+    ['image-publishing-workbench.html','Image Publishing Workbench','compress resize export jpg png webp image smaller'],
+    ['image-publishing-workbench.html','Image Publishing Workbench','resize image width height pixels'],
     ['heic-to-jpg.html','HEIC to JPG','iphone heic heif jpg convert'],
     ['webp-to-jpg.html','WebP to JPG','webp jpg convert image'],
     ['webp-to-png.html','WebP to PNG','webp png transparency convert'],
@@ -242,18 +242,18 @@ if(page==='index.html'){
     ['png-to-jpg.html','PNG to JPG','png jpg convert image'],
     ['jpg-to-png.html','JPG to PNG','jpg png convert image'],
     ['jpg-to-pdf.html','JPG to PDF','image jpg pdf document'],
-    ['merge-pdf.html','Merge PDF','combine pdf files'],
-    ['split-pdf.html','Split PDF','extract pdf pages'],
-    ['text-to-pdf.html','Text to PDF','text document pdf'],
+    ['document-workbench.html','PDF Document Workbench','combine merge pdf files'],
+    ['document-workbench.html','PDF Document Workbench','extract split pdf pages'],
+    ['document-workbench.html','PDF Document Workbench','text document pdf'],
     ['qr-code-generator.html','QR Code Generator','qr create link text'],
     ['scientific-calculator.html','Scientific Calculator','math trig log calculator'],
     ['emi-calculator.html','EMI Calculator','loan payment interest emi'],
     ['bmi-calculator.html','BMI Calculator','body mass index height weight'],
     ['pomodoro-timer.html','Pomodoro Timer','focus work break productivity'],
-    ['password-strength-checker.html','Password Strength Checker','password security strength'],
+    ['password-security-workbench.html','Password Security Workbench','password security strength'],
     ['unix-timestamp-converter.html','Unix Timestamp Converter','unix epoch date time developer'],
     ['resume-builder.html','Resume Builder','cv resume job career'],
-    ['ai-prompt-builder.html','AI Prompt Builder','ai prompt generator writing'],
+    ['ai-workflow-workbench.html','AI Workflow Workbench','ai prompt generator writing instructions'],
     ['gaming.html','Gaming Tools','gaming aim sensitivity edpi fps reaction minecraft steam settings'],
     ['gaming-sensitivity-converter.html','CS2 ↔ Valorant Sensitivity Converter','gaming cs2 valorant aim sensitivity convert mouse'],
     ['edpi-calculator.html','Gaming eDPI Calculator','gaming edpi dpi sensitivity aim mouse'],
@@ -263,7 +263,7 @@ if(page==='index.html'){
     ['steam-playtime-calculator.html','Steam Playtime Calculator','steam gaming playtime hours daily weekly monthly'],
     ['gaming-settings-notes.html','Gaming Settings & Crosshair Notes','gaming settings crosshair dpi sensitivity notes local'],
     ['gamer-name-generator.html','Gamer Name Generator','gaming gamer tag name generator ideas'],
-    ['developer-tools.html','Developer Tools','json base64 uuid sha url developer'],
+    ['developer-workbench.html','Developer Workbench','json base64 uuid sha url developer'],
     ['articles.html','Practical Articles','articles guides learning'],
     ['tech.html','Tech & Security','passkeys security ai browser quantum tech'],
     ['guides.html','Guides','how to guide tutorial']
