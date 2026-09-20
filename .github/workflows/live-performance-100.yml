@@ -74,7 +74,7 @@ jobs:
             --only-categories=performance,accessibility,best-practices,seo \
             --output=json \
             --output=html \
-            --output-path=live-performance/report.json
+            --output-path=live-performance/report.report.json
 
       - name: Enforce 100/100/100/100 on production
         shell: bash
