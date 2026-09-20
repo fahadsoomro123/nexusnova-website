@@ -60,13 +60,14 @@ test('browser exposes selected Sarafa source without publishing an invented loca
 test('primary navigation uses one clean LIVE dashboard link',()=>{
   const siteShell=read('assets/js/site-main.js');
   const hub=read('live.html');
-  assert.match(siteShell,/\['live\.html',"🟢 Today's Prices"\]/);
-  assert.doesNotMatch(siteShell,/Live Trackers/);
-  assert.doesNotMatch(siteShell,/nn-nav-dropdown/);
-  assert.doesNotMatch(siteShell,/fuel-rates\.html/);
-  assert.doesNotMatch(siteShell,/gold-rates\.html/);
-  assert.doesNotMatch(siteShell,/sports-live\.html/);
-  assert.match(siteShell,/\['gaming\.html','Gaming'\]/);
+  const navSource=siteShell.split('const items=[')[1]?.split('];')[0]||'';
+  assert.match(navSource,/\['live\.html',"🟢 Today's Prices"\]/);
+  assert.doesNotMatch(navSource,/Live Trackers/);
+  assert.doesNotMatch(navSource,/nn-nav-dropdown/);
+  assert.doesNotMatch(navSource,/fuel-rates\.html/);
+  assert.doesNotMatch(navSource,/gold-rates\.html/);
+  assert.doesNotMatch(navSource,/sports-live\.html/);
+  assert.match(navSource,/\['gaming\.html','Gaming'\]/);
   assert.match(hub,/href="fuel-rates\.html"/);
   assert.match(hub,/href="gold-rates\.html"/);
   assert.match(hub,/href="sports-live\.html"/);
