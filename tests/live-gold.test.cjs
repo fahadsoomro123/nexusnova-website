@@ -60,7 +60,7 @@ test('browser exposes selected Sarafa source without publishing an invented loca
 test('primary navigation uses one clean LIVE dashboard link',()=>{
   const siteShell=read('assets/js/site-main.js');
   const hub=read('live.html');
-  assert.match(siteShell,/\['live\.html','🔴 LIVE'\]/);
+  assert.match(siteShell,/\['live\.html','🟢 Today's Prices'\]/);
   assert.doesNotMatch(siteShell,/Live Trackers/);
   assert.doesNotMatch(siteShell,/nn-nav-dropdown/);
   assert.doesNotMatch(siteShell,/fuel-rates\.html/);
