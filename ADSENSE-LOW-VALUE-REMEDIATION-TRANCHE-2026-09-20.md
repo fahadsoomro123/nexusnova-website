@@ -1,0 +1,60 @@
+# NexusNova Tools — Low Value Content Remediation Tranche
+Date: 20 September 2026
+
+## Google finding being addressed
+
+The current AdSense UI shows the site under **Needs attention** with the specific issue **Low value content**. Google asks publishers to provide unique, relevant, useful content and a good user experience; its Search documentation also warns against scaled pages that provide little original value.
+
+## What changed in this tranche
+
+### Six new workflow workbenches
+- `document-workbench.html` — local PDF merge + selected-page extraction, with ordering and output verification guidance.
+- `image-publishing-workbench.html` — local image resize + compression + format selection + fresh export, with metadata/privacy boundaries.
+- `calculation-workbench.html` — percentage, reverse percentage, percentage change, discount, bill split, age, date difference and selected unit conversions in one transparent interface.
+- `writing-workbench.html` — words, characters, reading estimate, whitespace cleanup and case transforms in one writing workflow.
+- `ai-workflow-workbench.html` — structured prompt construction plus a test-case/checklist workflow; no AI API call.
+- `password-security-workbench.html` — local random password generation, local composition inspection and account-hardening checklist.
+
+### Nine commodity/single-task pages consolidated
+These pages are retained for existing links but are now `noindex,follow` and point visitors to the broader workflow:
+- percentage-calculator.html -> calculation-workbench.html
+- age-calculator.html -> calculation-workbench.html
+- date-difference-calculator.html -> calculation-workbench.html
+- unit-converter.html -> calculation-workbench.html
+- word-counter.html -> writing-workbench.html
+- image-compressor.html -> image-publishing-workbench.html
+- ai-prompt-builder.html -> ai-workflow-workbench.html
+- merge-pdf.html -> document-workbench.html
+- password-generator.html -> password-security-workbench.html
+
+## Homepage focus
+
+The homepage was refocused from a HumanProof-led presentation to a tools-first proposition. HumanProof is now described as a separate NexusNova product rather than the primary purpose of the tools site.
+
+## Information architecture change
+
+`tools.html` no longer presents a long wall of small utilities. It now presents five workflow workbenches first, followed by a smaller set of specialist utilities. The copy explains why the library is being consolidated and distinguishes browser-local processing from blanket security claims.
+
+## Index surface
+
+The branch sitemap now contains **45 URLs** after a second consolidation pass. The homepage and Tools hub now lead with the six workflow workbenches and the smaller specialist-tool set. The previous remediation branch contained 55 URLs. Nine single-purpose pages were removed from the sitemap and six workbench pages were added.
+
+## Verification status
+
+Verified directly in the GitHub branch:
+- PR #170 remains open and unmerged.
+- The current sitemap contains **45 URLs**.
+- Six flagship workbench pages are present in the sitemap: document, image publishing, calculation, writing, AI workflow and password security.
+- A seventh developer workbench was added for JSON, Base64, URL components, UUID and SHA-256.
+- Nine commodity tool pages are noindex and point to their broader workbench.
+- Eight thin category/listing surfaces are noindex and removed from the canonical sitemap: developer-tools, categories, PDF tools, image tools, calculator tools, productivity tools, Pakistan tools and network tools.
+- The homepage is tools-first and no longer presents HumanProof as the primary site purpose.
+- Inline JavaScript syntax checks passed for all six flagship workbenches.
+
+Not yet claimed:
+- Google AdSense approval.
+- Successful live deployment of this exact PR head.
+- Search Console performance changes.
+- A complete live rendered crawl.
+
+The exact branch must be deployed and then checked as a rendered production site before another AdSense review request.
