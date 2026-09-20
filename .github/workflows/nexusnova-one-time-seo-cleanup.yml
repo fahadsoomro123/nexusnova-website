@@ -26,9 +26,9 @@ jobs:
           import re
 
           pattern = re.compile(
-              r'<meta\\b(?=[^>]*\\bname\\s*=\\s*["\']robots["\'])'
-              r'(?=[^>]*\\bcontent\\s*=\\s*["\'][^"\']*\\bnoindex\\b[^"\']*["\'])'
-              r'[^>]*>\\s*',
+              r'<meta\b(?=[^>]*\bname\s*=\s*["\']robots["\'])'
+              r'(?=[^>]*\bcontent\s*=\s*["\'][^"\']*\bnoindex\b[^"\']*["\'])'
+              r'[^>]*>\s*',
               re.IGNORECASE,
           )
 
@@ -77,8 +77,8 @@ jobs:
               ],
               ".github/workflows/production-smoke.yml": [
                   (
-                      "              && grep -Fq '<meta name=\"robots\" content=\"noindex,nofollow\">' <<<\"$intelligence\" \\",
-                      "              && ! grep -Fq '<meta name=\"robots\" content=\"noindex,nofollow\">' <<<\"$intelligence\" \\",
+                      "              && grep -Fq '<meta name=\"robots\" content=\"noindex,nofollow\">' <<<\"$intelligence\" \",
+                      "              && ! grep -Fq '<meta name=\"robots\" content=\"noindex,nofollow\">' <<<\"$intelligence\" \",
                   ),
               ],
               ".github/workflows/intelligence-browser-quality.yml": [
@@ -117,8 +117,8 @@ jobs:
           import re, sys
 
           meta = re.compile(
-              r'<meta\\b(?=[^>]*\\bname\\s*=\\s*["\']robots["\'])'
-              r'(?=[^>]*\\bcontent\\s*=\\s*["\'][^"\']*\\bnoindex\\b[^"\']*["\'])'
+              r'<meta\b(?=[^>]*\bname\s*=\s*["\']robots["\'])'
+              r'(?=[^>]*\bcontent\s*=\s*["\'][^"\']*\bnoindex\b[^"\']*["\'])'
               r'[^>]*>',
               re.IGNORECASE,
           )
