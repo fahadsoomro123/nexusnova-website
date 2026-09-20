@@ -32,35 +32,15 @@
     window.addEventListener(type,loadAnalytics,{once:true,passive:true});
   });
 
-  const loadSiteShell=()=>{
-    if(document.querySelector('script[data-nexusnova-site-shell]'))return;
+  if(!document.querySelector('script[data-nexusnova-site-shell]')){
     const shell=document.createElement('script');
     shell.defer=true;
     shell.src=`${base}assets/js/site-main.js?v=20260920-nav4`;
     shell.dataset.nexusnovaSiteShell='';
     document.head.appendChild(shell);
-  };
-  const scheduleSiteShell=()=>{
-    if('requestIdleCallback' in window)window.requestIdleCallback(loadSiteShell,{timeout:2500});
-    else window.setTimeout(loadSiteShell,2500);
-  };
-  scheduleSiteShell();
-  /*
-    The manifest is useful for install metadata but is not a first-render dependency.
-    Attach it after load/idle so it cannot lengthen the document -> manifest chain.
-  */
-  const mountManifest=()=>{
-    if(document.querySelector('link[rel="manifest"]'))return;
-    const link=document.createElement('link');
-    link.rel='manifest';
-    link.href='/manifest.webmanifest';
-    document.head.appendChild(link);
-  };
-  if('requestIdleCallback' in window)window.requestIdleCallback(mountManifest,{timeout:4000});
-  else window.setTimeout(mountManifest,4000);
+  }
 
-  const mountShareWidget=()=>{
-      /* Floating share/support widget: keeps sharing explicit, user-initiated,
+  /* Floating share/support widget: keeps sharing explicit, user-initiated,
          and lightweight. No automatic messages or background sharing occur. */
       if(!document.querySelector('[data-nexusnova-share-widget]')){
         const shareMessage='Bhai, check out this 100% Free and Private AI & Web Utility Tools website: https://nexusnovatools.com - Zero latency, works completely in the browser!';
