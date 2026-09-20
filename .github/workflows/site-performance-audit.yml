@@ -71,9 +71,15 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p performance-artifacts
-          for page in index.html tools.html app.html; do
-            name="${page%.html}"
-            npx lighthouse "http://127.0.0.1:8000/$page" \
+          for page in home tools.html app.html; do
+            if [ "$page" = "home" ]; then
+              url="http://127.0.0.1:8000/"
+              name="index"
+            else
+              url="http://127.0.0.1:8000/$page"
+              name="${page%.html}"
+            fi
+            npx lighthouse "$url" \
               --quiet \
               --chrome-flags='--headless --no-sandbox --disable-gpu' \
               --only-categories=performance \
@@ -143,7 +149,7 @@ jobs:
         shell: bash
         run: |
           echo '## NexusNova Lighthouse Lab Audit' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Representative public pages: Home, Tools, App.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Representative public pages: Home (/), Tools, App.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Budgets: Performance >= 0.60, LCP <= 4.0s, CLS <= 0.25, TBT <= 600ms.' >> "$GITHUB_STEP_SUMMARY"
           echo 'This is a lab regression gate; field Core Web Vitals still depend on real-user traffic and device/network conditions.' >> "$GITHUB_STEP_SUMMARY"
           if [ -f performance-artifacts/summary.json ]; then
