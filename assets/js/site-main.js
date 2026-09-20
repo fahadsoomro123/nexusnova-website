@@ -1,40 +1,26 @@
 (()=>{
   const measurementId='G-YLPFKWSS12';
   const consentKey='nexusnova_analytics_consent_v1';
-  if(window.__nexusnovaConsentReady)return;
-  window.__nexusnovaConsentReady=true;
+  if(window.__nexusnovaConsentUiReady)return;
+  window.__nexusnovaConsentUiReady=true;
+
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-  window.gtag('consent','default',{
-    analytics_storage:'denied',
-    ad_storage:'denied',
-    ad_user_data:'denied',
-    ad_personalization:'denied',
-    wait_for_update:500
-  });
-  window.gtag('js',new Date());
-
-  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_) {}};
-  let analyticsLoaded=false;
-  const loadAnalytics=(grantAnalytics=false)=>{
-    if(grantAnalytics)window.gtag('consent','update',{
-      analytics_storage:'granted',
+  if(!window.__nexusnovaConsentDefaulted){
+    window.gtag('consent','default',{
+      analytics_storage:'denied',
       ad_storage:'denied',
       ad_user_data:'denied',
-      ad_personalization:'denied'
+      ad_personalization:'denied',
+      wait_for_update:500
     });
-    if(analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
-    analyticsLoaded=true;
-    const analyticsScript=document.createElement('script');
-    analyticsScript.async=true;
-    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
-    analyticsScript.dataset.nexusnovaGa4='';
-    analyticsScript.onload=()=>window.gtag('config',measurementId,{
-      allow_google_signals:false,
-      allow_ad_personalization_signals:false
-    });
-    document.head.appendChild(analyticsScript);
+    window.__nexusnovaConsentDefaulted=true;
+  }
+
+  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}}; 
+  const loadAnalytics=granted=>{
+    if(typeof window.__nexusnovaLoadAnalytics==='function')window.__nexusnovaLoadAnalytics(granted);
   };
   const denyAnalytics=()=>window.gtag('consent','update',{
     analytics_storage:'denied',
@@ -59,13 +45,17 @@
     banner.hidden=true;
     banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Optional analytics settings');
-    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br><strong>Anonymous measurement is on</strong><br>NexusNova uses denied-storage Consent Mode for basic cookieless measurement. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br>Analytics stays on the privacy-preserving denied-storage state until you choose an option. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
     const hide=()=>{banner.hidden=true};
-    banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{saveChoice('granted');loadAnalytics(true);hide()});
-    banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{saveChoice('denied');denyAnalytics();loadAnalytics();hide()});
-    banner.querySelector('[data-consent-dismiss]').addEventListener('click',hide);
+    banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
+      saveChoice('granted');loadAnalytics(true);hide();
+    });
+    banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{
+      saveChoice('denied');denyAnalytics();loadAnalytics(false);hide();
+    });
+    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
 
     const reopen=document.createElement('button');
     reopen.type='button';
@@ -74,18 +64,22 @@
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
     const footerLinks=document.querySelector('.site-footer .footer-links');
-    if(footerLinks) footerLinks.appendChild(reopen);
+    if(footerLinks)footerLinks.appendChild(reopen);
     else document.body.appendChild(reopen);
-    reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('[data-consent-allow]')?.focus()});
+    reopen.addEventListener('click',()=>{
+      banner.hidden=false;
+      banner.querySelector('[data-consent-allow]')?.focus();
+    });
 
     const choice=readChoice();
-    if(choice==='granted'){loadAnalytics(true);hide()}
-    else if(choice==='denied'){denyAnalytics();loadAnalytics();hide()}
+    if(choice==='granted'||choice==='denied'){
+      window.setTimeout(()=>loadAnalytics(choice==='granted'),12000);
+      hide();
+    }else{
+      banner.hidden=false;
+    }
   };
 
-  const initialChoice=readChoice();
-  if(initialChoice==='granted')loadAnalytics(true);
-  else {denyAnalytics();loadAnalytics();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
   else mountChoices();
 })();
