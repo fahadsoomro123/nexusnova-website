@@ -1,19 +1,49 @@
 (()=>{
   'use strict';
   const measurementId='G-YLPFKWSS12';
+  const consentKey='nexusnova_analytics_consent_v1';
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
 
-  /* One automatic GA4 bootstrap. The existing site shell is loaded separately
-     so its legacy analytics/consent bootstrap cannot initialize twice. */
-  window.__nexusnovaConsentReady=true;
+  /* Google Consent Mode defaults to the privacy-preserving state before any
+     analytics runtime is fetched. The runtime itself stays off the critical
+     render path and loads only after a meaningful user action or a settled
+     returning-consent window. */
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  window.gtag('consent','default',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied',
+    wait_for_update:500
+  });
+  window.__nexusnovaConsentDefaulted=true;
 
-  const loadAnalytics=()=>{
-    if(document.querySelector('script[data-nexusnova-ga4]'))return;
+  let analyticsLoaded=false;
+  const readChoice=()=>{
+    try{return localStorage.getItem(consentKey)||''}catch(_){return ''}
+  };
+  const updateConsent=(granted)=>{
+    window.gtag('consent','update',granted?{
+      analytics_storage:'granted',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    }:{
+      analytics_storage:'denied',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+  };
+  const loadAnalytics=(granted=false)=>{
+    if(granted)updateConsent(true);
+    else updateConsent(false);
+    if(analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
+    analyticsLoaded=true;
     window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
@@ -26,11 +56,23 @@
     });
     document.head.appendChild(analyticsScript);
   };
-  /* Analytics is non-critical to first paint. Load it on real user intent so
-     GA4 cannot occupy the homepage's initial render/main-thread budget. */
-  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>{
-    window.addEventListener(type,loadAnalytics,{once:true,passive:true});
+  window.__nexusnovaLoadAnalytics=loadAnalytics;
+  window.__nexusnovaConsentKey=consentKey;
+
+  const returningChoice=readChoice();
+  const interactTypes=['pointerdown','keydown','touchstart','scroll'];
+  interactTypes.forEach(type=>{
+    window.addEventListener(type,()=>{
+      loadAnalytics(returningChoice==='granted');
+    },{once:true,passive:true});
   });
+  window.addEventListener('load',()=>{
+    window.setTimeout(()=>{
+      const choice=readChoice();
+      if(choice==='granted'||choice==='denied')loadAnalytics(choice==='granted');
+    },12000);
+  },{once:true});
+
 
   if(!document.querySelector('script[data-nexusnova-site-shell]')){
     const shell=document.createElement('script');
