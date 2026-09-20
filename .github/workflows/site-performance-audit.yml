@@ -38,23 +38,22 @@ jobs:
       - name: Install Lighthouse
         run: npm install --no-save --ignore-scripts lighthouse@12
 
-      - name: Disable GA4 in local audit copy
+      - name: Disable GA4 network only in local audit copy
         shell: bash
         run: |
-          python3 - <<'PY'
           from pathlib import Path
-
+          
           path = Path('assets/js/main.js')
           text = path.read_text(encoding='utf-8')
-          needle = "(()=>{\n  const measurementId='G-YLPFKWSS12';"
-          replacement = "(()=>{\n  if(['127.0.0.1','localhost'].includes(location.hostname))return;\n  const measurementId='G-YLPFKWSS12';"
-          if needle in text:
-              path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
-              print('Legacy GA4 bootstrap detected; local audit copy disabled it.')
-          else:
-              print('GA4 is already deferred behind user interaction; local audit copy needs no patch.')
+          needle = "analyticsScript.src=\`https://www.googletagmanager.com/gtag/js?id=\${encodeURIComponent(measurementId)}\`;"
+          replacement = "analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
+          if "const measurementId='G-YLPFKWSS12';" not in text:
+              raise SystemExit('Canonical GA4 measurement ID not found; refusing local audit.')
+          if needle not in text:
+              raise SystemExit('Canonical GA4 loader source not found; refusing local audit.')
+          path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
+          print('Local audit keeps the site shell running and blocks only the external GA4 download.')
           PY
-
       - name: Start local website server
         run: |
           python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
