@@ -29,7 +29,7 @@
   if(!document.querySelector('script[data-nexusnova-site-shell]')){
     const shell=document.createElement('script');
     shell.defer=true;
-    shell.src=`${base}assets/js/site-main.js?v=20260915-ga4`;
+    shell.src=`${base}assets/js/site-main.js?v=20260920-nav2`;
     shell.dataset.nexusnovaSiteShell='';
     document.head.appendChild(shell);
   }
