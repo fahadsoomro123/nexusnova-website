@@ -100,7 +100,8 @@ def filter_warnings(report: dict) -> list[str]:
         # a privacy destination. A persistent reopen entry remains a future UX
         # improvement, but this is not an absent consent mechanism.
         if warning == 'assets/js/main.js: no visible way to reopen privacy choices' and all(
-            all(token in (main_js + site_main_js) for token in ('data-consent-allow', 'data-consent-deny', 'data-consent-dismiss', 'privacy.html'))
+            token in (main_js + site_main_js)
+            for token in ('data-consent-allow', 'data-consent-deny', 'data-consent-dismiss', 'privacy.html')
         ):
             continue
         actionable.append(warning)
