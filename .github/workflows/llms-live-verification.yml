@@ -73,7 +73,7 @@ jobs:
           success=0
 
           for attempt in {1..20}; do
-            echo "Live verification attempt \${attempt}/20"
+            echo "Live verification attempt ${attempt}/20"
             if curl --fail --silent --show-error --location \
               --max-time 20 \
               --retry 2 \
@@ -81,14 +81,14 @@ jobs:
               -A "NexusNovaLLMSLiveAudit/1.0" \
               -H "Cache-Control: no-cache" \
               -H "Pragma: no-cache" \
-              "\${LIVE_URL}" \
+              "${LIVE_URL}" \
               -o llms-evidence/live-llms.txt; then
 
-              LIVE_SHA="\$(sha256sum llms-evidence/live-llms.txt | awk '{print \$1}')"
-              echo "Expected source SHA: \${EXPECTED_SHA}"
-              echo "Live SHA:           \${LIVE_SHA}"
+              LIVE_SHA="$(sha256sum llms-evidence/live-llms.txt | awk '{print $1}')"
+              echo "Expected source SHA: ${EXPECTED_SHA}"
+              echo "Live SHA:           ${LIVE_SHA}"
 
-              if [ "\${LIVE_SHA}" = "\${EXPECTED_SHA}" ]; then
+              if [ "${LIVE_SHA}" = "${EXPECTED_SHA}" ]; then
                 success=1
                 break
               fi
@@ -97,7 +97,7 @@ jobs:
             sleep 15
           done
 
-          if [ "\${success}" -ne 1 ]; then
+          if [ "${success}" -ne 1 ]; then
             echo "Live deployment did not publish the exact main-branch llms.txt within the verification window."
             exit 1
           fi
