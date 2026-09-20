@@ -68,7 +68,7 @@ jobs:
           set -euo pipefail
           mkdir -p live-performance
           npx lighthouse \
-            "https://nexusnovatools.com/?nn_live_lighthouse=${GITHUB_SHA}" \
+            "https://nexusnovatools.com/" \
             --quiet \
             --chrome-flags='--headless --no-sandbox --disable-gpu' \
             --only-categories=performance,accessibility,best-practices,seo \
