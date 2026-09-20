@@ -482,3 +482,11 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 @media (max-width: 720px){
   .nn-home .nn-flagship-grid{gap:20px}
 }
+
+/* Performance: skip layout/paint work for below-the-fold homepage sections until they enter the viewport. */
+@media (min-width:1px){
+  .nn-home main > section:not(.nn-flagship-hero){
+    content-visibility:auto;
+    contain-intrinsic-size:800px;
+  }
+}
