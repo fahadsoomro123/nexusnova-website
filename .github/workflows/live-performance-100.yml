@@ -1,0 +1,139 @@
+name: NexusNova Live Performance 100 Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/css/**/*.css'
+      - 'assets/js/**/*.js'
+      - '.github/workflows/live-performance-100.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-live-performance-100
+  cancel-in-progress: true
+
+jobs:
+  live-lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Wait for the current performance assets to reach production
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_css='home-bundle.css?v=20260921-perf3'
+          expected_js='main.js?v=20260921-perf3'
+          success=0
+
+          for attempt in {1..30}; do
+            echo "Production asset check ${attempt}/30"
+            body="$(curl --fail --silent --show-error --location \
+              --max-time 25 \
+              -A "NexusNovaLivePerformanceAudit/1.0" \
+              -H "Cache-Control: no-cache" \
+              "https://nexusnovatools.com/?nn_live_perf=${GITHUB_SHA}")"
+
+            if printf '%s' "$body" | grep -Fq "$expected_css" && \
+               printf '%s' "$body" | grep -Fq "$expected_js"; then
+              success=1
+              break
+            fi
+            sleep 15
+          done
+
+          if [ "$success" -ne 1 ]; then
+            echo 'Production homepage did not expose the current performance asset versions.'
+            exit 1
+          fi
+
+      - name: Install Lighthouse 13.4.1
+        run: npm install --no-save --ignore-scripts lighthouse@13.4.1
+
+      - name: Audit the actual production homepage
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p live-performance
+          npx lighthouse \
+            "https://nexusnovatools.com/?nn_live_lighthouse=${GITHUB_SHA}" \
+            --quiet \
+            --chrome-flags='--headless --no-sandbox --disable-gpu' \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json \
+            --output=html \
+            --output-path=live-performance/report.json
+
+      - name: Enforce 100/100/100/100 on production
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data=json.loads(Path('live-performance/report.json').read_text(encoding='utf-8'))
+          categories=data.get('categories',{})
+
+          scores={
+              key: round(float((categories.get(key) or {}).get('score',0))*100)
+              for key in ('performance','accessibility','best-practices','seo')
+          }
+
+          audits=data.get('audits',{})
+          metrics={
+              'fcp_ms':round(float((audits.get('first-contentful-paint') or {}).get('numericValue',0))),
+              'lcp_ms':round(float((audits.get('largest-contentful-paint') or {}).get('numericValue',0))),
+              'tbt_ms':round(float((audits.get('total-blocking-time') or {}).get('numericValue',0))),
+              'cls':round(float((audits.get('cumulative-layout-shift') or {}).get('numericValue',0)),4),
+              'speed_index_ms':round(float((audits.get('speed-index') or {}).get('numericValue',0))),
+          }
+
+          print({'scores':scores,'metrics':metrics})
+          Path('live-performance/summary.json').write_text(
+              json.dumps({'scores':scores,'metrics':metrics},indent=2)+'\n',
+              encoding='utf-8'
+          )
+
+          failures=[f'{k}={v}' for k,v in scores.items() if v < 100]
+          if failures:
+              raise SystemExit('Live Lighthouse 100 gate failed: '+', '.join(failures))
+          PY
+
+      - name: Publish performance proof
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## NexusNova Live Lighthouse Proof'
+            echo
+            echo 'Target: https://nexusnovatools.com/'
+            echo 'Engine: Lighthouse 13.4.1'
+            echo
+            if [ -f live-performance/summary.json ]; then
+              cat live-performance/summary.json
+            else
+              echo '{"status":"no-summary"}'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload live Lighthouse evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-live-lighthouse-100-${{ github.run_id }}
+          path: live-performance/
+          if-no-files-found: warn
+          retention-days: 30
