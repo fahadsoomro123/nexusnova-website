@@ -12,7 +12,8 @@
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
-  if(!document.querySelector('script[data-nexusnova-ga4]')){
+  const loadAnalytics=()=>{
+    if(document.querySelector('script[data-nexusnova-ga4]'))return;
     window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
@@ -24,7 +25,12 @@
       allow_ad_personalization_signals:false
     });
     document.head.appendChild(analyticsScript);
-  }
+  };
+  /* Analytics is non-critical to first paint. Load it on real user intent so
+     GA4 cannot occupy the homepage's initial render/main-thread budget. */
+  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>{
+    window.addEventListener(type,loadAnalytics,{once:true,passive:true});
+  });
 
   if(!document.querySelector('script[data-nexusnova-site-shell]')){
     const shell=document.createElement('script');
