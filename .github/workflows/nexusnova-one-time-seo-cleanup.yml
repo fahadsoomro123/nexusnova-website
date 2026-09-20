@@ -5,6 +5,8 @@ on:
     branches: [main]
   issues:
     types: [opened, edited]
+  issue_comment:
+    types: [created]
   workflow_dispatch:
 
 permissions:
@@ -167,6 +169,6 @@ jobs:
           fi
           git commit -m "fix: globally remove HTML noindex and normalize robots"
           git push origin HEAD:main
-          if [ "${{ github.event_name }}" = "issues" ]; then
+          if [ "${{ github.event_name }}" = "issues" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
             gh issue close "${{ github.event.issue.number }}" --repo "${GITHUB_REPOSITORY}"
           fi
