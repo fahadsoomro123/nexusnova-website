@@ -66,12 +66,18 @@
     document.head.appendChild(shell);
   };
 
-  /* Give the browser two animation frames for the first paint before shell work. */
-  if('requestAnimationFrame' in window){
-    requestAnimationFrame(()=>requestAnimationFrame(loadShell));
-  }else{
-    window.setTimeout(loadShell,0);
-  }
+  /*
+    Keep shared shell decoration out of the LCP window. It remains available
+    during idle time and immediately on user intent.
+  */
+  const scheduleShell=()=>{
+    if('requestIdleCallback' in window){
+      requestIdleCallback(loadShell,{timeout:3000});
+    }else{
+      window.setTimeout(loadShell,3000);
+    }
+  };
+  scheduleShell();
 
   const onIntent=()=>{
     const choice=readChoice();
