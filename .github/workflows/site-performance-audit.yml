@@ -46,14 +46,13 @@ jobs:
           
           path = Path('assets/js/main.js')
           text = path.read_text(encoding='utf-8')
-          needle = "analyticsScript.src=\`https://www.googletagmanager.com/gtag/js?id=\${encodeURIComponent(measurementId)}\`;"
-          replacement = "analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
-          if "const measurementId='G-YLPFKWSS12';" not in text:
-              raise SystemExit('Canonical GA4 measurement ID not found; refusing local audit.')
-          if needle not in text:
-              raise SystemExit('Canonical GA4 loader source not found; refusing local audit.')
-          path.write_text(text.replace(needle, replacement, 1), encoding='utf-8')
-          print('Local audit keeps the site shell running and blocks only the external GA4 download.')
+          lines = text.splitlines()
+          matches = [i for i, line in enumerate(lines) if 'analyticsScript.src=' in line and 'googletagmanager.com/gtag/js' in line]
+          if len(matches) != 1:
+              raise SystemExit(f'Expected exactly one GA4 loader source line, found {len(matches)}')
+          lines[matches[0]] = "    analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
+          path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
+          print('Local audit blocks only the external GA4 download; production GA4 source is untouched.')
           PY
       - name: Start local website server
         run: |
