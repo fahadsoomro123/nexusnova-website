@@ -118,6 +118,12 @@
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
+  const liveTrackerPages=new Set(['live.html','fuel-rates.html','gold-rates.html','sports-live.html']);
+  if(!document.querySelector('[data-nexusnova-live-nav-style]')){
+    const style=document.createElement('style');style.dataset.nexusnovaLiveNavStyle='';
+    style.textContent='.nav .nn-nav-dropdown{position:relative;display:flex;align-items:center}.nav .nn-nav-dropdown-toggle{display:inline-flex;align-items:center;gap:7px;padding:10px 13px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:700 14px/1.2 inherit;cursor:pointer}.nav .nn-nav-dropdown-toggle:hover,.nav .nn-nav-dropdown.is-active .nn-nav-dropdown-toggle{background:rgba(16,185,129,.08);color:var(--text)}.nav .nn-nav-dropdown-chevron{font-size:11px;transition:transform .18s ease}.nav .nn-nav-dropdown.open .nn-nav-dropdown-chevron{transform:rotate(180deg)}.nav .nn-nav-dropdown-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:220px;padding:8px;border:1px solid #dbe3ec;border-radius:16px;background:#fff;box-shadow:0 18px 40px rgba(15,23,42,.16);z-index:1000;flex-direction:column;gap:3px}.nav .nn-nav-dropdown.open .nn-nav-dropdown-menu{display:flex}.nav .nn-nav-dropdown-menu a{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:11px;color:#334155;text-decoration:none;font-weight:750;font-size:13px}.nav .nn-nav-dropdown-menu a:hover,.nav .nn-nav-dropdown-menu a[aria-current=page]{background:#f0fdf7;color:#047857}.nav .nn-nav-dropdown-menu a[data-live-hub]{border-bottom:1px solid #e2e8f0;border-radius:0 0 11px 11px;margin-bottom:3px;padding-bottom:13px}.nav .nn-nav-dropdown-menu a[data-live-hub]::before{content:"LIVE";font-size:9px;letter-spacing:.08em;font-weight:900;color:#059669}.nav .nn-nav-dropdown-menu a:not([data-live-hub])::before{content:"";width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.11)}@media(max-width:720px){.nav .nn-nav-dropdown{display:block;width:100%}.nav .nn-nav-dropdown-toggle{width:100%;justify-content:space-between;text-align:left;padding:12px 13px}.nav .nn-nav-dropdown-menu{position:static;min-width:0;margin:4px 0 2px;padding:6px;box-shadow:none;border-radius:13px;background:#f8fafc}.nav .nn-nav-dropdown-menu a{padding:11px 12px}.nav .nn-nav-dropdown-menu a[data-live-hub]{padding-bottom:12px}}';
+    document.head.appendChild(style);
+  }
   if(nav){
     const items=[
       ['index.html','Home'],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['gaming.html','Gaming']
@@ -128,6 +134,28 @@
       if(page===file||(file==='gaming.html'&&gamingPages.has(page))||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
       nav.appendChild(link);
     });
+
+    const liveGroup=document.createElement('div');liveGroup.className='nn-nav-dropdown';liveGroup.dataset.liveTrackers='';
+    const liveToggle=document.createElement('button');liveToggle.type='button';liveToggle.className='nn-nav-dropdown-toggle';liveToggle.setAttribute('aria-haspopup','true');liveToggle.setAttribute('aria-expanded','false');liveToggle.innerHTML='<span>Live Trackers</span><span class="nn-nav-dropdown-chevron" aria-hidden="true">⌄</span>';
+    const liveMenu=document.createElement('div');liveMenu.className='nn-nav-dropdown-menu';liveMenu.setAttribute('role','menu');liveMenu.setAttribute('aria-label','Live tracker links');
+    const liveItems=[
+      ['live.html','Live Hub','data-live-hub'],
+      ['fuel-rates.html','Petrol Prices',''],
+      ['gold-rates.html','Gold Prices',''],
+      ['sports-live.html','Sports Scores','']
+    ];
+    liveItems.forEach(([file,label,marker])=>{
+      const link=document.createElement('a');link.href=`${base}${file}`;link.textContent=label;link.setAttribute('role','menuitem');if(marker)link.setAttribute(marker,'');
+      if(liveTrackerPages.has(page)&&page===file)link.setAttribute('aria-current','page');
+      liveMenu.appendChild(link);
+    });
+    const liveIsActive=liveTrackerPages.has(page);
+    if(liveIsActive)liveGroup.classList.add('is-active');
+    liveGroup.appendChild(liveToggle);liveGroup.appendChild(liveMenu);nav.appendChild(liveGroup);
+    const closeLive=()=>{liveGroup.classList.remove('open');liveToggle.setAttribute('aria-expanded','false')};
+    liveToggle.addEventListener('click',e=>{e.preventDefault();const open=liveGroup.classList.toggle('open');liveToggle.setAttribute('aria-expanded',String(open))});
+    document.addEventListener('click',e=>{if(!liveGroup.contains(e.target))closeLive()});
+
     const authMode=new URLSearchParams(location.search).get('mode')==='signin'?'signin':'register';
     const signIn=document.createElement('a');signIn.href=`${base}register.html?mode=signin`;signIn.textContent='Sign in';signIn.className='nn-nav-auth nn-nav-signin';if(page==='register.html'&&authMode==='signin')signIn.setAttribute('aria-current','page');nav.appendChild(signIn);
     const signUp=document.createElement('a');signUp.href=`${base}register.html?mode=register`;signUp.textContent='Sign up';signUp.className='nn-nav-auth nn-nav-signup';if(page==='register.html'&&authMode!=='signin')signUp.setAttribute('aria-current','page');nav.appendChild(signUp);
