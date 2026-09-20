@@ -1,0 +1,152 @@
+name: NexusNova llms.txt Live Verification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'llms.txt'
+      - '.github/workflows/llms-live-verification.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '10 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-llms-live-verification
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Validate repository llms.txt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('llms.txt')
+          if not path.is_file():
+              raise SystemExit('llms.txt is missing')
+
+          text = path.read_text(encoding='utf-8')
+          h1_count = len(re.findall(r'^#(?!#)\\s+.+$', text, re.M))
+          markdown_links = re.findall(r'\\[[^\\]]+\\]\\(https?://[^)]+\\)', text)
+          bare_list_urls = re.findall(r'^-\\s+[^()\\n]+:\\s*https?://\\S+$', text, re.M)
+
+          evidence = {
+              'h1_count': h1_count,
+              'markdown_link_count': len(markdown_links),
+              'bare_list_url_count': len(bare_list_urls),
+              'has_primary_pages': '## Primary pages' in text,
+              'has_crawling_section': '## Crawling and discovery' in text,
+          }
+          print(evidence)
+
+          if h1_count < 1:
+              raise SystemExit('llms.txt must contain at least one H1 heading')
+          if not markdown_links:
+              raise SystemExit('llms.txt must contain at least one Markdown link')
+          if bare_list_urls:
+              raise SystemExit('llms.txt still contains bare list-style URLs that can be missed by the audit')
+          if '## Primary pages' not in text or '## Crawling and discovery' not in text:
+              raise SystemExit('Expected llms.txt sections are missing')
+          PY
+
+      - name: Wait for GitHub Pages to publish the exact file
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ hashFiles('llms.txt') }}
+        run: |
+          set -euo pipefail
+          mkdir -p llms-evidence
+
+          LIVE_URL="https://nexusnovatools.com/llms.txt?nn_live_audit=${GITHUB_SHA}"
+          success=0
+
+          for attempt in {1..20}; do
+            echo "Live verification attempt ${attempt}/20"
+            if curl --fail --silent --show-error --location               --max-time 20               --retry 2               --retry-delay 1               -A "NexusNovaLLMSLiveAudit/1.0"               -H "Cache-Control: no-cache"               -H "Pragma: no-cache"               "${LIVE_URL}"               -o llms-evidence/live-llms.txt; then
+
+              LIVE_SHA="$(sha256sum llms-evidence/live-llms.txt | awk '{print $1}')"
+              echo "Expected source SHA: ${EXPECTED_SHA}"
+              echo "Live SHA:           ${LIVE_SHA}"
+
+              if [ "${LIVE_SHA}" = "${EXPECTED_SHA}" ]; then
+                success=1
+                break
+              fi
+            fi
+
+            sleep 15
+          done
+
+          if [ "${success}" -ne 1 ]; then
+            echo "Live deployment did not publish the exact main-branch llms.txt within the verification window."
+            exit 1
+          fi
+
+      - name: Re-run the PageSpeed-facing llms.txt checks against production
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('llms-evidence/live-llms.txt')
+          text = path.read_text(encoding='utf-8', errors='strict')
+
+          h1_count = len(re.findall(r'^#(?!#)\\s+.+$', text, re.M))
+          markdown_links = re.findall(r'\\[[^\\]]+\\]\\(https?://[^)]+\\)', text)
+          bare_list_urls = re.findall(r'^-\\s+[^()\\n]+:\\s*https?://\\S+$', text, re.M)
+
+          report = {
+              'production_sha256': __import__('hashlib').sha256(text.encode('utf-8')).hexdigest(),
+              'h1_count': h1_count,
+              'markdown_link_count': len(markdown_links),
+              'bare_list_url_count': len(bare_list_urls),
+              'contains_home_link': '[Home](https://nexusnovatools.com/)' in text,
+              'contains_tools_link': '[Daily tools](https://nexusnovatools.com/tools.html)' in text,
+          }
+          print(report)
+
+          if h1_count < 1:
+              raise SystemExit('Production llms.txt has no H1 heading')
+          if not markdown_links:
+              raise SystemExit('Production llms.txt has no Markdown links')
+          if bare_list_urls:
+              raise SystemExit('Production llms.txt contains bare list-style URLs')
+          if not report['contains_home_link'] or not report['contains_tools_link']:
+              raise SystemExit('Production llms.txt is not the expected corrected version')
+          PY
+
+      - name: Publish proof summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## NexusNova llms.txt Live Verification'
+            echo
+            echo '- Source file: validated before deployment.'
+            echo '- Production file: fetched from `https://nexusnovatools.com/llms.txt`.'
+            echo '- Production SHA: compared against the checked-out `main` source.'
+            echo '- Agent-accessibility format: H1 + Markdown links + no bare list-style URLs.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexusnova-llms-live-verification-${{ github.run_id }}
+          path: llms-evidence/
+          if-no-files-found: warn
+          retention-days: 30
