@@ -32,13 +32,19 @@
     window.addEventListener(type,loadAnalytics,{once:true,passive:true});
   });
 
-  if(!document.querySelector('script[data-nexusnova-site-shell]')){
+  const loadSiteShell=()=>{
+    if(document.querySelector('script[data-nexusnova-site-shell]'))return;
     const shell=document.createElement('script');
     shell.defer=true;
     shell.src=`${base}assets/js/site-main.js?v=20260920-nav4`;
     shell.dataset.nexusnovaSiteShell='';
     document.head.appendChild(shell);
-  }
+  };
+  const scheduleSiteShell=()=>{
+    if('requestIdleCallback' in window)window.requestIdleCallback(loadSiteShell,{timeout:2500});
+    else window.setTimeout(loadSiteShell,2500);
+  };
+  scheduleSiteShell();
   /* Floating share/support widget: keeps sharing explicit, user-initiated,
      and lightweight. No automatic messages or background sharing occur. */
   if(!document.querySelector('[data-nexusnova-share-widget]')){
