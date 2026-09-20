@@ -6,9 +6,8 @@
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
 
-  /* One automatic GA4 bootstrap. The existing site shell is loaded separately
-     so its legacy analytics/consent bootstrap cannot initialize twice. */
-  window.__nexusnovaConsentReady=true;
+  /* One automatic GA4 bootstrap. The site shell below owns the privacy-choice
+     UI and Consent Mode state; do not pre-set its readiness guard here. */
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
