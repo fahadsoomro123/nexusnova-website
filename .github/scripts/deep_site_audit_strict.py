@@ -83,6 +83,7 @@ def filter_warnings(report: dict) -> list[str]:
     }
     landmark = re.compile(r'^(.*?): missing <(?:main|footer)> landmark$')
     main_js = (ROOT / 'assets/js/main.js').read_text(encoding='utf-8', errors='replace') if (ROOT / 'assets/js/main.js').exists() else ''
+    site_main_js = (ROOT / 'assets/js/site-main.js').read_text(encoding='utf-8', errors='replace') if (ROOT / 'assets/js/site-main.js').exists() else ''
     for warning in report.get('warnings', []):
         page = warning.split(':', 1)[0]
         # Non-indexable transition/auth/preview pages are deliberately outside
@@ -99,7 +100,7 @@ def filter_warnings(report: dict) -> list[str]:
         # a privacy destination. A persistent reopen entry remains a future UX
         # improvement, but this is not an absent consent mechanism.
         if warning == 'assets/js/main.js: no visible way to reopen privacy choices' and all(
-            token in main_js for token in ('data-consent-allow', 'data-consent-deny', 'data-consent-dismiss', 'privacy.html')
+            all(token in (main_js + site_main_js) for token in ('data-consent-allow', 'data-consent-deny', 'data-consent-dismiss', 'privacy.html'))
         ):
             continue
         actionable.append(warning)
