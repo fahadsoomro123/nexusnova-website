@@ -233,7 +233,7 @@ jobs:
           set -euo pipefail
           git config user.name 'nexusnova-autopilot[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap-autopilot.xml sitemap-index.xml llms.txt
+          git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap.xml llms.txt
           if [ -f assets/data/search-growth-history.json ]; then git add assets/data/search-growth-history.json; fi
           if [ -f assets/data/social-growth-history.json ]; then git add assets/data/social-growth-history.json; fi
           if [ -d assets/generated ]; then git add assets/generated; fi
