@@ -38,9 +38,9 @@ jobs:
               raise SystemExit('llms.txt is missing')
 
           text = path.read_text(encoding='utf-8')
-          h1_count = len(re.findall(r'^#(?!#)\\s+.+$', text, re.M))
-          markdown_links = re.findall(r'\\[[^\\]]+\\]\\(https?://[^)]+\\)', text)
-          bare_list_urls = re.findall(r'^-\\s+[^()\\n]+:\\s*https?://\\S+$', text, re.M)
+          h1_count = len(re.findall(r'^#(?!#)\s+.+$', text, re.M))
+          markdown_links = re.findall(r'\[[^\]]+\]\(https?://[^)]+\)', text)
+          bare_list_urls = re.findall(r'^-\s+[^()\n]+:\s*https?://\S+$', text, re.M)
 
           evidence = {
               'h1_count': h1_count,
@@ -73,14 +73,22 @@ jobs:
           success=0
 
           for attempt in {1..20}; do
-            echo "Live verification attempt ${attempt}/20"
-            if curl --fail --silent --show-error --location               --max-time 20               --retry 2               --retry-delay 1               -A "NexusNovaLLMSLiveAudit/1.0"               -H "Cache-Control: no-cache"               -H "Pragma: no-cache"               "${LIVE_URL}"               -o llms-evidence/live-llms.txt; then
+            echo "Live verification attempt \${attempt}/20"
+            if curl --fail --silent --show-error --location \
+              --max-time 20 \
+              --retry 2 \
+              --retry-delay 1 \
+              -A "NexusNovaLLMSLiveAudit/1.0" \
+              -H "Cache-Control: no-cache" \
+              -H "Pragma: no-cache" \
+              "\${LIVE_URL}" \
+              -o llms-evidence/live-llms.txt; then
 
-              LIVE_SHA="$(sha256sum llms-evidence/live-llms.txt | awk '{print $1}')"
-              echo "Expected source SHA: ${EXPECTED_SHA}"
-              echo "Live SHA:           ${LIVE_SHA}"
+              LIVE_SHA="\$(sha256sum llms-evidence/live-llms.txt | awk '{print \$1}')"
+              echo "Expected source SHA: \${EXPECTED_SHA}"
+              echo "Live SHA:           \${LIVE_SHA}"
 
-              if [ "${LIVE_SHA}" = "${EXPECTED_SHA}" ]; then
+              if [ "\${LIVE_SHA}" = "\${EXPECTED_SHA}" ]; then
                 success=1
                 break
               fi
@@ -89,7 +97,7 @@ jobs:
             sleep 15
           done
 
-          if [ "${success}" -ne 1 ]; then
+          if [ "\${success}" -ne 1 ]; then
             echo "Live deployment did not publish the exact main-branch llms.txt within the verification window."
             exit 1
           fi
@@ -100,17 +108,18 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import hashlib
           import re
 
           path = Path('llms-evidence/live-llms.txt')
           text = path.read_text(encoding='utf-8', errors='strict')
 
-          h1_count = len(re.findall(r'^#(?!#)\\s+.+$', text, re.M))
-          markdown_links = re.findall(r'\\[[^\\]]+\\]\\(https?://[^)]+\\)', text)
-          bare_list_urls = re.findall(r'^-\\s+[^()\\n]+:\\s*https?://\\S+$', text, re.M)
+          h1_count = len(re.findall(r'^#(?!#)\s+.+$', text, re.M))
+          markdown_links = re.findall(r'\[[^\]]+\]\(https?://[^)]+\)', text)
+          bare_list_urls = re.findall(r'^-\s+[^()\n]+:\s*https?://\S+$', text, re.M)
 
           report = {
-              'production_sha256': __import__('hashlib').sha256(text.encode('utf-8')).hexdigest(),
+              'production_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
               'h1_count': h1_count,
               'markdown_link_count': len(markdown_links),
               'bare_list_url_count': len(bare_list_urls),
@@ -137,8 +146,8 @@ jobs:
             echo '## NexusNova llms.txt Live Verification'
             echo
             echo '- Source file: validated before deployment.'
-            echo '- Production file: fetched from `https://nexusnovatools.com/llms.txt`.'
-            echo '- Production SHA: compared against the checked-out `main` source.'
+            echo '- Production file: fetched from https://nexusnovatools.com/llms.txt.'
+            echo '- Production SHA: compared against the checked-out main source.'
             echo '- Agent-accessibility format: H1 + Markdown links + no bare list-style URLs.'
           } >> "$GITHUB_STEP_SUMMARY"
 
