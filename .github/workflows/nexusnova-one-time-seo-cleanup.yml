@@ -3,10 +3,13 @@ name: NexusNova One-Time SEO Cleanup
 on:
   push:
     branches: [main]
+  issues:
+    types: [opened]
   workflow_dispatch:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   seo-cleanup:
@@ -164,3 +167,6 @@ jobs:
           fi
           git commit -m "fix: globally remove HTML noindex and normalize robots"
           git push origin HEAD:main
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            gh issue close "${{ github.event.issue.number }}" --repo "${GITHUB_REPOSITORY}"
+          fi
