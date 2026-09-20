@@ -1,0 +1,50 @@
+name: AI Video Flagship OTA Self Check
+
+on:
+  push:
+    branches: [nexusnova-ota-public]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify published manifest and payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const m=JSON.parse(fs.readFileSync('ota/manifest.json','utf8'));
+          if(m.schema!==2) throw new Error('schema');
+          if(m.base!=='28ad58de566e42621dad6198aa01be885ccc9769') throw new Error('base');
+          if(m.version!=='96d61f6a126933811417d1c75b2198fa636ba236') throw new Error('version');
+          if(!m.files.find(x=>x.path==='src/features/apps/ai-video-studio-flagship.js')) throw new Error('flagship missing from manifest');
+          if(!m.files.find(x=>x.path==='src/features/apps/premium-studio-suite.js')) throw new Error('suite missing from manifest');
+          console.log('Manifest identity: PASS');
+          NODE
+          for f in ota/files/src/features/apps/ai-video-studio-flagship.js ota/files/src/features/apps/premium-studio-suite.js ota/manifest.json; do
+            test -s "$f"
+          done
+          node <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const m=JSON.parse(fs.readFileSync('ota/manifest.json','utf8'));
+          for(const row of m.files){
+            const p='ota/files/'+row.path;
+            if(!fs.existsSync(p)) throw new Error('Missing '+row.path);
+            const b=fs.readFileSync(p);
+            const h=crypto.createHash('sha256').update(b).digest('hex');
+            if(b.length!==row.size||h!==row.sha256) throw new Error('Mismatch '+row.path+' size='+b.length+' declared='+row.size);
+          }
+          console.log('All '+m.files.length+' OTA payload hashes/sizes: PASS');
+          NODE
+          grep -Fq "ai-video-studio-flagship.js" ota/files/src/features/apps/premium-studio-suite.js
+          ! grep -Fq "root.querySelector('[data-up]').addEventListener" ota/files/src/features/apps/ai-video-studio-flagship.js
+          ! grep -Fq "root.querySelector('[data-down]').addEventListener" ota/files/src/features/apps/ai-video-studio-flagship.js
+          node --check ota/files/src/features/apps/ai-video-studio-flagship.js
+          node --check ota/files/src/features/apps/premium-studio-suite.js
+          echo "Published AI Video Flagship OTA: PASS"
