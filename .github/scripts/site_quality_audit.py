@@ -1,3 +1,4 @@
+# Audit note: current robots/sitemap policy is part of the live SEO gate.
 from __future__ import annotations
 
 import json
