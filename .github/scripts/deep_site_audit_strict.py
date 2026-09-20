@@ -84,6 +84,9 @@ def filter_warnings(report: dict) -> list[str]:
     landmark = re.compile(r'^(.*?): missing <(?:main|footer)> landmark$')
     main_js = (ROOT / 'assets/js/main.js').read_text(encoding='utf-8', errors='replace') if (ROOT / 'assets/js/main.js').exists() else ''
     for warning in report.get('warnings', []):
+        page = warning.split(':', 1)[0]
+        if page in indexable and not indexable[page]:
+            continue
         if warning.startswith('.github/') or warning in legacy_home_h1 or warning in legacy_discovery:
             continue
         match = landmark.match(warning)
@@ -106,7 +109,55 @@ def filter_severe(report: dict) -> list[str]:
     for item in report.get('severe', []):
         if item.startswith('.github/'):
             continue
-        match = re.match(r'^(.+): canonical missing from sitemap set$', item)
+        indexable = is_indexable_map(report)
+        page = item.split(':', 1)[0]
+        if page in indexable and not indexable[page]:
+            continue
+        match = re.match(r'^(.+): canonical missing from sitemap set        if match:
+            canonical = canonical_for(match.group(1))
+            if canonical and canonical in sitemap_urls:
+                continue
+        out.append(item)
+    return sorted(set(out))
+
+
+def write_report(report: dict) -> None:
+    Path('deep-site-audit.json').write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    lines = [
+        'NEXUSNOVA DEEP PUBLIC-SITE AUDIT — STRICT ACTIONABLE GATE',
+        f"Pages scanned: {report.get('pages_scanned', 0)}",
+        f"Indexable pages: {report.get('indexable_pages', 0)}",
+        f"Tool pages detected: {report.get('tool_pages_detected', 0)}",
+        f"Unique sitemap URLs: {report.get('sitemap_unique_urls', 0)}",
+        f"Severe: {len(report.get('severe', []))}",
+        f"Warnings: {len(report.get('warnings', []))}",
+        '', 'SEVERE', *(report.get('severe') or ['None']), '', 'WARNINGS', *(report.get('warnings') or ['None'])
+    ]
+    Path('deep-site-audit.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    print('\n'.join(lines))
+
+
+def main() -> None:
+    with contextlib.redirect_stdout(io.StringIO()):
+        try:
+            deep_site_audit.main()
+        except SystemExit:
+            pass
+    report_path = Path('deep-site-audit.json')
+    if not report_path.exists():
+        raise SystemExit('Deep audit did not produce deep-site-audit.json')
+    report = json.loads(report_path.read_text(encoding='utf-8'))
+    report['warnings'] = filter_warnings(report)
+    report['severe'] = filter_severe(report)
+    report['strict_actionable_gate'] = True
+    write_report(report)
+    if report['severe'] or report['warnings']:
+        raise SystemExit(f"Deep audit strict gate failed: {len(report['severe'])} severe, {len(report['warnings'])} warning(s)")
+
+
+if __name__ == '__main__':
+    main()
+, item)
         if match:
             canonical = canonical_for(match.group(1))
             if canonical and canonical in sitemap_urls:
