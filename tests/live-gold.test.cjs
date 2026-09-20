@@ -57,13 +57,16 @@ test('browser exposes selected Sarafa source without publishing an invented loca
   assert.match(client,/localSource\.url/);
 });
 
-test('primary AdSense reviewer navigation keeps LIVE out while the noindex LIVE hub remains directly usable',()=>{
+test('primary navigation restores Live Trackers with the working tracker endpoints',()=>{
   const siteShell=read('assets/js/site-main.js');
-  const sitemap=read('sitemap-live.xml');
   const hub=read('live.html');
-  assert.doesNotMatch(siteShell,/\['live\.html','LIVE'\]/);
+  assert.match(siteShell,/Live Trackers/);
+  assert.match(siteShell,/fuel-rates\.html/);
+  assert.match(siteShell,/gold-rates\.html/);
+  assert.match(siteShell,/sports-live\.html/);
   assert.match(siteShell,/\['gaming\.html','Gaming'\]/);
-  assert.doesNotMatch(sitemap,/https:\/\/nexusnovatools\.com\/gold-rates\.html/);
-  assert.match(read('gold-rates.html'),/<meta name="robots" content="noindex, follow">/);
+  assert.match(hub,/href="fuel-rates\.html"/);
   assert.match(hub,/href="gold-rates\.html"/);
+  assert.match(hub,/href="sports-live\.html"/);
+  assert.match(read('gold-rates.html'),/<meta name="robots" content="noindex, follow">/);
 });
