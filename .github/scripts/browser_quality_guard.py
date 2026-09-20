@@ -180,7 +180,14 @@ def main() -> None:
                 try:
                     response = page.goto(url, wait_until="networkidle", timeout=30000)
                     status = response.status if response else 0
-                    page.wait_for_timeout(500)
+
+                    # Shared site shell is loaded by a deferred runtime after HTML
+                    # parsing. Measure the rendered state, not the pre-runtime DOM.
+                    page.wait_for_function(
+                        "document.documentElement.classList.contains('nexusnova-scifi')",
+                        timeout=8000,
+                    )
+                    page.wait_for_timeout(350)
 
                     metrics = page.evaluate(
                         """() => ({
