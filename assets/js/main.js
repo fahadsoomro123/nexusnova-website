@@ -51,7 +51,7 @@
     }
   };
   ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
-  const deferred=()=>{const arm=()=>window.setTimeout(enable,10000);if('requestIdleCallback' in window)window.requestIdleCallback(arm,{timeout:2000});else arm();};
+  const deferred=()=>{const arm=()=>window.setTimeout(enable,5000);if('requestIdleCallback' in window)window.requestIdleCallback(arm,{timeout:2000});else arm();};
   if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});
   else deferred();
 
