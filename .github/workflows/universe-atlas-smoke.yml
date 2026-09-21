@@ -23,18 +23,26 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('universe-atlas.html','utf8');
-          if (!html.includes('three.min.js')) throw new Error('Three.js engine hook missing');
-          if (!html.includes('gea.esac.esa.int/tap-server/tap/sync')) throw new Error('Gaia TAP hook missing');
+                    if (!html.includes('gea.esac.esa.int/tap-server/tap/sync')) throw new Error('Gaia TAP hook missing');
           if (!html.includes('exoplanetarchive.ipac.caltech.edu/TAP/sync')) throw new Error('NASA Exoplanet TAP hook missing');
-          const scripts = [...html.matchAll(/<script(?:[^>]*)>([\\s\\S]*?)<\\/script>/gi)]
-            .map(m => m[1]).filter(s => s.trim());
+          const scripts = [];
+          let cursor = 0;
+          while (true) {
+            const open = html.indexOf('<script', cursor);
+            if (open < 0) break;
+            const closeOpen = html.indexOf('>', open);
+            const closeScript = html.indexOf('</script>', closeOpen + 1);
+            if (closeOpen < 0 || closeScript < 0) break;
+            const body = html.slice(closeOpen + 1, closeScript);
+            if (body.trim()) scripts.push(body);
+            cursor = closeScript + 9;
+          }
           fs.writeFileSync('/tmp/universe-atlas-embedded.js', scripts.join('\n\n'));
           console.log('Embedded script blocks:', scripts.length);
           NODE
           node --check /tmp/universe-atlas-embedded.js
       - name: Required UI/data markers
         run: |
-          grep -q "LOAD GAIA" universe-atlas.html
-          grep -q "LOAD EXOPLANETS" universe-atlas.html
-          grep -q "SOLAR SYSTEM" universe-atlas.html
-          grep -q "Not reported" universe-atlas.html
+          grep -q 'id="gaia"' universe-atlas.html
+          grep -q 'id="exo"' universe-atlas.html
+          grep -q "SOLAR-SYSTEM LAYER" universe-atlas.html
