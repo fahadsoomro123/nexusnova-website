@@ -40,7 +40,7 @@ jobs:
       - name: 06 Visible fallback
         run: |
           grep -q 'run2d' universe-atlas.html
-          grep -q '3D WebGL unavailable' universe-atlas.html
+          grep -q 'fallback is active' universe-atlas.html
 
       - name: 07 Featured astronomy records
         run: |
