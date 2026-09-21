@@ -121,6 +121,24 @@
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
+  if(page==='index.html'){
+    if(button&&nav){
+      const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};
+      button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});
+      nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});
+      window.addEventListener('resize',()=>{if(innerWidth>720)close()});
+    }
+    const homeSearch=document.querySelector('[data-home-search]');
+    if(homeSearch){
+      const form=homeSearch.closest('form');
+      const cards=[...document.querySelectorAll('[data-home-tool]')];
+      const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};
+      homeSearch.addEventListener('input',filter);
+      form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();if(q)location.href='/tools.html?q='+encodeURIComponent(q)});
+    }
+    return;
+  }
+
   if(nav){
     const items=[
       ['index.html','Home'],['live.html',"🟢 Today's Prices"],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['nova-intelligence.html','Nova Intelligence'],['gaming.html','Gaming']
@@ -136,18 +154,6 @@
     const signUp=document.createElement('a');signUp.href=`${base}register.html?mode=register`;signUp.textContent='Sign up';signUp.className='nn-nav-auth nn-nav-signup';if(page==='register.html'&&authMode!=='signin')signUp.setAttribute('aria-current','page');nav.appendChild(signUp);
   }
   if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
-
-  if(page==='index.html'){
-    const homeSearch=document.querySelector('[data-home-search]');
-    if(homeSearch){
-      const form=homeSearch.closest('form');
-      const cards=[...document.querySelectorAll('[data-home-tool]')];
-      const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};
-      homeSearch.addEventListener('input',filter);
-      form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();if(q)location.href='/tools.html?q='+encodeURIComponent(q)});
-    }
-    return;
-  }
 
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
