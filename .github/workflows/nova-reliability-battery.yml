@@ -9,6 +9,10 @@ concurrency:
   group: nova-production-reliability
   cancel-in-progress: true
 
+concurrency:
+  group: nexusnova-nova-production-checks
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
