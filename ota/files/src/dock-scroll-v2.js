@@ -1,43 +1,41 @@
-/* NexusNova OTA route/touch recovery patch. */
-(() => {
-  const stageSelector = '#nx-stage';
-  const dockSelector = '.nx-dock';
-  const badgeSelector = '#nx-ota-proof-badge';
+const dock = document.querySelector('.nx-dock');
 
-  function restoreShell() {
-    const stage = document.querySelector(stageSelector);
-    const video = document.querySelector('.nx-video-flagship');
-    const route = stage?.dataset?.route || '';
-    if (route !== 'app' || !video) {
-      document.documentElement.style.removeProperty('overflow');
-      document.body.style.removeProperty('overflow');
-      document.documentElement.style.removeProperty('overscroll-behavior');
-      document.body.style.removeProperty('overscroll-behavior');
-      const dock = document.querySelector(dockSelector);
-      if (dock && route !== 'auth') dock.hidden = false;
-      if (video && route !== 'app') video.remove();
+if (dock instanceof HTMLElement) {
+  let lastY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+  let ticking = false;
+
+  const currentY = () => Math.max(
+    0,
+    window.scrollY || 0,
+    document.documentElement?.scrollTop || 0,
+    document.body?.scrollTop || 0
+  );
+
+  const update = () => {
+    ticking = false;
+    const y = currentY();
+    const delta = y - lastY;
+
+    if (y <= 8) {
+      dock.classList.remove('nx-dock--scroll-away');
+    } else if (delta > 5) {
+      dock.classList.add('nx-dock--scroll-away');
+    } else if (delta < -5) {
+      dock.classList.remove('nx-dock--scroll-away');
     }
-  }
 
-  function markOta9() {
-    const badge = document.querySelector(badgeSelector);
-    if (!badge) return;
-    const text = badge.querySelector('span');
-    if (text) text.textContent = 'OTA9 • ACTIVE';
-    badge.setAttribute('aria-label', 'OTA9 update active');
-  }
+    lastY = y;
+  };
 
-  function boot() {
-    const stage = document.querySelector(stageSelector);
-    const observer = new MutationObserver(() => {
-      restoreShell();
-      markOta9();
-    });
-    if (stage) observer.observe(stage, { attributes: true, childList: true, subtree: true });
-    restoreShell();
-    markOta9();
-  }
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  };
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-  else boot();
-})();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  document.addEventListener('scroll', onScroll, { passive: true, capture: true });
+
+  dock.addEventListener('focusin', () => dock.classList.remove('nx-dock--scroll-away'));
+  window.addEventListener('hashchange', () => dock.classList.remove('nx-dock--scroll-away'));
+}
