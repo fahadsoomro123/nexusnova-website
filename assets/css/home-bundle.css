@@ -596,9 +596,3 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 @media (max-width:720px){
   #popular-tools,#explore-by-task,#trust,.nn-live-home,.nn-nova-discovery,.nn-v11-sample,.nn-hp-overview{content-visibility:auto;contain-intrinsic-size:520px}
 }
-
-
-/* Performance: isolate the flagship visual compositor without changing its
-   children, copy, controls or decorative layers. */
-.nn-flagship-stage{contain:layout paint;isolation:isolate}
-.nn-proof-card{contain:layout paint}

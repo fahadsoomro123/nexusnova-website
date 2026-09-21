@@ -73,14 +73,16 @@
   };
   const scheduleShell=()=>{
     if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){
+      const loadHomepageRuntime=()=>{
+        loadShell();
+        loadSocialShare();
+      };
       if('requestIdleCallback' in window){
-        window.requestIdleCallback(loadShell,{timeout:1200});
-        window.requestIdleCallback(loadSocialShare,{timeout:1800});
+        window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});
       }else{
-        window.setTimeout(loadShell,120);
-        window.setTimeout(loadSocialShare,1400);
+        window.setTimeout(loadHomepageRuntime,3200);
       }
-      ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadShell,{once:true,passive:true}));
+      ['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));
       return;
     }
     if('requestIdleCallback' in window){
