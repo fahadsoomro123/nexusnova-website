@@ -54,13 +54,26 @@
   const deferred=()=>window.setTimeout(enable,7000);
   if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});
   else deferred();
+
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
-  if(!document.querySelector('script[data-nexusnova-site-shell]')){
+  const loadShell=()=>{
+    if(document.querySelector('script[data-nexusnova-site-shell]'))return;
     const shell=document.createElement('script');
-    shell.defer=true;
-    shell.src=base+'assets/js/site-main.js?v=20260921-nav5';
+    shell.src=base+'assets/js/site-main.js?v=20260921-nav6';
     shell.dataset.nexusnovaSiteShell='';
-    document.head.appendChild(shell);
+    document.body.appendChild(shell);
+  };
+  const scheduleShell=()=>{
+    if('requestIdleCallback' in window){
+      window.requestIdleCallback(loadShell,{timeout:1200});
+    }else{
+      window.setTimeout(loadShell,120);
+    }
+  };
+  if(document.readyState==='loading'){
+    window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});
+  }else{
+    scheduleShell();
   }
 })();
