@@ -92,21 +92,22 @@
   const base=inSubdir?'../':'';
   const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
   document.documentElement.classList.add('nexusnova-scifi');
-  /* Homepage uses one pre-bundled stylesheet to avoid eight render-blocking
-     requests; other surfaces keep their existing per-page CSS loading. */
-  if(isHome)return;
-  const styles=[
-    ['scifi',`${base}assets/css/scifi.css`],
-    ['motion',`${base}assets/css/motion.css`],
-    ['tool-icons',`${base}assets/css/tool-icons.css`],
-    ['polish',`${base}assets/css/polish.css`],
-    ['auth-nav',`${base}assets/css/auth-nav.css`]
-  ];
-  styles.forEach(([key,href])=>{
-    if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
-    const link=document.createElement('link');
-    link.rel='stylesheet';link.href=href;link.setAttribute(`data-nexusnova-${key}`,'');document.head.appendChild(link);
-  });
+  /* Homepage already ships these rules in home-bundle.css; other surfaces
+     keep their existing per-page CSS loading. */
+  if(!isHome){
+    const styles=[
+      ['scifi',`${base}assets/css/scifi.css`],
+      ['motion',`${base}assets/css/motion.css`],
+      ['tool-icons',`${base}assets/css/tool-icons.css`],
+      ['polish',`${base}assets/css/polish.css`],
+      ['auth-nav',`${base}assets/css/auth-nav.css`]
+    ];
+    styles.forEach(([key,href])=>{
+      if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
+      const link=document.createElement('link');
+      link.rel='stylesheet';link.href=href;link.setAttribute(`data-nexusnova-${key}`,'');document.head.appendChild(link);
+    });
+  }
 })();
 
 (()=>{
