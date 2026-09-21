@@ -4,43 +4,50 @@ const fs = require('node:fs');
 
 test('public HumanProof page loads the canonical main bootstrap', () => {
   const text = fs.readFileSync('humanproof.html', 'utf8');
-  assert.match(text, /<script src="assets\/js\/main\.js" defer><\/script>/);
+  assert.ok(text.includes('<script src="assets/js/main.js" defer></script>'));
 });
 
 test('GA4 bootstrap keeps the existing measurement ID and automatic page_view path', () => {
   const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
-  assert.match(wrapper, /const measurementId='G-YLPFKWSS12';/);
-  assert.match(wrapper, /window\\.dataLayer=window\\.dataLayer\\|\\|\\[\\];/);
-  assert.match(wrapper, /window\\.gtag=window\\.gtag\\|\\|function/);
-  assert.match(wrapper, /window\\.gtag\\('js',new Date\\(\\)\\)/);
-  assert.match(wrapper, /googletagmanager\\.com\\/gtag\\/js\\?id=/);
-  assert.match(wrapper, /window\\.gtag\\('config',measurementId,\\{/);
-  assert.match(wrapper, /send_page_view:true/);
-  assert.match(wrapper, /window\\.__nexusnovaConsentReady=true/);
-  assert.match(wrapper, /window\\.__nexusnovaLoadAnalytics=/);
-  assert.match(wrapper, /pointerdown/);
-  assert.match(wrapper, /setTimeout\\(runDeferredAnalytics,7000\\)/);
-  assert.doesNotMatch(wrapper, /__nexusnovaGa4BootstrapReady/);
+  const required = [
+    "const measurementId='G-YLPFKWSS12';",
+    'window.dataLayer=window.dataLayer||[];',
+    'window.gtag=window.gtag||function',
+    "window.gtag('js',new Date())",
+    'googletagmanager.com/gtag/js?id=',
+    "window.gtag('config',measurementId,{",
+    'send_page_view:true',
+    'window.__nexusnovaConsentReady=true',
+    'window.__nexusnovaLoadAnalytics=',
+    'pointerdown',
+    'setTimeout(runDeferredAnalytics,7000)'
+  ];
+  for (const token of required) assert.ok(wrapper.includes(token), token);
+  assert.ok(!wrapper.includes('__nexusnovaGa4BootstrapReady'));
 });
 
 test('legacy site shell delegates analytics loading through the canonical GA4 bridge', () => {
   const text = fs.readFileSync('assets/js/site-main.js', 'utf8');
-  assert.match(text, /const measurementId='G-YLPFKWSS12';/);
-  assert.match(text, /nexusnova_analytics_consent_v1/);
-  assert.match(text, /window\\.__nexusnovaLoadAnalytics/);
-  assert.match(text, /data-consent-allow/);
+  for (const token of [
+    "const measurementId='G-YLPFKWSS12';",
+    'nexusnova_analytics_consent_v1',
+    'window.__nexusnovaLoadAnalytics',
+    'data-consent-allow'
+  ]) assert.ok(text.includes(token), token);
 });
 
 test('tool analytics events are not blocked by the old consent gate', () => {
   const text = fs.readFileSync('assets/js/tool-analytics.js', 'utf8');
-  assert.match(text, /const allowed=\\(\\)=>typeof window\\.gtag==='function';/);
-  assert.doesNotMatch(text, /localStorage\\.getItem\\(consentKey\\)==='granted'/);
+  assert.ok(text.includes("const allowed=()=>typeof window.gtag==='function';"));
+  assert.ok(!text.includes("localStorage.getItem(consentKey)==='granted'"));
 });
 
 test('automatic GA4 config cannot initialize twice on the same page', () => {
   const text = fs.readFileSync('assets/js/main.js', 'utf8');
-  assert.match(text, /__nexusnovaConsentReady/);
-  assert.match(text, /analyticsLoaded=false/);
-  assert.match(text, /data-nexusnova-ga4/);
-  assert.match(text, /data-nexusnova-site-shell/);
+  for (const token of [
+    '__nexusnovaConsentReady',
+    'analyticsLoaded=false',
+    'data-nexusnova-ga4',
+    'data-nexusnova-site-shell'
+  ]) assert.ok(text.includes(token), token);
 });
