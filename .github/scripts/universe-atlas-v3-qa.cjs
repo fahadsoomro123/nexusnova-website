@@ -39,10 +39,14 @@ const { chromium } = require('playwright');
   await page.waitForTimeout(100);
   if(await page.locator('#inspector.show').count()!==0) throw new Error('3D inspector did not close');
 
+  await page.locator('#fit').click();
+  if(!(await page.locator('#scale').textContent()).includes('SURVEY OVERVIEW')) throw new Error('fit mode failed');
+  await page.setViewportSize({width:800,height:800});
   await page.locator('#local').click();
   if(!(await page.locator('#scale').textContent()).includes('LOCAL')) throw new Error('local mode failed');
   await page.locator('#home').click();
   if(!(await page.locator('#scale').textContent()).includes('MILKY WAY')) throw new Error('home mode failed');
+  await page.setViewportSize({width:412,height:915});
 
   await page.locator('#gaia').click();
   await page.waitForTimeout(700);
