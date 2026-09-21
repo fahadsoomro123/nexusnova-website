@@ -137,6 +137,18 @@
   }
   if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
+  if(page==='index.html'){
+    const homeSearch=document.querySelector('[data-home-search]');
+    if(homeSearch){
+      const form=homeSearch.closest('form');
+      const cards=[...document.querySelectorAll('[data-home-tool]')];
+      const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};
+      homeSearch.addEventListener('input',filter);
+      form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();if(q)location.href='/tools.html?q='+encodeURIComponent(q)});
+    }
+    return;
+  }
+
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
