@@ -31,12 +31,18 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify production bootstrap fingerprint in repository checkout
+        run: |
+          grep -Fq "const measurementId='G-YLPFKWSS12';" assets/js/main.js
+          grep -Fq "window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));" assets/js/main.js
+          ! grep -Fq "mountChoices" assets/js/main.js
+
       - name: Wait for the current performance assets to reach production
         shell: bash
         run: |
           set -euo pipefail
           expected_css='home-bundle.css?v=20260921-perf6'
-          expected_js='main.js?v=20260921-perf7'
+          expected_js='main.js?v=20260921-perf9'
           success=0
 
           for attempt in {1..30}; do
