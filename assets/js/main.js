@@ -65,6 +65,11 @@
     document.body.appendChild(shell);
   };
   const scheduleShell=()=>{
+    if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){
+      window.setTimeout(loadShell,6000);
+      ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadShell,{once:true,passive:true}));
+      return;
+    }
     if('requestIdleCallback' in window){
       window.requestIdleCallback(loadShell,{timeout:1200});
     }else{
