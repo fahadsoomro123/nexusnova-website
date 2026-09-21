@@ -84,7 +84,13 @@ jobs:
           grep -q 'id="exo"' universe-atlas.html
           grep -q 'id="solar"' universe-atlas.html
 
-      - name: 15 JavaScript syntax
+      - name: 15 No undefined solar state
+        run: |
+          ! grep -q 'solarMode' universe-atlas.html
+          grep -q 'function enterSolar' universe-atlas.html
+          grep -q 'SOLAR=\[' universe-atlas.html
+
+      - name: 16 JavaScript syntax
         run: |
           python - <<'PY'
           from pathlib import Path
