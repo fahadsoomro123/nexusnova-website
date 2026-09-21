@@ -20,7 +20,7 @@ test('GA4 bootstrap keeps the existing measurement ID and automatic page_view pa
     'window.__nexusnovaConsentReady=true',
     'window.__nexusnovaLoadAnalytics=',
     'pointerdown',
-    'setTimeout(enable,10000)',
+    'setTimeout(enable,5000)',
     'window.__nexusnovaAnalyticsAutoEnabled=true',
     'nexusnova-analytics-auto-enabled'
   ];
