@@ -161,7 +161,7 @@
   }
   if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
-  const deferHomeTask=(task,delay=1200)=>{if(page==='index.html')window.setTimeout(task,delay);else task()};
+  function deferHomeTask(task,delay=1200){if(page==='index.html')window.setTimeout(task,delay);else task()}
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
