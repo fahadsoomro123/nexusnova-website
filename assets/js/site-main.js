@@ -328,3 +328,68 @@ if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventL
     const meta=[...document.querySelectorAll('.article-meta span')].find(el=>el.textContent.trim()==='NexusNova Editorial Team');if(meta&&!meta.querySelector('a')){const link=document.createElement('a');link.href='../editorial-team.html';link.textContent='NexusNova Editorial Team';link.setAttribute('aria-label','About the NexusNova Editorial Team');meta.textContent='';meta.appendChild(link)}
   }
 })();
+/* Restored global share/support surface.
+   Loaded by the deferred site shell so it does not re-enter the homepage's
+   critical render path. The widget remains explicitly user-initiated. */
+(()=>{
+  const mountShareWidget=()=>{
+    if(document.querySelector('[data-nexusnova-share-widget]'))return;
+    const shareMessage='Bhai, check out this 100% Free and Private AI & Web Utility Tools website: https://nexusnovatools.com - Zero latency, works completely in the browser!';
+    const shareUrl='https://nexusnovatools.com';
+    const whatsappUrl='https://wa.me/?text='+encodeURIComponent(shareMessage);
+    const style=document.createElement('style');
+    style.dataset.nexusnovaShareStyle='';
+    style.textContent='.nn-share-widget{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(7,17,31,.94);box-shadow:0 18px 46px rgba(0,0,0,.34);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.nn-share-label{display:flex;flex-direction:column;gap:1px;padding:0 4px 0 2px;line-height:1.15}.nn-share-label strong{font-size:13px;color:#f7fbff;letter-spacing:-.01em}.nn-share-label span{font-size:10px;color:#a9b7c8}.nn-share-actions{display:flex;gap:8px}.nn-share-btn{width:44px;height:44px;border:1px solid rgba(255,255,255,.12);border-radius:13px;display:grid;place-items:center;color:#f7fbff;background:rgba(255,255,255,.06);transition:transform .18s ease,background .18s ease,border-color .18s ease;box-shadow:none}.nn-share-btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}.nn-share-btn:focus-visible{outline:3px solid rgba(121,242,192,.78);outline-offset:3px}.nn-share-btn svg{width:21px;height:21px}.nn-share-whatsapp{color:#79f2c0;border-color:rgba(121,242,192,.28);background:rgba(121,242,192,.1)}.nn-share-toast{position:fixed;right:18px;bottom:84px;z-index:81;max-width:min(360px,calc(100vw - 36px));padding:12px 15px;border:1px solid rgba(121,242,192,.3);border-radius:14px;background:rgba(7,17,31,.96);color:#eafff6;font-size:13px;font-weight:800;box-shadow:0 18px 45px rgba(0,0,0,.35);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s ease,transform .2s ease}.nn-share-toast.show{opacity:1;transform:translateY(0)}@media(max-width:560px){.nn-share-widget{left:11px;right:11px;bottom:11px;justify-content:space-between;padding:9px 10px;border-radius:16px}.nn-share-label{min-width:0}.nn-share-label strong{font-size:12px}.nn-share-actions{flex-shrink:0}.nn-share-toast{left:11px;right:11px;bottom:78px;max-width:none}}';
+    document.head.appendChild(style);
+    const widget=document.createElement('div');
+    widget.dataset.nexusnovaShareWidget='';
+    widget.className='nn-share-widget';
+    widget.setAttribute('aria-label','Share and support NexusNova Tools');
+    widget.innerHTML='<div class="nn-share-label"><strong>Share &amp; Support this Free Tool</strong><span>Help someone discover a useful free utility</span></div><div class="nn-share-actions"><button class="nn-share-btn nn-share-whatsapp" type="button" data-share-whatsapp aria-label="Share NexusNova Tools on WhatsApp" title="Share on WhatsApp">WhatsApp</button><button class="nn-share-btn" type="button" data-share-copy aria-label="Copy NexusNova invitation link" title="Copy invite link">Copy</button><button class="nn-share-btn" type="button" data-share-native aria-label="Use device sharing to share NexusNova Tools" title="More sharing options">Share</button></div>';
+    document.body.appendChild(widget);
+    const toast=document.createElement('div');
+    toast.className='nn-share-toast';
+    toast.setAttribute('role','status');
+    toast.setAttribute('aria-live','polite');
+    document.body.appendChild(toast);
+    let toastTimer=0;
+    const showToast=message=>{toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=window.setTimeout(()=>toast.classList.remove('show'),2400)};
+    const copyInvite=async()=>{
+      try{
+        await navigator.clipboard.writeText(shareMessage);
+        showToast('Invite message copied successfully. Share it with a friend!');
+      }catch{
+        const helper=document.createElement('textarea');
+        helper.value=shareMessage;
+        helper.setAttribute('readonly','');
+        helper.style.position='fixed';
+        helper.style.opacity='0';
+        document.body.appendChild(helper);
+        helper.select();
+        let copied=false;
+        try{copied=document.execCommand('copy')}catch{}
+        helper.remove();
+        showToast(copied?'Invite message copied successfully. Share it with a friend!':'Copy was blocked by the browser. Please copy the message manually.');
+      }
+    };
+    widget.querySelector('[data-share-whatsapp]').addEventListener('click',()=>window.open(whatsappUrl,'_blank','noopener,noreferrer'));
+    widget.querySelector('[data-share-copy]').addEventListener('click',copyInvite);
+    widget.querySelector('[data-share-native]').addEventListener('click',async()=>{
+      if(typeof navigator.share==='function'){
+        try{
+          await navigator.share({title:'NexusNova Tools',text:shareMessage,url:shareUrl});
+          showToast('Share sheet opened successfully.');
+          return;
+        }catch(error){
+          if(error&&error.name==='AbortError')return;
+        }
+      }
+      await copyInvite();
+    });
+  };
+  const loadShareOnIntent=()=>mountShareWidget();
+  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,loadShareOnIntent,{once:true,passive:true}));
+  const scheduleShare=()=>window.setTimeout(mountShareWidget,7000);
+  if(document.readyState==='loading')window.addEventListener('load',scheduleShare,{once:true});
+  else scheduleShare();
+})();
