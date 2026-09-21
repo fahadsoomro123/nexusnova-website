@@ -4,7 +4,7 @@ const fs = require('node:fs');
 
 test('public HumanProof page loads the canonical main bootstrap', () => {
   const text = fs.readFileSync('humanproof.html', 'utf8');
-  assert.match(text, /<script src="assets\\/js\\/main\\.js" defer><\\/script>/);
+  assert.match(text, /<script src="assets\/js\/main\.js" defer><\/script>/);
 });
 
 test('GA4 bootstrap keeps the existing measurement ID and automatic page_view path', () => {
