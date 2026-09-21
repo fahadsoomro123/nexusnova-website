@@ -55,6 +55,15 @@
   if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});
   else deferred();
 
+  // Keep the shared footer label consistent across the live site.
+  const normalizeFooterContact=()=>{
+    document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{
+      link.textContent='Contact Us';
+    });
+  };
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterContact,{once:true});
+  else normalizeFooterContact();
+
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const loadShell=()=>{
