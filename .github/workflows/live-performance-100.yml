@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_css='home-bundle.css?v=20260921-perf7'
+          expected_css='home-bundle.css?v=20260921-perf8'
           expected_js='main.js?v=20260921-perf22'
           success=0
 
