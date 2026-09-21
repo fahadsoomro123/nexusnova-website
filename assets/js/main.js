@@ -16,9 +16,10 @@
   window.gtag('js',new Date());
 
   const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){} };
   let analyticsLoaded=false;
-  const loadAnalytics=()=>{
+  const loadAnalytics=(granted=true)=>{
+    if(!granted)return;
     window.gtag('consent','update',{
       analytics_storage:'granted',
       ad_storage:'denied',
@@ -27,6 +28,7 @@
     });
     if(analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
     analyticsLoaded=true;
+    window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
     analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
@@ -47,6 +49,8 @@
   const shouldAutoEnableAnalytics=()=>{
     try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}
   };
+  window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
+  window.__nexusnovaConsentKey=consentKey;
 
   const mountChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
@@ -74,14 +78,28 @@
     banner.querySelector('[data-consent-deny]').addEventListener('click',()=>{saveChoice('denied');denyAnalytics();hide()});
     reopen.addEventListener('click',()=>{banner.hidden=false;banner.querySelector('button')?.focus()});
     const choice=readChoice();
-    if(choice==='granted'||(!choice&&shouldAutoEnableAnalytics())){loadAnalytics();hide()}
-    else if(choice==='denied'){denyAnalytics();hide()}
+    if(choice==='granted'||choice==='denied'||(!choice&&shouldAutoEnableAnalytics()))hide();
+    else banner.hidden=false;
   };
-  const initialChoice=readChoice();
-  if(initialChoice==='granted'||(!initialChoice&&shouldAutoEnableAnalytics()))loadAnalytics();
-  else denyAnalytics();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
-  else mountChoices();
+  const runDeferredAnalytics=()=>{
+    const choice=readChoice();
+    if(choice==='granted'||(!choice&&shouldAutoEnableAnalytics()))loadAnalytics(true);
+    else if(choice==='denied')denyAnalytics();
+  };
+  const loadAnalyticsOnIntent=()=>{
+    const choice=readChoice();
+    if(choice==='granted'||(!choice&&shouldAutoEnableAnalytics()))loadAnalytics(true);
+  };
+  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,loadAnalyticsOnIntent,{once:true,passive:true}));
+  const scheduleDeferred=()=>window.setTimeout(runDeferredAnalytics,7000);
+  const scheduleChoices=()=>window.setTimeout(mountChoices,7000);
+  if(document.readyState==='loading'){
+    window.addEventListener('load',scheduleDeferred,{once:true});
+    window.addEventListener('load',scheduleChoices,{once:true});
+  }else{
+    scheduleDeferred();
+    scheduleChoices();
+  }
 
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
@@ -120,6 +138,9 @@
     widget.querySelector('[data-share-copy]').addEventListener('click',copyInvite);
     widget.querySelector('[data-share-native]').addEventListener('click',async()=>{if(typeof navigator.share==='function'){try{await navigator.share({title:'NexusNova Tools',text:shareMessage,url:shareUrl});showToast('Share sheet opened successfully.');return}catch(error){if(error&&error.name==='AbortError')return}}await copyInvite()});
   };
-  if('requestIdleCallback' in window)window.requestIdleCallback(mountShareWidget,{timeout:3500});
-  else window.setTimeout(mountShareWidget,3500);
+  const loadShareOnIntent=()=>mountShareWidget();
+  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,loadShareOnIntent,{once:true,passive:true}));
+  const scheduleShare=()=>window.setTimeout(mountShareWidget,7000);
+  if(document.readyState==='loading')window.addEventListener('load',scheduleShare,{once:true});
+  else scheduleShare();
 })();
