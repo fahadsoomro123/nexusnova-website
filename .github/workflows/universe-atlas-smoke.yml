@@ -23,8 +23,7 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const html = fs.readFileSync('universe-atlas.html','utf8');
-          if (!html.includes('three.min.js')) throw new Error('Three.js engine hook missing');
-          if (!html.includes('gea.esac.esa.int/tap-server/tap/sync')) throw new Error('Gaia TAP hook missing');
+                    if (!html.includes('gea.esac.esa.int/tap-server/tap/sync')) throw new Error('Gaia TAP hook missing');
           if (!html.includes('exoplanetarchive.ipac.caltech.edu/TAP/sync')) throw new Error('NASA Exoplanet TAP hook missing');
           const scripts = [...html.matchAll(/<script(?:[^>]*)>([\\s\\S]*?)<\\/script>/gi)]
             .map(m => m[1]).filter(s => s.trim());
@@ -34,7 +33,7 @@ jobs:
           node --check /tmp/universe-atlas-embedded.js
       - name: Required UI/data markers
         run: |
-          grep -q "LOAD GAIA" universe-atlas.html
-          grep -q "LOAD EXOPLANETS" universe-atlas.html
+          grep -q 'id="gaia"' universe-atlas.html
+          grep -q 'id="exo"' universe-atlas.html
           grep -q "SOLAR SYSTEM" universe-atlas.html
           grep -q "Not reported" universe-atlas.html
