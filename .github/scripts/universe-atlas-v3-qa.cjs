@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
   page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
 
   await page.goto('http://127.0.0.1:4173/universe-atlas.html',{waitUntil:'networkidle',timeout:30000});
-  await page.waitForTimeout(900);
+  await page.locator('#loading').waitFor({state:'hidden',timeout:15000});
 
   if(await page.locator('#space').count()!==1) throw new Error('canvas missing');
   if(!(await page.title()).includes('NexusNova Universe Atlas')) throw new Error('title mismatch');
