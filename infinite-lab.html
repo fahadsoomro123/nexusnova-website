@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>NexusNova Infinite Lab — Worlds Within Worlds</title>
+<meta name="description" content="An interactive NexusNova deep-zoom universe where every portal opens into another generated world.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+:root{--p:#ff42d0;--c:#5de9ff;--v:#8d5cff;--bg:#050713}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,Arial,sans-serif}canvas{display:block;width:100vw;height:100vh;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.hud{position:fixed;inset:0;color:#fff;pointer-events:none}.brand{position:absolute;left:18px;top:16px;font-size:18px;font-weight:900;letter-spacing:.08em}.brand b{color:var(--p)}.tag{position:absolute;left:18px;top:44px;font-size:10px;letter-spacing:.16em;opacity:.55}.actions{position:absolute;right:16px;top:16px;display:flex;gap:7px;pointer-events:auto}.btn{border:1px solid #fff3;background:#0b0e1dd9;color:#fff;border-radius:999px;padding:9px 12px;font-weight:800;font-size:11px;cursor:pointer;backdrop-filter:blur(12px)}.btn:hover{border-color:#ff42d0aa}.bottom{position:absolute;left:50%;bottom:17px;transform:translateX(-50%);width:min(92vw,680px);text-align:center;text-shadow:0 2px 15px #000}.bottom strong{display:block;font-size:14px}.bottom span{font-size:11px;opacity:.62}.depth{position:absolute;left:18px;bottom:17px;font-size:10px;opacity:.55}.toast{position:absolute;left:50%;top:78px;transform:translateX(-50%);background:#0b0e1ddd;border:1px solid #fff3;border-radius:999px;padding:8px 13px;font-size:11px;opacity:0;transition:.2s}.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<canvas id="u" aria-label="Interactive NexusNova infinite zoom universe"></canvas>
+<div class="hud">
+  <div class="brand">NEXUS<b>NOVA</b></div><div class="tag">INFINITE LAB · WORLDS WITHIN WORLDS</div>
+  <div class="actions"><button class="btn" id="reset">Reset</button><button class="btn" id="surprise">Surprise me</button></div>
+  <div class="toast" id="toast"></div>
+  <div class="bottom"><strong>Zoom into the glowing portal. There is another world inside.</strong><span>Pinch / wheel to zoom · drag to explore · double-tap to dive</span></div>
+  <div class="depth" id="depth">DEPTH 0</div>
+</div>
+<script>
+(()=>{
+'use strict';
+const c=document.getElementById('u'),g=c.getContext('2d');let W=innerWidth,H=innerHeight,D=devicePixelRatio||1;
+function fit(){W=innerWidth;H=innerHeight;D=Math.min(2,devicePixelRatio||1);c.width=W*D;c.height=H*D;g.setTransform(D,0,0,D,0,0)}addEventListener('resize',fit);fit();
+let cam={x:0,y:0,z:1},drag=false,last=null,pointers=new Map(),pinch=null;
+const hash=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v)};
+const rnd=(s,i)=>hash(s*71+i*19.37), hue=s=>[190,225,270,315,340,160][Math.floor(hash(s)*6)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function toWorld(sx,sy){return{x:(sx-W/2)/cam.z+cam.x,y:(sy-H/2)/cam.z+cam.y}}
+function zoomAt(sx,sy,f){const p=toWorld(sx,sy);cam.z=clamp(cam.z*f,1e-14,1e14);cam.x=p.x-(sx-W/2)/cam.z;cam.y=p.y-(sy-H/2)/cam.z}
+function label(t,y,size=14,a=.85){g.save();g.fillStyle=`rgba(255,255,255,${a})`;g.font=`800 ${size}px system-ui`;g.textAlign='center';g.fillText(t,0,y);g.restore()}
+function scene(seed,depth){
+ const S=900;g.fillStyle=depth%2?'#091a35':'#0d0a28';g.fillRect(-S,-S,S*2,S*2);
+ for(let i=0;i<48;i++){const px=(rnd(seed,i)-.5)*1650,py=(rnd(seed+5,i)-.5)*1150,r=.7+rnd(seed+9,i)*2.5;g.fillStyle=`hsla(${hue(seed)+rnd(seed+12,i)*45},90%,82%,${.2+rnd(seed+15,i)*.55})`;g.beginPath();g.arc(px,py,r,0,7);g.fill()}
+ g.strokeStyle=`hsla(${hue(seed)},90%,70%,.16)`;g.lineWidth=9;g.beginPath();g.ellipse(0,0,390,245,.2,0,7);g.stroke();g.beginPath();g.ellipse(0,0,520,330,-.35,0,7);g.stroke();
+ const names=['AI LAB','TOOL CITY','HUMANPROOF','TRAVEL CORE','DEV ZONE','DATA GARDEN','SECRET ROOM'];
+ for(let i=0;i<7;i++){let a=rnd(seed,20+i)*Math.PI*2,rad=190+rnd(seed,40+i)*300,px=Math.cos(a)*rad,py=Math.sin(a)*rad*.62,rw=50+rnd(seed,60+i)*90,rh=32+rnd(seed,70+i)*55;g.fillStyle=`hsla(${hue(seed+i)+i*11},48%,${27+i*3}%,.96)`;g.beginPath();g.ellipse(px,py,rw,rh,a*.3,0,7);g.fill();for(let k=0;k<4;k++){g.fillStyle=`hsla(${hue(seed+i)+35},95%,82%,.72)`;g.fillRect(px-rw*.45+k*rw*.25,py-rh*.12-(k%2)*14,7,18+((k+i)%3)*12)}}
+ const h=hue(seed);g.shadowBlur=42;g.shadowColor=`hsl(${h},100%,65%)`;g.strokeStyle=`hsl(${h},100%,72%)`;g.lineWidth=12;g.beginPath();g.arc(0,0,118,0,7);g.stroke();g.shadowBlur=0;g.strokeStyle='#fff';g.globalAlpha=.7;g.lineWidth=2;g.beginPath();g.arc(0,0,94,0,7);g.stroke();g.globalAlpha=1;
+ const grd=g.createRadialGradient(0,0,6,0,0,104);grd.addColorStop(0,'#fff');grd.addColorStop(.2,`hsla(${h},100%,75%,.92)`);grd.addColorStop(1,'rgba(0,0,0,.02)');g.fillStyle=grd;g.beginPath();g.arc(0,0,104,0,7);g.fill();
+ label(names[Math.floor(rnd(seed,99)*names.length)],-146,19,.92);label('ZOOM DEEPER',150,11,.58);
+ if(depth<32){g.save();g.scale(.205,.205);scene(seed*13.17+depth*91.3,depth+1);g.restore()}
+}
+function frame(){g.clearRect(0,0,W,H);g.save();g.translate(W/2,H/2);g.scale(cam.z,cam.z);g.translate(-cam.x,-cam.y);scene(1.234,0);g.restore();document.getElementById('depth').textContent='DEPTH '+Math.max(0,Math.floor(Math.log(1/cam.z)/Math.log(4)));requestAnimationFrame(frame)}frame();
+function msg(t){const q=document.getElementById('toast');q.textContent=t;q.classList.add('on');clearTimeout(msg.t);msg.t=setTimeout(()=>q.classList.remove('on'),1000)}
+document.getElementById('reset').onclick=()=>{cam={x:0,y:0,z:1};msg('Surface restored')};document.getElementById('surprise').onclick=()=>{cam.x=(Math.random()-.5)*320;cam.y=(Math.random()-.5)*230;cam.z=1.5+Math.random()*4;msg('A new place in the universe')};
+c.addEventListener('dblclick',()=>{zoomAt(W/2,H/2,3.2);msg('Diving deeper…')});
+c.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*.0016))},{passive:false});
+c.addEventListener('pointerdown',e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});c.setPointerCapture(e.pointerId);if(pointers.size===1){drag=true;last={x:e.clientX,y:e.clientY}}if(pointers.size===2){drag=false;const a=[...pointers.values()];pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}}});
+c.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2&&pinch){const a=[...pointers.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);zoomAt(pinch.cx,pinch.cy,d/pinch.d);pinch={d,cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2}}else if(drag&&last){cam.x-=(e.clientX-last.x)/cam.z;cam.y-=(e.clientY-last.y)/cam.z;last={x:e.clientX,y:e.clientY}}});
+function up(e){pointers.delete(e.pointerId);if(pointers.size<2)pinch=null;if(!pointers.size){drag=false;last=null}}c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+})();
+</script>
+</body></html>
