@@ -1,0 +1,99 @@
+name: Universe Atlas 15-Pass QA
+
+on:
+  push:
+    paths:
+      - "universe-atlas.html"
+      - ".github/workflows/universe-atlas-15-qa.yml"
+  pull_request:
+    paths:
+      - "universe-atlas.html"
+      - ".github/workflows/universe-atlas-15-qa.yml"
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 01 HTML shell
+        run: |
+          grep -q '<!doctype html>' universe-atlas.html
+          grep -q '<title>NexusNova Universe Atlas' universe-atlas.html
+
+      - name: 02 Responsive viewport
+        run: grep -q 'width=device-width' universe-atlas.html
+
+      - name: 03 Canvas engine
+        run: grep -q 'getContext(.*webgl' universe-atlas.html
+
+      - name: 04 No external 3D library dependency
+        run: |
+          ! grep -Eiq 'three\.min\.js|babylon|unpkg\.com/three|jsdelivr\.net/npm/three' universe-atlas.html
+
+      - name: 05 WebGL shaders
+        run: |
+          grep -q 'gl.createShader' universe-atlas.html
+          grep -q 'gl.drawArrays(gl.POINTS' universe-atlas.html
+
+      - name: 06 Visible fallback
+        run: |
+          grep -q 'run2d' universe-atlas.html
+          grep -q '3D WebGL unavailable' universe-atlas.html
+
+      - name: 07 Featured astronomy records
+        run: |
+          test "$(grep -o 'name:' universe-atlas.html | wc -l)" -ge 20
+
+      - name: 08 Real named stars
+        run: |
+          grep -q 'Sirius' universe-atlas.html
+          grep -q 'Proxima Centauri' universe-atlas.html
+          grep -q 'Vega' universe-atlas.html
+
+      - name: 09 Deep-sky objects
+        run: |
+          grep -q 'Andromeda Galaxy' universe-atlas.html
+          grep -q 'Orion Nebula' universe-atlas.html
+          grep -q 'Sagittarius A' universe-atlas.html
+
+      - name: 10 Scientific metadata UI
+        run: |
+          grep -q 'DISTANCE' universe-atlas.html
+          grep -q 'MASS' universe-atlas.html
+          grep -q 'TEMPERATURE' universe-atlas.html
+          grep -q 'Not reported' universe-atlas.html
+
+      - name: 11 Gaia live data hook
+        run: grep -q 'gea.esac.esa.int/tap-server/tap/sync' universe-atlas.html
+
+      - name: 12 NASA exoplanet live data hook
+        run: grep -q 'exoplanetarchive.ipac.caltech.edu/TAP/sync' universe-atlas.html
+
+      - name: 13 Mobile interaction hooks
+        run: |
+          grep -q 'pointerdown' universe-atlas.html
+          grep -q 'pointermove' universe-atlas.html
+          grep -q 'touch-action:none' universe-atlas.html
+
+      - name: 14 Search and mode controls
+        run: |
+          grep -q 'id="find"' universe-atlas.html
+          grep -q 'id="gaia"' universe-atlas.html
+          grep -q 'id="exo"' universe-atlas.html
+          grep -q 'id="solar"' universe-atlas.html
+
+      - name: 15 JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path("universe-atlas.html").read_text()
+          m=re.search(r'<script>([\s\S]*?)</script>',html)
+          assert m, "No inline script found"
+          Path("/tmp/atlas.js").write_text(m.group(1))
+          print("inline JS extracted")
+          PY
+          node --check /tmp/atlas.js
+
