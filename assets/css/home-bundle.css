@@ -490,3 +490,6 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
     contain-intrinsic-size:800px;
   }
 }
+
+/* Defer layout/paint work for below-the-fold homepage sections while keeping full content available. */
+.nn-home main > section:nth-of-type(n+2){content-visibility:auto;contain-intrinsic-size:auto 900px}
