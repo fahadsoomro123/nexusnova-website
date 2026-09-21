@@ -49,6 +49,9 @@
     document.body.appendChild(banner);
 
     const hide=()=>{banner.hidden=true};
+    const syncAutoAnalytics=()=>{if(window.__nexusnovaAnalyticsAutoEnabled)hide()};
+    window.addEventListener('nexusnova-analytics-auto-enabled',syncAutoAnalytics,{once:true});
+    if(window.__nexusnovaAnalyticsAutoEnabled)hide();
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
       saveChoice('granted');loadAnalytics(true);hide();
     });

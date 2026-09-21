@@ -20,10 +20,13 @@ test('GA4 bootstrap keeps the existing measurement ID and automatic page_view pa
     'window.__nexusnovaConsentReady=true',
     'window.__nexusnovaLoadAnalytics=',
     'pointerdown',
-    'setTimeout(runDeferredAnalytics,7000)'
+    'setTimeout(runDeferredAnalytics,7000)',
+    'window.__nexusnovaAnalyticsAutoEnabled=true',
+    'nexusnova-analytics-auto-enabled'
   ];
   for (const token of required) assert.ok(wrapper.includes(token), token);
   assert.ok(!wrapper.includes('__nexusnovaGa4BootstrapReady'));
+  assert.ok(!wrapper.includes('const mountChoices=()=>{'));
 });
 
 test('legacy site shell delegates analytics loading through the canonical GA4 bridge', () => {

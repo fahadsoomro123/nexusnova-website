@@ -52,9 +52,28 @@
   window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
   window.__nexusnovaConsentKey=consentKey;
 
-  const mountChoices=()=>{
-    if(document.querySelector('[data-nexusnova-consent]'))return;
-    const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
+  const markAutoAnalytics=()=>{
+    window.__nexusnovaAnalyticsAutoEnabled=true;
+    try{window.dispatchEvent(new Event('nexusnova-analytics-auto-enabled'))}catch(_){ }
+  };
+  const runDeferredAnalytics=()=>{
+    const choice=readChoice();
+    if(choice==='granted')loadAnalytics(true);
+    else if(choice==='denied')denyAnalytics();
+    else if(shouldAutoEnableAnalytics()){markAutoAnalytics();loadAnalytics(true)}
+  };
+  const loadAnalyticsOnIntent=()=>{
+    const choice=readChoice();
+    if(choice==='granted')loadAnalytics(true);
+    else if(choice==='denied')denyAnalytics();
+    else if(shouldAutoEnableAnalytics()){markAutoAnalytics();loadAnalytics(true)}
+  };
+  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,loadAnalyticsOnIntent,{once:true,passive:true}));
+  const scheduleDeferred=()=>window.setTimeout(runDeferredAnalytics,7000);
+  if(document.readyState==='loading')window.addEventListener('load',scheduleDeferred,{once:true});
+  else scheduleDeferred();
+
+  const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
     const base=inSubdir?'../':'';
     const style=document.createElement('style');
     style.dataset.nexusnovaConsentStyle='';
