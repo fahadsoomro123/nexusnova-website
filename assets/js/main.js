@@ -39,6 +39,7 @@
     ad_personalization:'denied'
   });
   const autoEnable=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}};
+  window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
   const enable=()=>{
     const choice=readChoice();
     if(choice==='granted')loadAnalytics(true);
