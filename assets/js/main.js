@@ -50,8 +50,8 @@
       loadAnalytics(true);
     }
   };
-  ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
-  const deferred=()=>window.setTimeout(enable,7000);
+  ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
+  const deferred=()=>window.setTimeout(enable,10000);
   if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});
   else deferred();
 
@@ -60,7 +60,7 @@
   const loadShell=()=>{
     if(document.querySelector('script[data-nexusnova-site-shell]'))return;
     const shell=document.createElement('script');
-    shell.src=base+'assets/js/site-main.js?v=20260921-nav12';
+    shell.src=base+'assets/js/site-main.js?v=20260921-nav13';
     shell.dataset.nexusnovaSiteShell='';
     document.body.appendChild(shell);
   };
