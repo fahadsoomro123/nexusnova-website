@@ -142,7 +142,7 @@
     const signIn=document.createElement('a');signIn.href=`${base}register.html?mode=signin`;signIn.textContent='Sign in';signIn.className='nn-nav-auth nn-nav-signin';if(page==='register.html'&&authMode==='signin')signIn.setAttribute('aria-current','page');nav.appendChild(signIn);
     const signUp=document.createElement('a');signUp.href=`${base}register.html?mode=register`;signUp.textContent='Sign up';signUp.className='nn-nav-auth nn-nav-signup';if(page==='register.html'&&authMode!=='signin')signUp.setAttribute('aria-current','page');nav.appendChild(signUp);
   }
-  if(button&&nav){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
+  if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
