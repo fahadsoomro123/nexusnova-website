@@ -145,7 +145,7 @@
   }
   if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
-  const deferHomeTask=(task,delay=6000)=>{if(page==='index.html')window.setTimeout(task,delay);else task()};
+  const deferHomeTask=(task,delay=1200)=>{if(page==='index.html')window.setTimeout(task,delay);else task()};
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
@@ -224,8 +224,8 @@ if(page==='index.html'){
   const decorateHome=()=>{if(homeDecorated)return;homeDecorated=true;decorateDock();document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard)};
   ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,decorateHome,{once:true,passive:true}));
   window.addEventListener('scroll',decorateHome,{once:true,passive:true});
-  window.setTimeout(decorateDock,6000);
-  window.setTimeout(decorateHome,6000);
+  window.setTimeout(decorateDock,1200);
+  window.setTimeout(decorateHome,1200);
 }else{
   document.querySelectorAll('.home-tool,.tool-card,.trend-card,.popular-card,.category-card').forEach(decorateCard);
   decorateDock();
@@ -307,7 +307,7 @@ if(page==='index.html'){
     }
   };
   if(page==='index.html'){
-    deferHomeTask(initMotion,6000);
+    deferHomeTask(initMotion,1200);
     window.addEventListener('scroll',initMotion,{once:true,passive:true});
   }else initMotion();
   const loadAuthHeader=()=>{
@@ -320,7 +320,7 @@ if(page==='index.html'){
       document.body.appendChild(m);
     }
   };
-  deferHomeTask(loadAuthHeader,6000);
+  deferHomeTask(loadAuthHeader,1200);
 const loadNovaAssistant=()=>{if(document.querySelector('script[data-nova-assistant]'))return;const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)};
 if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}else loadNovaAssistant();
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}

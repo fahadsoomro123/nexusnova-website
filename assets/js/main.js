@@ -66,7 +66,11 @@
   };
   const scheduleShell=()=>{
     if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){
-      window.setTimeout(loadShell,6000);
+      if('requestIdleCallback' in window){
+        window.requestIdleCallback(loadShell,{timeout:1200});
+      }else{
+        window.setTimeout(loadShell,120);
+      }
       ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadShell,{once:true,passive:true}));
       return;
     }
