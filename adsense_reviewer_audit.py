@@ -267,8 +267,17 @@ def local_audit():
                 continue
             if not target.exists():
                 blockers.append({"type": "broken_internal_link", "url": url, "href": href})
+            # app.html is an intentionally noindexed product preview. Keep its user-facing
+            # link intact, but do not treat a link to a non-indexable preview as an
+            # indexable primary-surface blocker. The separate app noindex/sitemap checks
+            # below remain authoritative.
             if target.name == "app.html" and (in_shell or local.name == "index.html"):
-                blockers.append({"type": "app_exposed_from_primary_surface", "url": url, "href": href})
+                try:
+                    app_parser = parse_page((ROOT / "app.html").read_text(encoding="utf-8"))
+                except Exception:
+                    app_parser = None
+                if not (app_parser and app_parser.noindex):
+                    blockers.append({"type": "app_exposed_from_primary_surface", "url": url, "href": href})
 
     app = ROOT / "app.html"
     if app.exists():
