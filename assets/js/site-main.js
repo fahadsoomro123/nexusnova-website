@@ -296,8 +296,21 @@ if(page==='index.html'){
   const initMotion=()=>{
     if(motionInitialized)return;
     motionInitialized=true;
-    const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
-    if(motionOkay&&'IntersectionObserver'in window){targets.forEach(el=>el.classList.add('nn-reveal'));const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,ro  const loadAuthHeader=()=>{
+    const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
+    if(motionOkay&&'IntersectionObserver'in window){
+      targets.forEach(el=>el.classList.add('nn-reveal'));
+      const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,rootMargin:'0px 0px -18px'});
+      targets.forEach(el=>io.observe(el));
+    }else{
+      targets.forEach(el=>el.classList.add('nn-visible'));
+    }
+  };
+  if(page==='index.html'){
+    deferHomeTask(initMotion,6000);
+    window.addEventListener('scroll',initMotion,{once:true,passive:true});
+  }else initMotion();
+  const loadAuthHeader=()=>{
     let authSeen=false;
     try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
     if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
