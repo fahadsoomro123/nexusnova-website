@@ -24,12 +24,12 @@
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
+    window.gtag('config',measurementId,{send_page_view:true,allow_google_signals:false,allow_ad_personalization_signals:false});
     window.gtag('js',new Date());
     const script=document.createElement('script');
     script.async=true;
     script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
     script.dataset.nexusnovaGa4='';
-    script.onload=()=>window.gtag('config',measurementId,{send_page_view:true,allow_google_signals:false,allow_ad_personalization_signals:false});
     document.head.appendChild(script);
   };
   const denyAnalytics=()=>window.gtag('consent','update',{
@@ -38,7 +38,7 @@
     ad_user_data:'denied',
     ad_personalization:'denied'
   });
-  const autoEnable=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}};
+  const autoEnable=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'||new Date().getTimezoneOffset()===-300}catch(_){return new Date().getTimezoneOffset()===-300}};
   window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
   const enable=()=>{
     const choice=readChoice();
