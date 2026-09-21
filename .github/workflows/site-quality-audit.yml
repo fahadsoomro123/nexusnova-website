@@ -82,10 +82,10 @@ jobs:
           path = Path('assets/js/main.js')
           text = path.read_text(encoding='utf-8')
           lines = text.splitlines()
-          matches = [i for i, line in enumerate(lines) if 'analyticsScript.src=' in line and 'googletagmanager.com/gtag/js' in line]
+          matches = [i for i, line in enumerate(lines) if (('analyticsScript.src=' in line or 'script.src=' in line) and 'googletagmanager.com/gtag/js' in line)]
           if len(matches) != 1:
               raise SystemExit(f'Expected exactly one GA4 loader source line, found {len(matches)}')
-          lines[matches[0]] = "    analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
+          lines[matches[0]] = "    script.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
           path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
           print('Local audit blocks only the external GA4 download; production GA4 source is untouched.')
           PY
