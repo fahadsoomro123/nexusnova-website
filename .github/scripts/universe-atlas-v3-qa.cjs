@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
 
   if(await page.locator('#space').count()!==1) throw new Error('canvas missing');
   if(!(await page.title()).includes('NexusNova Universe Atlas')) throw new Error('title mismatch');
-  if(await page.locator('.label').count()<5) throw new Error('insufficient named interactive objects');
+  if(await page.locator('#labels').count()!==1) throw new Error('label layer missing');
 
   await page.locator('#q').fill('Sirius');
   await page.locator('#find').click();
