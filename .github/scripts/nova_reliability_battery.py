@@ -4,6 +4,8 @@ from playwright.sync_api import sync_playwright
 
 BASE = 'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev'
 PAGE = 'https://nexusnovatools.com/nova-intelligence.html?qa=' + os.environ['GITHUB_SHA']
+RATE_GAP = 8.0
+_last_request = 0.0
 TESTS = {
 'TEST 1':'What is the capital of Pakistan and why is it important?',
 'TEST 2':'Explain inflation to a person with no economics background using a simple real-world example.',
@@ -23,6 +25,13 @@ VIEWPORTS = [
 EVIDENCE_DIR = Path('nova-evidence')
 EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
 
+def pace():
+ global _last_request
+ wait = RATE_GAP - (time.time() - _last_request)
+ if wait > 0:
+  time.sleep(wait)
+ _last_request = time.time()
+
 def natural(a): return bool(re.search(r'[A-Za-z]{3,}', a)) and not bool(re.fullmatch(r'[\d\s,.%+\-*/()×÷:$]+', a))
 def limitation(label, x): return label == 'TEST 10' and any(t in x for t in ['cannot',"don't have",'missing','no access','not have access','unable']) and ('balance' in x or 'transaction' in x)
 def complete(label,a):
@@ -39,6 +48,7 @@ def complete(label,a):
  return True
 
 def api_call(prompt):
+ pace()
  req=urllib.request.Request(BASE+'/api/nova',method='POST',data=json.dumps({'message':prompt,'focus':'auto'}).encode(),headers={'Origin':'https://nexusnovatools.com','Accept':'application/json','Content-Type':'application/json','User-Agent':'NexusNova-Reliability/5.0'})
  started=time.time()
  try:
@@ -78,6 +88,7 @@ with sync_playwright() as p:
     page.evaluate('() => sessionStorage.clear()'); errs.clear()
     try:
      page.locator('#niPrompt').fill(prompt_text)
+     pace()
      with page.expect_response(lambda r:r.url==BASE+'/api/nova' and r.request.method=='POST',timeout=100000) as ev:
       page.locator('#niBuild').click(force=True)
      api=ev.value; body=api.json(); a=str(body.get('answer','')).strip(); honest=limitation(label,a.lower())
@@ -102,6 +113,7 @@ case_pass={l: all(x['success'] for x in results['api'][l]) and all(x['success'] 
 passed=sum(case_pass.values()); t3_api=sum(x['success'] for x in results['api']['TEST 3']); t3_browser=sum(x['success'] for name in results['browser'] for x in results['browser'][name]['TEST 3'])
 summary={'casePass':case_pass,'passedCases':passed,'totalCases':10,'caseSuccessRate':passed/10,'apiAttempts':sum(len(v) for v in results['api'].values()),'apiFailures':sum(not x['success'] for v in results['api'].values() for x in v),'test3ApiSuccess':f'{t3_api}/3','test3BrowserSuccess':f'{t3_browser}/9','browserConsoleErrors':browser_errors[:100],'viewports':[name for name,_,_ in VIEWPORTS]}
 Path('nova-reliability-results.json').write_text(json.dumps(results,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'); Path('nova-reliability-summary.json').write_text(json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+print('RATE_GAP_SECONDS=', RATE_GAP)
 print('FINAL_BATTERY_SUMMARY=',json.dumps(summary,indent=2,ensure_ascii=False))
 if passed<9 or t3_api!=3 or t3_browser!=9 or browser_errors: raise SystemExit('PRODUCTION RELIABILITY BATTERY FAILED')
 print('PRODUCTION RELIABILITY BATTERY PASSED')
