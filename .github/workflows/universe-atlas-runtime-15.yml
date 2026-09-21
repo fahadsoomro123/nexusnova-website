@@ -1,0 +1,44 @@
+name: Universe Atlas Runtime 15-Pass QA
+
+on:
+  push:
+    paths:
+      - "universe-atlas.html"
+      - ".github/scripts/universe-atlas-runtime-qa.cjs"
+      - ".github/workflows/universe-atlas-runtime-15.yml"
+  pull_request:
+    paths:
+      - "universe-atlas.html"
+      - ".github/scripts/universe-atlas-runtime-qa.cjs"
+      - ".github/workflows/universe-atlas-runtime-15.yml"
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Chromium test runner
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Serve site
+        run: |
+          python3 -m http.server 4173 >/tmp/atlas-server.log 2>&1 &
+          echo $! >/tmp/atlas-server.pid
+      - name: Run 15 independent browser passes
+        env:
+          ATLAS_URL: http://127.0.0.1:4173/universe-atlas.html
+        run: node .github/scripts/universe-atlas-runtime-qa.cjs
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: universe-atlas-runtime-qa
+          path: |
+            /tmp/universe-atlas-qa-results.json
+            /tmp/atlas-server.log
+          if-no-files-found: ignore
