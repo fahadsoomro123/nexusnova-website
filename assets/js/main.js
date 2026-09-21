@@ -67,7 +67,7 @@
   const loadSocialShare=()=>{
     if(document.querySelector('script[data-nexusnova-social-share]'))return;
     const script=document.createElement('script');
-    script.src=base+'assets/js/social-share.js?v=20260921-social1';
+    script.src=base+'assets/js/social-share.js?v=20260921-social2';
     script.dataset.nexusnovaSocialShare='';
     document.body.appendChild(script);
   };
