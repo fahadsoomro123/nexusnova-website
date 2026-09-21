@@ -123,7 +123,7 @@
   const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
   if(nav){
     const items=[
-      ['index.html','Home'],['live.html',"🟢 Today's Prices"],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['gaming.html','Gaming']
+      ['index.html','Home'],['live.html',"🟢 Today's Prices"],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['nova-intelligence.html','Nova Intelligence'],['gaming.html','Gaming']
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
