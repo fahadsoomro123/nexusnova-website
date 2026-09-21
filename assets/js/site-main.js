@@ -127,6 +127,22 @@
     button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});
     nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});
     window.addEventListener('resize',()=>{if(innerWidth>720)close()});
+    const ensureSecondaryNav=()=>{
+      if(!nav.querySelector('.nn-nav-signin')){
+        const signIn=document.createElement('a');
+        signIn.href='register.html?mode=signin';
+        signIn.textContent='Sign in';
+        signIn.className='nn-nav-auth nn-nav-signin';
+        nav.insertBefore(signIn,nav.querySelector('.nn-nav-signup')||null);
+      }
+      if(!nav.querySelector('a[href="gaming.html"]')){
+        const gaming=document.createElement('a');
+        gaming.href='gaming.html';
+        gaming.textContent='Gaming';
+        nav.appendChild(gaming);
+      }
+    };
+    deferHomeTask(ensureSecondaryNav,1200);
   }
 
   if(nav&&page!=='index.html'){
