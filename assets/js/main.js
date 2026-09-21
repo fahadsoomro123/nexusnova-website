@@ -64,20 +64,31 @@
     shell.dataset.nexusnovaSiteShell='';
     document.body.appendChild(shell);
   };
+  const loadSocialShare=()=>{
+    if(document.querySelector('script[data-nexusnova-social-share]'))return;
+    const script=document.createElement('script');
+    script.src=base+'assets/js/social-share.js?v=20260921-social1';
+    script.dataset.nexusnovaSocialShare='';
+    document.body.appendChild(script);
+  };
   const scheduleShell=()=>{
     if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){
       if('requestIdleCallback' in window){
         window.requestIdleCallback(loadShell,{timeout:1200});
+        window.requestIdleCallback(loadSocialShare,{timeout:1800});
       }else{
         window.setTimeout(loadShell,120);
+        window.setTimeout(loadSocialShare,1400);
       }
       ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadShell,{once:true,passive:true}));
       return;
     }
     if('requestIdleCallback' in window){
       window.requestIdleCallback(loadShell,{timeout:1200});
+      window.requestIdleCallback(loadSocialShare,{timeout:1800});
     }else{
       window.setTimeout(loadShell,120);
+      window.setTimeout(loadSocialShare,1400);
     }
   };
   if(document.readyState==='loading'){
