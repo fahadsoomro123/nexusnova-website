@@ -573,3 +573,7 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
   .nn-tool-symbol svg{width:25px;height:25px}
 }
 @media(prefers-reduced-motion:reduce){.nn-tool-symbol{transition:none!important}}
+
+
+/* Restored homepage LIVE/Pakistan discovery surface. */
+.nn-live-home-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.nn-live-home-grid>.home-tool{grid-column:span 4;min-height:150px}.nn-live-home-grid>.home-tool:nth-child(1),.nn-live-home-grid>.home-tool:nth-child(6),.nn-live-home-grid>.home-tool:nth-child(11){grid-column:span 6}@media(max-width:1100px){.nn-live-home-grid>.home-tool,.nn-live-home-grid>.home-tool:nth-child(n){grid-column:span 6}}@media(max-width:680px){.nn-live-home-grid{grid-template-columns:1fr}.nn-live-home-grid>.home-tool,.nn-live-home-grid>.home-tool:nth-child(n){grid-column:1;min-height:150px}.nn-live-home .section-head{display:block}}
