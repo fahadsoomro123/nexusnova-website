@@ -28,3 +28,5 @@ jobs:
           python3 -m http.server 4173 >/tmp/atlas.log 2>&1 &
       - name: One genuine runtime QA pass
         run: node .github/scripts/universe-atlas-v3-qa.cjs
+
+# QA policy: one genuine end-to-end browser pass is the hard gate.
