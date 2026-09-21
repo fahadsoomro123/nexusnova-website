@@ -127,7 +127,7 @@
     ];
     nav.innerHTML='';
     items.forEach(([file,label])=>{
-      const link=document.createElement('a');link.href=`${base}${file}`;link.textContent=label;if(file==='nova-intelligence.html')link.setAttribute('data-nova-intelligence-nav','');
+      const link=document.createElement('a');link.href=file==='nova-intelligence.html'?'/nova-intelligence.html':`${base}${file}`;link.textContent=label;if(file==='nova-intelligence.html')link.setAttribute('data-nova-intelligence-nav','');
       if(page===file||(file==='gaming.html'&&gamingPages.has(page))||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
       nav.appendChild(link);
     });
