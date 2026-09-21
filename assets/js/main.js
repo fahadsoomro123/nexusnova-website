@@ -60,7 +60,7 @@
   const loadShell=()=>{
     if(document.querySelector('script[data-nexusnova-site-shell]'))return;
     const shell=document.createElement('script');
-    shell.src=base+'assets/js/site-main.js?v=20260921-nav17';
+    shell.src=base+'assets/js/site-main.js?v=20260921-nav18';
     shell.dataset.nexusnovaSiteShell='';
     document.body.appendChild(shell);
   };

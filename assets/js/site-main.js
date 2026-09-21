@@ -145,6 +145,7 @@
   }
   if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
+  const deferHomeTask=(task,delay=6000)=>{if(page==='index.html')window.setTimeout(task,delay);else task()};
   const socialProfiles=[
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
@@ -219,11 +220,12 @@
   const decorateCard=el=>{if(el.dataset.nnSymbolic==='1')return;el.dataset.nnSymbolic='1';const kind=kindFor(el);const existing=el.matches('.trend-card')?el.querySelector(':scope > .trend-icon'):null;if(existing){existing.classList.add('nn-tool-symbol');existing.dataset.kind=kind;existing.setAttribute('aria-hidden','true');existing.innerHTML=iconSvg(kind);return}const symbol=symbolFor(el);const heading=el.querySelector(':scope > h1,:scope > h2,:scope > h3');el.insertBefore(symbol,heading||el.firstChild)};
   const decorateDock=()=>document.querySelectorAll('.command-dock a,.node').forEach(el=>{if(el.querySelector(':scope > .nn-tool-symbol'))return;el.insertBefore(symbolFor(el),el.firstChild)});
 if(page==='index.html'){
-  decorateDock();
   let homeDecorated=false;
-  const decorateHome=()=>{if(homeDecorated)return;homeDecorated=true;document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard)};
+  const decorateHome=()=>{if(homeDecorated)return;homeDecorated=true;decorateDock();document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard)};
   ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,decorateHome,{once:true,passive:true}));
   window.addEventListener('scroll',decorateHome,{once:true,passive:true});
+  window.setTimeout(decorateDock,6000);
+  window.setTimeout(decorateHome,6000);
 }else{
   document.querySelectorAll('.home-tool,.tool-card,.trend-card,.popular-card,.category-card').forEach(decorateCard);
   decorateDock();
@@ -290,16 +292,22 @@ if(page==='index.html'){
     const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};homeSearch.addEventListener('input',filter);
     form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();if(!q)return;const ranked=searchIndex.map(item=>[score(q,item),item]).sort((a,b)=>b[0]-a[0]);if(ranked[0]?.[0]>0)location.href=ranked[0][1][0];else location.href=`trending-tools.html?q=${encodeURIComponent(q)}`});
   }
-  const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
-  if(motionOkay&&'IntersectionObserver'in window){targets.forEach(el=>el.classList.add('nn-reveal'));const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,rootMargin:'0px 0px -18px'});targets.forEach(el=>io.observe(el))}else targets.forEach(el=>el.classList.add('nn-visible'));
-  let authSeen=false;
-  try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
-  if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
-    const m=document.createElement('script');
-    m.type='module';m.src=`${base}assets/js/auth-header-state.js`;
-    m.dataset.nexusnovaAuthHeader='';
-    document.body.appendChild(m);
-  }
+  let motionInitialized=false;
+  const initMotion=()=>{
+    if(motionInitialized)return;
+    motionInitialized=true;
+    const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
+    if(motionOkay&&'IntersectionObserver'in window){targets.forEach(el=>el.classList.add('nn-reveal'));const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,ro  const loadAuthHeader=()=>{
+    let authSeen=false;
+    try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
+    if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
+      const m=document.createElement('script');
+      m.type='module';m.src=`${base}assets/js/auth-header-state.js`;
+      m.dataset.nexusnovaAuthHeader='';
+      document.body.appendChild(m);
+    }
+  };
+  deferHomeTask(loadAuthHeader,6000);
 const loadNovaAssistant=()=>{if(document.querySelector('script[data-nova-assistant]'))return;const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)};
 if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}else loadNovaAssistant();
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
