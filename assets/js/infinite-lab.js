@@ -68,6 +68,9 @@ function updateHUD(){
   setText('seedReadout',(Math.abs(state.seed)%100000).toFixed(4).padStart(9,'0'));
   setText('catalogCount',String(getAllObjects().length)+' objects loaded');
   setText('distanceLabel',state.depth>=2?'LOGARITHMIC':'LOCAL FRAME');
+  const scaleReadings=['~1–40 AU FRAME','~4–30 LY LOCAL VOLUME','~10–100 KLY GALACTIC REGION','~0.1–3 MLY GALAXY GROUP','~10–100 MLY CLUSTER CONTEXT','~0.1–1 GLY COSMIC WEB','MULTI-GLY DEEP FIELD'];
+  setText('physicalScale',scaleReadings[Math.min(6,state.depth)]);
+  setText('cameraDistance','CAM '+Number(state.distance||8.2).toFixed(2));
   const m=document.getElementById('depthMeter'); if(m)m.style.width=clamp(7+Math.log1p(state.depth)*14,7,94)+'%';
   const az=(state.yaw*180/Math.PI+360)%360, el=clamp(state.pitch*180/Math.PI,-89,89);
   setText('cameraReadout','AZ '+String(Math.round(az)).padStart(3,'0')+'° · EL '+(el>=0?'+':'')+Math.round(el)+'°');
