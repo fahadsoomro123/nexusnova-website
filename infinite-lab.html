@@ -6,48 +6,99 @@
 <title>NexusNova Infinite Lab — Worlds Within Worlds</title>
 <meta name="description" content="Explore generated worlds within worlds through a procedural deep-zoom visual experiment. Not a scientific map or real telescope view.">
 <meta name="robots" content="noindex,follow">
-<meta name="theme-color" content="#05070d">
+<meta name="theme-color" content="#04060c">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NexusNova Tools">
 <meta property="og:title" content="NexusNova Infinite Lab — Worlds Within Worlds">
-<meta property="og:description" content="A procedural deep-zoom visual experiment: explore generated worlds inside worlds.">
+<meta property="og:description" content="A cinematic procedural deep-zoom experiment: discover generated worlds inside worlds.">
 <meta property="og:url" content="https://nexusnovatools.com/infinite-lab.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/infinite-lab.css">
 </head>
 <body>
-<canvas id="universe" aria-label="Interactive procedural Infinite Lab. Explore generated worlds by zooming, dragging and entering glowing portals." role="img"></canvas>
-<div class="hud" aria-hidden="false">
-  <div class="topbar">
-    <div class="brand"><strong>NEXUS<span>NOVA</span></strong><small>INFINITE LAB · WORLDS WITHIN WORLDS</small></div>
-    <div class="actions" aria-label="Infinite Lab controls">
-      <button class="btn" id="reset" type="button" aria-label="Reset exploration to the surface">Reset</button>
-      <button class="btn" id="jump" type="button" aria-label="Jump to a generated surprise destination">Surprise me</button>
+<main class="lab-shell" id="labShell">
+  <canvas id="universe" role="img" aria-label="Interactive procedural Infinite Lab. Zoom, drag, pinch, and enter the glowing core to descend through generated worlds."></canvas>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="brand"><span>NEXUS</span><strong>NOVA</strong></div>
+      <div class="eyebrow">INFINITE LAB / WORLDS WITHIN WORLDS</div>
+    </div>
+    <div class="top-actions" aria-label="Infinite Lab controls">
+      <button class="control" id="reset" type="button" aria-label="Reset the exploration">Reset</button>
+      <button class="control control-accent" id="jump" type="button" aria-label="Jump to a surprise destination">Surprise me</button>
+    </div>
+  </header>
+
+  <section class="depth-card" aria-label="Exploration depth">
+    <div class="micro">EXPLORATION DEPTH</div>
+    <div class="depth-row"><span id="depthIndex">00</span><span id="depthFamily">COSMIC FIELD</span></div>
+    <div class="depth-meter"><span id="depthMeter"></span></div>
+  </section>
+
+  <section class="orientation" aria-label="Orientation">
+    <div class="radar">
+      <div class="radar-ring radar-ring-a"></div>
+      <div class="radar-ring radar-ring-b"></div>
+      <div class="radar-ring radar-ring-c"></div>
+      <div class="radar-cross radar-cross-x"></div>
+      <div class="radar-cross radar-cross-y"></div>
+      <div class="radar-dot" id="radarDot"></div>
+      <div class="radar-core"></div>
+    </div>
+    <div class="orientation-copy">
+      <span class="micro">VECTOR</span>
+      <strong id="vectorReadout">CENTER / 000°</strong>
+    </div>
+  </section>
+
+  <section class="world-card" aria-live="polite">
+    <div class="world-kicker"><span class="signal-dot"></span><span id="worldKicker">PROCEDURAL FIELD</span></div>
+    <h1 id="worldName">THE FIRST FIELD</h1>
+    <p id="worldDescription">A generated environment built for visual exploration. Every descent reveals a new deterministic layer.</p>
+    <div class="world-meta">
+      <span><b>SEED</b><strong id="seedReadout">001.2340</strong></span>
+      <span><b>NODE</b><strong id="nodeReadout">C0 / SURFACE</strong></span>
+    </div>
+  </section>
+
+  <section class="portal-hint" aria-live="polite">
+    <div class="portal-status" id="portalStatus">CORE READY</div>
+    <div class="portal-title">DIVE THE CORE</div>
+    <div class="portal-subtitle">Scroll / pinch to approach · drag to orbit the field · tap the core to descend</div>
+  </section>
+
+  <section class="event-strip" id="eventStrip" aria-live="polite">
+    <span class="event-icon">◇</span>
+    <span id="eventText">Deep field online</span>
+  </section>
+
+  <aside class="discovery-card" id="discoveryCard" aria-live="polite">
+    <div class="micro">DISCOVERY LOG</div>
+    <strong id="discoveryTitle">New layer detected</strong>
+    <span id="discoveryText">Saved locally on this browser.</span>
+  </aside>
+
+  <footer class="footer-hint">
+    <span>WHEEL / PINCH <b>ZOOM</b></span>
+    <span>DRAG <b>ORBIT</b></span>
+    <span>DOUBLE-TAP <b>DIVE</b></span>
+    <span>R <b>RESET</b></span>
+    <span>S <b>SURPRISE</b></span>
+  </footer>
+
+  <div class="loading-screen" id="loading">
+    <div class="loading-panel">
+      <div class="eyebrow">NEXUSNOVA / INFINITE LAB</div>
+      <div class="loading-title">Opening the deep field</div>
+      <div class="loading-copy" id="loadingCopy">Building the render field and calibrating the first portal.</div>
+      <div class="loading-bar"><span id="loadingBar"></span></div>
+      <div class="loading-phase" id="loadingPhase">PHASE 01 / FOUNDATION</div>
     </div>
   </div>
-  <div class="depth" id="depthHud" aria-live="polite"><b>EXPLORATION DEPTH</b><strong>DEPTH 0</strong></div>
-  <div class="status" id="status" role="status" aria-live="polite"></div>
-  <div class="discovery" id="discovery" aria-live="polite"><b>DISCOVERY</b><strong></strong><span></span></div>
-  <div class="bottombar">
-    <div class="copy">
-      <strong id="worldName">DEEP FIELD</strong>
-      <span id="worldDescription">A procedural visual layer. Zoom into the portal to reveal another generated world.</span>
-      <div class="hint">Wheel / pinch: zoom · drag: pan · double-tap: dive · click/tap portal: enter · R: reset · S: surprise · + / −: depth</div>
-    </div>
-    <div class="readout" aria-label="Current exploration information">
-      <div class="chip"><b>WORLD FAMILY</b><strong id="familyReadout">COSMIC FIELD</strong></div>
-      <div class="chip"><b>SEED</b><strong id="seedReadout">1.2340</strong></div>
-    </div>
-  </div>
-</div>
-<div class="loading" id="loading" aria-hidden="true">
-  <div class="loader-panel">
-    <div class="loader-kicker">NEXUSNOVA / INFINITE LAB</div>
-    <div class="loader-title">Initializing deep field</div>
-    <div class="loader-text" id="loaderText">Building a bounded procedural layer, calibrating the portal and preparing local interaction.</div>
-    <div class="loader-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-  </div>
-</div>
+</main>
 <script src="assets/js/infinite-lab.js" defer></script>
 </body>
 </html>
