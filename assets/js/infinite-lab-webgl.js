@@ -103,8 +103,8 @@ function procedural(s){
   const u=rand(seed,i),v=rand(seed,i+11),w=rand(seed,i+23),a=u*TAU;
   let x=0,y=0,z=0,sz=.45+rand(seed,i+31)*1.8,c=[.55,.8,1];
   if(family===0){const r=Math.pow(v,.53)*8.5;x=Math.cos(a)*r;z=Math.sin(a)*r;y=(w-.5)*2.4;sz*=.48;}
-  else if(family===1){const arm=(i%7)*TAU/7,r=.4+v*8.3;x=Math.cos(arm+r*.42)*r;z=Math.sin(arm+r*.42)*r;y=(w-.5)*2.8;c=[.42,.88,1];sz*=.55;}
-  else if(family===2){const r=.15+Math.pow(v,.7)*5.4,arm=Math.floor(u*5)*TAU/5+xor?0:0;a2=arm+r*1.42;x=Math.cos(a2)*r;z=Math.sin(a2)*r*.58;y=(w-.5)*(1.1-r*.12);c=[.75,.56,1];sz*=.7;}
+  else if(family===1){const arm=(i%7)*TAU/7;const rr=.4+v*8.3;x=Math.cos(arm+rr*.42)*rr;z=Math.sin(arm+rr*.42)*rr;y=(w-.5)*2.8;c=[.42,.88,1];sz*=.55;}
+  else if(family===2){const rr=.15+Math.pow(v,.7)*5.4,arm=Math.floor(u*5)*TAU/5,aa=arm+rr*1.42;x=Math.cos(aa)*rr;z=Math.sin(aa)*rr*.58;y=(w-.5)*(1.1-rr*.12);c=[.75,.56,1];sz*=.7;}
   else if(family===3){const r=Math.pow(v,.64)*5.1;x=Math.cos(a)*r;z=Math.sin(a)*r*.78;y=(w-.5)*1.7;c=[.52,.84,1];sz*=.62;}
   else if(family===4){const r=.2+Math.pow(v,.82)*4.2;x=Math.cos(a)*r*.72;z=Math.sin(a)*r*.72;y=(w-.5)*.9;c=[.58,.9,1];sz*=.7;}
   else if(family===5){const R=3.2+v*1.2,ph=Math.acos(2*w-1);x=R*Math.sin(ph)*Math.cos(a);y=R*Math.cos(ph);z=R*Math.sin(ph)*Math.sin(a);c=[.42,.72,1];}
