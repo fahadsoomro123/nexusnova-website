@@ -40,8 +40,9 @@ function perspective(fov,aspect,near,far){const f=1/Math.tan(fov/2),nf=1/(near-f
 function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
 function mvp(s){
  const dist=Math.max(1.7,Math.min(62,Number(s.distance)||8.2)),cp=Math.cos(s.pitch||0),sp=Math.sin(s.pitch||0),cy=Math.cos(s.yaw||0),sy=Math.sin(s.yaw||0);
- const eye=[sy*cp*dist,sp*dist,cy*cp*dist];
- const view=lookAt(eye,[0,0,0],[0,1,0]);const proj=perspective(.78,W/Math.max(1,H),.03,90);return mul(proj,view);
+ const origin=s.origin||[0,0,0],tx=(Number(origin[0])||0)+(Number(s.panX)||0),ty=(Number(origin[1])||0)+(Number(s.panY)||0);
+ const eye=[tx+sy*cp*dist,ty+sp*dist,cy*cp*dist];
+ const view=lookAt(eye,[tx,ty,0],[0,1,0]);const proj=perspective(.78,W/Math.max(1,H),.03,90);return mul(proj,view);
 }
 function project(m,p){
  const x=p[0],y=p[1],z=p[2];
@@ -93,7 +94,7 @@ function draw(b,scale){
  gl.uniform1f(loc.ps,scale||15);gl.drawArrays(gl.POINTS,0,b.count);
 }
 
-let procKey='',procBuf=null,catBuf=null,projected=[];
+let procKey='',procBuf=null,catBuf=null,projected=[];let frameN=0,lastFrame=performance.now(),fpsEMA=60;
 function procedural(s){
  const key=s.depth+'|'+s.family+'|'+Number(s.seed).toFixed(6)+'|'+Math.round(Number(s.quality)*100);
  if(key===procKey)return;procKey=key;if(procBuf)del(procBuf);
@@ -122,9 +123,10 @@ function rebuildCatalog(){
  const s=WCA?.getState?.()||{quality:1,distance:8,depth:0};
  if(catBuf)del(catBuf);
  const far=Number(s.distance)>18||Number(s.depth)>8,step=Math.max(1,far?Math.ceil(6/Math.max(.45,s.quality)):Math.ceil(2/Math.max(.45,s.quality)));
- const list=[];projected=[];
+ const matrix=mvp(s),list=[];projected=[];
  for(let i=0;i<objects.length;i+=step){
   const o=objects[i];if(!o.position)o.position=astroPos(o);
+  const screen=project(matrix,o.position);if(!screen)continue;
   if(far&&step>1){
     const group=objects.slice(i,i+step).filter(x=>x?.position);
     const p=group.reduce((a,x)=>[a[0]+x.position[0],a[1]+x.position[1],a[2]+x.position[2]],[0,0,0]).map(v=>v/group.length);
@@ -151,12 +153,13 @@ function exoRow(r){
 function nedRow(r){const name=st(r.prefname)||'NED object';return finish({id:'ned-'+name,name,source:'NASA/IPAC NED',sourceKey:'ned',sourceType:'REAL CATALOG',release:'Current NED TAP',ra:n(r.ra)/15,dec:n(r.dec),redshift:n(r.z),type:st(r.pretype),reference:'NED',sourceUrl:'https://ned.ipac.caltech.edu/byname?objname='+encodeURIComponent(name)});}
 function sdssRow(r){const ra=n(r.ra??r.RA),dec=n(r.dec??r.DEC),name=st(r.objid??r.ObjID??r.specObjID)||'SDSS object';return finish({id:'sdss-'+name,name:'SDSS '+name,source:'SDSS DR20',sourceKey:'sdss',sourceType:'PUBLIC SURVEY',release:'DR20',ra,dec,type:st(r.type),redshift:n(r.z),mag:n(r.modelMag_r??r.mag_r),spectral:st(r.class),reference:'SDSS DR20',sourceUrl:'https://skyserver.sdss.org/dr20/'});}
 function desiRow(r){return finish({id:'desi-'+(r.TARGETID??r.targetid??'target'),name:'DESI '+(r.TARGETID??r.targetid??'target'),source:'DESI DR1 / NOIRLab Data Lab',sourceKey:'desi',sourceType:'PUBLIC SURVEY',release:'DR1',ra:n(r.RA??r.ra)/15,dec:n(r.DEC??r.dec),redshift:n(r.Z??r.z),type:st(r.SPECTYPE??r.spectype),reference:'DESI DR1',sourceUrl:'https://datalab.noirlab.edu/desi/'});}
-async function fetchJSON(url,timeout=14500){const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),timeout);try{const r=await fetch(url,{cache:'no-store',signal:ctl.signal,headers:{Accept:'application/json'}});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(timer);}}
+let inflight=0;const activeControllers=new Set();
+async function fetchJSON(url,timeout=14500){const ctl=new AbortController();activeControllers.add(ctl);inflight++;const timer=setTimeout(()=>ctl.abort(),timeout);try{const r=await fetch(url,{cache:'no-store',signal:ctl.signal,headers:{Accept:'application/json'}});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(timer);activeControllers.delete(ctl);inflight--;}}
 function centerFor(s){const ra=((Number(s.skyRA)||0)*15+360)%360,dec=Math.max(-90,Math.min(90,Number(s.skyDec)||0));return{ra,dec};}
 function tileFor(s){const c=centerFor(s);return Math.floor(c.ra/10)+'|'+Math.floor((c.dec+90)/10)+'|D'+Math.min(12,Number(s.depth)||0);}
 const adapters={
- gaia:{label:'ESA Gaia DR3',q:()=> 'SELECT TOP 1200 source_id,ra,dec,parallax,parallax_error,pmra,pmdec,radial_velocity,phot_g_mean_mag,bp_rp,teff_gspphot,mass_flame,radius_flame,ruwe,parallax_over_error FROM gaiadr3.gaia_source WHERE parallax>0 AND parallax_over_error>5 ORDER BY random_index',u:q=>'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY='+encodeURIComponent(q),parse:d=>normalizeRows(d).map(gaiaRow)},
- exo:{label:'NASA Exoplanet Archive',q:()=> 'SELECT TOP 700 pl_name,hostname,ra,dec,sy_dist,sy_disterr1,sy_disterr2,pl_rade,pl_masse,pl_orbper,pl_orbsmax,pl_orbeccen,st_teff,disc_refname,discoverymethod FROM pscomppars WHERE ra IS NOT NULL AND dec IS NOT NULL AND sy_dist IS NOT NULL',u:q=>'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query='+encodeURIComponent(q)+'&format=json',parse:d=>normalizeRows(d).map(exoRow)},
+ gaia:{label:'ESA Gaia DR3',q:(c)=> "SELECT TOP 1200 source_id,ra,dec,parallax,parallax_error,pmra,pmdec,radial_velocity,phot_g_mean_mag,bp_rp,teff_gspphot,mass_flame,radius_flame,ruwe,parallax_over_error FROM gaiadr3.gaia_source WHERE parallax>0 AND parallax_over_error>5 AND CONTAINS(POINT('ICRS',ra,dec),CIRCLE('ICRS',"+c.ra.toFixed(5)+","+c.dec.toFixed(5)+",5))=1",u:q=>'https://gea.esac.esa.int/tap-server/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY='+encodeURIComponent(q),parse:d=>normalizeRows(d).map(gaiaRow)},
+ exo:{label:'NASA Exoplanet Archive',q:(c)=> "SELECT TOP 700 pl_name,hostname,ra,dec,sy_dist,sy_disterr1,sy_disterr2,pl_rade,pl_masse,pl_orbper,pl_orbsmax,pl_orbeccen,st_teff,disc_refname,discoverymethod FROM pscomppars WHERE ra IS NOT NULL AND dec IS NOT NULL AND sy_dist IS NOT NULL AND CONTAINS(POINT('ICRS',ra*15,dec),CIRCLE('ICRS',"+c.ra.toFixed(5)+","+c.dec.toFixed(5)+",5))=1",u:q=>'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query='+encodeURIComponent(q)+'&format=json',parse:d=>normalizeRows(d).map(exoRow)},
  ned:{label:'NASA/IPAC NED',q:(c)=>"SELECT TOP 250 prefname,ra,dec,z,pretype FROM objdir WHERE CONTAINS(POINT('J2000',ra,dec),CIRCLE('J2000',"+c.ra.toFixed(5)+","+c.dec.toFixed(5)+",2.5))=1",u:q=>'https://ned.ipac.caltech.edu/tap/sync?QUERY='+encodeURIComponent(q)+'&LANG=ADQL&REQUEST=doQuery&FORMAT=json&MAXREC=250',parse:d=>normalizeRows(d).map(nedRow)},
  sdss:{label:'SDSS DR20',q:(c)=>'https://skyserver.sdss.org/dr20/SkyServerWS/SearchTools/RadialSearch?ra='+c.ra+'&dec='+c.dec+'&radius=2.5&whichway=equatorial&limit=250&format=json&fp=none&whichquery=imaging',u:q=>q,parse:d=>arrayRows(d).map(sdssRow)},
  desi:{label:'DESI DR1',q:(c)=>'SELECT TOP 250 TARGETID,RA,DEC,Z,SPECTYPE,ZWARN FROM desi_dr1.zpix WHERE RA BETWEEN '+(c.ra-2.5).toFixed(5)+' AND '+(c.ra+2.5).toFixed(5)+' AND DEC BETWEEN '+(c.dec-2.5).toFixed(5)+' AND '+(c.dec+2.5).toFixed(5),u:q=>'https://datalab.noirlab.edu/tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY='+encodeURIComponent(q),parse:d=>normalizeRows(d).map(desiRow)}
@@ -171,6 +174,7 @@ async function loadAdapter(key,c,reqEpoch){
 async function loadVisibleRegion(){
  const s=WCA?.getState?.()||{skyRA:0,skyDec:0,depth:0},key=tileFor(s);
  if(cache.has(key)){status('VISIBLE TILE CACHED · '+key);return cache.get(key).objects;}
+ activeControllers.forEach(c=>{try{c.abort()}catch(_){}});activeControllers.clear();
  const c=centerFor(s),reqEpoch=++epoch;
  status('QUERYING VISIBLE TILE · PUBLIC SOURCES');
  const results=await Promise.allSettled(Object.keys(adapters).map(k=>loadAdapter(k,c,reqEpoch)));
@@ -196,7 +200,7 @@ window.NexusNovaInfiniteLabCatalog={
  getObjects:()=>objects,
  focusObject:id=>objects.find(o=>o.id===id)||null,
  loadVisibleRegion,
- getDebug:()=>({sources:Object.values(adapters).map(a=>a.label),cacheSize:cache.size,cacheMax:MAX_TILES,tileLoading:true,staleProtection:true,requestsCancellable:true}),
+ getDebug:()=>({sources:Object.values(adapters).map(a=>a.label),cacheSize:cache.size,cacheMax:MAX_TILES,tileLoading:true,staleProtection:true,requestsCancellable:true,queriesInFlight:inflight}),
  __setObjects:a=>{objects=Array.isArray(a)?a:objects;}
 };
 
@@ -205,14 +209,15 @@ function render(){
  const s=WCA?.getState?.()||{depth:0,family:0,seed:1.234,yaw:0,pitch:0,distance:8.2,quality:1,transition:0,origin:[0,0,0]};
  lastRendered=s;
  procedural(s);if(!catBuf)rebuildCatalog();
- gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.disable(gl.DEPTH_TEST);gl.clearColor(.004,.007,.014,1);gl.clear(gl.COLOR_BUFFER_BIT);
+ gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.enable(gl.DEPTH_TEST);gl.depthMask(false);gl.clearDepth(1);gl.clearColor(.004,.007,.014,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
  gl.useProgram(prog);gl.uniform1f(loc.d,dpr);gl.uniformMatrix4fv(loc.m,false,mvp(s));
- draw(procBuf,15);draw(catBuf,17);
+ draw(procBuf,15);draw(catBuf,17);gl.depthMask(true);
  const t=performance.now()/1000,h=hash(s.seed)*TAU,base=[.42,.82,1],g=[];
  for(let r=0;r<3;r++)for(let i=0;i<100;i++){const a=i/100*TAU+h+t*(.11+r*.03),rr=1.0+r*.43;g.push({p:[Math.cos(a)*rr,(hash(s.seed+'g'+i+r)-.5)*.08,Math.sin(a)*rr],c:[base[0],base[1],base[2],.22-.03*r],s:1.25});}
  const gb=makeBuffer(g,gl.STREAM_DRAW);draw(gb,18);del(gb);
  if(s.transition>0){const tp=[];for(let i=0;i<140;i++){const a=hash(s.seed+'t'+i)*TAU,r=2+hash(s.seed+'r'+i)*7;tp.push({p:[Math.cos(a)*r,(hash(s.seed+'y'+i)-.5)*2.2,Math.sin(a)*r],c:[.72,.88,1,.05+Number(s.transition)*.08],s:1.0});}const tb=makeBuffer(tp,gl.STREAM_DRAW);draw(tb,14);del(tb);}
- window.NexusNovaInfiniteLabRenderer?.setRuntime?.({webgl2:true,dpr,culling:true,lod:true,catalogObjects:objects.length,cacheSize:cache.size});
+ const now=performance.now();const frameDt=now-lastFrame;lastFrame=now;if(frameDt>0)fpsEMA=fpsEMA*.9+(1000/frameDt)*.1;frameN++;if(frameN%60===0&&WCA?.setQuality){if(fpsEMA<43)WCA.setQuality(Math.max(.45,s.quality-.08));else if(fpsEMA>57)WCA.setQuality(Math.min(1,s.quality+.035));}
+ window.NexusNovaInfiniteLabRenderer?.setRuntime?.({webgl2:true,dpr,culling:true,lod:true,catalogObjects:objects.length,cacheSize:cache.size,adaptiveQuality:true,fps:fpsEMA,originRebased:s.origin?.slice?.()||[0,0,0]});
  requestAnimationFrame(render);
 }
 function tap(x,y){
