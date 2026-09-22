@@ -15,7 +15,6 @@ on:
       - "assets/js/infinite-lab-webgl.js"
       - ".github/scripts/infinite-lab-qa.cjs"
       - ".github/scripts/infinite-lab-visual-gate.py"
-      - ".github/scripts/infinite-lab-visual-gate.py"
       - ".github/workflows/infinite-lab-qa.yml"
   pull_request:
     branches:
@@ -63,7 +62,7 @@ jobs:
           python3 -m http.server 4173 >/tmp/infinite-lab-server.log 2>&1 &
           sleep 2
 
-      - name: Run 108-test visual + browser battery
+      - name: Run 109-test visual + browser battery
         run: |
           echo "QA source commit: $GITHUB_SHA"
           node .github/scripts/infinite-lab-qa.cjs
