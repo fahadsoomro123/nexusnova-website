@@ -1,0 +1,61 @@
+name: NexusNova Infinite Lab QA
+
+on:
+  push:
+    branches:
+      - "feature/infinite-lab-master-20260922"
+    paths:
+      - "infinite-lab.html"
+      - "assets/css/infinite-lab.css"
+      - "assets/js/infinite-lab.js"
+      - "assets/js/infinite-lab-webgl.js"
+      - ".github/scripts/infinite-lab-qa.cjs"
+      - ".github/workflows/infinite-lab-qa.yml"
+  pull_request:
+    branches:
+      - "feature/infinite-lab-master-20260922"
+    paths:
+      - "infinite-lab.html"
+      - "assets/css/infinite-lab.css"
+      - "assets/js/infinite-lab.js"
+      - "assets/js/infinite-lab-webgl.js"
+      - ".github/scripts/infinite-lab-qa.cjs"
+      - ".github/workflows/infinite-lab-qa.yml"
+
+jobs:
+  infinite-lab-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: |
+          node --check assets/js/infinite-lab.js
+          node --check assets/js/infinite-lab-webgl.js
+          node --check .github/scripts/infinite-lab-qa.cjs
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Start local server
+        run: |
+          python3 -m http.server 4173 >/tmp/infinite-lab-server.log 2>&1 &
+          sleep 2
+
+      - name: Run 97-test browser battery
+        run: |
+          node .github/scripts/infinite-lab-qa.cjs
+
+      - name: Server log
+        if: always()
+        run: cat /tmp/infinite-lab-server.log || true
