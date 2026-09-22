@@ -2,81 +2,130 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>NexusNova Infinite Lab — Worlds Within Worlds</title>
-<meta name="description" content="Explore generated worlds within worlds through a procedural deep-zoom visual experiment. Not a scientific map or real telescope view.">
-<meta name="robots" content="noindex,follow">
-<meta name="theme-color" content="#04060c">
+<meta name="description" content="NexusNova Infinite Lab is a WebGL2 exploration system that combines public astronomy catalog samples with clearly labelled procedural worlds-within-worlds visualization. It is not a complete map of the observable universe.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#03060d">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NexusNova Tools">
 <meta property="og:title" content="NexusNova Infinite Lab — Worlds Within Worlds">
-<meta property="og:description" content="A cinematic procedural deep-zoom experiment: discover generated worlds inside worlds.">
+<meta property="og:description" content="Explore a WebGL2 multi-scale astronomy visualization with public catalog data, provenance and deterministic procedural worlds.">
 <meta property="og:url" content="https://nexusnovatools.com/infinite-lab.html">
+<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NexusNova Infinite Lab — Worlds Within Worlds">
+<meta name="twitter:description" content="Public-catalog astronomy layers plus clearly labelled procedural exploration.">
+<link rel="canonical" href="https://nexusnovatools.com/infinite-lab.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/infinite-lab.css">
 </head>
 <body>
 <main class="lab-shell" id="labShell">
-  <canvas id="catalog3d" aria-hidden="true"></canvas>
-  <canvas id="universe" role="img" aria-label="Interactive procedural Infinite Lab. Zoom, drag, pinch, and enter the glowing core to descend through generated worlds."></canvas>
-  <div class="scanlines" aria-hidden="true"></div>
+  <canvas id="universe" aria-label="Interactive three-dimensional NexusNova Infinite Lab. Use drag to orbit, wheel or pinch to zoom, and enter the glowing portal to descend."></canvas>
+  <div class="star-haze" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
 
   <header class="topbar">
     <div class="brand-block">
-      <div class="brand"><span>NEXUS</span><strong>NOVA</strong></div>
+      <a class="brand" href="labs.html" aria-label="Back to NexusNova Labs"><span>NEXUS</span><strong>NOVA</strong></a>
       <div class="eyebrow">INFINITE LAB / WORLDS WITHIN WORLDS</div>
     </div>
-    <div class="top-actions" aria-label="Infinite Lab controls">
-      <button class="control" id="reset" type="button" aria-label="Reset the exploration">Reset</button>
-      <button class="control control-accent" id="jump" type="button" aria-label="Jump to a surprise destination">Surprise me</button>
+    <div class="top-actions">
+      <a class="control control-quiet" href="labs.html">Labs</a>
+      <button class="control" id="homeBtn" type="button">Home</button>
+      <button class="control" id="resetBtn" type="button">Reset</button>
+      <button class="control control-accent" id="surpriseBtn" type="button">Surprise me</button>
     </div>
   </header>
 
-  <section class="depth-card" aria-label="Exploration depth">
+  <section class="truth-banner" aria-label="Scientific truth boundary">
+    <span class="truth-mark">●</span>
+    <strong>EXPLORATION VISUALIZATION</strong>
+    <span>Catalog coverage is partial; procedural geometry is not an observation.</span>
+  </section>
+
+  <section class="depth-card" aria-label="Current exploration scale">
     <div class="micro">EXPLORATION DEPTH</div>
     <div class="depth-row"><span id="depthIndex">00</span><span id="depthFamily">COSMIC FIELD</span></div>
+    <div class="scale-line"><span id="scaleLabel">COSMOLOGICAL CONTEXT</span><span id="distanceLabel">LOG SCALE</span></div>
     <div class="depth-meter"><span id="depthMeter"></span></div>
   </section>
 
-  <section class="orientation" aria-label="Orientation">
-    <div class="radar">
-      <div class="radar-ring radar-ring-a"></div>
-      <div class="radar-ring radar-ring-b"></div>
-      <div class="radar-ring radar-ring-c"></div>
-      <div class="radar-cross radar-cross-x"></div>
-      <div class="radar-cross radar-cross-y"></div>
-      <div class="radar-dot" id="radarDot"></div>
-      <div class="radar-core"></div>
+  <section class="orientation-card" aria-label="Orientation and coordinates">
+    <div class="radar" aria-hidden="true">
+      <div class="radar-ring a"></div><div class="radar-ring b"></div><div class="radar-ring c"></div>
+      <div class="radar-cross x"></div><div class="radar-cross y"></div>
+      <div class="radar-dot" id="radarDot"></div><div class="radar-core"></div>
     </div>
     <div class="orientation-copy">
-      <span class="micro">VECTOR</span>
-      <strong id="vectorReadout">CENTER / 000°</strong>
+      <span class="micro">ORIENTATION</span>
+      <strong id="vectorReadout">RA 00:00 / DEC +00.0°</strong>
+      <span id="cameraReadout">AZ 000° · EL +12°</span>
     </div>
   </section>
 
   <section class="world-card" aria-live="polite">
-    <div class="world-kicker"><span class="signal-dot"></span><span id="worldKicker">PROCEDURAL FIELD</span></div>
+    <div class="world-kicker"><span class="signal-dot"></span><span id="worldType">PROCEDURAL VISUALIZATION</span></div>
     <h1 id="worldName">THE FIRST FIELD</h1>
-    <p id="worldDescription">A generated environment built for visual exploration. Every descent reveals a new deterministic layer.</p>
+    <p id="worldDescription">A bounded procedural context opens the first gateway. Public catalog layers can be loaded around the visible sky region without pretending to be complete.</p>
     <div class="world-meta">
+      <span><b>WORLD ID</b><strong id="worldId">D00-F00</strong></span>
       <span><b>SEED</b><strong id="seedReadout">001.2340</strong></span>
-      <span><b>NODE</b><strong id="nodeReadout">C0 / SURFACE</strong></span>
+      <span><b>CATALOG</b><strong id="catalogCount">9 anchors</strong></span>
     </div>
+  </section>
+
+  <section class="source-legend" aria-label="Data source legend">
+    <div class="legend-title">SOURCE-AWARE LAYERS</div>
+    <div class="legend-row">
+      <span class="legend-chip real"><i></i>REAL CATALOG</span>
+      <span class="legend-chip survey"><i></i>PUBLIC SURVEY</span>
+      <span class="legend-chip derived"><i></i>DERIVED FROM SOURCE DATA</span>
+      <span class="legend-chip proc"><i></i>PROCEDURAL VISUALIZATION</span>
+      <span class="legend-chip context"><i></i>ILLUSTRATIVE CONTEXT</span>
+    </div>
+  </section>
+
+  <section class="catalog-card" aria-live="polite" aria-label="Public data sources">
+    <div class="catalog-head">
+      <div><span class="micro">PUBLIC DATA PIPELINE</span><h2>Visible sky region</h2></div>
+      <button class="small-btn" id="loadRegionBtn" type="button">Load visible region</button>
+    </div>
+    <div class="source-grid">
+      <div class="source-row" data-source="gaia"><span class="source-name">ESA Gaia</span><span class="source-release">DR3</span><span class="source-state">READY</span></div>
+      <div class="source-row" data-source="exo"><span class="source-name">NASA Exoplanet Archive</span><span class="source-release">PS / PSCompPars</span><span class="source-state">READY</span></div>
+      <div class="source-row" data-source="ned"><span class="source-name">NASA/IPAC NED</span><span class="source-release">TAP</span><span class="source-state">READY</span></div>
+      <div class="source-row" data-source="sdss"><span class="source-name">SDSS</span><span class="source-release">DR20</span><span class="source-state">READY</span></div>
+      <div class="source-row" data-source="desi"><span class="source-name">DESI</span><span class="source-release">DR1 / Data Lab TAP</span><span class="source-state">READY</span></div>
+    </div>
+    <div class="catalog-foot"><span id="catalogStatus">Initializing public-data adapters…</span><span id="cacheStatus">CACHE 0 / 12 TILES</span></div>
+  </section>
+
+  <section class="search-card" aria-label="Astronomy search">
+    <div class="search-row">
+      <label class="sr-only" for="searchInput">Search astronomy object, catalog ID or coordinates</label>
+      <input id="searchInput" type="search" autocomplete="off" placeholder="Search object, catalog ID, RA Dec or source…">
+      <select id="sourceFilter" aria-label="Search source">
+        <option value="all">All sources</option>
+        <option value="gaia">Gaia DR3</option>
+        <option value="exo">NASA Exoplanet Archive</option>
+        <option value="ned">NED</option>
+        <option value="sdss">SDSS DR20</option>
+        <option value="desi">DESI DR1</option>
+      </select>
+      <button class="small-btn" id="searchBtn" type="button">Find</button>
+    </div>
+    <div class="search-help">Examples: Sirius · Gaia DR3 source ID · Kepler-22 b · 10.68 -11.24 · NED</div>
   </section>
 
   <section class="portal-hint" aria-live="polite">
     <div class="portal-status" id="portalStatus">CORE READY</div>
-    <div class="portal-title">DIVE THE CORE</div>
-    <div class="portal-subtitle">Scroll / pinch to approach · drag to orbit the field · tap the core to descend</div>
+    <div class="portal-title">ENTER THE NEXT WORLD</div>
+    <div class="portal-subtitle">Scroll / pinch toward the core · drag to orbit · tap or double-click the core to descend</div>
   </section>
 
-  <section class="catalog-status" aria-live="polite"><span class="signal-dot"></span><b id="catalogMode">3D CATALOG LAYER</b><span id="catalogStatus">Initializing public-data adapters…</span></section>
-
-  <section class="event-strip" id="eventStrip" aria-live="polite">
-    <span class="event-icon">◇</span>
-    <span id="eventText">Deep field online</span>
-  </section>
+  <section class="event-strip" id="eventStrip" aria-live="polite"><span>◇</span><span id="eventText">DEEP FIELD ONLINE</span></section>
 
   <aside class="discovery-card" id="discoveryCard" aria-live="polite">
     <div class="micro">DISCOVERY LOG</div>
@@ -84,21 +133,61 @@
     <span id="discoveryText">Saved locally on this browser.</span>
   </aside>
 
+  <aside class="inspector" id="inspector" aria-label="Catalog object inspector" aria-hidden="true">
+    <div class="inspector-head">
+      <div><span class="micro">OBJECT INSPECTOR</span><h2 id="inspectorName">NOT SELECTED</h2><p id="inspectorClass">NOT REPORTED</p></div>
+      <button class="close-btn" id="inspectorClose" type="button" aria-label="Close object inspector">×</button>
+    </div>
+    <div class="inspector-canvas-wrap"><canvas id="object3d" aria-label="Interactive three-dimensional object inspection preview"></canvas><div class="object-overlay">VISUAL RECONSTRUCTION · NOT A PHOTOGRAPH</div></div>
+    <div class="inspector-tags"><span id="inspectorSourceType">REAL CATALOG</span><span id="inspectorSource">SOURCE</span><span id="inspectorRelease">RELEASE</span></div>
+    <dl class="facts">
+      <div><dt>Identifier</dt><dd id="f-id">NOT REPORTED</dd></div>
+      <div><dt>RA</dt><dd id="f-ra">NOT REPORTED</dd></div>
+      <div><dt>Dec</dt><dd id="f-dec">NOT REPORTED</dd></div>
+      <div><dt>Distance</dt><dd id="f-distance">NOT REPORTED</dd></div>
+      <div><dt>Distance uncertainty</dt><dd id="f-distance-uncertainty">NOT REPORTED</dd></div>
+      <div><dt>Redshift</dt><dd id="f-redshift">NOT REPORTED</dd></div>
+      <div><dt>Object class</dt><dd id="f-type">NOT REPORTED</dd></div>
+      <div><dt>Magnitude</dt><dd id="f-mag">NOT REPORTED</dd></div>
+      <div><dt>Temperature</dt><dd id="f-temp">NOT REPORTED</dd></div>
+      <div><dt>Mass</dt><dd id="f-mass">NOT REPORTED</dd></div>
+      <div><dt>Radius</dt><dd id="f-radius">NOT REPORTED</dd></div>
+      <div><dt>Proper motion</dt><dd id="f-pm">NOT REPORTED</dd></div>
+      <div><dt>Radial velocity</dt><dd id="f-rv">NOT REPORTED</dd></div>
+      <div><dt>Spectral / photometric</dt><dd id="f-spectral">NOT REPORTED</dd></div>
+      <div><dt>Planet / host</dt><dd id="f-planet">NOT REPORTED</dd></div>
+      <div><dt>Reference</dt><dd id="f-reference">NOT REPORTED</dd></div>
+    </dl>
+    <div class="provenance">
+      <div><span>PROVENANCE</span><strong id="p-source">NOT REPORTED</strong></div>
+      <div><span>RELEASE</span><strong id="p-release">NOT REPORTED</strong></div>
+      <div><span>QUERIED</span><strong id="p-time">NOT REPORTED</strong></div>
+      <a id="p-url" href="#" target="_blank" rel="noopener noreferrer">Open source record ↗</a>
+    </div>
+    <div class="inspector-note">Source-backed values remain authoritative. Derived distance/uncertainty is marked as derived; visual materials are reconstructions for navigation only.</div>
+  </aside>
+
+  <section class="breadcrumbs" aria-label="Exploration depth history">
+    <button id="breadcrumbBack" type="button" class="crumb-btn" disabled>↑ Previous scale</button>
+    <span id="breadcrumbText">COSMIC FIELD</span>
+  </section>
+
   <footer class="footer-hint">
-    <span>WHEEL / PINCH <b>ZOOM</b></span>
     <span>DRAG <b>ORBIT</b></span>
+    <span>WHEEL / PINCH <b>ZOOM</b></span>
     <span>DOUBLE-TAP <b>DIVE</b></span>
+    <span>ENTER <b>DIVE</b></span>
     <span>R <b>RESET</b></span>
     <span>S <b>SURPRISE</b></span>
   </footer>
 
-  <div class="loading-screen" id="loading">
+  <div class="loading-screen" id="loadingScreen">
     <div class="loading-panel">
       <div class="eyebrow">NEXUSNOVA / INFINITE LAB</div>
       <div class="loading-title">Opening the deep field</div>
-      <div class="loading-copy" id="loadingCopy">Building the render field and calibrating the first portal.</div>
+      <div class="loading-copy" id="loadingCopy">Starting a WebGL2 camera-relative universe renderer.</div>
       <div class="loading-bar"><span id="loadingBar"></span></div>
-      <div class="loading-phase" id="loadingPhase">PHASE 01 / FOUNDATION</div>
+      <div class="loading-phase" id="loadingPhase">PHASE 01 / WEBGL2</div>
     </div>
   </div>
 </main>
