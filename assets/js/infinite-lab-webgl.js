@@ -279,10 +279,32 @@ function drawDeepUniverseScene(s,mat,t){
  const count=Math.max(12,Math.floor(22*Math.max(.45,Math.min(1,s.quality))));for(let i=0;i<count;i++){const a=hash(s.seed+'a'+i)*TAU,p=(hash(s.seed+'p'+i)-.5)*Math.PI*.86,r=2.0+hash(s.seed+'r'+i)*17,x=Math.cos(a)*Math.cos(p)*r,y=Math.sin(p)*r,z=Math.sin(a)*Math.cos(p)*r,sc=.045+hash(s.seed+'s'+i)*.22,mdl=model(x,y,z,sc,sc*.11,sc,((hash(s.seed+'ti'+i)-.5)*1.5),hash(s.seed+'q'+i)*TAU,0);drawMesh(galaxyScene.disk,mat,mdl,[.22,.48,.8],.26,1.8);drawMesh(galaxyScene.bulge,mat,model(x,y,z,sc*.33,sc*.16,sc*.33,((hash(s.seed+'ti'+i)-.5)*1.5),hash(s.seed+'q'+i)*TAU,0),[.92,.58,.4],.52,2.0);}
  drawPoints(starsBuf,mat,10);
 }
+const labelState={key:'',els:[]};
+function ensureSceneLabels(items){
+ const host=document.getElementById('sceneLabels');if(!host)return;
+ const key=items.map(x=>x.name+':'+x.tag).join('|');if(labelState.key===key)return;
+ host.innerHTML='';labelState.els=[];
+ items.forEach(x=>{const el=document.createElement('div');el.className='scene-label';el.innerHTML='<i></i><span>'+x.name+'</span><small>'+x.tag+'</small>';host.appendChild(el);labelState.els.push({el,p:x.p});});
+ labelState.key=key;
+}
+function updateSceneLabels(s,scene){
+ const items=[];
+ if(scene==='solar'){
+  const names=[['SUN',[0,0,0],'REFERENCE'],['EARTH',[1.62,0,0],'3D CONTEXT'],['JUPITER',[2.55,0,0],'3D CONTEXT'],['SATURN',[3.08,0,0],'3D CONTEXT']];
+  names.forEach(x=>items.push({name:x[0],p:x[1],tag:x[2]}));
+ }else{
+  const ids=['sgr-a','m31','m87','sirius','proxima'];
+  ids.forEach(id=>{const o=objects.find(x=>x.id===id);if(o&&o.position)items.push({name:o.name,p:o.position,tag:o.source==='Reference anchor'?'REFERENCE':'CATALOG'});});
+ }
+ ensureSceneLabels(items);
+ const mat=mvp(s);
+ labelState.els.forEach(({el,p})=>{const q=project(mat,p);if(!q){el.classList.remove('visible');return;}el.style.left=q.x+'px';el.style.top=q.y+'px';el.classList.add('visible');});
+}
 function render(){
  const s=WCA?.getState?.()||{depth:0,family:0,seed:1.234,yaw:0,pitch:0,distance:8.2,quality:1,transition:0,origin:[0,0,0]};
  lastRendered=s;const t=performance.now()/1000,mat=mvp(s),scene=getScene(s.depth,s.seed,s.quality,s.family);
- if(scene!==lastScene){lastScene=scene;emitScene(scene);}
+ if(scene!==lastScene){lastScene=scene;labelState.key='';emitScene(scene);}
+ updateSceneLabels(s,scene);
  gl.enable(gl.BLEND);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(.002,.004,.01,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
  gl.uniformMatrix4fv(ploc.m,false,mat);gl.uniformMatrix4fv(mloc.m,false,mat);
  if(scene==='solar')drawSolarScene(s,mat,t);
