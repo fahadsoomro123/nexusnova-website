@@ -6,6 +6,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const lab = fs.readFileSync(path.join(ROOT, 'infinite-lab.html'), 'utf8');
 const engine = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab.js'), 'utf8');
+const css = fs.readFileSync(path.join(ROOT, 'assets/css/infinite-lab.css'), 'utf8');
 const labs = fs.readFileSync(path.join(ROOT, 'labs.html'), 'utf8');
 
 test('Infinite Lab shell and rendering core exist', () => {
