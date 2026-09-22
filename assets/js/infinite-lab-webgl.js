@@ -94,7 +94,7 @@ function draw(b,scale){
  gl.uniform1f(loc.ps,scale||15);gl.drawArrays(gl.POINTS,0,b.count);
 }
 
-let procKey='',procBuf=null,catBuf=null,projected=[];let frameN=0,lastFrame=performance.now(),fpsEMA=60;
+let procKey='',procBuf=null,catBuf=null,projected=[];let gateKey='',gateBuf=null,transitionKey='',transitionBuf=null;let frameN=0,lastFrame=performance.now(),fpsEMA=60;
 function procedural(s){
  const key=s.depth+'|'+s.family+'|'+Number(s.seed).toFixed(6)+'|'+Math.round(Number(s.quality)*100);
  if(key===procKey)return;procKey=key;if(procBuf)del(procBuf);
@@ -214,8 +214,10 @@ function render(){
  draw(procBuf,15);draw(catBuf,17);gl.depthMask(true);
  const t=performance.now()/1000,h=hash(s.seed)*TAU,base=[.42,.82,1],g=[];
  for(let r=0;r<3;r++)for(let i=0;i<100;i++){const a=i/100*TAU+h+t*(.11+r*.03),rr=1.0+r*.43;g.push({p:[Math.cos(a)*rr,(hash(s.seed+'g'+i+r)-.5)*.08,Math.sin(a)*rr],c:[base[0],base[1],base[2],.22-.03*r],s:1.25});}
- const gb=makeBuffer(g,gl.STREAM_DRAW);draw(gb,18);del(gb);
- if(s.transition>0){const tp=[];for(let i=0;i<140;i++){const a=hash(s.seed+'t'+i)*TAU,r=2+hash(s.seed+'r'+i)*7;tp.push({p:[Math.cos(a)*r,(hash(s.seed+'y'+i)-.5)*2.2,Math.sin(a)*r],c:[.72,.88,1,.05+Number(s.transition)*.08],s:1.0});}const tb=makeBuffer(tp,gl.STREAM_DRAW);draw(tb,14);del(tb);}
+ const gkey=String(s.depth)+'|'+String(s.family)+'|'+Number(s.seed).toFixed(5);
+ if(gkey!==gateKey){if(gateBuf)del(gateBuf);const gp=[];for(let rr=0;rr<3;rr++)for(let i=0;i<100;i++){const a=i/100*TAU+hash(s.seed+'ga'+rr),rad=1.0+rr*.43;gp.push({p:[Math.cos(a)*rad,(hash(s.seed+'gy'+i+rr)-.5)*.08,Math.sin(a)*rad],c:[.42,.82,1,.22-.03*rr],s:1.25});}gateBuf=makeBuffer(gp,gl.STATIC_DRAW);gateKey=gkey;}
+ draw(gateBuf,18);
+ if(s.transition>0){const tkey=String(s.depth)+'|'+Number(s.seed).toFixed(5);if(tkey!==transitionKey){if(transitionBuf)del(transitionBuf);const tp=[];for(let i=0;i<140;i++){const a=hash(s.seed+'t'+i)*TAU,r=2+hash(s.seed+'r'+i)*7;tp.push({p:[Math.cos(a)*r,(hash(s.seed+'y'+i)-.5)*2.2,Math.sin(a)*r],c:[.72,.88,1,.10],s:1.0});}transitionBuf=makeBuffer(tp,gl.STATIC_DRAW);transitionKey=tkey;}draw(transitionBuf,14);}
  const now=performance.now();const frameDt=now-lastFrame;lastFrame=now;if(frameDt>0)fpsEMA=fpsEMA*.9+(1000/frameDt)*.1;frameN++;if(frameN%60===0&&WCA?.setQuality){if(fpsEMA<43)WCA.setQuality(Math.max(.45,s.quality-.08));else if(fpsEMA>57)WCA.setQuality(Math.min(1,s.quality+.035));}
  window.NexusNovaInfiniteLabRenderer?.setRuntime?.({webgl2:true,dpr,culling:true,lod:true,catalogObjects:objects.length,cacheSize:cache.size,adaptiveQuality:true,fps:fpsEMA,originRebased:s.origin?.slice?.()||[0,0,0]});
  requestAnimationFrame(render);
@@ -224,7 +226,6 @@ function tap(x,y){
  if(!lastRendered)return;rebuildCatalog();const m=mvp(lastRendered);let best=null,bd=31;
  projected.forEach((o,i)=>{if(!o)return;const q=project(m,o.position);if(!q)return;const dd=Math.hypot(q.x-x,q.y-y);if(dd<bd){bd=dd;best=o;}});
  if(best){WCA?.selectObject?.(best);return;}
- if(Math.hypot(W-width*.5,H-height*.52)<0){}
  const dd=Math.hypot(x-width*.5,y-height*.52);if(dd<Math.min(width,height)*.22)WCA?.dive?.();
 }
 window.NexusNovaInfiniteLabRenderer={
@@ -238,16 +239,16 @@ status('WEBGL2 ACTIVE · GPU POINT RENDERING · CAMERA-RELATIVE VIEW · PROGRESS
 bootSources().catch(()=>status('PUBLIC DATA SOURCE TEMPORARILY UNAVAILABLE · ANCHORS + PROCEDURAL LAYER PRESERVED'));
 requestAnimationFrame(render);
 
-const objVS=['#version 300 es','in vec3 aPos;','uniform mat4 uM;','uniform float uT;','void main(){float c=cos(uT),s=sin(uT);vec3 p=vec3(c*aPos.x-s*aPos.z,aPos.y,s*aPos.x+c*aPos.z);gl_Position=uM*vec4(p,1.0);}'].join('\n');
+const objVS=['#version 300 es','in vec3 aPos;','uniform mat4 uM;','uniform float uT;','uniform vec3 uScale;','void main(){float c=cos(uT),s=sin(uT);vec3 p=vec3(c*aPos.x-s*aPos.z,aPos.y,s*aPos.x+c*aPos.z);p*=uScale;gl_Position=uM*vec4(p,1.0);}'].join('\n');
 const objFS=['#version 300 es','precision highp float;','uniform vec3 uColor;','out vec4 outColor;','void main(){outColor=vec4(uColor,1.0);}'].join('\n');
-let ogl=null,op=null,obuf=null,ibuf=null,ic=0,ov=null,oi=null,orot=.4,oz=3.2,ovis=false,oraf=false;
+let ogl=null,op=null,obuf=null,ibuf=null,ic=0,ov=null,oi=null,orot=.4,oz=3.2,ovis=false,oraf=false,oScale=[1,1,1],oColor=[.53,.8,1];
 function ocompile(t,s){const sh=ogl.createShader(t);ogl.shaderSource(sh,s);ogl.compileShader(sh);return sh;}
 function oinit(){const c=document.getElementById('object3d');if(!c)return;ov=c;if(ogl)return;try{ogl=c.getContext('webgl2',{alpha:false,antialias:true});}catch(_){ogl=null;}if(!ogl)return;op=ogl.createProgram();ogl.attachShader(op,ocompile(ogl.VERTEX_SHADER,objVS));ogl.attachShader(op,ocompile(ogl.FRAGMENT_SHADER,objFS));ogl.linkProgram(op);
  const seg=28,rings=18,V=[],I=[];for(let y=0;y<=rings;y++){const ph=y/rings*Math.PI;for(let x=0;x<=seg;x++){const th=x/seg*TAU;V.push(Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th));}}for(let y=0;y<rings;y++)for(let x=0;x<seg;x++){const a=y*(seg+1)+x,b=a+seg+1;I.push(a,b,a+1,b,b+1,a+1);}obuf=ogl.createBuffer();ogl.bindBuffer(ogl.ARRAY_BUFFER,obuf);ogl.bufferData(ogl.ARRAY_BUFFER,new Float32Array(V),ogl.STATIC_DRAW);ibuf=ogl.createBuffer();ogl.bindBuffer(ogl.ELEMENT_ARRAY_BUFFER,ibuf);ogl.bufferData(ogl.ELEMENT_ARRAY_BUFFER,new Uint16Array(I),ogl.STATIC_DRAW);ic=I.length;
 }
 function omul(a,b){return mul(a,b)}
-function orender(){if(!ogl||!ovis)return;const c=ov,w=Math.max(1,c.clientWidth),h=Math.max(1,c.clientHeight),dr=Math.min(2,devicePixelRatio||1);c.width=w*dr;c.height=h*dr;ogl.viewport(0,0,c.width,c.height);ogl.enable(ogl.DEPTH_TEST);ogl.clearColor(.012,.02,.04,1);ogl.clear(ogl.COLOR_BUFFER_BIT|ogl.DEPTH_BUFFER_BIT);ogl.useProgram(op);const lp=ogl.getAttribLocation(op,'aPos');ogl.bindBuffer(ogl.ARRAY_BUFFER,obuf);ogl.enableVertexAttribArray(lp);ogl.vertexAttribPointer(lp,3,ogl.FLOAT,false,0,0);ogl.bindBuffer(ogl.ELEMENT_ARRAY_BUFFER,ibuf);const M=perspective(.8,w/h,.1,20),V=lookAt([0,0,oz],[0,0,0],[0,1,0]);ogl.uniformMatrix4fv(ogl.getUniformLocation(op,'uM'),false,mul(M,V));ogl.uniform1f(ogl.getUniformLocation(op,'uT'),orot);ogl.uniform3fv(ogl.getUniformLocation(op,'uColor'),new Float32Array([.53,.8,1]));ogl.drawElements(ogl.TRIANGLES,ic,ogl.UNSIGNED_SHORT,0);oraf=requestAnimationFrame(orender);}
-function oshow(obj){oinit();if(!ogl)return;ovis=true;orot=.4;oz=3.2;if(!oraf)oraf=requestAnimationFrame(orender);}
+function orender(){if(!ogl||!ovis)return;const c=ov,w=Math.max(1,c.clientWidth),h=Math.max(1,c.clientHeight),dr=Math.min(2,devicePixelRatio||1);c.width=w*dr;c.height=h*dr;ogl.viewport(0,0,c.width,c.height);ogl.enable(ogl.DEPTH_TEST);ogl.clearColor(.012,.02,.04,1);ogl.clear(ogl.COLOR_BUFFER_BIT|ogl.DEPTH_BUFFER_BIT);ogl.useProgram(op);const lp=ogl.getAttribLocation(op,'aPos');ogl.bindBuffer(ogl.ARRAY_BUFFER,obuf);ogl.enableVertexAttribArray(lp);ogl.vertexAttribPointer(lp,3,ogl.FLOAT,false,0,0);ogl.bindBuffer(ogl.ELEMENT_ARRAY_BUFFER,ibuf);const M=perspective(.8,w/h,.1,20),V=lookAt([0,0,oz],[0,0,0],[0,1,0]);ogl.uniformMatrix4fv(ogl.getUniformLocation(op,'uM'),false,mul(M,V));ogl.uniform1f(ogl.getUniformLocation(op,'uT'),orot);ogl.uniform3fv(ogl.getUniformLocation(op,'uScale'),new Float32Array(oScale));ogl.uniform3fv(ogl.getUniformLocation(op,'uColor'),new Float32Array(oColor));ogl.drawElements(ogl.TRIANGLES,ic,ogl.UNSIGNED_SHORT,0);oraf=requestAnimationFrame(orender);}
+function oshow(obj){oinit();if(!ogl)return;ovis=true;orot=.4;oz=3.2;const t=String(obj?.type||'').toLowerCase();if(t.includes('galaxy')){oScale=[1.45,.52,1]}else if(t.includes('black hole')||t.includes('agn')){oScale=[1.55,.42,1.55];oColor=[1,.32,.08]}else if(t.includes('nebula')){oScale=[1.4,.9,1.2];oColor=[.42,1,.82]}else if(t.includes('planet')||obj?.planet){oScale=[1,1,1];oColor=[.42,.7,1]}else{oScale=[1.08,1.08,1.08];oColor=[.72,.83,1]};if(!oraf)oraf=requestAnimationFrame(orender);}
 function ohide(){ovis=false;}
 window.NexusNovaObject3D={show:oshow,hide:ohide,rotate:x=>{orot+=x;},zoom:f=>{oz=Math.max(1.8,Math.min(7,oz*f));}};
 document.getElementById('object3d')?.addEventListener('pointermove',e=>{if(e.buttons)window.NexusNovaObject3D?.rotate?.(e.movementX*.01);},{passive:true});
