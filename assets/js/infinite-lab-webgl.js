@@ -46,7 +46,7 @@ function makeGalaxy(seed,scale,tilt=0){const disk=discGeometry(.22,1,72),bulge=s
 let galaxyKey='',galaxyScene=null,starsKey='',starsBuf=null,catBuf=null,projected=[];
 function releaseGalaxy(){if(!galaxyScene)return;if(galaxyScene.disk)delMesh(galaxyScene.disk);if(galaxyScene.arms)galaxyScene.arms.forEach(delMesh);galaxyScene=null;}
 function ensureGalaxy(seed){const gk=String(seed);if(galaxyKey===gk&&galaxyScene)return;releaseGalaxy();galaxyScene=makeGalaxy(seed,1,0);galaxyKey=gk;}
-function sceneMode(s){const d=Number(s.depth)||0,f=Number(s.family)||0;if(d===0)return'solar';if(d===1)return'neighborhood';if(d<=4)return f===8?'nebula': 'milkyway';if(d<=7)return'galaxy-group';if(f===8)return'nebula';if(f===9)return'star-system';if(f===10)return'planet';if(f===11)return'agn';if(f===12)return'anomaly';if(d<=11)return'cosmic-web';return'deep-universe';}
+function sceneMode(s){const d=Number(s.depth)||0,f=Number(s.family)||0;if(d===0)return'solar';if(d===1)return'neighborhood';if(d===2)return'milkyway';if(d===3||d===4)return'galaxy-group';if(d===5)return'cosmic-web';if(d===6)return'deep-universe';if(f===7)return'data-world';if(f===8)return'nebula';if(f===9)return'star-system';if(f===10)return'planet';if(f===11)return'agn';if(f===12)return'anomaly';return'deep-universe';}
 function getScene(depth,seed,q,family){const sceneDepth=Math.max(0,Number(depth)||0),key=sceneDepth+'|'+String(family||0)+'|'+Number(seed).toFixed(5)+'|'+Math.round(q*100);if(starsKey!==key){if(starsBuf)delPoint(starsBuf);starsBuf=makePointBuffer(makePointArray(seed,q,sceneDepth),gl.STATIC_DRAW);starsKey=key;}
  if(sceneDepth>=2&&sceneDepth<=7)ensureGalaxy(seed);return{mode:sceneMode({depth:sceneDepth,family:Number(family)||0}),key};}
 function rebuildCatalog(){const s=WCA?.getState?.()||{quality:1,distance:8,depth:0};if(catBuf)delPoint(catBuf);const far=Number(s.distance)>18||Number(s.depth)>8,step=Math.max(1,far?Math.ceil(7/Math.max(.45,s.quality)):Math.ceil(2/Math.max(.45,s.quality)));const matrix=mvp(s),list=[];projected=[];for(let i=0;i<objects.length;i+=step){const o=objects[i];if(!o.position)o.position=astroPos(o);const p=project(matrix,o.position);if(!p)continue;if(far&&step>1){const group=objects.slice(i,i+step).filter(x=>x?.position);const c=group.reduce((a,x)=>[a[0]+x.position[0],a[1]+x.position[1],a[2]+x.position[2]],[0,0,0]).map(v=>v/group.length);list.push({p:c,c:[.5,.66,1,.32],s:1.8+group.length*.05});projected.push(null);}else{list.push({p:o.position,c:o.sourceType==='PUBLIC SURVEY'?[.46,.91,1,.95]:[.48,.92,.74,1],s:o.sourceType==='PUBLIC SURVEY'?2.2:2.9});projected.push(o);}}catBuf=makePointBuffer(list,gl.DYNAMIC_DRAW);}
@@ -167,6 +167,12 @@ function drawCosmicWebScene(s,mat,t){
  webRibbons.forEach((r,i)=>drawMesh(r,mat,identity(),i%3===0?[.35,.92,1]:[.55,.52,1],.18,.9));
  const nodes=Math.max(28,Math.floor(80*Math.max(.45,Math.min(1,s.quality))));for(let i=0;i<nodes;i++){const a=hash(s.seed+'n'+i)*TAU,rr=1.2+hash(s.seed+'r'+i)*7.5,y=(hash(s.seed+'y'+i)-.5)*10,x=Math.cos(a)*rr,z=Math.sin(a)*rr;drawMesh(galaxyScene?.bulge||solarSphere,mat,model(x,y,z,.018,.018,.018),[.48,.84,1],.45,1.7);}
 }
+function drawDataWorldScene(s,mat,t){
+ gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);ensurePortal();
+ for(let i=0;i<7;i++){const a=t*(.08+i*.01)+i*TAU/7,r=1.2+i*.32,x=Math.cos(a)*r,z=Math.sin(a)*r;drawMesh(portalMesh,mat,model(x,(hash(s.seed+'dy'+i)-.5)*.7,z,.45,.045,.45,Math.PI*.5,a,0),[.2,.85,1],.1,.9);}
+ for(let i=0;i<24;i++){const a=hash(s.seed+'da'+i)*TAU,r=.7+hash(s.seed+'dr'+i)*4.2,x=Math.cos(a)*r,y=(hash(s.seed+'dy2'+i)-.5)*2,z=Math.sin(a)*r,sc=.025+hash(s.seed+'ds'+i)*.08;drawMesh(solarSphere,mat,model(x,y,z,sc,sc,sc,0,t*.1,0),i%4?[.45,.86,1]:[.84,.42,1],.6,1.3);}
+ gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawPoints(starsBuf,mat,7);
+}
 function drawNebulaScene(s,mat,t){
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
  for(let i=0;i<18;i++){const a=hash(s.seed+'na'+i)*TAU,r=.5+hash(s.seed+'nr'+i)*3.8,x=Math.cos(a)*r,y=(hash(s.seed+'ny'+i)-.5)*2.5,z=Math.sin(a)*r,sc=.25+hash(s.seed+'ns'+i)*1.0;const col=i%3===0?[.98,.22,.52]:i%3===1?[.25,.72,1]:[.52,.38,1];drawMesh(solarSphere,mat,model(x,y,z,sc,sc*(.55+hash(s.seed+'nsy'+i)*.7),sc*.8,0,a,0),col,.055,.95);}
@@ -213,6 +219,7 @@ function render(){
  else if(scene==='milkyway')drawMilkyWayScene(s,mat,t);
  else if(scene==='galaxy-group')drawGalaxyGroupScene(s,mat,t);
  else if(scene==='cosmic-web')drawCosmicWebScene(s,mat,t);
+ else if(scene==='data-world')drawDataWorldScene(s,mat,t);
  else if(scene==='nebula')drawNebulaScene(s,mat,t);
  else if(scene==='star-system')drawStarSystemScene(s,mat,t);
  else if(scene==='planet')drawPlanetScene(s,mat,t);
