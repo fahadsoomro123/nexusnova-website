@@ -120,7 +120,7 @@ test('18 — mobile and desktop UX are represented', () => {
 });
 
 test('19 — scientific claims are explicitly bounded', () => {
-  assert.match(lab, /procedural browser experience/i);
+  assert.match(lab, /procedural deep-zoom visual experiment/i);
   assert.match(lab, /without presenting them as real scientific maps/i);
   assert.doesNotMatch(lab + engine, /actual full universe|NASA complete universe map|real telescope view|scientifically exact infinite universe/i);
 });
