@@ -113,11 +113,11 @@ function procedural(s){
   else if(family===4){const r=.2+Math.pow(v,.82)*4.2;x=Math.cos(a)*r*.72;z=Math.sin(a)*r*.72;y=(w-.5)*.9;c=[.58,.9,1];sz*=.7;}
   else if(family===5){const R=3.2+v*1.2,ph=Math.acos(2*w-1);x=R*Math.sin(ph)*Math.cos(a);y=R*Math.cos(ph);z=R*Math.sin(ph)*Math.sin(a);c=[.42,.72,1];}
   else if(family===6){x=((i%9)-4)*.65+(w-.5)*.12;z=((Math.floor(i/9)%9)-4)*.65+(u-.5)*.12;y=rand(seed,i+51)*1.2;c=[1,.6,.84];sz=.35+rand(seed,i+61)*1.5;}
-  else if(family===7){const ring=i%15,r=1+ring*.22+v*.25;a2=a+ring*.24;x=Math.cos(a2)*r;z=Math.sin(a2)*r;y=(w-.5)*.35;c=[.5,1,.84];}
+  else if(family===7){const ring=i%15,r=1+ring*.22+v*.25,aa=a+ring*.24;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*.35;c=[.5,1,.84];}
   else if(family===8){const r=Math.pow(v,.56)*4.8;x=Math.cos(a)*r;z=Math.sin(a)*r;y=Math.sin(a*3+r)*.72+(w-.5);c=[.55,1,.76];}
-  else if(family===9){const r=.3+Math.pow(v,.7)*4.5;a2=a+Math.sin(r+seed)*.65;x=Math.cos(a2)*r;z=Math.sin(a2)*r;y=(w-.5)*1.1;c=[.8,.66,1];}
+  else if(family===9){const r=.3+Math.pow(v,.7)*4.5,aa=a+Math.sin(r+seed)*.65;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*1.1;c=[.8,.66,1];}
   else if(family===10){const r=Math.pow(v,.5)*4.7;x=Math.cos(a)*r*.92;z=Math.sin(a)*r*.92;y=(w-.5)*2.3;c=[.45,1,.9];}
-  else {const r=.45+v*4.3;a2=a+Math.sin(r*1.8+seed)*.8;x=Math.cos(a2)*r;z=Math.sin(a2)*r;y=(w-.5)*1.5;c=[1,.55,.35];}
+  else {const r=.45+v*4.3,aa=a+Math.sin(r*1.8+seed)*.8;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*1.5;c=[1,.55,.35];}
   out.push({p:[x,y,z],c:[c[0],c[1],c[2],.14+.55*rand(seed,i+81)],s:sz});
  }
  procBuf=makeBuffer(out,gl.STATIC_DRAW);
