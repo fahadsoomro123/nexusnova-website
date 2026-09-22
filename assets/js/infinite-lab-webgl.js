@@ -176,7 +176,7 @@ function ensureSaturnRing(){if(!saturnRingMesh)saturnRingMesh=ringMeshBuffer(.42
 function drawSolarScene(s,mat,t){
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
  solarOrbits.forEach((o)=>drawLineBuffer(o,mat,[.24,.5,.72,.2]));
- const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);glowBlob(mat,sun,[1,.53,.12],1,2.7,3,t);
+ const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawMesh(solarSphere,mat,model(0,0,0,.91,.91,.91,t*.02,0,0),[1,.3,.03],.055,2.0,3,t);glowBlob(mat,sun,[1,.53,.12],1,2.7,3,t);
  const planets=[
   {name:'Mercury',r:.82,s:.1,c:[.52,.52,.48]},
   {name:'Venus',r:1.18,s:.16,c:[.92,.69,.4]},
@@ -189,7 +189,7 @@ function drawSolarScene(s,mat,t){
  planets.forEach((p,i)=>{
    const ang=t*(.12/(i+1))+i*1.31,x=Math.cos(ang)*p.r,z=Math.sin(ang)*p.r;
    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawMesh(solarSphere,mat,model(x,0,z,p.s,p.s,p.s,0,t*.06,0),p.c,1,.32,p.name==='Earth'?1:(p.name==='Jupiter'||p.name==='Saturn'?2:0),t);
-   if(p.name==='Earth'){drawMesh(solarSphere,mat,model(x,0,z,p.s*1.075,p.s*1.075,p.s*1.075,0,t*.04,0),[.16,.5,1],.11,.55);drawMesh(solarSphere,mat,model(x+.27,0,z+.12,.055,.055,.055,0,t*.2,0),[.75,.78,.84],1,.18,0,t);}
+   if(p.name==='Earth'){drawMesh(solarSphere,mat,model(x,0,z,p.s*1.09,p.s*1.09,p.s*1.09,0,t*.04,0),[.18,.54,1],.10,.65,0,t);const ma=t*.62,mx=x+Math.cos(ma)*.34,mz=z+Math.sin(ma)*.34;drawMesh(solarSphere,mat,model(mx,0,mz,.055,.055,.055,0,t*.2,0),[.75,.78,.84],1,.18,0,t);}
    if(p.name==='Saturn'){ensureSaturnRing();drawMesh(saturnRingMesh,mat,model(x,0,z,p.s*1.65,p.s*.34,p.s*1.65,.15,0,0),[.9,.7,.45],.65,.35);}
  });
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawPoints(starsBuf,mat,12);
