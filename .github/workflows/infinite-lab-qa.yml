@@ -14,6 +14,7 @@ on:
       - "assets/js/infinite-lab.js"
       - "assets/js/infinite-lab-webgl.js"
       - ".github/scripts/infinite-lab-qa.cjs"
+      - ".github/scripts/infinite-lab-visual-gate.py"
       - ".github/workflows/infinite-lab-qa.yml"
   pull_request:
     branches:
@@ -64,6 +65,10 @@ jobs:
         run: |
           echo "QA source commit: $GITHUB_SHA"
           node .github/scripts/infinite-lab-qa.cjs
+
+      - name: Analyze rendered screenshot
+        if: always()
+        run: python3 .github/scripts/infinite-lab-visual-gate.py
 
       - name: Server log
         if: always()
