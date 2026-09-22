@@ -45,6 +45,8 @@ test('06 — pointer lifecycle is complete', () => {
 test('07 — desktop wheel and double-click interactions exist', () => {
   assert.match(engine, /addEventListener\('wheel'/);
   assert.match(engine, /addEventListener\('dblclick'/);
+  assert.match(engine, /lastTap/);
+  assert.match(engine, /isDouble/);
   assert.match(css, /touch-action:none/);
 });
 
@@ -74,7 +76,7 @@ test('11 — world family depth ladder is meaningful', () => {
 });
 
 test('12 — galaxy, stellar and planetary rendering layers exist', () => {
-  for (const term of ['function galaxy','function orbits','function planet']) {
+  for (const term of ['function galaxy','function orbits','function planet','type=Math.floor(hash(seed,6100)']) {
     assert.match(engine, new RegExp(term));
   }
 });
