@@ -127,6 +127,7 @@ addEventListener('resize',()=>window.NexusNovaInfiniteLabRenderer?.resize?.(),{p
 function tick(){updatePhysics();updateHUD();window.NexusNovaInfiniteLabRenderer?.setState?.(state);requestAnimationFrame(tick);}
 window.NexusNovaInfiniteLab={
   getState:()=>({...state,world:{...currentWorld()},history:state.history.map(x=>({...x})),quality:state.quality}),
+  emitEvent,
   reset,home,surprise,dive:queueDive,zoomBy,back,selectObject,openInspector,closeInspector,search,
   setQuality:q=>{state.quality=clamp(Number(q)||1,.45,1);},
   deterministicSignature:(seed,depth,family)=>worldSignature(depth,seed,family),
