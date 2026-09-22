@@ -171,7 +171,7 @@ const adapters={
 async function loadAdapter(key,c,reqEpoch){
  const a=adapters[key];if(!a)return[];
  row(key,'loading');
- try{const query=a.q(c),data=await fetchJSON(a.u(query));if(reqEpoch!==epoch)return[];const result=a.parse(data).filter(Boolean);row(key,'ready');return result;}
+ try{const query=a.q(c),data=await fetchAstronomy(key,query);if(reqEpoch!==epoch)return[];const result=a.parse(data).filter(Boolean);row(key,'ready');return result;}
  catch(err){if(reqEpoch===epoch)row(key,'error');throw err;}
 }
 async function loadVisibleRegion(){
