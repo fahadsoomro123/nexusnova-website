@@ -245,11 +245,15 @@ function ensureVideoFlagshipStyles() {
       flex:none!important;width:100%!important;min-width:0!important;min-height:44px!important;height:100%!important;
       scroll-snap-align:none!important;padding:3px 2px!important;
     }
+    .nx-video-bottom{position:relative!important}
     .nx-video-flagship .nx-video-file-input{
-      position:absolute!important;left:-10000px!important;top:auto!important;
-      width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;
-      clip:rect(0 0 0 0)!important;
+      position:absolute!important;left:0!important;top:0!important;
+      width:calc(50% - 3px)!important;height:100%!important;
+      z-index:20!important;opacity:0!important;pointer-events:auto!important;
+      clip:auto!important;cursor:pointer!important;
     }
+    .nx-video-bottom>[data-add]{position:relative!important;z-index:1!important}
+    .nx-video-bottom>[data-open-export]{position:relative!important;z-index:1!important}
     @media(max-width:390px){
       .nx-video-flagship{grid-template-rows:minmax(0,1.15fr) minmax(0,.52fr) minmax(0,1fr) minmax(0,.58fr) minmax(0,.58fr)!important}
       .nx-video-flagship .nx-video-clip{height:58px!important}
@@ -267,6 +271,10 @@ function normalizeImportKind(file){
   const type=String(file?.type||'').toLowerCase();
   if(type.startsWith('image/')) return 'image';
   if(type.startsWith('video/')) return 'video';
+  const name=String(file?.name||'').toLowerCase();
+  const ext=name.includes('.')?name.slice(name.lastIndexOf('.')+1):'';
+  if(['jpg','jpeg','png','webp','gif','bmp','heic','heif'].includes(ext)) return 'image';
+  if(['mp4','mov','m4v','webm','mkv','avi','3gp'].includes(ext)) return 'video';
   return null;
 }
 function probeMedia(url,kind,timeout=8000){
@@ -473,7 +481,7 @@ export function renderAiVideoStudio(){
     <div class="nx-video-bottom">
       <button type="button" class="nx-video-primary nx-video-add" data-add>＋ ADD MEDIA</button>
       <button type="button" class="nx-video-primary nx-video-export" data-open-export>EXPORT VIDEO</button>
-      <input class="nx-video-hidden" type="file" accept="video/*,image/*" multiple data-file>
+      <input class="nx-video-hidden nx-video-file-input" type="file" accept="video/*,image/*" multiple data-file aria-label="Add photo or video media">
     </div>
   `;
 
@@ -970,8 +978,19 @@ export function renderAiVideoStudio(){
   }
 
   const openPicker=()=>{
-    try{if(typeof els.file.showPicker==='function'){els.file.showPicker();return;}}catch{}
-    try{els.file.click()}catch{els.meta.textContent='Media picker could not be opened.';}
+    try{
+      const picker=els.file;
+      if(!picker){els.meta.textContent='Media picker is unavailable in this editor.';return false;}
+      picker.value='';
+      if(typeof picker.showPicker==='function'){try{picker.showPicker();return true;}catch{}}
+      picker.focus?.({preventScroll:true});
+      picker.click();
+      return true;
+    }catch(error){
+      els.meta.textContent='Media picker could not be opened. Tap ADD MEDIA again.';
+      console.warn('[NexusNova Video] file picker:',error);
+      return false;
+    }
   };
   els.file.addEventListener('change',async()=>{await addFiles(els.file.files);els.file.value='';});
   root.querySelector('[data-add]').addEventListener('click',openPicker);
