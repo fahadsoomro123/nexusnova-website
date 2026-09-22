@@ -1,64 +1,25 @@
-(() => {
-'use strict';
-
-const canvas=document.getElementById('universe');
-if(!canvas)return;
-const DPR_MAX=2,MAX_TILES=12,TAU=Math.PI*2,WCA=window.NexusNovaInfiniteLab;
-let gl=null;
-try{gl=canvas.getContext('webgl2',{alpha:false,antialias:true,powerPreference:'high-performance'});}catch(_){gl=null;}
-
-function status(t){const e=document.getElementById('catalogStatus');if(e)e.textContent=t;}
-function row(key,s){
- const r=document.querySelector('.source-row[data-source="'+key+'"]');if(!r)return;
- r.classList.remove('loading','error');if(s==='loading')r.classList.add('loading');if(s==='error')r.classList.add('error');
- const e=r.querySelector('.source-state');if(e)e.textContent=s.toUpperCase();
-}
-function noWebGL(message){
- const box=document.createElement('section');box.className='no-webgl';
- box.innerHTML='<div class="box"><div class="micro">RENDERER STATUS</div><h1>WebGL2 is unavailable on this device.</h1><p>'+message+'</p></div>';
- document.body.appendChild(box);status('WEBGL2 UNAVAILABLE · 3D SCENE STOPPED SAFELY');
-}
-if(!gl){noWebGL('Infinite Lab never substitutes a 2D canvas for the primary 3D renderer. Source-backed records and provenance remain protected, but interactive 3D is unavailable in this browser.');return;}
-
-const vertexSource=['#version 300 es','in vec3 aPosition;','in vec4 aColor;','in float aSize;','uniform mat4 uMvp;','uniform float uPointScale;','uniform float uDpr;','out vec4 vColor;','void main(){','vec4 p=uMvp*vec4(aPosition,1.0);','gl_Position=p;','float depth=max(0.25,-p.z);','gl_PointSize=clamp(aSize*uPointScale*uDpr/depth,1.0,32.0);','vColor=aColor;','}'].join('\n');
-const fragmentSource=['#version 300 es','precision highp float;','in vec4 vColor;','out vec4 outColor;','void main(){','vec2 p=gl_PointCoord*2.0-1.0;','float r=dot(p,p);','if(r>1.0)discard;','float soft=1.0-smoothstep(.06,1.0,r);','outColor=vec4(vColor.rgb,vColor.a*soft);','}'].join('\n');
+const pointVS=['#version 300 es','in vec3 aPosition;','in vec4 aColor;','in float aSize;','uniform mat4 uMvp;','uniform float uPointScale;','uniform float uDpr;','out vec4 vColor;','void main(){vec4 p=uMvp*vec4(aPosition,1.0);gl_Position=p;float d=max(.22,-p.z);gl_PointSize=clamp(aSize*uPointScale*uDpr/d,1.0,34.0);vColor=aColor;}'].join('\\n');
+const pointFS=['#version 300 es','precision highp float;','in vec4 vColor;','out vec4 outColor;','void main(){vec2 p=gl_PointCoord*2.0-1.0;float r=dot(p,p);if(r>1.0)discard;float g=1.0-smoothstep(.02,1.0,r);float c=1.0-smoothstep(.0,.28,r);outColor=vec4(vColor.rgb,(.18*g+.92*c)*vColor.a);}'].join('\\n');
+const meshVS=['#version 300 es','in vec3 aPosition;','in vec3 aNormal;','uniform mat4 uMvp;','uniform mat4 uModel;','out vec3 vNormal;','out vec3 vLocal;','void main(){vec4 p=uModel*vec4(aPosition,1.0);gl_Position=uMvp*p;vNormal=normalize(mat3(uModel)*aNormal);vLocal=aPosition;}'].join('\\n');
+const meshFS=['#version 300 es','precision highp float;','uniform vec3 uColor;','uniform float uOpacity;','uniform float uEmission;','in vec3 vNormal;','in vec3 vLocal;','out vec4 outColor;','void main(){vec3 n=normalize(vNormal);float l=.52+.48*max(0.,dot(n,normalize(vec3(.45,.78,.32))));float rim=pow(1.-max(0.,dot(n,vec3(0.,0.,1.))),2.0);float grain=.97+.03*sin((vLocal.x+vLocal.y*1.7+vLocal.z*.8)*20.);vec3 c=uColor*(l*grain)+uColor*(uEmission*(.5+.5*rim));outColor=vec4(c,uOpacity);}'].join('\\n');
+const lineVS=['#version 300 es','in vec3 aPosition;','uniform mat4 uMvp;','void main(){gl_Position=uMvp*vec4(aPosition,1.0);}'].join('\\n');
+const lineFS=['#version 300 es','precision highp float;','uniform vec4 uColor;','out vec4 outColor;','void main(){outColor=uColor;}'].join('\\n');
 function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s)||'Shader compile failed');return s;}
 function program(v,f){const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p)||'Program link failed');return p;}
-let prog;
-try{prog=program(vertexSource,fragmentSource);}catch(err){console.error(err);noWebGL('The WebGL2 shader program could not initialize. The scene stopped safely rather than silently falling back to 2D rendering.');return;}
-const loc={p:gl.getAttribLocation(prog,'aPosition'),c:gl.getAttribLocation(prog,'aColor'),s:gl.getAttribLocation(prog,'aSize'),m:gl.getUniformLocation(prog,'uMvp'),ps:gl.getUniformLocation(prog,'uPointScale'),d:gl.getUniformLocation(prog,'uDpr')};
-
-let W=1,H=1,dpr=1;
-function resize(){W=Math.max(1,innerWidth);H=Math.max(1,innerHeight);dpr=Math.min(DPR_MAX,Math.max(1,devicePixelRatio||1));canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';gl.viewport(0,0,canvas.width,canvas.height);}
-addEventListener('resize',resize,{passive:true});resize();
-
-function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]]}
-function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
-function norm(a){const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]}
+let pointProg,meshProg,lineProg;try{pointProg=program(pointVS,pointFS);meshProg=program(meshVS,meshFS);lineProg=program(lineVS,lineFS);}catch(err){console.error(err);noWebGL('The WebGL2 scene programs could not initialize. The scene stopped safely rather than substituting a 2D canvas.');return;}
+const ploc={p:gl.getAttribLocation(pointProg,'aPosition'),c:gl.getAttribLocation(pointProg,'aColor'),s:gl.getAttribLocation(pointProg,'aSize'),m:gl.getUniformLocation(pointProg,'uMvp'),ps:gl.getUniformLocation(pointProg,'uPointScale'),d:gl.getUniformLocation(pointProg,'uDpr')};
+const mloc={p:gl.getAttribLocation(meshProg,'aPosition'),n:gl.getAttribLocation(meshProg,'aNormal'),m:gl.getUniformLocation(meshProg,'uMvp'),model:gl.getUniformLocation(meshProg,'uModel'),color:gl.getUniformLocation(meshProg,'uColor'),opacity:gl.getUniformLocation(meshProg,'uOpacity'),emission:gl.getUniformLocation(meshProg,'uEmission')};
+const lloc={p:gl.getAttribLocation(lineProg,'aPosition'),m:gl.getUniformLocation(lineProg,'uMvp'),color:gl.getUniformLocation(lineProg,'uColor')};
+let W=1,H=1,dpr=1;function resize(){W=Math.max(1,innerWidth);H=Math.max(1,innerHeight);dpr=Math.min(DPR_MAX,Math.max(1,devicePixelRatio||1));canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';gl.viewport(0,0,canvas.width,canvas.height);}addEventListener('resize',resize,{passive:true});resize();
+function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]]}function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}function norm(a){const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]}
 function lookAt(eye,target,up){const z=norm(sub(eye,target)),x=norm(cross(up,z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-(x[0]*eye[0]+x[1]*eye[1]+x[2]*eye[2]),-(y[0]*eye[0]+y[1]*eye[1]+y[2]*eye[2]),-(z[0]*eye[0]+z[1]*eye[1]+z[2]*eye[2]),1]);}
 function perspective(fov,aspect,near,far){const f=1/Math.tan(fov/2),nf=1/(near-far),m=new Float32Array(16);m[0]=f/aspect;m[5]=f;m[10]=(far+near)*nf;m[11]=-1;m[14]=2*far*near*nf;return m;}
 function mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o;}
-function mvp(s){
- const dist=Math.max(1.7,Math.min(62,Number(s.distance)||8.2)),cp=Math.cos(s.pitch||0),sp=Math.sin(s.pitch||0),cy=Math.cos(s.yaw||0),sy=Math.sin(s.yaw||0);
- const origin=s.origin||[0,0,0],tx=(Number(origin[0])||0)+(Number(s.panX)||0),ty=(Number(origin[1])||0)+(Number(s.panY)||0);
- const eye=[tx+sy*cp*dist,ty+sp*dist,cy*cp*dist];
- const view=lookAt(eye,[tx,ty,0],[0,1,0]);const proj=perspective(.78,W/Math.max(1,H),.03,90);return mul(proj,view);
-}
-function project(m,p){
- const x=p[0],y=p[1],z=p[2];
- const cx=m[0]*x+m[4]*y+m[8]*z+m[12],cy=m[1]*x+m[5]*y+m[9]*z+m[13],cz=m[2]*x+m[6]*y+m[10]*z+m[14],cw=m[3]*x+m[7]*y+m[11]*z+m[15];
- if(cw<=.001)return null;const nx=cx/cw,ny=cy/cw,nz=cz/cw;if(nx<-1.12||nx>1.12||ny<-1.12||ny>1.12||nz<-1.03||nz>1.03)return null;return{x:(nx+1)*.5*W,y:(1-ny)*.5*H,z:nz};
-}
-function hash(s){let h=2166136261>>>0;const x=String(s);for(let i=0;i<x.length;i++){h^=x.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)/4294967296;}
-function rand(seed,i){return hash(seed+'|'+i);}
-function sky(ra,dec){const a=Number(ra)*15*Math.PI/180,b=Number(dec)*Math.PI/180;return[Math.cos(b)*Math.cos(a),Math.sin(b),Math.cos(b)*Math.sin(a)];}
-function astroPos(o){
- const v=sky(o.ra,o.dec),ly=Number(o.distanceLy),z=Number(o.redshift);
- let r=.7;
- if(Number.isFinite(ly)&&Math.abs(ly)>0)r+=Math.log10(Math.abs(ly)+1)*.92;
- else if(Number.isFinite(z)){o.visualDepthDerived=true;r+=Math.log10(1+Math.max(0,z)*1200)*.65;}
- return[v[0]*r,v[1]*r,v[2]*r];
-}
+function model(x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){const cx=Math.cos(rx),sxr=Math.sin(rx),cy=Math.cos(ry),syr=Math.sin(ry),cz=Math.cos(rz),szr=Math.sin(rz),Rx=new Float32Array([1,0,0,0,0,cx,sxr,0,0,-sxr,cx,0,0,0,0,1]),Ry=new Float32Array([cy,0,-syr,0,0,1,0,0,syr,0,cy,0,0,0,0,1]),Rz=new Float32Array([cz,szr,0,0,-szr,cz,0,0,0,0,1,0,0,0,0,1]);let m=mul(mul(Rz,Ry),Rx);m[0]*=sx;m[1]*=sx;m[2]*=sx;m[4]*=sy;m[5]*=sy;m[6]*=sy;m[8]*=sz;m[9]*=sz;m[10]*=sz;m[12]=x;m[13]=y;m[14]=z;return m;}
+function mvp(s){const dist=Math.max(1.35,Math.min(70,Number(s.distance)||8.2)),cp=Math.cos(s.pitch||0),sp=Math.sin(s.pitch||0),cy=Math.cos(s.yaw||0),sy=Math.sin(s.yaw||0),o=s.origin||[0,0,0],tx=(Number(o[0])||0)+(Number(s.panX)||0),ty=(Number(o[1])||0)+(Number(s.panY)||0),eye=[tx+sy*cp*dist,ty+sp*dist,cy*cp*dist],view=lookAt(eye,[tx,ty,0],[0,1,0]),proj=perspective(.74,W/Math.max(1,H),.03,95);return mul(proj,view);}
+function project(m,p){const x=p[0],y=p[1],z=p[2],cx=m[0]*x+m[4]*y+m[8]*z+m[12],cy=m[1]*x+m[5]*y+m[9]*z+m[13],cz=m[2]*x+m[6]*y+m[10]*z+m[14],cw=m[3]*x+m[7]*y+m[11]*z+m[15];if(cw<=.001)return null;const nx=cx/cw,ny=cy/cw,nz=cz/cw;if(nx<-1.12||nx>1.12||ny<-1.12||ny>1.12||nz<-1.03||nz>1.03)return null;return{x:(nx+1)*.5*W,y:(1-ny)*.5*H,z:nz};}
+function hash(s){let h=2166136261>>>0;const x=String(s);for(let i=0;i<x.length;i++){h^=x.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0)/4294967296;}function rand(seed,i){return hash(seed+'|'+i);}function sky(ra,dec){const a=Number(ra)*15*Math.PI/180,b=Number(dec)*Math.PI/180;return[Math.cos(b)*Math.cos(a),Math.sin(b),Math.cos(b)*Math.sin(a)];}
+function astroPos(o){const v=sky(o.ra,o.dec),ly=Number(o.distanceLy),z=Number(o.redshift);let r=.62;if(Number.isFinite(ly)&&Math.abs(ly)>0)r+=Math.log10(Math.abs(ly)+1)*.92;else if(Number.isFinite(z)){o.visualDepthDerived=true;r+=Math.log10(1+Math.max(0,z)*1200)*.65;}return[v[0]*r,v[1]*r,v[2]*r];}
 const anchors=[
  {id:'sun',name:'Sun',source:'Anchor / Solar System',sourceType:'REAL CATALOG',release:'Reference anchor',ra:0,dec:0,distanceLy:.00000508,type:'Star',mag:-26.74,spectral:'G2 V',reference:'IAU / NASA Solar System',sourceUrl:'https://solarsystem.nasa.gov/solar-system/sun/overview/'},
  {id:'sirius',name:'Sirius',source:'Reference anchor',sourceType:'REAL CATALOG',release:'Reference anchor',ra:6.7525,dec:-16.7161,distanceLy:8.6,type:'Star',mag:-1.46,spectral:'A1 V',reference:'Bright-star reference',sourceUrl:'https://simbad.cds.unistra.fr/simbad/sim-id?Ident=Sirius'},
@@ -69,77 +30,25 @@ const anchors=[
  {id:'m87',name:'M87',source:'Reference anchor',sourceType:'REAL CATALOG',release:'Reference anchor',ra:12.5137,dec:12.3911,distanceLy:53500000,type:'Galaxy',reference:'Extragalactic reference',sourceUrl:'https://ned.ipac.caltech.edu/'},
  {id:'sgr-a',name:'Sagittarius A*',source:'Anchor / Galactic Center',sourceType:'REAL CATALOG',release:'Reference anchor',ra:17.7611,dec:-28.9998,distanceLy:26673,type:'Black hole / AGN',reference:'Galactic-center reference',sourceUrl:'https://ned.ipac.caltech.edu/'},
  {id:'kepler-22-b',name:'Kepler-22 b',source:'NASA Exoplanet Archive',sourceType:'REAL CATALOG',release:'Reference anchor',ra:19.1411,dec:47.7784,distanceLy:600,type:'Exoplanet',planet:'Kepler-22 b',host:'Kepler-22',reference:'NASA Exoplanet Archive',sourceUrl:'https://exoplanetarchive.ipac.caltech.edu/'}
-];
-anchors.forEach(o=>o.position=astroPos(o));
-let objects=[...anchors];
-
-function sourceColor(o){
- if(o.sourceType==='PUBLIC SURVEY')return[.458,.91,1,.86];
- if(o.sourceType==='DERIVED FROM SOURCE DATA')return[.68,.6,1,.8];
- return[.49,.89,.67,.92];
-}
-function makeBuffer(points,usage){
- if(!points.length)return null;
- const P=new Float32Array(points.length*3),C=new Float32Array(points.length*4),S=new Float32Array(points.length);
- points.forEach((x,i)=>{P.set(x.p,i*3);C.set(x.c,i*4);S[i]=x.s;});
- const b={p:gl.createBuffer(),c:gl.createBuffer(),s:gl.createBuffer(),count:points.length};
- gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.bufferData(gl.ARRAY_BUFFER,P,usage||gl.DYNAMIC_DRAW);
- gl.bindBuffer(gl.ARRAY_BUFFER,b.c);gl.bufferData(gl.ARRAY_BUFFER,C,usage||gl.DYNAMIC_DRAW);
- gl.bindBuffer(gl.ARRAY_BUFFER,b.s);gl.bufferData(gl.ARRAY_BUFFER,S,usage||gl.DYNAMIC_DRAW);
- return b;
-}
-function del(b){if(!b)return;gl.deleteBuffer(b.p);gl.deleteBuffer(b.c);gl.deleteBuffer(b.s);}
-function draw(b,scale){
- if(!b||!b.count)return;
- gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.enableVertexAttribArray(loc.p);gl.vertexAttribPointer(loc.p,3,gl.FLOAT,false,0,0);
- gl.bindBuffer(gl.ARRAY_BUFFER,b.c);gl.enableVertexAttribArray(loc.c);gl.vertexAttribPointer(loc.c,4,gl.FLOAT,false,0,0);
- gl.bindBuffer(gl.ARRAY_BUFFER,b.s);gl.enableVertexAttribArray(loc.s);gl.vertexAttribPointer(loc.s,1,gl.FLOAT,false,0,0);
- gl.uniform1f(loc.ps,scale||15);gl.drawArrays(gl.POINTS,0,b.count);
-}
-
-let procKey='',procBuf=null,catBuf=null,projected=[];let gateKey='',gateBuf=null,transitionKey='',transitionBuf=null;let frameN=0,lastFrame=performance.now(),fpsEMA=60;
-function procedural(s){
- const key=s.depth+'|'+s.family+'|'+Number(s.seed).toFixed(6)+'|'+Math.round(Number(s.quality)*100);
- if(key===procKey)return;procKey=key;if(procBuf)del(procBuf);
- const family=Number(s.family)||0,seed=Number(s.seed)||1,q=Math.max(.45,Math.min(1,Number(s.quality)||1));
- const base=family===1?15000:family===2?12000:family===11?9500:8000,count=Math.floor(base*q),out=[];
- for(let i=0;i<count;i++){
-  const u=rand(seed,i),v=rand(seed,i+11),w=rand(seed,i+23),a=u*TAU;
-  let x=0,y=0,z=0,sz=.45+rand(seed,i+31)*1.8,c=[.55,.8,1];
-  if(family===0){const r=Math.pow(v,.53)*8.5;x=Math.cos(a)*r;z=Math.sin(a)*r;y=(w-.5)*2.4;sz*=.48;}
-  else if(family===1){const arm=(i%7)*TAU/7;const rr=.4+v*8.3;x=Math.cos(arm+rr*.42)*rr;z=Math.sin(arm+rr*.42)*rr;y=(w-.5)*2.8;c=[.42,.88,1];sz*=.55;}
-  else if(family===2){const rr=.15+Math.pow(v,.7)*5.4,arm=Math.floor(u*5)*TAU/5,aa=arm+rr*1.42;x=Math.cos(aa)*rr;z=Math.sin(aa)*rr*.58;y=(w-.5)*(1.1-rr*.12);c=[.75,.56,1];sz*=.7;}
-  else if(family===3){const r=Math.pow(v,.64)*5.1;x=Math.cos(a)*r;z=Math.sin(a)*r*.78;y=(w-.5)*1.7;c=[.52,.84,1];sz*=.62;}
-  else if(family===4){const r=.2+Math.pow(v,.82)*4.2;x=Math.cos(a)*r*.72;z=Math.sin(a)*r*.72;y=(w-.5)*.9;c=[.58,.9,1];sz*=.7;}
-  else if(family===5){const R=3.2+v*1.2,ph=Math.acos(2*w-1);x=R*Math.sin(ph)*Math.cos(a);y=R*Math.cos(ph);z=R*Math.sin(ph)*Math.sin(a);c=[.42,.72,1];}
-  else if(family===6){x=((i%9)-4)*.65+(w-.5)*.12;z=((Math.floor(i/9)%9)-4)*.65+(u-.5)*.12;y=rand(seed,i+51)*1.2;c=[1,.6,.84];sz=.35+rand(seed,i+61)*1.5;}
-  else if(family===7){const ring=i%15,r=1+ring*.22+v*.25,aa=a+ring*.24;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*.35;c=[.5,1,.84];}
-  else if(family===8){const r=Math.pow(v,.56)*4.8;x=Math.cos(a)*r;z=Math.sin(a)*r;y=Math.sin(a*3+r)*.72+(w-.5);c=[.55,1,.76];}
-  else if(family===9){const r=.3+Math.pow(v,.7)*4.5,aa=a+Math.sin(r+seed)*.65;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*1.1;c=[.8,.66,1];}
-  else if(family===10){const r=Math.pow(v,.5)*4.7;x=Math.cos(a)*r*.92;z=Math.sin(a)*r*.92;y=(w-.5)*2.3;c=[.45,1,.9];}
-  else {const r=.45+v*4.3,aa=a+Math.sin(r*1.8+seed)*.8;x=Math.cos(aa)*r;z=Math.sin(aa)*r;y=(w-.5)*1.5;c=[1,.55,.35];}
-  out.push({p:[x,y,z],c:[c[0],c[1],c[2],.14+.55*rand(seed,i+81)],s:sz});
- }
- procBuf=makeBuffer(out,gl.STATIC_DRAW);
-}
-function rebuildCatalog(){
- const s=WCA?.getState?.()||{quality:1,distance:8,depth:0};
- if(catBuf)del(catBuf);
- const far=Number(s.distance)>18||Number(s.depth)>8,step=Math.max(1,far?Math.ceil(6/Math.max(.45,s.quality)):Math.ceil(2/Math.max(.45,s.quality)));
- const matrix=mvp(s),list=[];projected=[];
- for(let i=0;i<objects.length;i+=step){
-  const o=objects[i];if(!o.position)o.position=astroPos(o);
-  const screen=project(matrix,o.position);if(!screen)continue;
-  if(far&&step>1){
-    const group=objects.slice(i,i+step).filter(x=>x?.position);
-    const p=group.reduce((a,x)=>[a[0]+x.position[0],a[1]+x.position[1],a[2]+x.position[2]],[0,0,0]).map(v=>v/group.length);
-    list.push({p,c:[.67,.62,1,.33],s:1.7+group.length*.05});projected.push(null);
-  }else{list.push({p:o.position,c:sourceColor(o),s:o.sourceType==='PUBLIC SURVEY'?2.1:2.5});projected.push(o);}
- }
- catBuf=makeBuffer(list,gl.DYNAMIC_DRAW);
-}
-
-const cache=new Map();let epoch=0;
+];anchors.forEach(o=>o.position=astroPos(o));let objects=[...anchors];
+function makePointBuffer(points,usage){if(!points.length)return null;const P=new Float32Array(points.length*3),C=new Float32Array(points.length*4),S=new Float32Array(points.length);points.forEach((x,i)=>{P.set(x.p,i*3);C.set(x.c,i*4);S[i]=x.s;});const b={p:gl.createBuffer(),c:gl.createBuffer(),s:gl.createBuffer(),count:points.length};gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.bufferData(gl.ARRAY_BUFFER,P,usage||gl.DYNAMIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,b.c);gl.bufferData(gl.ARRAY_BUFFER,C,usage||gl.DYNAMIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,b.s);gl.bufferData(gl.ARRAY_BUFFER,S,usage||gl.DYNAMIC_DRAW);return b;}
+function makeMeshBuffer(v,n,usage){const b={v:gl.createBuffer(),n:gl.createBuffer(),count:v.length/3};gl.bindBuffer(gl.ARRAY_BUFFER,b.v);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(v),usage||gl.STATIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,b.n);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(n),usage||gl.STATIC_DRAW);return b;}
+function delPoint(b){if(!b)return;gl.deleteBuffer(b.p);gl.deleteBuffer(b.c);gl.deleteBuffer(b.s);}function delMesh(b){if(!b)return;gl.deleteBuffer(b.v);gl.deleteBuffer(b.n);}
+function drawPoints(b,mat,scale){if(!b||!b.count)return;gl.useProgram(pointProg);gl.bindBuffer(gl.ARRAY_BUFFER,b.p);gl.enableVertexAttribArray(ploc.p);gl.vertexAttribPointer(ploc.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.c);gl.enableVertexAttribArray(ploc.c);gl.vertexAttribPointer(ploc.c,4,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.s);gl.enableVertexAttribArray(ploc.s);gl.vertexAttribPointer(ploc.s,1,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(ploc.m,false,mat);gl.uniform1f(ploc.ps,scale||15);gl.uniform1f(ploc.d,dpr);gl.drawArrays(gl.POINTS,0,b.count);}
+function drawMesh(b,mat,mdl,color,opacity=1,emission=.7){if(!b||!b.count)return;gl.useProgram(meshProg);gl.bindBuffer(gl.ARRAY_BUFFER,b.v);gl.enableVertexAttribArray(mloc.p);gl.vertexAttribPointer(mloc.p,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,b.n);gl.enableVertexAttribArray(mloc.n);gl.vertexAttribPointer(mloc.n,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(mloc.m,false,mat);gl.uniformMatrix4fv(mloc.model,false,mdl);gl.uniform3fv(mloc.color,new Float32Array(color));gl.uniform1f(mloc.opacity,opacity);gl.uniform1f(mloc.emission,emission);gl.drawArrays(gl.TRIANGLES,0,b.count);}
+function drawLineBuffer(buf,mat,color){if(!buf||!buf.count)return;gl.useProgram(lineProg);gl.bindBuffer(gl.ARRAY_BUFFER,buf.buffer);gl.enableVertexAttribArray(lloc.p);gl.vertexAttribPointer(lloc.p,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(lloc.m,false,mat);gl.uniform4fv(lloc.color,new Float32Array(color));gl.drawArrays(gl.LINE_STRIP,0,buf.count);}
+function sphereGeometry(seg=28,rings=18){const v=[],n=[];for(let y=0;y<rings;y++){const p0=y/rings*Math.PI,p1=(y+1)/rings*Math.PI;for(let x=0;x<seg;x++){const a0=x/seg*TAU,a1=(x+1)/seg*TAU,qs=[[p0,a0],[p1,a0],[p1,a1],[p0,a0],[p1,a1],[p0,a1]];qs.forEach(([p,a])=>{const s=Math.sin(p),c=Math.cos(p),ca=Math.cos(a),sa=Math.sin(a),nx=s*ca,ny=c,nz=s*sa;v.push(nx,ny,nz);n.push(nx,ny,nz);});}}return makeMeshBuffer(v,n);}
+function discGeometry(inner=.3,outer=1,seg=100){const v=[],n=[];for(let i=0;i<seg;i++){const a0=i/seg*TAU,a1=(i+1)/seg*TAU,ps=[[inner,a0],[outer,a0],[outer,a1],[inner,a0],[outer,a1],[inner,a1]];ps.forEach(([r,a])=>{v.push(r*Math.cos(a),0,r*Math.sin(a));n.push(0,1,0);});}return makeMeshBuffer(v,n);}
+function ribbon(points,widths){const v=[],n=[];for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],t=norm(sub(b,a));let side=norm(cross(t,[0,1,0]));if(Math.hypot(...side)<.2)side=norm(cross(t,[1,0,0]));const wa=widths[i]||.05,wb=widths[i+1]||wa,l0=[a[0]+side[0]*wa,a[1]+side[1]*wa,a[2]+side[2]*wa],r0=[a[0]-side[0]*wa,a[1]-side[1]*wa,a[2]-side[2]*wa],l1=[b[0]+side[0]*wb,b[1]+side[1]*wb,b[2]+side[2]*wb],r1=[b[0]-side[0]*wb,b[1]-side[1]*wb,b[2]-side[2]*wb];[l0,r0,l1,r0,r1,l1].forEach(p=>{v.push(p[0],p[1],p[2]);n.push(0,1,0);});}return makeMeshBuffer(v,n);}
+const solarSphere=sphereGeometry(),solarOrbits=[.82,1.18,1.62,2.08,2.55,3.08,3.66].map(r=>{const a=[];for(let i=0;i<=160;i++){const t=i/160*TAU;a.push(r*Math.cos(t),0,r*Math.sin(t));}const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);return{buffer:b,count:a.length/3};});
+function makePointArray(seed,q,depth){const count=Math.floor((depth<2?2200:depth<8?4300:3600)*Math.max(.5,Math.min(1,q))),out=[];for(let i=0;i<count;i++){const u=rand(seed,i),v=rand(seed,i+7),w=rand(seed,i+19),a=u*TAU,p=Math.acos(2*v-1),r=.3+Math.pow(w,.55)*(depth<2?21:27),t=rand(seed,i+41);let c=[.78,.88,1,1];if(t<.18)c=[1,.58,.35,1];else if(t<.44)c=[1,.8,.52,1];else if(t<.77)c=[.7,.84,1,1];out.push({p:[r*Math.sin(p)*Math.cos(a),r*Math.cos(p),r*Math.sin(p)*Math.sin(a)],c,s:.4+rand(seed,i+43)*1.8});}return out;}
+function makeGalaxy(seed,scale,tilt=0){const disk=discGeometry(.22,1,72),bulge=solarSphere,arms=[];for(let arm=0;arm<3;arm++){const pts=[],ws=[];for(let i=0;i<70;i++){const u=i/69,r=.3+u*2.0,a=arm*TAU/3+u*TAU*1.55+hash(seed+'a'+arm,i)*.08;pts.push([Math.cos(a)*r,(hash(seed+'y'+arm,i)-.5)*.06,Math.sin(a)*r]);ws.push(.035+.045*u);}arms.push(ribbon(pts,ws));}return{disk,bulge,arms,scale,tilt};}
+let galaxyKey='',galaxyScene=null,starsKey='',starsBuf=null,catBuf=null,projected=[];
+function getScene(depth,seed,q){const sceneDepth=Math.max(0,Number(depth)||0);const key=sceneDepth+'|'+Number(seed).toFixed(5)+'|'+Math.round(q*100);if(starsKey!==key){if(starsBuf)delPoint(starsBuf);starsBuf=makePointBuffer(makePointArray(seed,q,sceneDepth),gl.STATIC_DRAW);starsKey=key;}
+ if(sceneDepth>=2&&sceneDepth<=5){const k='g|'+key;if(galaxyKey!==k){galaxyScene=makeGalaxy(seed,1,0);galaxyKey=k;}}return{mode:sceneDepth===0?'solar':sceneDepth===1?'neighborhood':sceneDepth<=4?'milkyway':sceneDepth<=7?'galaxy-group':sceneDepth<=11?'cosmic-web':'deep-universe'};}
+function rebuildCatalog(){const s=WCA?.getState?.()||{quality:1,distance:8,depth:0};if(catBuf)delPoint(catBuf);const far=Number(s.distance)>18||Number(s.depth)>8,step=Math.max(1,far?Math.ceil(7/Math.max(.45,s.quality)):Math.ceil(2/Math.max(.45,s.quality)));const matrix=mvp(s),list=[];projected=[];for(let i=0;i<objects.length;i+=step){const o=objects[i];if(!o.position)o.position=astroPos(o);const p=project(matrix,o.position);if(!p)continue;if(far&&step>1){const group=objects.slice(i,i+step).filter(x=>x?.position);const c=group.reduce((a,x)=>[a[0]+x.position[0],a[1]+x.position[1],a[2]+x.position[2]],[0,0,0]).map(v=>v/group.length);list.push({p:c,c:[.5,.66,1,.32],s:1.8+group.length*.05});projected.push(null);}else{list.push({p:o.position,c:o.sourceType==='PUBLIC SURVEY'?[.46,.91,1,.95]:[.48,.92,.74,1],s:o.sourceType==='PUBLIC SURVEY'?2.2:2.9});projected.push(o);}}catBuf=makePointBuffer(list,gl.DYNAMIC_DRAW);}
+const cache=new Map();
+let epoch=0;
 function arrayRows(d){if(Array.isArray(d))return d;if(Array.isArray(d.data))return d.data;if(Array.isArray(d.results))return d.results;return[];}
 function fieldNames(d){if(Array.isArray(d.fields))return d.fields.map(x=>x&&x.name?x.name:x);if(Array.isArray(d.metadata))return d.metadata.map(x=>x&&x.name?x.name:'');return[];}
 function normalizeRows(d){const f=fieldNames(d);return arrayRows(d).map(r=>{if(Array.isArray(r)){const o={};f.forEach((k,i)=>o[k]=r[i]);return o;}return r||{};});}
