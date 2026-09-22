@@ -150,7 +150,7 @@ function drawSolarScene(s,mat,t){
 }
 function drawNeighborhoodScene(s,mat,t){
  const pts=makePointArray(s.seed,s.quality,1);if(starsKey!==String(s.seed)+'n'){if(starsBuf)delPoint(starsBuf);starsBuf=makePointBuffer(pts,gl.STATIC_DRAW);starsKey=String(s.seed)+'n';}
- drawPoints(starsBuf,mat,18);
+ drawRealStarLayer(s,mat,16,.42);drawPoints(starsBuf,mat,18);
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);for(let i=0;i<18;i++){const a=hash(s.seed+'na',i)*TAU,p=(hash(s.seed+'np',i)-.5)*Math.PI*.8,r=.8+hash(s.seed+'nr',i)*5.0,x=Math.cos(a)*Math.cos(p)*r,y=Math.sin(p)*r,z=Math.sin(a)*Math.cos(p)*r,sz=.035+hash(s.seed+'ns',i)*.09,c=hash(s.seed+'nc',i);drawMesh(solarSphere,mat,model(x,y,z,sz,sz,sz,0,t*.03,0),c<.25?[1,.42,.2]:c<.62?[1,.75,.4]:[.54,.78,1],1,.42);}
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);
 }
@@ -161,6 +161,19 @@ function catalogPosition(o,base=1){
  else if(Number.isFinite(z))r+=Math.log1p(Math.max(0,z)*2600)*.7;
  return[v[0]*r,v[1]*r,v[2]*r];
 }
+function starCatalogs(limit=18){
+ return objects.filter(o=>String(o.type||'').toLowerCase().includes('star')||String(o.sourceKey||'')==='gaia').filter(o=>Number.isFinite(Number(o.ra))&&Number.isFinite(Number(o.dec))).slice(0,limit);
+}
+function starColor(o){
+ const m=Number(o.mag);if(Number.isFinite(m)&&m<-5)return[1,.55,.2];
+ const s=String(o.spectral||'').toLowerCase();if(s.includes('m'))return[1,.48,.28];if(s.includes('a'))return[.72,.84,1];if(s.includes('f'))return[.86,.92,1];if(s.includes('g'))return[1,.9,.62];if(s.includes('k'))return[1,.67,.38];return[.82,.9,1];
+}
+function drawRealStarLayer(s,mat,limit=18,base=.55){
+ const list=starCatalogs(limit);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
+ list.forEach((o,i)=>{const p=catalogPosition(o,base),m=Number(o.mag),brightness=Number.isFinite(m)?Math.max(.05,Math.min(1,(11-Math.max(-5,Math.min(12,m)))/12)):.42,sc=.022+.105*brightness;drawMesh(solarSphere,mat,model(p[0],p[1],p[2],sc,sc,sc,0,(performance.now()/10000)+i,0),starColor(o),.82,1.0+brightness*.7);});
+ return list.length;
+}
+
 function galaxyCatalogs(limit=12){
  return objects.filter(o=>/galaxy|agn|quasar/i.test(String(o.type||''))||['ned','sdss','desi'].includes(o.sourceKey)).filter(o=>Number.isFinite(Number(o.ra))&&Number.isFinite(Number(o.dec))).slice(0,limit);
 }
@@ -189,6 +202,7 @@ function drawMilkyWayScene(s,mat,t){
  drawMesh(galaxyScene.disk,mat,model(0,0,0,5.9,.055,5.9,0,0,0),[.08,.24,.46],.48,.55);
  drawMesh(galaxyScene.bulge,mat,model(0,0,0,.7,.32,.7,0,0,0),[1,.46,.2],.88,2.5);
  galaxyScene.arms.forEach((arm,i)=>drawMesh(arm,mat,model(0,.02,0,2.85,.45,2.85,0,i*.02+t*.006,0),i%2?[.22,.55,1]:[.62,.36,1],.56,2.4));
+ drawRealStarLayer(s,mat,18,.65);
  for(let i=0;i<9;i++){const a=hash(s.seed+'n'+i)*TAU,r=.9+hash(s.seed+'r'+i)*4.7;drawMesh(solarSphere,mat,model(Math.cos(a)*r,(hash(s.seed+'y'+i)-.5)*.28,Math.sin(a)*r,.12+hash(s.seed+'sz'+i)*.26,.08,.18+hash(s.seed+'zz'+i)*.2,0,a,0),[.18,.62,1],.11,2.2);}
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawPoints(starsBuf,mat,16);
 }
