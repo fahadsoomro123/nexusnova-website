@@ -194,16 +194,12 @@ def main() -> None:
             if in_sitemap:
                 mapped += 1
 
-        # Universe Atlas is a deliberate full-screen standalone visual surface.
-        # Its own embedded canvas/UI theme is the page theme; do not require the
-        # shared document-shell theme to be present on this page.
         has_theme = (
             'assets/css/scifi.css' in text
             or '../assets/css/scifi.css' in text
             or 'assets/js/main.js' in text
             or '../assets/js/main.js' in text
             or 'assets/css/humanproof.css' in text
-            or rel == 'universe-atlas.html'
         )
         if has_theme:
             theme_covered += 1
