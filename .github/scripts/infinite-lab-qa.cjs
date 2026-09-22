@@ -132,6 +132,11 @@ function mockRouteOriginal(page,opts={}){
  await test('61 body rejects deceptive completeness claims',async()=>{const t=await desktop.locator('body').innerText();const bad=[/\b(?:is|this is|we provide|shown as)\s+(?:a\s+)?complete map of the observable universe\b/i,/\bevery star in the universe is displayed\b/i,/\bevery galaxy is loaded\b/i,/\bactual telescope surface image\b/i];for(const re of bad)assert(!re.test(t),'deceptive claim found: '+re)});
  await test('62 runtime no page errors',async()=>assert(runtimeErrors.length===0,'runtime errors: '+runtimeErrors.join(' | ')));
 
+ await test('63 scale ladder renderer contract',async()=>{const src=await desktop.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));for(const x of ['sceneMode','drawSolarScene','drawNeighborhoodScene','drawMilkyWayScene','drawGalaxyGroupScene','drawCosmicWebScene','drawDeepUniverseScene'])assert(src.includes(x),x+' scene contract missing')});
+ await test('64 solar scene contains 3D body geometry',async()=>{const src=await desktop.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));assert(/solarSphere/.test(src)&&/solarOrbits/.test(src)&&/drawMesh\(solarSphere/.test(src),'solar 3D geometry missing')});
+ await test('65 galaxy morphology renderer contract',async()=>{const src=await desktop.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));assert(src.includes('function drawGalaxy')&&src.includes('kind===1')&&src.includes('kind===2'),'galaxy morphology variants missing')});
+ await test('66 cosmic web geometry contract',async()=>{const src=await desktop.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));assert(src.includes('function makeWeb')&&src.includes('function drawCosmicWebScene'),'cosmic web renderer missing')});
+ await test('67 recursive special-world renderer contract',async()=>{const src=await desktop.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));for(const x of ['drawDataWorldScene','drawNebulaScene','drawPlanetScene','drawAGNScene','drawAnomalyScene'])assert(src.includes(x),x+' recursive scene missing')});
  await desktop.close();
 
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
