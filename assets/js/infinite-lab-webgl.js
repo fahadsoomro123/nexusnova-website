@@ -44,8 +44,10 @@ const solarSphere=sphereGeometry(),solarOrbits=[.82,1.18,1.62,2.08,2.55,3.08,3.6
 function makePointArray(seed,q,depth){const count=Math.floor((depth<2?2200:depth<8?4300:3600)*Math.max(.5,Math.min(1,q))),out=[];for(let i=0;i<count;i++){const u=rand(seed,i),v=rand(seed,i+7),w=rand(seed,i+19),a=u*TAU,p=Math.acos(2*v-1),r=.3+Math.pow(w,.55)*(depth<2?21:27),t=rand(seed,i+41);let c=[.78,.88,1,1];if(t<.18)c=[1,.58,.35,1];else if(t<.44)c=[1,.8,.52,1];else if(t<.77)c=[.7,.84,1,1];out.push({p:[r*Math.sin(p)*Math.cos(a),r*Math.cos(p),r*Math.sin(p)*Math.sin(a)],c,s:.4+rand(seed,i+43)*1.8});}return out;}
 function makeGalaxy(seed,scale,tilt=0){const disk=discGeometry(.22,1,72),bulge=solarSphere,arms=[];for(let arm=0;arm<3;arm++){const pts=[],ws=[];for(let i=0;i<70;i++){const u=i/69,r=.3+u*2.0,a=arm*TAU/3+u*TAU*1.55+hash(seed+'a'+arm,i)*.08;pts.push([Math.cos(a)*r,(hash(seed+'y'+arm,i)-.5)*.06,Math.sin(a)*r]);ws.push(.035+.045*u);}arms.push(ribbon(pts,ws));}return{disk,bulge,arms,scale,tilt};}
 let galaxyKey='',galaxyScene=null,starsKey='',starsBuf=null,catBuf=null,projected=[];
+function releaseGalaxy(){if(!galaxyScene)return;if(galaxyScene.disk)delMesh(galaxyScene.disk);if(galaxyScene.arms)galaxyScene.arms.forEach(delMesh);galaxyScene=null;}
+function ensureGalaxy(seed){const gk=String(seed);if(galaxyKey===gk&&galaxyScene)return;releaseGalaxy();galaxyScene=makeGalaxy(seed,1,0);galaxyKey=gk;}
 function getScene(depth,seed,q){const sceneDepth=Math.max(0,Number(depth)||0);const key=sceneDepth+'|'+Number(seed).toFixed(5)+'|'+Math.round(q*100);if(starsKey!==key){if(starsBuf)delPoint(starsBuf);starsBuf=makePointBuffer(makePointArray(seed,q,sceneDepth),gl.STATIC_DRAW);starsKey=key;}
- if(sceneDepth>=2&&sceneDepth<=5){const gk=String(seed);if(galaxyKey!==gk){galaxyScene=makeGalaxy(seed,1,0);galaxyKey=gk;}}return{mode:sceneDepth===0?'solar':sceneDepth===1?'neighborhood':sceneDepth<=4?'milkyway':sceneDepth<=7?'galaxy-group':sceneDepth<=11?'cosmic-web':'deep-universe'};}
+ if(sceneDepth>=2&&sceneDepth<=5)ensureGalaxy(seed);return{mode:sceneDepth===0?'solar':sceneDepth===1?'neighborhood':sceneDepth<=4?'milkyway':sceneDepth<=7?'galaxy-group':sceneDepth<=11?'cosmic-web':'deep-universe'};}
 function rebuildCatalog(){const s=WCA?.getState?.()||{quality:1,distance:8,depth:0};if(catBuf)delPoint(catBuf);const far=Number(s.distance)>18||Number(s.depth)>8,step=Math.max(1,far?Math.ceil(7/Math.max(.45,s.quality)):Math.ceil(2/Math.max(.45,s.quality)));const matrix=mvp(s),list=[];projected=[];for(let i=0;i<objects.length;i+=step){const o=objects[i];if(!o.position)o.position=astroPos(o);const p=project(matrix,o.position);if(!p)continue;if(far&&step>1){const group=objects.slice(i,i+step).filter(x=>x?.position);const c=group.reduce((a,x)=>[a[0]+x.position[0],a[1]+x.position[1],a[2]+x.position[2]],[0,0,0]).map(v=>v/group.length);list.push({p:c,c:[.5,.66,1,.32],s:1.8+group.length*.05});projected.push(null);}else{list.push({p:o.position,c:o.sourceType==='PUBLIC SURVEY'?[.46,.91,1,.95]:[.48,.92,.74,1],s:o.sourceType==='PUBLIC SURVEY'?2.2:2.9});projected.push(o);}}catBuf=makePointBuffer(list,gl.DYNAMIC_DRAW);}
 const cache=new Map();
 let epoch=0;
@@ -145,7 +147,7 @@ function drawGalaxy(mat,seed,x,y,z,scale,rot,tilt){
  galaxyScene.arms.forEach((arm,i)=>drawMesh(arm,mat,model(x,y,z,scale,scale*.72,scale,tilt,rot+i*.02,0),i%2?[.25,.62,1]:[.7,.38,1],.55,1.8));
 }
 function drawMilkyWayScene(s,mat,t){
- if(!galaxyScene||galaxyKey!==String(s.seed)){galaxyScene=makeGalaxy(s.seed,1,0);galaxyKey=String(s.seed);}
+ ensureGalaxy(s.seed);
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
  drawMesh(galaxyScene.disk,mat,model(0,0,0,5.9,.055,5.9,0,0,0),[.08,.24,.46],.48,.55);
  drawMesh(galaxyScene.bulge,mat,model(0,0,0,.7,.32,.7,0,0,0),[1,.46,.2],.88,2.5);
@@ -167,7 +169,7 @@ function drawCosmicWebScene(s,mat,t){
 function drawDeepUniverseScene(s,mat,t){
  if(!galaxyScene||galaxyKey!==String(s.seed)){galaxyScene=makeGalaxy(s.seed,1,0);galaxyKey=String(s.seed);}
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
- const count=Math.max(14,Math.floor(44*Math.max(.45,Math.min(1,s.quality))));for(let i=0;i<count;i++){const a=hash(s.seed+'a'+i)*TAU,p=(hash(s.seed+'p'+i)-.5)*Math.PI*.86,r=2.0+hash(s.seed+'r'+i)*17,x=Math.cos(a)*Math.cos(p)*r,y=Math.sin(p)*r,z=Math.sin(a)*Math.cos(p)*r,sc=.045+hash(s.seed+'s'+i)*.22;drawGalaxy(mat,s.seed+'d'+i,x,y,z,sc,hash(s.seed+'q'+i)*TAU,(hash(s.seed+'ti'+i)-.5)*1.5);}
+ const count=Math.max(14,Math.floor(30*Math.max(.45,Math.min(1,s.quality))));for(let i=0;i<count;i++){const a=hash(s.seed+'a'+i)*TAU,p=(hash(s.seed+'p'+i)-.5)*Math.PI*.86,r=2.0+hash(s.seed+'r'+i)*17,x=Math.cos(a)*Math.cos(p)*r,y=Math.sin(p)*r,z=Math.sin(a)*Math.cos(p)*r,sc=.045+hash(s.seed+'s'+i)*.22,mdl=model(x,y,z,sc,sc*.11,sc,((hash(s.seed+'ti'+i)-.5)*1.5),hash(s.seed+'q'+i)*TAU,0);drawMesh(galaxyScene.disk,mat,mdl,[.22,.48,.8],.26,1.8);drawMesh(galaxyScene.bulge,mat,model(x,y,z,sc*.33,sc*.16,sc*.33,((hash(s.seed+'ti'+i)-.5)*1.5),hash(s.seed+'q'+i)*TAU,0),[.92,.58,.4],.52,2.0);}
  drawPoints(starsBuf,mat,10);
 }
 function render(){
