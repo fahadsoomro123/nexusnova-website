@@ -107,7 +107,7 @@ test('20 — Surprise Me uses curated bounded destinations', () => {
   assert.match(engine, /SURPRISE VECTOR/);
 });
 test('21 — event system provides exploration feedback', () => {
-  assert.match(engine, /const EVENTS=/);
+  assert.match(engine, /const EVENTS =/);
   assert.match(engine, /function emitEvent/);
   assert.match(engine, /DESCENT VECTOR ARMED/);
 });
@@ -138,7 +138,7 @@ test('25 — accessibility and keyboard controls are present', () => {
 });
 test('26 — reduced motion changes animation behavior', () => {
   assert.match(engine, /prefers-reduced-motion/);
-  assert.match(engine, /reducedMotion\?\.18:1/);
+  assert.match(engine, /reducedMotion \? \.18 : 1/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });
 test('27 — adaptive quality is bounded for performance', () => {
