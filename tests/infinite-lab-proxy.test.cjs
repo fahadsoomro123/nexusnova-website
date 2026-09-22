@@ -16,13 +16,17 @@ const runnable = source
   .replace(/^export \{ NovaProviderGate.*$/m, '')
   .replace('export default {', 'globalThis.__entry = {');
 const calls = [];
+class MockAbortController {
+  constructor() { this.signal = undefined; this.aborted = false; }
+  abort() { this.aborted = true; }
+}
 const context = {
   crypto: webcrypto,
   fetch: async (url, init) => {
     calls.push({ url: String(url), init });
     return new Response(JSON.stringify({ fields: ['id'], data: [['fixture']] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   },
-  Request, Response, Headers, URL, URLSearchParams, TextEncoder, TextDecoder, AbortController,
+  Request, Response, Headers, URL, URLSearchParams, TextEncoder, TextDecoder, AbortController: MockAbortController,
   setTimeout, clearTimeout, console: { error() {}, warn() {} }
 };
 vm.runInNewContext(runnable + '\nglobalThis.__astronomyProxy = astronomyProxy;', context, { filename: 'worker-instagram-entry.js' });
