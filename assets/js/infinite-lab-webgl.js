@@ -229,7 +229,7 @@ function tap(x,y){
  if(!lastRendered)return;rebuildCatalog();const m=mvp(lastRendered);let best=null,bd=31;
  projected.forEach((o,i)=>{if(!o)return;const q=project(m,o.position);if(!q)return;const dd=Math.hypot(q.x-x,q.y-y);if(dd<bd){bd=dd;best=o;}});
  if(best){WCA?.selectObject?.(best);return;}
- const dd=Math.hypot(x-width*.5,y-height*.52);if(dd<Math.min(width,height)*.22)WCA?.dive?.();
+ const dd=Math.hypot(x-W*.5,y-H*.52);if(dd<Math.min(W,H)*.22)WCA?.dive?.();
 }
 window.NexusNovaInfiniteLabRenderer={
  resize,
