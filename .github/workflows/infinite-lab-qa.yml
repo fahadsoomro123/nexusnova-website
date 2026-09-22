@@ -62,6 +62,7 @@ jobs:
 
       - name: Run 108-test visual + browser battery
         run: |
+          echo "QA source commit: $GITHUB_SHA"
           node .github/scripts/infinite-lab-qa.cjs
 
       - name: Server log
