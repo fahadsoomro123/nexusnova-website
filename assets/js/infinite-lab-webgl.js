@@ -56,7 +56,7 @@ function ribbon(points,widths){const v=[],n=[];for(let i=0;i<points.length-1;i++
 const solarSphere=sphereGeometry(),solarOrbits=[.82,1.18,1.62,2.08,2.55,3.08,3.66].map(r=>{const a=[];for(let i=0;i<=160;i++){const t=i/160*TAU;a.push(r*Math.cos(t),0,r*Math.sin(t));}const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);return{buffer:b,count:a.length/3};});
 function makePointArray(seed,q,depth){const count=Math.floor((depth<2?2200:depth<8?4300:3600)*Math.max(.5,Math.min(1,q))),out=[];for(let i=0;i<count;i++){const u=rand(seed,i),v=rand(seed,i+7),w=rand(seed,i+19),a=u*TAU,p=Math.acos(2*v-1),r=.3+Math.pow(w,.55)*(depth<2?21:27),t=rand(seed,i+41);let c=[.78,.88,1,1];if(t<.18)c=[1,.58,.35,1];else if(t<.44)c=[1,.8,.52,1];else if(t<.77)c=[.7,.84,1,1];out.push({p:[r*Math.sin(p)*Math.cos(a),r*Math.cos(p),r*Math.sin(p)*Math.sin(a)],c,s:.4+rand(seed,i+43)*1.8});}return out;}
 function makeGalaxy(seed,scale,tilt=0){const disk=discGeometry(.22,1,72),bulge=solarSphere,arms=[];for(let arm=0;arm<3;arm++){const pts=[],ws=[];for(let i=0;i<70;i++){const u=i/69,r=.3+u*2.0,a=arm*TAU/3+u*TAU*1.55+hash(seed+'a'+arm,i)*.08;pts.push([Math.cos(a)*r,(hash(seed+'y'+arm,i)-.5)*.06,Math.sin(a)*r]);ws.push(.035+.045*u);}arms.push(ribbon(pts,ws));}return{disk,bulge,arms,scale,tilt};}
-let galaxyKey='',galaxyScene=null,starsKey='',starsBuf=null,catBuf=null,projected=[];
+let galaxyKey='',galaxyScene=null,starsKey='',starsBuf=null,catBuf=null,projected=[],webNetworkNodes=[];
 function releaseGalaxy(){if(!galaxyScene)return;if(galaxyScene.disk)delMesh(galaxyScene.disk);if(galaxyScene.arms)galaxyScene.arms.forEach(delMesh);galaxyScene=null;}
 function ensureGalaxy(seed){const gk=String(seed);if(galaxyKey===gk&&galaxyScene)return;releaseGalaxy();galaxyScene=makeGalaxy(seed,1,0);galaxyKey=gk;}
 function sceneMode(s){const d=Number(s.depth)||0,f=Number(s.family)||0;if(d===0)return'solar';if(d===1)return'neighborhood';if(d===2)return'milkyway';if(d===3||d===4)return'galaxy-group';if(d===5)return'cosmic-web';if(d===6)return'deep-universe';if(f===7)return'data-world';if(f===8)return'nebula';if(f===9)return'star-system';if(f===10)return'planet';if(f===11)return'agn';if(f===12)return'anomaly';return'deep-universe';}
@@ -137,16 +137,37 @@ let lastRendered=null,lastScene='',webKey='',webRibbons=[],portalMesh=null;
 function linePoints(arr){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(arr),gl.STATIC_DRAW);return{buffer:b,count:arr.length/3};}
 function torusGeometry(R=1,r=.055,seg=72,tube=10){const v=[],n=[];for(let i=0;i<seg;i++){const a0=i/seg*TAU,a1=(i+1)/seg*TAU;for(let j=0;j<tube;j++){const b0=j/tube*TAU,b1=(j+1)/tube*TAU;const ps=[[a0,b0],[a1,b0],[a1,b1],[a0,b0],[a1,b1],[a0,b1]];ps.forEach(([a,b])=>{const rr=R+r*Math.cos(b),x=rr*Math.cos(a),y=r*Math.sin(b),z=rr*Math.sin(a),nx=Math.cos(b)*Math.cos(a),ny=Math.sin(b),nz=Math.cos(b)*Math.sin(a);v.push(x,y,z);n.push(nx,ny,nz);});}}return makeMeshBuffer(v,n);}
 function ensurePortal(){if(!portalMesh)portalMesh=torusGeometry(1.25,.035,96,10);}
-function makeWeb(seed){const rs=[];for(let k=0;k<32;k++){const pts=[],ws=[],a=hash(seed+'wa'+k)*TAU,rr=1.5+hash(seed+'wr'+k)*4.0;for(let i=0;i<14;i++){const t=i/13,ang=a+t*(.7+hash(seed+'wf'+k)*1.6),rad=rr*(.25+.75*t);pts.push([Math.cos(ang)*rad+(hash(seed+'x'+k+'|'+i)-.5)*1.3,(t-.5)*11+(hash(seed+'y'+k+'|'+i)-.5)*1.7,Math.sin(ang)*rad+(hash(seed+'z'+k+'|'+i)-.5)*1.3]);ws.push(.018+hash(seed+'w'+k+'|'+i)*.05);}rs.push(ribbon(pts,ws));}return rs;}
-function ensureWeb(seed){const k=String(seed);if(webKey===k)return;if(webRibbons.length)webRibbons.forEach(delMesh);webRibbons=makeWeb(seed);webKey=k;}
+function makeWeb(seed){
+ const nodes=[],filaments=[];
+ for(let i=0;i<18;i++){const u=hash(seed+'cn'+i),v=hash(seed+'cm'+i),w=hash(seed+'cp'+i),a=u*TAU,p=(v-.5)*Math.PI*.72,r=1.8+w*7.8;nodes.push([Math.cos(a)*Math.cos(p)*r,(w-.5)*9,Math.sin(a)*Math.cos(p)*r]);}
+ for(let i=0;i<nodes.length;i++){const links=2+(hash(seed+'lk'+i)*3|0);for(let j=1;j<=links;j++){const k=(i+j+1)%nodes.length;if(k<=i)continue;const A=nodes[i],B=nodes[k],pts=[],ws=[];for(let n=0;n<9;n++){const t=n/8,curve=Math.sin(t*Math.PI)*(hash(seed+'cv'+i+'|'+k)-.5)*1.8;pts.push([A[0]+(B[0]-A[0])*t+curve,A[1]+(B[1]-A[1])*t+Math.sin(t*Math.PI*2)*(hash(seed+'cy'+i+'|'+k)-.5)*1.1,A[2]+(B[2]-A[2])*t+curve*.72]);ws.push(.018+.045*Math.sin(Math.PI*t));}filaments.push(ribbon(pts,ws));}}
+ return{nodes,filaments};
+}
+function ensureWeb(seed){const k=String(seed);if(webKey===k&&webNetworkNodes.length)return;if(webRibbons.length)webRibbons.forEach(delMesh);const net=makeWeb(seed);webRibbons=net.filaments;webNetworkNodes=net.nodes;webKey=k;}
 function glowBlob(mat,mdl,color,opacity,em){drawMesh(solarSphere,mat,mdl,color,opacity,em);}
+function ringMeshBuffer(inner,outer,seg=128){const v=[],n=[];for(let i=0;i<seg;i++){const a0=i/seg*TAU,a1=(i+1)/seg*TAU,ps=[[inner,a0],[outer,a0],[outer,a1],[inner,a0],[outer,a1],[inner,a1]];ps.forEach(([r,a])=>{v.push(r*Math.cos(a),0,r*Math.sin(a));n.push(0,1,0);});}return makeMeshBuffer(v,n);}
+let saturnRingMesh=null;
+function ensureSaturnRing(){if(!saturnRingMesh)saturnRingMesh=ringMeshBuffer(.42,.82,96);}
 function drawSolarScene(s,mat,t){
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
- solarOrbits.forEach((o,i)=>{const r=[.82,1.18,1.62,2.08,2.55,3.08,3.66][i];drawLineBuffer(o,mat,[.24,.5,.72,.22]);});
- const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);glowBlob(mat,sun,[1,.53,.12],1,2.4);
- const planets=[{r:.82,s:.1,c:[.52,.52,.48]},{r:1.18,s:.16,c:[.92,.69,.4]},{r:1.62,s:.19,c:[.28,.58,1]},{r:2.08,s:.13,c:[.72,.3,.18]},{r:2.55,s:.32,c:[.78,.56,.33]},{r:3.08,s:.28,c:[.85,.72,.48]},{r:3.66,s:.23,c:[.38,.72,.9]}];
- planets.forEach((p,i)=>{const ang=t*(.12/(i+1))+i*1.31,x=Math.cos(ang)*p.r,z=Math.sin(ang)*p.r;gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawMesh(solarSphere,mat,model(x,0,z,p.s,p.s,p.s,0,t*.06,0),p.c,1,.28);if(i===2)drawMesh(solarSphere,mat,model(x+.29,0,z+.08,.055,.055,.055,0,t*.2,0),[.78,.78,.84],1,.15);});
- gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);drawPoints(starsBuf,mat,12);
+ solarOrbits.forEach((o)=>drawLineBuffer(o,mat,[.24,.5,.72,.2]));
+ const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);glowBlob(mat,sun,[1,.53,.12],1,2.7);
+ const planets=[
+  {name:'Mercury',r:.82,s:.1,c:[.52,.52,.48]},
+  {name:'Venus',r:1.18,s:.16,c:[.92,.69,.4]},
+  {name:'Earth',r:1.62,s:.19,c:[.12,.38,.9]},
+  {name:'Mars',r:2.08,s:.13,c:[.72,.3,.18]},
+  {name:'Jupiter',r:2.55,s:.32,c:[.78,.56,.33]},
+  {name:'Saturn',r:3.08,s:.28,c:[.85,.72,.48]},
+  {name:'Uranus',r:3.66,s:.23,c:[.38,.72,.9]}
+ ];
+ planets.forEach((p,i)=>{
+   const ang=t*(.12/(i+1))+i*1.31,x=Math.cos(ang)*p.r,z=Math.sin(ang)*p.r;
+   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawMesh(solarSphere,mat,model(x,0,z,p.s,p.s,p.s,0,t*.06,0),p.c,1,.32);
+   if(p.name==='Earth'){drawMesh(solarSphere,mat,model(x,0,z,p.s*1.075,p.s*1.075,p.s*1.075,0,t*.04,0),[.16,.5,1],.11,.55);drawMesh(solarSphere,mat,model(x+.27,0,z+.12,.055,.055,.055,0,t*.2,0),[.75,.78,.84],1,.18);}
+   if(p.name==='Saturn'){ensureSaturnRing();drawMesh(saturnRingMesh,mat,model(x,0,z,p.s*1.65,p.s*.34,p.s*1.65,.15,0,0),[.9,.7,.45],.65,.35);}
+ });
+ gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawPoints(starsBuf,mat,12);
 }
 function drawNeighborhoodScene(s,mat,t){
  const pts=makePointArray(s.seed,s.quality,1);if(starsKey!==String(s.seed)+'n'){if(starsBuf)delPoint(starsBuf);starsBuf=makePointBuffer(pts,gl.STATIC_DRAW);starsKey=String(s.seed)+'n';}
