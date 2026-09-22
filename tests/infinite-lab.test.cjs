@@ -76,9 +76,10 @@ test('11 — world family depth ladder is meaningful', () => {
 });
 
 test('12 — galaxy, stellar and planetary rendering layers exist', () => {
-  for (const term of ['function galaxy','function orbits','function planet','type=Math.floor(hash(seed,6100)']) {
+  for (const term of ['function galaxy','function orbits','function planet']) {
     assert.match(engine, new RegExp(term));
   }
+  assert.ok(engine.includes('type=Math.floor(hash(seed,6100)'));
 });
 
 test('13 — portal is rendered and actionable', () => {
