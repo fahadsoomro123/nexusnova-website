@@ -52,6 +52,10 @@ Data Lab TAP: https://datalab.noirlab.edu/tap
 
 The adapter targets the public DESI DR1 spectroscopic catalog family, including the `desi_dr1.zpix` table where available. DESI records are labelled **PUBLIC SURVEY** and retain DR1 provenance. DESI data carries its published reuse/acknowledgement requirements; this feature does not strip source attribution.
 
+## Browser delivery path
+
+The browser requests catalog data through the NexusNova Cloudflare Worker astronomy proxy at `/api/astronomy/query`. The proxy allows only the five supported source families, validates the expected table/endpoint shape and query limits, blocks arbitrary URL forwarding, applies request/response size limits and returns source data with CORS for `https://nexusnovatools.com`. The public catalog remains the upstream authority; the Worker is only the controlled transport layer.
+
 ## Provenance rule
 
 Every normalized catalog object retains:
