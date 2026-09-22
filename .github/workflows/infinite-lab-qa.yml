@@ -1,5 +1,9 @@
 name: NexusNova Infinite Lab QA
 
+concurrency:
+  group: infinite-lab-qa-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
