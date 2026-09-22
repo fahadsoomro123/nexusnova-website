@@ -40,12 +40,16 @@ jobs:
           node --check assets/js/infinite-lab.js
           node --check assets/js/infinite-lab-webgl.js
           node --check .github/scripts/infinite-lab-qa.cjs
+          node --check tests/infinite-lab-proxy.test.cjs
 
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium
+
+      - name: Astronomy proxy security unit tests
+        run: node --test tests/infinite-lab-proxy.test.cjs
 
       - name: Start local server
         run: |
