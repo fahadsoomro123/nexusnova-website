@@ -52,7 +52,7 @@ jobs:
           python3 -m http.server 4173 >/tmp/infinite-lab-server.log 2>&1 &
           sleep 2
 
-      - name: Run 97-test browser battery
+      - name: Run 98-test browser battery
         run: |
           node .github/scripts/infinite-lab-qa.cjs
 
