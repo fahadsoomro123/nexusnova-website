@@ -311,6 +311,17 @@ function updateSceneLabels(s,scene){
  const mat=mvp(s);
  labelState.els.forEach(({el,p})=>{const q=project(mat,p);if(!q){el.classList.remove('visible');return;}el.style.left=q.x+'px';el.style.top=q.y+'px';el.classList.add('visible');});
 }
+function drawTravelField(s,mat,t){
+ const amount=Math.max(0,Math.min(1,Number(s.transition)||0));
+ if(amount<=0)return;
+ const bands=6;
+ gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
+ for(let k=0;k<bands;k++){
+  const a=hash(s.seed+'travelA'+k)*TAU+t*(.18+k*.025),r=(1-amount)*.8+(.5+amount*3.5)*((k+1)/bands),len=.02+.12*amount;
+  const p=[Math.cos(a)*r,(hash(s.seed+'travelY'+k)-.5)*r*.7,Math.sin(a)*r];
+  drawMesh(solarSphere,mat,model(p[0],p[1],p[2],len,Math.max(.01,len*.18),len,0,a,0),k%2?[.25,.88,1]:[.72,.38,1],.12+.08*amount,1.0);
+ }
+}
 function render(){
  const s=WCA?.getState?.()||{depth:0,family:0,seed:1.234,yaw:0,pitch:0,distance:8.2,quality:1,transition:0,origin:[0,0,0]};
  lastRendered=s;const t=performance.now()/1000,mat=mvp(s),scene=getScene(s.depth,s.seed,s.quality,s.family);
@@ -331,7 +342,7 @@ function render(){
  else if(scene==='anomaly')drawAnomalyScene(s,mat,t);
  else drawDeepUniverseScene(s,mat,t);
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);ensurePortal();const pd=.62+.18*Math.sin(t*1.3);drawMesh(portalMesh,mat,model(0,0,0,pd,pd,pd,Math.PI*.5,t*.22,0),[.28,.72,1],.16,.9);
- if(s.transition>0){const q=1+(.9-s.transition)*2.4;gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawMesh(portalMesh,mat,model(0,0,0,q,q,q,Math.PI*.5,-t*.18,0),[.52,.38,1],.24,.9);}
+ if(s.transition>0){drawTravelField(s,mat,t);const q=1+(.9-s.transition)*2.4;gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawMesh(portalMesh,mat,model(0,0,0,q,q,q,Math.PI*.5,-t*.18,0),[.52,.38,1],.24,.9);}
  rebuildCatalogIfNeeded(s);
  const now=performance.now(),dt=now-lastFrame;lastFrame=now;if(dt>0)fpsEMA=fpsEMA*.9+(1000/dt)*.1;frameN++;if(frameN%60===0&&WCA?.setQuality){if(fpsEMA<43)WCA.setQuality(Math.max(.45,s.quality-.07));else if(fpsEMA>57)WCA.setQuality(Math.min(1,s.quality+.025));}
  window.NexusNovaInfiniteLabRenderer?.setRuntime?.({webgl2:true,dpr,culling:true,lod:true,catalogObjects:objects.length,cacheSize:cache.size,adaptiveQuality:true,fps:fpsEMA,originRebased:s.origin?.slice?.()||[0,0,0],scene});
