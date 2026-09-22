@@ -23,6 +23,18 @@ const exoFixture = {
   data:[['QA-World-1','QA-Star',120,22,10,1,1.2,2.1,15.5,.12,.03,5800,'QA fixture']]
 };
 function mockRoute(page,opts={}){
+  return page.route('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/astronomy/query',async route=>{
+    const body=route.request().postDataJSON?.()||{}; const source=body.source;
+    const payload= source==='gaia' ? (opts.gaia||fixture) : source==='exo' ? (opts.exo||exoFixture) : source==='ned' ? (opts.ned||{fields:['prefname','ra','dec','z','pretype'],data:[['QA Galaxy',120,22,.003,'Galaxy']]}) : source==='sdss' ? (opts.sdss||[{objid:'QA-SDSS',ra:120,dec:22,z:.002,type:'GALAXY'}]) : (opts.desi||{fields:['TARGETID','RA','DEC','Z','SPECTYPE'],data:[[12345,120,22,.004,'GALAXY']]});
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(payload)});
+  });
+}
+
+async function mockAstroFailure(page){
+  await page.route('https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/astronomy/query',async route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'upstream-unavailable',error:'Public astronomy source is temporarily unavailable.'})}));
+}
+
+function mockRouteOriginal(page,opts={}){
   return page.route('**/*',async route=>{
     const u=route.request().url();
     if(/gea\.esac\.esa\.int\/tap-server\/tap\/sync/i.test(u)){
@@ -53,7 +65,7 @@ function mockRoute(page,opts={}){
  const runtimeErrors=[];
  desktop.on('pageerror',e=>runtimeErrors.push('pageerror:'+e.message));
  desktop.on('console',m=>{if(m.type()==='error')runtimeErrors.push('console:'+m.text());});
- await desktop.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
+ await mockRoute(desktop); await desktop.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
  await desktop.locator('#loadingScreen').waitFor({state:'hidden',timeout:12000}).catch(()=>{});
  await desktop.waitForTimeout(1400);
 
@@ -96,7 +108,7 @@ function mockRoute(page,opts={}){
  await test('37 close inspector',async()=>{await desktop.locator('#inspectorClose').click();assert(await desktop.locator('#inspector.open').count()===0,'inspector did not close')});
  await test('38 wheel zoom changes distance',async()=>{const before=await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().targetDistance);await desktop.locator('#universe').hover();await desktop.mouse.wheel(0,-500);await desktop.waitForTimeout(80);const after=await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().targetDistance);assert(after!==before,'wheel zoom did not change state')});
  await test('39 drag orbit changes yaw',async()=>{const before=await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().yaw);await desktop.mouse.move(700,450);await desktop.mouse.down();await desktop.mouse.move(780,470,{steps:6});await desktop.mouse.up();await desktop.waitForTimeout(70);const after=await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().yaw);assert(after!==before,'drag did not change yaw')});
- await test('40 portal zoom arm',async()=>{await desktop.evaluate(()=>window.NexusNovaInfiniteLab.zoomBy(.34));await desktop.waitForTimeout(50);assert((await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().targetDistance))<3,'portal approach failed')});
+ await test('40 portal zoom arm',async()=>{await desktop.evaluate(()=>{window.NexusNovaInfiniteLab.zoomBy(.34);window.NexusNovaInfiniteLab.zoomBy(.34);});await desktop.waitForTimeout(50);assert((await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().targetDistance))<3,'portal approach failed')});
  await test('41 portal dive by Enter',async()=>{await desktop.keyboard.press('Enter');await desktop.waitForTimeout(140);assert((await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().depth))===1,'Enter did not descend')});
  await test('42 breadcrumb enabled after descent',async()=>assert(!(await desktop.locator('#breadcrumbBack').isDisabled()),'breadcrumb disabled after descent'));
  await test('43 return previous scale',async()=>{await desktop.locator('#breadcrumbBack').click();await desktop.waitForTimeout(80);assert((await desktop.evaluate(()=>window.NexusNovaInfiniteLab.getState().depth))===0,'breadcrumb did not return')});
@@ -124,7 +136,7 @@ function mockRoute(page,opts={}){
 
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
  const mobileErrors=[];page.on('pageerror',e=>mobileErrors.push(e.message));page.on('console',m=>{if(m.type()==='error')mobileErrors.push(m.text());});
- await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});await page.locator('#loadingScreen').waitFor({state:'hidden',timeout:12000}).catch(()=>{});await page.waitForTimeout(700);
+ await mockRoute(page); await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});await page.locator('#loadingScreen').waitFor({state:'hidden',timeout:12000}).catch(()=>{});await page.waitForTimeout(700);
  await test('63 mobile WebGL2',async()=>assert(await page.locator('#universe').evaluate(el=>!!el.getContext('webgl2')),'mobile WebGL2 unavailable'));
  await test('64 mobile no horizontal overflow',async()=>{const dims=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}));assert(dims.sw<=dims.cw+2,'mobile horizontal overflow')});
  await test('65 mobile touch-safe controls',async()=>{const h=await page.locator('#resetBtn').evaluate(el=>el.getBoundingClientRect().height);assert(h>=40,'reset control below touch target')});
@@ -165,21 +177,22 @@ function mockRoute(page,opts={}){
  await test('84 derived distance uncertainty available for Gaia',async()=>{const o=await mock.evaluate(()=>window.NexusNovaInfiniteLabCatalog.getObjects().find(x=>x.sourceKey==='gaia'));assert(Number.isFinite(o.distanceUncertaintyLy),'Gaia uncertainty not derived')});
  await test('85 source provenance timestamp present',async()=>{const o=await mock.evaluate(()=>window.NexusNovaInfiniteLabCatalog.getObjects().find(x=>x.sourceKey==='gaia'));assert(typeof o.queriedAt==='string'&&o.queriedAt.includes('T'),'timestamp missing')});
  await test('86 inspector populated from fixture',async()=>{await mock.locator('#searchInput').fill('QA-World-1');await mock.locator('#searchBtn').click();await mock.waitForTimeout(50);assert((await mock.locator('#f-orbital-period').textContent()).includes('15.5'),'orbital period not shown');assert((await mock.locator('#f-semi-major-axis').textContent()).includes('.12'),'semi-major axis not shown');assert((await mock.locator('#f-eccentricity').textContent()).includes('.03'),'eccentricity not shown')});
- await test('87 repeated reset remains deterministic',async()=>{await mock.evaluate(()=>window.NexusNovaInfiniteLab.reset());const a=await mock.evaluate(()=>window.NexusNovaInfiniteLab.deterministicSignature(1.234,0,0));await mock.evaluate(()=>window.NexusNovaInfiniteLab.reset());const b=await mock.evaluate(()=>window.NexusNovaInfiniteLab.deterministicSignature(1.234,0,0));assert(a===b,'deterministic signature drift')});
- await test('88 runtime debug exposes adaptive quality',async()=>{await mock.waitForTimeout(300);const r=await mock.evaluate(()=>window.__nnRuntime||{});assert(r.adaptiveQuality===true,'adaptive quality not active')});
- await test('89 browser local discovery only',async()=>{const origin=await mock.evaluate(()=>location.origin);const entries=await mock.evaluate(()=>JSON.parse(localStorage.getItem('nexusnova.infiniteLab.discoveries')||'[]'));assert(origin.startsWith('http://127.0.0.1'),'unexpected discovery origin');assert(entries.every(x=>x.timestamp),'discovery timestamp missing')});
- await test('90 procedural depth family list present',async()=>assert((await mock.evaluate(()=>window.NexusNovaInfiniteLab.getDebug().worldDepth))>=0,'world state absent'));
- await test('91 object 3D source boundary survives fixture',async()=>{await mock.locator('#inspectorClose').click().catch(()=>{});await mock.locator('#searchInput').fill('QA-World-1');await mock.locator('#searchBtn').click();assert((await mock.locator('.object-overlay').textContent()).includes('NOT A PHOTOGRAPH'),'image boundary removed')});
- await test('92 cache status text',async()=>assert((await mock.locator('#cacheStatus').textContent()).includes('/ 12 TILES'),'cache UI missing'));
- await test('93 no fake leaderboard text',async()=>{const t=await mock.locator('body').innerText();assert(!/global leaderboard|users discovered today|worldwide discoveries/i.test(t),'fake social proof text present')});
- await test('94 reduced-motion JS branch available',async()=>{const s=await mock.evaluate(()=>window.NexusNovaInfiniteLab.getState());assert(Number.isFinite(s.transition),'transition state invalid')});
- await test('95 camera coordinates remain finite after controls',async()=>{await mock.keyboard.press('ArrowLeft');await mock.keyboard.press('ArrowUp');await mock.mouse.wheel(0,-300);const s=await mock.evaluate(()=>window.NexusNovaInfiniteLab.getState());assert(finiteState(s),'camera controls broke state')});
+ await test('87 astronomy proxy source route is explicit in client',async()=>{const src=await mock.evaluate(()=>fetch('assets/js/infinite-lab-webgl.js').then(r=>r.text()));assert(src.includes('/api/astronomy/query'),'client proxy route missing')});
+ await test('88 repeated reset remains deterministic',async()=>{await mock.evaluate(()=>window.NexusNovaInfiniteLab.reset());const a=await mock.evaluate(()=>window.NexusNovaInfiniteLab.deterministicSignature(1.234,0,0));await mock.evaluate(()=>window.NexusNovaInfiniteLab.reset());const b=await mock.evaluate(()=>window.NexusNovaInfiniteLab.deterministicSignature(1.234,0,0));assert(a===b,'deterministic signature drift')});
+ await test('89 runtime debug exposes adaptive quality',async()=>{await mock.waitForTimeout(300);const r=await mock.evaluate(()=>window.__nnRuntime||{});assert(r.adaptiveQuality===true,'adaptive quality not active')});
+ await test('90 browser local discovery only',async()=>{const origin=await mock.evaluate(()=>location.origin);const entries=await mock.evaluate(()=>JSON.parse(localStorage.getItem('nexusnova.infiniteLab.discoveries')||'[]'));assert(origin.startsWith('http://127.0.0.1'),'unexpected discovery origin');assert(entries.every(x=>x.timestamp),'discovery timestamp missing')});
+ await test('91 procedural depth family list present',async()=>assert((await mock.evaluate(()=>window.NexusNovaInfiniteLab.getDebug().worldDepth))>=0,'world state absent'));
+ await test('92 object 3D source boundary survives fixture',async()=>{await mock.locator('#inspectorClose').click().catch(()=>{});await mock.locator('#searchInput').fill('QA-World-1');await mock.locator('#searchBtn').click();assert((await mock.locator('.object-overlay').textContent()).includes('NOT A PHOTOGRAPH'),'image boundary removed')});
+ await test('93 cache status text',async()=>assert((await mock.locator('#cacheStatus').textContent()).includes('/ 12 TILES'),'cache UI missing'));
+ await test('94 no fake leaderboard text',async()=>{const t=await mock.locator('body').innerText();assert(!/global leaderboard|users discovered today|worldwide discoveries/i.test(t),'fake social proof text present')});
+ await test('95 reduced-motion JS branch available',async()=>{const s=await mock.evaluate(()=>window.NexusNovaInfiniteLab.getState());assert(Number.isFinite(s.transition),'transition state invalid')});
+ await test('96 camera coordinates remain finite after controls',async()=>{await mock.keyboard.press('ArrowLeft');await mock.keyboard.press('ArrowUp');await mock.mouse.wheel(0,-300);const s=await mock.evaluate(()=>window.NexusNovaInfiniteLab.getState());assert(finiteState(s),'camera controls broke state')});
  await mock.close();
 
  const reduced=await browser.newPage({viewport:{width:1000,height:700},reducedMotion:'reduce'});
- await reduced.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});await reduced.waitForTimeout(450);
- await test('96 reduced-motion page starts',async()=>assert(await reduced.locator('#universe').count()===1,'reduced-motion canvas missing'));
- await test('97 reduced-motion transition short',async()=>{await reduced.evaluate(()=>window.NexusNovaInfiniteLab.surprise());const t=await reduced.evaluate(()=>window.NexusNovaInfiniteLab.getState().transition);assert(t<=.2,'reduced-motion transition too large')});
+ await mockRoute(reduced); await reduced.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});await reduced.waitForTimeout(450);
+ await test('97 reduced-motion page starts',async()=>assert(await reduced.locator('#universe').count()===1,'reduced-motion canvas missing'));
+ await test('98 reduced-motion transition short',async()=>{await reduced.evaluate(()=>window.NexusNovaInfiniteLab.surprise());const t=await reduced.evaluate(()=>window.NexusNovaInfiniteLab.getState().transition);assert(t<=.2,'reduced-motion transition too large')});
  await reduced.close();
 
  const total=results.length,passed=results.filter(x=>x.ok).length;
