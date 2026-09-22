@@ -91,3 +91,6 @@ Already loaded source-backed records remain visible. Procedural navigation may c
 ## Scope
 
 Universe Atlas remains the real-data-oriented astronomy atlas. Infinite Lab is the worlds-within-worlds exploration system and intentionally separates scientific records from procedural continuation.
+## Verification snapshot
+
+The source catalog adapters are designed for progressive, bounded retrieval; current browser QA must pass before this branch can be called ready for owner approval.
