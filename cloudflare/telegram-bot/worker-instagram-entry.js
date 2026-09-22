@@ -29,11 +29,18 @@ async function astronomyProxy(request) {
   if (declaredLength > ASTRONOMY_MAX_BODY_BYTES) {
     return jsonResponse(request, { ok: false, code: 'request-too-large', error: 'Astronomy query is too large.' }, 413);
   }
+  let bodyText;
+  try {
+    bodyText = await request.text();
+  } catch (_) {
+    return jsonResponse(request, { ok: false, code: 'invalid-argument', error: 'Astronomy query body is invalid.' }, 400);
+  }
+  if (bodyText.length > ASTRONOMY_MAX_BODY_BYTES) {
+    return jsonResponse(request, { ok: false, code: 'request-too-large', error: 'Astronomy query is too large.' }, 413);
+  }
   let body;
   try {
-    const text = await request.text();
-    if (text.length > ASTRONOMY_MAX_BODY_BYTES) throw new Error('request-too-large');
-    body = JSON.parse(text || '{}');
+    body = JSON.parse(bodyText || '{}');
   } catch (_) {
     return jsonResponse(request, { ok: false, code: 'invalid-argument', error: 'Astronomy query body is invalid.' }, 400);
   }
