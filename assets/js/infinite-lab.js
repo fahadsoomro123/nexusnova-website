@@ -16,7 +16,7 @@ const WORLDS = [
   {name:'PLANET FORGE',family:'PLANET',type:'PROCEDURAL VISUALIZATION',scale:'PLANETARY SCALE',desc:'A generated planetary scene whose visual class is driven by available catalog fields when a real planet is selected.'},
   {name:'AGN CORE',family:'BLACK HOLE / AGN',type:'ILLUSTRATIVE CONTEXT',scale:'COMPACT OBJECT',desc:'A visual interpretation of an accretion-disk / active-galaxy concept. It is not a direct image of a black-hole surface.'},
   {name:'ANOMALY FIELD',family:'ANOMALY',type:'PROCEDURAL VISUALIZATION',scale:'RARE PROCEDURAL LAYER',desc:'A rare deterministic variant with warped geometry and interference patterns. It is explicitly synthetic.'}
-
+];
 
 const STATIC_ANCHORS = [
   {id:'sun',name:'Sun',source:'Anchor / Solar System',sourceType:'REAL CATALOG',release:'Reference anchor',ra:0,dec:0,distanceLy:0.00000508,type:'Star',mag:-26.74,spectral:'G2 V',reference:'IAU/Solar reference',sourceUrl:'https://solarsystem.nasa.gov/solar-system/sun/overview/'},
