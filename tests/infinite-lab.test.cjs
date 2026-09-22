@@ -186,3 +186,142 @@ test('35 — flagship engine is materially larger than the old demo', () => {
   assert.ok(css.length > 5000);
   assert.ok(lab.length > 3000);
 });
+
+test('36 — primary 3D renderer file is wired after the procedural engine', () => {
+  assert.match(lab, /assets\/js\/infinite-lab\.js/);
+  assert.match(lab, /assets\/js\/infinite-lab-webgl\.js/);
+  assert.match(lab, /<canvas id="catalog3d"/);
+});
+
+test('37 — WebGL renderer initializes a real GPU context', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /getContext\('webgl'/);
+  assert.match(webgl, /shaderSource/);
+  assert.match(webgl, /drawArrays\(gl\.POINTS/);
+});
+
+test('38 — 3D renderer uses perspective camera math', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /function perspective/);
+  assert.match(webgl, /function lookAt/);
+  assert.match(webgl, /function projection/);
+  assert.match(webgl, /uniformMatrix4fv/);
+});
+
+test('39 — real catalog points are represented as 3D positions', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /function pointFromAstro/);
+  assert.match(webgl, /skyVector/);
+  assert.match(webgl, /return\[v\[0\]\*r/);
+});
+
+test('40 — ESA Gaia public TAP adapter is present', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /gea\.esac\.esa\.int\/tap-server\/tap\/sync/);
+  assert.match(webgl, /gaiadr3\.gaia_source/);
+  assert.match(webgl, /source_id,ra,dec,parallax/);
+});
+
+test('41 — NASA Exoplanet Archive TAP adapter is present', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /exoplanetarchive\.ipac\.caltech\.edu\/TAP\/sync/);
+  assert.match(webgl, /pscomppars/);
+  assert.match(webgl, /hostname,pl_name,ra,dec,sy_dist/);
+});
+
+test('42 — public-data requests have timeout and failure handling', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /AbortController/);
+  assert.match(webgl, /setTimeout\(\(\)=>controller\.abort/);
+  assert.match(webgl, /Promise\.allSettled/);
+});
+
+test('43 — catalog layer never claims fetched samples are complete universes', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(lab, /public catalog/i);
+  assert.match(lab, /procedural/i);
+  assert.match(lab, /Not a scientific map/i);
+  assert.doesNotMatch(webgl + lab, /all stars in the universe|every galaxy is loaded|complete observable universe catalog/i);
+});
+
+test('44 — 3D catalog layer has a WebGL failure status path', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /if\(!gl\)/);
+  assert.match(webgl, /PROCEDURAL FALLBACK/);
+});
+
+test('45 — adaptive 3D canvas sizing caps device pixel ratio', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /DPR_MAX=2/);
+  assert.match(webgl, /Math\.min\(DPR_MAX/);
+  assert.match(webgl, /canvas\.width=Math\.floor\(W\*pixelRatio\)/);
+});
+
+test('46 — catalog rendering is bounded rather than billions of points in memory', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /TOP 1800/);
+  assert.match(webgl, /TOP 700/);
+  assert.match(webgl, /26000/);
+});
+
+test('47 — sourced anchor objects retain named astronomy context', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  for (const name of ['Sirius','Proxima Centauri','Betelgeuse','Vega','M31','M87','Sagittarius A*']) assert.ok(webgl.includes(name));
+});
+
+test('48 — real data is differentiated by source-aware metadata', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /kind==='exo'/);
+  assert.match(webgl, /kind==='Gaia DR3'/);
+  assert.match(webgl, /NASA Exoplanet Archive/);
+});
+
+test('49 — source status HUD is connected to the live adapter', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(lab, /id="catalogStatus"/);
+  assert.match(webgl, /statusEl\.textContent=/);
+  assert.match(webgl, /catalogReady/);
+});
+
+test('50 — 3D catalog renderer consumes the same Infinite Lab depth state', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /window\.NexusNovaInfiniteLab\?\.getState/);
+  assert.match(webgl, /state\.depth/);
+  assert.match(webgl, /state\.angle/);
+});
+
+test('51 — catalog reload is exposed for QA without fake counters', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /window\.NexusNovaInfiniteLabCatalog/);
+  assert.match(webgl, /reload:loadCatalogs/);
+  assert.match(webgl, /realPoints/);
+  assert.doesNotMatch(webgl, /fakeCount|999999999/);
+});
+
+test('52 — LOD math compresses astronomical distance for navigable scale', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /function logDistance/);
+  assert.match(webgl, /Math\.log10/);
+  assert.match(webgl, /Math\.log10\(ly\+1\)/);
+});
+
+test('53 — procedural and catalog canvases are explicitly layered', () => {
+  assert.match(css, /#catalog3d\{/);
+  assert.match(css, /#universe\{/);
+  assert.match(css, /z-index:0/);
+  assert.match(css, /z-index:3/);
+});
+
+test('54 — source adapters are public and credential-free in client code', () => {
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /https:\/\//);
+  assert.doesNotMatch(webgl, /API_KEY|SECRET|Authorization:/i);
+});
+
+test('55 — flagship QA covers both procedural and observational surfaces', () => {
+  assert.match(engine, /drawPortal/);
+  assert.match(engine, /drawTransition/);
+  const webgl = fs.readFileSync(path.join(ROOT, 'assets/js/infinite-lab-webgl.js'), 'utf8');
+  assert.match(webgl, /drawBuffer\(realBuffer\)/);
+  assert.match(webgl, /drawBuffer\(anchorBuffer\)/);
+});
