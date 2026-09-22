@@ -17,6 +17,7 @@
 </head>
 <body>
 <main class="lab-shell" id="labShell">
+  <canvas id="catalog3d" aria-hidden="true"></canvas>
   <canvas id="universe" role="img" aria-label="Interactive procedural Infinite Lab. Zoom, drag, pinch, and enter the glowing core to descend through generated worlds."></canvas>
   <div class="scanlines" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
@@ -70,6 +71,8 @@
     <div class="portal-subtitle">Scroll / pinch to approach · drag to orbit the field · tap the core to descend</div>
   </section>
 
+  <section class="catalog-status" aria-live="polite"><span class="signal-dot"></span><b id="catalogMode">3D CATALOG LAYER</b><span id="catalogStatus">Initializing public-data adapters…</span></section>
+
   <section class="event-strip" id="eventStrip" aria-live="polite">
     <span class="event-icon">◇</span>
     <span id="eventText">Deep field online</span>
@@ -100,5 +103,6 @@
   </div>
 </main>
 <script src="assets/js/infinite-lab.js" defer></script>
+<script src="assets/js/infinite-lab-webgl.js" defer></script>
 </body>
 </html>
