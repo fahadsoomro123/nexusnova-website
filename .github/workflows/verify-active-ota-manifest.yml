@@ -1,0 +1,90 @@
+name: Verify Active OTA Manifest
+
+on:
+  push:
+    branches:
+      - nexusnova-ota-public
+    paths:
+      - 'ota/files/**'
+      - 'ota/manifest.json'
+      - '.github/workflows/verify-active-ota-manifest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-rewrite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: nexusnova-ota-public
+          fetch-depth: 0
+
+      - name: Recalculate every published OTA hash and byte size
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+
+          const manifestPath = 'ota/manifest.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          if (manifest.schema !== 2) throw new Error('Unsupported OTA manifest schema');
+
+          for (const entry of manifest.files || []) {
+            const full = `ota/files/${entry.path}`;
+            if (!fs.existsSync(full) || !fs.statSync(full).isFile()) {
+              throw new Error(`Missing OTA payload file: ${full}`);
+            }
+            const data = fs.readFileSync(full);
+            entry.sha256 = crypto.createHash('sha256').update(data).digest('hex');
+            entry.size = data.length;
+          }
+
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest) + '\n');
+          console.log(JSON.stringify({
+            base: manifest.base,
+            version: manifest.version,
+            files: manifest.files.map(x => ({path:x.path, sha256:x.sha256, size:x.size}))
+          }, null, 2));
+          NODE
+
+      - name: Verify manifest payload integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const manifest = JSON.parse(fs.readFileSync('ota/manifest.json', 'utf8'));
+          if (manifest.schema !== 2) throw new Error('OTA schema must be 2');
+          if (!/^[0-9a-f]{40}$/.test(manifest.base || '')) throw new Error('Invalid OTA base');
+          if (!/^[0-9a-f]{40}$/.test(manifest.version || '')) throw new Error('Invalid OTA version');
+          if (!Array.isArray(manifest.files) || !manifest.files.length) throw new Error('OTA file list is empty');
+
+          for (const entry of manifest.files) {
+            const data = fs.readFileSync(`ota/files/${entry.path}`);
+            const hash = crypto.createHash('sha256').update(data).digest('hex');
+            if (hash !== entry.sha256) throw new Error(`SHA mismatch: ${entry.path}`);
+            if (data.length !== entry.size) throw new Error(`Size mismatch: ${entry.path}`);
+          }
+          console.log('OTA payload hashes and sizes: PASS');
+          NODE
+
+      - name: Publish corrected manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NexusNova OTA Verifier'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ota/manifest.json
+          if git diff --cached --quiet; then
+            echo 'Manifest already current.'
+            exit 0
+          fi
+          git commit -m 'ci: verify and publish active OTA hashes [skip ci]'
+          git push origin HEAD:nexusnova-ota-public
