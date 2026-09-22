@@ -690,7 +690,7 @@ function commitDepth(){
   state.family=n.family;
   state.x=0; state.y=0; state.tx=0; state.ty=0;
   state.z=1.04; state.tz=1.04;
-  state.transition=reducedMotion?.18:1;
+  state.transition=reducedMotion ? .18 : 1;
   state.rebaseCooldown=.9;
   state.diveRequested=false;
   state.pulse=1;
@@ -721,7 +721,7 @@ function surprise(){
   state.y=(hash(seed,2840)-.5)*.3;
   state.tx=state.x; state.ty=state.y;
   state.z=1.52; state.tz=1.72;
-  state.transition=reducedMotion?.12:.65;
+  state.transition=reducedMotion ? .12 : .65;
   state.pulse=1;
   state.rebaseCooldown=.7;
   state.diveRequested=false;
@@ -828,11 +828,11 @@ function render(ms){
   lastFrame=ms;
   state.time=ms*.001;
   qualityTick(dt);
-  state.z += (state.tz-state.z)*(reducedMotion?.24:.115);
+  state.z += (state.tz-state.z)*(reducedMotion ? .24 : .115);
   state.x += (state.tx-state.x)*.1;
   state.y += (state.ty-state.y)*.1;
   state.angle += (state.angleTarget-state.angle)*.06;
-  if(state.transition>0) state.transition=Math.max(0,state.transition-(reducedMotion?.045:.026));
+  if(state.transition>0) state.transition=Math.max(0,state.transition-(reducedMotion ? .045 : .026));
   if(state.pulse>0) state.pulse=Math.max(0,state.pulse-.018);
   maybeAdvance();
 
