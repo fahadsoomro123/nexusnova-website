@@ -128,7 +128,8 @@ test('19 — scientific claims are explicitly bounded', () => {
 test('20 — Labs clearly distinguishes Infinite Lab from Universe Atlas', () => {
   assert.match(labs, /infinite-lab\.html/);
   assert.match(labs, /Infinite Lab/i);
-  assert.match(labs, /interactive browser experiment/i);
+  assert.match(labs, /INTERACTIVE EXPERIMENT/i);
+  assert.match(labs, /visual experiment/i);
   assert.match(labs, /Universe Atlas/i);
 });
 
