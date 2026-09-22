@@ -7,7 +7,7 @@ const TAU=Math.PI*2, MIN_Z=.72, MAX_Z=4.2, DPR_MAX=2;
 const families=['COSMIC FIELD','GALAXY','STELLAR REGION','PLANETARY WORLD','CITY LAYER','DATA WORLD','MICRO WORLD','FRACTAL WORLD','ANOMALY FIELD'];
 const desc=['A wide generated field of stars and layered portals.','A procedural galaxy with clusters, dust lanes and a luminous core.','A local stellar neighborhood with orbital structures and drifting debris.','A generated planet-scale scene with terrain, atmosphere and moons.','A stylized city layer nested inside the current portal.','An abstract data landscape built from rings, traces and luminous nodes.','A dense micro-world with particles, cells and nested geometry.','A bounded recursive family built from repeating geometric motifs.','A rare visual variation with unusual rhythm, density and motion.'];
 let W=1,H=1,dpr=1,raf=0,resizeQueued=false,statusTimer=0,discTimer=0;
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 let s={x:0,y:0,z:1,tx:0,ty:0,tz:1,depth:0,seed:1.234,family:0,diving:0,pulse:0,time:0,quality:1,frameGoal:0};
 const pointers=new Map();let pinch=null,down=null,downAt=0,last=null;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
