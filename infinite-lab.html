@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>NexusNova Infinite Lab — Worlds Within Worlds</title>
+<meta name="description" content="NexusNova Infinite Lab is a procedural browser experience where each deep-zoom world reveals another generated world. Explore galaxies, stellar regions, planets, cities and abstract data worlds without presenting them as real scientific maps.">
+<meta name="robots" content="noindex,follow">
+<meta name="theme-color" content="#05070d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NexusNova Tools">
+<meta property="og:title" content="NexusNova Infinite Lab — Worlds Within Worlds">
+<meta property="og:description" content="A procedural deep-zoom visual experiment: explore generated worlds inside worlds.">
+<meta property="og:url" content="https://nexusnovatools.com/infinite-lab.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/infinite-lab.css">
+</head>
+<body>
+<canvas id="universe" aria-label="Interactive procedural Infinite Lab. Explore generated worlds by zooming, dragging and entering glowing portals." role="img"></canvas>
+<div class="hud" aria-hidden="false">
+  <div class="topbar">
+    <div class="brand"><strong>NEXUS<span>NOVA</span></strong><small>INFINITE LAB · WORLDS WITHIN WORLDS</small></div>
+    <div class="actions" aria-label="Infinite Lab controls">
+      <button class="btn" id="reset" type="button" aria-label="Reset exploration to the surface">Reset</button>
+      <button class="btn" id="jump" type="button" aria-label="Jump to a generated surprise destination">Surprise me</button>
+    </div>
+  </div>
+  <div class="depth" id="depthHud" aria-live="polite"><b>EXPLORATION DEPTH</b><strong>DEPTH 0</strong></div>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="discovery" id="discovery" aria-live="polite"><b>DISCOVERY</b><strong></strong><span></span></div>
+  <div class="bottombar">
+    <div class="copy">
+      <strong id="worldName">DEEP FIELD</strong>
+      <span id="worldDescription">A procedural visual layer. Zoom into the portal to reveal another generated world.</span>
+      <div class="hint">Wheel / pinch: zoom · drag: pan · double-tap: dive · click/tap portal: enter · R: reset · S: surprise · + / −: depth</div>
+    </div>
+    <div class="readout" aria-label="Current exploration information">
+      <div class="chip"><b>WORLD FAMILY</b><strong id="familyReadout">COSMIC FIELD</strong></div>
+      <div class="chip"><b>SEED</b><strong id="seedReadout">1.2340</strong></div>
+    </div>
+  </div>
+</div>
+<div class="loading" id="loading" aria-hidden="true">
+  <div class="loader-panel">
+    <div class="loader-kicker">NEXUSNOVA / INFINITE LAB</div>
+    <div class="loader-title">Initializing deep field</div>
+    <div class="loader-text" id="loaderText">Building a bounded procedural layer, calibrating the portal and preparing local interaction.</div>
+    <div class="loader-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+  </div>
+</div>
+<script src="assets/js/infinite-lab.js" defer></script>
+</body>
+</html>
