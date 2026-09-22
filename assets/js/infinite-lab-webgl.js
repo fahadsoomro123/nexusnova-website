@@ -53,7 +53,10 @@ function hash(s){let h=2166136261>>>0;const x=String(s);for(let i=0;i<x.length;i
 function rand(seed,i){return hash(seed+'|'+i);}
 function sky(ra,dec){const a=Number(ra)*15*Math.PI/180,b=Number(dec)*Math.PI/180;return[Math.cos(b)*Math.cos(a),Math.sin(b),Math.cos(b)*Math.sin(a)];}
 function astroPos(o){
- const v=sky(o.ra,o.dec),ly=Math.max(1e-6,Math.abs(Number(o.distanceLy)||1e-6)),r=.7+Math.log10(ly+1)*.92;
+ const v=sky(o.ra,o.dec),ly=Number(o.distanceLy),z=Number(o.redshift);
+ let r=.7;
+ if(Number.isFinite(ly)&&Math.abs(ly)>0)r+=Math.log10(Math.abs(ly)+1)*.92;
+ else if(Number.isFinite(z)){o.visualDepthDerived=true;r+=Math.log10(1+Math.max(0,z)*1200)*.65;}
  return[v[0]*r,v[1]*r,v[2]*r];
 }
 const anchors=[
