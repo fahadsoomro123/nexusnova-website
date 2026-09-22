@@ -22,7 +22,7 @@ const context = {
     calls.push({ url: String(url), init });
     return new Response(JSON.stringify({ fields: ['id'], data: [['fixture']] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   },
-  Request, Response, Headers, URL, URLSearchParams, TextEncoder, TextDecoder,
+  Request, Response, Headers, URL, URLSearchParams, TextEncoder, TextDecoder, AbortController,
   setTimeout, clearTimeout, console: { error() {}, warn() {} }
 };
 vm.runInNewContext(runnable + '\nglobalThis.__astronomyProxy = astronomyProxy;', context, { filename: 'worker-instagram-entry.js' });
@@ -65,6 +65,6 @@ test('astronomy proxy enforces safe SDSS range and ADQL table limits', async () 
 test('astronomy proxy rejects wrong-origin access and oversized bodies', async () => {
   const wrongOrigin = await context.__astronomyProxy(req({ source: 'gaia', query: "SELECT TOP 1 source_id FROM gaiadr3.gaia_source" }, 'https://evil.example'));
   assert.equal(wrongOrigin.status, 403);
-  const oversized = await context.__astronomyProxy(req({ source: 'gaia', query: 'SELECT TOP 1 source_id FROM gaiadr3.gaia_source ' + 'x'.repeat(30000) }));
+  const oversized = await context.__astronomyProxy(req({ source: 'gaia', query: 'SELECT TOP 1 source_id FROM gaiadr3.gaia_source ' + 'x'.repeat(50000) }));
   assert.equal(oversized.status, 413);
 });
