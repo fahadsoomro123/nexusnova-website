@@ -1,4 +1,6 @@
 const { chromium } = require('playwright');
+const fs = require('fs');
+fs.mkdirSync('qa-artifacts',{recursive:true});
 
 const BASE = 'http://127.0.0.1:4173/infinite-lab.html';
 const results = [];
@@ -68,6 +70,7 @@ function mockRouteOriginal(page,opts={}){
  await mockRoute(desktop); await desktop.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
  await desktop.locator('#loadingScreen').waitFor({state:'hidden',timeout:12000}).catch(()=>{});
  await desktop.waitForTimeout(1400);
+ await desktop.screenshot({path:'qa-artifacts/01-solar-system.png',fullPage:false});
 
  await test('01 title',async()=>assert((await desktop.title()).includes('NexusNova Infinite Lab'),'title missing'));
  await test('02 description metadata',async()=>assert((await desktop.locator('meta[name="description"]').getAttribute('content')).includes('WebGL2'),'description boundary missing'));
