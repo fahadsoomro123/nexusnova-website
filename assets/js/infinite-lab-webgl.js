@@ -1,3 +1,16 @@
+(() => {
+'use strict';
+
+const canvas=document.getElementById('universe');
+if(!canvas)return;
+const DPR_MAX=2,MAX_TILES=12,TAU=Math.PI*2,WCA=window.NexusNovaInfiniteLab;
+let gl=null;
+try{gl=canvas.getContext('webgl2',{alpha:false,antialias:true,powerPreference:'high-performance'});}catch(_){gl=null;}
+function status(t){const e=document.getElementById('catalogStatus');if(e)e.textContent=t;}
+function row(key,s){const r=document.querySelector('.source-row[data-source="'+key+'"]');if(!r)return;r.classList.remove('loading','error');if(s==='loading')r.classList.add('loading');if(s==='error')r.classList.add('error');const e=r.querySelector('.source-state');if(e)e.textContent=s.toUpperCase();}
+function noWebGL(message){const box=document.createElement('section');box.className='no-webgl';box.innerHTML='<div class="box"><div class="micro">RENDERER STATUS</div><h1>WebGL2 is unavailable on this device.</h1><p>'+message+'</p></div>';document.body.appendChild(box);status('WEBGL2 UNAVAILABLE · 3D SCENE STOPPED SAFELY');}
+if(!gl){noWebGL('Infinite Lab never substitutes a 2D canvas for the primary 3D renderer. Source-backed records and provenance remain protected, but interactive 3D is unavailable in this browser.');return;}
+
 const pointVS=['#version 300 es','in vec3 aPosition;','in vec4 aColor;','in float aSize;','uniform mat4 uMvp;','uniform float uPointScale;','uniform float uDpr;','out vec4 vColor;','void main(){vec4 p=uMvp*vec4(aPosition,1.0);gl_Position=p;float d=max(.22,-p.z);gl_PointSize=clamp(aSize*uPointScale*uDpr/d,1.0,34.0);vColor=aColor;}'].join('\\n');
 const pointFS=['#version 300 es','precision highp float;','in vec4 vColor;','out vec4 outColor;','void main(){vec2 p=gl_PointCoord*2.0-1.0;float r=dot(p,p);if(r>1.0)discard;float g=1.0-smoothstep(.02,1.0,r);float c=1.0-smoothstep(.0,.28,r);outColor=vec4(vColor.rgb,(.18*g+.92*c)*vColor.a);}'].join('\\n');
 const meshVS=['#version 300 es','in vec3 aPosition;','in vec3 aNormal;','uniform mat4 uMvp;','uniform mat4 uModel;','out vec3 vNormal;','out vec3 vLocal;','void main(){vec4 p=uModel*vec4(aPosition,1.0);gl_Position=uMvp*p;vNormal=normalize(mat3(uModel)*aNormal);vLocal=aPosition;}'].join('\\n');
