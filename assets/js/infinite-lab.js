@@ -60,6 +60,7 @@ function updateHUD(){
   setText('depthIndex',String(state.depth).padStart(2,'0'));
   setText('depthFamily',w.family);
   setText('scaleLabel',w.scale);
+  document.querySelectorAll('[data-scale-step]').forEach((el)=>{const n=Number(el.getAttribute('data-scale-step'));el.classList.toggle('active',n===Math.min(6,state.depth));el.classList.toggle('passed',n<Math.min(6,state.depth));});
   setText('worldType',w.type);
   setText('worldName',w.name);
   setText('worldDescription',w.desc);
