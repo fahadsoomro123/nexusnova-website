@@ -154,14 +154,14 @@ function makeWeb(seed){
  return{nodes,filaments};
 }
 function ensureWeb(seed){const k=String(seed);if(webKey===k&&webNetworkNodes.length)return;if(webRibbons.length)webRibbons.forEach(delMesh);const net=makeWeb(seed);webRibbons=net.filaments;webNetworkNodes=net.nodes;webKey=k;}
-function glowBlob(mat,mdl,color,opacity,em){drawMesh(solarSphere,mat,mdl,color,opacity,em);}
+function glowBlob(mat,mdl,color,opacity,em,pattern=0,time=0){drawMesh(solarSphere,mat,mdl,color,opacity,em,pattern,time);}
 function ringMeshBuffer(inner,outer,seg=128){const v=[],n=[];for(let i=0;i<seg;i++){const a0=i/seg*TAU,a1=(i+1)/seg*TAU,ps=[[inner,a0],[outer,a0],[outer,a1],[inner,a0],[outer,a1],[inner,a1]];ps.forEach(([r,a])=>{v.push(r*Math.cos(a),0,r*Math.sin(a));n.push(0,1,0);});}return makeMeshBuffer(v,n);}
 let saturnRingMesh=null;
 function ensureSaturnRing(){if(!saturnRingMesh)saturnRingMesh=ringMeshBuffer(.42,.82,96);}
 function drawSolarScene(s,mat,t){
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
  solarOrbits.forEach((o)=>drawLineBuffer(o,mat,[.24,.5,.72,.2]));
- const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);glowBlob(mat,sun,[1,.53,.12],1,2.7);
+ const sun=model(0,0,0,.72,.72,.72,t*.045,0,0);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);glowBlob(mat,sun,[1,.53,.12],1,2.7,3,t);
  const planets=[
   {name:'Mercury',r:.82,s:.1,c:[.52,.52,.48]},
   {name:'Venus',r:1.18,s:.16,c:[.92,.69,.4]},
@@ -173,8 +173,8 @@ function drawSolarScene(s,mat,t){
  ];
  planets.forEach((p,i)=>{
    const ang=t*(.12/(i+1))+i*1.31,x=Math.cos(ang)*p.r,z=Math.sin(ang)*p.r;
-   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawMesh(solarSphere,mat,model(x,0,z,p.s,p.s,p.s,0,t*.06,0),p.c,1,.32);
-   if(p.name==='Earth'){drawMesh(solarSphere,mat,model(x,0,z,p.s*1.075,p.s*1.075,p.s*1.075,0,t*.04,0),[.16,.5,1],.11,.55);drawMesh(solarSphere,mat,model(x+.27,0,z+.12,.055,.055,.055,0,t*.2,0),[.75,.78,.84],1,.18);}
+   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawMesh(solarSphere,mat,model(x,0,z,p.s,p.s,p.s,0,t*.06,0),p.c,1,.32,p.name==='Earth'?1:(p.name==='Jupiter'||p.name==='Saturn'?2:0),t);
+   if(p.name==='Earth'){drawMesh(solarSphere,mat,model(x,0,z,p.s*1.075,p.s*1.075,p.s*1.075,0,t*.04,0),[.16,.5,1],.11,.55);drawMesh(solarSphere,mat,model(x+.27,0,z+.12,.055,.055,.055,0,t*.2,0),[.75,.78,.84],1,.18,0,t);}
    if(p.name==='Saturn'){ensureSaturnRing();drawMesh(saturnRingMesh,mat,model(x,0,z,p.s*1.65,p.s*.34,p.s*1.65,.15,0,0),[.9,.7,.45],.65,.35);}
  });
  gl.blendFunc(gl.SRC_ALPHA,gl.ONE);drawPoints(starsBuf,mat,12);
