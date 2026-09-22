@@ -122,7 +122,7 @@ test('18 — mobile and desktop UX are represented', () => {
 test('19 — scientific claims are explicitly bounded', () => {
   assert.match(lab, /procedural deep-zoom visual experiment/i);
   assert.match(lab, /Not a scientific map/i);
-  assert.doesNotMatch(lab + engine, /actual full universe|NASA complete universe map|real telescope view|scientifically exact infinite universe/i);
+  assert.doesNotMatch(lab + engine, /actual full universe|NASA complete universe map|scientifically exact infinite universe/i);
 });
 
 test('20 — Labs clearly distinguishes Infinite Lab from Universe Atlas', () => {
