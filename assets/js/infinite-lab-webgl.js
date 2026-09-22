@@ -284,14 +284,15 @@ function ensureSceneLabels(items){
  const host=document.getElementById('sceneLabels');if(!host)return;
  const key=items.map(x=>x.name+':'+x.tag).join('|');if(labelState.key===key)return;
  host.innerHTML='';labelState.els=[];
- items.forEach(x=>{const el=document.createElement('div');el.className='scene-label';el.innerHTML='<i></i><span>'+x.name+'</span><small>'+x.tag+'</small>';host.appendChild(el);labelState.els.push({el,p:x.p});});
+ items.forEach(x=>{const el=document.createElement('div');el.className='scene-label';const dot=document.createElement('i'),name=document.createElement('span'),tag=document.createElement('small');name.textContent=x.name;tag.textContent=x.tag;el.append(dot,name,tag);host.appendChild(el);labelState.els.push({el,p:x.p});});
  labelState.key=key;
 }
+function solarBodyPoint(i,t){const radii=[.82,1.18,1.62,2.08,2.55,3.08,3.66],ang=t*(.12/(i+1))+i*1.31;return[i===-1?0:Math.cos(ang)*radii[i],0,i===-1?0:Math.sin(ang)*radii[i]];}
 function updateSceneLabels(s,scene){
  const items=[];
  if(scene==='solar'){
-  const names=[['SUN',[0,0,0],'REFERENCE'],['EARTH',[1.62,0,0],'3D CONTEXT'],['JUPITER',[2.55,0,0],'3D CONTEXT'],['SATURN',[3.08,0,0],'3D CONTEXT']];
-  names.forEach(x=>items.push({name:x[0],p:x[1],tag:x[2]}));
+  items.push({name:'SUN',p:[0,0,0],tag:'REFERENCE'});
+  [['EARTH',2],['JUPITER',4],['SATURN',5]].forEach(([name,i])=>items.push({name,p:solarBodyPoint(i,performance.now()/1000),tag:'3D CONTEXT'}));
  }else{
   const ids=['sgr-a','m31','m87','sirius','proxima'];
   ids.forEach(id=>{const o=objects.find(x=>x.id===id);if(o&&o.position)items.push({name:o.name,p:o.position,tag:o.source==='Reference anchor'?'REFERENCE':'CATALOG'});});
