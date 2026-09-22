@@ -138,5 +138,6 @@ window.NexusNovaInfiniteLab={
 };
 updateHUD();
 emitEvent('INFINITE LAB ONLINE');
+tick();
 window.setInterval(()=>{window.NexusNovaInfiniteLabRenderer?.setTransition?.(state.transition);},100);
 })();
