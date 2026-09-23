@@ -116,7 +116,7 @@ jobs:
               && grep -Fq 'data-flagship-depth' <<<"$cctv" \
               && grep -Fq 'data-flagship-depth' <<<"$reaction" \
               && grep -Fq 'data-flagship-depth' <<<"$settings" \
-              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then; then
+              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then
               echo 'Production smoke PASS: core trust/product markers and recovery changes are exposed publicly.'
               exit 0
             fi
