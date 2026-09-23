@@ -10,7 +10,10 @@ const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
 const ACCOUNT_ELIGIBILITY_PATH = '/api/account/eligibility';
 const REFERRAL_ATTACH_PATH = '/api/referral/attach';
 const MINING_SESSION_PATH = '/api/mining/session';
-const ALLOWED_ORIGIN = 'https://nexusnovatools.com';
+const ALLOWED_ORIGINS = new Set([
+  'https://nexusnovatools.com',
+  'https://appassets.androidplatform.net'
+]);
 const ALLOWED_TURNSTILE_HOSTNAME = 'nexusnovatools.com';
 const TURNSTILE_ACTION = 'auth';
 const TURNSTILE_SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
@@ -75,15 +78,17 @@ export default {
 };
 
 function assertAuthOrigin(request) {
-  if (request.headers.get('Origin') !== ALLOWED_ORIGIN) {
+  const origin = String(request.headers.get('Origin') || '');
+  if (!ALLOWED_ORIGINS.has(origin)) {
     throw new Error('origin-not-allowed');
   }
 }
 
 function authCors(request, response) {
   const headers = new Headers(response.headers);
-  if (request.headers.get('Origin') === ALLOWED_ORIGIN) {
-    headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  const origin = String(request.headers.get('Origin') || '');
+  if (ALLOWED_ORIGINS.has(origin)) {
+    headers.set('Access-Control-Allow-Origin', origin);
     headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
     headers.set('Access-Control-Max-Age', '600');
