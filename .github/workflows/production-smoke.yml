@@ -104,7 +104,7 @@ jobs:
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' <<<"$ocr" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' <<<"$invoice" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf" \
-              && grep -Fq 'Prompt review before you send it' <<<"$aiprompt"
+              && grep -Fq 'Prompt review before you send it' <<<"$aiprompt" \\
               && grep -Fq 'Key Features &amp; Practical Applications' <<<"$aiprompt"
               && grep -Fq 'Frequently Asked Questions' <<<"$aiprompt"
               && ! grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"
