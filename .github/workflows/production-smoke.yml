@@ -123,6 +123,31 @@ jobs:
             sleep 5
           done
 
+          echo '--- CORE MARKER DIAGNOSTIC ---'
+          checks=(
+            "home_canonical|$home|<link rel="canonical" href="https://nexusnovatools.com/">"
+            "home_humanproof|$home|NexusNova HumanProof"
+            "home_trust|$home|id="trust""
+            "home_live_verify|$home|humanproof.html#live-verification"
+            "home_nova|$home|Nova Intelligence"
+            "home_nova_href|$home|href="/nova-intelligence.html""
+            "home_nova_cta|$home|Try Nova Intelligence →"
+            "home_nova_prompt|$home|Tell Nova what you need."
+            "home_nova_marker|$home|NOVA INTELLIGENCE • FLAGSHIP DISCOVERY"
+            "intel_noindex|$intelligence|<meta name="robots" content="noindex,nofollow">"
+            "intel_flow|$intelligence|UNDERSTAND → ROUTE → ACT"
+            "intel_title|$intelligence|NexusNova Intelligence — Product Preview"
+            "hp_canonical|$humanproof|<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">"
+            "hp_binding|$humanproof|exact-action binding"
+          )
+          for check in "${checks[@]}"; do
+            name="${check%%|*}"
+            rest="${check#*|}"
+            body="${rest%%|*}"
+            marker="${rest#*|}"
+            if grep -Fq "$marker" <<<"$body"; then echo "PASS $name"; else echo "FAIL $name"; fi
+          done
+
           echo '--- LIVE PRODUCTION DIAGNOSTIC ---'
           for item in home intelligence humanproof live labs contact privacy resume ocr invoice jpgpdf aiprompt sens invoice_tool typing cctv reaction settings resizer; do
             value="${!item}"
