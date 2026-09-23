@@ -1,11 +1,11 @@
 {
   "schema": 2,
   "base": "28ad58de566e42621dad6198aa01be885ccc9769",
-  "version": "65af1af9ee607d230c32cb623c5edf6ed7a57e09",
-  "ota_badge": "OTA12",
+  "version": "a94d82b6c791f009defde5fef20b339bd9d772ee",
+  "ota_badge": "OTA13",
   "ota_badge_status": "ACTIVE",
-  "diagnostic": "1.0.43-android-picker-extension-fallback-v12",
-  "source_commit": "9269ce36176731b0b2e15d63708c5368eb7c8b86",
+  "diagnostic": "mining-firebase-auth-restore-v13",
+  "source_commit": "a94d82b6c791f009defde5fef20b339bd9d772ee",
   "files": [
     {
       "path": "index.html",
@@ -36,6 +36,21 @@
       "path": "src/main.js",
       "sha256": "54748544a4e97a0b2a8e5b4a84bfcf521281b82a1504b8231e280f89c9df8303",
       "size": 12513
+    },
+    {
+      "path": "src/core/firebase-backend.js",
+      "sha256": "e79e18940f90efa15fe8dc9169b3e036d652c34cc78cbfa6d80cfdb2b574d192",
+      "size": 5825
+    },
+    {
+      "path": "src/core/auth-service.js",
+      "sha256": "efbfe0b2a8084d4799cb04abca5a3de9134f3d8e5ed4467c4cdc6771e8a37c1b",
+      "size": 3611
+    },
+    {
+      "path": "src/core/nova-mining-rewards-store.js",
+      "sha256": "7bfced5b4fae1f6594b2433caca1886be2a04b3b0335c30262d67670b48a8307",
+      "size": 1858
     }
   ],
   "video_hotfix": "android-user-gesture-picker-plus-mime-extension-fallback",
