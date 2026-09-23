@@ -28,7 +28,7 @@ on:
       - 'assets/css/live-tech-pulse.css'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-traffic-autopilot
@@ -100,7 +100,7 @@ jobs:
       - name: Analyze GSC search opportunities and safely optimize one page
         continue-on-error: true
         env:
-          NEXUSNOVA_AUTO_OPTIMIZE: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '1' || '0' }}
+          NEXUSNOVA_AUTO_OPTIMIZE: '0'
         run: python .github/scripts/search_growth_autopilot.py
 
       - name: Prepare Instagram-safe article image
@@ -226,49 +226,20 @@ jobs:
               print('Social Growth v2 safety boundary passed:', item.get('title'))
           PY
 
-      - name: Commit safe daily changes
-        id: commit
+      - name: Enforce review-only publishing boundary
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'nexusnova-autopilot[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap.xml llms.txt
-          if [ -f assets/data/search-growth-history.json ]; then git add assets/data/search-growth-history.json; fi
-          if [ -f assets/data/social-growth-history.json ]; then git add assets/data/social-growth-history.json; fi
-          if [ -d assets/generated ]; then git add assets/generated; fi
-          git add articles/
-          if [ -f search-growth-changed-files.txt ]; then
-            while IFS= read -r file; do
-              [ -n "$file" ] && git add -- "$file"
-            done < search-growth-changed-files.txt
-          fi
-          if git diff --cached --quiet; then
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
-            echo 'No useful staged public change today.'
-            exit 0
-          fi
-          git commit -m "automation: daily traffic autopilot ${GITHUB_RUN_ID}"
-          # Generated diagnostics are ignored/untracked. A clean worktree is
-          # required before rebasing against any bot commit that reached main.
+          echo 'Automatic public publishing is disabled. This workflow is analysis-only.'
+          echo 'Any tracked site mutation produced by analysis is treated as a failure and must be reviewed manually.'
           if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-            echo 'Autopilot blocked: tracked unstaged changes remain after safe commit.' >&2
-            git status --short >&2
+            echo 'ERROR: analysis changed tracked repository files:' >&2
+            git status --short --untracked-files=no >&2
             exit 1
           fi
-          git pull --rebase origin main
-          git push origin HEAD:main
-          echo 'changed=true' >> "$GITHUB_OUTPUT"
-
-      - name: Submit changed pages to IndexNow
-        if: steps.commit.outputs.changed == 'true'
-        continue-on-error: true
-        run: python .github/scripts/submit_indexnow.py
-
-      - name: Distribute adaptive useful update to configured social channels
-        if: steps.commit.outputs.changed == 'true'
-        continue-on-error: true
-        run: python .github/scripts/distribute_social_growth.py
+          echo 'Review-only boundary: PASS'
+          echo 'No tracked public files were changed.'
+          echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
 
       - name: Publish run summary
         if: always()
