@@ -92,8 +92,8 @@ jobs:
               && grep -Fq 'Tell Nova what you need.' <<<"$home" \
               && grep -Fq 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' <<<"$home" \
               && grep -Fq '<meta name="robots" content="noindex,nofollow">' <<<"$intelligence" \
-              && grep -Fq 'UNDERSTAND → ROUTE → ACT' <<<"$intelligence" \
-              && grep -Fq 'NexusNova Intelligence — Product Preview' <<<"$intelligence" \
+              && grep -Fq 'GENERAL-PURPOSE INTELLIGENCE' <<<"$intelligence" \
+              && grep -Fq 'NexusNova Intelligence — AI Workspace' <<<"$intelligence" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' <<<"$humanproof" \
               && grep -Fq 'exact-action binding' <<<"$humanproof" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/live.html">' <<<"$live" \
@@ -122,6 +122,15 @@ jobs:
             fi
             sleep 5
           done
+
+          echo '--- ORIGIN VS CUSTOM-DOMAIN DIAGNOSTIC ---'
+          origin_labs="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/labs.html?smoke=${GITHUB_SHA}" || true)"
+          origin_ai="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/ai-prompt-builder.html?smoke=${GITHUB_SHA}" || true)"
+          origin_hp="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/humanproof.html?smoke=${GITHUB_SHA}" || true)"
+          echo "origin_labs bytes=${#origin_labs} nova=$(grep -Fq 'Open Nova Intelligence' <<<"$origin_labs" && echo PASS || echo FAIL)"
+          echo "origin_ai bytes=${#origin_ai} prompt=$(grep -Fq 'Prompt review before you send it' <<<"$origin_ai" && echo PASS || echo FAIL)"
+          echo "origin_hp bytes=${#origin_hp} canonical=$(grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' <<<"$origin_hp" && echo PASS || echo FAIL)"
+          if grep -Fq '<link rel="canonical"' <<<"$humanproof"; then grep -oi '<link rel="canonical"[^>]*>' <<<"$humanproof" | head -1; else echo 'custom_humanproof_canonical=NOT_FOUND'; fi
 
           echo '--- CORE MARKER DIAGNOSTIC ---'
           checks=(
