@@ -105,18 +105,18 @@ jobs:
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' <<<"$invoice" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf" \
               && grep -Fq 'Prompt review before you send it' <<<"$aiprompt" \
-              && grep -Fq 'Key Features &amp; Practical Applications' <<<"$aiprompt"
-              && grep -Fq 'Frequently Asked Questions' <<<"$aiprompt"
-              && ! grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"
-              && ! grep -Fq 'Enter Universe Atlas' <<<"$labs"
-              && grep -Fq 'Open Nova Intelligence' <<<"$labs"
-              && grep -Fq 'data-flagship-depth' <<<"$sens"
-              && grep -Fq 'data-flagship-depth' <<<"$invoice_tool"
-              && grep -Fq 'data-flagship-depth' <<<"$typing"
-              && grep -Fq 'data-flagship-depth' <<<"$cctv"
-              && grep -Fq 'data-flagship-depth' <<<"$reaction"
-              && grep -Fq 'data-flagship-depth' <<<"$settings"
-              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then
+              && grep -Fq 'Key Features &amp; Practical Applications' <<<"$aiprompt" \
+              && grep -Fq 'Frequently Asked Questions' <<<"$aiprompt" \
+              && ! grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt" \
+              && ! grep -Fq 'Enter Universe Atlas' <<<"$labs" \
+              && grep -Fq 'Open Nova Intelligence' <<<"$labs" \
+              && grep -Fq 'data-flagship-depth' <<<"$sens" \
+              && grep -Fq 'data-flagship-depth' <<<"$invoice_tool" \
+              && grep -Fq 'data-flagship-depth' <<<"$typing" \
+              && grep -Fq 'data-flagship-depth' <<<"$cctv" \
+              && grep -Fq 'data-flagship-depth' <<<"$reaction" \
+              && grep -Fq 'data-flagship-depth' <<<"$settings" \
+              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then; then
               echo 'Production smoke PASS: core trust/product markers and recovery changes are exposed publicly.'
               exit 0
             fi
