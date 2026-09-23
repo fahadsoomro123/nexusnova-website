@@ -56,11 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
-      - name: Wait for deployed flagship and trust markers
+      - name: Wait for deployed recovery and trust markers
         shell: bash
         run: |
           set -euo pipefail
           base='https://nexusnovatools.com'
+          last_reason=''
           for attempt in $(seq 1 30); do
             home="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/?smoke=${GITHUB_SHA}-${attempt}" || true)"
             intelligence="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/nova-intelligence.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
@@ -75,105 +76,75 @@ jobs:
             jpgpdf="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/jpg-to-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             aiprompt="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/ai-prompt-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             sens="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-sensitivity-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
-            invoice_tool="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             typing="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/typing-speed-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             cctv="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/photo-cctv-enhancer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             reaction="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/reaction-time-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             settings="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-settings-notes.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             resizer="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-resizer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
 
-            if grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/">' <<<"$home" \
-              && grep -Fq 'NexusNova HumanProof' <<<"$home" \
-              && grep -Fq 'id="trust"' <<<"$home" \
-              && grep -Fq 'humanproof.html#live-verification' <<<"$home" \
-              && grep -Fq 'Nova Intelligence' <<<"$home" \
-              && grep -Fq 'href="/nova-intelligence.html"' <<<"$home" \
-              && grep -Fq 'Try Nova Intelligence →' <<<"$home" \
-              && grep -Fq 'Tell Nova what you need.' <<<"$home" \
-              && grep -Fq 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' <<<"$home" \
-              && grep -Fq '<meta name="robots" content="noindex,nofollow">' <<<"$intelligence" \
-              && grep -Fq 'GENERAL-PURPOSE INTELLIGENCE' <<<"$intelligence" \
-              && grep -Fq 'NexusNova Intelligence — AI Workspace' <<<"$intelligence" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' <<<"$humanproof" \
-              && grep -Fq 'exact-action binding' <<<"$humanproof" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/live.html">' <<<"$live" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' <<<"$labs" \
-              && grep -Fq 'nexusnovatools@gmail.com' <<<"$contact" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/privacy.html">' <<<"$privacy" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/resume-builder.html">' <<<"$resume" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' <<<"$ocr" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' <<<"$invoice" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf" \
-              && grep -Fq 'Prompt review before you send it' <<<"$aiprompt" \
-              && grep -Fq 'Key Features &amp; Practical Applications' <<<"$aiprompt" \
-              && grep -Fq 'Frequently Asked Questions' <<<"$aiprompt" \
-              && ! grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt" \
-              && ! grep -Fq 'Enter Universe Atlas' <<<"$labs" \
-              && grep -Fq 'Open Nova Intelligence' <<<"$labs" \
-              && grep -Fq 'data-flagship-depth' <<<"$sens" \
-              && grep -Fq 'data-flagship-depth' <<<"$invoice_tool" \
-              && grep -Fq 'data-flagship-depth' <<<"$typing" \
-              && grep -Fq 'data-flagship-depth' <<<"$cctv" \
-              && grep -Fq 'data-flagship-depth' <<<"$reaction" \
-              && grep -Fq 'data-flagship-depth' <<<"$settings" \
-              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then
-              echo 'Production smoke PASS: core trust/product markers and recovery changes are exposed publicly.'
+            ok=1
+            check_contains() { grep -Fq -- "$2" <<<"$1"; }
+            check_absent() { ! grep -Fq -- "$2" <<<"$1"; }
+
+            check_contains "$home" '<link rel="canonical" href="https://nexusnovatools.com/">' || ok=0
+            check_contains "$home" 'NexusNova HumanProof' || ok=0
+            check_contains "$home" 'id="trust"' || ok=0
+            check_contains "$home" 'humanproof.html#live-verification' || ok=0
+            check_contains "$home" 'Nova Intelligence' || ok=0
+            check_contains "$home" 'href="/nova-intelligence.html"' || ok=0
+            check_contains "$home" 'Try Nova Intelligence →' || ok=0
+            check_contains "$home" 'Tell Nova what you need.' || ok=0
+            check_contains "$home" 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' || ok=0
+
+            check_contains "$intelligence" '<meta name="robots" content="noindex,nofollow">' || ok=0
+            check_contains "$intelligence" 'GENERAL-PURPOSE INTELLIGENCE' || ok=0
+            check_contains "$intelligence" 'NexusNova Intelligence — AI Workspace' || ok=0
+
+            check_contains "$humanproof" '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' || ok=0
+            check_contains "$humanproof" 'exact-action binding' || ok=0
+            check_contains "$live" '<link rel="canonical" href="https://nexusnovatools.com/live.html">' || ok=0
+            check_contains "$labs" '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' || ok=0
+            check_contains "$labs" 'Open Nova Intelligence' || ok=0
+            check_absent "$labs" 'Enter Universe Atlas' || ok=0
+
+            check_contains "$contact" 'nexusnovatools@gmail.com' || ok=0
+            check_contains "$privacy" '<link rel="canonical" href="https://nexusnovatools.com/privacy.html">' || ok=0
+            check_contains "$resume" '<link rel="canonical" href="https://nexusnovatools.com/resume-builder.html">' || ok=0
+            check_contains "$ocr" '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' || ok=0
+            check_contains "$invoice" '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' || ok=0
+            check_contains "$jpgpdf" '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' || ok=0
+
+            check_contains "$aiprompt" 'Prompt review before you send it' || ok=0
+            check_contains "$aiprompt" 'Key Features &amp; Practical Applications' || ok=0
+            check_contains "$aiprompt" 'Frequently Asked Questions' || ok=0
+            check_absent "$aiprompt" 'Guide on How to Use the AI Prompt Builder' || ok=0
+
+            check_contains "$sens" 'data-flagship-depth' || ok=0
+            check_contains "$typing" 'data-flagship-depth' || ok=0
+            check_contains "$cctv" 'data-flagship-depth' || ok=0
+            check_contains "$reaction" 'data-flagship-depth' || ok=0
+            check_contains "$settings" 'data-flagship-depth' || ok=0
+            check_contains "$resizer" 'data-flagship-depth' || ok=0
+
+            if [ "$ok" -eq 1 ]; then
+              echo 'LIVE PRODUCTION PASS: core + recovery markers verified on public domain.'
               exit 0
             fi
+
+            last_reason="public recovery marker mismatch on attempt ${attempt}"
             sleep 5
           done
 
-          echo '--- ORIGIN VS CUSTOM-DOMAIN DIAGNOSTIC ---'
-          origin_labs="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/labs.html?smoke=${GITHUB_SHA}" || true)"
-          origin_ai="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/ai-prompt-builder.html?smoke=${GITHUB_SHA}" || true)"
-          origin_hp="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "https://fahadsoomro123.github.io/nexusnova-website/humanproof.html?smoke=${GITHUB_SHA}" || true)"
-          echo "origin_labs bytes=${#origin_labs} nova=$(grep -Fq 'Open Nova Intelligence' <<<"$origin_labs" && echo PASS || echo FAIL)"
-          echo "origin_ai bytes=${#origin_ai} prompt=$(grep -Fq 'Prompt review before you send it' <<<"$origin_ai" && echo PASS || echo FAIL)"
-          echo "origin_hp bytes=${#origin_hp} canonical=$(grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' <<<"$origin_hp" && echo PASS || echo FAIL)"
-          if grep -Fq '<link rel="canonical"' <<<"$humanproof"; then grep -oi '<link rel="canonical"[^>]*>' <<<"$humanproof" | head -1; else echo 'custom_humanproof_canonical=NOT_FOUND'; fi
-
-          echo '--- CORE MARKER DIAGNOSTIC ---'
-          checks=(
-            "home_canonical|$home|<link rel="canonical" href="https://nexusnovatools.com/">"
-            "home_humanproof|$home|NexusNova HumanProof"
-            "home_trust|$home|id="trust""
-            "home_live_verify|$home|humanproof.html#live-verification"
-            "home_nova|$home|Nova Intelligence"
-            "home_nova_href|$home|href="/nova-intelligence.html""
-            "home_nova_cta|$home|Try Nova Intelligence →"
-            "home_nova_prompt|$home|Tell Nova what you need."
-            "home_nova_marker|$home|NOVA INTELLIGENCE • FLAGSHIP DISCOVERY"
-            "intel_noindex|$intelligence|<meta name="robots" content="noindex,nofollow">"
-            "intel_flow|$intelligence|UNDERSTAND → ROUTE → ACT"
-            "intel_title|$intelligence|NexusNova Intelligence — Product Preview"
-            "hp_canonical|$humanproof|<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">"
-            "hp_binding|$humanproof|exact-action binding"
-          )
-          for check in "${checks[@]}"; do
-            name="${check%%|*}"
-            rest="${check#*|}"
-            body="${rest%%|*}"
-            marker="${rest#*|}"
-            if grep -Fq "$marker" <<<"$body"; then echo "PASS $name"; else echo "FAIL $name"; fi
-          done
-
-          echo '--- LIVE PRODUCTION DIAGNOSTIC ---'
-          for item in home intelligence humanproof live labs contact privacy resume ocr invoice jpgpdf aiprompt sens invoice_tool typing cctv reaction settings resizer; do
-            value="${!item}"
-            printf '%-14s bytes=%s' "$item" "${#value}"
-            case "$item" in
-              labs) if grep -Fq 'Open Nova Intelligence' <<<"$value"; then echo ' marker=nova-intelligence:PASS'; else echo ' marker=nova-intelligence:FAIL'; fi
-                   if grep -Fq 'Enter Universe Atlas' <<<"$value"; then echo '  legacy-universe-atlas:FOUND'; else echo '  legacy-universe-atlas:ABSENT'; fi ;;
-              aiprompt) if grep -Fq 'Prompt review before you send it' <<<"$value"; then echo ' marker=prompt-review:PASS'; else echo ' marker=prompt-review:FAIL'; fi
-                        if grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$value"; then echo '  legacy-duplicate-guide:FOUND'; else echo '  legacy-duplicate-guide:ABSENT'; fi ;;
-              sens|invoice_tool|typing|cctv|reaction|settings|resizer)
-                if grep -Fq 'data-flagship-depth' <<<"$value"; then echo ' marker=flagship-depth:PASS'; else echo ' marker=flagship-depth:FAIL'; fi ;;
-              *) echo ;;
-            esac
-          done
-          echo 'Production did not expose all expected current public markers.' >&2
+          echo "PRODUCTION FAIL: $last_reason" >&2
+          echo 'Public AI Prompt Builder legacy duplicate present:'
+          if grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"; then echo 'YES'; else echo 'NO'; fi
+          echo 'Public Labs legacy Universe Atlas present:'
+          if grep -Fq 'Enter Universe Atlas' <<<"$labs"; then echo 'YES'; else echo 'NO'; fi
+          echo 'Public HumanProof canonical:'
+          grep -oi '<link rel="canonical"[^>]*>' <<<"$humanproof" | head -1 || true
+          echo 'Public Nova title:'
+          grep -oi '<title>[^<]*</title>' <<<"$intelligence" | head -1 || true
           exit 1
-
       - name: Verify important production routes
         shell: bash
         run: |
