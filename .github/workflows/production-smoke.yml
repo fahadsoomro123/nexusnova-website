@@ -38,6 +38,14 @@ on:
       - 'image-to-text-ocr.html'
       - 'invoice-maker.html'
       - 'jpg-to-pdf.html'
+      - 'ai-prompt-builder.html'
+      - 'gaming-sensitivity-converter.html'
+      - 'invoice-maker.html'
+      - 'typing-speed-test.html'
+      - 'photo-cctv-enhancer.html'
+      - 'reaction-time-test.html'
+      - 'gaming-settings-notes.html'
+      - 'image-resizer.html'
   workflow_dispatch:
 
 permissions:
@@ -65,6 +73,14 @@ jobs:
             ocr="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-to-text-ocr.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             invoice="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             jpgpdf="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/jpg-to-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            aiprompt="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/ai-prompt-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            sens="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-sensitivity-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            invoice_tool="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            typing="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/typing-speed-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            cctv="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/photo-cctv-enhancer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            reaction="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/reaction-time-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            settings="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-settings-notes.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            resizer="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-resizer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
 
             if grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/">' <<<"$home" \
               && grep -Fq 'NexusNova HumanProof' <<<"$home" \
@@ -87,8 +103,21 @@ jobs:
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/resume-builder.html">' <<<"$resume" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' <<<"$ocr" \
               && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' <<<"$invoice" \
-              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf"; then
-              echo 'Current homepage Nova discoverability, flagship, Intelligence, HumanProof, trust and tool markers are deployed.'
+              && grep -Fq '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' <<<"$jpgpdf"
+              && grep -Fq 'Prompt review before you send it' <<<"$aiprompt"
+              && grep -Fq 'Key Features &amp; Practical Applications' <<<"$aiprompt"
+              && grep -Fq 'Frequently Asked Questions' <<<"$aiprompt"
+              && ! grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"
+              && ! grep -Fq 'Enter Universe Atlas' <<<"$labs"
+              && grep -Fq 'Open Nova Intelligence' <<<"$labs"
+              && grep -Fq 'data-flagship-depth' <<<"$sens"
+              && grep -Fq 'data-flagship-depth' <<<"$invoice_tool"
+              && grep -Fq 'data-flagship-depth' <<<"$typing"
+              && grep -Fq 'data-flagship-depth' <<<"$cctv"
+              && grep -Fq 'data-flagship-depth' <<<"$reaction"
+              && grep -Fq 'data-flagship-depth' <<<"$settings"
+              && grep -Fq 'data-flagship-depth' <<<"$resizer"; then
+              echo 'Production smoke PASS: core trust/product markers and recovery changes are exposed publicly.'
               exit 0
             fi
             sleep 5
