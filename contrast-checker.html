@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WCAG Contrast Checker — Check Text & Background Colors | NexusNova Tools</title>
+<meta name="description" content="Check text and background color contrast against WCAG 2.2 AA and AAA thresholds in your browser. Includes contrast ratio and large-text checks.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="WCAG Contrast Checker — NexusNova Tools"><meta property="og:description" content="Check text and background contrast against WCAG 2.2 thresholds locally in your browser."><meta property="og:url" content="https://nexusnovatools.com/contrast-checker.html">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="WCAG Contrast Checker — NexusNova Tools"><meta name="twitter:description" content="Check color contrast and WCAG 2.2 thresholds in the browser.">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WCAG Contrast Checker","url":"https://nexusnovatools.com/contrast-checker.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Check text and background contrast against WCAG 2.2 thresholds in the browser."}</script>
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260910-1" data-nexusnova-compact>
+</head>
+<body>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><a href="developer-tools.html">Developer Tools</a><span aria-hidden="true">›</span><span aria-current="page">Contrast Checker</span></nav><span class="kicker">WEB ACCESSIBILITY // WCAG 2.2</span><h1>Check text and background contrast <span class="gradient-text">before you ship.</span></h1><p>Enter foreground and background colors to calculate the contrast ratio and see whether the pair meets common WCAG 2.2 AA or AAA thresholds.</p><span class="guide-tag">✓ Local browser processing</span></div></section>
+<section class="section"><div class="container">
+<div class="tool-card">
+<div class="form-row">
+<div class="field"><label for="fg">Text / foreground color</label><div class="color-row"><input id="fg" type="color" value="#111827"><input id="fg-text" type="text" value="#111827" inputmode="text" aria-label="Foreground hex color"></div></div>
+<div class="field"><label for="bg">Background color</label><div class="color-row"><input id="bg" type="color" value="#ffffff"><input id="bg-text" type="text" value="#ffffff" inputmode="text" aria-label="Background hex color"></div></div>
+</div>
+<div class="tool-actions"><button class="btn btn-primary" id="check" type="button">Check contrast</button><button class="btn" id="swap" type="button">Swap colors</button></div>
+<div id="sample" class="contrast-sample">NexusNova Tools<br><span>Accessible color pairs are easier to read.</span></div>
+<div class="result" id="contrast-result" aria-live="polite">Contrast ratio: 16.05:1</div>
+<div id="levels" class="contrast-levels"></div>
+</div>
+</div></section>
+<section class="section"><div class="container article">
+<h2>What the ratio means</h2>
+<p>The contrast ratio is calculated from the relative luminance of the foreground and background colors. A higher ratio means a stronger luminance difference. This tool reports the numeric ratio and compares it with common WCAG 2.2 text thresholds rather than judging the design as a whole.</p>
+<h2>WCAG 2.2 thresholds used here</h2>
+<p>For normal text, WCAG 2.2 Success Criterion 1.4.3 specifies at least 4.5:1 for Level AA and 7:1 for Level AAA. Large-scale text has a lower minimum of 3:1 for AA and 4.5:1 for AAA. These checks apply to text contrast; non-text interface components have different requirements.</p>
+<h2>How to use the result</h2>
+<p>Check the actual text size, weight and visual context before making a design decision. A passing ratio does not prove that an entire page conforms to WCAG because accessibility also covers focus indicators, keyboard access, semantics, resizing, motion, forms and many other requirements.</p>
+<h2>Contrast checker FAQ</h2>
+<details><summary>Does a passing color ratio mean my page is WCAG conformant?</summary><p>No. This tool checks color contrast only. WCAG conformance involves many additional success criteria, and different content can have different requirements.</p></details>
+<details><summary>What counts as large text for the WCAG check?</summary><p>WCAG defines large-scale text by font size and weight rather than by a single universal CSS pixel value. Use the current WCAG understanding guidance when making a formal accessibility assessment; this page only compares the ratio against the large-text thresholds.</p></details>
+<details><summary>Does this tool send my colors to a server?</summary><p>No. The calculation runs locally in the browser. Only the hexadecimal color values you enter are used by the page to calculate the ratio and preview the sample.</p></details>
+<p class="mini-note">Reference: <a href="https://www.w3.org/TR/WCAG22/" rel="noopener noreferrer">W3C Web Content Accessibility Guidelines (WCAG) 2.2</a>.</p>
+</div></section>
+</main>
+<footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools and practical explanations for everyday digital work.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="developer-tools.html">Developer Tools</a><a href="tools.html">Tools</a><a href="articles.html">Articles</a></div></div><div><div class="footer-title">Trust</div><div class="footer-links"><a href="tool-methodology.html">Methodology</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact Us &amp; Support</a></div></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span>NEXUSNOVATOOLS.COM</span></div></footer>
+<style>.color-row{display:flex;gap:8px;align-items:center}.color-row input[type=color]{width:48px;height:42px;padding:3px}.color-row input[type=text]{flex:1}.contrast-sample{margin-top:16px;padding:34px 24px;border-radius:18px;font-size:28px;font-weight:800;line-height:1.35}.contrast-sample span{font-size:16px;font-weight:500}.contrast-levels{display:grid;gap:8px;margin-top:14px}.contrast-level{padding:12px 14px;border:1px solid #dbe6f2;border-radius:12px;background:#fff}.pass{border-color:#b7e1c2;background:#f1fbf3}.fail{border-color:#f1c1c1;background:#fff5f5}</style>
+<script>
+(()=>{const $=id=>document.getElementById(id);
+function hex(v){const s=v.trim().replace(/^#/,'');if(!/^[0-9a-f]{6}$/i.test(s))throw new Error('Use a 6-digit hex color such as #1f2937.');return '#'+s.toLowerCase();}
+function srgb(v){const n=parseInt(v,16)/255;return n<=.03928?n/12.92:Math.pow((n+.055)/1.055,2.4);}
+function lum(c){const s=c.slice(1);return .2126*srgb(s.slice(0,2))+.7152*srgb(s.slice(2,4))+.0722*srgb(s.slice(4,6));}
+function run(){try{const f=hex($('fg-text').value),b=hex($('bg-text').value);$('fg-text').value=f;$('bg-text').value=b;$('fg').value=f;$('bg').value=b;const ratio=(Math.max(lum(f),lum(b))+.05)/(Math.min(lum(f),lum(b))+.05);$('contrast-result').textContent='Contrast ratio: '+ratio.toFixed(2)+':1';$('sample').style.color=f;$('sample').style.background=b;const checks=[['AA • normal text',4.5],['AAA • normal text',7],['AA • large text',3],['AAA • large text',4.5]];$('levels').innerHTML=checks.map(([name,need])=>'<div class="contrast-level '+(ratio>=need?'pass':'fail')+'"><strong>'+name+'</strong><div>'+ratio.toFixed(2)+':1 vs '+need+':1 required — '+(ratio>=need?'Pass':'Below threshold')+'</div></div>').join('');}catch(e){$('contrast-result').textContent=e.message;$('levels').innerHTML='';}}
+['fg','bg'].forEach(id=>$(id).addEventListener('input',()=>{$(id+'-text').value=$(id).value;run();}));['fg-text','bg-text'].forEach(id=>$(id).addEventListener('change',run));$('check').onclick=run;$('swap').onclick=()=>{const f=$('fg-text').value;$('fg-text').value=$('bg-text').value;$('bg-text').value=f;run();};run();
+})();
+</script><script src="assets/js/main.js" defer></script>
+</body></html>
