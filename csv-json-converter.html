@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSV to JSON Converter & JSON to CSV | NexusNova Tools</title>
+<meta name="description" content="Convert CSV to JSON or JSON to CSV in your browser. Detect common delimiters, handle quoted fields, pretty-print JSON and download the result locally.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexusnovatools.com/csv-json-converter.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="CSV to JSON Converter & JSON to CSV | NexusNova Tools"><meta property="og:description" content="Convert structured CSV and JSON data locally in your browser."><meta property="og:url" content="https://nexusnovatools.com/csv-json-converter.html">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="CSV to JSON Converter & JSON to CSV | NexusNova Tools"><meta name="twitter:description" content="Browser-local conversion between CSV and JSON.">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CSV to JSON Converter","url":"https://nexusnovatools.com/csv-json-converter.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Convert CSV to JSON or JSON to CSV locally in the browser with quoted-field parsing and downloadable output."}</script>
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260910-1" data-nexusnova-compact>
+</head>
+<body>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><a href="developer-tools.html">Developer Tools</a><span aria-hidden="true">›</span><span aria-current="page">CSV ↔ JSON Converter</span></nav><span class="kicker">DEVELOPER // DATA FORMAT</span><h1>Convert CSV and JSON <span class="gradient-text">in your browser.</span></h1><p>Move tabular data between CSV and JSON without sending the text to a server. Quoted CSV fields, common delimiters and downloadable output are supported.</p><span class="guide-tag">✓ Local browser processing</span></div></section>
+<section class="section"><div class="container">
+<div class="tool-card">
+<div class="tool-actions"><button class="btn btn-primary" id="csv-to-json" type="button">CSV → JSON</button><button class="btn" id="json-to-csv" type="button">JSON → CSV</button><label class="mini-note"><input id="csv-header" type="checkbox" checked> First CSV row is a header</label></div>
+<div class="form-row">
+<div class="field"><label for="data-input">Input</label><textarea id="data-input" rows="18" placeholder="name,email&#10;Aisha,aisha@example.com"></textarea></div>
+<div class="field"><label for="data-output">Output</label><textarea id="data-output" rows="18" readonly placeholder="Converted output appears here…"></textarea></div>
+</div>
+<div class="tool-actions"><button class="btn" id="copy-output" type="button">Copy output</button><button class="btn" id="download-output" type="button">Download result</button></div>
+<div class="result" id="data-status" aria-live="polite">Choose a conversion direction.</div>
+</div>
+</div></section>
+<section class="section"><div class="container article">
+<h2>How CSV and JSON conversion works</h2>
+<p>CSV is row-oriented tabular data, while JSON can represent objects, arrays and nested structures. CSV input is parsed with support for quoted fields, commas inside quoted values and escaped double quotes. When JSON is converted back to CSV, the tool expects an array of objects; nested arrays or objects are written as JSON text inside their cells.</p>
+<h2>Delimiter detection and headers</h2>
+<p>The converter checks the first non-empty row for common comma, tab and semicolon separators. For ordinary CSV, leave “First CSV row is a header” enabled so each following row becomes an object keyed by the header names. Disable it when the file has no header row; the output then uses generic keys such as <code>column1</code> and <code>column2</code>.</p>
+<h2>Practical data checks</h2>
+<p>After conversion, inspect row counts, column names, empty values and any field containing commas, tabs or line breaks. CSV does not have a native type system, so numbers, booleans and dates may appear as strings in CSV-derived JSON. Decide which types your receiving application expects before importing the output.</p>
+<h2>CSV ↔ JSON FAQ</h2>
+<details><summary>Does the converter upload my data?</summary><p>The conversion runs in the browser. The tool does not need a server upload for parsing or formatting the text, so the data can remain on the device.</p></details>
+<details><summary>Can it convert nested JSON objects into normal CSV columns?</summary><p>It can preserve nested objects and arrays as JSON text inside a CSV cell, but it does not invent a flattening schema. That keeps the conversion reversible and avoids silently changing your data model.</p></details>
+<details><summary>Why did a number become a quoted JSON string?</summary><p>CSV values are text unless your import workflow defines types. The converter preserves CSV field text rather than guessing whether a value is a number, date or identifier. Validate or cast types deliberately in the system receiving the JSON.</p></details>
+</div></section>
+</main>
+<footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools and practical explanations for everyday digital work.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="developer-tools.html">Developer Tools</a><a href="tools.html">Tools</a><a href="articles.html">Articles</a></div></div><div><div class="footer-title">Trust</div><div class="footer-links"><a href="tool-methodology.html">Methodology</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact Us &amp; Support</a></div></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span>NEXUSNOVATOOLS.COM</span></div></footer>
+<script>
+(()=>{const $=id=>document.getElementById(id);let output='',filename='converted.txt';
+function parseCSV(text){text=text.replace(/^\uFEFF/,'');const first=text.split(/\r?\n/).find(x=>x.trim()!=='')||'';const counts={',':(first.match(/,/g)||[]).length,'\t':(first.match(/\t/g)||[]).length,';':(first.match(/;/g)||[]).length};const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);const delim=entries[0][1]?entries[0][0]:',';const rows=[];let row=[],cell='',quoted=false;
+for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'&&text[i+1]==='"'){cell+='"';i++;}else if(c==='"'){quoted=false;}else{cell+=c;}}else if(c==='"'){quoted=true;}else if(c===delim){row.push(cell);cell='';}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell='';}else{cell+=c;}}
+if(quoted)throw new Error('CSV contains an opening quote without a closing quote.');if(cell!==''||row.length){row.push(cell.replace(/\r$/,''));rows.push(row);}return {rows:rows.filter(r=>r.some(v=>v.trim()!=='')),delim};}
+function csvEscape(v,delim=','){const s=String(v??'');return /["\r\n]/.test(s)||s.includes(delim)?'"'+s.replace(/"/g,'""')+'"':s;}
+function jsonToCsv(value){if(!Array.isArray(value)||value.length===0||value.some(x=>x===null||typeof x!=='object'||Array.isArray(x)))throw new Error('JSON → CSV expects a non-empty array of objects.');const keys=[...new Set(value.flatMap(x=>Object.keys(x)))];const lines=[keys.map(k=>csvEscape(k)).join(',')];for(const obj of value){lines.push(keys.map(k=>{const v=obj[k];return csvEscape(v!==null&&typeof v==='object'?JSON.stringify(v):v??'');}).join(','));}return lines.join('\n');}
+$('csv-to-json').onclick=()=>{try{const parsed=parseCSV($('data-input').value);const rows=parsed.rows;if(!rows.length)throw new Error('Enter CSV data first.');const hasHeader=$('csv-header').checked;let out;if(hasHeader){const headers=rows[0].map((h,i)=>h.trim()||'column'+(i+1));out=rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])));}else{out=rows.map(r=>Object.fromEntries(r.map((v,i)=>['column'+(i+1),v])));}output=JSON.stringify(out,null,2);filename='converted.json';$('data-output').value=output;$('data-status').textContent='Converted '+out.length+' row'+(out.length===1?'':'s')+' to JSON.';}catch(e){$('data-status').textContent=e.message;$('data-output').value='';output='';}};
+$('json-to-csv').onclick=()=>{try{const value=JSON.parse($('data-input').value);output=jsonToCsv(value);filename='converted.csv';$('data-output').value=output;$('data-status').textContent='Converted JSON array to CSV.';}catch(e){$('data-status').textContent=e.message;$('data-output').value='';output='';}};
+$('copy-output').onclick=async()=>{if(!output)return $('data-status').textContent='Run a conversion first.';try{await navigator.clipboard.writeText(output);$('data-status').textContent='Output copied.';}catch{$('data-status').textContent='Clipboard access is unavailable in this browser.';}};
+$('download-output').onclick=()=>{if(!output)return $('data-status').textContent='Run a conversion first.';const blob=new Blob([output],{type:filename.endsWith('.json')?'application/json;charset=utf-8':'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0);$('data-status').textContent='Downloaded '+filename+'.';};
+})();
+</script><style>.tool-actions{flex-wrap:wrap}</style><script src="assets/js/main.js" defer></script>
+</body></html>
