@@ -54,7 +54,8 @@ function ensureVideoFlagshipStyles() {
     .nx-screen:has(.nx-video-flagship) .nx-app-head>div>p:last-child{display:none!important}
     .nx-video-flagship{--violet:#6c4cff;--pink:#ef4fb4;--ink:#17141f;--muted:#7d7888;position:relative;display:grid;grid-template-rows:minmax(220px,39%) minmax(128px,23%) minmax(0,1fr) auto;gap:8px;width:100%;height:100%;min-height:0;box-sizing:border-box;padding:7px;border-radius:20px;background:linear-gradient(180deg,#fff,#faf8ff);overflow:hidden;border:1px solid #ebe7f4;box-shadow:0 12px 30px rgba(68,41,120,.08)}
     .nx-video-preview{position:relative;min-height:0;display:grid;place-items:center;overflow:hidden;border-radius:16px;background:#16131c;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-    .nx-video-preview video,.nx-video-preview img{display:block;max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;background:#16131c}
+    .nx-video-stage{position:relative;display:grid;place-items:center;overflow:hidden;background:#16131c;border-radius:12px;box-shadow:0 12px 35px rgba(0,0,0,.18);flex:none}
+    .nx-video-preview video,.nx-video-preview img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;object-position:center;background:#16131c;flex:none}
     .nx-video-empty{display:grid;place-items:center;gap:7px;color:#fff;text-align:center;padding:20px}.nx-video-empty b{font-size:18px}.nx-video-empty span{font-size:12px;opacity:.78}
     .nx-video-status{position:absolute;left:8px;right:8px;bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border-radius:11px;background:rgba(18,14,28,.78);backdrop-filter:blur(8px);color:#fff;font-size:11px}
     .nx-video-overlay-text,.nx-video-overlay-caption{position:absolute;left:12px;right:12px;z-index:3;text-align:center;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65);pointer-events:none;overflow:hidden;text-overflow:ellipsis;display:none}
@@ -337,9 +338,11 @@ export function renderAiVideoStudio(){
   root.className='nx-app-body nx-video-flagship';
   root.innerHTML=`
     <section class="nx-video-preview" data-preview>
-      <div class="nx-video-empty" data-empty><b>CREATE YOUR VIDEO</b><span>Add videos or photos. Everything here is designed for fast, touch-first editing.</span></div>
-      <video playsinline preload="metadata" class="nx-video-hidden" data-main-video></video>
-      <img class="nx-video-hidden" data-main-image alt="">
+      <div class="nx-video-stage" data-preview-stage>
+        <div class="nx-video-empty" data-empty><b>CREATE YOUR VIDEO</b><span>Add videos or photos. Everything here is designed for fast, touch-first editing.</span></div>
+        <video playsinline preload="metadata" class="nx-video-hidden" data-main-video></video>
+        <img class="nx-video-hidden" data-main-image alt="">
+      </div>
       <div class="nx-video-overlay-text" data-preview-text></div>
       <div class="nx-video-overlay-caption" data-preview-caption></div>
       <button type="button" class="nx-video-play nx-video-hidden" data-play aria-label="Play or pause">▶</button>
@@ -487,6 +490,7 @@ export function renderAiVideoStudio(){
 
   const els = {
     preview:root.querySelector('[data-preview]'),
+    previewStage:root.querySelector('[data-preview-stage]'),
     empty:root.querySelector('[data-empty]'),
     video:root.querySelector('[data-main-video]'),
     image:root.querySelector('[data-main-image]'),
@@ -620,8 +624,45 @@ export function renderAiVideoStudio(){
       c.effect==='soft'?'blur(.35px)':''
     ].join(' ');
   }
+  function getPreviewRatio(){
+    const parts=String(els.ratio?.value||'16:9').split(':').map(Number);
+    return (Number(parts[0])||16)/(Number(parts[1])||9);
+  }
+  function fitPreviewMedia(el,naturalWidth,naturalHeight){
+    const nw=Number(naturalWidth)||0, nh=Number(naturalHeight)||0;
+    if(!el || !nw || !nh || !els.previewStage) return;
+    const box=els.previewStage.getBoundingClientRect();
+    const scale=Math.min(Math.max(1,box.width-8)/nw,Math.max(1,box.height-8)/nh);
+    if(!Number.isFinite(scale)||scale<=0) return;
+    el.style.width=Math.max(1,Math.round(nw*scale))+'px';
+    el.style.height=Math.max(1,Math.round(nh*scale))+'px';
+    el.style.maxWidth='100%';
+    el.style.maxHeight='100%';
+    el.style.objectFit='contain';
+    el.style.objectPosition='center center';
+  }
+  function refitPreviewMedia(){
+    const c=selected();
+    if(!c) return;
+    if(c.kind==='image') fitPreviewMedia(els.image,els.image.naturalWidth||c.mediaWidth,els.image.naturalHeight||c.mediaHeight);
+    else fitPreviewMedia(els.video,els.video.videoWidth||c.mediaWidth,els.video.videoHeight||c.mediaHeight);
+  }
+  function fitPreviewCanvas(){
+    if(!els.preview || !els.previewStage) return;
+    const box=els.preview.getBoundingClientRect();
+    const ratio=getPreviewRatio(), pad=16;
+    const maxW=Math.max(1,box.width-pad), maxH=Math.max(1,box.height-pad);
+    let width=maxW, height=width/ratio;
+    if(height>maxH){height=maxH;width=height*ratio;}
+    els.previewStage.style.width=Math.max(1,Math.round(width))+'px';
+    els.previewStage.style.height=Math.max(1,Math.round(height))+'px';
+    els.previewStage.style.aspectRatio=ratio;
+    refitPreviewMedia();
+  }
+
   function applyPreview(){
     const c=selected();
+    fitPreviewCanvas();
     if(!c){els.video.classList.add('nx-video-hidden');els.image.classList.add('nx-video-hidden');els.empty.classList.remove('nx-video-hidden');els.play.classList.add('nx-video-hidden');els.previewText.classList.remove('is-visible');els.previewCaption.classList.remove('is-visible');return;}
     els.empty.classList.add('nx-video-hidden');
     els.play.classList.remove('nx-video-hidden');
@@ -750,7 +791,7 @@ export function renderAiVideoStudio(){
       try{
         const meta=await probeMedia(url,kind,8000);
         const clip={id,name:String(file.name||'Media').replace(/\.[^.]+$/,'').slice(0,40)||'Media',kind,file:null,sourceUrl:url,sourceKey:id,
-          in:0,out:kind==='image'?DEFAULT_DUR:meta.duration,speed:1,volume:1,muted:false,brightness:1,contrast:1,saturate:1,effect:'none',textOverlay:'',scale:1,rotation:0,flipX:false,flipY:false,motionStartScale:1,motionEndScale:1.08,motionStartRotation:0,motionEndRotation:0,transition:'cut',transitionDuration:.25,captions:[]};
+          in:0,out:kind==='image'?DEFAULT_DUR:meta.duration,speed:1,volume:1,muted:false,brightness:1,contrast:1,saturate:1,effect:'none',mediaWidth:Number(meta.width)||0,mediaHeight:Number(meta.height)||0,textOverlay:'',scale:1,rotation:0,flipX:false,flipY:false,motionStartScale:1,motionEndScale:1.08,motionStartRotation:0,motionEndRotation:0,transition:'cut',transitionDuration:.25,captions:[]};
         state.sources.set(id,file);state.urls.set(id,url);imported.push(clip);
       }catch(e){try{URL.revokeObjectURL(url)}catch{};els.meta.textContent='Import failed: '+String(e?.message||e).slice(0,100);}
     }
@@ -1001,10 +1042,14 @@ export function renderAiVideoStudio(){
   root.querySelector('[data-undo]').addEventListener('click',undo);
   root.querySelector('[data-redo]').addEventListener('click',redo);
   els.play.addEventListener('click',()=>{if(state.playing)stopPlayback();else startPlayback();});
-  els.video.addEventListener('loadedmetadata',()=>{if(selected())applyPreview()});
+  const previewResizeObserver=new ResizeObserver(()=>fitPreviewCanvas());
+  previewResizeObserver.observe(els.preview);
+  fitPreviewCanvas();
+  els.video.addEventListener('loadedmetadata',()=>{if(selected()){refitPreviewMedia();applyPreview()}});
   els.video.addEventListener('timeupdate',()=>{const c=selected();if(!c||c.kind!=='video')return;state.playhead=clamp((els.video.currentTime-(Number(c.in)||0))/(Number(c.speed)||1),0,clipDuration(c));state.timelinePosition=clipStartTime(c.id)+state.playhead;els.current.textContent=fmt(state.timelinePosition);els.scrub.value=String(state.timelinePosition);applyPreview();if(state.playing&&els.video.currentTime>=(Number(c.out)||0)-.01){els.video.pause();advancePlayback();}});
   els.video.addEventListener('ended',()=>{if(state.playing&&selected()?.kind==='video')advancePlayback();});
   els.video.addEventListener('error',()=>{els.exportNote.textContent='Preview could not decode this video in the current Android WebView.';});
+  els.image.addEventListener('load',()=>{if(selected())refitPreviewMedia()});
   els.video.addEventListener('play',()=>els.play.textContent='Ⅱ');els.video.addEventListener('pause',()=>els.play.textContent='▶');
   els.scrub.addEventListener('input',()=>{const pos=clamp(Number(els.scrub.value)||0,0,totalDuration());const target=mapTimeline(state.clips,pos);if(target.clipId)selectClip(target.clipId,target.local);});
   root.querySelector('[data-in]').addEventListener('change',()=>{const c=selected();if(!c)return;pushUndo();c.in=clamp(Number(els.in.value)||0,0,Math.max(0,(Number(c.out)||DEFAULT_DUR)-.05));setSelectedLocalTime(0);render();});
@@ -1020,7 +1065,7 @@ export function renderAiVideoStudio(){
   root.querySelectorAll('[data-effect]').forEach(b=>b.addEventListener('click',()=>{const c=selected();if(!c)return;pushUndo();c.effect=b.dataset.effect;render();}));
   root.querySelector('[data-apply-text]').addEventListener('click',()=>{const c=selected();if(!c)return;pushUndo();c.textOverlay=els.text.value.trim();render();});
   root.querySelector('[data-clear-text]').addEventListener('click',()=>{const c=selected();if(!c)return;pushUndo();c.textOverlay='';els.text.value='';render();});
-  els.ratio.addEventListener('change',()=>render());els.bg.addEventListener('change',()=>applyPreview());
+  els.ratio.addEventListener('change',()=>{fitPreviewCanvas();render();});els.bg.addEventListener('change',()=>applyPreview());
   els.motionStartScale.addEventListener('input',()=>{const c=selected();if(!c)return;c.motionStartScale=Number(els.motionStartScale.value)||1;applyPreview();});
   els.motionEndScale.addEventListener('input',()=>{const c=selected();if(!c)return;c.motionEndScale=Number(els.motionEndScale.value)||1;applyPreview();});
   els.motionStartRotation.addEventListener('change',()=>{const c=selected();if(!c)return;pushUndo();c.motionStartRotation=clamp(Number(els.motionStartRotation.value)||0,-180,180);render();});
@@ -1087,6 +1132,7 @@ export function renderAiVideoStudio(){
     state.urls.clear();
     state.sources.clear();
     window.removeEventListener('keydown',keydown);
+    previewResizeObserver.disconnect();
   };
   root.__videoTestUtils=__videoFlagshipTestUtils;
   return root;
