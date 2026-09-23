@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Text Diff Checker Online — Compare Two Texts | NexusNova Tools</title>
+<meta name="description" content="Compare two versions of text in your browser and see added, removed and unchanged lines. Optional whitespace normalization, local processing and copyable results.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="Text Diff Checker Online — NexusNova Tools"><meta property="og:description" content="Compare two text versions locally in your browser and inspect added, removed and unchanged lines."><meta property="og:url" content="https://nexusnovatools.com/text-diff-checker.html">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Text Diff Checker Online — NexusNova Tools"><meta name="twitter:description" content="Compare text locally in your browser with clear added, removed and unchanged lines.">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Text Diff Checker","url":"https://nexusnovatools.com/text-diff-checker.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Compare two text versions locally in the browser and inspect added, removed and unchanged lines."}</script>
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260910-1" data-nexusnova-compact>
+</head>
+<body>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><a href="developer-tools.html">Developer Tools</a><span aria-hidden="true">›</span><span aria-current="page">Text Diff Checker</span></nav><span class="kicker">DEVELOPER // TEXT COMPARISON</span><h1>Compare two text versions <span class="gradient-text">without uploading them.</span></h1><p>Paste an original and a revised version to see which lines were added, removed or left unchanged. Everything is processed in this browser tab.</p><span class="guide-tag">✓ Local browser processing</span></div></section>
+<section class="section"><div class="container">
+<div class="tool-card">
+<div class="form-row">
+<div class="field"><label for="diff-left">Original text</label><textarea id="diff-left" rows="14" placeholder="Paste the original version here…"></textarea></div>
+<div class="field"><label for="diff-right">Revised text</label><textarea id="diff-right" rows="14" placeholder="Paste the revised version here…"></textarea></div>
+</div>
+<div class="tool-actions"><label class="mini-note"><input id="ignore-whitespace" type="checkbox"> Ignore leading/trailing whitespace when comparing lines</label><button class="btn btn-primary" id="diff-run" type="button">Compare texts</button><button class="btn" id="diff-copy" type="button">Copy diff</button><button class="btn" id="diff-clear" type="button">Clear</button></div>
+<div class="result" id="diff-status" aria-live="polite">Enter two text versions to compare.</div>
+<div id="diff-output" class="article" style="margin-top:16px"></div>
+</div>
+</div></section>
+<section class="section"><div class="container article">
+<h2>How this diff checker compares text</h2>
+<p>The comparison is line-based. It identifies unchanged lines and groups nearby additions and removals so you can review a revision without manually scanning two long versions. Optional whitespace normalization trims each line before comparison, but it does not ignore meaningful characters inside the line.</p>
+<h2>Useful review workflows</h2>
+<p>Use it before publishing an edited article, when checking configuration changes, when reviewing a copied document, or when comparing generated output with a previous version. For code, compare focused files or small sections first because very large inputs require more browser memory.</p>
+<h2>Limits to understand</h2>
+<p>This is a text comparison aid, not a syntax-aware source-control system. It does not understand programming-language structure, rename detection or semantic equivalence. Two different code snippets can behave the same, and two visually similar documents can differ in whitespace or hidden characters.</p>
+<h2>Text diff FAQ</h2>
+<details><summary>Does the text leave my browser?</summary><p>The comparison runs in the browser. The page does not need a server upload to calculate the diff, so the text can remain on your device while you work.</p></details>
+<details><summary>Why can a small edit produce several changed lines?</summary><p>Line-based comparison groups changes around the nearest matching lines. Inserting or deleting a line near repeated content can therefore move the alignment of a larger block. For semantic code review, use this tool alongside your normal version-control diff.</p></details>
+<details><summary>Can I compare very large files?</summary><p>Moderate text is the intended use. The checker limits extremely large comparisons to avoid freezing the tab; for very large repositories or binary files, use a dedicated source-control or desktop diff tool.</p></details>
+</div></section>
+</main>
+<footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools and practical explanations for everyday digital work.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="developer-tools.html">Developer Tools</a><a href="tools.html">Tools</a><a href="articles.html">Articles</a></div></div><div><div class="footer-title">Trust</div><div class="footer-links"><a href="tool-methodology.html">Methodology</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact Us &amp; Support</a></div></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span>NEXUSNOVATOOLS.COM</span></div></footer>
+<style>
+.diff-table{border:1px solid #dbe6f2;border-radius:14px;overflow:auto;background:#fff}.diff-line{display:grid;grid-template-columns:44px 1fr;min-width:620px;border-bottom:1px solid #edf2f7;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.diff-line:last-child{border-bottom:0}.diff-mark{padding:7px 9px;text-align:center;font-weight:900}.diff-text{padding:7px 10px;white-space:pre-wrap;overflow-wrap:anywhere}.diff-ctx .diff-mark{color:#718096}.diff-add{background:#effaf2}.diff-add .diff-mark{color:#16743a}.diff-del{background:#fff1f1}.diff-del .diff-mark{color:#a52929}.diff-empty{padding:14px;color:#718096}
+</style>
+<script>
+(()=>{const $=id=>document.getElementById(id);let latest='';
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function lines(v,trim){return v.replace(/\r\n?/g,'\n').split('\n').map(x=>trim?x.trim():x);}
+function diff(a,b){const n=a.length,m=b.length;if((n+1)*(m+1)>2200000)throw new Error('The texts are too large for this browser diff view. Try a smaller section.');
+const dp=Array.from({length:n+1},()=>new Uint32Array(m+1));
+for(let i=n-1;i>=0;i--){for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);}
+let i=0,j=0,out=[];
+while(i<n&&j<m){if(a[i]===b[j]){out.push(['ctx',a[i]]);i++;j++;}else if(dp[i+1][j]>=dp[i][j+1]){out.push(['del',a[i]]);i++;}else{out.push(['add',b[j]]);j++;}}
+while(i<n)out.push(['del',a[i++]]);while(j<m)out.push(['add',b[j++]]);
+return out;}
+function render(rows){return '<div class="diff-table" role="table" aria-label="Text comparison result">'+rows.map(([type,text])=>'<div class="diff-line diff-'+type+'" role="row"><div class="diff-mark" aria-hidden="true">'+(type==='add'?'+':type==='del'?'-':' ')+'</div><div class="diff-text" role="cell">'+esc(text||' ')+'</div></div>').join('')+'</div>';}
+$('diff-run').onclick=()=>{try{const a=lines($('diff-left').value,$('ignore-whitespace').checked),b=lines($('diff-right').value,$('ignore-whitespace').checked);if(!$('diff-left').value&&!$('diff-right').value){$('diff-status').textContent='Enter text in at least one side.';$('diff-output').innerHTML='';return;}const rows=diff(a,b);const added=rows.filter(x=>x[0]==='add').length,removed=rows.filter(x=>x[0]==='del').length,unchanged=rows.filter(x=>x[0]==='ctx').length;$('diff-status').textContent=(added===0&&removed===0?'No line differences • ':'')+(added===0&&removed===0?unchanged:added+' added • '+removed+' removed • '+unchanged)+' unchanged lines';const plain=rows.map(x=>(x[0]==='add'?'+ ':x[0]==='del'?'- ':'  ')+x[1]).join('\n');latest=plain;$('diff-output').innerHTML=render(rows);}catch(e){$('diff-status').textContent=e.message;$('diff-output').innerHTML='';}};
+$('diff-copy').onclick=async()=>{if(!latest){$('diff-status').textContent='Run a comparison first.';return;}try{await navigator.clipboard.writeText(latest);$('diff-status').textContent='Diff copied.';}catch{$('diff-status').textContent='Clipboard access is unavailable in this browser.';}};
+$('diff-clear').onclick=()=>{$('diff-left').value='';$('diff-right').value='';$('diff-output').innerHTML='';$('diff-status').textContent='Enter two text versions to compare.';latest='';};
+})();
+</script><script src="assets/js/main.js" defer></script>
+</body></html>
