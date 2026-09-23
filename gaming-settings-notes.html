@@ -7,4 +7,25 @@
 
 <!-- NEXUSNOVA_FINAL_REVIEW_VALUE -->
 <section class="section"><div class="container article"><h2>Record the settings that make a comparison reproducible</h2><p>A useful gaming-settings note should include the game, mouse DPI, in-game sensitivity, resolution or aspect ratio where relevant, and the date you changed the setup. Without that context, a saved number can be hard to interpret later.</p><p>Use notes for personal comparison rather than as proof that one setting is objectively best. Hardware, field of view, patches and personal preference can change how the same numeric value feels.</p></div></section>
+<section class="section" data-flagship-depth>
+  <div class="container article">
+    <h2>What makes a gaming-settings note reusable</h2>
+    <p>A useful note records enough context that you can reproduce the setup later. Include the game, mouse DPI, in-game sensitivity, resolution or aspect ratio when it affects the setup, and the date of the change. Add graphics, field-of-view or keybind details only when they matter to the experiment you are recording. The goal is a compact technical record, not a list of every menu option in the game.</p>
+    <h2>Use the note to test one variable at a time</h2>
+    <p>Suppose you are comparing two sensitivities. Keep the rest of the configuration fixed, record the original values, test the new value for a defined session, and then write down what changed. This makes the note useful months later because you can distinguish the actual experiment from memory or from several changes made simultaneously.</p>
+    <h2>Recommended record format</h2>
+    <ul>
+      <li><strong>Game:</strong> exact title and, where relevant, version or patch.</li>
+      <li><strong>Mouse:</strong> DPI and any device-specific profile.</li>
+      <li><strong>Aim:</strong> in-game sensitivity and related multipliers that matter.</li>
+      <li><strong>Display:</strong> resolution/aspect ratio if it affects your comparison.</li>
+      <li><strong>Date:</strong> when the setting was tested.</li>
+      <li><strong>Result:</strong> what felt better, worse or unchanged, with a brief reason.</li>
+    </ul>
+    <h2>Do not turn a personal note into a universal recommendation</h2>
+    <p>A setting can work well for one player because of mouse grip, desk space, hardware, field of view, game mechanics and preference. A note is valuable because it preserves your own evidence and makes a future comparison reproducible; it does not prove that the same number is objectively best for another person.</p>
+    <h2>Privacy and data handling</h2>
+    <p>Keep account identifiers, private community links and other personal details out of a public settings note unless there is a reason to share them. The tool is intended for lightweight browser-side notes, so use your normal password manager or secure storage for credentials and other secrets rather than storing them in a general-purpose gaming notes page.</p>
+  </div>
+</section>
 </main><footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools, practical articles and clear technology explainers.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="tools.html">Tools</a><a href="trending-tools.html">Trending Tools</a><a href="gaming.html">Gaming</a><a href="articles.html">Articles</a><a href="tech.html">Tech & Security</a></div></div><div><div class="footer-title">Trust</div><div class="footer-links"><a href="about.html">About</a><a href="editorial-policy.html">Editorial Policy</a><a href="privacy.html">Privacy</a></div></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span class="footer-online"><i></i> NEXUSNOVATOOLS.COM</span></div></footer><script>const ids=['game','dpi','sens','res','cross','notes'],key='nexusnovaGamingSettingsV1';function load(){try{const d=JSON.parse(localStorage.getItem(key)||'{}');ids.forEach(id=>document.getElementById(id).value=d[id]||'')}catch{}}document.getElementById('save').onclick=()=>{const d={};ids.forEach(id=>d[id]=document.getElementById(id).value.trim());localStorage.setItem(key,JSON.stringify(d));document.getElementById('out').textContent='Saved locally in this browser.'};document.getElementById('clear').onclick=()=>{localStorage.removeItem(key);ids.forEach(id=>document.getElementById(id).value='');document.getElementById('out').textContent='Saved data cleared.'};load();</script><script src="assets/js/main.js" defer></script></body></html>
