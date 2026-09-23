@@ -122,7 +122,22 @@ jobs:
             fi
             sleep 5
           done
-          echo 'Production did not expose the expected homepage Nova discoverability or current flagship, Intelligence, HumanProof, trust and tool markers.' >&2
+
+          echo '--- LIVE PRODUCTION DIAGNOSTIC ---'
+          for item in home intelligence humanproof live labs contact privacy resume ocr invoice jpgpdf aiprompt sens invoice_tool typing cctv reaction settings resizer; do
+            value="${!item}"
+            printf '%-14s bytes=%s' "$item" "${#value}"
+            case "$item" in
+              labs) if grep -Fq 'Open Nova Intelligence' <<<"$value"; then echo ' marker=nova-intelligence:PASS'; else echo ' marker=nova-intelligence:FAIL'; fi
+                   if grep -Fq 'Enter Universe Atlas' <<<"$value"; then echo '  legacy-universe-atlas:FOUND'; else echo '  legacy-universe-atlas:ABSENT'; fi ;;
+              aiprompt) if grep -Fq 'Prompt review before you send it' <<<"$value"; then echo ' marker=prompt-review:PASS'; else echo ' marker=prompt-review:FAIL'; fi
+                        if grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$value"; then echo '  legacy-duplicate-guide:FOUND'; else echo '  legacy-duplicate-guide:ABSENT'; fi ;;
+              sens|invoice_tool|typing|cctv|reaction|settings|resizer)
+                if grep -Fq 'data-flagship-depth' <<<"$value"; then echo ' marker=flagship-depth:PASS'; else echo ' marker=flagship-depth:FAIL'; fi ;;
+              *) echo ;;
+            esac
+          done
+          echo 'Production did not expose all expected current public markers.' >&2
           exit 1
 
       - name: Verify important production routes
