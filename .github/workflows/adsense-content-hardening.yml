@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   harden-content:
@@ -107,33 +107,10 @@ jobs:
           print('AdSense remediation structural gate: PASS')
           PY
 
-      - name: Commit verified content remediation
-        if: github.event_name != 'pull_request'
+      - name: Report proposed remediation without publishing
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t files < <(sed '/^[[:space:]]*$/d' adsense-combined-changed-files.txt)
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo 'No content changes required.'
-            exit 0
-          fi
-
-          git config user.name 'nexusnova-content-guard[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          for file in "${files[@]}"; do
-            git add -- "$file"
-          done
-          git commit -m 'content: add people-first depth to weak utility pages'
-
-          for attempt in 1 2 3; do
-            if git pull --rebase origin main && git push origin HEAD:main; then
-              echo 'Verified AdSense value remediation pushed to main.'
-              exit 0
-            fi
-            echo "Push attempt $attempt failed; retrying after sync..."
-            git rebase --abort 2>/dev/null || true
-            git fetch origin main
-            sleep $((attempt * 3))
-          done
-          echo 'Unable to push verified content remediation after retries.' >&2
-          exit 1
+          echo 'AdSense content hardening is audit-only in CI; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
