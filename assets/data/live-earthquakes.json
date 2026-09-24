@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-24T19:20:39.897Z",
+  "generated_at": "2026-09-24T20:24:54.640Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,30 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-24T19:19:54.000Z",
+  "feed_generated_at": "2026-09-24T20:24:54.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 34,
+  "source_count": 37,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "aka2026sywlqq",
+      "magnitude": 2.6,
+      "place": "60 km SW of Cantwell, Alaska",
+      "time": "2026-09-24T20:18:27.490Z",
+      "updated": "2026-09-24T20:21:49.381Z",
+      "depth_km": 85.5,
+      "coordinates": {
+        "lat": 63.084,
+        "lon": -149.943
+      },
+      "significance": 104,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sywlqq",
+      "pakistan_region": false
+    },
     {
       "id": "nc75440987",
       "magnitude": 2.47,
@@ -136,6 +155,25 @@
       "pakistan_region": false
     },
     {
+      "id": "aka2026sypoor",
+      "magnitude": 3.7,
+      "place": "155 km SW of Nikolski, Alaska",
+      "time": "2026-09-24T16:52:48.055Z",
+      "updated": "2026-09-24T19:45:40.813Z",
+      "depth_km": 11,
+      "coordinates": {
+        "lat": 52.172,
+        "lon": -170.778
+      },
+      "significance": 211,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sypoor",
+      "pakistan_region": false
+    },
+    {
       "id": "us6000txdb",
       "magnitude": 4.6,
       "place": "21 km NNW of Rioblanco, Colombia",
@@ -178,14 +216,14 @@
       "magnitude": 2.68,
       "place": "1 km S of Orange Cove, CA",
       "time": "2026-09-24T15:40:28.080Z",
-      "updated": "2026-09-24T16:07:21.822Z",
+      "updated": "2026-09-24T20:16:08.265Z",
       "depth_km": 19.4,
       "coordinates": {
         "lat": 36.6178,
         "lon": -119.3143
       },
-      "significance": 110,
-      "felt": 0,
+      "significance": 111,
+      "felt": 1,
       "alert": null,
       "status": "automatic",
       "tsunami": false,
@@ -288,6 +326,25 @@
       "pakistan_region": false
     },
     {
+      "id": "aka2026syezcx",
+      "magnitude": 3.5,
+      "place": "119 km ESE of Nikolski, Alaska",
+      "time": "2026-09-24T11:34:12.607Z",
+      "updated": "2026-09-24T19:33:14.362Z",
+      "depth_km": 17.2,
+      "coordinates": {
+        "lat": 52.396,
+        "lon": -167.34
+      },
+      "significance": 188,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026syezcx",
+      "pakistan_region": false
+    },
+    {
       "id": "us6000txb3",
       "magnitude": 4.9,
       "place": "Kermadec Islands, New Zealand",
@@ -304,6 +361,25 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txb3",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026sybrit",
+      "magnitude": 3.2,
+      "place": "216 km SSE of Akhiok, Alaska",
+      "time": "2026-09-24T09:55:04.538Z",
+      "updated": "2026-09-24T19:26:30.607Z",
+      "depth_km": 5,
+      "coordinates": {
+        "lat": 55.076,
+        "lon": -153.225
+      },
+      "significance": 158,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sybrit",
       "pakistan_region": false
     },
     {
@@ -646,25 +722,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41337999",
-      "pakistan_region": false
-    },
-    {
-      "id": "ci41337943",
-      "magnitude": 2.45,
-      "place": "17 km WSW of Johannesburg, CA",
-      "time": "2026-09-23T19:59:30.120Z",
-      "updated": "2026-09-23T20:26:27.660Z",
-      "depth_km": 6.5,
-      "coordinates": {
-        "lat": 35.311,
-        "lon": -117.8015
-      },
-      "significance": 92,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41337943",
       "pakistan_region": false
     }
   ]
