@@ -6,7 +6,7 @@
       const signal = `${location.hash} ${location.search}`;
       const inTelegram = /tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal) || !!window.TelegramWebviewProxy || !!window.TelegramWebview;
       if (!inTelegram) return;
-      document.write('<script src="https://telegram.org/js/telegram-web-app.js?63"><\/script>');
+      document.write('<script src="assets/js/vendor/telegram-web-app.js"><\/script>');
       document.write('<script src="assets/js/telegram-webapp.js?v=20260826-5"><\/script>');
     })();
   </script>
