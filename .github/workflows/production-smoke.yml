@@ -170,16 +170,16 @@ jobs:
           echo 'Verifying every URL advertised by the canonical sitemap...'
           curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/sitemap.xml?smoke=${GITHUB_SHA}" -o /tmp/nexusnova-sitemap.xml
           python3 - <<'PY'
-from pathlib import Path
-import xml.etree.ElementTree as ET
-root=ET.parse('/tmp/nexusnova-sitemap.xml').getroot()
-ns={'sm':'http://www.sitemaps.org/schemas/sitemap/0.9'}
-urls=[loc.text.strip() for loc in root.findall('.//sm:loc',ns) if loc.text and loc.text.strip()]
-if not urls:
-    raise SystemExit('Canonical sitemap returned no URLs.')
-Path('/tmp/nexusnova-sitemap-urls.txt').write_text('\n'.join(urls)+'\n',encoding='utf-8')
-print(f'Canonical sitemap URLs: {len(urls)}')
-PY
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root=ET.parse('/tmp/nexusnova-sitemap.xml').getroot()
+          ns={'sm':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls=[loc.text.strip() for loc in root.findall('.//sm:loc',ns) if loc.text and loc.text.strip()]
+          if not urls:
+              raise SystemExit('Canonical sitemap returned no URLs.')
+          Path('/tmp/nexusnova-sitemap-urls.txt').write_text('\n'.join(urls)+'\n',encoding='utf-8')
+          print(f'Canonical sitemap URLs: {len(urls)}')
+          PY
           failures=0
           while IFS= read -r url; do
             code="$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$url")"
