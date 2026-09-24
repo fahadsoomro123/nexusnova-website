@@ -29,6 +29,35 @@
   const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterContact,{once:true});else normalizeFooterContact();
 
+  // Global Website Launches trust badge: render once in the existing footer without changing footer structure.
+  const mountWebsiteLaunchesBadge=()=>{
+    if(document.querySelector('[data-nexusnova-website-launches-badge]'))return;
+    const footer=document.querySelector('.site-footer');
+    if(!footer)return;
+    const badgeWrap=document.createElement('div');
+    badgeWrap.dataset.nexusnovaWebsiteLaunchesBadge='';
+    badgeWrap.className='nn-website-launches-badge';
+    badgeWrap.innerHTML='<a href="https://websitelaunches.com/site/nexusnovatools.com" target="_blank" rel="noopener" aria-label="View NexusNova Tools public launch record"><img src="https://websitelaunches.com/badge/nexusnovatools.com.svg" alt="Established online - Public launch record" width="255" height="55" loading="lazy" decoding="async"></a>';
+    footer.insertBefore(badgeWrap,footer.querySelector('.footer-bottom')||footer.lastElementChild);
+  };
+  const ensureWebsiteLaunchesBadgeStyles=()=>{
+    if(document.querySelector('style[data-nexusnova-website-launches-style]'))return;
+    const style=document.createElement('style');
+    style.dataset.nexusnovaWebsiteLaunchesStyle='';
+    style.textContent=[
+      '.nn-website-launches-badge{display:flex;justify-content:center;align-items:center;margin:18px auto 12px;padding:0 12px;text-align:center}',
+      '.nn-website-launches-badge a{display:inline-flex;align-items:center;justify-content:center;line-height:0}',
+      '.nn-website-launches-badge img{display:block;max-width:100%;height:auto;width:255px}',
+      '@media(max-width:560px){.nn-website-launches-badge{margin:16px auto 10px}.nn-website-launches-badge img{width:min(255px,100%)}}'
+    ].join('');
+    document.head.appendChild(style);
+  };
+  const initWebsiteLaunchesBadge=()=>{
+    ensureWebsiteLaunchesBadgeStyles();
+    mountWebsiteLaunchesBadge();
+  };
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',initWebsiteLaunchesBadge,{once:true});else initWebsiteLaunchesBadge();
+
   // Global share action: one compact button, no in-page share panel.
   const mountShareWidget=()=>{
     if(document.querySelector('[data-nexusnova-share-widget]'))return;
