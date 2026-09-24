@@ -44,11 +44,12 @@ test('page separates official Pakistan bank-deduction Nisab from personal Zakat 
   assert.match(page,/not.*fatwa/i);
 });
 
-test('page cites SBP source and keeps entered financial values local to browser calculation',()=>{
+test('page cites government Zakat sources and keeps entered financial values local to browser calculation',()=>{
   const page=read('zakat-calculator-pakistan.html');
   const client=read('assets/js/zakat-calculator.js');
-  assert.match(page,/sbp\.org\.pk\/bprd\/2026\/CL3-Notification\.pdf/);
-  assert.match(page,/17 February 2026/);
+  assert.match(page,/finance\.gov\.pk\/survey\/chapter_26\/16_Social_Protection\.pdf/);
+  assert.match(page,/zakat\.punjab\.gov\.pk\/faq/);
+  assert.match(page,/February 2026/);
   assert.match(page,/calculated in your browser/i);
   assert.doesNotMatch(client,/fetch\(|XMLHttpRequest|axios|https?:\/\//i);
 });
