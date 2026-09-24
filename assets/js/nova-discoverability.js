@@ -32,7 +32,32 @@
     nav.insertBefore(link,nav.querySelector('.nn-nav-auth')||null);
   };
 
-  const mount=()=>{mountStyles();mountNav()};
+  // Bind the mobile menu immediately on the homepage. The canonical site shell is
+  // intentionally lazy-loaded for performance, so the menu must remain usable
+  // during the short period before site-main.js arrives.
+  const mountMenuBridge=()=>{
+    const nav=document.querySelector('[data-nav]');
+    const button=document.querySelector('[data-menu-btn]');
+    if(!nav||!button||button.dataset.novaMenuBridgeBound==='1')return;
+    const close=()=>{
+      nav.classList.remove('open');
+      button.setAttribute('aria-expanded','false');
+    };
+    button.addEventListener('click',event=>{
+      const open=nav.classList.toggle('open');
+      button.setAttribute('aria-expanded',String(open));
+      event.stopImmediatePropagation();
+    });
+    nav.addEventListener('click',event=>{
+      if(event.target.closest('a'))close();
+    });
+    window.addEventListener('resize',()=>{
+      if(window.innerWidth>720)close();
+    });
+    button.dataset.novaMenuBridgeBound='1';
+  };
+
+  const mount=()=>{mountStyles();mountNav();mountMenuBridge()};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
 })();
