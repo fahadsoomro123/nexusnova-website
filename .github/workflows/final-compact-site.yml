@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   compact-and-verify:
@@ -40,26 +40,10 @@ jobs:
           ! grep -q 'Human verification complete' assets/js/humanproof-live.js
           grep -q 'PENDING PAYMENT' assets/js/humanproof-live.js
           grep -q 'compact-2026.css' index.html
-      - name: Commit verified remediation
+      - name: Report proposed remediation without publishing
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'nexusnova-site-finalizer[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- '*.html' 'articles/*.html' 'guides/*.html' 'tech/*.html' 'assets/css/compact-2026.css' 'assets/js/humanproof-live.js'
-          if git diff --cached --quiet; then
-            echo 'No compact remediation changes needed.'
-            exit 0
-          fi
-          git commit -m 'site: compact production pages and harden HumanProof pre-payment state'
-          for attempt in 1 2 3; do
-            if git pull --rebase origin main && git push origin HEAD:main; then
-              echo 'Final compact remediation pushed.'
-              exit 0
-            fi
-            echo "Push attempt $attempt failed; retrying..."
-            git rebase --abort 2>/dev/null || true
-            git fetch origin main
-            sleep $((attempt * 3))
-          done
-          exit 1
+          echo 'Final Compact Site Remediation is audit-only; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
