@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   remediate:
@@ -23,17 +23,10 @@ jobs:
         run: git pull --rebase origin main
       - name: Apply targeted remediation
         run: python adsense_final_remediation.py
-      - name: Commit only if changed
+      - name: Report proposed remediation without publishing
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'nexusnova-adsense[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- '*.html' 'sitemap.xml'
-          if git diff --cached --quiet; then
-            echo 'No remediation changes needed.'
-            exit 0
-          fi
-          git commit -m 'adsense: complete reviewer-facing remediation'
-          git pull --rebase origin main
-          git push origin main
+          echo 'AdSense Final Remediation is audit-only; no changes are committed or pushed.'
+          git status --short
+          git diff --stat || true
