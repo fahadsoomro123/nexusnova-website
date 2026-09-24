@@ -2,50 +2,11 @@
 name: NexusNova Production Smoke
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/production-smoke.yml'
-      - 'index.html'
-      - 'nova-intelligence.html'
-      - 'assets/css/nova-discoverability.css'
-      - 'assets/js/nova-discoverability.js'
-      - 'humanproof.html'
-      - 'live.html'
-      - 'sports-live.html'
-      - 'network-tools.html'
-      - 'public-ip-checker.html'
-      - 'ssl-certificate-checker.html'
-      - 'currency-rates.html'
-      - 'gold-rates.html'
-      - 'fuel-rates.html'
-      - 'weather-live.html'
-      - 'earthquakes-live.html'
-      - 'zakat-calculator-pakistan.html'
-      - 'electricity-bill-calculator-pakistan.html'
-      - 'salary-tax-calculator-pakistan.html'
-      - 'prayer-times-qibla-pakistan.html'
-      - 'labs.html'
-      - 'pulse.html'
-      - 'magic-drop.html'
-      - 'xray.html'
-      - 'widgets.html'
-      - 'widget-pakistan-today.html'
-      - 'reaction-time-test.html'
-      - 'contact.html'
-      - 'privacy.html'
-      - 'resume-builder.html'
-      - 'image-to-text-ocr.html'
-      - 'invoice-maker.html'
-      - 'jpg-to-pdf.html'
-      - 'ai-prompt-builder.html'
-      - 'gaming-sensitivity-converter.html'
-      - 'invoice-maker.html'
-      - 'typing-speed-test.html'
-      - 'photo-cctv-enhancer.html'
-      - 'reaction-time-test.html'
-      - 'gaming-settings-notes.html'
-      - 'image-resizer.html'
+  workflow_run:
+    workflows:
+      - 'pages build and deployment'
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -53,6 +14,7 @@ permissions:
 
 jobs:
   production-smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
