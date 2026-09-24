@@ -7,7 +7,7 @@ on:
       - '.github/workflows/public-artifact-hygiene-fix-once.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   fix:
@@ -158,14 +158,10 @@ jobs:
           print('All relocation quality gates clean:',checks)
           PY
 
-      - name: Commit hygiene fix and remove temporary workflows
+      - name: Report proposed hygiene changes without publishing
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'nexusnova-hygiene[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm -f .github/workflows/public-artifact-hygiene-audit-once.yml .github/workflows/public-artifact-hygiene-fix-once.yml
-          git add -A
-          git commit -m 'security: keep internal engineering files out of Pages artifact'
-          git pull --rebase origin main
-          git push origin main
+          echo 'Public artifact hygiene repair is audit-only; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
