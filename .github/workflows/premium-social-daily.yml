@@ -76,8 +76,10 @@ jobs:
               4: datetime.time(17, 30),
               5: datetime.time(20, 30),
           }
-          expected = {'x', 'facebook', 'instagram', 'telegram'}
-          core = {'x', 'facebook', 'instagram'}
+          # X, Facebook and Telegram are the slot-completion core. Instagram failures are
+          # recorded but must never block the next daily slot or cause duplicate X/FB posts.
+          expected = {'x', 'facebook', 'telegram'}
+          core = {'x', 'facebook'}
 
           delivery_path = Path('/tmp/remote-premium-social-published.json')
           try:
@@ -215,7 +217,9 @@ jobs:
           PKT = datetime.timezone(datetime.timedelta(hours=5))
           today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
           slot = int(os.environ['SLOT'])
-          expected = {'x', 'facebook', 'instagram', 'telegram'}
+          # A slot already delivered to the X/FB/Telegram core is a duplicate, even when
+          # Instagram is temporarily blocked by Meta. This prevents repeated cross-posting.
+          expected = {'x', 'facebook', 'telegram'}
           path = Path('/tmp/remote-premium-social-published.json')
           duplicate = False
           try:
