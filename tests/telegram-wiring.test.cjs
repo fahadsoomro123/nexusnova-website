@@ -10,16 +10,19 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Telegram SDK and NexusNova bridge load before page-specific app code', () => {
   const index = read('index.html');
-  const indexSdk = index.indexOf('telegram-web-app.js?63');
+  const vendor = read('assets/js/vendor/telegram-web-app.js');
+  const indexSdk = index.indexOf('assets/js/vendor/telegram-web-app.js');
   const indexBridge = index.indexOf('assets/js/telegram-webapp.js');
   const indexMain = index.indexOf('assets/js/main.js');
+  assert.match(vendor, /TelegramMessenger\/TGMiniAppsJsSDK/);
+  assert.match(vendor, /Copyright \(c\) 2022 Telegram Messenger/);
   assert.ok(indexSdk >= 0, 'index.html is missing the official Telegram SDK');
   assert.ok(indexBridge > indexSdk, 'index.html must load the bridge after the official SDK');
   assert.ok(indexMain > indexBridge, 'index.html must load site code after the Telegram bridge');
 
   for (const file of ['register.html', 'account.html']) {
     const html = read(file);
-    const sdk = html.indexOf('telegram-web-app.js?63');
+    const sdk = html.indexOf('assets/js/vendor/telegram-web-app.js');
     const bridge = html.indexOf('assets/js/telegram-webapp.js');
     const shell = html.indexOf('assets/js/account-shell.js');
     assert.ok(sdk >= 0, `${file} is missing the official Telegram SDK`);
