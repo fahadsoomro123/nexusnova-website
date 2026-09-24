@@ -36,10 +36,10 @@ jobs:
           grep -q "measurementId='G-YLPFKWSS12'" assets/js/main.js
           grep -q "reopen.hidden=false" assets/js/main.js
           grep -q "z-index:2147483647!important" assets/js/main.js
-      - name: Commit
+      - name: Report proposed privacy-button repair without publishing
+        shell: bash
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/js/main.js
-          git commit -m 'Fix privacy button visibility' || exit 0
-          git push
+          set -euo pipefail
+          echo 'Privacy button repair is audit-only; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
