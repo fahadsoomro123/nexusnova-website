@@ -68,6 +68,9 @@ jobs:
             humanproof="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/humanproof.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             live="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/live.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             labs="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/labs.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            contrast="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/contrast-checker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            diffpage="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/text-diff-checker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            csvjson="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/csv-json-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             contact="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/contact.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             privacy="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/privacy.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             resume="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/resume-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
@@ -105,6 +108,9 @@ jobs:
             check_contains "$live" '<link rel="canonical" href="https://nexusnovatools.com/live.html">' || ok=0
             check_contains "$labs" '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' || ok=0
             check_contains "$labs" 'Open Nova Intelligence' || ok=0
+            check_contains "$contrast" '<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">' || ok=0
+            check_contains "$diffpage" '<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">' || ok=0
+            check_contains "$csvjson" '<link rel="canonical" href="https://nexusnovatools.com/csv-json-converter.html">' || ok=0
             check_absent "$labs" 'Enter Universe Atlas' || ok=0
 
             check_contains "$contact" 'nexusnovatools@gmail.com' || ok=0
