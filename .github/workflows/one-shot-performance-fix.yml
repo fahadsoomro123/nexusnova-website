@@ -7,7 +7,7 @@ on:
       - '.github/workflows/one-shot-performance-fix.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   patch:
@@ -170,12 +170,10 @@ jobs:
           node --check assets/js/register.js
           node --check assets/js/account-dashboard.js
 
-      - name: Commit targeted patch
+      - name: Report proposed performance changes without publishing
         shell: bash
         run: |
-          git config user.name 'NexusNova CI'
-          git config user.email 'actions@users.noreply.github.com'
-          git add assets/css/motion.css tools.html assets/js/main.js assets/js/auth-header-state.js assets/js/register.js assets/js/account-dashboard.js .github/scripts/browser_quality_guard.py
-          git diff --cached --check
-          git commit -m 'perf: defer guest auth analytics and stabilize tools layout'
-          git push origin HEAD:main
+          set -euo pipefail
+          echo 'One-Time Performance Fix is audit-only; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
