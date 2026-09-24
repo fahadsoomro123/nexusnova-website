@@ -103,7 +103,7 @@
       ['auth-nav',`${base}assets/css/auth-nav.css`]
     ];
     styles.forEach(([key,href])=>{
-      if(document.querySelector(`link[data-nexusnova-${key}]`)) return;
+      if(document.querySelector(`link[data-nexusnova-${key}]`) || Array.from(document.querySelectorAll('link[rel="stylesheet"][href]')).some(link=>{try{return new URL(link.href,location.href).pathname.endsWith(`/assets/css/${key}.css`)}catch(_){return false}})) return;
       const link=document.createElement('link');
       link.rel='stylesheet';link.href=href;link.setAttribute(`data-nexusnova-${key}`,'');document.head.appendChild(link);
     });
