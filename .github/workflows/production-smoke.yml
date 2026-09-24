@@ -2,11 +2,14 @@
 name: NexusNova Production Smoke
 
 on:
-  workflow_run:
-    workflows:
-      - 'pages build and deployment'
-    types:
-      - completed
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-smoke.yml'
+      - '**.html'
+      - 'assets/js/site-main.js'
+      - 'robots.txt'
+      - 'sitemap*.xml'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +17,6 @@ permissions:
 
 jobs:
   production-smoke:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -24,7 +26,7 @@ jobs:
           set -euo pipefail
           base='https://nexusnovatools.com'
           last_reason=''
-          for attempt in $(seq 1 30); do
+          for attempt in $(seq 1 72); do
             home="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/?smoke=${GITHUB_SHA}-${attempt}" || true)"
             intelligence="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/nova-intelligence.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             humanproof="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/humanproof.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
