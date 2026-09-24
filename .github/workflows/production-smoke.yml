@@ -1,4 +1,5 @@
 # Production verification guard for NexusNova core, HumanProof, Intelligence, Labs and trust/tool pages.
+# Post-deploy gate: wait for Pages propagation before validating published routes.
 name: NexusNova Production Smoke
 
 on:
