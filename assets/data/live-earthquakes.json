@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-25T07:35:41.267Z",
+  "generated_at": "2026-09-25T13:01:03.052Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,10 +16,29 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-25T07:35:03.000Z",
+  "feed_generated_at": "2026-09-25T13:00:54.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 41,
+  "source_count": 40,
   "pakistan_region_events": [
+    {
+      "id": "us6000txk0",
+      "magnitude": 4.5,
+      "place": "72 km E of Thang, India",
+      "time": "2026-09-25T11:53:21.312Z",
+      "updated": "2026-09-25T12:46:43.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 34.8425,
+        "lon": 77.5756
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txk0",
+      "pakistan_region": true
+    },
     {
       "id": "us6000txiw",
       "magnitude": 4.3,
@@ -41,6 +60,139 @@
     }
   ],
   "worldwide_events": [
+    {
+      "id": "us6000txk8",
+      "magnitude": 4.9,
+      "place": "Drake Passage",
+      "time": "2026-09-25T12:37:16.665Z",
+      "updated": "2026-09-25T12:59:50.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -59.849,
+        "lon": -61.371
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txk8",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txk0",
+      "magnitude": 4.5,
+      "place": "72 km E of Thang, India",
+      "time": "2026-09-25T11:53:21.312Z",
+      "updated": "2026-09-25T12:46:43.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 34.8425,
+        "lon": 77.5756
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txk0",
+      "pakistan_region": true
+    },
+    {
+      "id": "us6000txjy",
+      "magnitude": 5.3,
+      "place": "Vanuatu region",
+      "time": "2026-09-25T11:12:15.838Z",
+      "updated": "2026-09-25T11:31:30.040Z",
+      "depth_km": 24,
+      "coordinates": {
+        "lat": -21.8904,
+        "lon": 174.0792
+      },
+      "significance": 432,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txjy",
+      "pakistan_region": false
+    },
+    {
+      "id": "hv75043607",
+      "magnitude": 3.16,
+      "place": "16 km SW of Volcano, Hawaii",
+      "time": "2026-09-25T09:46:30.540Z",
+      "updated": "2026-09-25T09:49:52.150Z",
+      "depth_km": 27.7,
+      "coordinates": {
+        "lat": 19.341,
+        "lon": -155.3538
+      },
+      "significance": 154,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75043607",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txjq",
+      "magnitude": 3,
+      "place": "2 km NNW of Orihuela, Spain",
+      "time": "2026-09-25T09:04:36.235Z",
+      "updated": "2026-09-25T12:54:20.326Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 38.1037,
+        "lon": -0.9501
+      },
+      "significance": 141,
+      "felt": 6,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txjq",
+      "pakistan_region": false
+    },
+    {
+      "id": "hv75043592",
+      "magnitude": 2.46,
+      "place": "7 km SW of Volcano, Hawaii",
+      "time": "2026-09-25T08:57:38.180Z",
+      "updated": "2026-09-25T09:01:03.760Z",
+      "depth_km": 1.4,
+      "coordinates": {
+        "lat": 19.3913,
+        "lon": -155.2765
+      },
+      "significance": 93,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75043592",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txjc",
+      "magnitude": 4.1,
+      "place": "8 km ENE of Kariwa, Japan",
+      "time": "2026-09-25T07:18:22.822Z",
+      "updated": "2026-09-25T12:56:48.040Z",
+      "depth_km": 165.7,
+      "coordinates": {
+        "lat": 37.4587,
+        "lon": 138.7057
+      },
+      "significance": 259,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txjc",
+      "pakistan_region": false
+    },
     {
       "id": "us6000txj1",
       "magnitude": 2.5,
@@ -666,158 +818,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txc1",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000txbm",
-      "magnitude": 5.2,
-      "place": "139 km SW of Kokopo, Papua New Guinea",
-      "time": "2026-09-24T12:29:58.824Z",
-      "updated": "2026-09-24T12:44:54.040Z",
-      "depth_km": 95.6,
-      "coordinates": {
-        "lat": -5.3396,
-        "lon": 151.4915
-      },
-      "significance": 416,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txbm",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026syezcx",
-      "magnitude": 3.5,
-      "place": "119 km ESE of Nikolski, Alaska",
-      "time": "2026-09-24T11:34:12.607Z",
-      "updated": "2026-09-24T19:33:14.362Z",
-      "depth_km": 17.2,
-      "coordinates": {
-        "lat": 52.396,
-        "lon": -167.34
-      },
-      "significance": 188,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026syezcx",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000txb3",
-      "magnitude": 4.9,
-      "place": "Kermadec Islands, New Zealand",
-      "time": "2026-09-24T11:08:24.838Z",
-      "updated": "2026-09-24T11:42:21.040Z",
-      "depth_km": 35,
-      "coordinates": {
-        "lat": -30.2344,
-        "lon": -177.8691
-      },
-      "significance": 369,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txb3",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sybrit",
-      "magnitude": 3.2,
-      "place": "216 km SSE of Akhiok, Alaska",
-      "time": "2026-09-24T09:55:04.538Z",
-      "updated": "2026-09-24T19:26:30.607Z",
-      "depth_km": 5,
-      "coordinates": {
-        "lat": 55.076,
-        "lon": -153.225
-      },
-      "significance": 158,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sybrit",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026svaiir",
-      "magnitude": 2.7,
-      "place": "30 km SW of Garden City, Texas",
-      "time": "2026-09-24T09:38:10.067Z",
-      "updated": "2026-09-24T13:15:24.911Z",
-      "depth_km": 8.9,
-      "coordinates": {
-        "lat": 31.682,
-        "lon": -101.721
-      },
-      "significance": 112,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026svaiir",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026svahau",
-      "magnitude": 3,
-      "place": "32 km SW of Garden City, Texas",
-      "time": "2026-09-24T09:36:39.911Z",
-      "updated": "2026-09-24T21:07:02.040Z",
-      "depth_km": 5.4,
-      "coordinates": {
-        "lat": 31.678,
-        "lon": -101.742
-      },
-      "significance": 139,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026svahau",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026suygvy",
-      "magnitude": 3.6,
-      "place": "32 km SW of Garden City, Texas",
-      "time": "2026-09-24T08:36:08.785Z",
-      "updated": "2026-09-24T21:04:53.844Z",
-      "depth_km": 5.5,
-      "coordinates": {
-        "lat": 31.671,
-        "lon": -101.742
-      },
-      "significance": 200,
-      "felt": 2,
-      "alert": "green",
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026suygvy",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000tx9u",
-      "magnitude": 5.3,
-      "place": "15 km SSW of Hilvan, Turkey",
-      "time": "2026-09-24T07:40:58.138Z",
-      "updated": "2026-09-25T04:38:02.727Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 37.4736,
-        "lon": 38.8612
-      },
-      "significance": 437,
-      "felt": 9,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tx9u",
       "pakistan_region": false
     }
   ]
