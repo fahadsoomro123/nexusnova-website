@@ -1,5 +1,434 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags</title><meta name="description" content="Generate SEO title, meta description, canonical, robots, Open Graph and Twitter Card tags with live previews. Free browser-based meta tag generator."><meta name="robots" content="index,follow,max-image-preview:large"><meta name="theme-color" content="#f5f7fb"><link rel="canonical" href="https://nexusnovatools.com/meta-tag-generator.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><meta property="og:type" content="website"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags"><meta property="og:description" content="Build copy-ready SEO and social meta tags with live previews."><meta property="og:url" content="https://nexusnovatools.com/meta-tag-generator.html"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:card" content="summary"><link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/scifi.css"><style>.meta-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px}.meta-card,.meta-output{padding:24px;border:1px solid #dbe6f2;border-radius:26px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.08)}.field{display:grid;gap:7px;margin-bottom:14px}.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid #ccd9e8;border-radius:13px;font:inherit}.field textarea{min-height:90px;resize:vertical}.count{text-align:right;color:#64748b;font-size:.85rem}.code{width:100%;min-height:300px;padding:15px;border:1px solid #cbd8e7;border-radius:15px;background:#0f172a;color:#dbeafe;font:500 .9rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}.preview{padding:17px;border:1px solid #dbe5ef;border-radius:18px;margin-bottom:15px;background:linear-gradient(145deg,#fff,#f7f9fd)}.preview small{color:#15803d}.preview h3{margin:5px 0;color:#1a0dab;font-size:1.15rem}.preview p{margin:0;color:#4b5563}@media(max-width:820px){.meta-grid{grid-template-columns:1fr}}</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Meta Tag Generator","url":"https://nexusnovatools.com/meta-tag-generator.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Generate SEO, Open Graph and Twitter Card tags in the browser."}</script><meta name="twitter:title" content="Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags"><meta name="twitter:description" content="Build copy-ready SEO and social meta tags with live previews."><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"></head><body><header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header><main><section class="page-hero"><div class="container"><span class="kicker">SEO // SOCIAL PREVIEW</span><h1>Meta Tag & Open Graph Generator</h1><p>Write the important page metadata once, preview the search snippet and copy a clean head block for SEO and social sharing.</p></div></section><section class="section" style="padding-top:0"><h2 class="nn-audit-section-heading" style="margin:0 0 18px">Metadata fields and generator</h2>
-<div class="container meta-grid"><section class="meta-card"><div class="field"><label><strong>Page title</strong></label><input id="title" maxlength="100" placeholder="Your Page Title — Brand" aria-label="Page title"><span class="count" id="tc">0 characters</span></div><div class="field"><label><strong>Meta description</strong></label><textarea id="description" maxlength="240" placeholder="Describe the page clearly for search users." aria-label="Meta description"></textarea><span class="count" id="dc">0 characters</span></div><div class="field"><label><strong>Canonical URL</strong></label><input id="canonical" type="url" placeholder="https://example.com/page" aria-label="Canonical URL"></div><div class="field"><label><strong>Social image URL</strong></label><input id="image" type="url" placeholder="https://example.com/share-image.jpg" aria-label="Social preview image URL"></div><div class="field"><label><strong>Site name</strong></label><input id="site" placeholder="Your Site Name" aria-label="Site name"></div><div class="field"><label><strong>Robots</strong></label><select id="robots" aria-label="Robots directive"><option>index,follow,max-image-preview:large</option><option>index,follow</option><option>noindex,follow</option><option>noindex,nofollow</option></select></div></section><section class="meta-output"><div class="preview"><small id="purl">example.com</small><h3 id="ptitle">Your page title</h3><p id="pdesc">Your meta description preview will appear here.</p></div><textarea id="code" class="code" spellcheck="false" readonly aria-label="Generated code"></textarea><div class="hero-actions" style="margin-top:14px"><button id="copy" class="btn btn-primary" type="button">Copy tags</button><button id="example" class="btn" type="button">Load example</button><button id="clear" class="btn" type="button">Clear</button></div><p class="mini-note" id="status">Everything is generated locally in your browser.</p></section></div></section><section class="section"><div class="container"><div class="article-grid"><article class="article-card"><h3>Search metadata</h3><p>A focused title, useful description and correct canonical URL help search engines understand the preferred page.</p></article><article class="article-card"><h3>Social cards</h3><p>Open Graph and Twitter Card tags help shared links carry a title, summary and image on supported platforms.</p></article><article class="article-card"><h3>Avoid accidental noindex</h3><p>Always inspect the final rendered head before publishing. A stray noindex directive can keep a page out of search.</p></article></div><h2 style="margin-top:28px">Meta tag generator FAQ</h2><h3>Does Google always show my meta description?</h3><p>No. Search engines can choose a different snippet from the page when they think it better matches a search.</p></div></section><section class="section" data-deep-seo><div class="container article"><h2>Preview metadata before publishing</h2><p>Generated tags are a starting point. Keep the page title and description accurate to the real page, use a canonical URL you control, and confirm the final HTML after publishing.</p><h2>Social previews can vary</h2><p>Open Graph and social-card tags help platforms understand a page, but each platform may cache or crop previews differently. Recheck the live URL after major metadata changes.</p><p>Related: <a href="tools.html">SEO Tools</a> · <a href="developer-tools.html">URL Parser</a> · <a href="tool-methodology.html">Methodology</a>.</p></div></section>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags</title>
+<meta name="description" content="Generate SEO title, meta description, canonical, robots, Open Graph and Twitter Card tags with live previews. Free browser-based meta tag generator.">
+<meta name="robots" content="index,follow,max-image-preview:large"><meta name="theme-color" content="#f5f7fb">
+<link rel="canonical" href="https://nexusnovatools.com/meta-tag-generator.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
-<section class="section" data-adsense-remediation="2026-09-25"><div class="container article"><h2>Generate metadata that accurately describes the published page</h2><p>A metadata generator is most useful when it turns the real purpose of a page into concise HTML fields. The page title is the primary label people may see in search results or a browser tab, while a meta description is a short summary that search engines may use when building a snippet. Social-card fields can help platforms understand what should appear when a URL is shared.</p><p><strong>Worked example:</strong> for an image-resizing page, a clear title such as “Resize Images Online — JPG, PNG &amp; WebP” describes the actual task. The description can then explain the supported formats and a practical benefit. Repeating the same keyword many times adds noise without making the page clearer.</p><h3>Generated tags still need review</h3><p>Metadata is not a guarantee of rankings or a promise that a search engine will display the exact wording supplied. Search engines may rewrite snippets, and social platforms may cache older previews. After copying the generated markup, inspect the final HTML and confirm that the canonical URL and social URLs point to the intended page.</p><h3>Publishing checklist</h3><ul><li>Describe the actual page rather than unrelated search topics.</li><li>Use the correct absolute URL wherever the platform expects one.</li><li>Open the published page and test a real share preview after the metadata is deployed.</li></ul></div></section>
-</main><footer class="site-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><a href="tool-methodology.html">Methodology</a></div></footer><script src="assets/js/main.js" defer></script><script>(()=>{const $=s=>document.querySelector(s),title=$('#title'),description=$('#description'),canonical=$('#canonical'),image=$('#image'),site=$('#site'),robots=$('#robots'),code=$('#code'),ptitle=$('#ptitle'),pdesc=$('#pdesc'),purl=$('#purl'),status=$('#status');const esc=s=>String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');const render=()=>{const t=title.value.trim(),d=description.value.trim(),u=canonical.value.trim(),img=image.value.trim(),sn=site.value.trim();$('#tc').textContent=`${t.length} characters${t.length&&t.length<=60?' · good range':''}`;$('#dc').textContent=`${d.length} characters${d.length>=120&&d.length<=160?' · good range':''}`;ptitle.textContent=t||'Your page title';pdesc.textContent=d||'Your meta description preview will appear here.';try{purl.textContent=u?new URL(u).hostname:'example.com'}catch{purl.textContent='Check canonical URL'}const lines=[`<title>${esc(t)}</title>`,`<meta name="description" content="${esc(d)}">`,`<meta name="robots" content="${esc(robots.value)}">`];if(u)lines.push(`<link rel="canonical" href="${esc(u)}">`,`<meta property="og:url" content="${esc(u)}">`);lines.push('<meta property="og:type" content="website">',`<meta property="og:title" content="${esc(t)}">`,`<meta property="og:description" content="${esc(d)}">`);if(sn)lines.push(`<meta property="og:site_name" content="${esc(sn)}">`);if(img)lines.push(`<meta property="og:image" content="${esc(img)}">`);lines.push('<meta name="twitter:card" content="summary_large_image">',`<meta name="twitter:title" content="${esc(t)}">`,`<meta name="twitter:description" content="${esc(d)}">`);if(img)lines.push(`<meta name="twitter:image" content="${esc(img)}">`);code.value=lines.join('\n')};[title,description,canonical,image,site,robots].forEach(el=>el.addEventListener('input',render));$('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(code.value);status.textContent='Meta tags copied.'}catch{status.textContent='Copy failed. Select the generated code manually.'}};$('#example').onclick=()=>{title.value='Free Online Image Tools — Example';description.value='Fast browser tools for compressing, resizing and converting images without installing heavy software.';canonical.value='https://example.com/image-tools';image.value='https://example.com/share.jpg';site.value='Example Tools';robots.value='index,follow,max-image-preview:large';render()};$('#clear').onclick=()=>{[title,description,canonical,image,site].forEach(el=>el.value='');robots.selectedIndex=0;render()};render()})();</script></body></html>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NexusNova Tools">
+<meta property="og:title" content="Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags">
+<meta property="og:description" content="Build copy-ready SEO and social meta tags with live previews.">
+<meta property="og:url" content="https://nexusnovatools.com/meta-tag-generator.html">
+<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/scifi.css">
+
+<style>
+.meta-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.meta-card,.meta-output{padding:24px;border:1px solid #dbe6f2;border-radius:26px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.08)}
+.field{display:grid;gap:7px;margin-bottom:14px}
+.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid #ccd9e8;border-radius:13px;font:inherit}
+.field textarea{min-height:90px;resize:vertical}
+.count{text-align:right;color:#64748b;font-size:.85rem}
+.code{width:100%;min-height:300px;padding:15px;border:1px solid #cbd8e7;border-radius:15px;background:#0f172a;color:#dbeafe;font:500 .9rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
+.preview{padding:17px;border:1px solid #dbe5ef;border-radius:18px;margin-bottom:15px;background:linear-gradient(145deg,#fff,#f7f9fd)}
+.preview small{color:#15803d}
+.preview h3{margin:5px 0;color:#1a0dab;font-size:1.15rem}
+.preview p{margin:0;color:#4b5563}
+@media(max-width:820px){.meta-grid{grid-template-columns:1fr}}
+</style>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Meta Tag Generator","url":"https://nexusnovatools.com/meta-tag-generator.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Generate SEO, Open Graph and Twitter Card tags in the browser."}
+</script>
+
+<meta name="twitter:title" content="Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags">
+<meta name="twitter:description" content="Build copy-ready SEO and social meta tags with live previews.">
+<meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+
+</head>
+<body>
+
+<header class="site-header" data-header>
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">N</span>
+      <span class="brand-copy">
+        <strong>NEXUSNOVA TOOLS</strong>
+        <small>FAST EVERYDAY UTILITIES</small>
+      </span>
+    </a>
+
+    <button class="menu-btn" type="button" data-menu-btn aria-expanded="false">☰</button>
+
+    <nav class="nav" data-nav aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="tools.html">Tools</a>
+      <a href="categories.html">Categories</a>
+      <a href="articles.html">Articles</a>
+      <a href="guides.html">Guides</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="kicker">SEO // SOCIAL PREVIEW</span>
+    <h1>Meta Tag & Open Graph Generator</h1>
+    <p>Write the important page metadata once, preview the search snippet and copy a clean head block for SEO and social sharing.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <h2 class="nn-audit-section-heading" style="margin:0 0 18px">Metadata fields and generator</h2>
+
+  <div class="container meta-grid">
+
+    <section class="meta-card">
+
+      <div class="field">
+        <label><strong>Page title</strong></label>
+        <input id="title" maxlength="100" placeholder="Your Page Title — Brand" aria-label="Page title">
+        <span class="count" id="tc">0 characters</span>
+      </div>
+
+      <div class="field">
+        <label><strong>Meta description</strong></label>
+        <textarea id="description" maxlength="240" placeholder="Describe the page clearly for search users." aria-label="Meta description"></textarea>
+        <span class="count" id="dc">0 characters</span>
+      </div>
+
+      <div class="field">
+        <label><strong>Canonical URL</strong></label>
+        <input id="canonical" type="url" placeholder="https://example.com/page" aria-label="Canonical URL">
+      </div>
+
+      <div class="field">
+        <label><strong>Social image URL</strong></label>
+        <input id="image" type="url" placeholder="https://example.com/share-image.jpg" aria-label="Social preview image URL">
+      </div>
+
+      <div class="field">
+        <label><strong>Site name</strong></label>
+        <input id="site" placeholder="Your Site Name" aria-label="Site name">
+      </div>
+
+      <div class="field">
+        <label><strong>Robots</strong></label>
+        <select id="robots" aria-label="Robots directive">
+          <option>index,follow,max-image-preview:large</option>
+          <option>index,follow</option>
+          <option>noindex,follow</option>
+          <option>noindex,nofollow</option>
+        </select>
+      </div>
+
+    </section>
+
+    <section class="meta-output">
+
+      <div class="preview">
+        <small id="purl">example.com</small>
+        <h3 id="ptitle">Your page title</h3>
+        <p id="pdesc">Your meta description preview will appear here.</p>
+      </div>
+
+      <textarea id="code" class="code" spellcheck="false" readonly aria-label="Generated code"></textarea>
+
+      <div class="hero-actions" style="margin-top:14px">
+        <button id="copy" class="btn btn-primary" type="button">Copy tags</button>
+        <button id="example" class="btn" type="button">Load example</button>
+        <button id="clear" class="btn" type="button">Clear</button>
+      </div>
+
+      <p class="mini-note" id="status">Everything is generated locally in your browser.</p>
+
+    </section>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container article">
+
+    <h2>What are Meta Tags and How Do Search Engines Process Them?</h2>
+
+    <p>Meta tags are pieces of HTML metadata that provide information about a web page to search engines and other software clients. They are commonly placed inside the document's <code>&lt;head&gt;</code> section, alongside elements such as the page title, canonical link and other technical metadata. A crawler such as Googlebot can retrieve the HTML, process the document and use supported metadata as one part of understanding the page and determining how information may be presented in search.</p>
+
+    <p>The important distinction is between metadata that describes a page and signals that actually control a search-engine behavior. A <code>&lt;meta name="description"&gt;</code> element can provide a concise summary that Google may use when constructing a search snippet, but Google can also select text directly from visible page content when that better matches a user's query. The generated description is therefore a useful summary, not a command that guarantees one exact search-result snippet.</p>
+
+    <p>The title element is similarly important because it provides the document title shown in the browser and is one major source from which search engines can derive a title link. A canonical link provides a preferred URL signal for duplicate or closely related versions of a page. Robots directives serve a different purpose: they communicate page-level instructions such as whether a page should be indexed or whether links should be followed, subject to crawler access and supported directives.</p>
+
+    <p>This generator turns those common inputs into a copy-ready block of HTML. The value of the tool is not simply producing markup; it is making the relationship between the content you write and the technical HTML representation easier to inspect before publishing. A useful workflow is to generate the markup, review every field, paste it into the intended document head, and then inspect the live page after deployment.</p>
+
+    <h2>Understanding Open Graph and Twitter Card Directives</h2>
+
+    <p>Search metadata and social metadata solve related but different communication problems. Open Graph properties such as <code>og:title</code>, <code>og:description</code>, <code>og:url</code> and <code>og:image</code> describe how a page can be represented when a URL is shared on services that support Open Graph metadata. Twitter Card metadata uses fields such as <code>twitter:card</code>, <code>twitter:title</code>, <code>twitter:description</code> and <code>twitter:image</code> to provide social-preview information for supported sharing environments.</p>
+
+    <p>This information matters because a shared URL is often encountered through a compact preview rather than by immediately opening the page. A descriptive title can identify the resource, a concise description can explain its purpose, and an appropriate image can provide visual context. Platforms including Facebook, LinkedIn and X may process social metadata according to their own systems, caching behavior, formatting rules and preview constraints.</p>
+
+    <p>Social metadata should therefore accurately represent the page rather than being treated as a second keyword field. The safest approach is consistency: the generated social title should describe the same subject as the real page, the description should accurately summarize the page, the canonical URL should identify the intended resource, and the social image should actually represent the content being shared. A technically valid tag cannot compensate for misleading or unrelated page information.</p>
+
+    <p>Social previews can also remain temporarily different from the HTML after a change because external platforms may cache previously fetched metadata. When a major update is published, review the live page and, where appropriate, use the relevant platform's preview or debugging tools to determine whether the latest metadata has been fetched.</p>
+
+    <h2>Best Practices for SEO-Friendly Metadata</h2>
+
+    <p>Good metadata is descriptive, specific and written for people rather than constructed as a list of repeated search phrases. A practical working target for many page titles is around 50–60 characters, while around 150–160 characters can be a useful editorial target for meta descriptions. These numbers should be treated as guidelines rather than hard technical limits: search-result display widths vary by device and query, and Google does not guarantee that it will display the exact title or description supplied.</p>
+
+    <p>Titles should communicate the actual subject of the page as early and clearly as possible. A title such as “Meta Tag Generator — SEO, Open Graph &amp; Twitter Tags” immediately explains what the resource does. Avoid padding a title with unrelated phrases simply to increase keyword coverage. Clear wording is easier for users to understand and easier to review for relevance.</p>
+
+    <p>Descriptions should work as concise page summaries. Explain what the visitor will find, what the utility does and, where useful, what practical task it helps complete. Avoid long strings of repetitive keywords. Since search engines may use visible page text instead of the supplied description, the on-page content and metadata should describe the same underlying topic.</p>
+
+    <p>Robots directives require particular care because an accidental indexing instruction can have a much larger effect than a poorly phrased description. For an indexable public page, <code>index,follow</code> is the ordinary permissive configuration, while <code>noindex</code> tells supported crawlers not to show the page in search results. A generated <code>noindex</code> directive should never be published accidentally on a page that is intended to appear in search.</p>
+
+    <p>Canonical URLs should be absolute and should point to the intended preferred version of the page. Open Graph and Twitter image URLs should point to the intended share asset rather than a temporary or inaccessible file. Before publishing, inspect the final HTML rather than relying solely on the generator preview.</p>
+
+    <h2>Metadata is a Publishing Signal, Not a Ranking Guarantee</h2>
+
+    <p>Metadata can help search engines and social platforms interpret a document, but it does not guarantee rankings, traffic, indexing, a particular snippet or a particular social preview. Technical markup works best when it accurately describes genuinely useful page content. The generated code should therefore be considered one component of a larger publishing process that includes readable content, accessible HTML, working URLs, appropriate internal links, reliable page performance and accurate information.</p>
+
+    <p>It is also useful to keep metadata aligned with the destination page. Changing a title to target an unrelated query, adding repetitive keywords to descriptions or generating social text that promises content the page does not contain can create a mismatch between the metadata and the actual user experience. The generator should make technical implementation easier, not encourage metadata to become detached from the page it represents.</p>
+
+    <h2>Comprehensive FAQ Section</h2>
+
+    <details>
+      <summary>Do search engines still look at the meta keywords tag?</summary>
+      <p>Google Search does not use the traditional <code>&lt;meta name="keywords"&gt;</code> tag for indexing or ranking. That means adding a long keyword list to a page is not a substitute for descriptive visible content, a useful title or an accurate description. This generator intentionally focuses on metadata that has a current practical role, including the description, canonical URL, robots directive and supported social-preview fields.</p>
+    </details>
+
+    <details>
+      <summary>What happens if my meta description exceeds 160 characters?</summary>
+      <p>Nothing automatically breaks. There is no fixed 160-character technical limit for the HTML meta description element. The 150–160 range is a practical editorial target that can help keep a summary concise, but Google may truncate the displayed snippet according to the device and search context. Google can also choose text from the page itself instead of the supplied meta description when that better represents the query. Focus on accuracy and usefulness first, then keep the wording reasonably concise.</p>
+    </details>
+
+    <details>
+      <summary>How long does it take for Google to update my search snippet after changing meta tags?</summary>
+      <p>There is no guaranteed fixed interval. Google has to recrawl and process the changed page before the updated information can influence search presentation, and even after that Google may choose a different title or snippet for a particular query. After publishing a significant metadata change, confirm that the live HTML contains the new values and allow normal crawling and indexing processes to occur rather than expecting an immediate search-result replacement.</p>
+    </details>
+
+    <details>
+      <summary>What is the role of the robots meta directive?</summary>
+      <p>The robots meta directive provides page-level instructions to supported search crawlers. For example, <code>noindex</code> tells Google not to show the page in its search results, while <code>nofollow</code> provides a link-following instruction. Other supported directives can control snippet or preview behavior. These instructions are useful when a publisher needs page-specific control, but they should be applied deliberately because an accidental <code>noindex</code> can prevent a page from appearing in search. Crawlers also need access to the page for these instructions to be read and followed.</p>
+    </details>
+
+    <details>
+      <summary>Should every page have the same meta title and description?</summary>
+      <p>No. Each important page should have metadata that accurately describes its own subject. Reusing identical descriptions across unrelated pages provides little page-specific information and makes search-result previews less useful. A category page, calculator page, article and contact page generally serve different purposes and should communicate those purposes clearly in their own metadata.</p>
+    </details>
+
+    <details>
+      <summary>Does adding Open Graph metadata improve Google rankings?</summary>
+      <p>Open Graph metadata is primarily intended to describe how a URL can be represented when shared through compatible social systems. It should not be treated as a direct ranking shortcut. Its practical value is clearer social sharing: a relevant title, description, URL and image give supporting platforms information for constructing a link preview. Search visibility still depends on many other factors, including the page itself and how search systems interpret its content.</p>
+    </details>
+
+    <details>
+      <summary>Can I use the same title for the browser tab, Google result and social preview?</summary>
+      <p>Using related wording is often sensible because consistency helps the metadata accurately describe the same page, but the different fields serve different systems. The HTML <code>&lt;title&gt;</code> is the primary document title and a major source for search title links. <code>og:title</code> and <code>twitter:title</code> are social metadata fields. They can share a core description while being adjusted slightly when a specific sharing context benefits from different wording.</p>
+    </details>
+
+    <details>
+      <summary>Why is the canonical URL important in a metadata generator?</summary>
+      <p>A canonical link identifies the URL that a publisher considers the preferred version of a page when related URLs can represent substantially similar content. It is a signal rather than a universal command, so it should point to a real, accessible, appropriate URL under the publisher's control. The generator includes the canonical value in the output together with the corresponding Open Graph URL when a canonical URL is supplied, making it easier to keep those references aligned.</p>
+    </details>
+
+    <details>
+      <summary>Should I put every possible keyword into my title and description?</summary>
+      <p>No. Metadata should remain readable and directly connected to the page. Repeating phrases or inserting unrelated terms can make the result look artificial and can create a poor user experience. Write a concise title and description that explain the actual resource, then let the page's substantive content provide the fuller context. A metadata generator is most effective when it helps express the real purpose of the page rather than attempting to manufacture relevance.</p>
+    </details>
+
+    <details>
+      <summary>What should I check after copying the generated code?</summary>
+      <p>Review the final HTML in the actual page, not only the generator preview. Confirm that the title and description accurately match the visible content, the canonical URL is correct, the robots directive is intentional, and the Open Graph and Twitter image URLs are reachable and appropriate. Also confirm that the markup appears in the intended document head and that the published page is accessible to the crawlers expected to process it.</p>
+    </details>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div class="article-grid">
+      <article class="article-card">
+        <h3>Search metadata</h3>
+        <p>A focused title, useful description and correct canonical URL help search engines understand the preferred page.</p>
+      </article>
+
+      <article class="article-card">
+        <h3>Social cards</h3>
+        <p>Open Graph and Twitter Card tags help shared links carry a title, summary and image on supported platforms.</p>
+      </article>
+
+      <article class="article-card">
+        <h3>Avoid accidental noindex</h3>
+        <p>Always inspect the final rendered head before publishing. A stray noindex directive can keep a page out of search.</p>
+      </article>
+    </div>
+
+    <h2 style="margin-top:28px">Meta tag generator FAQ</h2>
+
+    <h3>Does Google always show my meta description?</h3>
+    <p>No. Search engines can choose a different snippet from the page when they think it better matches a search.</p>
+
+  </div>
+</section>
+
+<section class="section" data-deep-seo>
+  <div class="container article">
+
+    <h2>Preview metadata before publishing</h2>
+
+    <p>Generated tags are a starting point. Keep the page title and description accurate to the real page, use a canonical URL you control, and confirm the final HTML after publishing.</p>
+
+    <h2>Social previews can vary</h2>
+
+    <p>Open Graph and social-card tags help platforms understand a page, but each platform may cache or crop previews differently. Recheck the live URL after major metadata changes.</p>
+
+    <p>Related: <a href="tools.html">SEO Tools</a> · <a href="developer-tools.html">URL Parser</a> · <a href="tool-methodology.html">Methodology</a>.</p>
+
+  </div>
+</section>
+
+<section class="section" data-adsense-remediation="2026-09-25">
+  <div class="container article">
+
+    <h2>Generate metadata that accurately describes the published page</h2>
+
+    <p>A metadata generator is most useful when it turns the real purpose of a page into concise HTML fields. The page title is the primary label people may see in search results or a browser tab, while a meta description is a short summary that search engines may use when building a snippet. Social-card fields can help platforms understand what should appear when a URL is shared.</p>
+
+    <p><strong>Worked example:</strong> for an image-resizing page, a clear title such as “Resize Images Online — JPG, PNG &amp; WebP” describes the actual task. The description can then explain the supported formats and a practical benefit. Repeating the same keyword many times adds noise without making the page clearer.</p>
+
+    <h3>Generated tags still need review</h3>
+
+    <p>Metadata is not a guarantee of rankings or a promise that a search engine will display the exact wording supplied. Search engines may rewrite snippets, and social platforms may cache older previews. After copying the generated markup, inspect the final HTML and confirm that the canonical URL and social URLs point to the intended page.</p>
+
+    <h3>Publishing checklist</h3>
+
+    <ul>
+      <li>Describe the actual page rather than unrelated search topics.</li>
+      <li>Use the correct absolute URL wherever the platform expects one.</li>
+      <li>Open the published page and test a real share preview after the metadata is deployed.</li>
+    </ul>
+
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-bottom">
+    <span>© <span data-year></span> NexusNova Tools.</span>
+    <a href="tool-methodology.html">Methodology</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+
+<script>
+(()=>{
+  const $=s=>document.querySelector(s),
+  title=$('#title'),
+  description=$('#description'),
+  canonical=$('#canonical'),
+  image=$('#image'),
+  site=$('#site'),
+  robots=$('#robots'),
+  code=$('#code'),
+  ptitle=$('#ptitle'),
+  pdesc=$('#pdesc'),
+  purl=$('#purl'),
+  status=$('#status');
+
+  const esc=s=>String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+
+  const render=()=>{
+    const t=title.value.trim(),
+    d=description.value.trim(),
+    u=canonical.value.trim(),
+    img=image.value.trim(),
+    sn=site.value.trim();
+
+    $('#tc').textContent=`${t.length} characters${t.length&&t.length<=60?' · good range':''}`;
+    $('#dc').textContent=`${d.length} characters${d.length>=120&&d.length<=160?' · good range':''}`;
+
+    ptitle.textContent=t||'Your page title';
+    pdesc.textContent=d||'Your meta description preview will appear here.';
+
+    try{
+      purl.textContent=u?new URL(u).hostname:'example.com'
+    }catch{
+      purl.textContent='Check canonical URL'
+    }
+
+    const lines=[
+      `<title>${esc(t)}</title>`,
+      `<meta name="description" content="${esc(d)}">`,
+      `<meta name="robots" content="${esc(robots.value)}">`
+    ];
+
+    if(u)lines.push(
+      `<link rel="canonical" href="${esc(u)}">`,
+      `<meta property="og:url" content="${esc(u)}">`
+    );
+
+    lines.push(
+      '<meta property="og:type" content="website">',
+      `<meta property="og:title" content="${esc(t)}">`,
+      `<meta property="og:description" content="${esc(d)}">`
+    );
+
+    if(sn)lines.push(
+      `<meta property="og:site_name" content="${esc(sn)}">`
+    );
+
+    if(img)lines.push(
+      `<meta property="og:image" content="${esc(img)}">`
+    );
+
+    lines.push(
+      '<meta name="twitter:card" content="summary_large_image">',
+      `<meta name="twitter:title" content="${esc(t)}">`,
+      `<meta name="twitter:description" content="${esc(d)}">`
+    );
+
+    if(img)lines.push(
+      `<meta name="twitter:image" content="${esc(img)}">`
+    );
+
+    code.value=lines.join('\n')
+  };
+
+  [title,description,canonical,image,site,robots]
+    .forEach(el=>el.addEventListener('input',render));
+
+  $('#copy').onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.value);
+      status.textContent='Meta tags copied.'
+    }catch{
+      status.textContent='Copy failed. Select the generated code manually.'
+    }
+  };
+
+  $('#example').onclick=()=>{
+    title.value='Free Online Image Tools — Example';
+    description.value='Fast browser tools for compressing, resizing and converting images without installing heavy software.';
+    canonical.value='https://example.com/image-tools';
+    image.value='https://example.com/share.jpg';
+    site.value='Example Tools';
+    robots.value='index,follow,max-image-preview:large';
+    render()
+  };
+
+  $('#clear').onclick=()=>{
+    [title,description,canonical,image,site].forEach(el=>el.value='');
+    robots.selectedIndex=0;
+    render()
+  };
+
+  render()
+})();
+</script>
+
+</body>
+</html>
