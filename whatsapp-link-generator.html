@@ -1,5 +1,890 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WhatsApp Link Generator — Create wa.me Click to Chat Link</title><meta name="description" content="Create a WhatsApp click-to-chat wa.me link with an optional pre-filled message. Free, instant and generated locally in your browser."><meta name="robots" content="index,follow,max-image-preview:large"><meta name="theme-color" content="#f5f7fb"><link rel="canonical" href="https://nexusnovatools.com/whatsapp-link-generator.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml"><meta property="og:type" content="website"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="WhatsApp Link Generator — Create wa.me Click to Chat Link"><meta property="og:description" content="Create a clean wa.me click-to-chat link with an optional pre-filled message."><meta property="og:url" content="https://nexusnovatools.com/whatsapp-link-generator.html"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:card" content="summary"><link rel="stylesheet" href="assets/css/site.css"><link rel="stylesheet" href="assets/css/scifi.css"><style>.wa-wrap{max-width:900px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px}.wa-card,.wa-result{padding:24px;border:1px solid #dbe6f2;border-radius:26px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.08)}.field{display:grid;gap:7px;margin-bottom:15px}.field label{font-weight:800}.field input,.field textarea{width:100%;padding:13px 14px;border:1px solid #ccd9e8;border-radius:14px;font:inherit}.field textarea{min-height:130px;resize:vertical}.result-box{word-break:break-all;padding:15px;border-radius:15px;background:linear-gradient(135deg,#ecfff6,#eff7ff);border:1px solid #cfe8dc;min-height:74px}.wa-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.wa-actions a[aria-disabled="true"]{pointer-events:none;opacity:.5}@media(max-width:760px){.wa-wrap{grid-template-columns:1fr}}</style><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WhatsApp Link Generator","url":"https://nexusnovatools.com/whatsapp-link-generator.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Generate a wa.me click-to-chat link with an optional pre-filled message."}</script><meta name="twitter:title" content="WhatsApp Link Generator — Create wa.me Click to Chat Link"><meta name="twitter:description" content="Create a WhatsApp click-to-chat wa.me link with an optional pre-filled message. Free, instant and generated locally in your browser."><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><link rel="stylesheet" href="assets/css/compact-2026.css?v=20260910-1" data-nexusnova-compact>
-</head><body><header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header><main><section class="page-hero"><div class="container"><span class="kicker">BUSINESS + SOCIAL</span><h1>WhatsApp Link Generator</h1><p>Create a clean wa.me link so people can open a chat with your number and an optional pre-filled message.</p></div></section><section class="section" style="padding-top:0"><div class="container wa-wrap"><section class="wa-card"><div class="field"><label for="phone">Phone number with country code</label><input id="phone" inputmode="numeric" maxlength="15" placeholder="923001234567" autocomplete="tel"><small>7–15 digits, international format. Example for Pakistan: 923001234567.</small></div><div class="field"><label for="message">Pre-filled message (optional)</label><textarea id="message" maxlength="1000" placeholder="Hello, I would like to know more about..."></textarea></div><button id="generate" class="btn btn-primary" type="button">Generate link</button></section><section class="wa-result"><span class="kicker">YOUR LINK</span><h2>Ready to share</h2><div id="result" class="result-box">Enter a number and generate your link.</div><div class="wa-actions"><button id="copy" class="btn" type="button" disabled>Copy link</button><a id="open" class="btn btn-primary" href="#" rel="noopener noreferrer" target="_blank" aria-disabled="true" tabindex="-1">Open WhatsApp</a></div><p class="mini-note" id="status">The phone number and message are processed locally in this page.</p></section></div></section><section class="section"><div class="container"><div class="article-grid"><article class="article-card"><h3>Social bios</h3><p>Use a click-to-chat link in profiles, contact pages and business listings where direct messaging is useful.</p></article><article class="article-card"><h3>Pre-filled messages</h3><p>Add a short starter message so customers can begin with context instead of typing from scratch.</p></article><article class="article-card"><h3>No signup</h3><p>NexusNova builds the standard wa.me URL in your browser. It does not shorten, track or store the generated link.</p></article></div><h2 style="margin-top:28px">Frequently asked questions</h2><h3>How should I enter the phone number?</h3><p>Use the full international number with country code and digits only. Do not include a plus sign, brackets, spaces or a leading local zero.</p><h3>Is this an official WhatsApp tool?</h3><p>No. NexusNova Tools is not affiliated with WhatsApp or Meta. The generator simply formats a standard click-to-chat URL for convenience.</p></div></section>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<section class="section" data-adsense-remediation="2026-09-25"><div class="container article"><h2>How a WhatsApp click-to-chat link is built</h2><p>A click-to-chat link combines a phone number in international format with an optional pre-filled message. The useful part of the generator is that it prepares the URL structure and encodes message text so spaces and punctuation can travel safely inside a web link. The phone number should be entered as digits with the country code rather than as a local-format number.</p><p><strong>Worked example:</strong> a Pakistan number such as 923001234567 can be used with a short message such as “Hello, I would like more information.” The resulting link can be placed on a contact page, profile or QR code. Test the published link from another device before distributing it widely.</p><h3>Privacy and publishing considerations</h3><p>A generated link does not authenticate the person behind the number, verify a business relationship or guarantee that the recipient will respond. Publishing a phone number in a public link also makes that number easier for visitors or automated systems to discover. Only publish numbers that you are authorized to share.</p><h3>Before you publish</h3><ul><li>Use the correct international country code and remove unnecessary formatting characters.</li><li>Open the link on a separate device or private browser to verify the destination and message.</li><li>Do not expose a private person's number without permission.</li></ul></div></section>
-</main><footer class="site-footer"><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><a href="privacy.html">Privacy</a></div></footer><script src="assets/js/main.js" defer></script><script>(()=>{const phone=document.querySelector('#phone'),message=document.querySelector('#message'),result=document.querySelector('#result'),copy=document.querySelector('#copy'),open=document.querySelector('#open'),status=document.querySelector('#status');let url='';const disable=()=>{url='';copy.disabled=true;open.href='#';open.setAttribute('aria-disabled','true');open.setAttribute('tabindex','-1')};phone.addEventListener('input',()=>{phone.value=phone.value.replace(/\D/g,'').slice(0,15);disable()});message.addEventListener('input',disable);document.querySelector('#generate').addEventListener('click',()=>{const digits=phone.value.replace(/\D/g,'');if(digits.length<7||digits.length>15){disable();result.textContent='Enter a valid international number with 7–15 digits.';status.textContent='The number must use international format and contain only 7–15 digits.';return}url='https://wa.me/'+digits+(message.value.trim()?('?text='+encodeURIComponent(message.value.trim())):'');result.textContent=url;copy.disabled=false;open.href=url;open.setAttribute('aria-disabled','false');open.removeAttribute('tabindex');status.textContent='Link generated locally and ready to share.'});copy.addEventListener('click',async()=>{if(!url)return;try{await navigator.clipboard.writeText(url);status.textContent='Copied to clipboard.'}catch{status.textContent='Copy failed. Select the link above manually.'}});disable()})();</script></body></html>
+<title>WhatsApp Link Generator — Create wa.me Click to Chat Link</title>
+
+<meta
+  name="description"
+  content="Create a WhatsApp click-to-chat wa.me link with an optional pre-filled message. Learn how wa.me links work, how to create them manually, message encoding, business uses, tracking considerations, and common troubleshooting questions."
+>
+
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#f5f7fb">
+
+<link
+  rel="canonical"
+  href="https://nexusnovatools.com/whatsapp-link-generator.html"
+>
+
+<link
+  rel="icon"
+  href="assets/favicon.svg"
+  type="image/svg+xml"
+>
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NexusNova Tools">
+<meta
+  property="og:title"
+  content="WhatsApp Link Generator — Create wa.me Click to Chat Link"
+>
+<meta
+  property="og:description"
+  content="Create a clean wa.me click-to-chat link with an optional pre-filled message. Learn manual creation, encoding, business use cases, and troubleshooting."
+>
+<meta
+  property="og:url"
+  content="https://nexusnovatools.com/whatsapp-link-generator.html"
+>
+<meta
+  property="og:image"
+  content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"
+>
+
+<meta name="twitter:card" content="summary">
+<meta
+  name="twitter:title"
+  content="WhatsApp Link Generator — Create wa.me Click to Chat Link"
+>
+<meta
+  name="twitter:description"
+  content="Create a WhatsApp click-to-chat wa.me link with an optional pre-filled message. Free, instant and generated locally in your browser."
+>
+<meta
+  name="twitter:image"
+  content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"
+>
+
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/scifi.css">
+
+<style>
+.wa-wrap{
+  max-width:900px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px
+}
+
+.wa-card,
+.wa-result{
+  padding:24px;
+  border:1px solid #dbe6f2;
+  border-radius:26px;
+  background:#fff;
+  box-shadow:0 18px 48px rgba(15,23,42,.08)
+}
+
+.field{
+  display:grid;
+  gap:7px;
+  margin-bottom:15px
+}
+
+.field label{
+  font-weight:800
+}
+
+.field input,
+.field textarea{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #ccd9e8;
+  border-radius:14px;
+  font:inherit
+}
+
+.field textarea{
+  min-height:130px;
+  resize:vertical
+}
+
+.result-box{
+  word-break:break-all;
+  padding:15px;
+  border-radius:15px;
+  background:linear-gradient(135deg,#ecfff6,#eff7ff);
+  border:1px solid #cfe8dc;
+  min-height:74px
+}
+
+.wa-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px
+}
+
+.wa-actions a[aria-disabled="true"]{
+  pointer-events:none;
+  opacity:.5
+}
+
+@media(max-width:760px){
+  .wa-wrap{
+    grid-template-columns:1fr
+  }
+}
+</style>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"WhatsApp Link Generator",
+  "url":"https://nexusnovatools.com/whatsapp-link-generator.html",
+  "applicationCategory":"UtilitiesApplication",
+  "operatingSystem":"Any modern browser",
+  "isAccessibleForFree":true,
+  "description":"Generate a wa.me click-to-chat link with an optional pre-filled message."
+}
+</script>
+
+<link
+  rel="stylesheet"
+  href="assets/css/compact-2026.css?v=20260910-1"
+  data-nexusnova-compact
+>
+
+</head>
+
+<body>
+
+<header class="site-header" data-header>
+  <div class="container nav-wrap">
+
+    <a class="brand" href="index.html">
+      <span class="brand-mark">N</span>
+
+      <span class="brand-copy">
+        <strong>NEXUSNOVA TOOLS</strong>
+        <small>FAST EVERYDAY UTILITIES</small>
+      </span>
+    </a>
+
+    <button
+      class="menu-btn"
+      type="button"
+      data-menu-btn
+      aria-expanded="false"
+    >
+      ☰
+    </button>
+
+    <nav
+      class="nav"
+      data-nav
+      aria-label="Primary navigation"
+    >
+      <a href="index.html">Home</a>
+      <a href="tools.html">Tools</a>
+      <a href="categories.html">Categories</a>
+      <a href="articles.html">Articles</a>
+      <a href="guides.html">Guides</a>
+    </nav>
+
+  </div>
+</header>
+
+
+<main>
+
+  <section class="page-hero">
+
+    <div class="container">
+
+      <span class="kicker">BUSINESS + SOCIAL</span>
+
+      <h1>WhatsApp Link Generator</h1>
+
+      <p>
+        Create a clean wa.me link so people can open a chat with your number
+        and an optional pre-filled message.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section" style="padding-top:0">
+
+    <div class="container wa-wrap">
+
+      <section class="wa-card">
+
+        <div class="field">
+
+          <label for="phone">
+            Phone number with country code
+          </label>
+
+          <input
+            id="phone"
+            inputmode="numeric"
+            maxlength="15"
+            placeholder="923001234567"
+            autocomplete="tel"
+          >
+
+          <small>
+            7–15 digits, international format.
+            Example for Pakistan: 923001234567.
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="message">
+            Pre-filled message (optional)
+          </label>
+
+          <textarea
+            id="message"
+            maxlength="1000"
+            placeholder="Hello, I would like to know more about..."
+          ></textarea>
+
+        </div>
+
+
+        <button
+          id="generate"
+          class="btn btn-primary"
+          type="button"
+        >
+          Generate link
+        </button>
+
+      </section>
+
+
+      <section class="wa-result">
+
+        <span class="kicker">YOUR LINK</span>
+
+        <h2>Ready to share</h2>
+
+        <div
+          id="result"
+          class="result-box"
+        >
+          Enter a number and generate your link.
+        </div>
+
+        <div class="wa-actions">
+
+          <button
+            id="copy"
+            class="btn"
+            type="button"
+            disabled
+          >
+            Copy link
+          </button>
+
+          <a
+            id="open"
+            class="btn btn-primary"
+            href="#"
+            rel="noopener noreferrer"
+            target="_blank"
+            aria-disabled="true"
+            tabindex="-1"
+          >
+            Open WhatsApp
+          </a>
+
+        </div>
+
+        <p
+          class="mini-note"
+          id="status"
+        >
+          The phone number and message are processed locally in this page.
+        </p>
+
+      </section>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container article">
+
+      <h2>
+        What is a WhatsApp Link and How Does It Work?
+      </h2>
+
+      <p>
+        A WhatsApp click-to-chat link is a web address that lets a person
+        start a conversation with a specific WhatsApp account without having
+        to manually copy, save, or search for the phone number first. The
+        commonly used format is a <strong>wa.me</strong> link, where the
+        international phone number is placed after the domain. For example,
+        a simplified link can look like
+        <code>https://wa.me/923001234567</code>. The number is written in
+        international format and the link itself provides a convenient bridge
+        from a website, profile, button, QR code, digital advertisement, or
+        contact page into WhatsApp.
+      </p>
+
+      <p>
+        The optional message is added with a query parameter such as
+        <code>?text=</code>. Because a web URL has its own syntax, ordinary
+        spaces and certain punctuation characters cannot simply be inserted
+        without encoding. A message such as
+        <em>Hello, I would like more information.</em> is therefore encoded
+        before being placed in the URL so that browsers and receiving
+        applications can interpret the message reliably.
+      </p>
+
+      <p>
+        It is useful to distinguish a standard click-to-chat URL from
+        WhatsApp's business and API systems. A <strong>wa.me link is a
+        customer-facing URL mechanism</strong>; it does not by itself provide
+        programmatic messaging, customer records, automation, or API
+        credentials. Businesses that need automated workflows can use
+        appropriate WhatsApp Business platform or API products separately,
+        while a click-to-chat link can remain the simple front door that
+        takes a visitor into a conversation.
+      </p>
+
+      <p>
+        In practical terms, the generator on this page builds the URL locally
+        in the browser. It takes the number, removes unsupported non-digit
+        characters from the phone input, validates the allowed length, and
+        then combines the number with an encoded optional message. No URL
+        shortener is required for the result. This makes the generated link
+        easy to inspect, copy, test, and place on a page or in another
+        communication channel.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container article">
+
+      <h2>
+        How to Create a WhatsApp Link Manually
+      </h2>
+
+      <p>
+        You can create a basic WhatsApp click-to-chat link without using a
+        generator. The most important part is formatting the phone number
+        correctly and encoding the optional message so it remains a valid
+        web URL.
+      </p>
+
+      <h3>Step 1: Start with the international country code</h3>
+
+      <p>
+        Begin with the country code and the complete phone number. For
+        example, a Pakistan number can be represented with the country code
+        <code>92</code> followed by the remaining digits. The international
+        version might therefore look like
+        <code>923001234567</code>.
+      </p>
+
+      <h3>Step 2: Remove the plus sign</h3>
+
+      <p>
+        The common wa.me format uses digits rather than a leading
+        <code>+</code>. Therefore, instead of writing
+        <code>+923001234567</code> after the domain, use
+        <code>923001234567</code>. The same principle applies to formatting
+        characters such as spaces, parentheses, and hyphens. A clean
+        international digit string is easier to validate and less likely to
+        produce an unusable link.
+      </p>
+
+      <h3>Step 3: Build the basic wa.me address</h3>
+
+      <p>
+        Put the international number directly after the domain:
+        <code>https://wa.me/923001234567</code>. Opening that URL provides the
+        click-to-chat pathway associated with that number, provided the number
+        is valid and usable for WhatsApp.
+      </p>
+
+      <h3>Step 4: Add a pre-filled message</h3>
+
+      <p>
+        To include starter text, append
+        <code>?text=</code> followed by the URL-encoded message. For example,
+        the human-readable text
+        <em>Hello, I need help with my order.</em>
+        contains spaces, so those spaces can be represented as
+        <code>%20</code> in a URL. A manually constructed example can therefore
+        look like:
+        <code>https://wa.me/923001234567?text=Hello%2C%20I%20need%20help%20with%20my%20order.</code>
+      </p>
+
+      <p>
+        URL encoding is broader than replacing only spaces. Characters such
+        as commas, question marks, ampersands, and other reserved symbols may
+        need encoding so that they are interpreted as part of the message
+        rather than as part of the URL syntax. For that reason, using a
+        standard encoder is safer than trying to replace characters manually
+        one by one.
+      </p>
+
+      <h3>Step 5: Test the finished link</h3>
+
+      <p>
+        Before publishing a link on a business website, advertisement,
+        profile, QR code, or customer-support page, open it yourself and
+        confirm the intended destination and pre-filled message. Testing from
+        a second device or browser can also help reveal mistakes that are not
+        obvious when you test only from the same environment in which the
+        link was created.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container article">
+
+      <h2>
+        Benefits of Using Custom Pre-filled Messages
+      </h2>
+
+      <p>
+        A pre-filled WhatsApp message can reduce friction at the beginning of
+        a conversation. Instead of asking a visitor to decide what to write,
+        a business can provide a short prompt that gives the recipient useful
+        context. This is particularly helpful when the same questions appear
+        repeatedly, such as pricing requests, product availability,
+        appointment enquiries, order-status questions, service requests, or
+        requests for a quotation.
+      </p>
+
+      <h3>Faster customer queries</h3>
+
+      <p>
+        A visitor who clicks a button labeled “Ask about this product” can
+        arrive with a suggested message such as
+        <em>Hello, I would like information about this product.</em>. The
+        customer can edit the message before sending it, while the business
+        receives a useful indication of why the conversation was started.
+        This reduces blank-chat friction and can make the first exchange more
+        efficient.
+      </p>
+
+      <h3>Lead context and lightweight lead tracking</h3>
+
+      <p>
+        A pre-filled message can also carry a simple context label. For
+        example, different pages can use messages such as
+        <em>Website inquiry: Product A</em> or
+        <em>Campaign inquiry: Summer offer</em>. This does not automatically
+        create analytics or a CRM record, but it can help a support or sales
+        team understand where a conversation may have originated when the
+        message is actually sent.
+      </p>
+
+      <h3>Professional communication</h3>
+
+      <p>
+        A concise opening message can make a public contact button feel more
+        intentional and professional. Instead of forcing the customer to
+        begin with an empty composer, the link can suggest a clear request.
+        Good pre-filled text should remain natural, short, and easy to edit.
+        It should support the customer rather than trying to lock them into a
+        rigid script.
+      </p>
+
+      <h3>Different links for different customer journeys</h3>
+
+      <p>
+        Businesses can create separate click-to-chat links for different
+        website sections or campaigns. A contact page may invite a general
+        question, a product page may identify the product name, and a service
+        page may ask for appointment information. Because the message can be
+        customized for each context, one phone number can still support
+        multiple entry points.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container article">
+
+      <h2>
+        Comprehensive FAQ Section
+      </h2>
+
+
+      <details>
+
+        <summary>
+          Why is my WhatsApp link showing an invalid number error?
+        </summary>
+
+        <p>
+          Check the phone number formatting first. A standard click-to-chat
+          link should use the full international number rather than a local
+          representation. Make sure the country code is included and remove
+          the leading plus sign, spaces, brackets, hyphens, and other display
+          formatting. Also verify that the resulting number has the expected
+          number of digits for the destination country and that it is actually
+          associated with a WhatsApp account. If the link structure is correct
+          but the destination number cannot be reached through WhatsApp, the
+          problem may be with the number or account rather than the URL
+          generator itself.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          How can I track which link a customer clicked?
+        </summary>
+
+        <p>
+          A plain wa.me link does not automatically provide a complete
+          analytics system. This generator also does not shorten, store, or
+          independently track generated links. For attribution, businesses
+          commonly use separate landing pages, campaign-specific links,
+          analytics on the page containing the button, unique source labels in
+          pre-filled messages, or a dedicated measurement system around the
+          customer journey. Keep in mind that a click is not the same as a
+          sent message: a visitor can open a WhatsApp conversation without
+          actually submitting the message.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Can I use a WhatsApp link for international customers?
+        </summary>
+
+        <p>
+          Yes, provided the destination number is written in the correct
+          international format and is reachable through WhatsApp. The key
+          point is that the country code must be included. Do not use a
+          country-specific local dialing format when building the web link.
+          International visitors can then use the same click-to-chat pathway
+          without first needing to know how to format the number in their own
+          phone system. Test the published link with a real destination before
+          distributing it widely.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Why does my pre-filled message show broken spaces or strange characters?
+        </summary>
+
+        <p>
+          Message text is placed inside a URL, so characters that have special
+          meaning in web addresses need URL encoding. Ordinary spaces are
+          commonly represented as <code>%20</code>, while characters such as
+          commas and other reserved symbols may also be encoded. Manually
+          replacing a few spaces is not enough when the message contains
+          punctuation, symbols, line breaks, or other special characters. A
+          proper URL encoder is safer because it handles the complete string
+          consistently.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Can I change the pre-filled message after opening the link?
+        </summary>
+
+        <p>
+          The pre-filled text is intended as starter content in the
+          conversation. The person opening the link can normally review and
+          edit the message before sending it. It is therefore better to write
+          the text as a helpful suggestion rather than as though the customer
+          has already confirmed the statement. Keep it accurate, concise, and
+          easy to modify so the recipient can personalize the final message.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Can I use a WhatsApp link on a website button or QR code?
+        </summary>
+
+        <p>
+          Yes. A click-to-chat URL can be used wherever a normal web link can
+          be placed, including website buttons, contact sections, profile
+          pages, digital documents, and QR codes. When using a QR code, make
+          sure the underlying URL is complete and test the printed or displayed
+          code from a separate device. Long URLs with pre-filled messages can
+          create denser QR patterns, so testing the final rendered code is
+          important before mass printing.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Is a wa.me link the same thing as the WhatsApp Business API?
+        </summary>
+
+        <p>
+          No. A wa.me click-to-chat link is a URL that helps a user start a
+          conversation. An API is a programmatic interface used for software
+          integrations and supported business workflows. A link by itself
+          does not grant API access, send automated messages on the sender's
+          behalf, create CRM records, or provide a messaging automation
+          platform. Businesses should treat the click-to-chat URL and their
+          separate WhatsApp Business integration as different parts of the
+          overall customer-contact system.
+        </p>
+
+      </details>
+
+
+      <details>
+
+        <summary>
+          Is it safe to publish a WhatsApp number in a public link?
+        </summary>
+
+        <p>
+          A public click-to-chat link necessarily exposes the destination
+          number as part of the link structure. Before publishing it, make
+          sure the number is authorized for public contact and is intended for
+          customer or visitor communication. Avoid placing a private person's
+          number in a public page without permission. For business use, it is
+          usually clearer to publish a dedicated contact number that is meant
+          for incoming enquiries.
+        </p>
+
+      </details>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container article">
+
+      <h2>
+        Practical Checklist Before Sharing a WhatsApp Link
+      </h2>
+
+      <ul>
+
+        <li>
+          Confirm the destination number uses the full international country
+          code and digits only.
+        </li>
+
+        <li>
+          Remove the leading <code>+</code>, spaces, brackets, and hyphens
+          from the number used in the URL.
+        </li>
+
+        <li>
+          Encode spaces and special characters in any custom message rather
+          than inserting raw URL-sensitive characters.
+        </li>
+
+        <li>
+          Test both the plain link and the link with its pre-filled message
+          before publishing it.
+        </li>
+
+        <li>
+          Use only a phone number that you are authorized to publish and make
+          available for customer contact.
+        </li>
+
+        <li>
+          Remember that a link click is different from a completed message
+          send; use an appropriate measurement system when attribution matters.
+        </li>
+
+      </ul>
+
+      <p>
+        Following these checks keeps the link simple, understandable, and
+        easier to troubleshoot. The generator handles the basic formatting
+        and message encoding for you, while the final responsibility remains
+        with the publisher to verify the destination number, test the customer
+        experience, and make sure the published contact information is
+        appropriate for its intended audience.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="container">
+
+      <div class="article-grid">
+
+        <article class="article-card">
+
+          <h3>Social bios</h3>
+
+          <p>
+            Use a click-to-chat link in profiles, contact pages and business
+            listings where direct messaging is useful.
+          </p>
+
+        </article>
+
+
+        <article class="article-card">
+
+          <h3>Pre-filled messages</h3>
+
+          <p>
+            Add a short starter message so customers can begin with context
+            instead of typing from scratch.
+          </p>
+
+        </article>
+
+
+        <article class="article-card">
+
+          <h3>No signup</h3>
+
+          <p>
+            NexusNova builds the standard wa.me URL in your browser.
+            It does not shorten, track or store the generated link.
+          </p>
+
+        </article>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+</main>
+
+
+<footer class="site-footer">
+
+  <div class="container footer-bottom">
+
+    <span>
+      © <span data-year></span> NexusNova Tools.
+    </span>
+
+    <a href="privacy.html">
+      Privacy
+    </a>
+
+  </div>
+
+</footer>
+
+
+<script src="assets/js/main.js" defer></script>
+
+<script>
+(()=>{
+  const phone=document.querySelector('#phone'),
+        message=document.querySelector('#message'),
+        result=document.querySelector('#result'),
+        copy=document.querySelector('#copy'),
+        open=document.querySelector('#open'),
+        status=document.querySelector('#status');
+
+  let url='';
+
+  const disable=()=>{
+    url='';
+    copy.disabled=true;
+    open.href='#';
+    open.setAttribute('aria-disabled','true');
+    open.setAttribute('tabindex','-1')
+  };
+
+  phone.addEventListener('input',()=>{
+    phone.value=phone.value.replace(/\D/g,'').slice(0,15);
+    disable()
+  });
+
+  message.addEventListener('input',disable);
+
+  document.querySelector('#generate').addEventListener('click',()=>{
+    const digits=phone.value.replace(/\D/g,'');
+
+    if(digits.length<7||digits.length>15){
+      disable();
+      result.textContent='Enter a valid international number with 7–15 digits.';
+      status.textContent='The number must use international format and contain only 7–15 digits.';
+      return
+    }
+
+    url='https://wa.me/'+digits+(message.value.trim()?('?text='+encodeURIComponent(message.value.trim())):'');
+
+    result.textContent=url;
+    copy.disabled=false;
+    open.href=url;
+    open.setAttribute('aria-disabled','false');
+    open.removeAttribute('tabindex');
+    status.textContent='Link generated locally and ready to share.'
+  });
+
+  copy.addEventListener('click',async()=>{
+    if(!url)return;
+
+    try{
+      await navigator.clipboard.writeText(url);
+      status.textContent='Copied to clipboard.'
+    }catch{
+      status.textContent='Copy failed. Select the link above manually.'
+    }
+  });
+
+  disable()
+})();
+</script>
+
+</body>
+</html>
