@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-09-24T23:21:58.124Z",
+  "generated_at": "2026-09-25T01:49:10.256Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,49 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-09-24T23:21:37.000Z",
+  "feed_generated_at": "2026-09-25T01:48:23.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 41,
+  "source_count": 37,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "us6000txhp",
+      "magnitude": 5.3,
+      "place": "72 km NW of Finschhafen, Papua New Guinea",
+      "time": "2026-09-24T23:30:28.053Z",
+      "updated": "2026-09-24T23:48:55.040Z",
+      "depth_km": 53.6,
+      "coordinates": {
+        "lat": -6.0863,
+        "lon": 147.3935
+      },
+      "significance": 432,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txhp",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txha",
+      "magnitude": 4.9,
+      "place": "Kermadec Islands, New Zealand",
+      "time": "2026-09-24T22:22:59.185Z",
+      "updated": "2026-09-25T00:11:52.040Z",
+      "depth_km": 48.8,
+      "coordinates": {
+        "lat": -29.4432,
+        "lon": -177.6601
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txha",
+      "pakistan_region": false
+    },
     {
       "id": "uu80157946",
       "magnitude": 3.04,
@@ -684,120 +722,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41338223",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sxksxl",
-      "magnitude": 3.7,
-      "place": "14 km SSE of Susitna North, Alaska",
-      "time": "2026-09-24T01:27:20.927Z",
-      "updated": "2026-09-24T21:23:08.636Z",
-      "depth_km": 26.8,
-      "coordinates": {
-        "lat": 62.04,
-        "lon": -149.756
-      },
-      "significance": 225,
-      "felt": 47,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sxksxl",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000tx7k",
-      "magnitude": 4.3,
-      "place": "282 km WNW of Neiafu, Tonga",
-      "time": "2026-09-24T00:53:50.791Z",
-      "updated": "2026-09-24T04:21:09.040Z",
-      "depth_km": 338.2,
-      "coordinates": {
-        "lat": -17.2621,
-        "lon": -176.2226
-      },
-      "significance": 284,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tx7k",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000tx7g",
-      "magnitude": 4.6,
-      "place": "223 km WNW of Abepura, Indonesia",
-      "time": "2026-09-24T00:26:38.374Z",
-      "updated": "2026-09-24T03:42:13.040Z",
-      "depth_km": 35,
-      "coordinates": {
-        "lat": -1.8133,
-        "lon": 138.7809
-      },
-      "significance": 326,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tx7g",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr2026267000",
-      "magnitude": 3.74,
-      "place": "47 km SE of Boca de Yuma, Dominican Republic",
-      "time": "2026-09-24T00:07:28.770Z",
-      "updated": "2026-09-24T03:34:14.040Z",
-      "depth_km": 87,
-      "coordinates": {
-        "lat": 18.0768,
-        "lon": -68.2911
-      },
-      "significance": 215,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr2026267000",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026sxhzwp",
-      "magnitude": 3,
-      "place": "13 km ENE of Slana, Alaska",
-      "time": "2026-09-24T00:05:25.735Z",
-      "updated": "2026-09-24T03:13:01.040Z",
-      "depth_km": 5,
-      "coordinates": {
-        "lat": 62.767,
-        "lon": -143.743
-      },
-      "significance": 138,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026sxhzwp",
-      "pakistan_region": false
-    },
-    {
-      "id": "hv75042947",
-      "magnitude": 3.18,
-      "place": "14 km SSE of Honaunau-Napoopoo, Hawaii",
-      "time": "2026-09-24T00:05:12.310Z",
-      "updated": "2026-09-24T10:20:10.548Z",
-      "depth_km": 7.4,
-      "coordinates": {
-        "lat": 19.3303,
-        "lon": -155.8277
-      },
-      "significance": 158,
-      "felt": 12,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75042947",
       "pakistan_region": false
     }
   ]
