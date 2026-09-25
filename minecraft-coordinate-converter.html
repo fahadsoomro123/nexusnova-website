@@ -707,7 +707,7 @@ document.getElementById('to-nether').onclick=()=>{
 
   out.textContent=
     Number.isFinite(x)&&Number.isFinite(z)
-      ?\`Nether ≈ X \${Number((x/8).toFixed(3))}, Z \${Number((z/8).toFixed(3))}\`
+      ?`Nether ≈ X ${Number((x/8).toFixed(3))}, Z ${Number((z/8).toFixed(3))}`
       :'Enter valid coordinates.';
 };
 
@@ -717,7 +717,7 @@ document.getElementById('to-over').onclick=()=>{
 
   out.textContent=
     Number.isFinite(x)&&Number.isFinite(z)
-      ?\`Overworld ≈ X \${Number((x*8).toFixed(3))}, Z \${Number((z*8).toFixed(3))}\`
+      ?`Overworld ≈ X ${Number((x*8).toFixed(3))}, Z ${Number((z*8).toFixed(3))}`
       :'Enter valid coordinates.';
 };
 </script>
