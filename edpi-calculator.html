@@ -1,1 +1,710 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>eDPI Calculator for Gaming — CS2, Valorant &amp; More</title>
+
+<meta
+  name="description"
+  content="Calculate gaming eDPI from mouse DPI and in-game sensitivity. Learn what eDPI means, how to calculate it manually, how to compare settings, and what eDPI cannot tell you."
+>
+
+<meta
+  name="robots"
+  content="index,follow,max-image-preview:large"
+>
+
+<meta name="theme-color" content="#f5f7fb">
+
+<link
+  rel="canonical"
+  href="https://nexusnovatools.com/edpi-calculator.html"
+>
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NexusNova Tools">
+<meta property="og:title" content="eDPI Calculator for Gaming — CS2, Valorant &amp; More">
+<meta
+  property="og:description"
+  content="Calculate gaming eDPI instantly and learn how DPI and in-game sensitivity combine."
+>
+<meta
+  property="og:url"
+  content="https://nexusnovatools.com/edpi-calculator.html"
+>
+
+<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+
+<meta name="twitter:card" content="summary">
+<meta
+  name="twitter:title"
+  content="eDPI Calculator for Gaming — CS2, Valorant &amp; More"
+>
+<meta
+  name="twitter:description"
+  content="Calculate eDPI and understand how mouse DPI and in-game sensitivity work together."
+>
+<meta
+  name="twitter:image"
+  content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"
+>
+
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
+<link rel="stylesheet" href="assets/css/motion.css" data-nexusnova-motion>
+<link
+  rel="stylesheet"
+  href="assets/css/compact-2026.css?v=20260910-1"
+  data-nexusnova-compact
+>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"Gaming eDPI Calculator",
+  "applicationCategory":"UtilitiesApplication",
+  "operatingSystem":"Any",
+  "url":"https://nexusnovatools.com/edpi-calculator.html",
+  "offers":{
+    "@type":"Offer",
+    "price":"0",
+    "priceCurrency":"USD"
+  },
+  "description":"A free browser calculator for effective DPI using mouse DPI multiplied by in-game sensitivity."
+}
+</script>
+
+</head>
+
+<body>
+
+<header class="site-header" data-header>
+  <div class="container nav-wrap">
+
+    <a
+      class="brand"
+      href="index.html"
+      aria-label="NexusNova Tools home"
+    >
+      <span class="brand-mark">N</span>
+
+      <span class="brand-copy">
+        <strong>NEXUSNOVA TOOLS</strong>
+        <small>FAST EVERYDAY UTILITIES</small>
+      </span>
+    </a>
+
+    <button
+      class="menu-btn"
+      type="button"
+      data-menu-btn
+      aria-expanded="false"
+      aria-label="Open navigation"
+    >
+      ☰
+    </button>
+
+    <nav
+      class="nav"
+      data-nav
+      aria-label="Primary navigation"
+    >
+      <a href="index.html">Home</a>
+      <a href="tools.html">Tools</a>
+      <a href="categories.html">Categories</a>
+      <a href="articles.html">Articles</a>
+      <a href="guides.html">Guides</a>
+    </nav>
+
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="container">
+
+      <a
+        class="breadcrumb"
+        href="gaming.html"
+      >
+        Gaming Tools
+      </a>
+
+      <span class="kicker">MOUSE SETTINGS</span>
+
+      <h1>
+        Gaming
+        <span class="gradient-text">
+          eDPI Calculator.
+        </span>
+      </h1>
+
+      <p>
+        Enter your mouse DPI and in-game sensitivity to calculate
+        effective DPI. Everything runs locally in your browser.
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- TOOL -->
+  <section class="section">
+    <div class="container">
+
+      <div class="tool-card">
+
+        <div class="form-row">
+
+          <div class="field">
+            <label for="mouse-dpi">
+              Mouse DPI
+            </label>
+
+            <input
+              id="mouse-dpi"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              placeholder="e.g. 800"
+            >
+          </div>
+
+          <div class="field">
+            <label for="game-sens">
+              In-game sensitivity
+            </label>
+
+            <input
+              id="game-sens"
+              type="number"
+              min="0.001"
+              step="0.001"
+              inputmode="decimal"
+              placeholder="e.g. 1.25"
+            >
+          </div>
+
+        </div>
+
+        <button
+          class="btn btn-primary"
+          id="edpi-run"
+          type="button"
+        >
+          Calculate eDPI
+        </button>
+
+        <div
+          class="result"
+          id="edpi-result"
+          aria-live="polite"
+        >
+          Formula: DPI × in-game sensitivity.
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- DEEP EXPLANATION -->
+  <section class="section">
+    <div class="container article">
+
+      <h2>What is eDPI?</h2>
+
+      <p>
+        eDPI means effective DPI. It is a simple comparison number
+        that combines your physical mouse DPI with the sensitivity
+        value selected inside a game. The standard calculation used
+        by this calculator is mouse DPI multiplied by in-game
+        sensitivity. For example, if your mouse is set to 800 DPI
+        and your game sensitivity is 1.25, your eDPI is 1,000.
+        The purpose of eDPI is not to measure skill or determine
+        whether a player is better than another player. Instead,
+        it gives you one number that can make sensitivity settings
+        easier to compare when the underlying game uses the same
+        sensitivity scale.
+      </p>
+
+      <h2>How to calculate eDPI manually</h2>
+
+      <p>
+        You do not need a calculator or special software to calculate
+        eDPI. First, find the DPI value currently configured on your
+        mouse or in your mouse software. Second, open the game and
+        find the exact in-game sensitivity value used for aiming or
+        camera movement. Third, multiply those two numbers together.
+        The formula is: eDPI = mouse DPI × in-game sensitivity.
+        For example, 400 DPI × 2.00 sensitivity equals 800 eDPI.
+        Another example is 800 DPI × 1.00 sensitivity, which also
+        equals 800 eDPI. These two setups have different physical
+        DPI and sensitivity inputs, but they produce the same eDPI
+        number.
+      </p>
+
+      <h3>Manual calculation steps</h3>
+
+      <ol>
+        <li>
+          Check your actual mouse DPI. Do not assume the mouse is
+          using its factory default setting.
+        </li>
+
+        <li>
+          Record the sensitivity value shown in the game settings.
+          Keep all decimal places that are relevant to the game.
+        </li>
+
+        <li>
+          Multiply DPI by sensitivity. For example:
+          800 × 0.75 = 600 eDPI.
+        </li>
+
+        <li>
+          Record the final eDPI together with the game name and the
+          original DPI/sensitivity pair so that you can reproduce the
+          setup later.
+        </li>
+      </ol>
+
+      <h2>Why eDPI is useful</h2>
+
+      <p>
+        eDPI is useful because two players may configure their mouse
+        differently while ending up with the same combined value.
+        One player might use 400 DPI and a sensitivity of 2.00,
+        while another uses 800 DPI and a sensitivity of 1.00.
+        Both combinations equal 800 eDPI. Recording the combined
+        number can therefore make discussions about mouse settings
+        easier, especially when comparing personal configurations,
+        testing a new setup, or documenting settings before changing
+        them.
+      </p>
+
+      <p>
+        It can also help when you are experimenting with your own
+        configuration. A sensible workflow is to keep your DPI fixed
+        and change only your in-game sensitivity. After each change,
+        record the new eDPI and how the setting feels in actual
+        gameplay. This makes your testing more repeatable because
+        you know which variable changed. Keeping notes also gives you
+        a reliable baseline that you can restore if a new sensitivity
+        does not feel comfortable.
+      </p>
+
+      <h2>What eDPI does not tell you</h2>
+
+      <p>
+        eDPI should not be treated as a complete description of how
+        aiming will feel. Mouse grip, mouse shape, desk space,
+        mousepad size, polling behavior, raw-input settings, display
+        characteristics, field of view, frame rate, game-specific
+        input processing and personal technique can all influence
+        control. A player can therefore use the same eDPI as another
+        player and still experience a noticeably different aiming
+        feel.
+      </p>
+
+      <p>
+        eDPI also does not automatically provide a valid comparison
+        between different games. Games can use different sensitivity
+        scales and camera/input relationships. A value that looks
+        identical numerically may not correspond to the same physical
+        turn distance or the same aiming experience in another title.
+        For cross-game comparisons, use a game-specific sensitivity
+        conversion method rather than assuming that equal eDPI means
+        equal sensitivity.
+      </p>
+
+      <h2>Worked examples</h2>
+
+      <p>
+        Consider a player using 800 DPI with a sensitivity of 1.25.
+        Multiply 800 by 1.25 and the result is 1,000 eDPI. If that
+        player later changes sensitivity to 0.90 while keeping DPI at
+        800, the new eDPI is 720. The difference is easy to identify
+        because only one input changed.
+      </p>
+
+      <p>
+        As another example, a player using 1600 DPI and 0.50
+        sensitivity has 800 eDPI. This demonstrates why looking only
+        at mouse DPI can be misleading. Two players can use different
+        DPI values while reaching the same combined eDPI. The number
+        is most useful when the game and sensitivity scale are known.
+      </p>
+
+      <h2>Practical setup advice</h2>
+
+      <p>
+        Before changing a sensitivity setting, write down your
+        current DPI, sensitivity and eDPI. Test one major setting at
+        a time rather than changing several variables simultaneously.
+        This makes it easier to understand what caused a change in
+        control. Also keep enough physical mouse space for the
+        movement style you are testing. A sensitivity number that is
+        mathematically valid may still be impractical if your desk
+        or mousepad does not provide enough room for the movements
+        required by the game.
+      </p>
+
+      <p>
+        The calculator gives you the arithmetic result. Your actual
+        preference should be based on repeatable testing, comfort,
+        control and the requirements of the game you are playing.
+        There is no single eDPI value that automatically makes every
+        player more accurate.
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container article">
+
+      <h2>eDPI Calculator FAQ</h2>
+
+      <details>
+        <summary>What is the eDPI formula?</summary>
+        <p>
+          The basic formula is eDPI = mouse DPI × in-game sensitivity.
+          If your mouse is configured to 800 DPI and your game
+          sensitivity is 1.00, the result is 800 eDPI. If the
+          sensitivity is 0.50 at the same DPI, the result is 400 eDPI.
+          The calculator simply performs this multiplication for you.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I calculate eDPI without this tool?</summary>
+        <p>
+          Yes. Find the DPI setting of your mouse, find the game's
+          sensitivity value, and multiply the two numbers manually.
+          For example, 400 DPI multiplied by 2.00 sensitivity equals
+          800 eDPI. Writing down the original values alongside the
+          result is useful when you want to reproduce the same setup
+          later.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is higher eDPI better for aiming?</summary>
+        <p>
+          Not automatically. eDPI is a measurement of the relationship
+          between DPI and in-game sensitivity; it is not a score of
+          aim quality. A higher or lower value may feel more suitable
+          depending on the player, game, mouse, available mousepad
+          space, field of view and movement style. Use eDPI to record
+          and compare settings, then evaluate those settings through
+          consistent practical testing.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can two different DPI and sensitivity combinations have the same eDPI?</summary>
+        <p>
+          Yes. For example, 400 DPI × 2.00 sensitivity equals 800 eDPI,
+          while 800 DPI × 1.00 sensitivity also equals 800 eDPI.
+          This is one of the main reasons the eDPI number is useful:
+          it combines two inputs into a single comparison value.
+          However, equal eDPI does not prove that two physical mouse
+          setups will feel identical because other input and hardware
+          factors can differ.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I compare eDPI between CS2 and Valorant?</summary>
+        <p>
+          You should not assume that the same eDPI number represents
+          exactly the same sensitivity experience across different
+          games. Games can use different sensitivity scales and input
+          relationships. When comparing CS2 and Valorant, use a
+          game-specific sensitivity conversion approach instead of
+          treating the raw eDPI values as directly interchangeable.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why does the same eDPI sometimes feel different?</summary>
+        <p>
+          eDPI only combines DPI and the in-game sensitivity number.
+          It does not describe every part of the input chain. Mouse
+          shape, grip, sensor behavior, polling settings, raw input,
+          field of view, display settings, frame rate and the amount
+          of physical desk space available for movement can all
+          affect the experience. Two players can therefore use the
+          same eDPI while preferring very different setups.
+        </p>
+      </details>
+
+      <details>
+        <summary>Should I change DPI and sensitivity at the same time?</summary>
+        <p>
+          For controlled testing, it is usually easier to keep one
+          variable fixed while changing the other. If you change both
+          simultaneously, it becomes harder to tell which change
+          affected your control. A practical method is to keep mouse
+          DPI fixed, adjust in-game sensitivity, calculate the new
+          eDPI, and test the result over several sessions before
+          deciding whether to keep it.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does eDPI measure mouse accuracy or skill?</summary>
+        <p>
+          No. eDPI is simply a calculation based on mouse DPI and
+          in-game sensitivity. It cannot measure reaction time,
+          precision, crosshair placement, movement skill, decision
+          making or overall game performance. Use the number as a
+          configuration reference, not as an evaluation of a player's
+          ability.
+        </p>
+      </details>
+
+    </div>
+  </section>
+
+
+  <!-- RELATED TOOL -->
+  <section class="section">
+    <div class="container">
+
+      <div class="section-head">
+
+        <div>
+          <span class="kicker">RELATED GAMING TOOL</span>
+
+          <h2>
+            Cross-game sensitivity conversion
+          </h2>
+        </div>
+
+        <p>
+          When comparing games, use a title-specific converter instead
+          of assuming equal eDPI values are directly equivalent.
+        </p>
+
+      </div>
+
+      <div class="article-grid">
+
+        <a
+          class="article-card"
+          href="gaming-sensitivity-converter.html"
+        >
+          <span class="tag">GAMING</span>
+
+          <h3>
+            CS2 ↔ Valorant Sensitivity Converter
+          </h3>
+
+          <p>
+            Convert sensitivity settings between supported game
+            scales for a more appropriate cross-game comparison.
+          </p>
+
+          <span class="card-link">
+            Open →
+          </span>
+        </a>
+
+        <a
+          class="article-card"
+          href="gaming.html"
+        >
+          <span class="tag">GAMING</span>
+
+          <h3>
+            Gaming Tools Hub
+          </h3>
+
+          <p>
+            Browse related gaming utilities and settings tools.
+          </p>
+
+          <span class="card-link">
+            Open →
+          </span>
+        </a>
+
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+
+<footer class="site-footer">
+
+  <div class="container footer-console">
+
+    <div>
+
+      <a
+        class="brand"
+        href="index.html"
+      >
+        <span class="brand-mark">N</span>
+
+        <span class="brand-copy">
+          <strong>NEXUSNOVA TOOLS</strong>
+          <small>FAST EVERYDAY UTILITIES</small>
+        </span>
+      </a>
+
+      <p class="footer-copy">
+        Free browser tools for practical digital tasks.
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <div class="footer-title">
+        Gaming
+      </div>
+
+      <div class="footer-links">
+
+        <a href="gaming.html">
+          Gaming Hub
+        </a>
+
+        <a href="gaming-sensitivity-converter.html">
+          Sensitivity Converter
+        </a>
+
+        <a href="edpi-calculator.html">
+          eDPI Calculator
+        </a>
+
+        <a href="articles/cs2-valorant-sensitivity-edpi-guide.html">
+          Aim Settings Guide
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <div>
+
+      <div class="footer-title">
+        Trust
+      </div>
+
+      <div class="footer-links">
+
+        <a href="tool-methodology.html">
+          Methodology
+        </a>
+
+        <a href="editorial-policy.html">
+          Editorial Policy
+        </a>
+
+        <a href="privacy.html">
+          Privacy
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="container footer-bottom">
+
+    <span>
+      © <span data-year></span> NexusNova Tools.
+    </span>
+
+    <span>
+      NEXUSNOVATOOLS.COM
+    </span>
+
+  </div>
+
+</footer>
+
+
+<script src="assets/js/main.js" defer></script>
+
+<script>
+(function(){
+
+  const dpi = document.getElementById('mouse-dpi');
+  const sens = document.getElementById('game-sens');
+  const out = document.getElementById('edpi-result');
+
+  function run(){
+
+    const d = Number(dpi.value);
+    const s = Number(sens.value);
+
+    if (
+      !Number.isFinite(d) ||
+      d <= 0 ||
+      !Number.isFinite(s) ||
+      s <= 0
+    ){
+
+      out.textContent =
+        'Enter a DPI and sensitivity greater than 0.';
+
+      return;
+    }
+
+    const value = d * s;
+
+    out.innerHTML =
+      '<strong>' +
+      Number(value.toFixed(2)).toLocaleString() +
+      '</strong> eDPI ' +
+      '<span class="mini-note">(' +
+      d.toLocaleString() +
+      ' DPI × ' +
+      s +
+      ')</span>';
+
+  }
+
+  document
+    .getElementById('edpi-run')
+    .addEventListener('click', run);
+
+  [dpi, sens].forEach(function(el){
+
+    el.addEventListener('keydown', function(e){
+
+      if (e.key === 'Enter'){
+        run();
+      }
+
+    });
+
+  });
+
+})();
+</script>
+
+</body>
+</html>
