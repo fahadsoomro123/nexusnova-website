@@ -324,26 +324,26 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 @media(max-width:920px){.nn-hp-compare{grid-template-columns:1fr 1fr}.nn-hp-flow{grid-template-columns:1fr 1fr}.nn-hp-bottom{grid-template-columns:1fr}}
 @media(max-width:720px){.nav{background:rgba(250,252,255,.98)!important}.page-hero{padding:22px 0 10px!important}.page-hero h1{font-size:clamp(34px,9vw,40px)!important;line-height:1.1!important}.section{padding:26px 0!important}.hero{padding:34px 0 20px!important}.hero-grid{gap:22px!important}.nn-hp-flow,.nn-hp-compare{grid-template-columns:1fr}.tool-card{padding:15px!important}.article h2{font-size:24px!important;margin-top:20px!important}.site-footer{margin-top:20px!important}}
 
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}
+
 /* ===== Absolute system-wide visual hover and footer contrast lock ===== */
 a.btn-primary, button.btn-primary, .btn-primary, [class*="btn-primary"], button, .btn, a.btn {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
 a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
-    background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
-    color: #ffffff !important;            /* Text stays 100% crisp white */
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
 }
 .footer-title, footer h4, .footer-column h4, .nn-consent-reopen {
     color: #0f172a !important;
 }
 .footer-legal-inline, .footer-legal-inline a {
-    color: #1e293b !important;
-}
-
-/* ===== NexusNova legal ampersand contrast lock ===== */
-.footer-links li:has(> a[href="/terms.html"]) {
-    color: #1e293b !important;
-}
-.footer-links li:has(> a[href="/terms.html"]) > a {
     color: #1e293b !important;
 }

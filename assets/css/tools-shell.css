@@ -557,26 +557,26 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 @media(max-width:720px){.trend-grid{grid-template-columns:repeat(2,1fr)}.trend-row{grid-template-columns:1fr}.trend-tool-main{padding-top:36px}.trend-hero{padding-top:48px}}
 @media(max-width:480px){.trend-grid{grid-template-columns:1fr}.trend-card{min-height:185px}.trend-card .trend-icon{margin:20px 0 15px}.trend-workspace{padding:16px}.trend-tool-head h1{font-size:40px}}
 
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}
+
 /* ===== Absolute system-wide visual hover and footer contrast lock ===== */
 a.btn-primary, button.btn-primary, .btn-primary, [class*="btn-primary"], button, .btn, a.btn {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
 a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
-    background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
-    color: #ffffff !important;            /* Text stays 100% crisp white */
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
 }
 .footer-title, footer h4, .footer-column h4, .nn-consent-reopen {
     color: #0f172a !important;
 }
 .footer-legal-inline, .footer-legal-inline a {
-    color: #1e293b !important;
-}
-
-/* ===== NexusNova legal ampersand contrast lock ===== */
-.footer-links li:has(> a[href="/terms.html"]) {
-    color: #1e293b !important;
-}
-.footer-links li:has(> a[href="/terms.html"]) > a {
     color: #1e293b !important;
 }
