@@ -1,5 +1,9 @@
 (()=>{
   'use strict';
+
+  const enforceCleanCanonical=()=>{const link=document.querySelector('link[rel="canonical"]');if(!link)return;try{const canonical=new URL(link.getAttribute('href')||location.href,location.origin);canonical.search='';canonical.hash='';link.setAttribute('href',canonical.href);}catch(_){}};
+  enforceCleanCanonical();
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceCleanCanonical,{once:true});
   const measurementId='G-YLPFKWSS12';
   const consentKey='nexusnova_analytics_consent_v1';
   if(window.__nexusnovaConsentReady)return;
@@ -24,6 +28,10 @@
   ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
   const deferred=()=>{const arm=()=>window.setTimeout(enable,5000);if('requestIdleCallback' in window)window.requestIdleCallback(arm,{timeout:2000});else arm();};
   if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});else deferred();
+
+  const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
+  const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
 
   // Keep every visible footer Contact link consistent across the entire site.
   const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
