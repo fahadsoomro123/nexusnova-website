@@ -71,3 +71,30 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
     color: #1e293b !important;
     text-decoration: underline !important;
 }
+
+/* ===== NexusNova absolute button background and footer contrast lock ===== */
+.btn-primary {
+    background: #1d4ed8 !important;
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover, a.btn-primary:hover, button.btn-primary:hover {
+    background: #1d4ed8 !important;
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+.footer-title, footer h4, .footer-column h4 {
+    color: #0f172a !important;
+}
+.nn-consent-reopen, button.nn-consent-reopen {
+    color: #0f172a !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+}
+.footer-legal-inline {
+    color: #1e293b !important;
+}
+.footer-legal-inline a {
+    color: #1e293b !important;
+    text-decoration: underline !important;
+}
