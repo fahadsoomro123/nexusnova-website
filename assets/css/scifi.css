@@ -125,3 +125,11 @@ h1,h2,h3{margin:0;color:var(--text);text-wrap:balance}h1{font-weight:900;letter-
   .site-header .nav{gap:0!important;flex-shrink:1;min-width:0}
   .site-header .nav a{padding:5px 4px!important;font-size:10px!important;white-space:nowrap}
 }
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}

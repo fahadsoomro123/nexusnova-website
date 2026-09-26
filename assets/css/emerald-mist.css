@@ -177,3 +177,11 @@ h1,h2,h3{color:#1f5e4d!important;text-wrap:balance}
 @media(max-width:720px){.site-header{top:6px!important;margin-top:6px!important}.section{padding:38px 0!important}.page-hero{padding:38px 0 16px!important}.nn-command-hero,.nn-flagship-hero{padding:42px 0 30px!important}.nn-flagship-copy h1{font-size:clamp(48px,14vw,66px)!important}.nn-flagship-stage{min-height:390px;border-radius:34px}.nn-proof-card{inset:30px 16px 32px 20px;padding:16px}.nn-proof-orb{width:160px;height:160px}.nn-proof-orb::before{inset:-20px}.nn-proof-orb::after{inset:-38px}.nn-proof-top{font-size:8px}.nn-product-row{gap:11px}.nn-compact-tools{grid-template-columns:1fr}.nn-trust-band{grid-template-columns:1fr;padding:18px;border-radius:28px}.nn-trust-copy{grid-column:auto}.footer-grid,.footer-console{gap:20px!important}.command-frame{grid-template-columns:1fr!important}.core-console{min-height:380px!important;transform:none!important}}
 @media(max-width:520px){.container{width:min(var(--max),calc(100% - 22px))!important}.nav-wrap{min-height:58px!important}.brand-mark{width:36px!important;height:36px!important}.nn-flagship-copy h1{font-size:50px!important}.nn-flagship-copy .hero-copy{font-size:16px}.nn-flagship-stage{min-height:350px}.nn-proof-orb{width:138px;height:138px}.nn-proof-labels span{font-size:8px;padding:7px 8px}.nn-product-card{padding:22px}.nn-product-card h3{font-size:27px}.home-search{display:grid!important;grid-template-columns:1fr!important}.home-search .btn{width:100%!important}.site-footer{margin-top:22px!important}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.nn-proof-orb{animation:none!important}}
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}

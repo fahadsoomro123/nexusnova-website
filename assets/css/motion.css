@@ -56,3 +56,11 @@ img[src$="fahad-creator.svg"]{content:url("../fahad-creator.webp")!important;obj
   .article-grid>.article-card,.category-grid>.category-card,.home-tools>.home-tool{grid-column:1!important;min-height:170px!important}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.nn-reveal,.nn-reveal.nn-visible{opacity:1;transform:none;transition:none}}
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}

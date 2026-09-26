@@ -86,3 +86,11 @@
   .cert-stack{width:95vw;max-width:100%;transform:none;filter:drop-shadow(0 22px 28px rgba(63,63,44,.18))}
   .cert-stack:before{transform:translate3d(0,10px,-8px)}.cert-stack:after{transform:translate3d(0,5px,-4px)}
 }
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}

@@ -639,3 +639,11 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
 .footer-legal-inline, .footer-legal-inline a {
     color: #1e293b !important;
 }
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}
