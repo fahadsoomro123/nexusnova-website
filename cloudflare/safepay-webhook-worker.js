@@ -17,6 +17,11 @@ const PLANS = Object.freeze({
 
 const encoder = new TextEncoder();
 
+// Per-isolate sliding-window checkout limiter. Cloudflare WAF/Distributed Durable Object limiting should complement this for fleet-wide enforcement.
+const ipCache = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const MAX_REQUESTS_PER_MINUTE = 5;
+
 function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
@@ -373,6 +378,24 @@ async function webhook(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // --- SECURE INJECTION START: RATE LIMITER ---
+    if (request.method === 'POST' && url.pathname === '/api/safepay/create-checkout') {
+      const clientIP = request.headers.get('cf-connecting-ip') || 'anonymous';
+      const currentTime = Date.now();
+      if (!ipCache.has(clientIP)) { ipCache.set(clientIP, []); }
+      let timestamps = ipCache.get(clientIP).filter(time => currentTime - time < RATE_LIMIT_WINDOW);
+      if (timestamps.length >= MAX_REQUESTS_PER_MINUTE) {
+        return new Response(JSON.stringify({ error: "Too many checkout requests. Please slow down." }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'Retry-After': '60' }
+        });
+      }
+      timestamps.push(currentTime);
+      ipCache.set(clientIP, timestamps);
+    }
+    // --- SECURE INJECTION END ---
+
     const cors = corsHeaders(request);
 
     if (request.method === 'OPTIONS' && (

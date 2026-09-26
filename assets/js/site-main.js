@@ -91,10 +91,11 @@
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');
   document.documentElement.classList.add('nexusnova-scifi');
   /* Homepage already ships these rules in home-bundle.css; other surfaces
      keep their existing per-page CSS loading. */
-  if(!isHome){
+  if(!isHome&&!hasShellBundle){
     const styles=[
       ['scifi',`${base}assets/css/scifi.css`],
       ['motion',`${base}assets/css/motion.css`],
@@ -121,45 +122,21 @@
      creating a forced-reflow hotspot in Lighthouse. */
   const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  const gamingPages=new Set(['gaming.html','gaming-sensitivity-converter.html','edpi-calculator.html','fps-frame-time-calculator.html','reaction-time-test.html','steam-playtime-calculator.html','minecraft-coordinate-converter.html','gaming-settings-notes.html','gamer-name-generator.html']);
-  if(page==='index.html'&&button&&nav){
-    const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};
-    button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});
-    nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});
-    window.addEventListener('resize',()=>{if(innerWidth>720)close()});
-    const ensureSecondaryNav=()=>{
-      if(!nav.querySelector('.nn-nav-signin')){
-        const signIn=document.createElement('a');
-        signIn.href='register.html?mode=signin';
-        signIn.textContent='Sign in';
-        signIn.className='nn-nav-auth nn-nav-signin';
-        nav.insertBefore(signIn,nav.querySelector('.nn-nav-signup')||null);
-      }
-      if(!nav.querySelector('a[href="gaming.html"]')){
-        const gaming=document.createElement('a');
-        gaming.href='gaming.html';
-        gaming.textContent='Gaming';
-        nav.appendChild(gaming);
-      }
-    };
-    deferHomeTask(ensureSecondaryNav,1200);
-  }
-
-  if(nav&&page!=='index.html'){
-    const items=[
-      ['index.html','Home'],['live.html',"🟢 Today's Prices"],['tools.html','Tools'],['categories.html','Categories'],['articles.html','Articles'],['guides.html','Guides'],['nova-intelligence.html','Nova Intelligence'],['gaming.html','Gaming']
-    ];
-    nav.innerHTML='';
-    items.forEach(([file,label])=>{
-      const link=document.createElement('a');link.href=file==='nova-intelligence.html'?'/nova-intelligence.html':`${base}${file}`;link.textContent=label;if(file==='nova-intelligence.html')link.setAttribute('data-nova-intelligence-nav','');
-      if(page===file||(file==='gaming.html'&&gamingPages.has(page))||(file==='articles.html'&&/\/articles\//.test(location.pathname))||(file==='tech.html'&&/\/tech\//.test(location.pathname))||(file==='guides.html'&&/\/guides\//.test(location.pathname))) link.setAttribute('aria-current','page');
-      nav.appendChild(link);
-    });
-    const authMode=new URLSearchParams(location.search).get('mode')==='signin'?'signin':'register';
-    const signIn=document.createElement('a');signIn.href=`${base}register.html?mode=signin`;signIn.textContent='Sign in';signIn.className='nn-nav-auth nn-nav-signin';if(page==='register.html'&&authMode==='signin')signIn.setAttribute('aria-current','page');nav.appendChild(signIn);
-    const signUp=document.createElement('a');signUp.href=`${base}register.html?mode=register`;signUp.textContent='Sign up';signUp.className='nn-nav-auth nn-nav-signup';if(page==='register.html'&&authMode!=='signin')signUp.setAttribute('aria-current','page');nav.appendChild(signUp);
-  }
-  if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
+  if(nav){
+    const current=location.pathname.replace(/\/+$/,'')||'/'
+    nav.querySelectorAll('a[href]').forEach(link=>{
+      const href=link.getAttribute('href')||''
+      if(/^(https?:|mailto:|javascript:|#)/i.test(href))return
+      let target=''
+      try{target=new URL(href,location.href).pathname.replace(/\/+$/,'')||'/'}catch(_){return}
+      const isSection=(target===current)||
+        (target.endsWith('/articles.html')&&/\/articles\//.test(location.pathname))||
+        (target.endsWith('/guides.html')&&/\/guides\//.test(location.pathname))||
+        (target.endsWith('/tech.html')&&/\/tech\//.test(location.pathname))
+      link.classList.toggle('active',isSection)
+      if(isSection)link.setAttribute('aria-current','page');else if(link.getAttribute('aria-current')==='page')link.removeAttribute('aria-current')
+    })
+  }  if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
 
   function deferHomeTask(task,delay=1200){if(page==='index.html')window.setTimeout(task,delay);else task()}
   const socialProfiles=[
