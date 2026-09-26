@@ -47,3 +47,15 @@ new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/exampl
 new ResizeObserver(fit).observe(viewer);fit();const clock=new THREE.Clock();let last=0;function tick(){requestAnimationFrame(tick);const t=clock.getElapsedTime();if(t-last<1/18)return;last=t;rig.rotation.y=(t/42)*Math.PI*2;rig.position.y=Math.sin(t*.5)*.012;shaders.forEach(s=>s.uniforms.uTime.value=t);renderer.render(scene,camera)}tick();
 </script>
 </body></html>
+<footer class="site-footer">
+  <div class="container">
+    <ul class="footer-links" style="list-style:none;margin:0;padding:0">
+        <li><a href="/terms.html">Terms</a> & <a href="/refund-policy.html">Refund Policy</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/editorial-policy.html">Editorial Policy</a></li>
+        <li><a href="/tool-methodology.html">Tool Methodology</a></li>
+        <li><a href="/privacy.html">Privacy</a></li>
+        <li><a href="/contact.html">Contact Us & Support</a></li>
+      </ul>
+  </div>
+</footer>

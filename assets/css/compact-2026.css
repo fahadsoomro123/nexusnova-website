@@ -98,3 +98,19 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
     color: #1e293b !important;
     text-decoration: underline !important;
 }
+
+/* ===== Absolute system-wide visual hover and footer contrast lock ===== */
+a.btn-primary, button.btn-primary, .btn-primary, [class*="btn-primary"], button, .btn, a.btn {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+    background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
+    color: #ffffff !important;            /* Text stays 100% crisp white */
+}
+.footer-title, footer h4, .footer-column h4, .nn-consent-reopen {
+    color: #0f172a !important;
+}
+.footer-legal-inline, .footer-legal-inline a {
+    color: #1e293b !important;
+}
