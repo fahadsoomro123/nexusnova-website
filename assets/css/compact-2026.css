@@ -50,3 +50,24 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 .nn-flagship-hero,.nn-proof-card,.nn-product-card,.nn-trust-band,.nn-trust-item,.home-tool{color:#17213a!important}.nn-proof-card,.nn-product-card,.nn-trust-band,.nn-trust-item,.home-tool{background:rgba(255,255,255,.84)!important;border-color:var(--line)!important;box-shadow:0 12px 34px rgba(45,55,110,.08)!important}.nn-flagship-hero{padding-top:42px!important;padding-bottom:22px!important}.nn-proof-card{border-radius:22px!important}.nn-compact-tools{gap:10px!important}.home-tool{padding:14px 15px!important;border-radius:15px!important}.home-tool span,.nn-product-card p,.nn-trust-copy p,.nn-trust-item span{color:#5c6780!important}.micro-status{color:#53607a!important}.nn-proof-top,.nn-proof-360-status,.nn-proof-360-meta,.nn-proof-labels span{color:#3f4a66!important}
 @media(max-width:920px){.nn-hp-compare{grid-template-columns:1fr 1fr}.nn-hp-flow{grid-template-columns:1fr 1fr}.nn-hp-bottom{grid-template-columns:1fr}}
 @media(max-width:720px){.nav{background:rgba(250,252,255,.98)!important}.page-hero{padding:22px 0 10px!important}.page-hero h1{font-size:clamp(34px,9vw,40px)!important;line-height:1.1!important}.section{padding:26px 0!important}.hero{padding:34px 0 20px!important}.hero-grid{gap:22px!important}.nn-hp-flow,.nn-hp-compare{grid-template-columns:1fr}.tool-card{padding:15px!important}.article h2{font-size:24px!important;margin-top:20px!important}.site-footer{margin-top:20px!important}}
+
+/* ===== NexusNova unified footer + CTA contrast lock ===== */
+a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+.footer-title, footer h4, .footer-column h4 {
+    color: #0f172a !important;
+}
+.nn-consent-reopen, button.nn-consent-reopen {
+    color: #0f172a !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+}
+.footer-legal-inline {
+    color: #1e293b !important;
+}
+.footer-legal-inline a {
+    color: #1e293b !important;
+    text-decoration: underline !important;
+}
