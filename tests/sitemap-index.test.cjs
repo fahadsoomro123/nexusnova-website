@@ -13,7 +13,7 @@ test('central sitemap index exposes only the canonical main sitemap', () => {
 });
 
 test('robots advertises the central sitemap index', () => {
-  assert.match(robots, /^Sitemap: https:\/\/nexusnovatools\.com\/sitemap-index\.xml$/m);
+  assert.match(robots, /^Sitemap: https:\/\/nexusnovatools\.com\/sitemap\.xml$/m);
 });
 
 test('main sitemap contains only unique HTTPS canonical URLs and the previously omitted public pages', () => {
