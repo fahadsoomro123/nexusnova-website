@@ -347,3 +347,21 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
 .footer-legal-inline, .footer-legal-inline a {
     color: #1e293b !important;
 }
+
+/* ===== Absolute global patch to remove blue background strip from Privacy choices components ===== */
+button.nn-consent-reopen,
+.site-footer button.nn-consent-reopen,
+.footer-links button.nn-consent-reopen,
+.nn-consent-reopen {
+    background: none !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #0f172a !important; /* Forces 100% crisp readable dark charcoal black text */
+    text-decoration: underline !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
