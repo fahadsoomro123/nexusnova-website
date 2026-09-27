@@ -179,12 +179,12 @@ h3{font-size:21px}
     text-decoration: underline !important;
 }
 
-/* ===== Absolute system-wide visual hover and footer contrast lock ===== */
-.site-footer a.btn-primary, .site-footer button.btn-primary, .site-footer .btn-primary, .site-footer [class*="btn-primary"], .site-footer button, .site-footer .btn, .site-footer a.btn {
+/* ===== Narrow footer consent-control contrast lock ===== */
+.site-footer .nn-consent-reopen {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
-.site-footer a.btn-primary:hover, .site-footer button.btn-primary:hover, .site-footer .btn-primary:hover, .site-footer [class*="btn-primary"]:hover, .site-footer button:hover, .site-footer .btn:hover, .site-footer a.btn:hover {
+.site-footer .nn-consent-reopen:hover {
     background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
     color: #ffffff !important;            /* Text stays 100% crisp white */
 }
