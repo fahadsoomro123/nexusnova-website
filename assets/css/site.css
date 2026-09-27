@@ -222,13 +222,23 @@ div.nn-consent-reopen {
     visibility: visible !important;
 }
 
-/* ===== Isolated screenshot-button contrast/pointer lock ===== */
-.nav .navlinks > .navcta[href="#pricing"]:hover,
-.hero .ctaRow > a.btn.primary[href="#live-verification"]:hover,
-.hp-commerce-plans > .hp-commerce-plan.is-featured > a.btn.primary[href="humanproof-checkout.html?plan=starter"]:hover {
-  cursor: pointer !important;
+/* ===== 1. VIEW PRICING (Top Header Text Link) Solid Blue Hover Lock ===== */
+.nav .navlinks > a.navcta[href="#pricing"]:hover {
+  background: #1d4ed8 !important;
+  background-color: #1d4ed8 !important;
   color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  opacity: 1 !important;
 }
 
+/* ===== 2. START LIVE VERIFICATION (Hero Action Badge) Solid Blue Hover Lock ===== */
+.hero .ctaRow > a.btn.primary[href="#live-verification"]:hover {
+  background: #1d4ed8 !important;
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+/* ===== 3. CHOOSE STARTER (HumanProof Pricing Table Button) Solid Blue Hover Lock ===== */
+.hp-commerce-plans > .hp-commerce-plan.is-featured > a.btn.primary[href="humanproof-checkout.html?plan=starter"]:hover {
+  background: #1d4ed8 !important;
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
