@@ -221,3 +221,14 @@ div.nn-consent-reopen {
     opacity: 1 !important;
     visibility: visible !important;
 }
+
+/* ===== Isolated screenshot-button contrast/pointer lock ===== */
+.nav .navlinks > .navcta[href="#pricing"]:hover,
+.hero .ctaRow > a.btn.primary[href="#live-verification"]:hover,
+.hp-commerce-plans > .hp-commerce-plan.is-featured > a.btn.primary[href="humanproof-checkout.html?plan=starter"]:hover {
+  cursor: pointer !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
