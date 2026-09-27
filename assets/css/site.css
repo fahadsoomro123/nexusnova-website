@@ -132,7 +132,7 @@ h3{font-size:21px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 /* ===== NexusNova unified footer + CTA contrast lock ===== */
-a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+.site-footer button:hover, .site-footer .btn:hover, .site-footer a.btn:hover, .site-footer [class*="btn-primary"]:hover {
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
 }
@@ -158,7 +158,7 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
 }
-.btn-primary:hover, a.btn-primary:hover, button.btn-primary:hover {
+.site-footer .btn-primary:hover, .site-footer a.btn-primary:hover, .site-footer button.btn-primary:hover {
     background: #1d4ed8 !important;
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
@@ -180,11 +180,11 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
 }
 
 /* ===== Absolute system-wide visual hover and footer contrast lock ===== */
-a.btn-primary, button.btn-primary, .btn-primary, [class*="btn-primary"], button, .btn, a.btn {
+.site-footer a.btn-primary, .site-footer button.btn-primary, .site-footer .btn-primary, .site-footer [class*="btn-primary"], .site-footer button, .site-footer .btn, .site-footer a.btn {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
-a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+.site-footer a.btn-primary:hover, .site-footer button.btn-primary:hover, .site-footer .btn-primary:hover, .site-footer [class*="btn-primary"]:hover, .site-footer button:hover, .site-footer .btn:hover, .site-footer a.btn:hover {
     background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
     color: #ffffff !important;            /* Text stays 100% crisp white */
 }

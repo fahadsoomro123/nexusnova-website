@@ -32,7 +32,7 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 .nav-wrap{min-height:62px!important}
 .brand{color:#17213a!important}.brand-mark{width:35px!important;height:35px!important;border-radius:11px!important;background:linear-gradient(145deg,#6558ff,#0c789e 58%,#744bd8)!important;color:white!important;box-shadow:0 8px 22px rgba(84,79,190,.20)!important}.brand small{color:#5f6980!important}
 .nav a{color:#4d5a75!important;padding:8px 11px!important;font-size:13px!important}.nav a:hover,.nav a[aria-current="page"]{background:rgba(101,88,255,.08)!important;color:#17213a!important}.menu-btn{background:white!important;color:#17213a!important;border-color:var(--line)!important}
-.btn{min-height:42px!important;padding:0 15px!important;border-radius:12px!important;background:white!important;color:#24304d!important;border-color:var(--line)!important;box-shadow:0 5px 16px rgba(45,55,110,.06)!important}.btn:hover{background:#fbfcff!important}.btn-primary{color:white!important;border-color:transparent!important;background:linear-gradient(135deg,#6558ff,#0c789e 52%,#744bd8)!important;box-shadow:0 10px 24px rgba(82,76,190,.20)!important}
+.btn{min-height:42px!important;padding:0 15px!important;border-radius:12px!important;background:white!important;color:#24304d!important;border-color:var(--line)!important;box-shadow:0 5px 16px rgba(45,55,110,.06)!important}.hero-actions .btn:hover,.hero-actions a.btn:hover,.hero-actions button.btn:hover,.cta .btn:hover,.cta a.btn:hover,.cta button.btn:hover{background:#fbfcff!important}.hero-actions .btn-primary:hover,.hero-actions a.btn-primary:hover,.hero-actions button.btn-primary:hover,.cta .btn-primary:hover,.cta a.btn-primary:hover,.cta button.btn-primary:hover{background:#1d4ed8!important;background-color:#1d4ed8!important;color:#ffffff!important}.btn-primary{color:white!important;border-color:transparent!important;background:linear-gradient(135deg,#6558ff,#0c789e 52%,#744bd8)!important;box-shadow:0 10px 24px rgba(82,76,190,.20)!important}
 .gradient-text{background:linear-gradient(95deg,#4239bb 0%,#6558ff 38%,#0c789e 67%,#744bd8 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
 .page-hero{padding:28px 0 14px!important}.page-hero h1{font-size:clamp(36px,4.2vw,52px)!important;line-height:1.08!important;margin-top:8px!important}.page-hero p{font-size:15px!important;line-height:1.55!important;margin:8px 0!important;color:var(--muted)!important}.breadcrumb{margin-bottom:10px!important;color:#53607a!important}.kicker{color:#4f46c8!important;font-size:10px!important;letter-spacing:.11em!important}
 .hero{padding:48px 0 28px!important}.hero-copy{font-size:16px!important;margin:16px 0 20px!important;color:var(--muted)!important}.hero-grid{gap:34px!important}
@@ -52,7 +52,7 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 @media(max-width:720px){.nav{background:rgba(250,252,255,.98)!important}.page-hero{padding:22px 0 10px!important}.page-hero h1{font-size:clamp(34px,9vw,40px)!important;line-height:1.1!important}.section{padding:26px 0!important}.hero{padding:34px 0 20px!important}.hero-grid{gap:22px!important}.nn-hp-flow,.nn-hp-compare{grid-template-columns:1fr}.tool-card{padding:15px!important}.article h2{font-size:24px!important;margin-top:20px!important}.site-footer{margin-top:20px!important}}
 
 /* ===== NexusNova unified footer + CTA contrast lock ===== */
-a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+.site-footer button:hover, .site-footer .btn:hover, .site-footer a.btn:hover, .site-footer [class*="btn-primary"]:hover {
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
 }
@@ -78,7 +78,7 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
 }
-.btn-primary:hover, a.btn-primary:hover, button.btn-primary:hover {
+.site-footer .btn-primary:hover, .site-footer a.btn-primary:hover, .site-footer button.btn-primary:hover {
     background: #1d4ed8 !important;
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
@@ -100,13 +100,21 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
 }
 
 /* ===== Absolute system-wide visual hover and footer contrast lock ===== */
-a.btn-primary, button.btn-primary, .btn-primary, [class*="btn-primary"], button, .btn, a.btn {
+.site-footer a.btn-primary, .site-footer button.btn-primary, .site-footer .btn-primary, .site-footer [class*="btn-primary"], .site-footer button, .site-footer .btn, .site-footer a.btn {
     background-color: #2563eb !important;
     color: #ffffff !important;
 }
-a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-primary"]:hover, button:hover, .btn:hover, a.btn:hover {
+.site-footer a.btn-primary:hover, .site-footer button.btn-primary:hover, .site-footer .btn-primary:hover, .site-footer [class*="btn-primary"]:hover, .site-footer button:hover, .site-footer .btn:hover, .site-footer a.btn:hover {
     background-color: #1d4ed8 !important; /* Solid dark blue background stays visible website-wide */
     color: #ffffff !important;            /* Text stays 100% crisp white */
+}
+
+/* Privacy-choice control: constrain the override to its own component. */
+.site-footer .nn-consent-reopen:hover,
+.site-footer button.nn-consent-reopen:hover {
+    background:transparent !important;
+    background-color:transparent !important;
+    color:#1e293b !important;
 }
 .footer-title, footer h4, .footer-column h4, .nn-consent-reopen {
     color: #0f172a !important;
