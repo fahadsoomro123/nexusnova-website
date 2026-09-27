@@ -203,20 +203,21 @@ a.btn-primary:hover, button.btn-primary:hover, .btn-primary:hover, [class*="btn-
     color: #1e293b !important;
 }
 
-/* ===== Absolute global patch to remove blue background strip from Privacy choices components ===== */
+/* ===== Absolute global fix to left-align Privacy choices and match list layout ===== */
+.nn-consent-reopen,
 button.nn-consent-reopen,
-.site-footer button.nn-consent-reopen,
-.footer-links button.nn-consent-reopen,
-.nn-consent-reopen {
+div.nn-consent-reopen {
     background: none !important;
     background-color: transparent !important;
     border: 0 !important;
-    padding: 0 !important;
+    padding: 4px 0 !important; /* Small clean top/bottom padding to match standard li elements */
     margin: 0 !important;
-    color: #0f172a !important; /* Forces 100% crisp readable dark charcoal black text */
+    color: #1e293b !important; /* Match the exact slate-grey color of other links */
     text-decoration: underline !important;
     cursor: pointer !important;
-    display: inline-block !important;
+    display: block !important; /* Force block to drop to a fresh clean line */
+    text-align: left !important; /* Strictly force absolute left alignment */
+    font-size: 14px !important; /* Match standard footer link typography sizing */
     opacity: 1 !important;
     visibility: visible !important;
 }
