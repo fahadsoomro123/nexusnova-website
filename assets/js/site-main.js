@@ -143,7 +143,9 @@
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
     ['Instagram','@nexusnovatools','https://www.instagram.com/nexusnovatools/'],
-    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools']
+    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools'],
+    ['YouTube','@NexusNovaTools','https://youtube.com'],
+    ['LinkedIn','NexusNovaTools','https://linkedin.com']
   ];
   const footerGrid=document.querySelector('.site-footer .footer-console,.site-footer .footer-grid');
   if(footerGrid&&!footerGrid.querySelector('[data-social-links]')){
