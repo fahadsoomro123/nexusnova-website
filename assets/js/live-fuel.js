@@ -19,6 +19,7 @@
     if(value===0)return 'No change vs previous week';
     return `${value>0?'+':''}${value.toFixed(3)} USD/gal vs previous week`;
   };
+  const freshUrl=url=>`${url}?v=${Date.now()}`;
   const euChange=value=>{
     if(!Number.isFinite(value))return 'Previous published-week comparison unavailable';
     if(value===0)return 'No change vs previous published week';
@@ -27,7 +28,7 @@
 
   const pakistanStatus=document.querySelector('[data-fuel-status]');
   if(pakistanStatus){
-    fetch('assets/data/live-fuel.json',{cache:'no-store'})
+    fetch(freshUrl('assets/data/live-fuel.json'),{cache:'no-store'})
       .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})
       .then(data=>{
         const petrol=Number(data?.prices?.petrol?.pkr_per_litre);
@@ -50,7 +51,7 @@
 
   const usStatus=document.querySelector('[data-fuel-us-status]');
   if(usStatus){
-    fetch('assets/data/live-fuel-us.json',{cache:'no-store'})
+    fetch(freshUrl('assets/data/live-fuel-us.json'),{cache:'no-store'})
       .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})
       .then(data=>{
         const gasoline=Number(data?.prices?.regular_gasoline?.usd_per_gallon);
@@ -75,7 +76,7 @@
 
   const euStatus=document.querySelector('[data-fuel-eu-status]');
   if(euStatus){
-    fetch('assets/data/live-fuel-eu.json',{cache:'no-store'})
+    fetch(freshUrl('assets/data/live-fuel-eu.json'),{cache:'no-store'})
       .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()})
       .then(data=>{
         const countries=Array.isArray(data?.countries)?data.countries:[];
