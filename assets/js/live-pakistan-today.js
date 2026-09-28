@@ -79,6 +79,8 @@
   };
 
   let datasets=null;
+  let cityBound=false;
+  let refreshTimer=null;
   const render=()=>{
     if(!datasets)return;
     const {currency,gold,fuel,weather}=datasets;
@@ -107,7 +109,10 @@
       if(citySelect){
         citySelect.replaceChildren(...weather.cities.map(city=>{const option=document.createElement('option');option.value=city.slug;option.textContent=city.name;return option;}));
         citySelect.value=weather.cities.some(city=>city.slug==='karachi')?'karachi':weather.cities[0].slug;
-        citySelect.addEventListener('change',()=>{try{render()}catch(error){console.warn('Pakistan Today weather card failed:',error)}});
+        if(!cityBound){
+          cityBound=true;
+          citySelect.addEventListener('change',()=>{try{render()}catch(error){console.warn('Pakistan Today weather card failed:',error)}});
+        }
       }
       render();
     }catch(error){
@@ -117,6 +122,21 @@
       console.warn('NexusNova Pakistan Today dashboard unavailable:',error);
     }
   };
-  const start=()=>{syncOptionalModuleState();load()};
+  const start=()=>{
+    syncOptionalModuleState();
+    load();
+    if(refreshTimer)return;
+    refreshTimer=window.setInterval(()=>{
+      if(document.hidden)return;
+      syncOptionalModuleState();
+      load();
+    },300000);
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden){
+        syncOptionalModuleState();
+        load();
+      }
+    });
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
