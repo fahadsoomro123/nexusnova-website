@@ -259,7 +259,7 @@ def check_favicons(repo_root: Path, source_file: Path, parser: AssetParser, repo
     if not icon_links:
         report.favicon_failures += 1
         report.findings.append(
-            Finding("FAIL", "FAVICON", "No <link rel="icon"> asset was found.")
+            Finding("FAIL", "FAVICON", 'No <link rel="icon"> asset was found.')
         )
         return
 
