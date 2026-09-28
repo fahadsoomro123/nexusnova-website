@@ -18,6 +18,7 @@ Optional explicit repository root:
 from __future__ import annotations
 
 import argparse
+import os
 import posixpath
 import re
 import sys
@@ -536,16 +537,41 @@ def parse_args() -> argparse.Namespace:
 
 
 def infer_repo_root() -> Path:
-    script_path = Path(__file__).resolve()
+    """
+    Resolve the repository root safely in both normal module execution and
+    dynamic runtimes where Python may not define __file__.
+    """
+    module_file = globals().get("__file__")
 
-    # .github/scripts/manual_review_health_check.py
-    # parents[2] -> repository root
-    candidate = script_path.parents[2]
+    if module_file:
+        try:
+            script_path = Path(module_file).expanduser().resolve()
 
-    if (candidate / ".git").exists():
-        return candidate
+            # .github/scripts/manual_review_health_check.py
+            # parents[2] -> repository root
+            candidate = script_path.parents[2]
 
-    return Path.cwd().resolve()
+            if (candidate / ".git").exists():
+                return candidate
+        except (OSError, RuntimeError, IndexError):
+            # Fall through to cwd-based discovery.
+            pass
+
+    # Dynamic execution environments may not expose __file__. Start from
+    # the current working directory and walk upward until the Git root is
+    # found. This also handles execution from inside a repository subfolder.
+    try:
+        cwd = Path.cwd().resolve()
+    except (OSError, RuntimeError):
+        cwd = Path(os.path.abspath(os.getcwd()))
+
+    for candidate in (cwd, *cwd.parents):
+        if (candidate / ".git").exists():
+            return candidate
+
+    # Last-resort deterministic fallback: use the current working directory
+    # itself rather than raising because a file-binding is unavailable.
+    return cwd
 
 
 def main() -> int:
