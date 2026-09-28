@@ -10,6 +10,17 @@ const TURNSTILE_VERIFY_PATH = '/api/auth/turnstile/verify';
 const ACCOUNT_ELIGIBILITY_PATH = '/api/account/eligibility';
 const REFERRAL_ATTACH_PATH = '/api/referral/attach';
 const MINING_SESSION_PATH = '/api/mining/session';
+const FBR_ATL_PATH = '/api/fbr/atl-status';
+const FBR_ATL_ORIGINS = new Set([
+  'https://nexusnovatools.com',
+  'https://www.nexusnovatools.com'
+]);
+let fbrVerificationCache = { token: '', expiresAt: 0 };
+const FBR_TOKEN_CACHE_MS = 5 * 60 * 1000;
+const FBR_ATL_LIMIT_WINDOW_MS = 60 * 1000;
+const FBR_ATL_LIMIT_MAX = 8;
+const fbrAtlRateCache = new Map();
+
 const ALLOWED_ORIGINS = new Set([
   'https://nexusnovatools.com',
   'https://appassets.androidplatform.net'
@@ -64,6 +75,25 @@ export default {
       return authCors(request, await attachReferralRequest(request, env));
     }
 
+    if (request.method === 'OPTIONS' && url.pathname === FBR_ATL_PATH) {
+      const origin = String(request.headers.get('Origin') || '');
+      if (!FBR_ATL_ORIGINS.has(origin)) return new Response(null, { status: 403 });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': origin,
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Max-Age': '600',
+          'Vary': 'Origin'
+        }
+      });
+    }
+
+    if (request.method === 'POST' && url.pathname === FBR_ATL_PATH) {
+      return fbrAtlStatus(request);
+    }
+
     if (request.method === 'GET' && url.pathname === AVATAR_PATH) {
       return telegramAvatar(request, env);
     }
@@ -77,6 +107,163 @@ export default {
   }
 };
 
+async function fbrAtlStatus(request) {
+  const origin = String(request.headers.get('Origin') || '');
+  if (!FBR_ATL_ORIGINS.has(origin)) {
+    return fbrJson(origin, { ok: false, code: 'permission-denied', error: 'Request origin is not allowed.' }, 403);
+  }
+
+  const ip = String(request.headers.get('CF-Connecting-IP') || 'anonymous');
+  const now = Date.now();
+  const recent = (fbrAtlRateCache.get(ip) || []).filter((time) => now - time < FBR_ATL_LIMIT_WINDOW_MS);
+  if (recent.length >= FBR_ATL_LIMIT_MAX) {
+    return fbrJson(origin, { ok: false, code: 'too-many-requests', error: 'Too many FBR checks. Please wait a little and try again.' }, 429, { 'Retry-After': '60' });
+  }
+  recent.push(now);
+  fbrAtlRateCache.set(ip, recent);
+
+  let body;
+  try {
+    const text = await request.text();
+    if (text.length > 4096) throw new Error('request-too-large');
+    body = JSON.parse(text || '{}');
+  } catch (error) {
+    return fbrJson(origin, { ok: false, code: error && error.message === 'request-too-large' ? 'request-too-large' : 'invalid-body', error: 'The verification request is invalid.' }, 400);
+  }
+
+  const identifierType = String(body && body.identifierType || '').trim();
+  const identifier = normalizeFbrIdentifier(identifierType, body && body.identifier);
+  const validTypes = new Set(['CNIC', 'NTN', 'Passport No.', 'Reg/Inc. No.']);
+  if (!validTypes.has(identifierType) || !isValidFbrIdentifier(identifierType, identifier)) {
+    return fbrJson(origin, { ok: false, code: 'invalid-identifier', error: 'Enter a valid identification number for the selected type.' }, 400);
+  }
+
+  const payload = JSON.stringify({ protocolId: '1004', outputType: '4', identifierType: identifierType, identifier: identifier, date: currentFbrDate() });
+  let upstream;
+  try {
+    const token = await getFbrVerificationToken(false);
+    upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: payload
+    });
+    if (upstream.status === 401) {
+      const freshToken = await getFbrVerificationToken(true);
+      upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + freshToken, Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: payload
+      });
+    }
+  } catch (error) {
+    console.error('FBR ATL upstream unavailable', String(error && error.message || error || 'unknown'));
+    return fbrJson(origin, { ok: false, code: 'fbr-unavailable', error: 'FBR verification is temporarily unavailable. Please try again.' }, 503);
+  }
+
+  const upstreamText = await upstream.text();
+  if (!upstream.ok) {
+    console.error('FBR ATL upstream returned', upstream.status);
+    return fbrJson(origin, { ok: false, code: upstream.status === 401 ? 'fbr-auth-expired' : 'fbr-upstream-error', error: upstream.status === 404 ? 'No FBR verification result was returned.' : 'FBR verification could not be completed right now.' }, upstream.status === 404 ? 404 : 502);
+  }
+
+  let data;
+  try { data = JSON.parse(upstreamText); } catch {
+    return fbrJson(origin, { ok: false, code: 'fbr-invalid-response', error: 'FBR returned an unexpected response.' }, 502);
+  }
+
+  const parsed = parseFbrAtlResponse(data);
+  return fbrJson(origin, {
+    ok: true,
+    identifierType: identifierType,
+    identifierLast4: identifier.slice(-4),
+    status: parsed.status,
+    statusText: parsed.statusText,
+    registrationNo: parsed.registrationNo || null,
+    checkedAt: new Date().toISOString(),
+    source: 'FBR IRIS 2.0'
+  });
+}
+
+function fbrJson(origin, data, status, extraHeaders) {
+  return new Response(JSON.stringify(data), {
+    status: status || 200,
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin', ...(extraHeaders || {}) }
+  });
+}
+
+function normalizeFbrIdentifier(type, value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (type === 'CNIC') return raw.replace(/[^0-9]/g, '');
+  if (type === 'NTN') return raw.replace(/[^0-9]/g, '');
+  return raw.replace(/\s+/g, ' ').slice(0, 20);
+}
+
+function isValidFbrIdentifier(type, value) {
+  if (type === 'CNIC') return /^\d{13}$/.test(value);
+  if (type === 'NTN') return /^\d{7}$/.test(value);
+  return /^[A-Za-z0-9][A-Za-z0-9 ./_-]{0,19}$/.test(value);
+}
+
+function currentFbrDate() {
+  const date = new Date(Date.now() + 5 * 60 * 60 * 1000);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(date.getUTCDate()).padStart(2, '0') + ',' + months[date.getUTCMonth()] + ',' + date.getUTCFullYear();
+}
+
+async function getFbrVerificationToken(forceRefresh) {
+  if (!forceRefresh && fbrVerificationCache.token && Date.now() < fbrVerificationCache.expiresAt) return fbrVerificationCache.token;
+  const home = await fetch('https://iris.fbr.gov.pk/', { redirect: 'follow' });
+  if (!home.ok) throw new Error('fbr-home-' + home.status);
+  const html = await home.text();
+  const match = html.match(/(?:src|href)=["']([^"']*main\.[A-Za-z0-9._-]+\.js)["']/i);
+  if (!match) throw new Error('fbr-main-bundle-not-found');
+  const bundleUrl = new URL(match[1], 'https://iris.fbr.gov.pk/').toString();
+  const bundle = await fetch(bundleUrl, { redirect: 'follow' });
+  if (!bundle.ok) throw new Error('fbr-main-' + bundle.status);
+  const source = await bundle.text();
+  const tokenMatch = source.match(/authorization_key_verifcation:["']([^"']+)["']/);
+  if (!tokenMatch) throw new Error('fbr-verification-token-not-found');
+  fbrVerificationCache = { token: tokenMatch[1], expiresAt: Date.now() + FBR_TOKEN_CACHE_MS };
+  return fbrVerificationCache.token;
+}
+
+function parseFbrAtlResponse(data) {
+  const records = Array.isArray(data && data.response) ? data.response : [];
+  if (typeof (data && data.response) === 'string' && /no record exists/i.test(data.response)) return { status: 'not-found', statusText: 'No ATL record found for this identifier.' };
+  const fields = new Map();
+  for (const row of records) {
+    const title = stripFbrMarkup(row && row.Title);
+    const value = stripFbrMarkup(row && row.Value);
+    if (title) fields.set(title.toLowerCase(), value);
+  }
+  const combined = records.map((row) => stripFbrMarkup(row && row.Title) + ' ' + stripFbrMarkup(row && row.Value)).join(' ');
+  const statusText = findFbrField(fields, ['filing status', 'status']) || combined;
+  const registrationNo = findFbrField(fields, ['registration no', 'registration number']);
+  const result = classifyFbrStatus(statusText, combined);
+  return { status: result.status, statusText: result.text, registrationNo: registrationNo };
+}
+
+function findFbrField(fields, names) {
+  for (const entry of fields.entries()) {
+    if (names.some((name) => entry[0].includes(name))) return entry[1];
+  }
+  return '';
+}
+
+function classifyFbrStatus(primary, fallback) {
+  const text = String(primary || fallback || '').trim();
+  const lower = text.toLowerCase();
+  if (!text) return { status: 'unknown', text: 'FBR returned no readable status.' };
+  if (/no record exists|not found|no record/.test(lower)) return { status: 'not-found', text: 'No ATL record found for this identifier.' };
+  if (/late filer|late-filer|latefiler/.test(lower)) return { status: 'late-filer', text: 'Late Filer' };
+  if (/non.?atl|not active|inactive|non.?filer/.test(lower)) return { status: 'inactive', text: 'Not Active / Non-ATL' };
+  if (/\bactive\b/.test(lower)) return { status: 'active', text: 'Active Taxpayer' };
+  return { status: 'unknown', text: primary || 'FBR returned a result that NexusNova could not classify.' };
+}
+
+function stripFbrMarkup(value) {
+  return String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+}
 function assertAuthOrigin(request) {
   const origin = String(request.headers.get('Origin') || '');
   if (!ALLOWED_ORIGINS.has(origin)) {

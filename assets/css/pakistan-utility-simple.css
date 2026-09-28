@@ -10,6 +10,10 @@
 .nn-simple-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .nn-simple-result{margin-top:20px;padding:20px;border:1px solid #bfdbfe;border-radius:16px;background:#f8fbff}
 .nn-simple-result.is-error{border-color:#fecaca;background:#fff7f7;color:#991b1b}
+.nn-simple-result.is-success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}
+.nn-simple-result.is-warning{border-color:#fde68a;background:#fffbeb;color:#92400e}
+.nn-atl-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #e2e8f0;color:#64748b;font-size:.88rem}
+.nn-atl-meta span{padding:6px 9px;border-radius:8px;background:#f8fafc}
 .nn-simple-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .nn-simple-result-item{padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
 .nn-simple-result-item span{display:block;font-size:.84rem;color:#64748b}

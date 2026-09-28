@@ -2,27 +2,35 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {normalizeCNIC,isValidCNIC,formatCNIC}=require('../assets/js/fbr-atl-status-checker.js');
+const {clean,valid,formatCNIC,TYPES,ENDPOINT}=require('../assets/js/fbr-atl-status-checker.js');
 const {calculate,SALARY,NON_SALARY}=require('../assets/js/fbr-tax-calculator-pakistan.js');
 const {sources,makeUrl}=require('../assets/js/pakistan-jobs-finder.js');
 
 const root=path.resolve(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 
-test('FBR CNIC checker normalizes and validates exactly 13 digits',()=>{
-  assert.equal(normalizeCNIC('35202-1234567-1'),'3520212345671');
-  assert.equal(isValidCNIC('35202-1234567-1'),true);
+test('FBR ATL checker supports all official identifier types and validates inputs',()=>{
+  assert.equal(clean('CNIC','35202-1234567-1'),'3520212345671');
+  assert.equal(valid('CNIC','3520212345671'),true);
   assert.equal(formatCNIC('3520212345671'),'35202-1234567-1');
-  assert.equal(isValidCNIC('35202-1234567'),false);
-  assert.equal(isValidCNIC('35202-1234567-X'),false);
+  assert.equal(valid('CNIC','35202-1234567'),false);
+  assert.equal(valid('NTN','1234567'),true);
+  assert.equal(valid('NTN','123456'),false);
+  assert.equal(valid('Passport No.','AB123456'),true);
+  assert.equal(valid('Reg/Inc. No.','REG-12345'),true);
+  assert.deepEqual(Object.keys(TYPES),['CNIC','NTN','Passport No.','Reg/Inc. No.']);
+  assert.match(ENDPOINT,/api\/fbr\/atl-status$/);
 });
 
-test('FBR CNIC checker is format-only and never calls a remote API',()=>{
+test('FBR ATL checker now performs a same-page live lookup through NexusNova backend',()=>{
   const js=read('assets/js/fbr-atl-status-checker.js');
-  assert.doesNotMatch(js,/fetch\s*\(/);
-  assert.doesNotMatch(js,/XMLHttpRequest/);
+  assert.match(js,/fetch\s*\(/);
+  assert.match(js,/api\/fbr\/atl-status/);
+  assert.match(read('fbr-atl-status-checker.html'),/Parameter Type/);
+  assert.match(read('fbr-atl-status-checker.html'),/Passport No\./);
+  assert.match(read('fbr-atl-status-checker.html'),/Reg\/Inc\. No\./);
+  assert.match(read('fbr-atl-status-checker.html'),/Check FBR Status/);
   assert.match(read('fbr-atl-status-checker.html'),/iris\.fbr\.gov\.pk/);
-  assert.match(read('fbr-atl-status-checker.html'),/9966/);
 });
 
 test('FBR salary tax table boundaries are deterministic for Tax Year 2027',()=>{
