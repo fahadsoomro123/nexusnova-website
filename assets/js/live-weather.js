@@ -62,7 +62,17 @@
 
   const renderCached=()=>{
     if(!dataset)return;grid.innerHTML='';const mode=region?.value||'pakistan';const selected=dataset.cities.filter(city=>mode==='world'?city.country!=='Pakistan':city.country==='Pakistan');
-    selected.forEach(city=>{const f=city.forecast;if(!f)return;const card=document.createElement('article');card.className='live-rate-card weather-card';card.innerHTML=`<header><h3>${city.name}</h3><span class="live-code">${icon(f.symbol_code)} ${f.condition||'Forecast'}</span></header><strong class="live-rate-value">${num(Number(f.temperature_c),1)}°C</strong><span class="live-rate-unit">${city.country} · forecast valid ${localTime(f.valid_at)}</span><div class="weather-details"><span>24h: ${num(Number(f.next_24h?.low_c),1)}° / ${num(Number(f.next_24h?.high_c),1)}°</span><span>Humidity: ${num(Number(f.humidity_pct),0)}%</span><span>Wind: ${num(Number(f.wind_speed_ms),1)} m/s</span><span>Next hour rain: ${num(Number(f.precipitation_next_hour_mm||0),1)} mm</span></div>`;grid.appendChild(card)});
+    selected.forEach(city=>{const f=city.forecast;if(!f)return;const card=document.createElement('article');card.className='live-rate-card weather-card';
+      const header=document.createElement('header');
+      const h3=document.createElement('h3');h3.textContent=city.name;
+      const code=document.createElement('span');code.className='live-code';code.textContent=`${icon(f.symbol_code)} ${f.condition||'Forecast'}`;
+      header.append(h3,code);
+      const strong=document.createElement('strong');strong.className='live-rate-value';strong.textContent=`${num(Number(f.temperature_c),1)}°C`;
+      const unit=document.createElement('span');unit.className='live-rate-unit';unit.textContent=`${city.country} · forecast valid ${localTime(f.valid_at)}`;
+      const details=document.createElement('div');details.className='weather-details';
+      [`24h: ${num(Number(f.next_24h?.low_c),1)}° / ${num(Number(f.next_24h?.high_c),1)}°`,`Humidity: ${num(Number(f.humidity_pct),0)}%`,`Wind: ${num(Number(f.wind_speed_ms),1)} m/s`,`Next hour rain: ${num(Number(f.precipitation_next_hour_mm||0),1)} mm`].forEach(text=>{const span=document.createElement('span');span.textContent=text;details.appendChild(span)});
+      card.append(header,strong,unit,details);grid.appendChild(card);
+    });
     status.textContent=mode==='world'?'Featured worldwide city forecasts loaded from the cached MET Norway feed. Search above for any other place.':'Pakistan city forecasts loaded from the cached MET Norway feed. Search above for any place worldwide.';
   };
   region?.addEventListener('change',renderCached);
