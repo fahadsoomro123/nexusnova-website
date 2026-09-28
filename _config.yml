@@ -1,0 +1,9 @@
+# NexusNova GitHub Pages build exclusions.
+# These paths are repository engineering/runtime sources, not website content.
+# Excluding them from the Pages build prevents direct public URLs from resolving.
+exclude:
+  - cloudflare/
+  - package.json
+  - tests/
+  - nexusnova-dev-ai/
+  - .github/
