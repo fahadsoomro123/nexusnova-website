@@ -144,14 +144,14 @@ async function fbrAtlStatus(request) {
     const token = await getFbrVerificationToken(false);
     upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
       method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, Accept: 'application/json', 'Content-Type': 'application/json' },
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/json, text/plain, */*', 'Content-Type': 'application/json', Origin: 'https://iris.fbr.gov.pk', Referer: 'https://iris.fbr.gov.pk/', 'User-Agent': 'Mozilla/5.0' },
       body: payload
     });
     if (upstream.status === 401) {
       const freshToken = await getFbrVerificationToken(true);
       upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + freshToken, Accept: 'application/json', 'Content-Type': 'application/json' },
+        headers: { Authorization: 'Bearer ' + freshToken, Accept: 'application/json, text/plain, */*', 'Content-Type': 'application/json', Origin: 'https://iris.fbr.gov.pk', Referer: 'https://iris.fbr.gov.pk/', 'User-Agent': 'Mozilla/5.0' },
         body: payload
       });
     }
