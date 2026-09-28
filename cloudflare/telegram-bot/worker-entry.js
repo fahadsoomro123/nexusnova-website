@@ -228,19 +228,48 @@ async function getFbrVerificationToken(forceRefresh) {
 }
 
 function parseFbrAtlResponse(data) {
-  const records = Array.isArray(data && data.response) ? data.response : [];
-  if (typeof (data && data.response) === 'string' && /no record exists/i.test(data.response)) return { status: 'not-found', statusText: 'No ATL record found for this identifier.' };
   const fields = new Map();
-  for (const row of records) {
-    const title = stripFbrMarkup(row && row.Title);
-    const value = stripFbrMarkup(row && row.Value);
-    if (title) fields.set(title.toLowerCase(), value);
-  }
-  const combined = records.map((row) => stripFbrMarkup(row && row.Title) + ' ' + stripFbrMarkup(row && row.Value)).join(' ');
-  const statusText = findFbrField(fields, ['filing status', 'status']) || combined;
+  const statusParts = [];
+  const allParts = [];
+  collectFbrValues(data && data.response !== undefined ? data.response : data, '', fields, statusParts, allParts);
+  const topStatus = data && typeof data.status === 'string' ? stripFbrMarkup(data.status) : '';
+  const topMessage = data && typeof data.message === 'string' ? stripFbrMarkup(data.message) : '';
+  if (topStatus) statusParts.push(topStatus);
+  if (topMessage) allParts.push(topMessage);
+
+  const combined = allParts.join(' ');
+  const statusText = statusParts.join(' ') || findFbrField(fields, ['filing status', 'atl status', 'status']) || combined;
   const registrationNo = findFbrField(fields, ['registration no', 'registration number']);
   const result = classifyFbrStatus(statusText, combined);
   return { status: result.status, statusText: result.text, registrationNo: registrationNo };
+}
+
+function collectFbrValues(node, key, fields, statusParts, allParts) {
+  if (node == null) return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectFbrValues(item, '', fields, statusParts, allParts);
+    return;
+  }
+  if (typeof node === 'object') {
+    const title = stripFbrMarkup(node.Title || node.title || key);
+    const value = stripFbrMarkup(node.Value || node.value || node.Response || node.response || '');
+    if (title && value) {
+      const normalizedTitle = title.toLowerCase();
+      fields.set(normalizedTitle, value);
+      allParts.push(title + ' ' + value);
+      if (/filing status|atl status|status/.test(normalizedTitle)) statusParts.push(value);
+      if (/no record|not found/.test((title + ' ' + value).toLowerCase())) statusParts.push(title + ' ' + value);
+    }
+    for (const [childKey, childValue] of Object.entries(node)) {
+      if (['Title', 'title', 'Value', 'value', 'Response', 'response'].includes(childKey)) continue;
+      collectFbrValues(childValue, childKey, fields, statusParts, allParts);
+    }
+    return;
+  }
+  const text = stripFbrMarkup(node);
+  if (!text) return;
+  allParts.push(key ? key + ' ' + text : text);
+  if (/status|record|active|filer/i.test(key)) statusParts.push(text);
 }
 
 function findFbrField(fields, names) {
