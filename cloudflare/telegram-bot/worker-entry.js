@@ -252,8 +252,12 @@ function collectFbrValues(node, key, fields, statusParts, allParts) {
   }
   if (typeof node === 'object') {
     const title = stripFbrMarkup(node.Title || node.title || key);
-    const value = stripFbrMarkup(node.Value || node.value || node.Response || node.response || '');
-    if (title && value) {
+    const directResponse = stripFbrMarkup(node.Response || node.response || '');
+    const value = stripFbrMarkup(node.Value || node.value || '');
+    if (!title && directResponse) {
+      allParts.push(directResponse);
+      statusParts.push(directResponse);
+    } else if (title && value) {
       const normalizedTitle = title.toLowerCase();
       fields.set(normalizedTitle, value);
       allParts.push(title + ' ' + value);
