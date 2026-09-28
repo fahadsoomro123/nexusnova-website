@@ -20,18 +20,6 @@
     }
   };
 
-  const mountNav=()=>{
-    const nav=document.querySelector('[data-nav]');
-    if(!nav||nav.querySelector('[data-nova-intelligence-nav]'))return;
-    const link=document.createElement('a');
-    link.href='/nova-intelligence.html';
-    link.textContent='Nova Intelligence';
-    link.className='nn-nav-nova';
-    link.dataset.novaIntelligenceNav='';
-    link.setAttribute('aria-label','Nova Intelligence — tell Nova what you need');
-    nav.insertBefore(link,nav.querySelector('.nn-nav-auth')||null);
-  };
-
   // Bind the mobile menu immediately on the homepage. The canonical site shell is
   // intentionally lazy-loaded for performance, so the menu must remain usable
   // during the short period before site-main.js arrives.
@@ -57,7 +45,7 @@
     button.dataset.novaMenuBridgeBound='1';
   };
 
-  const mount=()=>{mountStyles();mountNav();mountMenuBridge()};
+  const mount=()=>{mountStyles();mountMenuBridge()};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
 })();
