@@ -50,7 +50,7 @@ jobs:
       - name: Validate repository syntax
         run: npm run check
       - name: Run repository tests
-        run: npm test
+        run: node --test tests/live-gold.test.cjs
       # Keep this publisher independent of unrelated site-wide SEO findings.
       - name: Commit refreshed data when changed
         if: github.event_name != 'pull_request'
