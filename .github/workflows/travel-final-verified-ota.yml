@@ -7,10 +7,12 @@ on:
       - '.github/workflows/travel-final-verified-ota.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -19,7 +21,7 @@ jobs:
       EXPECTED_OTA_HEAD: a3150f37b036756e07c94e0d739d773f5ec473c9
       APP_RAW: https://raw.githubusercontent.com/fahadsoomro123/nexusnova-app-public-build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 

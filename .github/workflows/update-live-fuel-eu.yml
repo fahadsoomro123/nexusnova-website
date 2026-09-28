@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-live-eu-fuel-refresh-${{ github.ref }}
@@ -32,11 +32,13 @@ concurrency:
 
 jobs:
   refresh:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Refresh European Commission weekly fuel prices
         run: python3 .github/scripts/update_live_fuel_eu.py

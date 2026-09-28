@@ -17,7 +17,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-apk-publish
@@ -25,6 +25,8 @@ concurrency:
 
 jobs:
   publish:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -40,7 +42,7 @@ jobs:
           test -n "$APK_ARTIFACT_URL" || { echo 'APK publish blocked: NEXUSNOVA_APK_ARTIFACT_URL secret is not configured.' >&2; exit 1; }
 
       - name: Checkout current main
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: main
           fetch-depth: 0

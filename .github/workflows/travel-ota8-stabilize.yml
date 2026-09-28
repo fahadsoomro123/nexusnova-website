@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-travel-ota-release
@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   stabilize:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -25,7 +27,7 @@ jobs:
       OTA_REPO: fahadsoomro123/nexusnova-website
     steps:
       - name: Checkout cumulative OTA branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: nexusnova-ota-public
           fetch-depth: 0
