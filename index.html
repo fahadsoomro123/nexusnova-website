@@ -3,47 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NexusNova Tools — Find the Right Tool Without the Hunt</title>
-<meta name="description" content="NexusNova brings practical browser tools, Pakistan utilities, live information, categories and guides into one clean, simple workspace.">
+<title>NexusNova Tools — Four Powerful Tools, One Clean Workspace</title>
+<meta name="description" content="NexusNova Tools presents four focused browser utilities for Pakistan tax, electricity bills, WhatsApp links and safe URL inspection in one clean workspace.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="theme-color" content="#f8fafc">
 <link rel="canonical" href="https://nexusnovatools.com/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NexusNova Tools">
-<meta property="og:title" content="NexusNova Tools — Find the Right Tool Without the Hunt">
-<meta property="og:description" content="Practical browser tools, Pakistan utilities, live information and useful guides in one clean workspace.">
+<meta property="og:title" content="NexusNova Tools — Four Powerful Tools, One Clean Workspace">
+<meta property="og:description" content="Four focused browser utilities for Pakistan tax, electricity bills, WhatsApp links and safe URL inspection.">
 <meta property="og:url" content="https://nexusnovatools.com/">
 <meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NexusNova Tools — Find the Right Tool Without the Hunt">
-<meta name="twitter:description" content="Practical browser tools, Pakistan utilities, live information and useful guides in one clean workspace.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NexusNova Tools — Four Powerful Tools, One Clean Workspace">
+<meta name="twitter:description" content="Four focused browser utilities for Pakistan tax, electricity bills, WhatsApp links and safe URL inspection.">
 <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+
 <link rel="stylesheet" href="assets/css/site.css">
+<script src="assets/js/search-core.js" defer></script>
+
 <style>
 :root{
   --nn-bg:#f8fafc;
-  --nn-surface:#ffffff;
+  --nn-white:#ffffff;
   --nn-text:#0f172a;
   --nn-muted:#64748b;
   --nn-line:#e2e8f0;
   --nn-soft:#f5f3ff;
-  --nn-accent:#6d28d9;
-  --nn-accent-strong:#5b21b6;
-  --nn-max:1180px;
+  --nn-purple:#6d28d9;
+  --nn-purple-deep:#5b21b6;
+  --nn-max:1160px;
 }
-html{scroll-behavior:smooth}
-body.nn-curated-home{
+
+html{
+  scroll-behavior:smooth;
+}
+
+body.nn-foundation{
   margin:0;
   background:var(--nn-bg)!important;
   color:var(--nn-text)!important;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-body.nn-curated-home::before,
-body.nn-curated-home::after{display:none!important}
-.nn-curated-home a{color:inherit}
-.nn-container{width:min(calc(100% - 40px),var(--nn-max));margin:0 auto}
-.nn-curated-home .site-header{
+
+body.nn-foundation::before,
+body.nn-foundation::after{
+  display:none!important;
+}
+
+.nn-wrap{
+  width:min(calc(100% - 40px),var(--nn-max));
+  margin:0 auto;
+}
+
+.nn-foundation .site-header{
   position:sticky;
   top:0;
   z-index:1000;
@@ -52,577 +66,632 @@ body.nn-curated-home::after{display:none!important}
   box-shadow:none!important;
   backdrop-filter:blur(16px);
 }
-.nn-curated-home .nav-wrap{min-height:72px}
-.nn-curated-home .brand{
+
+.nn-foundation .nav-wrap{
+  min-height:72px;
+}
+
+.nn-foundation .brand{
   color:var(--nn-text)!important;
   text-decoration:none;
 }
-.nn-curated-home .brand-mark{
+
+.nn-foundation .brand-mark{
   width:42px;
   height:42px;
-  border-radius:14px;
   display:grid;
   place-items:center;
+  border-radius:14px;
+  color:var(--nn-purple);
   background:var(--nn-soft);
-  color:var(--nn-accent);
   border:1px solid #ddd6fe;
-  flex:none;
+  flex:0 0 auto;
+  overflow:hidden;
 }
-.nn-curated-home .brand-network{display:block}
-.nn-curated-home .brand-copy strong{color:var(--nn-text)!important}
-.nn-curated-home .brand-copy small{color:var(--nn-muted)!important}
-.nn-curated-home .nav a{
+
+.nn-foundation .brand-network{
+  display:block;
+  width:28px;
+  height:28px;
+}
+
+.nn-foundation .brand-copy strong{
+  color:var(--nn-text)!important;
+}
+
+.nn-foundation .brand-copy small{
+  color:var(--nn-muted)!important;
+}
+
+.nn-foundation .nav a{
   color:#475569!important;
   text-decoration:none;
 }
-.nn-curated-home .nav a:hover,
-.nn-curated-home .nav a[aria-current="page"]{
+
+.nn-foundation .nav a:hover,
+.nn-foundation .nav a[aria-current="page"]{
+  color:var(--nn-purple)!important;
   background:var(--nn-soft)!important;
-  color:var(--nn-accent)!important;
 }
-.nn-curated-home .menu-btn{
+
+.nn-foundation .menu-btn{
   background:#fff!important;
   color:var(--nn-text)!important;
   border:1px solid var(--nn-line)!important;
 }
+
 .nn-hero{
-  padding:72px 0 48px;
-  background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+  padding:104px 0 96px;
+  background:
+    radial-gradient(circle at 86% 20%,rgba(109,40,217,.08),transparent 24%),
+    linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
   border-bottom:1px solid #eef2f7;
 }
+
 .nn-hero-grid{
   display:grid;
-  grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
-  gap:48px;
+  grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);
+  gap:76px;
   align-items:center;
 }
+
 .nn-kicker{
   display:inline-flex;
   align-items:center;
-  color:var(--nn-accent);
+  color:var(--nn-purple);
   font-size:11px;
   font-weight:900;
-  letter-spacing:.12em;
+  letter-spacing:.13em;
   text-transform:uppercase;
 }
+
 .nn-hero h1{
-  margin:14px 0 18px;
-  max-width:780px;
-  font-size:clamp(46px,6vw,76px);
-  line-height:.98;
-  letter-spacing:-.055em;
+  max-width:760px;
+  margin:16px 0 20px;
   color:var(--nn-text);
+  font-size:clamp(50px,7vw,86px);
+  line-height:.96;
+  letter-spacing:-.06em;
 }
-.nn-hero h1 span{color:var(--nn-accent)}
+
+.nn-hero h1 span{
+  color:var(--nn-purple);
+}
+
 .nn-hero-copy{
-  max-width:700px;
+  max-width:640px;
   margin:0;
   color:#475569;
   font-size:18px;
-  line-height:1.7;
+  line-height:1.78;
 }
-.nn-search-wrap{
+
+.nn-search{
   position:relative;
-  margin-top:28px;
-  z-index:20;
+  margin-top:30px;
+  z-index:40;
 }
+
 .nn-search-form{
   display:flex;
   gap:10px;
   position:relative;
 }
-.nn-search-form input{
+
+.nn-search-input{
   flex:1;
   min-width:0;
-  min-height:58px;
+  min-height:60px;
   padding:0 18px;
-  border:1px solid #dbe2ea;
+  border:1px solid #d8dee8;
   border-radius:16px;
   background:#fff;
   color:var(--nn-text);
   outline:none;
-  box-shadow:0 12px 34px rgba(15,23,42,.07);
+  box-shadow:0 14px 36px rgba(15,23,42,.07);
 }
-.nn-search-form input::placeholder{color:#94a3b8}
-.nn-search-form input:focus{
-  border-color:var(--nn-accent);
-  box-shadow:0 0 0 4px rgba(109,40,217,.10),0 12px 34px rgba(15,23,42,.08);
+
+.nn-search-input::placeholder{
+  color:#94a3b8;
 }
-.nn-search-form .btn-primary{
-  min-height:58px;
-  white-space:nowrap;
-  background:var(--nn-accent)!important;
-  border-color:var(--nn-accent)!important;
-  color:#fff!important;
+
+.nn-search-input:focus{
+  border-color:var(--nn-purple);
+  box-shadow:
+    0 0 0 4px rgba(109,40,217,.10),
+    0 14px 36px rgba(15,23,42,.08);
 }
+
+.nn-search-submit{
+  min-width:126px;
+  min-height:60px;
+  border:1px solid var(--nn-purple);
+  border-radius:16px;
+  background:var(--nn-purple);
+  color:#fff;
+  font:inherit;
+  font-weight:850;
+  cursor:pointer;
+}
+
+.nn-search-submit:hover{
+  background:var(--nn-purple-deep);
+  border-color:var(--nn-purple-deep);
+}
+
 .nn-search-suggestions{
   position:absolute;
-  top:68px;
+  top:70px;
   left:0;
-  right:120px;
+  right:136px;
   display:grid;
   gap:4px;
   padding:8px;
-  background:#fff;
   border:1px solid var(--nn-line);
   border-radius:16px;
-  box-shadow:0 22px 60px rgba(15,23,42,.14);
+  background:#fff;
+  box-shadow:0 24px 60px rgba(15,23,42,.14);
   z-index:100000;
 }
-.nn-search-suggestions[hidden]{display:none!important}
-.nn-search-suggestion{
+
+.nn-search-suggestions[hidden]{
+  display:none!important;
+}
+
+.nn-search-result{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
-  padding:12px 13px;
+  gap:14px;
+  padding:13px 14px;
   border:1px solid transparent;
   border-radius:12px;
-  text-decoration:none!important;
+  color:var(--nn-text);
+  text-decoration:none;
 }
-.nn-search-suggestion:hover,
-.nn-search-suggestion:focus-visible{
+
+.nn-search-result:hover,
+.nn-search-result:focus-visible{
   background:var(--nn-soft);
   border-color:#ddd6fe;
-  color:var(--nn-accent);
+  color:var(--nn-purple);
 }
-.nn-search-suggestion-title{
+
+.nn-search-result-title{
   min-width:0;
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+  font-size:14px;
   font-weight:850;
 }
-.nn-search-suggestion-category{
-  flex:none;
+
+.nn-search-result-category{
+  flex:0 0 auto;
   color:var(--nn-muted);
   font-size:11px;
 }
-.nn-search-help{
-  margin-top:11px;
+
+.nn-search-note{
+  margin-top:10px;
   color:#94a3b8;
   font-size:12px;
 }
-.nn-action-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:18px;
-}
-.nn-action-row .btn{
-  min-height:44px;
-}
-.nn-action-row .btn-primary{
-  background:var(--nn-accent)!important;
-  border-color:var(--nn-accent)!important;
-  color:#fff!important;
-}
-.nn-hero-proof{
-  padding:24px;
-  border:1px solid var(--nn-line);
-  border-radius:28px;
-  background:#fff;
-  box-shadow:0 20px 50px rgba(15,23,42,.07);
-}
-.nn-hero-proof-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:18px;
-}
-.nn-hero-proof-head strong{
-  display:block;
-  color:var(--nn-accent);
-  font-size:12px;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.1em;
-}
-.nn-hero-proof-head h2{
-  margin:8px 0 0;
-  color:var(--nn-text);
-  font-size:26px;
-  line-height:1.1;
-}
-.nn-proof-note{
-  color:var(--nn-muted);
-  font-size:13px;
-  line-height:1.6;
-  text-align:right;
-}
-.nn-proof-stage{
-  min-height:320px;
+
+.nn-mark-panel{
   position:relative;
-  overflow:hidden;
+  min-height:360px;
   display:grid;
   place-items:center;
-  border:1px solid #e6eaf0;
-  border-radius:22px;
-  background:
-    radial-gradient(circle at 50% 45%,rgba(109,40,217,.06),transparent 45%),
-    #f8fafc;
 }
-.nn-proof-stage::after{
+
+.nn-mark-panel::before{
   content:"";
   position:absolute;
-  inset:auto 16% 15px;
-  height:1px;
-  background:#e2e8f0;
-}
-.nn-proof-360-holder{
-  position:relative;
-  width:100%;
+  width:320px;
   height:320px;
-  z-index:1;
+  border-radius:50%;
+  border:1px solid rgba(109,40,217,.09);
 }
-#nnHumanProof360{
-  width:100%;
-  height:100%;
-  display:block;
-}
-#nnHumanProof360Load{
+
+.nn-mark-panel::after{
+  content:"";
   position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  padding:10px 14px;
-  border:1px solid #ddd6fe;
-  border-radius:999px;
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  border:1px solid rgba(109,40,217,.07);
+}
+
+.nn-mark-card{
+  position:relative;
+  z-index:1;
+  width:min(100%,390px);
+  padding:34px;
+  border:1px solid var(--nn-line);
+  border-radius:30px;
   background:#fff;
-  color:var(--nn-accent);
-  font-size:11px;
-  font-weight:900;
-  letter-spacing:.08em;
+  box-shadow:0 28px 70px rgba(15,23,42,.08);
   text-align:center;
-  white-space:nowrap;
-  box-shadow:0 10px 25px rgba(15,23,42,.08);
 }
-#nnHumanProof360Load.is-hidden{display:none}
-.nn-proof-foot{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-top:14px;
-}
-.nn-proof-foot span{
-  color:var(--nn-muted);
-  font-size:12px;
-}
-.nn-proof-foot a{
-  color:var(--nn-accent);
-  font-size:13px;
-  font-weight:850;
-  text-decoration:none;
-}
-.nn-section{
-  padding:64px 0;
-}
-.nn-section.alt{background:#fff;border-top:1px solid #eef2f7;border-bottom:1px solid #eef2f7}
-.nn-section-head{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:26px;
-  margin-bottom:22px;
-}
-.nn-section-head h2{
-  margin:7px 0 0;
+
+.nn-mark-card strong{
+  display:block;
+  margin-top:16px;
   color:var(--nn-text);
-  font-size:36px;
-  line-height:1.08;
-  letter-spacing:-.035em;
+  font-size:18px;
 }
-.nn-section-head p{
-  max-width:600px;
-  margin:0;
+
+.nn-mark-card p{
+  max-width:300px;
+  margin:8px auto 0;
   color:var(--nn-muted);
+  font-size:13px;
   line-height:1.65;
 }
-.nn-grid{
-  display:grid;
-  gap:16px;
-}
-.nn-grid.popular{grid-template-columns:repeat(3,minmax(0,1fr))}
-.nn-grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
-.nn-card{
+
+.nn-network-large{
+  width:150px;
+  height:150px;
   display:block;
-  padding:22px;
-  border:1px solid var(--nn-line);
-  border-radius:20px;
+  margin:0 auto;
+}
+
+.nn-section{
+  padding:92px 0;
+}
+
+.nn-section.alt{
   background:#fff;
-  box-shadow:0 12px 34px rgba(15,23,42,.045);
-  text-decoration:none;
-  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+  border-top:1px solid #eef2f7;
+  border-bottom:1px solid #eef2f7;
 }
-.nn-card:hover{
-  transform:translateY(-2px);
-  border-color:#ddd6fe;
-  box-shadow:0 18px 42px rgba(15,23,42,.08);
+
+.nn-section-head{
+  max-width:760px;
+  margin-bottom:34px;
 }
-.nn-card-kicker{
-  color:var(--nn-accent);
-  font-size:11px;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.1em;
-}
-.nn-card h3{
-  margin:9px 0 7px;
+
+.nn-section-head h2{
+  margin:10px 0 12px;
   color:var(--nn-text);
-  font-size:19px;
-  line-height:1.2;
+  font-size:clamp(34px,4vw,52px);
+  line-height:1.03;
+  letter-spacing:-.045em;
 }
-.nn-card p{
+
+.nn-section-head p{
   margin:0;
   color:var(--nn-muted);
-  font-size:13px;
-  line-height:1.6;
+  font-size:15px;
+  line-height:1.7;
 }
-.nn-card-arrow{
+
+.nn-tool-matrix{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.nn-tool-card{
+  position:relative;
+  padding:30px;
+  border:1px solid var(--nn-line);
+  border-radius:24px;
+  background:#fff;
+  box-shadow:0 16px 40px rgba(15,23,42,.05);
+  text-decoration:none;
+  transition:
+    transform .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease;
+}
+
+.nn-tool-card:hover{
+  transform:translateY(-3px);
+  border-color:#ddd6fe;
+  box-shadow:0 22px 50px rgba(15,23,42,.09);
+}
+
+.nn-tool-tag{
   display:inline-flex;
-  margin-top:15px;
-  color:var(--nn-accent);
-  font-size:13px;
-  font-weight:850;
+  align-items:center;
+  min-height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  background:var(--nn-soft);
+  color:var(--nn-purple);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
 }
-.nn-pakistan-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.nn-live-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.nn-category-grid{
+
+.nn-tool-card h3{
+  margin:20px 0 10px;
+  color:var(--nn-text);
+  font-size:25px;
+  line-height:1.12;
+  letter-spacing:-.025em;
+}
+
+.nn-tool-card p{
+  margin:0;
+  max-width:520px;
+  color:var(--nn-muted);
+  font-size:14px;
+  line-height:1.7;
+}
+
+.nn-tool-open{
+  display:inline-flex;
+  margin-top:22px;
+  color:var(--nn-purple);
+  font-size:13px;
+  font-weight:900;
+}
+
+.nn-principles{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:16px;
+  gap:18px;
 }
-.nn-category-card{
-  min-height:158px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  padding:22px;
+
+.nn-principle{
+  padding:26px;
   border:1px solid var(--nn-line);
-  border-radius:20px;
-  background:var(--nn-surface);
-  box-shadow:0 12px 34px rgba(15,23,42,.045);
-  text-decoration:none;
-  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;
+  border-radius:22px;
+  background:#fff;
 }
-.nn-category-card:hover{
-  transform:translateY(-2px);
-  border-color:#ddd6fe;
-  box-shadow:0 18px 42px rgba(15,23,42,.08);
-}
-.nn-category-icon{
-  width:40px;
-  height:40px;
+
+.nn-principle-mark{
+  width:38px;
+  height:38px;
   display:grid;
   place-items:center;
   margin-bottom:18px;
   border-radius:12px;
   background:var(--nn-soft);
-  color:var(--nn-accent);
+  color:var(--nn-purple);
   font-size:12px;
   font-weight:900;
 }
-.nn-category-card h3{
-  margin:0 0 7px;
+
+.nn-principle h3{
+  margin:0 0 8px;
   color:var(--nn-text);
-  font-size:19px;
+  font-size:18px;
 }
-.nn-category-card p{
+
+.nn-principle p{
   margin:0;
   color:var(--nn-muted);
   font-size:13px;
-  line-height:1.55;
+  line-height:1.68;
 }
-.nn-category-card span:last-child{
-  margin-top:16px;
-  color:var(--nn-accent);
-  font-size:13px;
-  font-weight:850;
-}
-.nn-guides-grid{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:16px;
-}
-.nn-guide-card{
-  padding:22px;
-  border:1px solid var(--nn-line);
-  border-radius:20px;
+
+.nn-footer{
   background:#fff;
+  border-top:1px solid var(--nn-line);
 }
-.nn-guide-card h3{
-  margin:8px 0;
-  color:var(--nn-text);
-  font-size:19px;
+
+.nn-footer-inner{
+  padding:42px 0 26px;
 }
-.nn-guide-card p{
-  margin:0;
+
+.nn-footer-grid{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:30px;
+  align-items:start;
+}
+
+.nn-footer-brand{
+  max-width:420px;
+}
+
+.nn-footer-brand .brand{
+  display:inline-flex;
+}
+
+.nn-footer-copy{
+  margin:16px 0 0;
   color:var(--nn-muted);
   font-size:13px;
-  line-height:1.6;
+  line-height:1.7;
 }
-.nn-guide-card a{
-  display:inline-flex;
-  margin-top:15px;
-  color:var(--nn-accent);
+
+.nn-footer-links{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:16px 20px;
+}
+
+.nn-footer-links a{
+  color:var(--nn-muted);
   font-size:13px;
-  font-weight:850;
+  font-weight:750;
   text-decoration:none;
 }
-.nn-directory-cta{
+
+.nn-footer-links a:hover{
+  color:var(--nn-purple);
+}
+
+.nn-footer-bottom{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:20px;
-  margin-top:22px;
-  padding:20px 22px;
-  border:1px solid #ddd6fe;
-  border-radius:20px;
-  background:#faf8ff;
+  padding:18px 0 22px;
+  border-top:1px solid var(--nn-line);
+  color:#94a3b8;
+  font-size:11px;
 }
-.nn-directory-cta strong{color:var(--nn-text)}
-.nn-directory-cta span{color:var(--nn-muted);font-size:13px}
-.nn-directory-cta a{
-  flex:none;
-  color:var(--nn-accent);
-  font-size:13px;
-  font-weight:850;
-  text-decoration:none;
+
+.nn-footer-domain{
+  color:var(--nn-purple);
+  font-weight:900;
+  letter-spacing:.08em;
 }
-.nn-curated-home .site-footer{
-  margin-top:0;
-  background:#fff!important;
-  color:#475569!important;
-  border-top:1px solid var(--nn-line)!important;
-  box-shadow:none!important;
-}
-.nn-curated-home .footer-console{
-  padding-top:40px;
-  padding-bottom:30px;
-}
-.nn-footer-grid{
-  display:grid;
-  grid-template-columns:1.4fr .8fr .8fr;
-  gap:32px;
-  align-items:start;
-}
-.nn-curated-home .site-footer .brand-mark{
-  width:38px;
-  height:38px;
-}
-.nn-curated-home .footer-title{
-  color:var(--nn-text)!important;
-}
-.nn-curated-home .footer-links a,
-.nn-curated-home .footer-copy,
-.nn-curated-home .footer-bottom{
-  color:var(--nn-muted)!important;
-}
-.nn-curated-home .footer-links a:hover{color:var(--nn-accent)!important}
-.nn-curated-home .footer-bottom{
-  background:#f8fafc!important;
-  border-top:1px solid var(--nn-line)!important;
-}
-.nn-curated-home :focus-visible{
-  outline:3px solid rgba(109,40,217,.28);
+
+.nn-foundation :focus-visible{
+  outline:3px solid rgba(109,40,217,.25);
   outline-offset:3px;
 }
-@media(max-width:1000px){
-  .nn-hero-grid{grid-template-columns:1fr}
-  .nn-grid.popular,.nn-pakistan-grid,.nn-live-grid,.nn-guides-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .nn-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .nn-footer-grid{grid-template-columns:1fr 1fr}
-  .nn-footer-grid>div:first-child{grid-column:1/-1}
+
+@media(max-width:920px){
+  .nn-hero{
+    padding:76px 0 70px;
+  }
+
+  .nn-hero-grid{
+    grid-template-columns:1fr;
+    gap:52px;
+  }
+
+  .nn-mark-panel{
+    min-height:300px;
+  }
+
+  .nn-tool-matrix{
+    grid-template-columns:1fr;
+  }
+
+  .nn-principles{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .nn-footer-grid{
+    grid-template-columns:1fr;
+  }
+
+  .nn-footer-links{
+    justify-content:flex-start;
+  }
 }
-@media(max-width:720px){
-  .nn-container{width:min(calc(100% - 22px),var(--nn-max))}
-  .nn-hero{padding:52px 0 34px}
-  .nn-hero h1{font-size:clamp(42px,15vw,62px)}
-  .nn-search-form{flex-direction:column}
-  .nn-search-form .btn-primary{width:100%}
-  .nn-search-suggestions{right:0;top:128px}
-  .nn-section{padding:48px 0}
-  .nn-section-head{align-items:flex-start;flex-direction:column}
-  .nn-section-head h2{font-size:30px}
-  .nn-grid.popular,.nn-pakistan-grid,.nn-live-grid,.nn-category-grid,.nn-guides-grid{grid-template-columns:1fr}
-  .nn-directory-cta{align-items:flex-start;flex-direction:column}
-  .nn-footer-grid{grid-template-columns:1fr}
-  .nn-footer-grid>div:first-child{grid-column:auto}
-  .nn-proof-stage,.nn-proof-360-holder{height:280px;min-height:280px}
-  .nn-proof-foot{align-items:flex-start;flex-direction:column}
+
+@media(max-width:640px){
+  .nn-wrap{
+    width:min(calc(100% - 22px),var(--nn-max));
+  }
+
+  .nn-hero h1{
+    font-size:clamp(44px,14vw,64px);
+  }
+
+  .nn-search-form{
+    flex-direction:column;
+  }
+
+  .nn-search-submit{
+    width:100%;
+  }
+
+  .nn-search-suggestions{
+    right:0;
+    top:128px;
+  }
+
+  .nn-section{
+    padding:64px 0;
+  }
+
+  .nn-section-head h2{
+    font-size:36px;
+  }
+
+  .nn-principles{
+    grid-template-columns:1fr;
+  }
+
+  .nn-tool-card{
+    padding:24px;
+  }
+
+  .nn-footer-bottom{
+    align-items:flex-start;
+    flex-direction:column;
+  }
 }
+
 @media(prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  .nn-card,.nn-category-card{transition:none}
+  html{
+    scroll-behavior:auto;
+  }
+
+  .nn-tool-card{
+    transition:none;
+  }
 }
 </style>
-<script src="assets/js/search-core.js" defer></script>
 </head>
-<body class="nn-curated-home">
+
+<body class="nn-foundation">
+
 <header class="site-header" data-header>
   <div class="container nav-wrap">
     <a class="brand" href="/" aria-label="NexusNova Tools home">
       <span class="brand-mark" aria-hidden="true">
-  <svg class="brand-network" viewBox="0 0 48 48" width="26" height="26" focusable="false" role="img" aria-label="NexusNova interconnected network mark">
-    <defs>
-      <linearGradient id="nn-logo-face" x1="8" y1="7" x2="40" y2="41" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#8b5cf6"/>
-        <stop offset="0.55" stop-color="#6d28d9"/>
-        <stop offset="1" stop-color="#5b21b6"/>
-      </linearGradient>
-      <radialGradient id="nn-logo-node" cx="35%" cy="30%" r="72%">
-        <stop offset="0" stop-color="#ffffff"/>
-        <stop offset="0.16" stop-color="#ede9fe"/>
-        <stop offset="0.5" stop-color="#8b5cf6"/>
-        <stop offset="1" stop-color="#6d28d9"/>
-      </radialGradient>
-    </defs>
+        <svg class="brand-network" viewBox="0 0 48 48" focusable="false" role="img" aria-label="NexusNova network mark">
+          <defs>
+            <linearGradient id="nn-brand-line" x1="7" y1="7" x2="42" y2="41" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#8b5cf6"/>
+              <stop offset=".55" stop-color="#6d28d9"/>
+              <stop offset="1" stop-color="#5b21b6"/>
+            </linearGradient>
+            <radialGradient id="nn-brand-node" cx="32%" cy="27%" r="75%">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset=".18" stop-color="#ede9fe"/>
+              <stop offset=".55" stop-color="#8b5cf6"/>
+              <stop offset="1" stop-color="#6d28d9"/>
+            </radialGradient>
+          </defs>
 
-    <g fill="none" stroke="#c4b5fd" stroke-linecap="round" stroke-linejoin="round" opacity=".58">
-      <path d="M10 12L24 6L39 14L35 31L21 42L8 33L10 12Z" stroke-width="1.2"/>
-      <path d="M10 12L29 31M24 6L21 42M39 14L21 42M8 33L24 6" stroke-width="1"/>
-    </g>
+          <g fill="none" stroke="#c4b5fd" stroke-width="1" opacity=".48" stroke-linecap="round">
+            <path d="M8 12L23 5L40 14L35 32L20 43L7 33L8 12Z"/>
+            <path d="M8 12L30 31M23 5L20 43M40 14L20 43M7 33L23 5"/>
+          </g>
 
-    <g fill="none" stroke="url(#nn-logo-face)" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 10L23 5L37 12L33 29L20 40L7 31L9 10Z"/>
-      <path d="M9 10L33 29M23 5L20 40M37 12L20 40M7 31L23 5"/>
-      <path d="M23 5L23 18L37 12M23 18L33 29M23 18L20 40M23 18L7 31M9 10L23 18"/>
-    </g>
+          <g fill="none" stroke="url(#nn-brand-line)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 10L23 4L40 12L34 30L20 42L6 32L8 10Z"/>
+            <path d="M8 10L34 30M23 4L20 42M40 12L20 42M6 32L23 4"/>
+            <path d="M23 4L23 18L40 12M23 18L34 30M23 18L20 42M23 18L6 32M8 10L23 18"/>
+          </g>
 
-    <g fill="none" stroke="#4c1d95" stroke-width=".9" opacity=".45">
-      <path d="M23 6L23 18L37 13"/>
-      <path d="M8 31L20 40L33 29"/>
-    </g>
+          <g fill="#4c1d95" opacity=".34">
+            <circle cx="23" cy="4" r="4.2"/>
+            <circle cx="40" cy="12" r="4.2"/>
+            <circle cx="34" cy="30" r="4.2"/>
+            <circle cx="20" cy="42" r="4.2"/>
+            <circle cx="6" cy="32" r="4.2"/>
+            <circle cx="8" cy="10" r="4.2"/>
+          </g>
 
-    <g>
-      <circle cx="9" cy="10" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="23" cy="5" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="37" cy="12" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="33" cy="29" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="20" cy="40" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="7" cy="31" r="4.1" fill="url(#nn-logo-node)"/>
-      <circle cx="23" cy="18" r="3.35" fill="#6d28d9"/>
-      <circle cx="22" cy="17" r="1.15" fill="#ffffff" opacity=".9"/>
-    </g>
+          <g>
+            <circle cx="8" cy="10" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="23" cy="4" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="40" cy="12" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="34" cy="30" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="20" cy="42" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="6" cy="32" r="3.7" fill="url(#nn-brand-node)"/>
+            <circle cx="23" cy="18" r="3.2" fill="#6d28d9"/>
+            <circle cx="22" cy="17" r="1.05" fill="#fff" opacity=".92"/>
+          </g>
+        </svg>
+      </span>
 
-    <g fill="#ffffff" opacity=".7">
-      <circle cx="7.7" cy="8.7" r=".75"/>
-      <circle cx="21.7" cy="3.7" r=".75"/>
-      <circle cx="35.7" cy="10.7" r=".75"/>
-    </g>
-  </svg>
-</span>
       <span class="brand-copy">
         <strong>NEXUSNOVA TOOLS</strong>
-        <small>TOOLS • HUMANPROOF • GUIDES</small>
+        <small>FOCUSED TOOLS • CLEAR RESULTS</small>
       </span>
     </a>
+
     <button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button>
+
     <nav class="nav" data-nav aria-label="Primary navigation">
       <a href="/" aria-current="page">Home</a>
-      <a href="live.html">🟢 Today's Prices</a>
       <a href="tools.html">Tools</a>
       <a href="categories.html">Categories</a>
       <a href="articles.html">Articles</a>
@@ -632,494 +701,381 @@ body.nn-curated-home::after{display:none!important}
 </header>
 
 <main>
-  <section class="nn-hero">
-    <div class="nn-container nn-hero-grid">
-      <div>
-        <span class="nn-kicker">NEXUSNOVA TOOLS • ONE SIMPLE WORKSPACE</span>
-        <h1>Find the right tool. <span>Without the hunt.</span></h1>
-        <p class="nn-hero-copy">Practical browser tools, Pakistan utilities, live information and useful guides in one clean place. Search by the task you have in mind, browse a focused category, or open the full master directory when you need more.</p>
 
-        <div class="nn-search-wrap">
+  <section class="nn-hero">
+    <div class="nn-wrap nn-hero-grid">
+
+      <div>
+        <span class="nn-kicker">NEXUSNOVA • FOCUSED DIGITAL UTILITIES</span>
+
+        <h1>
+          Useful tools.
+          <span>Nothing extra.</span>
+        </h1>
+
+        <p class="nn-hero-copy">
+          A deliberately focused workspace for four high-value utilities.
+          Search by task, open the tool you need, and keep the rest of the interface out of your way.
+        </p>
+
+        <div class="nn-search">
           <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search NexusNova tools">
             <input
+              class="nn-search-input"
+              data-nexusnova-search-input
               data-home-search
               type="search"
-              placeholder="Search by tool, task, synonym or typo…"
+              placeholder="Search salary tax, bijli bill, WhatsApp link, X-Ray…"
               aria-label="Search NexusNova tools"
               autocomplete="off"
               aria-autocomplete="list"
               aria-controls="nn-search-suggestions"
               aria-expanded="false">
-            <button class="btn btn-primary" type="submit">Find a tool</button>
-            <div id="nn-search-suggestions" class="nn-search-suggestions" role="listbox" aria-label="Search suggestions" hidden></div>
+
+            <button class="nn-search-submit" type="submit">
+              Find a tool
+            </button>
+
+            <div
+              id="nn-search-suggestions"
+              class="nn-search-suggestions"
+              role="listbox"
+              aria-label="Tool suggestions"
+              hidden>
+            </div>
           </form>
-          <div class="nn-search-help">Try: salary tax, bijli bill, WhatsApp link, X-Ray, FBR ATL.</div>
-        </div>
 
-        <div class="nn-action-row">
-          <a class="btn btn-primary" href="tools.html">Browse all tools →</a>
-          <a class="btn" href="categories.html">Browse categories</a>
+          <div class="nn-search-note">
+            Search understands common names, aliases, typos and task language.
+          </div>
         </div>
       </div>
 
-      <aside class="nn-hero-proof" aria-labelledby="humanproof-home-title">
-        <div class="nn-hero-proof-head">
-          <div>
-            <strong>HumanProof</strong>
-            <h2 id="humanproof-home-title">A focused live-human step.</h2>
-          </div>
-          <span class="nn-proof-note">Secondary flagship<br>kept compact</span>
-        </div>
+      <div class="nn-mark-panel" aria-label="NexusNova network mark">
+        <div class="nn-mark-card">
+          <svg class="nn-network-large" viewBox="0 0 160 160" focusable="false" aria-hidden="true">
+            <defs>
+              <linearGradient id="nn-large-line" x1="25" y1="20" x2="138" y2="141" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#a78bfa"/>
+                <stop offset=".48" stop-color="#6d28d9"/>
+                <stop offset="1" stop-color="#4c1d95"/>
+              </linearGradient>
+              <radialGradient id="nn-large-node" cx="30%" cy="25%" r="78%">
+                <stop offset="0" stop-color="#ffffff"/>
+                <stop offset=".18" stop-color="#ede9fe"/>
+                <stop offset=".52" stop-color="#8b5cf6"/>
+                <stop offset="1" stop-color="#6d28d9"/>
+              </radialGradient>
+            </defs>
 
-        <div class="nn-proof-stage">
-          <div class="nn-proof-360-holder" data-hp-360-holder>
-            <canvas id="nnHumanProof360" aria-label="HumanProof 3D human head preview"></canvas>
-            <div id="nnHumanProof360Load">CLICK TO LOAD 3D HUMAN VIEW</div>
-          </div>
-        </div>
+            <g fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity=".5">
+              <path d="M32 36L80 18L132 40L116 96L72 138L28 112L32 36Z"/>
+              <path d="M32 36L116 96M80 18L72 138M132 40L72 138M28 112L80 18"/>
+            </g>
 
-        <div class="nn-proof-foot">
-          <span>HumanProof is a live-human approval layer for sensitive actions.</span>
-          <a href="humanproof.html">Learn how it works →</a>
+            <g fill="none" stroke="url(#nn-large-line)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M30 30L79 14L134 36L114 98L72 146L24 110L30 30Z"/>
+              <path d="M30 30L114 98M79 14L72 146M134 36L72 146M24 110L79 14"/>
+              <path d="M79 14L79 72L134 36M79 72L114 98M79 72L72 146M79 72L24 110M30 30L79 72"/>
+            </g>
+
+            <g>
+              <circle cx="30" cy="30" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="79" cy="14" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="134" cy="36" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="114" cy="98" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="72" cy="146" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="24" cy="110" r="11" fill="url(#nn-large-node)"/>
+              <circle cx="79" cy="72" r="10" fill="#6d28d9"/>
+              <circle cx="76" cy="69" r="2.7" fill="#fff" opacity=".9"/>
+            </g>
+          </svg>
+
+          <strong>One connected workspace</strong>
+          <p>
+            Four focused tools, one consistent visual language, and a search surface built for fast discovery.
+          </p>
         </div>
-      </aside>
+      </div>
+
     </div>
   </section>
 
-  <section class="nn-section" id="popular-tasks" aria-labelledby="popular-tasks-title">
-    <div class="nn-container">
+  <section class="nn-section" id="tools" aria-labelledby="tools-title">
+    <div class="nn-wrap">
+
       <div class="nn-section-head">
-        <div>
-          <span class="nn-kicker">POPULAR TASKS</span>
-          <h2 id="popular-tasks-title">Start with something useful.</h2>
-        </div>
-        <p>Common, high-intent tools stay close to the top. The complete library belongs in the master directory, not on the homepage.</p>
+        <span class="nn-kicker">CURATED TOOL MATRIX</span>
+        <h2 id="tools-title">Four tools worth putting within one click.</h2>
+        <p>
+          The homepage stays intentionally small. The master catalogue can remain available separately without turning this first screen into a wall of links.
+        </p>
       </div>
 
-      <div class="nn-grid popular">
-        <a class="nn-card" href="image-to-text-ocr.html">
-          <span class="nn-card-kicker">Images</span>
-          <h3>Image to Text OCR</h3>
-          <p>Extract copyable English text from screenshots, scans and photos.</p>
-          <span class="nn-card-arrow">Open tool →</span>
+      <div class="nn-tool-matrix">
+
+        <a class="nn-tool-card" href="salary-tax-calculator-pakistan.html">
+          <span class="nn-tool-tag">Pakistan • Tax</span>
+          <h3>Pakistan Salary Tax Calculator</h3>
+          <p>
+            Estimate salaried-person income tax using the calculator's stated tax-year assumptions and show the calculation path clearly.
+          </p>
+          <span class="nn-tool-open">Open calculator →</span>
         </a>
-        <a class="nn-card" href="image-compressor.html">
-          <span class="nn-card-kicker">Images</span>
-          <h3>Image Compressor</h3>
-          <p>Reduce image file size for faster sharing, uploads and publishing.</p>
-          <span class="nn-card-arrow">Open tool →</span>
+
+        <a class="nn-tool-card" href="electricity-bill-calculator-pakistan.html">
+          <span class="nn-tool-tag">Pakistan • Utility</span>
+          <h3>Pakistan Electricity Bill Calculator</h3>
+          <p>
+            Work through supported residential electricity inputs with a focused calculation flow for units, tariff and bill estimates.
+          </p>
+          <span class="nn-tool-open">Open calculator →</span>
         </a>
-        <a class="nn-card" href="merge-pdf.html">
-          <span class="nn-card-kicker">PDF &amp; Documents</span>
-          <h3>Merge PDF</h3>
-          <p>Combine PDF files into one document directly in the browser.</p>
-          <span class="nn-card-arrow">Open tool →</span>
-        </a>
-        <a class="nn-card" href="salary-tax-calculator-pakistan.html">
-          <span class="nn-card-kicker">Pakistan</span>
-          <h3>Pakistan Salary Tax</h3>
-          <p>Estimate salaried-person income tax using the applicable tax-year assumptions.</p>
-          <span class="nn-card-arrow">Open calculator →</span>
-        </a>
-        <a class="nn-card" href="electricity-bill-calculator-pakistan.html">
-          <span class="nn-card-kicker">Pakistan</span>
-          <h3>Electricity Bill Calculator</h3>
-          <p>Estimate residential electricity charges with supported tariff inputs.</p>
-          <span class="nn-card-arrow">Open calculator →</span>
-        </a>
-        <a class="nn-card" href="whatsapp-link-generator.html">
-          <span class="nn-card-kicker">Communication</span>
+
+        <a class="nn-tool-card" href="whatsapp-link-generator.html">
+          <span class="nn-tool-tag">Communication</span>
           <h3>WhatsApp Link Generator</h3>
-          <p>Create pre-filled WhatsApp chat links for customer communication and sharing.</p>
-          <span class="nn-card-arrow">Open tool →</span>
+          <p>
+            Build a pre-filled WhatsApp chat link for customer communication, sharing and repeat-use messaging workflows.
+          </p>
+          <span class="nn-tool-open">Open generator →</span>
         </a>
-      </div>
 
-      <div class="nn-directory-cta">
-        <div>
-          <strong>Need something less common?</strong><br>
-          <span>Open the complete searchable NexusNova directory instead of scrolling through hundreds of homepage links.</span>
-        </div>
-        <a href="tools.html">Open the master tool index →</a>
+        <a class="nn-tool-card" href="xray.html">
+          <span class="nn-tool-tag">Security • URL</span>
+          <h3>NexusNova X-Ray</h3>
+          <p>
+            Inspect visible URL structure and redirect-related warning signals before deciding whether a link should be opened.
+          </p>
+          <span class="nn-tool-open">Inspect a link →</span>
+        </a>
+
       </div>
     </div>
   </section>
 
-  <section class="nn-section alt" id="pakistan-tools" aria-labelledby="pakistan-tools-title">
-    <div class="nn-container">
+  <section class="nn-section alt" id="principles" aria-labelledby="principles-title">
+    <div class="nn-wrap">
+
       <div class="nn-section-head">
-        <div>
-          <span class="nn-kicker">PAKISTAN TOOLS</span>
-          <h2 id="pakistan-tools-title">Practical tools for everyday Pakistan workflows.</h2>
-        </div>
-        <p>Keep the regional utilities easy to reach without turning the homepage into a long directory.</p>
+        <span class="nn-kicker">WORKSPACE FOUNDATION</span>
+        <h2 id="principles-title">Simple by design.</h2>
+        <p>
+          The interface has three jobs: make the right tool easy to find, keep the visual system consistent, and leave enough space for useful content.
+        </p>
       </div>
 
-      <div class="nn-grid nn-pakistan-grid">
-        <a class="nn-card" href="salary-tax-calculator-pakistan.html">
-          <span class="nn-card-kicker">Tax</span>
-          <h3>Salary Tax Calculator</h3>
-          <p>Estimate tax for salaried income with the page's stated tax-year assumptions.</p>
-          <span class="nn-card-arrow">Open calculator →</span>
-        </a>
-        <a class="nn-card" href="electricity-bill-calculator-pakistan.html">
-          <span class="nn-card-kicker">Utilities</span>
-          <h3>Electricity Bill Calculator</h3>
-          <p>Work through supported residential units, tariff and bill inputs.</p>
-          <span class="nn-card-arrow">Open calculator →</span>
-        </a>
-        <a class="nn-card" href="fbr-atl-status-checker.html">
-          <span class="nn-card-kicker">FBR</span>
-          <h3>FBR Active Taxpayer Status</h3>
-          <p>Check ATL status through the NexusNova verification workflow.</p>
-          <span class="nn-card-arrow">Open checker →</span>
-        </a>
-        <a class="nn-card" href="zakat-calculator-pakistan.html">
-          <span class="nn-card-kicker">Finance</span>
-          <h3>Pakistan Zakat Calculator</h3>
-          <p>Estimate Zakat with editable threshold reference and transparent calculation notes.</p>
-          <span class="nn-card-arrow">Open calculator →</span>
-        </a>
+      <div class="nn-principles">
+
+        <article class="nn-principle">
+          <div class="nn-principle-mark">01</div>
+          <h3>Focused discovery</h3>
+          <p>
+            Search is the first navigation layer. The homepage does not compete with it by dumping the entire site index into the screen.
+          </p>
+        </article>
+
+        <article class="nn-principle">
+          <div class="nn-principle-mark">02</div>
+          <h3>Clear hierarchy</h3>
+          <p>
+            White surfaces, measured spacing and one purple accent make actions, labels and results easy to distinguish at a glance.
+          </p>
+        </article>
+
+        <article class="nn-principle">
+          <div class="nn-principle-mark">03</div>
+          <h3>Room for substance</h3>
+          <p>
+            Individual tool pages can carry their own methods, formulas, sources, limitations and practical guidance without overcrowding the homepage.
+          </p>
+        </article>
+
       </div>
     </div>
   </section>
 
-  <section class="nn-section" id="live-information" aria-labelledby="live-information-title">
-    <div class="nn-container">
-      <div class="nn-section-head">
-        <div>
-          <span class="nn-kicker">LIVE INFORMATION</span>
-          <h2 id="live-information-title">Check changing information in one place.</h2>
-        </div>
-        <p>Live pages keep source, freshness, method and limitations visible rather than hiding everything behind a number.</p>
-      </div>
-
-      <div class="nn-grid nn-live-grid">
-        <a class="nn-card" href="live.html">
-          <span class="nn-card-kicker">Today</span>
-          <h3>Pakistan Today Dashboard</h3>
-          <p>USD/PKR, gold, fuel and Pakistan city weather in one dashboard.</p>
-          <span class="nn-card-arrow">Open dashboard →</span>
-        </a>
-        <a class="nn-card" href="currency-rates.html">
-          <span class="nn-card-kicker">Currency</span>
-          <h3>Currency Rates</h3>
-          <p>Pakistan-first reference rates with a worldwide pair converter.</p>
-          <span class="nn-card-arrow">Open rates →</span>
-        </a>
-        <a class="nn-card" href="gold-rates.html">
-          <span class="nn-card-kicker">Markets</span>
-          <h3>Gold Rates</h3>
-          <p>International XAU/USD with transparent PKR 24K reference calculations.</p>
-          <span class="nn-card-arrow">Open gold rates →</span>
-        </a>
-        <a class="nn-card" href="weather-live.html">
-          <span class="nn-card-kicker">Weather</span>
-          <h3>Pakistan Weather</h3>
-          <p>Forecasts for major Pakistan cities with source freshness and model notes.</p>
-          <span class="nn-card-arrow">Open weather →</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="nn-section alt" id="categories" aria-labelledby="categories-title">
-    <div class="nn-container">
-      <div class="nn-section-head">
-        <div>
-          <span class="nn-kicker">BROWSE BY CATEGORY</span>
-          <h2 id="categories-title">Know the kind of task? Start here.</h2>
-        </div>
-        <p>Category hubs give the large tool library a clear second layer so the homepage can stay focused and readable.</p>
-      </div>
-
-      <div class="nn-category-grid">
-        <a class="nn-category-card" href="image-tools.html">
-          <div>
-            <div class="nn-category-icon">IMG</div>
-            <h3>Images</h3>
-            <p>Compress, convert, enhance, inspect metadata and extract text from images.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="pdf-tools.html">
-          <div>
-            <div class="nn-category-icon">PDF</div>
-            <h3>PDF &amp; Documents</h3>
-            <p>Merge, split, create and convert practical document workflows.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="calculator-tools.html">
-          <div>
-            <div class="nn-category-icon">∑</div>
-            <h3>Calculators</h3>
-            <p>Math, finance, dates, AI, gaming and repeat-use calculation utilities.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="pakistan-tools.html">
-          <div>
-            <div class="nn-category-icon">PK</div>
-            <h3>Pakistan Tools</h3>
-            <p>Salary tax, electricity, FBR, Zakat, prayer, holidays and jobs.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="xray.html">
-          <div>
-            <div class="nn-category-icon">URL</div>
-            <h3>Security &amp; Network</h3>
-            <p>URL inspection, DNS, SSL, reachability and other visible network signals.</p>
-          </div>
-          <span>Explore security tools →</span>
-        </a>
-        <a class="nn-category-card" href="developer-tools.html">
-          <div>
-            <div class="nn-category-icon">{}</div>
-            <h3>Developer &amp; Data</h3>
-            <p>JSON, Base64, UUID, timestamps and structured-data utilities.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="productivity-tools.html">
-          <div>
-            <div class="nn-category-icon">PLAN</div>
-            <h3>Productivity</h3>
-            <p>Business, writing, planning, messaging, notes and repeat-use utilities.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="gaming.html">
-          <div>
-            <div class="nn-category-icon">PLAY</div>
-            <h3>Gaming</h3>
-            <p>Gaming sensitivity, eDPI, FPS, reactions, Minecraft and Steam tools.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-        <a class="nn-category-card" href="live.html">
-          <div>
-            <div class="nn-category-icon">LIVE</div>
-            <h3>Live Information</h3>
-            <p>Live rates, weather, markets, alerts, earthquakes, sports and public data.</p>
-          </div>
-          <span>Open category →</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="nn-section" id="guides-articles" aria-labelledby="guides-articles-title">
-    <div class="nn-container">
-      <div class="nn-section-head">
-        <div>
-          <span class="nn-kicker">GUIDES &amp; ARTICLES</span>
-          <h2 id="guides-articles-title">Understand the method, not just the button.</h2>
-        </div>
-        <p>Guides and articles explain formulas, workflows, privacy choices and practical limitations around the tools.</p>
-      </div>
-
-      <div class="nn-guides-grid">
-        <article class="nn-guide-card">
-          <span class="nn-card-kicker">Methodology</span>
-          <h3>How NexusNova Tools Produce Results</h3>
-          <p>See how browser processing, formulas, metadata handling and source notes are presented.</p>
-          <a href="tool-methodology.html">Read methodology →</a>
-        </article>
-        <article class="nn-guide-card">
-          <span class="nn-card-kicker">Pakistan</span>
-          <h3>FBR Compliance Guide</h3>
-          <p>A practical guide to taxpayer context, records, verification and responsible use of tax outputs.</p>
-          <a href="guide-fbr-compliance.html">Read FBR guide →</a>
-        </article>
-        <article class="nn-guide-card">
-          <span class="nn-card-kicker">Guides</span>
-          <h3>Practical How-To Guides</h3>
-          <p>Step-by-step help for common tasks, privacy, formulas and everyday digital workflows.</p>
-          <a href="guides.html">Browse guides →</a>
-        </article>
-        <article class="nn-guide-card">
-          <span class="nn-card-kicker">Articles</span>
-          <h3>Original Practical Articles</h3>
-          <p>Useful explainers across tools, software, security and digital workflows.</p>
-          <a href="articles.html">Read articles →</a>
-        </article>
-      </div>
-    </div>
-  </section>
 </main>
 
-<footer class="site-footer">
-  <div class="container footer-console">
+<footer class="nn-footer">
+
+  <div class="nn-wrap nn-footer-inner">
     <div class="nn-footer-grid">
-      <div>
+
+      <div class="nn-footer-brand">
         <a class="brand" href="/" aria-label="NexusNova Tools home">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="brand-network" viewBox="0 0 40 40" width="23" height="23" focusable="false">
-              <g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M7 8L20 4L33 11L28 28L17 36L6 27L7 8Z"/>
-                <path d="M7 8L28 28M20 4L17 36M33 11L17 36M6 27L20 4"/>
+            <svg class="brand-network" viewBox="0 0 48 48" width="28" height="28" focusable="false">
+              <defs>
+                <linearGradient id="nn-foot-line" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#8b5cf6"/>
+                  <stop offset=".55" stop-color="#6d28d9"/>
+                  <stop offset="1" stop-color="#5b21b6"/>
+                </linearGradient>
+              </defs>
+              <g fill="none" stroke="#c4b5fd" stroke-width="1" opacity=".45">
+                <path d="M8 12L23 5L40 14L34 31L20 42L7 33L8 12Z"/>
               </g>
-              <g fill="currentColor">
-                <circle cx="7" cy="8" r="2.7"/>
-                <circle cx="20" cy="4" r="2.7"/>
-                <circle cx="33" cy="11" r="2.7"/>
-                <circle cx="28" cy="28" r="2.7"/>
-                <circle cx="17" cy="36" r="2.7"/>
-                <circle cx="6" cy="27" r="2.7"/>
+              <g fill="none" stroke="url(#nn-foot-line)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 10L23 4L40 12L34 30L20 42L6 32L8 10Z"/>
+                <path d="M8 10L34 30M23 4L20 42M40 12L20 42M6 32L23 4M23 4L23 18L40 12M23 18L34 30M23 18L20 42M23 18L6 32"/>
+              </g>
+              <g fill="#6d28d9">
+                <circle cx="8" cy="10" r="3.8"/>
+                <circle cx="23" cy="4" r="3.8"/>
+                <circle cx="40" cy="12" r="3.8"/>
+                <circle cx="34" cy="30" r="3.8"/>
+                <circle cx="20" cy="42" r="3.8"/>
+                <circle cx="6" cy="32" r="3.8"/>
+                <circle cx="23" cy="18" r="3.1"/>
               </g>
             </svg>
           </span>
+
           <span class="brand-copy">
             <strong>NEXUSNOVA TOOLS</strong>
-            <small>TOOLS • HUMANPROOF • GUIDES</small>
+            <small>FOCUSED TOOLS • CLEAR RESULTS</small>
           </span>
         </a>
-        <p class="footer-copy">Practical browser tools, Pakistan utilities, live information and useful guidance in one coherent workspace.</p>
+
+        <p class="nn-footer-copy">
+          A focused workspace for practical browser utilities.
+        </p>
       </div>
 
-      <div>
-        <div class="footer-title">Explore</div>
-        <div class="footer-links">
-          <a href="tools.html">Tools</a>
-          <a href="categories.html">Categories</a>
-          <a href="pakistan-tools.html">Pakistan Tools</a>
-          <a href="humanproof.html">HumanProof</a>
-          <a href="articles.html">Articles</a>
-          <a href="guides.html">Guides</a>
-          <a href="live.html">🟢 Today's Prices</a>
-        </div>
-      </div>
+      <nav class="nn-footer-links" aria-label="Footer navigation">
+        <a href="tools.html">Tools</a>
+        <a href="categories.html">Categories</a>
+        <a href="articles.html">Articles</a>
+        <a href="guides.html">Guides</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </nav>
 
-      <div>
-        <div class="footer-title">Trust</div>
-        <ul class="footer-links" style="list-style:none;margin:0;padding:0">
-          <li><a href="/terms.html">Terms</a> &amp; <a href="/refund-policy.html">Refund Policy</a></li>
-          <li><a href="/about.html">About</a></li>
-          <li><a href="/editorial-policy.html">Editorial Policy</a></li>
-          <li><a href="/tool-methodology.html">Tool Methodology</a></li>
-          <li><a href="/privacy.html">Privacy</a></li>
-          <li><a href="/contact.html">Contact Us &amp; Support</a></li>
-        </ul>
-      </div>
     </div>
   </div>
 
-  <div class="container footer-bottom">
+  <div class="nn-wrap nn-footer-bottom">
     <span>© <span data-year></span> NexusNova Tools.</span>
-    <span class="footer-online"><i></i> NEXUSNOVATOOLS.COM</span>
+    <span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span>
   </div>
+
 </footer>
 
-<script src="assets/js/main.js?v=20260921-perf23" defer></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
-  const form=document.querySelector('[data-nexusnova-search]');
-  const input=form?.querySelector('[data-home-search]');
-  const panel=document.getElementById('nn-search-suggestions');
-  if(!form||!input||!panel||typeof window.NexusNovaSearchCore!=='function')return;
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('[data-nexusnova-search]');
+  const input = document.querySelector('[data-nexusnova-search-input]');
+  const panel = document.getElementById('nn-search-suggestions');
 
-  const engine=new window.NexusNovaSearchCore();
+  if (
+    !form ||
+    !input ||
+    !panel ||
+    typeof window.NexusNovaSearchCore !== 'function'
+  ) {
+    return;
+  }
 
-  const purge=()=>{
+  const engine = new window.NexusNovaSearchCore();
+
+  const clearSuggestions = () => {
     panel.replaceChildren();
-    panel.hidden=true;
-    input.setAttribute('aria-expanded','false');
+    panel.hidden = true;
+    input.setAttribute('aria-expanded', 'false');
   };
 
-  const render=(results)=>{
-    purge();
-    if(!results.length)return;
+  const renderSuggestions = (results) => {
+    clearSuggestions();
 
-    const fragment=document.createDocumentFragment();
+    const topResults = results.slice(0, 5);
 
-    results.slice(0,5).forEach((result,index)=>{
-      const item=document.createElement('a');
-      item.className='nn-search-suggestion';
-      item.href=result.url;
-      item.id='nn-search-suggestion-'+(index+1);
-      item.setAttribute('role','option');
-      item.setAttribute('aria-label',result.title+', '+result.category);
+    if (!topResults.length) {
+      return;
+    }
 
-      const title=document.createElement('span');
-      title.className='nn-search-suggestion-title';
-      title.textContent=result.title;
+    const fragment = document.createDocumentFragment();
 
-      const category=document.createElement('span');
-      category.className='nn-search-suggestion-category';
-      category.textContent=result.category;
+    topResults.forEach((result, index) => {
+      const link = document.createElement('a');
 
-      item.append(title,category);
-      fragment.appendChild(item);
+      link.className = 'nn-search-result';
+      link.href = result.url;
+      link.id = 'nn-search-result-' + (index + 1);
+      link.setAttribute('role', 'option');
+      link.setAttribute(
+        'aria-label',
+        result.title + ', ' + result.category
+      );
+
+      const title = document.createElement('span');
+      title.className = 'nn-search-result-title';
+      title.textContent = result.title;
+
+      const category = document.createElement('span');
+      category.className = 'nn-search-result-category';
+      category.textContent = result.category;
+
+      link.append(title, category);
+      fragment.appendChild(link);
     });
 
     panel.appendChild(fragment);
-    panel.hidden=false;
-    input.setAttribute('aria-expanded','true');
+    panel.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
   };
 
-  input.addEventListener('input',()=>{
-    const value=input.value.trim();
-    if(!value){
-      purge();
+  const runSearch = () => {
+    const query = input.value.trim();
+
+    if (!query) {
+      clearSuggestions();
       return;
     }
-    render(engine.query(value));
-  });
 
-  form.addEventListener('submit',(event)=>{
-    const value=input.value.trim();
-    if(!value)return;
-    const matches=engine.query(value);
-    if(matches[0]?.url){
-      event.preventDefault();
-      window.location.href=matches[0].url;
-    }
-  });
-
-  input.addEventListener('focus',()=>{
-    if(input.value.trim())render(engine.query(input.value.trim()));
-  });
-
-  input.addEventListener('keydown',(event)=>{
-    if(event.key==='Escape')purge();
-  });
-
-  document.addEventListener('pointerdown',(event)=>{
-    if(!form.contains(event.target))purge();
-  });
-
-  purge();
-},{once:true});
-</script>
-<script>
-(()=>{
-  const holder=document.querySelector('[data-hp-360-holder]');
-  const loader=document.getElementById('nnHumanProof360Load');
-  if(!holder||!loader)return;
-
-  const start=()=>{
-    if(holder.dataset.started==='1')return;
-    holder.dataset.started='1';
-    loader.textContent='LOADING 3D HUMAN VIEW…';
-
-    const script=document.createElement('script');
-    script.src='assets/js/humanproof-hero-360.js?v=20260921-lazy1';
-    script.defer=true;
-    document.body.appendChild(script);
+    renderSuggestions(engine.query(query));
   };
 
-  loader.addEventListener('click',start,{once:true});
-  loader.addEventListener('keydown',(event)=>{
-    if(event.key==='Enter'||event.key===' '){
-      event.preventDefault();
-      start();
+  input.addEventListener('input', runSearch);
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim()) {
+      runSearch();
     }
   });
-  loader.setAttribute('role','button');
-  loader.setAttribute('tabindex','0');
-})();
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      clearSuggestions();
+    }
+  });
+
+  form.addEventListener('submit', (event) => {
+    const query = input.value.trim();
+
+    if (!query) {
+      event.preventDefault();
+      return;
+    }
+
+    const results = engine.query(query);
+
+    if (results[0]?.url) {
+      event.preventDefault();
+      window.location.href = results[0].url;
+    }
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    if (!form.contains(event.target)) {
+      clearSuggestions();
+    }
+  });
+
+  clearSuggestions();
+});
 </script>
+
 </body>
 </html>
