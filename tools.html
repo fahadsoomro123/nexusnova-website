@@ -101,7 +101,56 @@ body.nn-light-hub::before{display:none}
 <script src="assets/js/search-core.js" defer></script>
 </head>
 <body class="nn-light-hub">
-<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark"><svg class="brand-network" viewBox="0 0 40 40" width="23" height="23" focusable="false" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8L20 4L33 11L28 28L17 36L6 27L7 8Z"/><path d="M7 8L28 28M20 4L17 36M33 11L17 36M6 27L20 4"/></g><g fill="currentColor"><circle cx="7" cy="8" r="2.7"/><circle cx="20" cy="4" r="2.7"/><circle cx="33" cy="11" r="2.7"/><circle cx="28" cy="28" r="2.7"/><circle cx="17" cy="36" r="2.7"/><circle cx="6" cy="27" r="2.7"/></g></svg></span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>TOOLS • HUMANPROOF • GUIDES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="live.html">🟢 Today's Prices</a><a href="tools.html" aria-current="page">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark" aria-hidden="true">
+  <svg class="brand-network" viewBox="0 0 48 48" width="26" height="26" focusable="false" role="img" aria-label="NexusNova interconnected network mark">
+    <defs>
+      <linearGradient id="nn-logo-face" x1="8" y1="7" x2="40" y2="41" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#8b5cf6"/>
+        <stop offset="0.55" stop-color="#6d28d9"/>
+        <stop offset="1" stop-color="#5b21b6"/>
+      </linearGradient>
+      <radialGradient id="nn-logo-node" cx="35%" cy="30%" r="72%">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="0.16" stop-color="#ede9fe"/>
+        <stop offset="0.5" stop-color="#8b5cf6"/>
+        <stop offset="1" stop-color="#6d28d9"/>
+      </radialGradient>
+    </defs>
+
+    <g fill="none" stroke="#c4b5fd" stroke-linecap="round" stroke-linejoin="round" opacity=".58">
+      <path d="M10 12L24 6L39 14L35 31L21 42L8 33L10 12Z" stroke-width="1.2"/>
+      <path d="M10 12L29 31M24 6L21 42M39 14L21 42M8 33L24 6" stroke-width="1"/>
+    </g>
+
+    <g fill="none" stroke="url(#nn-logo-face)" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 10L23 5L37 12L33 29L20 40L7 31L9 10Z"/>
+      <path d="M9 10L33 29M23 5L20 40M37 12L20 40M7 31L23 5"/>
+      <path d="M23 5L23 18L37 12M23 18L33 29M23 18L20 40M23 18L7 31M9 10L23 18"/>
+    </g>
+
+    <g fill="none" stroke="#4c1d95" stroke-width=".9" opacity=".45">
+      <path d="M23 6L23 18L37 13"/>
+      <path d="M8 31L20 40L33 29"/>
+    </g>
+
+    <g>
+      <circle cx="9" cy="10" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="23" cy="5" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="37" cy="12" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="33" cy="29" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="20" cy="40" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="7" cy="31" r="4.1" fill="url(#nn-logo-node)"/>
+      <circle cx="23" cy="18" r="3.35" fill="#6d28d9"/>
+      <circle cx="22" cy="17" r="1.15" fill="#ffffff" opacity=".9"/>
+    </g>
+
+    <g fill="#ffffff" opacity=".7">
+      <circle cx="7.7" cy="8.7" r=".75"/>
+      <circle cx="21.7" cy="3.7" r=".75"/>
+      <circle cx="35.7" cy="10.7" r=".75"/>
+    </g>
+  </svg>
+</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>TOOLS • HUMANPROOF • GUIDES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="live.html">🟢 Today's Prices</a><a href="tools.html" aria-current="page">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
 <main>
 <section class="nn-hub-hero"><div class="container nn-hub-hero-grid"><div><span class="nn-hub-kicker">NEXUSNOVA TOOL DIRECTORY</span><h1>Find the tool for <span>the job.</span></h1><p class="nn-hub-hero-copy">A focused master directory for the NexusNova ecosystem. Search by task, browse a category, or jump directly into one of the working browser tools.</p><div class="nn-search-wrap"><form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search NexusNova tools"><input data-nexusnova-search-input type="search" placeholder="Search tools, categories or aliases…" aria-label="Search NexusNova tools" autocomplete="off" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false"><button class="btn btn-primary" type="submit">Search</button><div id="nn-search-suggestions" class="nn-search-suggestions" role="listbox" aria-label="Search suggestions" hidden></div></form></div><div class="hero-actions" style="margin-top:16px"><a class="btn btn-primary" href="categories.html">Browse categories</a><a class="btn" href="index.html">Back to home</a></div></div><aside class="nn-hero-side"><strong>Directory architecture</strong><h2>Curated discovery, complete access.</h2><p>The homepage stays focused. This hub carries the broader tool index while category pages provide a cleaner second level of navigation.</p></aside></div></section>
 <section class="nn-hub-main"><div class="container"><div class="nn-section-title"><div><span class="nn-hub-kicker">MASTER INDEX</span><h2>Tools grouped by purpose.</h2></div><p>Use the links below to move into focused task clusters. Individual tool pages keep their own instructions, methods and privacy notes.</p></div><div class="nn-directory"><section class="nn-directory-group" aria-labelledby="group-images">
