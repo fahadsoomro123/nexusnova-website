@@ -5,6 +5,7 @@
   const money=(value,digits=2)=>new Intl.NumberFormat('en-PK',{minimumFractionDigits:digits,maximumFractionDigits:digits}).format(value);
   const pkr=value=>`Rs ${new Intl.NumberFormat('en-PK',{maximumFractionDigits:0}).format(value)}`;
   const time=value=>{if(!value)return '—';const date=new Date(value);return Number.isNaN(date.getTime())?'—':date.toLocaleString('en-PK',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Karachi'})};
+  const freshUrl=url=>`${url}?v=${Date.now()}`;
   const renderHistory=data=>{
     const table=document.querySelector('[data-gold-history-rows]'),chart=document.querySelector('[data-gold-history-chart]'),summary=document.querySelector('[data-gold-history-summary]');
     if(!table||!chart||!summary)return;
@@ -16,8 +17,8 @@
     const vals=recent.map(p=>Number(p.pkr_per_tola_24k)),min=Math.min(...vals),max=Math.max(...vals),span=max-min||1,w=600,h=160,pad=10;const coords=vals.map((v,i)=>`${pad+(i*(w-2*pad))/Math.max(1,vals.length-1)},${h-pad-((v-min)/span)*(h-2*pad)}`).join(' ');chart.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="NexusNova 24K gold per tola snapshot trend"><polyline points="${coords}" fill="none" stroke="currentColor" stroke-width="4" vector-effect="non-scaling-stroke"/></svg>`;
   };
   Promise.all([
-    fetch('assets/data/live-gold.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}),
-    fetch('assets/data/live-gold-history.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+    fetch(freshUrl('assets/data/live-gold.json'),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}),
+    fetch(freshUrl('assets/data/live-gold-history.json'),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
   ]).then(([data,history])=>{
     if(data?.status!=='ok'||!data?.xau||!data?.international_derived_pkr||!data?.fx)throw new Error('Gold reference data is not ready');
     const xau=Number(data.xau.usd_per_troy_ounce),derived=data.international_derived_pkr;if(!Number.isFinite(xau)||xau<=0)throw new Error('Invalid gold price');
