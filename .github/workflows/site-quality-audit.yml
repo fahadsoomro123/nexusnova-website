@@ -14,6 +14,9 @@ on:
       - '**/*.txt'
       - '.github/scripts/site_quality_audit.py'
       - '.github/scripts/browser_quality_guard.py'
+      - '.github/scripts/public_path_hardening.py'
+      - '.github/scripts/adsense_template_matrix.py'
+      - '_config.yml'
       - '.github/workflows/site-quality-audit.yml'
   pull_request:
     branches: [main]
@@ -25,6 +28,9 @@ on:
       - '**/*.txt'
       - '.github/scripts/site_quality_audit.py'
       - '.github/scripts/browser_quality_guard.py'
+      - '.github/scripts/public_path_hardening.py'
+      - '.github/scripts/adsense_template_matrix.py'
+      - '_config.yml'
       - '.github/workflows/site-quality-audit.yml'
   workflow_dispatch:
 
@@ -50,6 +56,12 @@ jobs:
 
       - name: Scan full site map, SEO and internal links
         run: python .github/scripts/site_quality_audit.py
+
+      - name: Run public path hardening gate
+        run: python .github/scripts/public_path_hardening.py
+
+      - name: Run five-template AdSense structural matrix
+        run: python .github/scripts/adsense_template_matrix.py
 
       - name: Require zero static findings
         run: |
