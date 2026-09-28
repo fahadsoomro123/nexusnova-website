@@ -12,13 +12,13 @@ function newToolsItemList() {
   return itemList;
 }
 
-test('New Tools structured data stays in sync with the 14-tool collection', () => {
+test('New Tools structured data stays in sync with the 17-tool collection', () => {
   const itemList = newToolsItemList();
   const rows = itemList.itemListElement;
-  assert.equal(itemList.numberOfItems, 14);
-  assert.equal(rows.length, 14);
-  assert.deepEqual(rows.map(row => row.position), Array.from({ length: 14 }, (_, i) => i + 1));
-  assert.equal(new Set(rows.map(row => row.url)).size, 14, 'ItemList URLs must be unique');
+  assert.equal(itemList.numberOfItems, 17);
+  assert.equal(rows.length, 17);
+  assert.deepEqual(rows.map(row => row.position), Array.from({ length: 17 }, (_, i) => i + 1));
+  assert.equal(new Set(rows.map(row => row.url)).size, 17, 'ItemList URLs must be unique');
 
   const required = [
     'salary-tax-calculator-pakistan.html',
@@ -35,6 +35,9 @@ test('New Tools structured data stays in sync with the 14-tool collection', () =
     'qr-code-scanner.html',
     'ai-token-calculator.html',
     'invoice-maker.html',
+    'fbr-atl-status-checker.html',
+    'fbr-tax-calculator-pakistan.html',
+    'pakistan-jobs-finder.html',
   ].map(path => `https://nexusnovatools.com/${path}`);
 
   assert.deepEqual(rows.map(row => row.url), required);
