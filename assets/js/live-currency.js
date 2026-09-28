@@ -9,6 +9,7 @@
   };
   const FEATURED=['USD','GBP','EUR','AED','SAR'];
   let rates=new Map();
+  const freshUrl=url=>`${url}?v=${Date.now()}`;
 
   const formatRate=value=>new Intl.NumberFormat('en-PK',{minimumFractionDigits:2,maximumFractionDigits:4}).format(value);
   const formatAmount=value=>new Intl.NumberFormat('en-PK',{maximumFractionDigits:6}).format(value);
@@ -130,7 +131,7 @@
     addLiveNav();
     bindConverter();
     try{
-      const response=await fetch(DATA_URL,{cache:'no-cache',headers:{Accept:'application/json'}});
+      const response=await fetch(freshUrl(DATA_URL),{cache:'no-cache',headers:{Accept:'application/json'}});
       if(!response.ok)throw new Error(`HTTP ${response.status}`);
       const data=await response.json();
       const valid=(data.rates||[]).filter(item=>typeof item.code==='string'&&Number.isFinite(item.rate)&&item.rate>0);
