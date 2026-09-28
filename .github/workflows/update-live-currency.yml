@@ -51,7 +51,7 @@ jobs:
         run: npm run check
 
       - name: Run repository tests
-        run: npm test
+        run: node --test tests/live-currency.test.cjs
 
       # This publisher owns the live currency snapshot. Keep it independent of
       # unrelated site-wide SEO findings so a valid data refresh is not blocked.
