@@ -93,6 +93,10 @@ body.nn-light-hub::before{display:none}
 .nn-light-hub .article p,.nn-light-hub .article li{color:#64748b}
 @media(max-width:960px){.nn-light-hub .nn-hub-hero-grid{grid-template-columns:1fr}.nn-light-hub .nn-link-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nn-light-hub .nn-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nn-light-hub .nn-directory-group-head{align-items:start;flex-direction:column}}
 @media(max-width:720px){.nn-light-hub .container{width:min(100% - 22px,var(--max))}.nn-light-hub .nav{background:#fff!important;border-color:#e2e8f0!important}.nn-light-hub .nn-hub-hero{padding:56px 0 34px}.nn-light-hub .nn-search-form{flex-direction:column}.nn-light-hub .nn-search-form .btn-primary{width:100%}.nn-light-hub .nn-search-suggestions{top:120px}.nn-light-hub .nn-link-grid,.nn-light-hub .nn-category-grid{grid-template-columns:1fr}.nn-light-hub .nn-directory-group{padding:18px}.nn-light-hub .nn-section-title{align-items:start;flex-direction:column}.nn-light-hub .nn-section-title h2{font-size:29px}}
+
+.nn-light-hub .nn-footer-grid{display:grid;grid-template-columns:1.25fr .75fr .75fr;gap:32px;align-items:start}
+@media(max-width:900px){.nn-light-hub .nn-footer-grid{grid-template-columns:1fr 1fr}.nn-light-hub .nn-footer-grid>div:first-child{grid-column:1/-1}}
+@media(max-width:720px){.nn-light-hub .nn-footer-grid{grid-template-columns:1fr}.nn-light-hub .nn-footer-grid>div:first-child{grid-column:auto}}
 </style>
 <script src="assets/js/search-core.js" defer></script>
 </head>
