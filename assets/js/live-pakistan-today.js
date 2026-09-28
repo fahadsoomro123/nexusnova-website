@@ -30,8 +30,9 @@
     return new Intl.DateTimeFormat('en-PK',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Karachi'}).format(parsed)+' PKT';
   };
   const valid=value=>Number.isFinite(Number(value));
+  const freshUrl=url=>`${url}?v=${Date.now()}`;
   const fetchJson=async url=>{
-    const response=await fetch(url,{cache:'no-cache',headers:{Accept:'application/json'}});
+    const response=await fetch(freshUrl(url),{cache:'no-cache',headers:{Accept:'application/json'}});
     if(!response.ok)throw new Error(`${url} HTTP ${response.status}`);
     const data=await response.json();
     if(data?.status!=='ok')throw new Error(`${url} is not published`);
@@ -44,7 +45,7 @@
       if(!link||!article)return;
       let ready=false;
       try{
-        const response=await fetch(module.data,{cache:'no-store',headers:{Accept:'application/json'}});
+        const response=await fetch(freshUrl(module.data),{cache:'no-store',headers:{Accept:'application/json'}});
         if(response.ok){
           const data=await response.json();
           ready=data?.status==='ok';
