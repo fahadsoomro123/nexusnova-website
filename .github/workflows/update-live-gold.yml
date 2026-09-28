@@ -2,7 +2,7 @@ name: NexusNova LIVE Gold Refresh
 
 on:
   schedule:
-    - cron: '7 * * * *'
+    - cron: '*/15 * * * *'
   push:
     branches: [main]
     paths:
