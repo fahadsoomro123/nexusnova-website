@@ -1,1116 +1,254 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NexusNova Tools â€” Enterprise Utility Command Center</title>
-  <meta name="description" content="NexusNova Tools is a focused browser utility workspace for Pakistan salary tax, electricity bills, WhatsApp links and URL inspection.">
+  <title>NexusNova Tools — 94 Free Browser Tools, Categories, Articles & Guides</title>
+  <meta name="description" content="NexusNova Tools gives visitors direct homepage access to 94 browser tools, category hubs, practical articles and guides, with client-side fuzzy search and mobile-friendly navigation.">
   <meta name="robots" content="index,follow,max-image-preview:large">
-  <meta name="theme-color" content="#f8fafc">
+  <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://nexusnovatools.com/">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NexusNova Tools">
-  <meta property="og:title" content="NexusNova Tools â€” Enterprise Utility Command Center">
-  <meta property="og:description" content="Four focused browser utilities with instant client-side discovery in a clean enterprise grid.">
+  <meta property="og:title" content="NexusNova Tools — 94 Free Browser Tools, Categories, Articles & Guides">
+  <meta property="og:description" content="Open every listed NexusNova tool directly from the homepage, or browse categories, articles and guides in one flat directory.">
   <meta property="og:url" content="https://nexusnovatools.com/">
-  <meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <meta property="og:image" content="https://nexusnovatools.com/assets/logo.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="NexusNova Tools â€” Enterprise Utility Command Center">
-  <meta name="twitter:description" content="Find the right NexusNova utility instantly, then open the tool without interface clutter.">
-  <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
+  <meta name="twitter:title" content="NexusNova Tools — 94 Free Browser Tools, Categories, Articles & Guides">
+  <meta name="twitter:description" content="94 direct tool routes plus categories, articles and guides on one homepage.">
+  <meta name="twitter:image" content="https://nexusnovatools.com/assets/logo.png">
 
   <link rel="preload" href="assets/js/search-core.js" as="script">
   <script src="assets/js/search-core.js" defer></script>
+  <link rel="stylesheet" href="assets/css/humanproof-hero-360.css">
 
   <style>
     :root{
-      --nn-bg:#f8fafc;
-      --nn-surface:#ffffff;
-      --nn-surface-soft:#f8fafc;
-      --nn-line:#e2e8f0;
-      --nn-line-strong:#cbd5e1;
-      --nn-text:#0f172a;
+      --nn-max:1180px;
+      --nn-text:#111827;
       --nn-muted:#64748b;
       --nn-subtle:#94a3b8;
+      --nn-line:#e2e8f0;
+      --nn-line-strong:#cbd5e1;
       --nn-purple:#6d28d9;
       --nn-purple-dark:#5b21b6;
-      --nn-purple-soft:#f5f3ff;
-      --nn-purple-line:#ddd6fe;
       --nn-green:#15803d;
-      --nn-green-soft:#f0fdf4;
       --nn-green-line:#bbf7d0;
-      --nn-max:1180px;
-      --nn-radius:20px;
-      --nn-shadow:0 20px 55px rgba(15,23,42,.07);
+      --nn-surface:#ffffff;
+      --nn-sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       --nn-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      --nn-sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     }
 
-    *,
-    *::before,
-    *::after{
-      box-sizing:border-box;
-    }
-
-    html{
-      min-width:320px;
-      scroll-behavior:smooth;
-      background:var(--nn-bg);
-    }
-
+    *,*::before,*::after{box-sizing:border-box}
+    html{min-width:320px;scroll-behavior:smooth;background:#fff}
     body{
-      min-height:100vh;
-      margin:0;
-      color:var(--nn-text);
-      background:
-        linear-gradient(rgba(226,232,240,.48) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(226,232,240,.48) 1px,transparent 1px),
-        var(--nn-bg);
-      background-size:32px 32px;
-      font-family:var(--nn-sans);
-      line-height:1.55;
-      -webkit-font-smoothing:antialiased;
-      text-rendering:optimizeLegibility;
+      margin:0;min-height:100vh;color:var(--nn-text);background:#fff;
+      font-family:var(--nn-sans);font-size:14px;line-height:1.55;
+      -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
     }
+    a{color:inherit;text-decoration:none}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    :focus-visible{outline:2px solid rgba(109,40,217,.35);outline-offset:2px}
+    ::selection{background:#ede9fe;color:#4c1d95}
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(248,250,252,.66) 22%,rgba(248,250,252,.12) 70%,rgba(248,250,252,.92) 100%);
-      z-index:-1;
-    }
-
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button,
-    input{
-      font:inherit;
-    }
-
-    button{
-      cursor:pointer;
-    }
-
-    ::selection{
-      background:#ddd6fe;
-      color:#3b0764;
-    }
-
-    .nn-shell{
-      width:min(var(--nn-max),calc(100% - 36px));
-      margin-inline:auto;
-    }
-
+    .nn-shell{width:min(var(--nn-max),calc(100% - 32px));margin-inline:auto}
     .nn-header{
-      position:sticky;
-      top:0;
-      z-index:200;
-      border-bottom:1px solid rgba(226,232,240,.94);
-      background:rgba(255,255,255,.91);
-      backdrop-filter:blur(18px);
-    }
-
-    .nn-header-row{
-      min-height:72px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:28px;
-    }
-
-    .nn-brand{
-      display:inline-flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .nn-brand-logo-img{
-      height:40px;
-      width:auto;
-      display:block;
-      max-width:none;
-      object-fit:contain;
-      margin-left:-8px;
-    }
-
-    .nn-footer .nn-brand-logo-img{
-      height:26px;
-      width:auto;
-      display:block;
-      max-width:none;
-      object-fit:contain;
-    }
-
-    .nn-brand-copy{
-      display:grid;
-      gap:2px;
-      min-width:0;
-    }
-
-    .nn-brand-copy strong{
-      color:var(--nn-text);
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:.045em;
-      line-height:1.05;
-      white-space:nowrap;
-    }
-
-    .nn-brand-copy small{
-      color:var(--nn-muted);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:700;
-      letter-spacing:.075em;
-      line-height:1.2;
-      white-space:nowrap;
-    }
-
-    .nn-nav{
-      display:flex;
-      align-items:center;
-      gap:3px;
-    }
-
-    .nn-nav a{
-      padding:9px 11px;
-      border:1px solid transparent;
-      border-radius:10px;
-      color:#475569;
-      font-size:12px;
-      font-weight:800;
-    }
-
-    .nn-nav a:hover,
-    .nn-nav a[aria-current="page"]{
-      border-color:var(--nn-line);
-      background:var(--nn-surface);
-      color:var(--nn-purple);
-    }
-
-    .nn-menu{
-      display:none;
-      width:42px;
-      height:42px;
-      border:1px solid var(--nn-line);
-      border-radius:11px;
+      position:sticky;top:0;z-index:200;
+      border-bottom:1px solid var(--nn-line);
       background:#fff;
-      color:var(--nn-text);
     }
+    .nn-header-row{min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .nn-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
+    .nn-brand-logo-img{height:40px;width:auto;display:block;max-width:none;object-fit:contain;margin-left:-8px}
+    .nn-brand-copy{display:grid;gap:1px;min-width:0}
+    .nn-brand-copy strong{font-size:12px;font-weight:850;letter-spacing:.04em;line-height:1.1;white-space:nowrap}
+    .nn-brand-copy small{font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.07em;color:var(--nn-muted);white-space:nowrap}
+    .nn-nav{display:flex;align-items:center;gap:2px;flex-wrap:wrap;justify-content:flex-end}
+    .nn-nav a{padding:7px 9px;border:1px solid transparent;font-size:12px;font-weight:750;color:#475569}
+    .nn-nav a:hover,.nn-nav a[aria-current=page]{border-color:var(--nn-line);color:var(--nn-purple);background:#fff}
+    .nn-menu{display:none}
 
-    .nn-main{
-      padding-bottom:70px;
+    .nn-main{padding-bottom:56px}
+    .nn-step{padding:24px 0 0}
+    .nn-step-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 10px}
+    .nn-step-label{
+      display:block;color:var(--nn-subtle);font-family:var(--nn-mono);
+      font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase
     }
-
-    .nn-command{
-      padding:52px 0 22px;
+    .nn-step-head h1,.nn-step-head h2,.nn-master-group h3,.nn-content-column h3,.nn-footer h2{
+      margin:4px 0 0;font-size:18px;line-height:1.2;letter-spacing:-.015em;font-weight:850
     }
+    .nn-step-copy{max-width:760px;margin:4px 0 0;color:var(--nn-muted);font-size:13px}
 
-    .nn-command-grid{
-      display:grid;
-      grid-template-columns:minmax(0,1.22fr) minmax(280px,.78fr);
-      gap:28px;
-      align-items:stretch;
-    }
-
-    .nn-command-card,
-    .nn-status-card{
-      min-width:0;
-      border:1px solid var(--nn-line);
-      background:rgba(255,255,255,.93);
-      box-shadow:var(--nn-shadow);
-    }
-
-    .nn-command-card{
-      padding:34px 34px 30px;
-      border-radius:24px;
-    }
-
-    .nn-status-card{
-      border-radius:24px;
-      overflow:hidden;
-    }
-
-    .nn-eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      color:var(--nn-purple);
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.13em;
-      text-transform:uppercase;
-    }
-
-    .nn-eyebrow::before{
-      content:"";
-      width:7px;
-      height:7px;
-      border-radius:50%;
-      background:var(--nn-purple);
-      box-shadow:0 0 0 4px rgba(109,40,217,.1);
-    }
-
-    .nn-command-title{
-      max-width:820px;
-      margin:15px 0 14px;
-      font-size:clamp(42px,6.5vw,76px);
-      font-weight:900;
-      letter-spacing:-.065em;
-      line-height:.96;
-    }
-
-    .nn-command-title span{
-      color:var(--nn-purple);
-    }
-
-    .nn-command-copy{
-      max-width:720px;
-      margin:0;
-      color:#475569;
-      font-size:16px;
-      line-height:1.7;
-    }
-
-    .nn-search{
-      position:relative;
-      z-index:60;
-      margin-top:26px;
-    }
-
-    .nn-search-form{
-      position:relative;
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:9px;
-    }
-
+    .nn-search-wrap{padding:0 0 2px}
+    .nn-search{position:relative;z-index:50}
+    .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
     .nn-search-field{
-      position:relative;
-      display:flex;
-      align-items:center;
-      min-width:0;
-      border:1px solid var(--nn-line-strong);
-      border-radius:15px;
-      background:#fff;
-      box-shadow:0 12px 28px rgba(15,23,42,.055);
-      transition:border-color .15s ease,box-shadow .15s ease;
+      min-width:0;display:flex;align-items:center;
+      border:1px solid var(--nn-line-strong);background:#fff;
     }
-
-    .nn-search-field:focus-within{
-      border-color:#a78bfa;
-      box-shadow:0 0 0 4px rgba(109,40,217,.09),0 15px 34px rgba(15,23,42,.07);
-    }
-
-    .nn-search-icon{
-      width:18px;
-      height:18px;
-      margin-left:15px;
-      flex:0 0 auto;
-      color:#64748b;
-    }
-
+    .nn-search-icon{width:17px;height:17px;margin-left:12px;flex:0 0 auto;color:#64748b}
     .nn-search-input{
-      width:100%;
-      min-width:0;
-      height:58px;
-      padding:0 14px;
-      border:0;
-      outline:0;
-      background:transparent;
-      color:var(--nn-text);
-      font-size:15px;
-      font-weight:650;
+      width:100%;min-width:0;height:46px;padding:0 12px;border:0;outline:0;
+      background:transparent;color:var(--nn-text);font-size:14px
     }
-
-    .nn-search-input::placeholder{
-      color:#94a3b8;
-      font-weight:550;
-    }
-
-    .nn-search-shortcut{
-      margin-right:11px;
-      padding:4px 7px;
-      border:1px solid var(--nn-line);
-      border-radius:7px;
-      background:#f8fafc;
-      color:#64748b;
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:850;
-      white-space:nowrap;
-    }
-
+    .nn-search-input::placeholder{color:#94a3b8}
+    .nn-search-shortcut{margin-right:10px;padding:3px 6px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:#64748b}
     .nn-search-submit{
-      min-width:122px;
-      height:58px;
-      padding:0 18px;
-      border:1px solid var(--nn-purple);
-      border-radius:15px;
-      background:var(--nn-purple);
-      color:#fff;
-      font-size:13px;
-      font-weight:900;
-      box-shadow:0 12px 28px rgba(109,40,217,.18);
-      transition:background .15s ease,border-color .15s ease,transform .15s ease;
+      min-width:94px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);
+      background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850
     }
-
-    .nn-search-submit:hover{
-      background:var(--nn-purple-dark);
-      border-color:var(--nn-purple-dark);
-      transform:translateY(-1px);
-    }
-
+    .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
     .nn-search-suggestions{
-      position:absolute;
-      top:68px;
-      left:0;
-      right:131px;
-      display:grid;
-      gap:3px;
-      padding:7px;
-      border:1px solid var(--nn-line);
-      border-radius:15px;
-      background:#fff;
-      box-shadow:0 24px 65px rgba(15,23,42,.15);
-      overflow:auto;
-      max-height:min(330px,calc(100vh - 180px));
-      z-index:2000;
+      position:absolute;top:53px;left:0;right:102px;display:grid;gap:2px;
+      padding:5px;border:1px solid var(--nn-line);background:#fff;max-height:320px;overflow:auto
     }
-
-    .nn-search-suggestions[hidden]{
-      display:none;
-    }
-
+    .nn-search-suggestions[hidden]{display:none}
     .nn-search-result{
-      display:grid;
-      grid-template-columns:auto minmax(0,1fr) auto;
-      align-items:center;
-      gap:11px;
-      min-height:52px;
-      padding:8px 10px;
-      border:1px solid transparent;
-      border-radius:11px;
-      color:var(--nn-text);
-    }
-
-    .nn-search-result:hover,
-    .nn-search-result:focus-visible,
-    .nn-search-result.is-active{
-      border-color:#ede9fe;
-      background:var(--nn-purple-soft);
-      color:#4c1d95;
-      outline:0;
-    }
-
-    .nn-search-result-icon{
-      width:30px;
-      height:30px;
-      display:grid;
-      place-items:center;
-      border:1px solid var(--nn-line);
-      border-radius:8px;
-      background:#fff;
-      color:var(--nn-purple);
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:900;
-    }
-
-    .nn-search-result-main{
-      min-width:0;
-    }
-
-    .nn-search-result-title{
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      font-size:13px;
-      font-weight:900;
-    }
-
-    .nn-search-result-meta{
-      display:flex;
-      align-items:center;
-      gap:7px;
-      margin-top:2px;
-      color:#64748b;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-      letter-spacing:.035em;
-      text-transform:uppercase;
-    }
-
-    .nn-search-result-key{
-      padding:3px 6px;
-      border:1px solid var(--nn-line);
-      border-radius:6px;
-      background:#fff;
-      color:#64748b;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-    }
-
-    .nn-search-empty{
-      padding:18px 13px;
-      color:#64748b;
-      font-size:12px;
-      line-height:1.6;
-    }
-
-    .nn-search-note{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:10px;
-      color:#94a3b8;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-      letter-spacing:.045em;
-      text-transform:uppercase;
-    }
-
-    .nn-status-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:17px 18px;
-      border-bottom:1px solid var(--nn-line);
-      background:#fcfdff;
-    }
-
-    .nn-status-label{
-      color:var(--nn-muted);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-    }
-
-    .nn-status-live{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:5px 8px;
-      border:1px solid var(--nn-green-line);
-      border-radius:999px;
-      background:var(--nn-green-soft);
-      color:var(--nn-green);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-    }
-
-    .nn-status-live::before{
-      content:"";
-      width:6px;
-      height:6px;
-      border-radius:50%;
-      background:#16a34a;
-      box-shadow:0 0 0 3px rgba(22,163,74,.1);
-    }
-
-    .nn-telemetry{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-    }
-
-    .nn-telemetry-cell{
-      min-width:0;
-      padding:19px 18px;
-      border-bottom:1px solid var(--nn-line);
-    }
-
-    .nn-telemetry-cell:nth-child(odd){
-      border-right:1px solid var(--nn-line);
-    }
-
-    .nn-telemetry-cell:nth-last-child(-n+2){
-      border-bottom:0;
-    }
-
-    .nn-telemetry-key{
-      color:var(--nn-subtle);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:850;
-      letter-spacing:.1em;
-      text-transform:uppercase;
-    }
-
-    .nn-telemetry-value{
-      margin-top:6px;
-      color:var(--nn-text);
-      font-size:15px;
-      font-weight:900;
-      line-height:1.2;
-    }
-
-    .nn-telemetry-value small{
-      color:var(--nn-muted);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-    }
-
-    .nn-grid-section{
-      padding-top:22px;
-    }
-
-    .nn-section-head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:24px;
-      margin:22px 0 13px;
-    }
-
-    .nn-section-title{
-      margin:5px 0 0;
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:-.045em;
-      line-height:1.05;
-    }
-
-    .nn-section-copy{
-      max-width:600px;
-      margin:0;
-      color:var(--nn-muted);
-      font-size:12px;
-      line-height:1.6;
-    }
-
-    .nn-tool-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:1px;
-      padding:1px;
-      border:1px solid var(--nn-line);
-      border-radius:20px;
-      background:var(--nn-line);
-      overflow:hidden;
-      box-shadow:var(--nn-shadow);
-    }
-
-    .nn-tool{
-      position:relative;
-      min-width:0;
-      min-height:245px;
-      display:flex;
-      flex-direction:column;
-      padding:24px;
-      background:rgba(255,255,255,.96);
-      transition:background .16s ease,transform .16s ease;
-    }
-
-    .nn-tool:hover{
-      background:#fff;
-      transform:translateY(-1px);
-      z-index:2;
-      box-shadow:0 18px 42px rgba(15,23,42,.08);
-    }
-
-    .nn-tool-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-    }
-
-    .nn-tool-tag{
-      display:inline-flex;
-      align-items:center;
-      min-height:24px;
-      padding:0 8px;
-      border:1px solid var(--nn-line);
-      border-radius:7px;
-      background:#fbfcfe;
-      color:#64748b;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-    }
-
-    .nn-tool-status{
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      color:#15803d;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-    }
-
-    .nn-tool-status::before{
-      content:"";
-      width:6px;
-      height:6px;
-      border-radius:50%;
-      background:#22c55e;
-    }
-
-    .nn-tool-index{
-      margin-top:21px;
-      color:#cbd5e1;
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.08em;
-    }
-
-    .nn-tool h3{
-      max-width:540px;
-      margin:5px 0 10px;
-      font-size:23px;
-      font-weight:900;
-      letter-spacing:-.035em;
-      line-height:1.08;
-    }
-
-    .nn-tool p{
-      max-width:590px;
-      margin:0;
-      color:var(--nn-muted);
-      font-size:12px;
-      line-height:1.7;
-    }
-
-    .nn-tool-foot{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-      margin-top:auto;
-      padding-top:22px;
-    }
-
-    .nn-tool-metric{
-      display:grid;
-      gap:4px;
-    }
-
-    .nn-tool-metric span{
-      color:var(--nn-subtle);
-      font-family:var(--nn-mono);
-      font-size:8px;
-      font-weight:900;
-      letter-spacing:.09em;
-      text-transform:uppercase;
-    }
-
-    .nn-tool-metric strong{
-      color:#334155;
-      font-size:11px;
-      font-weight:850;
-    }
-
-    .nn-tool-open{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      padding:9px 11px;
-      border:1px solid var(--nn-purple-line);
-      border-radius:9px;
-      background:var(--nn-purple-soft);
-      color:var(--nn-purple);
-      font-size:11px;
-      font-weight:900;
-      white-space:nowrap;
-    }
-
-    .nn-tool-open::after{
-      content:"â†’";
-      font-size:13px;
-      line-height:1;
-    }
-
-    .nn-system-strip{
-      margin-top:22px;
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      border:1px solid var(--nn-line);
-      border-radius:16px;
-      background:#fff;
-      overflow:hidden;
-    }
-
-    .nn-system-cell{
-      min-width:0;
-      padding:15px 16px;
-      border-right:1px solid var(--nn-line);
-    }
-
-    .nn-system-cell:last-child{
-      border-right:0;
-    }
-
-    .nn-system-key{
-      color:var(--nn-subtle);
-      font-family:var(--nn-mono);
-      font-size:8px;
-      font-weight:900;
-      letter-spacing:.09em;
-      text-transform:uppercase;
-    }
-
-    .nn-system-value{
-      margin-top:5px;
-      color:#334155;
-      font-size:11px;
-      font-weight:850;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .nn-footer{
-      margin-top:0;
-      border-top:1px solid var(--nn-line);
-      background:#fff;
-    }
-
-    .nn-footer-main{
-      padding:34px 0 26px;
-      display:grid;
-      grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);
-      gap:36px;
-    }
-
-    .nn-footer-copy{
-      max-width:500px;
-      margin:14px 0 0;
-      color:var(--nn-muted);
-      font-size:12px;
-      line-height:1.7;
-    }
-
-    .nn-footer-links{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:9px 18px;
-      align-content:start;
-    }
-
-    .nn-footer-links a{
-      color:#64748b;
-      font-size:11px;
-      font-weight:800;
-    }
-
-    .nn-footer-links a:hover{
-      color:var(--nn-purple);
-    }
-
-    .nn-footer-bottom{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-      padding:16px 0 20px;
-      border-top:1px solid var(--nn-line);
-      color:#94a3b8;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-    }
-
-    .nn-footer-domain{
-      color:var(--nn-purple);
-    }
-
-    .nn-noscript{
-      margin-top:14px;
-      padding:12px 14px;
-      border:1px solid #fde68a;
-      border-radius:10px;
-      background:#fffbeb;
-      color:#854d0e;
-      font-size:11px;
-      line-height:1.6;
-    }
-
-    .nn-humanproof-hero{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:22px;
-      margin-top:24px;
-      padding:24px 26px;
-      border:1px solid var(--nn-purple-line);
-      border-radius:20px;
-      background:linear-gradient(135deg,#ffffff 0%,#faf7ff 100%);
-      box-shadow:0 16px 38px rgba(109,40,217,.10);
-    }
-
-    .nn-humanproof-label{
-      display:block;
-      margin-bottom:6px;
-      color:var(--nn-purple);
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-    }
-
-    .nn-humanproof-hero h2{
-      margin:0;
-      color:var(--nn-text);
-      font-size:clamp(22px,3vw,34px);
-      font-weight:900;
-      letter-spacing:-.04em;
-      line-height:1.08;
-    }
-
-    .nn-humanproof-hero p{
-      margin:7px 0 0;
-      color:var(--nn-muted);
-      font-size:13px;
-      line-height:1.6;
-    }
-
-    .nn-humanproof-cta{
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:50px;
-      padding:0 19px;
-      border:1px solid var(--nn-purple);
-      border-radius:13px;
-      background:var(--nn-purple);
-      color:#fff;
-      font-size:13px;
-      font-weight:900;
-      white-space:nowrap;
-      box-shadow:0 12px 26px rgba(109,40,217,.18);
-    }
-
-    .nn-humanproof-cta:hover{
-      background:var(--nn-purple-dark);
-      border-color:var(--nn-purple-dark);
-    }
-
-    :focus-visible{
-      outline:3px solid rgba(109,40,217,.23);
-      outline-offset:3px;
-    }
-
-    @media (max-width:920px){
-      .nn-command-grid{
-        grid-template-columns:1fr;
-      }
-
-
-      .nn-tool-grid{
-        grid-template-columns:1fr;
-      }
-
-      .nn-system-strip{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .nn-system-cell:nth-child(2){
-        border-right:0;
-      }
-
-      .nn-system-cell:nth-child(-n+2){
-        border-bottom:1px solid var(--nn-line);
-      }
-
-      .nn-system-cell:nth-child(3){
-        border-top:0;
-      }
-
-      .nn-footer-main{
-        grid-template-columns:1fr;
-        gap:22px;
-      }
-
-      .nn-footer-links{
-        max-width:420px;
-      }
-    }
-
-    @media (max-width:760px){
-      .nn-shell{
-        width:min(var(--nn-max),calc(100% - 22px));
-      }
-
-      .nn-header-row{
-        min-height:64px;
-        flex-wrap:wrap;
-        padding:9px 0;
-      }
-
-      .nn-nav{
-        display:flex;
-        position:static;
-        width:100%;
-        justify-content:flex-start;
-        flex-wrap:wrap;
-        gap:3px;
-        padding:0;
-        border:0;
-        border-radius:0;
-        background:transparent;
-        box-shadow:none;
-      }
-
-      .nn-nav a{
-        padding:11px 12px;
-      }
-
-      .nn-command{
-        padding-top:28px;
-      }
-
-      .nn-command-card{
-        padding:25px 21px 24px;
-      }
-
-      .nn-command-title{
-        font-size:clamp(40px,13vw,62px);
-      }
-
-      .nn-search-form{
-        grid-template-columns:1fr;
-      }
-
-      .nn-search-submit{
-        width:100%;
-      }
-
-      .nn-search-suggestions{
-        top:126px;
-        right:0;
-      }
-
-
-      .nn-section-head{
-        align-items:flex-start;
-        flex-direction:column;
-      }
-
-      .nn-tool{
-        min-height:225px;
-      }
-
-      .nn-tool-foot{
-        align-items:flex-start;
-        flex-direction:column;
-      }
-
-      .nn-humanproof-hero{
-        align-items:flex-start;
-        flex-direction:column;
-        padding:20px;
-      }
-
-      .nn-humanproof-cta{
-        width:100%;
-      }
-
-      .nn-footer-bottom{
-        align-items:flex-start;
-        flex-direction:column;
-      }
-    }
-
-    @media (max-width:360px){
-      .nn-shell{
-        width:calc(100% - 16px);
-      }
-
-      .nn-header-row{
-        min-height:58px;
-        gap:8px;
-      }
-
-      .nn-brand{
-        flex:1 1 auto;
-        min-width:0;
-      }
-
-      .nn-brand-logo-img{
-        height:30px;
-        max-width:calc(100vw - 58px);
-      }
-
-    }
-    @media (max-width:460px){
-      .nn-system-strip{
-        grid-template-columns:1fr;
-      }
-
-      .nn-system-cell{
-        border-right:0;
-        border-bottom:1px solid var(--nn-line);
-      }
-
-      .nn-system-cell:last-child{
-        border-bottom:0;
-      }
-
-      .nn-footer-links{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (prefers-reduced-motion:reduce){
-      html{
-        scroll-behavior:auto;
-      }
-
-      .nn-search-field,
-      .nn-search-submit,
-      .nn-tool{
-        transition:none;
-      }
+      display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;
+      min-height:44px;padding:6px 8px;border:1px solid transparent
+    }
+    .nn-search-result:hover,.nn-search-result:focus-visible,.nn-search-result.is-active{border-color:#ddd6fe;background:#faf7ff}
+    .nn-search-result-icon{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:var(--nn-purple)}
+    .nn-search-result-main{min-width:0}
+    .nn-search-result-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:850}
+    .nn-search-result-meta{display:flex;gap:7px;margin-top:1px;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:800;text-transform:uppercase}
+    .nn-search-result-key{padding:2px 5px;border:1px solid var(--nn-line);font-size:8px}
+    .nn-search-empty{padding:13px;color:#64748b;font-size:11px}
+    .nn-search-note{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;color:var(--nn-subtle);font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+
+    .nn-humanproof-card{
+      margin-top:18px;border:1px solid var(--nn-line);background:#fff;
+    }
+    .nn-humanproof-row{
+      display:grid;grid-template-columns:minmax(0,1.2fr) minmax(170px,.8fr);gap:16px;align-items:center;
+      padding:16px
+    }
+    .nn-humanproof-copy .nn-step-label{color:var(--nn-purple)}
+    .nn-humanproof-copy h2{margin:4px 0 5px;font-size:17px;line-height:1.2;font-weight:850}
+    .nn-humanproof-copy p{margin:0;color:var(--nn-muted);font-size:12px}
+    .nn-humanproof-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .nn-humanproof-actions a{
+      display:inline-flex;align-items:center;min-height:34px;padding:0 10px;
+      border:1px solid var(--nn-line-strong);font-size:11px;font-weight:850
+    }
+    .nn-humanproof-actions a.primary{border-color:var(--nn-purple);background:var(--nn-purple);color:#fff}
+    .nn-humanproof-actions a.primary:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
+    .nn-humanproof-pricing{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;color:#475569;font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.04em}
+    .nn-humanproof-pricing span{padding:2px 5px;border:1px solid var(--nn-line);background:#fff}
+    .nn-humanproof-stage{min-width:0}
+    .nn-proof-360-holder{
+      height:150px;min-height:150px;margin:0!important;border:1px solid var(--nn-line)!important;
+      border-radius:0!important;background:#fff!important;box-shadow:none!important;overflow:hidden;
+    }
+    .nn-proof-360-holder::before,.nn-proof-360-holder::after{display:none!important}
+    .nn-proof-360-viewer{background:#fff!important;border-radius:0!important}
+    .nn-proof-360-scan{display:none!important}
+    .nn-proof-360-load{background:#fff!important;color:#64748b;font-size:8px;padding:10px}
+    .nn-proof-360-status{left:7px!important;top:7px!important;padding:4px 6px!important;border-radius:0!important;background:#fff!important;backdrop-filter:none!important;font-size:7px!important}
+    .nn-proof-360-meta{right:7px!important;bottom:6px!important;font-size:7px!important}
+    .nn-proof-attribution{margin:3px 0 0;color:#94a3b8;font-size:7px;line-height:1.3}
+    .nn-proof-attribution a{text-decoration:underline;text-underline-offset:2px}
+    
+    .nn-directory{padding-top:24px}
+    .nn-directory-intro{border-top:1px solid var(--nn-line);border-bottom:1px solid var(--nn-line);padding:13px 0;margin-bottom:12px}
+    .nn-directory-intro p{margin:4px 0 0;color:var(--nn-muted);font-size:12px}
+    .nn-group-list{display:grid;gap:18px}
+    .nn-master-group{border:1px solid var(--nn-line);background:#fff}
+    .nn-master-group-head{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:11px 12px;border-bottom:1px solid var(--nn-line);background:#fff
+    }
+    .nn-master-group-head h3{margin-top:2px}
+    .nn-group-count{font-family:var(--nn-mono);font-size:8px;font-weight:850;color:#64748b}
+    .nn-master-tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--nn-line)}
+    .nn-master-tool{
+      min-width:0;min-height:168px;display:flex;flex-direction:column;
+      padding:13px;background:#fff;border:0
+    }
+    .nn-master-tool:hover,.nn-master-tool:focus-visible{background:#fdfcff;outline:1px solid #ddd6fe;outline-offset:-1px}
+    .nn-master-tool-no{font-family:var(--nn-mono);font-size:8px;font-weight:900;color:#cbd5e1}
+    .nn-master-tool-category{margin-top:4px;color:#94a3b8;font-family:var(--nn-mono);font-size:7px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+    .nn-master-tool h3{margin:6px 0 5px;font-size:14px;line-height:1.25;font-weight:850}
+    .nn-master-tool p{margin:0;color:var(--nn-muted);font-size:11px;line-height:1.5}
+    .nn-master-tool-open{margin-top:auto;padding-top:10px;color:var(--nn-purple);font-size:10px;font-weight:850}
+    .nn-master-tool-open span{display:inline-block;margin-left:3px}
+
+    .nn-content{padding-top:28px}
+    .nn-content-intro{margin-bottom:12px}
+    .nn-content-intro p{margin:4px 0 0;color:var(--nn-muted);font-size:12px}
+    .nn-content-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .nn-content-column{min-width:0;border:1px solid var(--nn-line);background:#fff}
+    .nn-content-column-head{padding:12px;border-bottom:1px solid var(--nn-line)}
+    .nn-content-column-head p{margin:4px 0 0;color:var(--nn-muted);font-size:11px}
+    .nn-content-list{display:grid}
+    .nn-content-item{display:grid;gap:4px;padding:11px 12px;border-bottom:1px solid var(--nn-line)}
+    .nn-content-item:last-child{border-bottom:0}
+    .nn-content-item:hover,.nn-content-item:focus-visible{background:#fafafa;outline:0}
+    .nn-content-item-title{font-size:12px;font-weight:850;line-height:1.3}
+    .nn-content-item-meta{font-family:var(--nn-mono);font-size:8px;color:var(--nn-subtle);font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+    .nn-content-item-copy{font-size:10px;color:var(--nn-muted);line-height:1.45}
+
+    .nn-editorial-resources{
+      display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:11px;border-top:1px solid var(--nn-line)
+    }
+    .nn-editorial-resources a{padding:7px 9px;border:1px solid var(--nn-line);font-size:10px;font-weight:800}
+    .nn-editorial-resources a:hover{color:var(--nn-purple);border-color:#ddd6fe}
+
+    .nn-footer{margin-top:34px;border-top:1px solid var(--nn-line);background:#fff}
+    .nn-footer-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:24px;padding:22px 0}
+    .nn-footer .nn-brand-logo-img{height:26px;width:auto;display:block;max-width:none;object-fit:contain;margin-left:0}
+    .nn-footer-copy{max-width:560px;margin:9px 0 0;color:var(--nn-muted);font-size:11px}
+    .nn-footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;align-content:start}
+    .nn-footer-links a{font-size:10px;color:#64748b;font-weight:800}
+    .nn-footer-links a:hover{color:var(--nn-purple)}
+    .nn-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0 14px;border-top:1px solid var(--nn-line);color:#94a3b8;font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .nn-footer-domain{color:var(--nn-purple)}
+
+    @media(max-width:1000px){
+      .nn-master-tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    @media(max-width:760px){
+      .nn-shell{width:min(var(--nn-max),calc(100% - 22px))}
+      .nn-header-row{align-items:flex-start;padding:8px 0}
+      .nn-nav{width:100%;justify-content:flex-start}
+      .nn-nav a{padding:6px 7px}
+      .nn-brand-copy strong,.nn-brand-copy small{white-space:normal}
+      .nn-humanproof-row{grid-template-columns:1fr}
+      .nn-humanproof-stage{order:-1}
+      .nn-proof-360-holder{height:164px;min-height:164px}
+      .nn-master-tool-grid{grid-template-columns:1fr}
+      .nn-master-tool{min-height:148px}
+      .nn-content-grid{grid-template-columns:1fr}
+      .nn-footer-main{grid-template-columns:1fr}
+      .nn-footer-links{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media(max-width:420px){
+      .nn-search-form{grid-template-columns:1fr}
+      .nn-search-submit{width:100%}
+      .nn-search-suggestions{right:0;top:104px}
+      .nn-search-shortcut{display:inline-flex}
+      .nn-footer-links{grid-template-columns:1fr}
     }
   </style>
 </head>
-
 <body>
   <header class="nn-header">
     <div class="nn-shell nn-header-row">
       <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
         <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
-
         <span class="nn-brand-copy">
           <strong>NEXUSNOVA TOOLS</strong>
-          <small>ENTERPRISE GRID â€¢ CLIENT SEARCH</small>
+          <small>MASTER DIRECTORY • CLIENT SEARCH</small>
         </span>
       </a>
-
-      <button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">â˜°</button>
-
-      <nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
+      <nav class="nn-nav" id="nn-primary-nav" aria-label="Primary navigation">
         <a href="/" aria-current="page">Home</a>
-        <a href="tools.html">Tools</a>
+        <a href="#master-directory">All Tools</a>
+        <a href="#content-library">Content</a>
         <a href="categories.html">Categories</a>
         <a href="articles.html">Articles</a>
         <a href="guides.html">Guides</a>
@@ -1119,216 +257,1167 @@
   </header>
 
   <main class="nn-main">
-    <section class="nn-command" aria-labelledby="command-title">
-      <div class="nn-shell nn-command-grid">
-        <div class="nn-command-card">
-          <div class="nn-eyebrow">NEXUSNOVA / COMMAND CENTER</div>
-
-          <h1 class="nn-command-title" id="command-title">
-            Find the right tool.<br>
-            <span>Open it instantly.</span>
-          </h1>
-
-          <p class="nn-command-copy">
-            A focused utility workspace with four high-value tools on the surface and a fast client-side search layer underneath. Type a task, typo, alias or common local phrase and the closest matching route appears without a page reload.
-          </p>
-
+    <!-- STEP 1: SEARCH -->
+    <section class="nn-step" aria-labelledby="search-title">
+      <div class="nn-shell">
+        <div class="nn-step-head">
+          <div>
+            <span class="nn-step-label">STEP 1 • SEARCH</span>
+            <h1 id="search-title">Find a NexusNova tool</h1>
+            <p class="nn-step-copy">Search the full 94-tool directory by title, task, alias or common typo. The client-side search opens the matching route directly.</p>
+          </div>
+        </div>
+        <div class="nn-search-wrap">
           <div class="nn-search" data-nexusnova-search-root>
-            <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search NexusNova tools" novalidate>
+            <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search all NexusNova tools" novalidate>
               <label class="nn-search-field" for="nexusnova-search-input">
-                <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m20 20-4.3-4.3m2.1-5.1a7.2 7.2 0 1 1-14.4 0 7.2 7.2 0 0 1 14.4 0Z"/>
-                </svg>
-
-                <input
-                  class="nn-search-input"
-                  id="nexusnova-search-input"
-                  data-nexusnova-search-input
-                  type="search"
-                  inputmode="search"
-                  autocomplete="off"
-                  autocapitalize="none"
-                  spellcheck="false"
-                  enterkeyhint="go"
-                  placeholder="Search salary tax, bijli bill, fbr atl, WhatsApp linkâ€¦"
-                  aria-label="Search NexusNova tools"
-                  aria-autocomplete="list"
-                  aria-controls="nn-search-suggestions"
-                  aria-expanded="false"
-                  aria-activedescendant="">
-
+                <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m20 20-4.3-4.3m2.1-5.1a7.2 7.2 0 1 1 14.4 0 7.2 7.2 0 0 1-14.4 0Z"/></svg>
+                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="Try salary tax, bijli bill, fbr atl, WhatsApp link or xray…" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
                 <span class="nn-search-shortcut" aria-hidden="true">Ctrl K</span>
               </label>
-
               <button class="nn-search-submit" type="submit">Find tool</button>
-
-              <div
-                class="nn-search-suggestions"
-                id="nn-search-suggestions"
-                role="listbox"
-                aria-label="NexusNova tool suggestions"
-                hidden></div>
+              <div class="nn-search-suggestions" id="nn-search-suggestions" role="listbox" aria-label="NexusNova tool suggestions" hidden></div>
             </form>
-
             <div class="nn-search-note">
-              <span>â†‘â†“ navigate</span>
-              <span>enter open</span>
-              <span>esc close</span>
-              <span>typo recovery enabled</span>
+              <span>↑↓ navigate</span><span>enter open</span><span>esc close</span><span>fuzzy typo recovery</span>
             </div>
           </div>
-
-          <section class="nn-humanproof-hero" aria-labelledby="nn-humanproof-title">
-            <div class="nn-humanproof-hero-copy">
-              <span class="nn-humanproof-label">NEXUSNOVA HUMANPROOF</span>
-              <h2 id="nn-humanproof-title">NEXUSNOVA HUMANPROOF — Live Human Verification</h2>
-              <p>Secure and live checkout available instantly through SafePay.</p>
-            </div>
-            <a class="nn-humanproof-cta" href="humanproof.html">Get HumanProof Now</a>
-          </section>
-
-          <noscript>
-            <div class="nn-noscript">
-              JavaScript is required for instant search. The four featured tools remain available through the panels below.
-            </div>
-          </noscript>
         </div>
-
-        <aside class="nn-status-card" aria-label="Workspace telemetry">
-          <div class="nn-status-head">
-            <span class="nn-status-label">WORKSPACE TELEMETRY</span>
-            <span class="nn-status-live">READY</span>
-          </div>
-
-          <div class="nn-telemetry">
-            <div class="nn-telemetry-cell">
-              <div class="nn-telemetry-key">INDEX</div>
-              <div class="nn-telemetry-value">04 <small>/ featured routes</small></div>
-            </div>
-            <div class="nn-telemetry-cell">
-              <div class="nn-telemetry-key">MODE</div>
-              <div class="nn-telemetry-value">CLIENT <small>/ local matching</small></div>
-            </div>
-            <div class="nn-telemetry-cell">
-              <div class="nn-telemetry-key">INPUT</div>
-              <div class="nn-telemetry-value">ALIASES <small>/ typos + phrases</small></div>
-            </div>
-            <div class="nn-telemetry-cell">
-              <div class="nn-telemetry-key">ACTION</div>
-              <div class="nn-telemetry-value">ROUTE <small>/ direct open</small></div>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
 
-    <section class="nn-grid-section" aria-labelledby="tool-grid-title">
+    <!-- STEP 2: HUMANPROOF -->
+    <section class="nn-step" aria-labelledby="humanproof-title">
       <div class="nn-shell">
-        <div class="nn-section-head">
+        <article class="nn-humanproof-card">
+          <div class="nn-humanproof-row">
+            <div class="nn-humanproof-copy">
+              <span class="nn-step-label">STEP 2 • HUMANPROOF</span>
+              <h2 id="humanproof-title">HumanProof — live human verification</h2>
+              <p>Compact entry point for the live-human approval flow, with direct production SafePay checkout links and the existing 360° interactive head surface.</p>
+              <div class="nn-humanproof-actions">
+                <a class="primary" href="humanproof.html">Open HumanProof</a>
+                <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=personal">Personal $1.00</a>
+                <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=starter">Starter $9.99</a>
+                <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=growth">Growth $24.99</a>
+              </div>
+              <div class="nn-humanproof-pricing">
+                <span>PRODUCTION CHECKOUT</span><span>USD</span><span>SAFEpay</span>
+              </div>
+            </div>
+            <div class="nn-humanproof-stage" aria-label="Interactive 360 degree HumanProof head">
+              <div class="nn-proof-360-holder" data-hp-360-holder>
+                <div class="nn-proof-360-viewer">
+                  <canvas id="nnHumanProof360" aria-hidden="true"></canvas>
+                  <div class="nn-proof-360-load" id="nnHumanProof360Load">Loading 360° human scan…</div>
+                  <div class="nn-proof-360-scan" aria-hidden="true"></div>
+                  <span class="nn-proof-360-status">LIVE HUMAN SIGNAL</span>
+                  <span class="nn-proof-360-meta">360° rotation</span>
+                </div>
+              </div>
+              <p class="nn-proof-attribution">3D model: Lee Perry-Smith via three.js examples, <a href="https://creativecommons.org/licenses/by/3.0/" rel="noopener">CC BY 3.0</a>.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- STEP 3: COMPLETE TOOLS DIRECTORY -->
+    <section class="nn-directory" id="master-directory" aria-labelledby="master-directory-title">
+      <div class="nn-shell">
+        <div class="nn-step-head">
           <div>
-            <div class="nn-eyebrow">FEATURED / OPERATIONAL TOOLS</div>
-            <h2 class="nn-section-title" id="tool-grid-title">Four utility panels. No clutter.</h2>
+            <span class="nn-step-label">STEP 3 • COMPLETE TOOL DIRECTORY</span>
+            <h2 id="master-directory-title">All 94 listed tools, directly clickable</h2>
+            <p class="nn-step-copy">The directory is fully expanded on this page. Every listed route remains visible and clickable; the search above is an additional shortcut, not a replacement for the directory.</p>
           </div>
-          <p class="nn-section-copy">
-            Each panel is a real internal route already present in the project. File names and targets stay unchanged so existing indexation and sitemap references continue to resolve.
-          </p>
         </div>
 
-        <div class="nn-tool-grid">
-          <a class="nn-tool" href="salary-tax-calculator-pakistan.html">
-            <div class="nn-tool-top">
-              <span class="nn-tool-tag">PK / FINANCE</span>
-              <span class="nn-tool-status">READY</span>
-            </div>
-            <div class="nn-tool-index">01 â€” CORE UTILITY</div>
-            <h3>Pakistan Salary Tax Calculator</h3>
-            <p>
-              A focused salary-tax calculation route for Pakistan-based salaried users, with the calculation workflow kept on the dedicated tool page.
-            </p>
-            <div class="nn-tool-foot">
-              <div class="nn-tool-metric">
-                <span>SEARCH ALIASES</span>
-                <strong>salery Â· income tax Â· fbr tax</strong>
-              </div>
-              <span class="nn-tool-open">Open calculator</span>
-            </div>
-          </a>
-
-          <a class="nn-tool" href="electricity-bill-calculator-pakistan.html">
-            <div class="nn-tool-top">
-              <span class="nn-tool-tag">PK / UTILITY</span>
-              <span class="nn-tool-status">READY</span>
-            </div>
-            <div class="nn-tool-index">02 â€” CORE UTILITY</div>
-            <h3>Pakistan Electricity Bill Calculator</h3>
-            <p>
-              A dedicated electricity-bill route for supported Pakistan utility inputs, with units and tariff handling performed inside the calculator.
-            </p>
-            <div class="nn-tool-foot">
-              <div class="nn-tool-metric">
-                <span>SEARCH ALIASES</span>
-                <strong>bijli bill Â· wapda Â· lesco</strong>
-              </div>
-              <span class="nn-tool-open">Open calculator</span>
-            </div>
-          </a>
-
-          <a class="nn-tool" href="whatsapp-link-generator.html">
-            <div class="nn-tool-top">
-              <span class="nn-tool-tag">COMMUNICATION</span>
-              <span class="nn-tool-status">READY</span>
-            </div>
-            <div class="nn-tool-index">03 â€” CORE UTILITY</div>
-            <h3>WhatsApp Link Generator</h3>
-            <p>
-              Create a direct WhatsApp chat link with the message content prepared for repeat sharing, customer contact and simple outreach workflows.
-            </p>
-            <div class="nn-tool-foot">
-              <div class="nn-tool-metric">
-                <span>SEARCH ALIASES</span>
-                <strong>wa link Â· chat link Â· wa me</strong>
-              </div>
-              <span class="nn-tool-open">Open generator</span>
-            </div>
-          </a>
-
-          <a class="nn-tool" href="xray.html">
-            <div class="nn-tool-top">
-              <span class="nn-tool-tag">SECURITY / URL</span>
-              <span class="nn-tool-status">READY</span>
-            </div>
-            <div class="nn-tool-index">04 â€” CORE UTILITY</div>
-            <h3>NexusNova X-Ray</h3>
-            <p>
-              Inspect a link through the dedicated X-Ray workflow before opening it, with the tool page responsible for the actual URL inspection experience.
-            </p>
-            <div class="nn-tool-foot">
-              <div class="nn-tool-metric">
-                <span>SEARCH ALIASES</span>
-                <strong>link checker Â· url scanner Â· x-ray</strong>
-              </div>
-              <span class="nn-tool-open">Inspect a link</span>
-            </div>
-          </a>
+        <div class="nn-directory-intro">
+          <span class="nn-step-label">VISIBLE CATALOG</span>
+          <p>Images, PDF &amp; documents, calculators, Pakistan tools, security, developer/data, productivity, gaming and live information are presented as flat groups with no collapsed cards or click-to-reveal states.</p>
         </div>
 
-        <div class="nn-system-strip" aria-label="Workspace foundations">
-          <div class="nn-system-cell">
-            <div class="nn-system-key">ROUTES</div>
-            <div class="nn-system-value">4 verified featured targets</div>
+        <div class="nn-group-list">
+
+      <section class="nn-master-group" id="group-images" aria-labelledby="group-images-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-images-title">Images</h3>
           </div>
-          <div class="nn-system-cell">
-            <div class="nn-system-key">SEARCH</div>
-            <div class="nn-system-value">Client-side instant matching</div>
+          <span class="nn-group-count">12 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="image-compressor.html" data-master-tool data-title="Image Compressor" data-search="Image Compressor | Images | image compressor">
+          <span class="nn-master-tool-no">01</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>Image Compressor</h3>
+          <p>Process image compressor with a focused browser image workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="image-to-text-ocr.html" data-master-tool data-title="Image to Text OCR" data-search="Image to Text OCR | Images | image to text ocr">
+          <span class="nn-master-tool-no">02</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>Image to Text OCR</h3>
+          <p>Extract readable text from an image with a focused browser OCR workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="image-metadata-remover.html" data-master-tool data-title="Image Metadata Remover" data-search="Image Metadata Remover | Images | image metadata remover">
+          <span class="nn-master-tool-no">03</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>Image Metadata Remover</h3>
+          <p>Remove embedded image metadata before sharing or publishing a file.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="image-resizer.html" data-master-tool data-title="Image Resizer" data-search="Image Resizer | Images | image resizer">
+          <span class="nn-master-tool-no">04</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>Image Resizer</h3>
+          <p>Process image resizer with a focused browser image workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="photo-cctv-enhancer.html" data-master-tool data-title="Photo CCTV Enhancer" data-search="Photo CCTV Enhancer | Images | photo cctv enhancer">
+          <span class="nn-master-tool-no">05</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>Photo CCTV Enhancer</h3>
+          <p>Enhance a photo for clearer inspection and practical image review.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="avif-to-jpg.html" data-master-tool data-title="AVIF to JPG" data-search="AVIF to JPG | Images | avif to jpg">
+          <span class="nn-master-tool-no">06</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>AVIF to JPG</h3>
+          <p>Convert avif to jpg with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="heic-to-jpg.html" data-master-tool data-title="HEIC to JPG" data-search="HEIC to JPG | Images | heic to jpg">
+          <span class="nn-master-tool-no">07</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>HEIC to JPG</h3>
+          <p>Convert heic to jpg with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="jpg-to-png.html" data-master-tool data-title="JPG to PNG" data-search="JPG to PNG | Images | jpg to png">
+          <span class="nn-master-tool-no">08</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>JPG to PNG</h3>
+          <p>Convert jpg to png with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="png-to-jpg.html" data-master-tool data-title="PNG to JPG" data-search="PNG to JPG | Images | png to jpg">
+          <span class="nn-master-tool-no">09</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>PNG to JPG</h3>
+          <p>Convert png to jpg with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="webp-to-jpg.html" data-master-tool data-title="WebP to JPG" data-search="WebP to JPG | Images | webp to jpg">
+          <span class="nn-master-tool-no">10</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>WebP to JPG</h3>
+          <p>Convert webp to jpg with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="webp-to-png.html" data-master-tool data-title="WebP to PNG" data-search="WebP to PNG | Images | webp to png">
+          <span class="nn-master-tool-no">11</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>WebP to PNG</h3>
+          <p>Convert webp to png with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="youtube-thumbnail-downloader.html" data-master-tool data-title="YouTube Thumbnail Downloader" data-search="YouTube Thumbnail Downloader | Images | youtube thumbnail downloader">
+          <span class="nn-master-tool-no">12</span>
+          <span class="nn-master-tool-category">Images</span>
+          <h3>YouTube Thumbnail Downloader</h3>
+          <p>Retrieve a YouTube thumbnail image through a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-pdf-documents" aria-labelledby="group-pdf-documents-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-pdf-documents-title">PDF &amp; Documents</h3>
           </div>
-          <div class="nn-system-cell">
-            <div class="nn-system-key">UI</div>
-            <div class="nn-system-value">Light enterprise grid</div>
+          <span class="nn-group-count">4 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="jpg-to-pdf.html" data-master-tool data-title="JPG to PDF" data-search="JPG to PDF | PDF &amp; Documents | jpg to pdf">
+          <span class="nn-master-tool-no">13</span>
+          <span class="nn-master-tool-category">PDF &amp; Documents</span>
+          <h3>JPG to PDF</h3>
+          <p>Convert jpg to pdf with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="merge-pdf.html" data-master-tool data-title="Merge PDF" data-search="Merge PDF | PDF &amp; Documents | merge pdf">
+          <span class="nn-master-tool-no">14</span>
+          <span class="nn-master-tool-category">PDF &amp; Documents</span>
+          <h3>Merge PDF</h3>
+          <p>Handle merge pdf in a focused browser document workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="split-pdf.html" data-master-tool data-title="Split PDF" data-search="Split PDF | PDF &amp; Documents | split pdf">
+          <span class="nn-master-tool-no">15</span>
+          <span class="nn-master-tool-category">PDF &amp; Documents</span>
+          <h3>Split PDF</h3>
+          <p>Handle split pdf in a focused browser document workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="text-to-pdf.html" data-master-tool data-title="Text to PDF" data-search="Text to PDF | PDF &amp; Documents | text to pdf">
+          <span class="nn-master-tool-no">16</span>
+          <span class="nn-master-tool-category">PDF &amp; Documents</span>
+          <h3>Text to PDF</h3>
+          <p>Handle text to pdf in a focused browser document workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-calculators" aria-labelledby="group-calculators-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-calculators-title">Calculators</h3>
           </div>
-          <div class="nn-system-cell">
-            <div class="nn-system-key">INDEX SAFETY</div>
-            <div class="nn-system-value">Existing filenames preserved</div>
+          <span class="nn-group-count">23 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="ai-token-calculator.html" data-master-tool data-title="AI Token Calculator" data-search="AI Token Calculator | Calculators | ai token calculator">
+          <span class="nn-master-tool-no">17</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>AI Token Calculator</h3>
+          <p>Calculate ai token with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="ai-vram-calculator.html" data-master-tool data-title="AI VRAM Calculator" data-search="AI VRAM Calculator | Calculators | ai vram calculator">
+          <span class="nn-master-tool-no">18</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>AI VRAM Calculator</h3>
+          <p>Calculate ai vram with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="paper-size-converter.html" data-master-tool data-title="Paper Size Converter" data-search="Paper Size Converter | Calculators | paper size converter">
+          <span class="nn-master-tool-no">19</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Paper Size Converter</h3>
+          <p>Convert paper size with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="paper-size-in-pixels.html" data-master-tool data-title="Paper Size in Pixels" data-search="Paper Size in Pixels | Calculators | paper size in pixels">
+          <span class="nn-master-tool-no">20</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Paper Size in Pixels</h3>
+          <p>Convert paper size in pixels with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="calculator.html" data-master-tool data-title="Calculator" data-search="Calculator | Calculators | calculator">
+          <span class="nn-master-tool-no">21</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Calculator</h3>
+          <p>Calculate with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="percentage-calculator.html" data-master-tool data-title="Percentage Calculator" data-search="Percentage Calculator | Calculators | percentage calculator">
+          <span class="nn-master-tool-no">22</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Percentage Calculator</h3>
+          <p>Calculate percentage with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="age-calculator.html" data-master-tool data-title="Age Calculator" data-search="Age Calculator | Calculators | age calculator">
+          <span class="nn-master-tool-no">23</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Age Calculator</h3>
+          <p>Calculate age with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="date-difference-calculator.html" data-master-tool data-title="Date Difference Calculator" data-search="Date Difference Calculator | Calculators | date difference calculator">
+          <span class="nn-master-tool-no">24</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Date Difference Calculator</h3>
+          <p>Calculate date difference with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="discount-calculator.html" data-master-tool data-title="Discount Calculator" data-search="Discount Calculator | Calculators | discount calculator">
+          <span class="nn-master-tool-no">25</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Discount Calculator</h3>
+          <p>Calculate discount with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="percentage-change-calculator.html" data-master-tool data-title="Percentage Change Calculator" data-search="Percentage Change Calculator | Calculators | percentage change calculator">
+          <span class="nn-master-tool-no">26</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Percentage Change Calculator</h3>
+          <p>Calculate percentage change with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="bmi-calculator.html" data-master-tool data-title="BMI Calculator" data-search="BMI Calculator | Calculators | bmi calculator">
+          <span class="nn-master-tool-no">27</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>BMI Calculator</h3>
+          <p>Calculate bmi with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="emi-calculator.html" data-master-tool data-title="EMI Calculator" data-search="EMI Calculator | Calculators | emi calculator">
+          <span class="nn-master-tool-no">28</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>EMI Calculator</h3>
+          <p>Calculate emi with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="scientific-calculator.html" data-master-tool data-title="Scientific Calculator" data-search="Scientific Calculator | Calculators | scientific calculator">
+          <span class="nn-master-tool-no">29</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Scientific Calculator</h3>
+          <p>Calculate scientific with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="unit-converter.html" data-master-tool data-title="Unit Converter" data-search="Unit Converter | Calculators | unit converter">
+          <span class="nn-master-tool-no">30</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Unit Converter</h3>
+          <p>Convert unit with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="storage-size-converter.html" data-master-tool data-title="Storage Size Converter" data-search="Storage Size Converter | Calculators | storage size converter">
+          <span class="nn-master-tool-no">31</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Storage Size Converter</h3>
+          <p>Convert storage size with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="time-duration-calculator.html" data-master-tool data-title="Time Duration Calculator" data-search="Time Duration Calculator | Calculators | time duration calculator">
+          <span class="nn-master-tool-no">32</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Time Duration Calculator</h3>
+          <p>Calculate time duration with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="online-timer.html" data-master-tool data-title="Online Timer" data-search="Online Timer | Calculators | online timer">
+          <span class="nn-master-tool-no">33</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Online Timer</h3>
+          <p>Use online timer through a focused browser utility.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="stopwatch.html" data-master-tool data-title="Stopwatch" data-search="Stopwatch | Calculators | stopwatch">
+          <span class="nn-master-tool-no">34</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Stopwatch</h3>
+          <p>Use stopwatch through a focused browser utility.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="pomodoro-timer.html" data-master-tool data-title="Pomodoro Timer" data-search="Pomodoro Timer | Calculators | pomodoro timer">
+          <span class="nn-master-tool-no">35</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Pomodoro Timer</h3>
+          <p>Use pomodoro timer through a focused browser utility.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="word-counter.html" data-master-tool data-title="Word Counter" data-search="Word Counter | Calculators | word counter">
+          <span class="nn-master-tool-no">36</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Word Counter</h3>
+          <p>Use word counter through a focused browser utility.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="roman-numeral-converter.html" data-master-tool data-title="Roman Numeral Converter" data-search="Roman Numeral Converter | Calculators | roman numeral converter">
+          <span class="nn-master-tool-no">37</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Roman Numeral Converter</h3>
+          <p>Convert roman numeral with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="rgb-hex-converter.html" data-master-tool data-title="RGB to HEX Converter" data-search="RGB to HEX Converter | Calculators | rgb hex converter">
+          <span class="nn-master-tool-no">38</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>RGB to HEX Converter</h3>
+          <p>Convert rgb to hex with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="bill-split-tip-calculator.html" data-master-tool data-title="Bill Split &amp;amp; Tip Calculator" data-search="Bill Split &amp;amp; Tip Calculator | Calculators | bill split tip calculator">
+          <span class="nn-master-tool-no">39</span>
+          <span class="nn-master-tool-category">Calculators</span>
+          <h3>Bill Split &amp;amp; Tip Calculator</h3>
+          <p>Calculate bill split &amp;amp; tip with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-pakistan-tools" aria-labelledby="group-pakistan-tools-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-pakistan-tools-title">Pakistan Tools</h3>
           </div>
+          <span class="nn-group-count">8 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="salary-tax-calculator-pakistan.html" data-master-tool data-title="Pakistan Salary Tax Calculator" data-search="Pakistan Salary Tax Calculator | Pakistan Tools | salary tax calculator pakistan | salery | income tax | fbr tax | fbr atl | salary calculator">
+          <span class="nn-master-tool-no">40</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Pakistan Salary Tax Calculator</h3>
+          <p>Calculate pakistan salary tax with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="electricity-bill-calculator-pakistan.html" data-master-tool data-title="Pakistan Electricity Bill Calculator" data-search="Pakistan Electricity Bill Calculator | Pakistan Tools | electricity bill calculator pakistan | bijli bill | bijli bil | wapda | lesco | kelectric | electric bill">
+          <span class="nn-master-tool-no">41</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Pakistan Electricity Bill Calculator</h3>
+          <p>Calculate pakistan electricity bill with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="fbr-atl-status-checker.html" data-master-tool data-title="FBR Active Taxpayer Status" data-search="FBR Active Taxpayer Status | Pakistan Tools | fbr atl status checker">
+          <span class="nn-master-tool-no">42</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>FBR Active Taxpayer Status</h3>
+          <p>Use fbr active taxpayer status for a focused Pakistan-specific browser task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="fbr-tax-calculator-pakistan.html" data-master-tool data-title="FBR Tax Calculator" data-search="FBR Tax Calculator | Pakistan Tools | fbr tax calculator pakistan">
+          <span class="nn-master-tool-no">43</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>FBR Tax Calculator</h3>
+          <p>Calculate fbr tax with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="zakat-calculator-pakistan.html" data-master-tool data-title="Pakistan Zakat Calculator" data-search="Pakistan Zakat Calculator | Pakistan Tools | zakat calculator pakistan">
+          <span class="nn-master-tool-no">44</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Pakistan Zakat Calculator</h3>
+          <p>Calculate pakistan zakat with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="prayer-times-qibla-pakistan.html" data-master-tool data-title="Prayer Times &amp;amp; Qibla Pakistan" data-search="Prayer Times &amp;amp; Qibla Pakistan | Pakistan Tools | prayer times qibla pakistan">
+          <span class="nn-master-tool-no">45</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Prayer Times &amp;amp; Qibla Pakistan</h3>
+          <p>Use prayer times &amp;amp; qibla pakistan for a focused Pakistan-specific browser task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="pakistan-public-holidays-2026.html" data-master-tool data-title="Pakistan Public Holidays 2026" data-search="Pakistan Public Holidays 2026 | Pakistan Tools | pakistan public holidays 2026">
+          <span class="nn-master-tool-no">46</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Pakistan Public Holidays 2026</h3>
+          <p>Use pakistan public holidays 2026 for a focused Pakistan-specific browser task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="pakistan-jobs-finder.html" data-master-tool data-title="Pakistan Jobs Finder" data-search="Pakistan Jobs Finder | Pakistan Tools | pakistan jobs finder">
+          <span class="nn-master-tool-no">47</span>
+          <span class="nn-master-tool-category">Pakistan Tools</span>
+          <h3>Pakistan Jobs Finder</h3>
+          <p>Generate or prepare pakistan jobs with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-security" aria-labelledby="group-security-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-security-title">Security</h3>
+          </div>
+          <span class="nn-group-count">12 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="qr-code-generator.html" data-master-tool data-title="QR Code Generator" data-search="QR Code Generator | Security | qr code generator">
+          <span class="nn-master-tool-no">48</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>QR Code Generator</h3>
+          <p>Generate or prepare qr code with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="qr-code-scanner.html" data-master-tool data-title="QR Code Scanner" data-search="QR Code Scanner | Security | qr code scanner">
+          <span class="nn-master-tool-no">49</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>QR Code Scanner</h3>
+          <p>Check qr code directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="xray.html" data-master-tool data-title="NexusNova X-Ray" data-search="NexusNova X-Ray | Security | xray | x-ray | link checker | url scanner | redirect detector | inspect link">
+          <span class="nn-master-tool-no">50</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>NexusNova X-Ray</h3>
+          <p>Inspect a URL before opening it through the dedicated NexusNova X-Ray workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="dns-lookup.html" data-master-tool data-title="DNS Lookup" data-search="DNS Lookup | Security | dns lookup">
+          <span class="nn-master-tool-no">51</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>DNS Lookup</h3>
+          <p>Check dns directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="ssl-certificate-checker.html" data-master-tool data-title="SSL Certificate Checker" data-search="SSL Certificate Checker | Security | ssl certificate checker">
+          <span class="nn-master-tool-no">52</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>SSL Certificate Checker</h3>
+          <p>Check ssl certificate directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="public-ip-checker.html" data-master-tool data-title="Public IP Checker" data-search="Public IP Checker | Security | public ip checker">
+          <span class="nn-master-tool-no">53</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Public IP Checker</h3>
+          <p>Check public ip directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="ip-cidr-calculator.html" data-master-tool data-title="IP CIDR Calculator" data-search="IP CIDR Calculator | Security | ip cidr calculator">
+          <span class="nn-master-tool-no">54</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>IP CIDR Calculator</h3>
+          <p>Calculate ip cidr with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="website-reachability-checker.html" data-master-tool data-title="Website Reachability Checker" data-search="Website Reachability Checker | Security | website reachability checker">
+          <span class="nn-master-tool-no">55</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Website Reachability Checker</h3>
+          <p>Check website reachability directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="contrast-checker.html" data-master-tool data-title="Contrast Checker" data-search="Contrast Checker | Security | contrast checker">
+          <span class="nn-master-tool-no">56</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Contrast Checker</h3>
+          <p>Check contrast directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="password-generator.html" data-master-tool data-title="Password Generator" data-search="Password Generator | Security | password generator">
+          <span class="nn-master-tool-no">57</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Password Generator</h3>
+          <p>Generate or prepare password with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="password-strength-checker.html" data-master-tool data-title="Password Strength Checker" data-search="Password Strength Checker | Security | password strength checker">
+          <span class="nn-master-tool-no">58</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Password Strength Checker</h3>
+          <p>Check password strength directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="text-diff-checker.html" data-master-tool data-title="Text Diff Checker" data-search="Text Diff Checker | Security | text diff checker">
+          <span class="nn-master-tool-no">59</span>
+          <span class="nn-master-tool-category">Security</span>
+          <h3>Text Diff Checker</h3>
+          <p>Check text diff directly in the browser with a focused result view.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-developer-data" aria-labelledby="group-developer-data-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-developer-data-title">Developer &amp; Data</h3>
+          </div>
+          <span class="nn-group-count">3 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="csv-json-converter.html" data-master-tool data-title="CSV to JSON Converter" data-search="CSV to JSON Converter | Developer &amp; Data | csv json converter">
+          <span class="nn-master-tool-no">60</span>
+          <span class="nn-master-tool-category">Developer &amp; Data</span>
+          <h3>CSV to JSON Converter</h3>
+          <p>Convert csv to json with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="meta-tag-generator.html" data-master-tool data-title="Meta Tag Generator" data-search="Meta Tag Generator | Developer &amp; Data | meta tag generator">
+          <span class="nn-master-tool-no">61</span>
+          <span class="nn-master-tool-category">Developer &amp; Data</span>
+          <h3>Meta Tag Generator</h3>
+          <p>Generate or prepare meta tag with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="unix-timestamp-converter.html" data-master-tool data-title="Unix Timestamp Converter" data-search="Unix Timestamp Converter | Developer &amp; Data | unix timestamp converter">
+          <span class="nn-master-tool-no">62</span>
+          <span class="nn-master-tool-category">Developer &amp; Data</span>
+          <h3>Unix Timestamp Converter</h3>
+          <p>Convert unix timestamp with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-productivity" aria-labelledby="group-productivity-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-productivity-title">Productivity</h3>
+          </div>
+          <span class="nn-group-count">13 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="magic-drop.html" data-master-tool data-title="Magic Drop" data-search="Magic Drop | Productivity | magic drop">
+          <span class="nn-master-tool-no">63</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Magic Drop</h3>
+          <p>Use the Magic Drop utility for a focused browser-based file or content workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="ai-prompt-builder.html" data-master-tool data-title="AI Prompt Builder" data-search="AI Prompt Builder | Productivity | ai prompt builder">
+          <span class="nn-master-tool-no">64</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>AI Prompt Builder</h3>
+          <p>Generate or prepare ai prompt with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="invoice-maker.html" data-master-tool data-title="Invoice Maker" data-search="Invoice Maker | Productivity | invoice maker">
+          <span class="nn-master-tool-no">65</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Invoice Maker</h3>
+          <p>Generate or prepare invoice with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="resume-builder.html" data-master-tool data-title="Resume Builder" data-search="Resume Builder | Productivity | resume builder">
+          <span class="nn-master-tool-no">66</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Resume Builder</h3>
+          <p>Generate or prepare resume with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="decision-matrix-calculator.html" data-master-tool data-title="Decision Matrix Calculator" data-search="Decision Matrix Calculator | Productivity | decision matrix calculator">
+          <span class="nn-master-tool-no">67</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Decision Matrix Calculator</h3>
+          <p>Calculate decision matrix with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="timezone-meeting-planner.html" data-master-tool data-title="Global Meeting Planner" data-search="Global Meeting Planner | Productivity | timezone meeting planner">
+          <span class="nn-master-tool-no">68</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Global Meeting Planner</h3>
+          <p>Use global meeting planner for a focused browser productivity task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="number-to-words.html" data-master-tool data-title="Number to Words" data-search="Number to Words | Productivity | number to words">
+          <span class="nn-master-tool-no">69</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Number to Words</h3>
+          <p>Convert number to words with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="whatsapp-link-generator.html" data-master-tool data-title="WhatsApp Link Generator" data-search="WhatsApp Link Generator | Productivity | whatsapp link generator | wa link | chat link | wa me | click to chat">
+          <span class="nn-master-tool-no">70</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>WhatsApp Link Generator</h3>
+          <p>Generate or prepare whatsapp link with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="random-number-generator.html" data-master-tool data-title="Random Number Generator" data-search="Random Number Generator | Productivity | random number generator">
+          <span class="nn-master-tool-no">71</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Random Number Generator</h3>
+          <p>Generate or prepare random number with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="random-picker.html" data-master-tool data-title="Random Picker" data-search="Random Picker | Productivity | random picker">
+          <span class="nn-master-tool-no">72</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Random Picker</h3>
+          <p>Use random picker for a focused browser productivity task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="typing-speed-test.html" data-master-tool data-title="Typing Speed Test" data-search="Typing Speed Test | Productivity | typing speed test">
+          <span class="nn-master-tool-no">73</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Typing Speed Test</h3>
+          <p>Use typing speed test for a focused browser productivity task.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="text-case-converter.html" data-master-tool data-title="Text Case Converter" data-search="Text Case Converter | Productivity | text case converter">
+          <span class="nn-master-tool-no">74</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Text Case Converter</h3>
+          <p>Convert text case with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="private-quick-note.html" data-master-tool data-title="Private Quick Note" data-search="Private Quick Note | Productivity | private quick note">
+          <span class="nn-master-tool-no">75</span>
+          <span class="nn-master-tool-category">Productivity</span>
+          <h3>Private Quick Note</h3>
+          <p>Keep a small note in this browser on this device without sending the note to a server.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-gaming" aria-labelledby="group-gaming-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-gaming-title">Gaming</h3>
+          </div>
+          <span class="nn-group-count">7 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="reaction-time-test.html" data-master-tool data-title="Reaction Time Test" data-search="Reaction Time Test | Gaming | reaction time test">
+          <span class="nn-master-tool-no">76</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>Reaction Time Test</h3>
+          <p>Use reaction time test for a focused gaming utility workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="edpi-calculator.html" data-master-tool data-title="eDPI Calculator" data-search="eDPI Calculator | Gaming | edpi calculator">
+          <span class="nn-master-tool-no">77</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>eDPI Calculator</h3>
+          <p>Calculate edpi with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="fps-frame-time-calculator.html" data-master-tool data-title="FPS Frame Time Calculator" data-search="FPS Frame Time Calculator | Gaming | fps frame time calculator">
+          <span class="nn-master-tool-no">78</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>FPS Frame Time Calculator</h3>
+          <p>Calculate fps frame time with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="gaming-sensitivity-converter.html" data-master-tool data-title="Gaming Sensitivity Converter" data-search="Gaming Sensitivity Converter | Gaming | gaming sensitivity converter">
+          <span class="nn-master-tool-no">79</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>Gaming Sensitivity Converter</h3>
+          <p>Convert gaming sensitivity with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="minecraft-coordinate-converter.html" data-master-tool data-title="Minecraft Coordinate Converter" data-search="Minecraft Coordinate Converter | Gaming | minecraft coordinate converter">
+          <span class="nn-master-tool-no">80</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>Minecraft Coordinate Converter</h3>
+          <p>Convert minecraft coordinate with a focused browser workflow and clear outputs.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="gamer-name-generator.html" data-master-tool data-title="Gamer Name Generator" data-search="Gamer Name Generator | Gaming | gamer name generator">
+          <span class="nn-master-tool-no">81</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>Gamer Name Generator</h3>
+          <p>Generate or prepare gamer name with a simple browser workflow.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="steam-playtime-calculator.html" data-master-tool data-title="Steam Playtime Calculator" data-search="Steam Playtime Calculator | Gaming | steam playtime calculator">
+          <span class="nn-master-tool-no">82</span>
+          <span class="nn-master-tool-category">Gaming</span>
+          <h3>Steam Playtime Calculator</h3>
+          <p>Calculate steam playtime with clear inputs and browser-side results.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+
+      <section class="nn-master-group" id="group-live-information" aria-labelledby="group-live-information-title">
+        <div class="nn-master-group-head">
+          <div>
+            <span class="nn-step-label">DIRECTORY GROUP</span>
+            <h3 id="group-live-information-title">Live Information</h3>
+          </div>
+          <span class="nn-group-count">12 tools</span>
+        </div>
+        <div class="nn-master-tool-grid">
+
+        <a class="nn-master-tool" href="live.html" data-master-tool data-title="Pakistan Today Dashboard" data-search="Pakistan Today Dashboard | Live Information | live">
+          <span class="nn-master-tool-no">83</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Pakistan Today Dashboard</h3>
+          <p>Open the Pakistan-focused live dashboard for current public information and quick checks.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="currency-rates.html" data-master-tool data-title="Currency Rates" data-search="Currency Rates | Live Information | currency rates">
+          <span class="nn-master-tool-no">84</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Currency Rates</h3>
+          <p>View currency rates through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="gold-rates.html" data-master-tool data-title="Gold Rates" data-search="Gold Rates | Live Information | gold rates">
+          <span class="nn-master-tool-no">85</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Gold Rates</h3>
+          <p>View gold rates through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="fuel-rates.html" data-master-tool data-title="Fuel Rates" data-search="Fuel Rates | Live Information | fuel rates">
+          <span class="nn-master-tool-no">86</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Fuel Rates</h3>
+          <p>View fuel rates through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="weather-live.html" data-master-tool data-title="Pakistan Weather" data-search="Pakistan Weather | Live Information | weather live">
+          <span class="nn-master-tool-no">87</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Pakistan Weather</h3>
+          <p>View pakistan weather through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="aqi-live.html" data-master-tool data-title="Air Quality" data-search="Air Quality | Live Information | aqi live">
+          <span class="nn-master-tool-no">88</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Air Quality</h3>
+          <p>View air quality through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="earthquakes-live.html" data-master-tool data-title="Recent Earthquakes" data-search="Recent Earthquakes | Live Information | earthquakes live">
+          <span class="nn-master-tool-no">89</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Recent Earthquakes</h3>
+          <p>View recent earthquakes through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="crypto-live.html" data-master-tool data-title="Crypto Market" data-search="Crypto Market | Live Information | crypto live">
+          <span class="nn-master-tool-no">90</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Crypto Market</h3>
+          <p>View crypto market through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="live-alerts.html" data-master-tool data-title="Live Alerts" data-search="Live Alerts | Live Information | live alerts">
+          <span class="nn-master-tool-no">91</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Live Alerts</h3>
+          <p>View live alerts through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="sports-live.html" data-master-tool data-title="Live Sports" data-search="Live Sports | Live Information | sports live">
+          <span class="nn-master-tool-no">92</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Live Sports</h3>
+          <p>View live sports through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="pulse.html" data-master-tool data-title="NexusNova Pulse" data-search="NexusNova Pulse | Live Information | pulse">
+          <span class="nn-master-tool-no">93</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>NexusNova Pulse</h3>
+          <p>View nexusnova pulse through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="nn-master-tool" href="widget-pakistan-today.html" data-master-tool data-title="Pakistan Today Widget" data-search="Pakistan Today Widget | Live Information | widget pakistan today">
+          <span class="nn-master-tool-no">94</span>
+          <span class="nn-master-tool-category">Live Information</span>
+          <h3>Pakistan Today Widget</h3>
+          <p>View pakistan today widget through a focused live-information browser page.</p>
+          <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
+        </a>
+        </div>
+      </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: EDITORIAL CONTENT -->
+    <section class="nn-content" id="content-library" aria-labelledby="content-library-title">
+      <div class="nn-shell">
+        <div class="nn-content-intro">
+          <span class="nn-step-label">STEP 4 • EDITORIAL CONTENT &amp; STRUCTURE</span>
+          <h2 id="content-library-title">Categories, articles and practical guides</h2>
+          <p>Content depth is exposed directly from the homepage so users and crawlers can reach the major topic hubs and individual editorial resources without relying on a hidden directory.</p>
+        </div>
+
+        <div class="nn-content-grid">
+          <section class="nn-content-column" aria-labelledby="category-links-title">
+            <div class="nn-content-column-head">
+              <span class="nn-step-label">CATEGORIES</span>
+              <h3 id="category-links-title">All category hubs</h3>
+              <p>Nine published groups covering the complete tool catalog.</p>
+            </div>
+            <div class="nn-content-list">
+
+          <a class="nn-content-item" href="image-tools.html">
+            <span class="nn-content-item-title">Images</span>
+            <span class="nn-content-item-meta">12 tools</span>
+            <span class="nn-content-item-copy">Compress, resize, convert, inspect and extract text from visual files.</span>
+          </a>
+
+          <a class="nn-content-item" href="pdf-tools.html">
+            <span class="nn-content-item-title">PDF &amp; Documents</span>
+            <span class="nn-content-item-meta">4 tools</span>
+            <span class="nn-content-item-copy">Merge, split and create PDF documents in the browser.</span>
+          </a>
+
+          <a class="nn-content-item" href="calculator-tools.html">
+            <span class="nn-content-item-title">Calculators</span>
+            <span class="nn-content-item-meta">23 tools</span>
+            <span class="nn-content-item-copy">Mathematical, financial, percentage, date, BMI and scientific utilities.</span>
+          </a>
+
+          <a class="nn-content-item" href="pakistan-tools.html">
+            <span class="nn-content-item-title">Pakistan Tools</span>
+            <span class="nn-content-item-meta">8 tools</span>
+            <span class="nn-content-item-copy">Localized tax, electricity, FBR, Zakat, prayer and jobs utilities.</span>
+          </a>
+
+          <a class="nn-content-item" href="network-tools.html">
+            <span class="nn-content-item-title">Security &amp; Network</span>
+            <span class="nn-content-item-meta">12 tools</span>
+            <span class="nn-content-item-copy">DNS, SSL, IP, CIDR, reachability, QR and URL inspection tools.</span>
+          </a>
+
+          <a class="nn-content-item" href="developer-tools.html">
+            <span class="nn-content-item-title">Developer &amp; Data</span>
+            <span class="nn-content-item-meta">3 tools</span>
+            <span class="nn-content-item-copy">Practical data and developer utilities for browser workflows.</span>
+          </a>
+
+          <a class="nn-content-item" href="productivity-tools.html">
+            <span class="nn-content-item-title">Productivity</span>
+            <span class="nn-content-item-meta">13 tools</span>
+            <span class="nn-content-item-copy">Writing, links, notes, timers, planning and everyday productivity tools.</span>
+          </a>
+
+          <a class="nn-content-item" href="gaming.html">
+            <span class="nn-content-item-title">Gaming</span>
+            <span class="nn-content-item-meta">7 tools</span>
+            <span class="nn-content-item-copy">Gaming sensitivity, eDPI, reaction and related calculation utilities.</span>
+          </a>
+
+          <a class="nn-content-item" href="live.html">
+            <span class="nn-content-item-title">Live Information</span>
+            <span class="nn-content-item-meta">12 tools</span>
+            <span class="nn-content-item-copy">Live dashboards for weather, rates, air quality, earthquakes, sports and alerts.</span>
+          </a>
+            </div>
+          </section>
+
+          <section class="nn-content-column" aria-labelledby="article-links-title">
+            <div class="nn-content-column-head">
+              <span class="nn-step-label">ARTICLES</span>
+              <h3 id="article-links-title">Published articles</h3>
+              <p>Practical explanations connected to common NexusNova tasks.</p>
+            </div>
+            <div class="nn-content-list">
+
+          <a class="nn-content-item" href="articles/cs2-valorant-sensitivity-edpi-guide.html">
+            <span class="nn-content-item-title">CS2 vs Valorant Sensitivity &amp; eDPI</span>
+            <span class="nn-content-item-copy">Understand conversion ratios, effective DPI and why matched numbers can still feel different across game engines.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/ai-photo-restoration-vs-enhancement.html">
+            <span class="nn-content-item-title">AI Photo Restoration vs Enhancement</span>
+            <span class="nn-content-item-copy">Understand what sharpening can reveal and when generative AI algorithms may invent plausible but unverified detail.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/background-removal-online-guide.html">
+            <span class="nn-content-item-title">Online Background Removers in 2026</span>
+            <span class="nn-content-item-copy">Check edge quality, transparency, client-side privacy and output resolution before trusting a one-click automated result.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/remove-exif-gps-metadata-photos.html">
+            <span class="nn-content-item-title">Remove EXIF and GPS Metadata Before Sharing</span>
+            <span class="nn-content-item-copy">Strip unnecessary camera details, location coordinates and device timestamps while maintaining an uncompressed sharing copy.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/jpg-png-webp-avif-guide.html">
+            <span class="nn-content-item-title">JPG vs PNG vs WebP vs AVIF</span>
+            <span class="nn-content-item-copy">Choose a sensible file format for photos, screenshots, UI icons and web graphics to balance speed and fidelity.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/split-pdf-organize-pages.html">
+            <span class="nn-content-item-title">How to Split a PDF and Keep Pages Organized</span>
+            <span class="nn-content-item-copy">Extract specific page intervals, name output files clearly and verify layout structure without cloud data uploads.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/emi-calculator-explained.html">
+            <span class="nn-content-item-title">EMI Calculator Explained</span>
+            <span class="nn-content-item-copy">Deconstruct principal amortization, reducing balance interest rates and loan tenure before finalizing financing scenarios.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/pomodoro-focus-workflow.html">
+            <span class="nn-content-item-title">Use a Pomodoro Timer Without Overcomplicating Focus</span>
+            <span class="nn-content-item-copy">Implement structured 25-minute work blocks and restorative intervals without turning tracking into an administrative burden.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/resume-mistakes-to-fix.html">
+            <span class="nn-content-item-title">7 Resume Mistakes to Fix</span>
+            <span class="nn-content-item-copy">Eliminate ambiguous terminology, crowded typography and formatting defects before submitting applications to hiring managers.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/unix-timestamps-explained.html">
+            <span class="nn-content-item-title">Unix Timestamps Explained</span>
+            <span class="nn-content-item-copy">Understand seconds, epoch milliseconds, UTC normalization and common leap second edge cases in system programming.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/hex-vs-rgb-colors.html">
+            <span class="nn-content-item-title">HEX vs RGB Color Codes</span>
+            <span class="nn-content-item-copy">Explore hexadecimal base-16 channels versus 8-bit RGB color notation and their practical usage across CSS workflows.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/compress-images-for-web.html">
+            <span class="nn-content-item-title">Compress Images for Web Without Ruining Quality</span>
+            <span class="nn-content-item-copy">Resize pixel dimensions, select appropriate lossy thresholds, and benchmark compression savings before asset delivery.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/merge-pdf-privately.html">
+            <span class="nn-content-item-title">Merge PDF Files With Privacy in Mind</span>
+            <span class="nn-content-item-copy">Prepare source documents, arrange page sequences, and compile consolidated PDFs locally in your browser session.</span>
+          </a>
+
+          <a class="nn-content-item" href="articles/qr-code-best-practices.html">
+            <span class="nn-content-item-title">QR Code Best Practices</span>
+            <span class="nn-content-item-copy">Design scannable matrix barcodes with adequate quiet zones, high error correction levels, and strong foreground contrast.</span>
+          </a>
+            </div>
+          </section>
+
+          <section class="nn-content-column" aria-labelledby="guide-links-title">
+            <div class="nn-content-column-head">
+              <span class="nn-step-label">GUIDES</span>
+              <h3 id="guide-links-title">Published guides</h3>
+              <p>Step-by-step reference material for everyday workflows.</p>
+            </div>
+            <div class="nn-content-list">
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+
+          <a class="nn-content-item" href="">
+            <span class="nn-content-item-title"></span>
+            <span class="nn-content-item-copy">Read the practical guide and continue to the linked NexusNova workflow.</span>
+          </a>
+            </div>
+          </section>
+        </div>
+
+        <div class="nn-editorial-resources" aria-label="Editorial resources">
+          <a href="editorial-team.html">Editorial Team</a>
+          <a href="editorial-policy.html">Editorial Policy</a>
+          <a href="tool-methodology.html">Tool Methodology</a>
+          <a href="faq.html">FAQ</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="disclaimer.html">Disclaimer</a>
         </div>
       </div>
     </section>
@@ -1339,34 +1428,33 @@
       <div>
         <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
           <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
-
           <span class="nn-brand-copy">
             <strong>NEXUSNOVA TOOLS</strong>
             <small>FOCUSED DIGITAL UTILITIES</small>
           </span>
         </a>
-
-        <p class="nn-footer-copy">
-          A deliberately small command surface for practical browser utilities. Search by intent, use the relevant tool, and keep the interface out of the way.
-        </p>
+        <p class="nn-footer-copy">NexusNova Tools places the complete published tool directory, editorial library and key site resources on the homepage for direct access.</p>
       </div>
-
       <nav class="nn-footer-links" aria-label="Footer navigation">
-        <a href="tools.html">Tools directory</a>
+        <a href="#master-directory">All Tools</a>
+        <a href="#content-library">Content</a>
+        <a href="tools.html">Tools Directory</a>
         <a href="categories.html">Categories</a>
         <a href="articles.html">Articles</a>
         <a href="guides.html">Guides</a>
+        <a href="humanproof.html">HumanProof</a>
+        <a href="contact.html">Contact</a>
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
-        <a href="contact.html">Contact</a>
       </nav>
     </div>
-
     <div class="nn-shell nn-footer-bottom">
-      <span>Â© <span data-year></span> NexusNova Tools</span>
+      <span>© <span data-year></span> NexusNova Tools</span>
       <span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span>
     </div>
   </footer>
+
+  <script type="module" src="assets/js/humanproof-hero-360.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1376,72 +1464,23 @@
       var form = document.querySelector('[data-nexusnova-search]');
       var input = document.querySelector('[data-nexusnova-search-input]');
       var panel = document.getElementById('nn-search-suggestions');
-      var menu = document.querySelector('[data-nn-menu]');
-      var nav = document.querySelector('[data-nn-nav]');
       var yearNodes = document.querySelectorAll('[data-year]');
+      var directoryNodes = Array.prototype.slice.call(document.querySelectorAll('[data-master-tool]'));
 
-      if (yearNodes.length) {
-        var currentYear = String(new Date().getFullYear());
-        yearNodes.forEach(function (node) {
-          node.textContent = currentYear;
-        });
-      }
-
-      if (menu && nav) {
-        menu.addEventListener('click', function () {
-          var open = nav.classList.toggle('is-open');
-          menu.setAttribute('aria-expanded', String(open));
-          menu.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
-        });
-
-        nav.querySelectorAll('a').forEach(function (link) {
-          link.addEventListener('click', function () {
-            nav.classList.remove('is-open');
-            menu.setAttribute('aria-expanded', 'false');
-            menu.setAttribute('aria-label', 'Open navigation');
-          });
-        });
-      }
+      yearNodes.forEach(function (node) {
+        node.textContent = String(new Date().getFullYear());
+      });
 
       if (!root || !form || !input || !panel) {
         return;
       }
 
-      var fallbackCatalog = [
-        {
-          title: 'Pakistan Salary Tax Calculator',
-          url: 'salary-tax-calculator-pakistan.html',
-          category: 'Pakistan Calculators',
-          aliases: ['salery', 'income tax', 'fbr tax', 'fbr atl'],
-          keywords: ['salary', 'salary tax', 'salery', 'income tax', 'fbr', 'fbr tax', 'fbr atl', 'pakistan salary tax', 'salary calculator'],
-          priority: 100
-        },
-        {
-          title: 'Pakistan Electricity Bill Calculator',
-          url: 'electricity-bill-calculator-pakistan.html',
-          category: 'Pakistan Utilities',
-          aliases: ['bijli bill', 'bijli bil', 'wapda', 'lesco', 'kelectric'],
-          keywords: ['electricity', 'electricity bill', 'bijli', 'bijli bill', 'bijli bil', 'wapda', 'lesco', 'k electric', 'kelectric', 'electric bill', 'bill calculator'],
-          priority: 95
-        },
-        {
-          title: 'WhatsApp Link Generator',
-          url: 'whatsapp-link-generator.html',
-          category: 'Communication',
-          aliases: ['wa link', 'chat link', 'wa me'],
-          keywords: ['whatsapp', 'whatsapp link', 'wa link', 'chat link', 'click to chat', 'business message', 'message link', 'wa me', 'whatsapp business'],
-          priority: 90
-        },
-        {
-          title: 'NexusNova X-Ray',
-          url: 'xray.html',
-          category: 'Security',
-          aliases: ['x-ray', 'link checker', 'url scanner', 'redirect detector'],
-          keywords: ['xray', 'x-ray', 'link checker', 'url checker', 'url scanner', 'redirect detector', 'redirect checker', 'link scanner', 'inspect link', 'inspect url', 'phishing link', 'suspicious link'],
-          priority: 90
-        }
-      ];
-
+      /*
+       * The matching algorithm stays the same style as the existing homepage:
+       * normalize -> tokenize -> exact/substring/fuzzy token scoring -> ranked route.
+       * The catalog is now built from the fully visible homepage directory, so
+       * fallback search covers every listed route instead of only four featured tools.
+       */
       function normalize(value) {
         return String(value || '')
           .normalize('NFKD')
@@ -1465,17 +1504,9 @@
         var row;
         var column;
 
-        if (a === b) {
-          return 0;
-        }
-
-        if (!a.length) {
-          return b.length;
-        }
-
-        if (!b.length) {
-          return a.length;
-        }
+        if (a === b) return 0;
+        if (!a.length) return b.length;
+        if (!b.length) return a.length;
 
         for (column = 0; column <= b.length; column += 1) {
           previous[column] = column;
@@ -1499,13 +1530,8 @@
       }
 
       function fuzzyTokenMatch(queryToken, candidateToken) {
-        if (!queryToken || !candidateToken) {
-          return false;
-        }
-
-        if (queryToken === candidateToken) {
-          return true;
-        }
+        if (!queryToken || !candidateToken) return false;
+        if (queryToken === candidateToken) return true;
 
         if (candidateToken.indexOf(queryToken) !== -1 || queryToken.indexOf(candidateToken) !== -1) {
           return true;
@@ -1513,9 +1539,20 @@
 
         var maxLength = Math.max(queryToken.length, candidateToken.length);
         var allowed = maxLength <= 3 ? 0 : (maxLength <= 5 ? 1 : (maxLength <= 8 ? 2 : 3));
-
         return distance(queryToken, candidateToken) <= allowed;
       }
+
+      var fallbackCatalog = directoryNodes.map(function (node, index) {
+        var searchText = node.getAttribute('data-search') || node.getAttribute('data-title') || node.textContent;
+        return {
+          title: node.getAttribute('data-title') || node.querySelector('h3')?.textContent.trim() || '',
+          url: node.getAttribute('href') || '',
+          category: node.querySelector('.nn-master-tool-category')?.textContent.trim() || '',
+          aliases: [],
+          keywords: searchText.split('|').map(function (part) { return part.trim(); }).filter(Boolean),
+          priority: directoryNodes.length - index
+        };
+      });
 
       function fallbackQuery(query) {
         var normalizedQuery = normalize(query);
@@ -1563,9 +1600,7 @@
               });
             });
 
-            if (!matched) {
-              return null;
-            }
+            if (!matched) return null;
 
             score += exactPhrase ? 250 : 0;
             score += Math.min(80, matched * 7);
@@ -1585,7 +1620,6 @@
             if (right.matchScore !== left.matchScore) {
               return right.matchScore - left.matchScore;
             }
-
             return left.index - right.index;
           });
       }
@@ -1604,21 +1638,15 @@
         if (externalEngine) {
           try {
             var results = externalEngine.query(query);
-            if (Array.isArray(results)) {
-              return results;
-            }
+            if (Array.isArray(results) && results.length) return results;
           } catch (error) {
             externalEngine = null;
           }
         }
-
         return fallbackQuery(query);
       }
 
-      var state = {
-        results: [],
-        activeIndex: -1
-      };
+      var state = { results: [], activeIndex: -1 };
 
       function clearPanel() {
         panel.replaceChildren();
@@ -1631,28 +1659,20 @@
 
       function setActive(index) {
         var items = panel.querySelectorAll('[data-nn-search-result]');
-        var normalizedIndex = index;
-
         if (!items.length) {
           state.activeIndex = -1;
           input.setAttribute('aria-activedescendant', '');
           return;
         }
 
-        if (normalizedIndex < 0) {
-          normalizedIndex = items.length - 1;
-        }
-
-        if (normalizedIndex >= items.length) {
-          normalizedIndex = 0;
-        }
+        var normalizedIndex = index;
+        if (normalizedIndex < 0) normalizedIndex = items.length - 1;
+        if (normalizedIndex >= items.length) normalizedIndex = 0;
 
         items.forEach(function (item, itemIndex) {
           var active = itemIndex === normalizedIndex;
           item.classList.toggle('is-active', active);
-          if (active) {
-            item.scrollIntoView({ block: 'nearest' });
-          }
+          if (active) item.scrollIntoView({ block: 'nearest' });
         });
 
         state.activeIndex = normalizedIndex;
@@ -1668,7 +1688,7 @@
           var empty = document.createElement('div');
           empty.className = 'nn-search-empty';
           empty.setAttribute('role', 'status');
-          empty.textContent = 'No matching tool found. Try salary, bijli, whatsapp, xray, fbr or a simpler task phrase.';
+          empty.textContent = 'No matching tool found. Search by a simpler task, title, typo or alias.';
           panel.appendChild(empty);
           panel.hidden = false;
           input.setAttribute('aria-expanded', 'true');
@@ -1691,7 +1711,7 @@
           item.href = result.url;
           item.setAttribute('role', 'option');
           item.setAttribute('data-nn-search-result', '');
-          item.setAttribute('aria-label', result.title + ', ' + result.category);
+          item.setAttribute('aria-label', result.title + ', ' + (result.category || 'NexusNova tool'));
 
           icon.className = 'nn-search-result-icon';
           icon.setAttribute('aria-hidden', 'true');
@@ -1703,7 +1723,7 @@
           title.textContent = result.title;
 
           meta.className = 'nn-search-result-meta';
-          meta.textContent = result.category;
+          meta.textContent = result.category || 'NEXUSNOVA TOOL';
 
           key.className = 'nn-search-result-key';
           key.textContent = index < 9 ? 'ALT ' + (index + 1) : '';
@@ -1713,15 +1733,10 @@
           main.appendChild(meta);
           item.appendChild(icon);
           item.appendChild(main);
-          item.appendChild(document.createTextNode('â†’'));
+          item.appendChild(document.createTextNode('→'));
 
-          item.addEventListener('mouseenter', function () {
-            setActive(index);
-          });
-
-          item.addEventListener('focus', function () {
-            setActive(index);
-          });
+          item.addEventListener('mouseenter', function () { setActive(index); });
+          item.addEventListener('focus', function () { setActive(index); });
 
           fragment.appendChild(item);
         });
@@ -1733,12 +1748,10 @@
 
       function runQuery() {
         var query = input.value.trim();
-
         if (!query) {
           clearPanel();
           return;
         }
-
         renderResults(search(query));
       }
 
@@ -1747,43 +1760,28 @@
           window.location.assign(state.results[state.activeIndex].url);
           return true;
         }
-
         if (state.results[0] && state.results[0].url) {
           window.location.assign(state.results[0].url);
           return true;
         }
-
         return false;
       }
 
-      input.addEventListener('input', function () {
-        runQuery();
-      });
-
+      input.addEventListener('input', runQuery);
       input.addEventListener('focus', function () {
-        if (input.value.trim()) {
-          runQuery();
-        }
+        if (input.value.trim()) runQuery();
       });
 
       input.addEventListener('keydown', function (event) {
         var resultCount = state.results.length;
 
-        if (event.key === 'ArrowDown') {
-          if (!resultCount) {
-            return;
-          }
-
+        if (event.key === 'ArrowDown' && resultCount) {
           event.preventDefault();
           setActive(state.activeIndex + 1);
           return;
         }
 
-        if (event.key === 'ArrowUp') {
-          if (!resultCount) {
-            return;
-          }
-
+        if (event.key === 'ArrowUp' && resultCount) {
           event.preventDefault();
           setActive(state.activeIndex - 1);
           return;
@@ -1834,15 +1832,11 @@
       });
 
       document.addEventListener('pointerdown', function (event) {
-        if (!root.contains(event.target)) {
-          clearPanel();
-        }
+        if (!root.contains(event.target)) clearPanel();
       });
 
       document.addEventListener('keydown', function (event) {
-        var isShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
-
-        if (isShortcut) {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
           event.preventDefault();
           input.focus();
           input.select();
