@@ -62,13 +62,13 @@ async function verifySafepayWebhook(rawBody, signature, secret) {
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-512' },
+    { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   );
   const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
   const expected = hex(digest);
-  const provided = signature.trim().toLowerCase().replace(/^sha512=/, '');
+  const provided = signature.trim().toLowerCase().replace(/^sha256=/, '');
   return timingSafeEqualText(expected.toLowerCase(), provided);
 }
 
