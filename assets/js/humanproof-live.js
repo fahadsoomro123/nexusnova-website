@@ -26,9 +26,51 @@ function dial(cx,cy,r,spin,active=true){ctx.save();ctx.strokeStyle='rgba(69,226,
 function topLabel(b,age){if(age<2.15)return;const p=Math.min(1,(age-2.15)/.55),x=Math.max(12,b.minX-b.w*.72),y=Math.max(55,b.minY-20);ctx.save();ctx.globalAlpha=p;line(x,y-5,x,y+26,'rgba(77,236,250,.7)',1,5);for(let i=0;i<4;i++){const yy=y+i*7;line(x-3,yy,x+3,yy+4,'rgba(77,236,250,.65)',.7);line(x+3,yy,x-3,yy+4,'rgba(77,236,250,.45)',.7)}const bx=x+12,by=y+2,w=122,h=18;ctx.fillStyle='rgba(5,67,82,.58)';ctx.fillRect(bx,by,w*p,h);ctx.fillStyle='rgba(65,230,247,.28)';ctx.fillRect(bx,by,Math.max(4,88*p),h);txt('LIVENESS ANALYSIS',bx+9,by+12,7,.96*p);ctx.restore()}
 function leftDials(b,age){if(age<2.75)return;const p=Math.min(1,(age-2.75)/.7),x=Math.max(46,b.minX-b.w*.40),y=b.cy+4;ctx.save();ctx.globalAlpha=p;dial(x,y-43,22,phase*.45,true);dial(x+35,y-8,24,-phase*.38,idx>=1);dial(x+4,y+43,25,phase*.32,idx>=1);ctx.fillStyle='rgba(75,233,249,.48)';ctx.fillRect(x-34,y-53,24,3);ctx.fillRect(x+24,y-68,20,3);ctx.fillRect(x-22,y+63,28,3);txt('LIVE',x-32,y-58,5,.62);txt(idx===0?'SCAN':idx===1?'50%':'100%',x-20,y+67,5,.72);ctx.restore()}
 function drawHud(a){phase+=.03;const b=faceData(a),age=(performance.now()-faceSince)/1000;drawInitialMesh(b,age);if(age>.75)drawSparseFace(b);topLabel(b,age);leftDials(b,age)}
-function showCredential(){const d=new Date();const stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;let id='HP-'+stamp;try{const storageKey='humanproof_verification_id_'+(tracker||'session');const existing=sessionStorage.getItem(storageKey);if(existing)id=existing;else{const suffix=(crypto.randomUUID?crypto.randomUUID().slice(0,8):Math.random().toString(16).slice(2,10)).toUpperCase();id=id+'-'+suffix;sessionStorage.setItem(storageKey,id)}}catch{const suffix=Math.random().toString(16).slice(2,10).toUpperCase();id=id+'-'+suffix}credentialId.textContent=id;credentialOrder.textContent=orderId||'—';credentialIssued.textContent=d.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});credential.hidden=false;if(typeof window.QRCode==='function'){const qr=document.getElementById('hpCredentialQR');if(qr){qr.innerHTML='';new window.QRCode(qr,{text:'https://nexusnovatools.com/humanproof-payment-success.html?order_id='+encodeURIComponent(orderId)+'&tracker='+encodeURIComponent(tracker),width:180,height:180,colorDark:'#16493c',colorLight:'#fbfffc',correctLevel:window.QRCode.CorrectLevel.H})}}credential.scrollIntoView({behavior:'smooth',block:'nearest'})}
+async function showCredential(){
+  const d=new Date();
+  let id='HP-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0');
+  try{
+    const storageKey='humanproof_verification_id_'+(tracker||'session');
+    const existing=sessionStorage.getItem(storageKey);
+    if(existing)id=existing;
+    else{
+      const suffix=(crypto.randomUUID?crypto.randomUUID().slice(0,8):Math.random().toString(16).slice(2,10)).toUpperCase();
+      id=id+'-'+suffix;
+      sessionStorage.setItem(storageKey,id);
+    }
+  }catch{ id=id+'-'+Math.random().toString(16).slice(2,10).toUpperCase(); }
+  ok.textContent='PAYMENT CONFIRMED • GENERATING SERVER-SIGNED HUMANPROOF CREDENTIAL…';
+  ok.classList.add('show');
+  try{
+    const r=await fetch(WORKER+'/api/humanproof/issue-credential',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tracker,order_id:orderId,verification_id:id})
+    });
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok||!data.ok||!data.credential||!data.token)throw new Error(data.error||('http_'+r.status));
+    const issued=data.credential;
+    credentialId.textContent=issued.credential_id||id;
+    credentialOrder.textContent=issued.order_id||orderId||'—';
+    credentialIssued.textContent=issued.issued_at?new Date(issued.issued_at).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):d.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    credential.hidden=false;
+    if(typeof window.QRCode==='function'){
+      const qr=document.getElementById('hpCredentialQR');
+      if(qr){
+        qr.innerHTML='';
+        new window.QRCode(qr,{text:data.verification_url||('https://nexusnovatools.com/humanproof-verify.html?credential='+encodeURIComponent(data.token)),width:180,height:180,colorDark:'#16493c',colorLight:'#fbfffc',correctLevel:window.QRCode.CorrectLevel.H});
+      }
+    }
+    ok.textContent='PAYMENT CONFIRMED • SERVER-SIGNED HUMANPROOF CREDENTIAL ISSUED. The payment was confirmed by SafePay and the completed browser challenge was recorded in the credential.';
+    credential.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){
+    console.error('HumanProof credential issuance error',e);
+    credential.hidden=true;
+    ok.textContent='PAYMENT CONFIRMED • CREDENTIAL ISSUANCE FAILED. Your payment is already confirmed; no unverifiable credential is being shown. Please contact support if this persists.';
+  }
+}
 async function begin(){if(!paid){await verifyPayment();if(!paid)return}err.classList.remove('show');ok.classList.remove('show');credential.hidden=true;idx=0;hold=0;seq=pick();res=null;faceSince=0;start.disabled=true;progressEl.textContent='0%';try{if(!isSecureContext)throw Error('Secure HTTPS is required.');await init();stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});v.srcObject=stream;await v.play();resize();run=true;state.textContent='ACQUIRING FACE';prompt.textContent='Look at the camera';requestAnimationFrame(loop)}catch(e){start.disabled=paid;state.textContent='SYSTEM STANDBY';prompt.textContent='Camera unavailable';err.textContent=e?.message||String(e);err.classList.add('show')}}
 function stop(){run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null;res=null;faceSince=0;start.disabled=!paid;state.textContent=paid?'PAYMENT CONFIRMED':'SYSTEM STANDBY';prompt.textContent=paid?'Ready for live verification.':'Ready when you are.';progressEl.textContent=credential.hidden?'0%':'100%';ctx.clearRect(0,0,c.clientWidth,c.clientHeight)}
 start.onclick=begin;reset.onclick=()=>{credential.hidden=true;stop()};if(printCredential)printCredential.onclick=()=>window.print();if(newVerification)newVerification.onclick=()=>{credential.hidden=true;stop();verifyPayment()};addEventListener('pagehide',stop,{once:true});
-function loop(){if(!run)return;resize();ctx.clearRect(0,0,c.clientWidth,c.clientHeight);if(v.readyState>=2&&v.currentTime!==last){last=v.currentTime;try{res=lm.detectForVideo(v,performance.now())}catch{}}if(res?.faceLandmarks?.length){if(!faceSince)faceSince=performance.now();state.textContent='LIVE ANALYSIS';drawHud(res.faceLandmarks[0]);const age=(performance.now()-faceSince)/1000;if(age>3.25&&idx===0&&prompt.textContent==='Look at the camera')showChallenge();if(age>3.25&&idx<2){if(passed(seq[idx].k,score(res))){hold++;if(hold>=2){idx++;hold=0;progressEl.textContent=idx===1?'50%':'100%';if(idx>=2){run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null;res=null;state.textContent='VERIFICATION COMPLETE';prompt.textContent='Credential ready';ok.textContent='PAYMENT CONFIRMED • HUMANPROOF CREDENTIAL ISSUED. The paid order and completed browser verification are recorded on this screen.';ok.classList.add('show');start.disabled=false;showCredential();return}else showChallenge()}}else hold=0}}else{faceSince=0;state.textContent='ACQUIRING FACE';prompt.textContent='Look at the camera';hold=0}requestAnimationFrame(loop)}
+function loop(){if(!run)return;resize();ctx.clearRect(0,0,c.clientWidth,c.clientHeight);if(v.readyState>=2&&v.currentTime!==last){last=v.currentTime;try{res=lm.detectForVideo(v,performance.now())}catch{}}if(res?.faceLandmarks?.length){if(!faceSince)faceSince=performance.now();state.textContent='LIVE ANALYSIS';drawHud(res.faceLandmarks[0]);const age=(performance.now()-faceSince)/1000;if(age>3.25&&idx===0&&prompt.textContent==='Look at the camera')showChallenge();if(age>3.25&&idx<2){if(passed(seq[idx].k,score(res))){hold++;if(hold>=2){idx++;hold=0;progressEl.textContent=idx===1?'50%':'100%';if(idx>=2){run=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null;res=null;state.textContent='VERIFICATION COMPLETE';prompt.textContent='Generating signed credential…';ok.textContent='PAYMENT CONFIRMED • GENERATING SERVER-SIGNED HUMANPROOF CREDENTIAL…';ok.classList.add('show');start.disabled=true;await showCredential();start.disabled=paid;return}else showChallenge()}}else hold=0}}else{faceSince=0;state.textContent='ACQUIRING FACE';prompt.textContent='Look at the camera';hold=0}requestAnimationFrame(loop)}
 verifyPayment();
