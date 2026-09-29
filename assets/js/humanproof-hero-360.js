@@ -253,6 +253,12 @@
   };
 
   {
+    const autoStart=holder.hasAttribute('data-hp-360-autostart');
+    if(autoStart){
+      boot();
+      return;
+    }
+
     // Keep the approved scan stage immediately visible, while moving expensive
     // WebGL/model work behind one explicit action on every device.
     load.textContent=compactViewport?'TAP TO LOAD 3D HUMAN SCAN':'CLICK TO LOAD 3D HUMAN SCAN';
