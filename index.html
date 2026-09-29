@@ -852,6 +852,68 @@
       line-height:1.6;
     }
 
+    .nn-humanproof-hero{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:22px;
+      margin-top:24px;
+      padding:24px 26px;
+      border:1px solid var(--nn-purple-line);
+      border-radius:20px;
+      background:linear-gradient(135deg,#ffffff 0%,#faf7ff 100%);
+      box-shadow:0 16px 38px rgba(109,40,217,.10);
+    }
+
+    .nn-humanproof-label{
+      display:block;
+      margin-bottom:6px;
+      color:var(--nn-purple);
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    .nn-humanproof-hero h2{
+      margin:0;
+      color:var(--nn-text);
+      font-size:clamp(22px,3vw,34px);
+      font-weight:900;
+      letter-spacing:-.04em;
+      line-height:1.08;
+    }
+
+    .nn-humanproof-hero p{
+      margin:7px 0 0;
+      color:var(--nn-muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .nn-humanproof-cta{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:50px;
+      padding:0 19px;
+      border:1px solid var(--nn-purple);
+      border-radius:13px;
+      background:var(--nn-purple);
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
+      white-space:nowrap;
+      box-shadow:0 12px 26px rgba(109,40,217,.18);
+    }
+
+    .nn-humanproof-cta:hover{
+      background:var(--nn-purple-dark);
+      border-color:var(--nn-purple-dark);
+    }
+
     :focus-visible{
       outline:3px solid rgba(109,40,217,.23);
       outline-offset:3px;
@@ -903,19 +965,22 @@
 
       .nn-header-row{
         min-height:64px;
+        flex-wrap:wrap;
+        padding:9px 0;
       }
 
       .nn-nav{
-        display:none;
-        position:absolute;
-        left:11px;
-        right:11px;
-        top:70px;
-        padding:7px;
-        border:1px solid var(--nn-line);
-        border-radius:14px;
-        background:#fff;
-        box-shadow:0 24px 55px rgba(15,23,42,.12);
+        display:flex;
+        position:static;
+        width:100%;
+        justify-content:flex-start;
+        flex-wrap:wrap;
+        gap:3px;
+        padding:0;
+        border:0;
+        border-radius:0;
+        background:transparent;
+        box-shadow:none;
       }
 
       .nn-nav.is-open{
@@ -971,6 +1036,16 @@
       .nn-tool-foot{
         align-items:flex-start;
         flex-direction:column;
+      }
+
+      .nn-humanproof-hero{
+        align-items:flex-start;
+        flex-direction:column;
+        padding:20px;
+      }
+
+      .nn-humanproof-cta{
+        width:100%;
       }
 
       .nn-footer-bottom{
@@ -1125,6 +1200,15 @@
               <span>typo recovery enabled</span>
             </div>
           </div>
+
+          <section class="nn-humanproof-hero" aria-labelledby="nn-humanproof-title">
+            <div class="nn-humanproof-hero-copy">
+              <span class="nn-humanproof-label">NEXUSNOVA HUMANPROOF</span>
+              <h2 id="nn-humanproof-title">NEXUSNOVA HUMANPROOF — Live Human Verification</h2>
+              <p>Secure and live checkout available instantly through SafePay.</p>
+            </div>
+            <a class="nn-humanproof-cta" href="humanproof.html">Get HumanProof Now</a>
+          </section>
 
           <noscript>
             <div class="nn-noscript">
