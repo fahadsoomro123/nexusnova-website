@@ -153,6 +153,86 @@
     .nn-proof-attribution{margin:3px 0 0;color:#94a3b8;font-size:7px;line-height:1.3}
     .nn-proof-attribution a{text-decoration:underline;text-underline-offset:2px}
     
+
+    .nn-pakistan-highlight{
+      padding-top:18px;
+    }
+    .nn-pakistan-highlight-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:10px;
+    }
+    .nn-pakistan-highlight-head h2{
+      margin:4px 0 0;
+      font-size:18px;
+      line-height:1.2;
+      font-weight:850;
+      letter-spacing:-.015em;
+    }
+    .nn-pakistan-highlight-head p{
+      max-width:650px;
+      margin:4px 0 0;
+      color:var(--nn-muted);
+      font-size:12px;
+    }
+    .nn-pakistan-highlight-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:1px;
+      border:1px solid var(--nn-line);
+      background:var(--nn-line);
+    }
+    .nn-pakistan-highlight-card{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      padding:14px;
+      background:#fff;
+    }
+    .nn-pakistan-highlight-card:hover,
+    .nn-pakistan-highlight-card:focus-visible{
+      background:#fafafa;
+      outline:1px solid #cbd5e1;
+      outline-offset:-1px;
+    }
+    .nn-pakistan-highlight-label{
+      color:var(--nn-subtle);
+      font-family:var(--nn-mono);
+      font-size:8px;
+      font-weight:900;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+    }
+    .nn-pakistan-highlight-card h3{
+      margin:6px 0 5px;
+      font-size:16px;
+      line-height:1.25;
+      font-weight:850;
+    }
+    .nn-pakistan-highlight-card p{
+      margin:0;
+      color:var(--nn-muted);
+      font-size:11px;
+      line-height:1.5;
+    }
+    .nn-pakistan-highlight-open{
+      margin-top:auto;
+      padding-top:10px;
+      color:var(--nn-purple);
+      font-size:10px;
+      font-weight:850;
+    }
+    .nn-pakistan-highlight-note{
+      margin-top:8px;
+      color:var(--nn-subtle);
+      font-family:var(--nn-mono);
+      font-size:8px;
+      line-height:1.4;
+      letter-spacing:.03em;
+    }
+
     .nn-directory{padding-top:24px}
     .nn-directory-intro{border-top:1px solid var(--nn-line);border-bottom:1px solid var(--nn-line);padding:13px 0;margin-bottom:12px}
     .nn-directory-intro p{margin:4px 0 0;color:var(--nn-muted);font-size:12px}
@@ -218,6 +298,9 @@
       .nn-nav a{padding:6px 7px}
       .nn-brand-copy strong,.nn-brand-copy small{white-space:normal}
       .nn-humanproof-row{grid-template-columns:1fr}
+      .nn-pakistan-highlight-head{align-items:flex-start;flex-direction:column}
+      .nn-pakistan-highlight-grid{grid-template-columns:1fr}
+      .nn-pakistan-highlight-card{min-height:0}
       .nn-humanproof-stage{order:-1}
       .nn-proof-360-holder{height:164px;min-height:164px}
       .nn-master-tool-grid{grid-template-columns:1fr}
@@ -319,6 +402,43 @@
             </div>
           </div>
         </article>
+      </div>
+    </section>
+
+    <!-- CORE PAKISTAN TOOLS: KEEP THESE ABOVE THE FULL DIRECTORY -->
+    <section class="nn-pakistan-highlight" aria-labelledby="pakistan-highlight-title">
+      <div class="nn-shell">
+        <div class="nn-pakistan-highlight-head">
+          <div>
+            <span class="nn-step-label">CORE PAKISTAN PUBLIC TOOLS</span>
+            <h2 id="pakistan-highlight-title">Government jobs, FBR status and income tax</h2>
+            <p>Three high-priority Pakistan utilities are surfaced here before the complete directory so visitors can reach them without searching or opening another hub.</p>
+          </div>
+        </div>
+
+        <div class="nn-pakistan-highlight-grid">
+          <a class="nn-pakistan-highlight-card" href="pakistan-jobs-finder.html">
+            <span class="nn-pakistan-highlight-label">01 • GOVERNMENT JOBS</span>
+            <h3>Government Jobs Portal</h3>
+            <p>Search Pakistan government and private job sources by keyword, city and source type, then open live listings on the original job portal.</p>
+            <span class="nn-pakistan-highlight-open">Open Government Jobs Portal →</span>
+          </a>
+
+          <a class="nn-pakistan-highlight-card" href="fbr-atl-status-checker.html">
+            <span class="nn-pakistan-highlight-label">02 • FBR STATUS</span>
+            <h3>FBR ATL Checker</h3>
+            <p>Check Active Taxpayer List status using CNIC, NTN, Passport No. or Reg/Inc. No. directly on the NexusNova verification page.</p>
+            <span class="nn-pakistan-highlight-open">Check FBR ATL Status →</span>
+          </a>
+
+          <a class="nn-pakistan-highlight-card" href="fbr-tax-calculator-pakistan.html">
+            <span class="nn-pakistan-highlight-label">03 • FBR INCOME TAX</span>
+            <h3>FBR Income Tax Calculator</h3>
+            <p>Choose Salaried or Business / self-employed income, enter annual taxable income, and see the estimated annual and monthly tax breakdown.</p>
+            <span class="nn-pakistan-highlight-open">Calculate FBR Income Tax →</span>
+            <span class="nn-pakistan-highlight-note">Simple flow: income type + annual taxable income.</span>
+          </a>
+        </div>
       </div>
     </section>
 
