@@ -173,7 +173,6 @@ const NEXUSNOVA_ALIAS_MAP = Object.freeze({
   'whatsapp link': ['whatsapp-link-generator.html'],
   'wa link': ['whatsapp-link-generator.html'],
   'wa me': ['whatsapp-link-generator.html'],
-  'wa me': ['whatsapp-link-generator.html'],
   'click to chat': ['whatsapp-link-generator.html'],
   'xray': ['xray.html'],
   'x-ray': ['xray.html'],
@@ -279,7 +278,7 @@ function fuzzyTokenScore(queryToken, candidateToken) {
   if (!query || !candidate) return 0;
   if (query === candidate) return 1;
 
-  if (candidate.includes(query) || query.includes(candidate)) {
+  if (candidate.includes(query) && query.length >= 3) {
     return 0.93;
   }
 
