@@ -47,8 +47,9 @@
 (()=>{
   const WORKER='https://nexusnova-safepay.fahadsoomro123.workers.dev';
   const qs=new URLSearchParams(location.search);
-  const orderId=qs.get('order_id')||sessionStorage.getItem('humanproof_order_id')||'—';
-  const tracker=qs.get('tracker')||sessionStorage.getItem('humanproof_tracker')||'';
+  const orderId=qs.get('order_id')||sessionStorage.getItem('humanproof_order_id')||localStorage.getItem('humanproof_order_id')||'—';
+  const tracker=qs.get('tracker')||sessionStorage.getItem('humanproof_tracker')||localStorage.getItem('humanproof_tracker')||'';
+  try{if(orderId&&orderId!=='—')localStorage.setItem('humanproof_order_id',orderId);if(tracker)localStorage.setItem('humanproof_tracker',tracker);}catch{}
   const returnLink=document.getElementById('returnToHumanProof');
   if(returnLink&&tracker){
     returnLink.href='humanproof.html?order_id='+encodeURIComponent(orderId)+'&tracker='+encodeURIComponent(tracker);
