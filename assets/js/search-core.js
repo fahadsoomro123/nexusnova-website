@@ -330,18 +330,6 @@ function tokenCoverage(queryTokens, candidateTokens) {
         continue;
       }
 
-      if (
-        queryToken.includes(candidateToken) &&
-        candidateToken.length >= 4 &&
-        queryToken.length - candidateToken.length <= 2
-      ) {
-        bestScore = Math.max(bestScore, 0.86);
-        bestDistance = Math.min(
-          bestDistance,
-          Math.abs(candidateToken.length - queryToken.length)
-        );
-        continue;
-      }
 
       const fuzzy = fuzzyTokenScore(queryToken, candidateToken);
 
