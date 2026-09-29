@@ -108,7 +108,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Security & Network", url:"network-tools.html", type:"category", category:"", tags:["security & network","network tools","security","network","category","hub"] },
   { title:"Developer & Data", url:"developer-tools.html", type:"category", category:"", tags:["developer & data","developer tools","developer","data","category","hub"] },
   { title:"Productivity", url:"productivity-tools.html", type:"category", category:"", tags:["productivity","productivity tools","category","hub"] },
-  { title:"Gaming", url:"gaming.html", type:"category", category:"", tags:["gaming","category","hub"] },
+  { title:"Gaming", url:"gaming.html", type:"category", category:"", tags:["gaming","game","edpi","sensitivity","reaction","category","hub"] },
   { title:"Live Information", url:"live.html", type:"category", category:"", tags:["live information","live","information","category","hub","today","pakistan today","dashboard","weather","sports","gold","fuel","currency","aqi","crypto","earthquakes"] },
   { title:"CS2 vs Valorant Sensitivity & eDPI", url:"articles/cs2-valorant-sensitivity-edpi-guide.html", type:"article", category:"Articles", tags:["cs2 vs valorant sensitivity & edpi","articles cs2 valorant sensitivity edpi guide","articles","cs2","valorant","sensitivity","edpi","article"] },
   { title:"AI Photo Restoration vs Enhancement", url:"articles/ai-photo-restoration-vs-enhancement.html", type:"article", category:"Articles", tags:["ai photo restoration vs enhancement","articles ai photo restoration vs enhancement","articles","photo","restoration","enhancement","article"] },
