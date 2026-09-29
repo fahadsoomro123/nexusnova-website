@@ -32,7 +32,7 @@
 
 <div class="hp-commerce-order">
 <section class="hp-commerce-summary" aria-labelledby="order-title">
-<div class="hp-test-badge">SAFEpay SANDBOX • TEST MODE</div>
+<div class="hp-test-badge">SAFEpay LIVE • PRODUCTION</div>
 <span class="hp-commerce-launch">ORDER SUMMARY</span>
 <h1 id="order-title" style="font-size:30px;margin:10px 0 5px">HumanProof <span id="planName">Personal</span></h1>
 <p class="hp-commerce-muted" id="planCopy">One production HumanProof verified action and digital receipt.</p>
@@ -48,7 +48,7 @@
 <h3>Safepay secure checkout</h3>
 <p class="hp-commerce-muted">This checkout creates the payment session on the NexusNova server. Safepay credentials are never stored in this web page.</p>
 <button class="btn btn-primary" id="payButton" type="button" disabled style="width:100%">Accept policies to continue</button>
-<p id="payHelp" class="hp-commerce-muted" style="margin:8px 0 0">Sandbox / Test Mode is active for Safepay due-diligence testing. No live production charge is being claimed on this page.</p>
+<p id="payHelp" class="hp-commerce-muted" style="margin:8px 0 0">Live Production Mode is active for Safepay. This checkout is ready for live payment testing.</p>
 </div>
 </section>
 
@@ -117,7 +117,7 @@
     btn.disabled=true;
     btn.textContent='Creating secure checkout…';
     help.className='hp-commerce-muted';
-    help.textContent='Connecting securely to Safepay Sandbox…';
+    help.textContent='Connecting securely to Safepay Live…';
 
     try{
       const response=await fetch(WORKER+'/api/safepay/create-checkout',{
