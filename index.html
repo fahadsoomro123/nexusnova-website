@@ -133,37 +133,30 @@
     }
 
     .nn-brand-mark{
-      width:40px;
-      height:40px;
-      display:grid;
-      place-items:center;
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
       flex:0 0 auto;
-      border:1px solid var(--nn-purple-line);
-      border-radius:13px;
-      background:var(--nn-purple-soft);
-      overflow:hidden;
-    }
-
-    .nn-brand-mark .nn-brand-network{
-      width:27px;
-      height:27px;
-      display:block;
+      min-width:0;
+      border:0;
+      border-radius:0;
+      background:transparent;
       overflow:visible;
     }
 
     .nn-brand-logo-img{
       height:40px;
       width:auto;
-      aspect-ratio:1 / 1;
       display:block;
+      max-width:none;
       object-fit:contain;
     }
 
     .nn-footer .nn-brand-logo-img{
       height:26px;
       width:auto;
-      aspect-ratio:1 / 1;
       display:block;
+      max-width:none;
       object-fit:contain;
     }
 
