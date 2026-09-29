@@ -21,6 +21,56 @@
 <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
 <link rel="stylesheet" href="assets/css/humanproof.css?v=20260927-hpbtn2">
 <link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260927-hpbtn2">
+<style id="humanproof-live-commerce-css">
+#live-verification .verifyStart:disabled{opacity:.58;cursor:not-allowed;filter:grayscale(.18)}
+.hp-live-payment{margin-top:10px;padding:11px 13px;border-radius:13px;border:1px solid rgba(101,88,255,.18);background:rgba(101,88,255,.05);font-size:12px;line-height:1.5;color:#4f587c}
+.hp-live-payment strong{display:block;margin-bottom:3px;color:#25315f}
+.hp-credential{margin-top:16px}
+.hp-credential-card{position:relative;overflow:hidden;border-radius:24px;padding:22px;background:
+ radial-gradient(circle at 14% 10%,rgba(186,243,218,.80),transparent 31%),
+ radial-gradient(circle at 84% 12%,rgba(209,198,255,.74),transparent 30%),
+ radial-gradient(circle at 82% 86%,rgba(244,180,203,.63),transparent 34%),
+ linear-gradient(135deg,#e9fff3 0%,#90d9ba 30%,#d7caff 57%,#efb3ca 78%,#fff0d5 100%);
+ border:1px solid rgba(181,139,49,.72);
+ box-shadow:0 20px 50px rgba(45,59,93,.18),inset 0 1px rgba(255,255,255,.95)}
+.hp-credential-card:before{content:"";position:absolute;inset:9px;border:1px solid rgba(180,139,47,.43);border-radius:18px;pointer-events:none}
+.hp-credential-top,.hp-credential-body,.hp-credential-foot{position:relative;z-index:2}
+.hp-credential-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.hp-credential-brand{font-weight:1000;letter-spacing:.1em;color:#1e5a4a;font-size:13px}
+.hp-credential-kicker{margin-top:4px;font-size:9px;letter-spacing:.16em;font-weight:900;color:#6a6682}
+.hp-credential-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.58);border:1px solid rgba(62,119,96,.18);font-size:9px;letter-spacing:.10em;font-weight:1000;color:#256148}
+.hp-credential-badge i{width:7px;height:7px;border-radius:50%;background:#0b8d66;box-shadow:0 0 0 3px rgba(11,141,102,.14)}
+.hp-credential-body{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:18px;margin-top:22px}
+.hp-credential-title{font-size:38px;line-height:.9;letter-spacing:-.055em;font-weight:1000;color:#183f35;text-transform:uppercase}
+.hp-credential-title span{display:block;font-size:.68em;color:#806018;margin-top:6px}
+.hp-credential-proof{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.52);border:1px solid rgba(62,119,96,.16);font-size:10px;letter-spacing:.08em;font-weight:1000;color:#17624b}
+.hp-credential-action{margin-top:18px;padding-top:10px;border-top:1px solid rgba(49,93,76,.20)}
+.hp-credential-action small{display:block;font-size:8px;letter-spacing:.14em;font-weight:900;color:#6c6a80}
+.hp-credential-action strong{display:block;margin-top:4px;font-size:15px;color:#234c40}
+.hp-credential-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.hp-credential-meta div{padding-top:7px;border-top:1px solid rgba(49,93,76,.17)}
+.hp-credential-meta small{display:block;font-size:7px;letter-spacing:.12em;font-weight:900;color:#737287}
+.hp-credential-meta b{display:block;margin-top:3px;font-size:9px;color:#285247;overflow-wrap:anywhere}
+.hp-credential-qr{align-self:center;justify-self:end;width:112px;padding:9px;border-radius:16px;background:linear-gradient(145deg,#f3d977,#a97918 55%,#efd573);border:1px solid rgba(112,75,13,.28);box-shadow:inset 1px 1px 2px rgba(255,255,231,.88),0 7px 15px rgba(74,68,46,.15)}
+.hp-credential-qr-inner{padding:7px;border-radius:10px;background:#fbfffc;box-shadow:inset 0 1px 3px rgba(42,70,59,.12)}
+#hpCredentialQR canvas,#hpCredentialQR img{display:block!important;width:100%!important;height:100%!important;image-rendering:pixelated}
+.hp-credential-scan{margin-top:6px;text-align:center;font-size:7px;letter-spacing:.14em;font-weight:1000;color:#74571a}
+.hp-credential-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:18px;padding-top:10px;border-top:1px solid rgba(49,93,76,.18);font-size:8px;color:#5f6871}
+.hp-credential-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hp-credential-actions .btn{padding:9px 12px;font-size:12px}
+@media(max-width:700px){.hp-credential-body{grid-template-columns:1fr}.hp-credential-qr{justify-self:start}.hp-credential-meta{grid-template-columns:1fr 1fr}.hp-credential-title{font-size:31px}.hp-credential-top{flex-direction:column}}
+@media print{
+body>*:not(#top){display:none!important}
+nav,.section:not(.hero),footer{display:none!important}
+.heroGrid>div:first-child{display:none!important}
+.hero{padding:0!important;background:#fff!important}
+.verifyShell{box-shadow:none!important;min-height:0!important}
+.verifyShell>*:not(#credential){display:none!important}
+#credential[hidden]{display:block!important}
+.hp-credential-actions{display:none!important}
+.hp-credential-card{box-shadow:none!important}
+}
+</style>
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -105,7 +155,42 @@
       </div>
       <div class="ok" id="ok">PENDING PAYMENT • NOT VERIFIED. No HumanProof result has been issued. Production verification requires an activated paid flow and server confirmation.</div>
       <div class="err" id="err"></div>
-      <div class="notice">This public camera flow is an evaluation surface. Completing the challenge alone does not create a verified result. Production HumanProof issuance requires the activated paid flow and trusted server confirmation.</div>
+      <div class="notice">Complete payment first. Once the server confirms your payment, the live-human verification step unlocks and a HumanProof digital credential is shown after the challenge is completed.</div>
+      <div id="paymentGate" class="hp-live-payment" role="status"><strong>Payment required</strong>Choose a HumanProof plan below to unlock the live verification step.</div>
+      <div id="credential" class="hp-credential" hidden>
+        <article class="hp-credential-card" id="credentialCard">
+          <div class="hp-credential-top">
+            <div>
+              <div class="hp-credential-brand">NEXUSNOVA HUMANPROOF</div>
+              <div class="hp-credential-kicker">VERIFIED ACTION • DIGITAL CREDENTIAL</div>
+            </div>
+            <span class="hp-credential-badge"><i></i> PAID &amp; VERIFIED</span>
+          </div>
+          <div class="hp-credential-body">
+            <div>
+              <div class="hp-credential-title">HumanProof<span>Verified</span></div>
+              <div class="hp-credential-proof">✓ LIVE HUMAN CHALLENGE COMPLETED</div>
+              <div class="hp-credential-action"><small>VERIFICATION</small><strong>Human presence + conscious approval</strong></div>
+              <div class="hp-credential-meta">
+                <div><small>VERIFICATION ID</small><b id="credentialId">—</b></div>
+                <div><small>ORDER</small><b id="credentialOrder">—</b></div>
+                <div><small>ISSUED</small><b id="credentialIssued">—</b></div>
+                <div><small>PAYMENT</small><b>SAFEpay • CONFIRMED</b></div>
+                <div><small>ENVIRONMENT</small><b>LIVE / PRODUCTION</b></div>
+                <div><small>STATUS</small><b>VERIFIED ACTION</b></div>
+              </div>
+            </div>
+            <aside>
+              <div class="hp-credential-qr"><div class="hp-credential-qr-inner"><div id="hpCredentialQR" aria-label="Payment verification QR"></div></div><div class="hp-credential-scan">SCAN TO VERIFY PAYMENT</div></div>
+            </aside>
+          </div>
+          <div class="hp-credential-foot"><span>Digital service • Not KYC or legal identity proof</span><span>NexusNova Tools</span></div>
+        </article>
+        <div class="hp-credential-actions">
+          <button class="btn primary" id="printCredential" type="button">Print / Save Card</button>
+          <button class="btn secondary" id="newVerification" type="button">Start New</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -228,7 +313,8 @@
       </ul>
 </footer>
 
-<script type="module" src="assets/js/humanproof-live.js?v=20260909-1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module" src="assets/js/humanproof-live.js?v=20260929-live1"></script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>
