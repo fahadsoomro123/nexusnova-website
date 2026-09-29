@@ -57,18 +57,36 @@ function timingSafeEqualText(a, b) {
   return diff === 0;
 }
 
-async function verifySafepayWebhook(rawBody, signature, secret) {
-  if (!rawBody || !signature || !secret) return false;
+function base64UrlEncodeText(value) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function base64UrlDecodeText(value) {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+async function hmacHex(secret, value) {
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-512' },
+    { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   );
-  const digest = await crypto.subtle.sign('HMAC', key, encoder.encode(rawBody));
-  const expected = hex(digest);
-  const provided = signature.trim().toLowerCase().replace(/^sha512=/, '');
+  return hex(await crypto.subtle.sign('HMAC', key, encoder.encode(value)));
+}
+
+async function verifySafepayWebhook(rawBody, signature, secret) {
+  if (!rawBody || !signature || !secret) return false;
+  const expected = await hmacHex(secret, rawBody);
+  const provided = signature.trim().toLowerCase().replace(/^sha256=/, '');
   return timingSafeEqualText(expected.toLowerCase(), provided);
 }
 
@@ -187,7 +205,7 @@ async function createCheckout(request, env) {
   }
 
   // Keep these URLs free of their own query string. Safepay appends tracker/order data.
-  const redirectUrl = 'https://nexusnovatools.com/humanproof-payment-success.html';
+  const redirectUrl = 'https://nexusnovatools.com/humanproof-payment-success-v2.html';
   const cancelUrl = 'https://nexusnovatools.com/humanproof-payment-cancelled.html';
 
   const checkoutUrl = new URL(checkoutHost);
@@ -309,6 +327,149 @@ async function paymentStatus(request, env) {
   }, 200, cors);
 }
 
+function getCredentialSecret(env) {
+  // Dedicated credential secret is preferred; the live webhook secret is a temporary secure fallback.
+  return env.HUMANPROOF_CREDENTIAL_SECRET || env.SAFEPAY_WEBHOOK_SECRET || '';
+}
+
+async function issueHumanProofCredential(request, env) {
+  const cors = corsHeaders(request);
+  const origin = request.headers.get('origin');
+  if (origin && !SITE_ORIGINS.has(origin)) {
+    return json({ ok: false, error: 'origin_not_allowed' }, 403, cors);
+  }
+  const credentialSecret = getCredentialSecret(env);
+  if (!env.SAFEPAY_SECRET_KEY || !env.SAFEPAY_PUBLIC_KEY || !credentialSecret) {
+    return json({ ok: false, error: 'credential_issuer_not_configured' }, 503, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: 'invalid_json' }, 400, cors);
+  }
+
+  const tracker = typeof body?.tracker === 'string' ? body.tracker : '';
+  const orderId = typeof body?.order_id === 'string' ? body.order_id : '';
+  const verificationId = typeof body?.verification_id === 'string' ? body.verification_id : '';
+  if (!/^track_[A-Za-z0-9-]{10,120}$/.test(tracker)) {
+    return json({ ok: false, error: 'invalid_tracker' }, 400, cors);
+  }
+  if (!/^NN-HP-[A-Za-z0-9-]{8,100}$/.test(orderId)) {
+    return json({ ok: false, error: 'invalid_order_id' }, 400, cors);
+  }
+  if (!/^HP-[A-Za-z0-9-]{10,120}$/.test(verificationId)) {
+    return json({ ok: false, error: 'invalid_verification_id' }, 400, cors);
+  }
+
+  const { environment, apiHost } = environmentConfig(env);
+  const response = await safepayRequest(
+    `${apiHost}/reporter/api/v1/payments/${encodeURIComponent(tracker)}`,
+    env.SAFEPAY_SECRET_KEY,
+    { method: 'GET' }
+  );
+  const text = await response.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch {}
+
+  if (!response.ok) {
+    console.error('Credential payment lookup failed', response.status, text.slice(0, 800));
+    return json({ ok: false, error: 'payment_lookup_failed' }, 502, cors);
+  }
+
+  const candidate = data?.data?.tracker || data?.data?.payment || data?.data || data?.tracker || data?.payment || data || {};
+  const state = candidate?.state || candidate?.status || data?.data?.state || data?.state || null;
+  const clientValue = candidate?.client || candidate?.merchant_api_key || data?.data?.client || data?.data?.merchant_api_key || data?.client || data?.merchant_api_key || null;
+  const clientKey = typeof clientValue === 'string' ? clientValue : (clientValue?.api_key || clientValue?.apiKey || null);
+
+  if (env.SAFEPAY_PUBLIC_KEY && clientKey && clientKey !== env.SAFEPAY_PUBLIC_KEY) {
+    return json({ ok: false, error: 'merchant_mismatch' }, 403, cors);
+  }
+  if (state !== 'TRACKER_ENDED') {
+    return json({ ok: false, error: 'payment_not_confirmed', state }, 409, cors);
+  }
+
+  const totals = candidate?.purchase_totals || {};
+  const quote = totals?.quote_amount || totals?.base_amount || {};
+  const currency = quote?.currency || 'USD';
+  const amount = typeof quote?.amount === 'number' ? quote.amount : null;
+  const issuedAt = new Date().toISOString();
+  const credential = {
+    version: '1.0',
+    credential_id: verificationId,
+    issuer: 'NexusNova HumanProof',
+    order_id: orderId,
+    tracker,
+    payment: {
+      provider: 'Safepay',
+      environment,
+      state: 'TRACKER_ENDED',
+      confirmed: true,
+      currency,
+      amount
+    },
+    verification: {
+      method: 'browser-live-response-challenge',
+      challenge_completed: true,
+      claim: 'The payment was server-confirmed and the browser reported completion of the HumanProof live-response challenge.',
+      identity_or_kyc: false
+    },
+    issued_at: issuedAt
+  };
+
+  const unsigned = JSON.stringify(credential);
+  const signature = await hmacHex(credentialSecret, unsigned);
+  const token = `${base64UrlEncodeText(unsigned)}.${signature}`;
+
+  console.log(JSON.stringify({
+    event: 'humanproof.credential_issued',
+    credential_id: verificationId,
+    order_id: orderId,
+    tracker,
+    environment
+  }));
+
+  return json({
+    ok: true,
+    credential,
+    token,
+    verification_url: `https://nexusnovatools.com/humanproof-verify.html?credential=${encodeURIComponent(token)}`
+  }, 200, cors);
+}
+
+async function verifyHumanProofCredential(request, env) {
+  const cors = corsHeaders(request);
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token') || url.searchParams.get('credential') || '';
+  const credentialSecret = getCredentialSecret(env);
+  if (!credentialSecret || !token) {
+    return json({ ok: false, verified: false, error: 'credential_not_verifiable' }, 400, cors);
+  }
+
+  const parts = token.split('.');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return json({ ok: false, verified: false, error: 'invalid_credential' }, 400, cors);
+  }
+
+  let unsigned;
+  let credential;
+  try {
+    unsigned = base64UrlDecodeText(parts[0]);
+    credential = JSON.parse(unsigned);
+  } catch {
+    return json({ ok: false, verified: false, error: 'invalid_credential' }, 400);
+  }
+
+  const expected = await hmacHex(credentialSecret, unsigned);
+  const provided = parts[1].trim().toLowerCase();
+  if (!timingSafeEqualText(expected.toLowerCase(), provided)) {
+    return json({ ok: true, verified: false, error: 'invalid_signature' }, 200, cors);
+  }
+
+  return json({ ok: true, verified: true, credential }, 200, cors);
+}
+
 async function webhook(request, env) {
   if (!env.SAFEPAY_WEBHOOK_SECRET) {
     console.error('Missing SAFEPAY_WEBHOOK_SECRET');
@@ -400,7 +561,8 @@ export default {
 
     if (request.method === 'OPTIONS' && (
       url.pathname === '/api/safepay/create-checkout' ||
-      url.pathname === '/api/safepay/payment-status'
+      url.pathname === '/api/safepay/payment-status' ||
+      url.pathname === '/api/humanproof/issue-credential'
     )) {
       const origin = request.headers.get('origin');
       if (!origin || !SITE_ORIGINS.has(origin)) return new Response(null, { status: 403 });
@@ -430,6 +592,16 @@ export default {
     if (url.pathname === '/api/safepay/webhook') {
       if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed' }, 405);
       return webhook(request, env);
+    }
+
+    if (url.pathname === '/api/humanproof/issue-credential') {
+      if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed' }, 405, cors);
+      return issueHumanProofCredential(request, env);
+    }
+
+    if (url.pathname === '/api/humanproof/verify-credential') {
+      if (request.method !== 'GET') return json({ ok: false, error: 'method_not_allowed' }, 405);
+      return verifyHumanProofCredential(request, env);
     }
 
     return json({ ok: false, error: 'not_found' }, 404);
