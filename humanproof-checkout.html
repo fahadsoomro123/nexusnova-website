@@ -134,8 +134,9 @@
       help.textContent='Secure checkout created. Redirecting to Safepay…';
       try{
         sessionStorage.setItem('humanproof_plan',key);
-        if(data.order_id)sessionStorage.setItem('humanproof_order_id',data.order_id);
-        if(data.tracker)sessionStorage.setItem('humanproof_tracker',data.tracker);
+        localStorage.setItem('humanproof_plan',key);
+        if(data.order_id){sessionStorage.setItem('humanproof_order_id',data.order_id);localStorage.setItem('humanproof_order_id',data.order_id);}
+        if(data.tracker){sessionStorage.setItem('humanproof_tracker',data.tracker);localStorage.setItem('humanproof_tracker',data.tracker);}
       }catch{}
       location.assign(data.checkout_url);
     }catch(error){
