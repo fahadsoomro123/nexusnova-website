@@ -173,7 +173,7 @@ const NEXUSNOVA_ALIAS_MAP = Object.freeze({
   'whatsapp link': ['whatsapp-link-generator.html'],
   'wa link': ['whatsapp-link-generator.html'],
   'wa me': ['whatsapp-link-generator.html'],
-  'wa.me': ['whatsapp-link-generator.html'],
+  'wa me': ['whatsapp-link-generator.html'],
   'click to chat': ['whatsapp-link-generator.html'],
   'xray': ['xray.html'],
   'x-ray': ['xray.html'],
@@ -443,7 +443,7 @@ class NexusNovaSearchCore {
 
     const coverage = tokenCoverage(queryTokens, tokenField);
 
-    if (coverage.coverage < 0.42) return null;
+    if (coverage.coverage < 0.62) return null;
 
     let score = weights.token * coverage.coverage;
 
@@ -591,10 +591,15 @@ class NexusNovaSearchCore {
       return left.record._index - right.record._index;
     });
 
+    const aliasTargets = NEXUSNOVA_ALIAS_MAP[query];
+    const ranked = aliasTargets
+      ? scored.filter((item) => aliasTargets.includes(item.record.url))
+      : scored;
+
     const seenUrls = new Set();
     const output = [];
 
-    for (const item of scored) {
+    for (const item of ranked) {
       if (seenUrls.has(item.record.url)) continue;
 
       seenUrls.add(item.record.url);
