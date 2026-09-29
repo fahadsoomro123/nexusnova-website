@@ -321,8 +321,21 @@ function tokenCoverage(queryTokens, candidateTokens) {
         break;
       }
 
-      if (candidateToken.includes(queryToken) || queryToken.includes(candidateToken)) {
+      if (candidateToken.includes(queryToken) && queryToken.length >= 3) {
         bestScore = Math.max(bestScore, 0.93);
+        bestDistance = Math.min(
+          bestDistance,
+          Math.abs(candidateToken.length - queryToken.length)
+        );
+        continue;
+      }
+
+      if (
+        queryToken.includes(candidateToken) &&
+        candidateToken.length >= 4 &&
+        queryToken.length - candidateToken.length <= 2
+      ) {
+        bestScore = Math.max(bestScore, 0.86);
         bestDistance = Math.min(
           bestDistance,
           Math.abs(candidateToken.length - queryToken.length)
