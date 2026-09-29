@@ -327,13 +327,19 @@ async function paymentStatus(request, env) {
   }, 200, cors);
 }
 
+function getCredentialSecret(env) {
+  // Dedicated credential secret is preferred; the live webhook secret is a temporary secure fallback.
+  return env.HUMANPROOF_CREDENTIAL_SECRET || env.SAFEPAY_WEBHOOK_SECRET || '';
+}
+
 async function issueHumanProofCredential(request, env) {
   const cors = corsHeaders(request);
   const origin = request.headers.get('origin');
   if (origin && !SITE_ORIGINS.has(origin)) {
     return json({ ok: false, error: 'origin_not_allowed' }, 403, cors);
   }
-  if (!env.SAFEPAY_SECRET_KEY || !env.SAFEPAY_PUBLIC_KEY || !env.HUMANPROOF_CREDENTIAL_SECRET) {
+  const credentialSecret = getCredentialSecret(env);
+  if (!env.SAFEPAY_SECRET_KEY || !env.SAFEPAY_PUBLIC_KEY || !credentialSecret) {
     return json({ ok: false, error: 'credential_issuer_not_configured' }, 503, cors);
   }
 
@@ -413,7 +419,7 @@ async function issueHumanProofCredential(request, env) {
   };
 
   const unsigned = JSON.stringify(credential);
-  const signature = await hmacHex(env.HUMANPROOF_CREDENTIAL_SECRET, unsigned);
+  const signature = await hmacHex(credentialSecret, unsigned);
   const token = `${base64UrlEncodeText(unsigned)}.${signature}`;
 
   console.log(JSON.stringify({
@@ -435,7 +441,8 @@ async function issueHumanProofCredential(request, env) {
 async function verifyHumanProofCredential(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get('token') || url.searchParams.get('credential') || '';
-  if (!env.HUMANPROOF_CREDENTIAL_SECRET || !token) {
+  const credentialSecret = getCredentialSecret(env);
+  if (!credentialSecret || !token) {
     return json({ ok: false, verified: false, error: 'credential_not_verifiable' }, 400);
   }
 
@@ -453,7 +460,7 @@ async function verifyHumanProofCredential(request, env) {
     return json({ ok: false, verified: false, error: 'invalid_credential' }, 400);
   }
 
-  const expected = await hmacHex(env.HUMANPROOF_CREDENTIAL_SECRET, unsigned);
+  const expected = await hmacHex(credentialSecret, unsigned);
   const provided = parts[1].trim().toLowerCase();
   if (!timingSafeEqualText(expected.toLowerCase(), provided)) {
     return json({ ok: true, verified: false, error: 'invalid_signature' }, 200);
