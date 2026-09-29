@@ -19,7 +19,7 @@
 <header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • PAYMENT STATUS</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
 <main class="hp-result-wrap">
 <section class="hp-result-card">
-<span class="hp-result-badge">SAFEpay SANDBOX • TEST MODE</span>
+<span class="hp-result-badge">SAFEpay LIVE • PRODUCTION</span>
 <h1 style="margin:14px 0 8px">Checking your Safepay payment…</h1>
 <p class="hp-commerce-muted">Safepay has returned you to NexusNova. This page checks the tracker from the NexusNova server before showing a confirmed state.</p>
 <div id="stateBox" class="hp-result-state"><strong id="stateTitle">Verifying payment</strong><span id="stateCopy">Waiting for Safepay server status…</span></div>
@@ -70,8 +70,8 @@
       if(r.ok&&data.paid===true){
         stateBox.classList.remove('hp-error');
         stateBox.classList.add('hp-confirmed');
-        stateTitle.textContent='Sandbox payment confirmed';
-        stateCopy.textContent='Safepay reports this tracker as TRACKER_ENDED. This is a Sandbox/Test Mode transaction for integration and due-diligence testing.';
+        stateTitle.textContent='Live payment confirmed';
+        stateCopy.textContent='Safepay reports this tracker as TRACKER_ENDED. This is a live production transaction confirmed through Safepay.';
         return;
       }
       if(r.ok&&attempts<10){
