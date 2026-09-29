@@ -205,7 +205,7 @@ async function createCheckout(request, env) {
   }
 
   // Keep these URLs free of their own query string. Safepay appends tracker/order data.
-  const redirectUrl = 'https://nexusnovatools.com/humanproof-payment-success.html';
+  const redirectUrl = 'https://nexusnovatools.com/humanproof-payment-success-v2.html';
   const cancelUrl = 'https://nexusnovatools.com/humanproof-payment-cancelled.html';
 
   const checkoutUrl = new URL(checkoutHost);
