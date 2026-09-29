@@ -1,61 +1,927 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Practical Tool Guides & Articles 2026 — NexusNova Tools</title>
-<meta name="description" content="Practical NexusNova articles for browser tools, PDFs, images, calculators, gaming settings, privacy, productivity and repeatable digital workflows.">
-<meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#f4f6fb">
-<link rel="canonical" href="https://nexusnovatools.com/articles.html">
-<link rel="alternate" type="application/rss+xml" title="NexusNova Tools Updates" href="https://nexusnovatools.com/feed.xml">
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="NexusNova Tools">
-<meta property="og:title" content="Practical Tool & Search Articles — NexusNova Tools">
-<meta property="og:description" content="Practical browser-tool and digital-workflow articles connected to useful NexusNova utilities.">
-<meta property="og:url" content="https://nexusnovatools.com/articles.html">
-<meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
-<meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="assets/css/site.css">
-<link rel="stylesheet" href="assets/css/scifi.css" data-nexusnova-scifi>
-<link rel="stylesheet" href="assets/css/motion.css" data-nexusnova-motion>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"CollectionPage","name":"NexusNova Practical Tool Articles","url":"https://nexusnovatools.com/articles.html","description":"Original workflow articles connected to NexusNova browser tools, with practical methods, privacy notes and limitations."},{"@type":"ItemList","name":"Featured NexusNova Practical Articles","numberOfItems":13,"itemListElement":[{"@type":"ListItem","position":1,"name":"CS2 vs Valorant Sensitivity & eDPI","url":"https://nexusnovatools.com/articles/cs2-valorant-sensitivity-edpi-guide.html"},{"@type":"ListItem","position":2,"name":"AI Photo Restoration vs Enhancement","url":"https://nexusnovatools.com/articles/ai-photo-restoration-vs-enhancement.html"},{"@type":"ListItem","position":3,"name":"Online Background Removers in 2026","url":"https://nexusnovatools.com/articles/background-removal-online-guide.html"},{"@type":"ListItem","position":4,"name":"Remove EXIF and GPS Metadata Before Sharing","url":"https://nexusnovatools.com/articles/remove-exif-gps-metadata-photos.html"},{"@type":"ListItem","position":5,"name":"JPG vs PNG vs WebP vs AVIF","url":"https://nexusnovatools.com/articles/jpg-png-webp-avif-guide.html"},{"@type":"ListItem","position":6,"name":"How to Split a PDF and Keep Pages Organized","url":"https://nexusnovatools.com/articles/split-pdf-organize-pages.html"},{"@type":"ListItem","position":7,"name":"EMI Calculator Explained","url":"https://nexusnovatools.com/articles/emi-calculator-explained.html"},{"@type":"ListItem","position":8,"name":"Use a Pomodoro Timer Without Overcomplicating Focus","url":"https://nexusnovatools.com/articles/pomodoro-focus-workflow.html"},{"@type":"ListItem","position":9,"name":"7 Resume Mistakes to Fix","url":"https://nexusnovatools.com/articles/resume-mistakes-to-fix.html"},{"@type":"ListItem","position":10,"name":"Unix Timestamps Explained","url":"https://nexusnovatools.com/articles/unix-timestamps-explained.html"},{"@type":"ListItem","position":11,"name":"HEX vs RGB Color Codes","url":"https://nexusnovatools.com/articles/hex-vs-rgb-colors.html"},{"@type":"ListItem","position":12,"name":"Compress Images for the Web Without Ruining Quality","url":"https://nexusnovatools.com/articles/compress-images-for-web.html"},{"@type":"ListItem","position":13,"name":"QR Code Best Practices","url":"https://nexusnovatools.com/articles/qr-code-best-practices.html"}]},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},{"@type":"ListItem","position":2,"name":"Articles","item":"https://nexusnovatools.com/articles.html"}]}]}</script>
-<meta name="twitter:title" content="Practical Tool &amp; Search Articles 2026 — NexusNova Tools"><meta name="twitter:description" content="Practical NexusNova articles for browser tools, PDFs, images, calculators, gaming settings, privacy, productivity and repeatable digital workflows."><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><link rel="stylesheet" href="assets/css/compact-2026.css?v=20260910-1" data-nexusnova-compact>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practical Tool Guides & Articles — NexusNova Tools</title>
+  <meta name="description" content="Practical NexusNova articles for browser tools, PDFs, images, calculators, gaming settings, privacy, productivity and repeatable digital workflows.">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#f8fafc">
+  <link rel="canonical" href="https://nexusnovatools.com/articles.html">
+  <link rel="alternate" type="application/rss+xml" title="NexusNova Tools Updates" href="https://nexusnovatools.com/feed.xml">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NexusNova Tools">
+  <meta property="og:title" content="Practical Tool Guides & Articles — NexusNova Tools">
+  <meta property="og:description" content="Practical browser-tool and digital-workflow articles connected to useful NexusNova utilities.">
+  <meta property="og:url" content="https://nexusnovatools.com/articles.html">
+  <meta property="og:image" content="https://nexusnovatools.com/assets/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Practical Tool Guides & Articles — NexusNova Tools">
+  <meta name="twitter:description" content="Practical explanations and workflows connected to online utilities.">
+  <meta name="twitter:image" content="https://nexusnovatools.com/assets/logo.png">
+  <link rel="stylesheet" href="assets/css/site.css">
+
+  <style>
+    :root{
+      --nn-bg:#f8fafc;
+      --nn-surface:#ffffff;
+      --nn-line:#e2e8f0;
+      --nn-line-strong:#cbd5e1;
+      --nn-text:#0f172a;
+      --nn-muted:#64748b;
+      --nn-subtle:#94a3b8;
+      --nn-purple:#6d28d9;
+      --nn-purple-dark:#5b21b6;
+      --nn-purple-soft:#f5f3ff;
+      --nn-purple-line:#ddd6fe;
+      --nn-green:#15803d;
+      --nn-max:1180px;
+      --nn-sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      --nn-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      margin:0;
+      color:var(--nn-text);
+      background:
+        linear-gradient(rgba(226,232,240,.48) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(226,232,240,.48) 1px,transparent 1px),
+        var(--nn-bg);
+      background-size:32px 32px;
+      font-family:var(--nn-sans);
+      line-height:1.55;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    a{color:inherit;text-decoration:none}
+    .nn-shell{width:min(var(--nn-max),calc(100% - 36px));margin-inline:auto}
+
+    /* HEADER */
+    .nn-header{
+      position:sticky;
+      top:0;
+      z-index:200;
+      border-bottom:1px solid rgba(226,232,240,.94);
+      background:rgba(255,255,255,.91);
+      backdrop-filter:blur(18px);
+    }
+    .nn-header-row{
+      min-height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:28px;
+    }
+    .nn-brand{display:inline-flex;align-items:center;gap:12px;min-width:0}
+    .nn-brand-logo-img{
+      height:40px;
+      width:auto;
+      display:block;
+      max-width:none;
+      object-fit:contain;
+      margin-left:-8px;
+    }
+    .nn-brand-copy{display:grid;gap:2px;min-width:0}
+    .nn-brand-copy strong{
+      color:var(--nn-text);
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.045em;
+      line-height:1.05;
+      white-space:nowrap;
+    }
+    .nn-brand-copy small{
+      color:var(--nn-muted);
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:700;
+      letter-spacing:.075em;
+      line-height:1.2;
+      white-space:nowrap;
+    }
+    .nn-nav{display:flex;align-items:center;gap:3px}
+    .nn-nav a{
+      padding:9px 11px;
+      border:1px solid transparent;
+      border-radius:10px;
+      color:#475569;
+      font-size:12px;
+      font-weight:800;
+    }
+    .nn-nav a:hover,
+    .nn-nav a[aria-current="page"]{
+      border-color:var(--nn-line);
+      background:var(--nn-surface);
+      color:var(--nn-purple);
+    }
+    .nn-menu{
+      display:none;
+      width:42px;
+      height:42px;
+      border:1px solid var(--nn-line);
+      border-radius:11px;
+      background:#fff;
+      color:var(--nn-text);
+      font:inherit;
+      cursor:pointer;
+    }
+
+    /* HERO */
+    .nn-hero{
+      padding:74px 0 46px;
+      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(248,250,252,.92));
+      border-bottom:1px solid rgba(226,232,240,.92);
+    }
+    .nn-hero-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);
+      gap:46px;
+      align-items:end;
+    }
+    .nn-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color:var(--nn-purple);
+      font-family:var(--nn-mono);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+    }
+    .nn-hero h1{
+      margin:10px 0 16px;
+      max-width:760px;
+      font-size:clamp(40px,5.8vw,68px);
+      line-height:1.03;
+      letter-spacing:-.045em;
+    }
+    .nn-hero h1 span{color:var(--nn-purple)}
+    .nn-hero-copy{max-width:760px;margin:0;color:#475569;font-size:18px}
+
+    /* HERO SEARCH & FILTER */
+    .nn-search{position:relative;margin-top:26px;z-index:30}
+    .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
+    .nn-search-field{
+      position:relative;
+      display:flex;
+      align-items:center;
+      min-width:0;
+      border:1px solid var(--nn-line-strong);
+      border-radius:15px;
+      background:#fff;
+      box-shadow:0 12px 28px rgba(15,23,42,.055);
+    }
+    .nn-search-icon{
+      width:18px;
+      height:18px;
+      margin-left:15px;
+      flex:0 0 auto;
+      color:#64748b;
+      display:grid;
+      place-items:center;
+      font-size:17px;
+    }
+    .nn-search-input{
+      width:100%;
+      min-width:0;
+      height:58px;
+      padding:0 14px;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--nn-text);
+      font:inherit;
+      font-size:15px;
+      font-weight:650;
+    }
+    .nn-search-shortcut{
+      margin-right:11px;
+      padding:4px 7px;
+      border:1px solid var(--nn-line);
+      border-radius:7px;
+      background:#f8fafc;
+      color:#64748b;
+      font-family:var(--nn-mono);
+      font-size:10px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    .nn-search-submit{
+      min-width:122px;
+      height:58px;
+      padding:0 18px;
+      border:1px solid var(--nn-purple);
+      border-radius:15px;
+      background:var(--nn-purple);
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .nn-search-submit:hover{
+      background:var(--nn-purple-dark);
+      border-color:var(--nn-purple-dark);
+    }
+    .nn-search-meta{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:10px;
+      color:var(--nn-subtle);
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:.045em;
+      text-transform:uppercase;
+    }
+    .nn-search-count{color:var(--nn-muted)}
+
+    /* HERO SIDE */
+    .nn-hero-side{
+      padding:24px;
+      border:1px solid var(--nn-line);
+      border-radius:24px;
+      background:#fff;
+      box-shadow:0 18px 45px rgba(15,23,42,.06);
+    }
+    .nn-side-label{
+      color:var(--nn-green);
+      font-family:var(--nn-mono);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+    }
+    .nn-hero-side h2{margin:8px 0;font-size:24px;line-height:1.15}
+    .nn-hero-side p{margin:0;color:var(--nn-muted);font-size:14px}
+    .nn-stat-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      margin-top:20px;
+      border-top:1px solid var(--nn-line);
+    }
+    .nn-stat{padding:14px 0;border-bottom:1px solid var(--nn-line)}
+    .nn-stat:nth-child(odd){padding-right:14px;border-right:1px solid var(--nn-line)}
+    .nn-stat:nth-child(even){padding-left:14px}
+    .nn-stat-label{
+      display:block;
+      color:var(--nn-subtle);
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .nn-stat-value{
+      display:block;
+      margin-top:4px;
+      color:var(--nn-text);
+      font-size:13px;
+      font-weight:850;
+    }
+
+    /* MAIN SECTION */
+    .nn-main{padding:48px 0 68px}
+
+    /* EDITORIAL / ADSENSE QUALITY BLOCK */
+    .nn-editorial{margin-bottom:42px}
+    .nn-editorial-card{
+      padding:24px;
+      border:1px solid var(--nn-line);
+      border-radius:22px;
+      background:#fff;
+      box-shadow:0 12px 34px rgba(15,23,42,.045);
+    }
+    .nn-editorial-card+.nn-editorial-card{margin-top:14px}
+    .nn-editorial-grid{
+      display:grid;
+      grid-template-columns:minmax(210px,.7fr) minmax(0,1.3fr);
+      gap:28px;
+      align-items:start;
+    }
+    .nn-editorial-card h2{margin:7px 0 0;font-size:24px;line-height:1.15}
+    .nn-editorial-card p{margin:0;color:var(--nn-muted);font-size:14px}
+    .nn-editorial-links{margin-top:12px;display:flex;gap:16px;font-size:12px;font-weight:800}
+    .nn-editorial-links a{color:var(--nn-purple)}
+
+    /* ARTICLES GRID */
+    .nn-section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:22px;
+      margin-bottom:24px;
+    }
+    .nn-section-head h2{margin:7px 0 0;font-size:32px;letter-spacing:-.025em}
+    .nn-section-head p{max-width:600px;margin:0;color:var(--nn-muted)}
+
+    .nn-article-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+    .nn-article-card{
+      display:flex;
+      flex-direction:column;
+      min-height:220px;
+      padding:24px;
+      border:1px solid var(--nn-line);
+      border-radius:22px;
+      background:#fff;
+      color:var(--nn-text);
+      box-shadow:0 10px 28px rgba(15,23,42,.04);
+      transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;
+    }
+    .nn-article-card:hover,
+    .nn-article-card:focus-visible{
+      transform:translateY(-3px);
+      border-color:var(--nn-purple-line);
+      background:#fdfcff;
+      box-shadow:0 18px 42px rgba(109,40,217,.09);
+      outline:none;
+    }
+    .nn-article-card[hidden]{display:none}
+    .nn-article-tag{
+      align-self:flex-start;
+      display:inline-flex;
+      align-items:center;
+      padding:4px 9px;
+      border:1px solid var(--nn-purple-line);
+      border-radius:8px;
+      background:var(--nn-purple-soft);
+      color:var(--nn-purple);
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .nn-article-card h3{
+      margin:14px 0 8px;
+      font-size:19px;
+      font-weight:850;
+      line-height:1.25;
+    }
+    .nn-article-card p{
+      margin:0;
+      color:var(--nn-muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+    .nn-article-link{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-top:auto;
+      padding-top:18px;
+      color:var(--nn-purple);
+      font-size:12px;
+      font-weight:900;
+    }
+    .nn-article-link span{transition:transform .16s ease}
+    .nn-article-card:hover .nn-article-link span{transform:translateX(4px)}
+
+    .nn-no-results{
+      display:none;
+      margin-top:22px;
+      padding:28px;
+      border:1px dashed var(--nn-line-strong);
+      border-radius:18px;
+      background:#fff;
+      color:var(--nn-muted);
+      text-align:center;
+    }
+    .nn-no-results.is-visible{display:block}
+
+    /* BOTTOM ACTIONS BAND */
+    .nn-info-band{
+      margin-top:42px;
+      padding:24px 28px;
+      border:1px solid var(--nn-line);
+      border-radius:20px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      flex-wrap:wrap;
+      box-shadow:0 8px 24px rgba(15,23,42,.035);
+    }
+    .nn-info-band p{margin:0;color:var(--nn-muted);font-size:14px}
+    .nn-info-band-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .nn-btn-action{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:9px 14px;
+      border:1px solid var(--nn-line);
+      border-radius:10px;
+      background:#fff;
+      color:var(--nn-text);
+      font-size:12px;
+      font-weight:850;
+      transition:.15s ease;
+    }
+    .nn-btn-action:hover{
+      border-color:var(--nn-purple-line);
+      background:var(--nn-purple-soft);
+      color:var(--nn-purple);
+    }
+    .nn-btn-action.primary{
+      background:var(--nn-purple);
+      border-color:var(--nn-purple);
+      color:#fff;
+    }
+    .nn-btn-action.primary:hover{
+      background:var(--nn-purple-dark);
+      border-color:var(--nn-purple-dark);
+    }
+
+    /* FOOTER */
+    .nn-footer{
+      margin-top:0;
+      border-top:1px solid var(--nn-line);
+      background:#fff;
+    }
+    .nn-footer-main{
+      padding:34px 0 26px;
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);
+      gap:36px;
+    }
+    .nn-footer .nn-brand-logo-img{
+      height:26px;
+      width:auto;
+      display:block;
+      max-width:none;
+      object-fit:contain;
+      margin-left:0;
+    }
+    .nn-footer-copy{
+      max-width:560px;
+      margin:15px 0 0;
+      color:var(--nn-muted);
+      font-size:13px;
+    }
+    .nn-footer-links{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:9px 18px;
+      align-content:start;
+    }
+    .nn-footer-links a{color:#64748b;font-size:11px;font-weight:800}
+    .nn-footer-links a:hover{color:var(--nn-purple)}
+    .nn-footer-bottom{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:16px 0 20px;
+      border-top:1px solid var(--nn-line);
+      color:#94a3b8;
+      font-family:var(--nn-mono);
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:960px){
+      .nn-hero-grid{grid-template-columns:1fr}
+      .nn-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .nn-editorial-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:720px){
+      .nn-shell{width:min(var(--nn-max),calc(100% - 22px))}
+      .nn-header-row{min-height:64px}
+      .nn-nav{
+        display:none;
+        position:absolute;
+        left:11px;
+        right:11px;
+        top:64px;
+        padding:8px;
+        flex-direction:column;
+        align-items:stretch;
+        border:1px solid var(--nn-line);
+        border-radius:14px;
+        background:#fff;
+        box-shadow:0 18px 46px rgba(15,23,42,.12);
+      }
+      .nn-nav.is-open{display:flex}
+      .nn-nav a{padding:11px 12px}
+      .nn-menu{display:block}
+      .nn-brand-copy small{display:none}
+      .nn-hero{padding:56px 0 34px}
+      .nn-search-form{grid-template-columns:1fr}
+      .nn-search-submit{width:100%}
+      .nn-search-shortcut{display:none}
+      .nn-article-grid{grid-template-columns:1fr}
+      .nn-section-head{align-items:start;flex-direction:column}
+      .nn-section-head h2{font-size:28px}
+      .nn-footer-main{grid-template-columns:1fr;gap:22px}
+      .nn-footer-links{grid-template-columns:1fr 1fr}
+      .nn-footer-bottom{align-items:flex-start;flex-direction:column;gap:8px}
+    }
+    @media(max-width:420px){
+      .nn-footer-links{grid-template-columns:1fr}
+      .nn-brand-logo-img{height:34px}
+    }
+  </style>
 </head>
 <body>
-<header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html" aria-current="page">Articles</a><a href="guides.html">Guides</a></nav></div></header>
-<main>
-<section class="page-hero"><div class="container"><span class="kicker">TOOLS + KNOWLEDGE</span><h1>Practical context for everyday digital tasks.</h1><p>Focused explanations about calculators, gaming settings, privacy, PDFs, images and productivity. Articles are selected when they help someone complete or verify a real task—not merely because a topic is trending.</p><p class="mini-note">Published under the <a href="editorial-team.html">NexusNova Editorial Team</a> process and <a href="editorial-policy.html">Editorial Policy</a>. For step-by-step learning connected to working utilities, visit <a href="guides.html">Practical Guides</a>.</p></div></section>
-<section class="section"><div class="container"><div class="section-head"><div><span class="kicker">PRACTICAL WORKFLOWS</span><h2>Original guidance connected to tools you can use.</h2></div><p>Each article focuses on a repeatable task, explains important tradeoffs and points to a working NexusNova utility where relevant.</p></div><div class="article-grid"><!-- NEXUSNOVA_AUTOPILOT_ARTICLES_START -->
+  <!-- HEADER -->
+  <header class="nn-header">
+    <div class="nn-shell nn-header-row">
+      <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
+        <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
+        <span class="nn-brand-copy">
+          <strong>NEXUSNOVA TOOLS</strong>
+          <small>ENTERPRISE GRID • CLIENT SEARCH</small>
+        </span>
+      </a>
 
-<!-- NEXUSNOVA_AUTOPILOT_ARTICLES_END -->
-<a class="article-card" href="articles/cs2-valorant-sensitivity-edpi-guide.html"><span class="tag">GAMING SETTINGS</span><h3>CS2 vs Valorant Sensitivity & eDPI</h3><p>Understand conversion ratios, effective DPI and why matched numbers can still feel different.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/ai-photo-restoration-vs-enhancement.html"><span class="tag">PHOTO RESTORATION</span><h3>AI Photo Restoration vs Enhancement</h3><p>Understand what sharpening can reveal and when generative AI may invent plausible detail.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/background-removal-online-guide.html"><span class="tag">IMAGE EDITING</span><h3>Online Background Removers in 2026</h3><p>Check edge quality, transparency, privacy and output size before trusting a one-click result.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/remove-exif-gps-metadata-photos.html"><span class="tag">PHOTO PRIVACY</span><h3>Remove EXIF and GPS Metadata Before Sharing</h3><p>Strip unnecessary camera and location metadata while keeping a clean sharing copy.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/jpg-png-webp-avif-guide.html"><span class="tag">IMAGE FORMATS</span><h3>JPG vs PNG vs WebP vs AVIF</h3><p>Choose a sensible format for photos, screenshots, logos and web graphics.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/split-pdf-organize-pages.html"><span class="tag">PDF WORKFLOW</span><h3>How to Split a PDF and Keep Pages Organized</h3><p>Extract the right pages, name outputs clearly and verify the final file.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/emi-calculator-explained.html"><span class="tag">CALCULATORS</span><h3>EMI Calculator Explained</h3><p>Understand principal, interest and loan tenure before comparing scenarios.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/pomodoro-focus-workflow.html"><span class="tag">PRODUCTIVITY</span><h3>Use a Pomodoro Timer Without Overcomplicating Focus</h3><p>Use focused work blocks and breaks without turning the method into extra work.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/resume-mistakes-to-fix.html"><span class="tag">CAREER TOOLS</span><h3>7 Resume Mistakes to Fix</h3><p>Fix vague wording, crowded layouts and weak final checks before you apply.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/unix-timestamps-explained.html"><span class="tag">DEVELOPER BASICS</span><h3>Unix Timestamps Explained</h3><p>Understand seconds, milliseconds, UTC and common timestamp mistakes.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/hex-vs-rgb-colors.html"><span class="tag">DESIGN BASICS</span><h3>HEX vs RGB Color Codes</h3><p>See how two common color formats represent the same screen colors.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/compress-images-for-web.html"><span class="tag">IMAGE OPTIMIZATION</span><h3>Compress Images for the Web Without Ruining Quality</h3><p>Resize, choose a format and compress with a visual quality check.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/merge-pdf-privately.html"><span class="tag">PDF WORKFLOW</span><h3>Merge PDF Files With Privacy in Mind</h3><p>Prepare source files, order pages and verify the final document.</p><span class="card-link">Read article →</span></a>
-<a class="article-card" href="articles/qr-code-best-practices.html"><span class="tag">QR CODES</span><h3>QR Code Best Practices</h3><p>Create QR codes that remain easy to scan in real use.</p><span class="card-link">Read article →</span></a>
-</div>
-<div class="cta" style="margin-top:26px"><div><span class="kicker">MORE TO EXPLORE</span><h2>Move from reading to doing.</h2><p>Jump to a working utility, focused category or step-by-step guide when you are ready to apply what you learned.</p></div><div class="hero-actions"><a class="btn btn-primary" href="tools.html">Open tools →</a><a class="btn" href="categories.html">Browse categories →</a><a class="btn" href="guides.html">Practical guides →</a></div></div>
-</div></section>
-</main>
-<footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools and practical explanations for modern digital work.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="tools.html">Tools</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></div></div><div><div class="footer-title">Trust</div><ul class="footer-links" style="list-style:none;margin:0;padding:0">
-        <li><a href="/terms.html">Terms</a> & <a href="/refund-policy.html">Refund Policy</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/editorial-policy.html">Editorial Policy</a></li>
-        <li><a href="/tool-methodology.html">Tool Methodology</a></li>
-        <li><a href="/privacy.html">Privacy</a></li>
-        <li><a href="/contact.html">Contact Us & Support</a></li>
-      </ul></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span>NEXUSNOVATOOLS.COM</span></div></footer>
-<script src="assets/js/main.js" defer></script>
+      <button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button>
+
+      <nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
+        <a href="/">Home</a>
+        <a href="tools.html">Tools</a>
+        <a href="categories.html">Categories</a>
+        <a href="articles.html" aria-current="page">Articles</a>
+        <a href="guides.html">Guides</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="nn-hero">
+      <div class="nn-shell nn-hero-grid">
+        <div>
+          <span class="nn-kicker">TOOLS + KNOWLEDGE</span>
+          <h1>Practical Context for <span>Everyday Digital Tasks</span></h1>
+          <p class="nn-hero-copy">Focused explanations about calculators, gaming settings, privacy, PDFs, images and productivity. Articles are written to help verify, understand and complete real workflows.</p>
+
+          <div class="nn-search">
+            <form class="nn-search-form" id="article-search-form" role="search" aria-label="Filter practical articles">
+              <label class="nn-search-field" for="article-search-input">
+                <span class="nn-search-icon" aria-hidden="true">⌕</span>
+                <input class="nn-search-input" id="article-search-input" type="search" placeholder="Search articles by topic, format or task…" autocomplete="off" spellcheck="false">
+                <span class="nn-search-shortcut">CTRL / ⌘ K</span>
+              </label>
+              <button class="nn-search-submit" type="submit">Filter</button>
+            </form>
+            <div class="nn-search-meta">
+              <span>Instant client-side filter • no reload</span>
+              <span class="nn-search-count" id="article-search-count">14 articles available</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="nn-hero-side">
+          <span class="nn-side-label">EDITORIAL INTEGRITY</span>
+          <h2>Clear methodology behind every workflow.</h2>
+          <p>Published under the NexusNova Editorial Team standards to deliver verified calculations and reliable explanations.</p>
+
+          <div class="nn-stat-grid">
+            <div class="nn-stat">
+              <span class="nn-stat-label">ARTICLES</span>
+              <span class="nn-stat-value">14 Original Guides</span>
+            </div>
+            <div class="nn-stat">
+              <span class="nn-stat-label">DOMAINS</span>
+              <span class="nn-stat-value">Gaming, Math, Media</span>
+            </div>
+            <div class="nn-stat">
+              <span class="nn-stat-label">OBJECTIVE</span>
+              <span class="nn-stat-value">Task verification</span>
+            </div>
+            <div class="nn-stat">
+              <span class="nn-stat-label">STANDARDS</span>
+              <span class="nn-stat-value">Editorial Policy</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- MAIN BODY -->
+    <section class="nn-main">
+      <div class="nn-shell">
+
+        <!-- EDITORIAL / ADSENSE QUALITY BLOCK -->
+        <section class="nn-editorial" aria-labelledby="articles-editorial-title">
+          <article class="nn-editorial-card">
+            <div class="nn-editorial-grid">
+              <div>
+                <span class="nn-kicker">EDITORIAL PROCESS</span>
+                <h2 id="articles-editorial-title">Original guidance connected to tools you can use.</h2>
+              </div>
+              <div>
+                <p>Every article published on NexusNova Tools is curated to bridge the gap between abstract technical concepts and practical daily browser utilities. Rather than posting generic trending summaries, our articles deconstruct exact mathematical formulas, file format trade-offs, DPI conversion physics, and data privacy safeguards. Each guide is directly paired with a zero-friction tool so readers can immediately verify and apply what they learn.</p>
+                <div class="nn-editorial-links">
+                  <a href="editorial-team.html">Meet Editorial Team →</a>
+                  <a href="editorial-policy.html">Read Editorial Policy →</a>
+                  <a href="tool-methodology.html">Tool Methodology →</a>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- ARTICLES GRID -->
+        <div class="nn-section-head">
+          <div>
+            <span class="nn-kicker">FEATURED WORKFLOWS</span>
+            <h2>All Practical Articles</h2>
+          </div>
+          <p>Read in-depth explanations and best practices, then open the corresponding tools to execute your task.</p>
+        </div>
+
+        <div class="nn-article-grid" id="articles-cards-grid">
+
+          <!-- 1 -->
+          <a class="nn-article-card" href="articles/cs2-valorant-sensitivity-edpi-guide.html" data-article-card data-search-text="gaming settings cs2 valorant sensitivity edpi guide fps mouse">
+            <span class="nn-article-tag">Gaming Settings</span>
+            <h3>CS2 vs Valorant Sensitivity &amp; eDPI</h3>
+            <p>Understand conversion ratios, effective DPI and why matched numbers can still feel different across game engines.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 2 -->
+          <a class="nn-article-card" href="articles/ai-photo-restoration-vs-enhancement.html" data-article-card data-search-text="photo restoration ai enhancement sharpening image quality">
+            <span class="nn-article-tag">Photo Restoration</span>
+            <h3>AI Photo Restoration vs Enhancement</h3>
+            <p>Understand what sharpening can reveal and when generative AI algorithms may invent plausible but unverified detail.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 3 -->
+          <a class="nn-article-card" href="articles/background-removal-online-guide.html" data-article-card data-search-text="image editing background removal online transparent png cutout">
+            <span class="nn-article-tag">Image Editing</span>
+            <h3>Online Background Removers in 2026</h3>
+            <p>Check edge quality, transparency, client-side privacy and output resolution before trusting a one-click automated result.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 4 -->
+          <a class="nn-article-card" href="articles/remove-exif-gps-metadata-photos.html" data-article-card data-search-text="photo privacy remove exif gps metadata camera location">
+            <span class="nn-article-tag">Photo Privacy</span>
+            <h3>Remove EXIF and GPS Metadata Before Sharing</h3>
+            <p>Strip unnecessary camera details, location coordinates and device timestamps while maintaining an uncompressed sharing copy.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 5 -->
+          <a class="nn-article-card" href="articles/jpg-png-webp-avif-guide.html" data-article-card data-search-text="image formats jpg png webp avif compression graphic web">
+            <span class="nn-article-tag">Image Formats</span>
+            <h3>JPG vs PNG vs WebP vs AVIF</h3>
+            <p>Choose a sensible file format for photos, screenshots, UI icons and web graphics to balance speed and fidelity.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 6 -->
+          <a class="nn-article-card" href="articles/split-pdf-organize-pages.html" data-article-card data-search-text="pdf workflow split organize extract pages document">
+            <span class="nn-article-tag">PDF Workflow</span>
+            <h3>How to Split a PDF and Keep Pages Organized</h3>
+            <p>Extract specific page intervals, name output files clearly and verify layout structure without cloud data uploads.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 7 -->
+          <a class="nn-article-card" href="articles/emi-calculator-explained.html" data-article-card data-search-text="calculators emi loan finance interest principal payment">
+            <span class="nn-article-tag">Calculators</span>
+            <h3>EMI Calculator Explained</h3>
+            <p>Deconstruct principal amortization, reducing balance interest rates and loan tenure before finalizing financing scenarios.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 8 -->
+          <a class="nn-article-card" href="articles/pomodoro-focus-workflow.html" data-article-card data-search-text="productivity pomodoro focus workflow timer study work blocks">
+            <span class="nn-article-tag">Productivity</span>
+            <h3>Use a Pomodoro Timer Without Overcomplicating Focus</h3>
+            <p>Implement structured 25-minute work blocks and restorative intervals without turning tracking into an administrative burden.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 9 -->
+          <a class="nn-article-card" href="articles/resume-mistakes-to-fix.html" data-article-card data-search-text="career tools resume mistakes cv job application layout">
+            <span class="nn-article-tag">Career Tools</span>
+            <h3>7 Resume Mistakes to Fix</h3>
+            <p>Eliminate ambiguous terminology, crowded typography and formatting defects before submitting applications to hiring managers.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 10 -->
+          <a class="nn-article-card" href="articles/unix-timestamps-explained.html" data-article-card data-search-text="developer basics unix timestamps epoch seconds milliseconds utc">
+            <span class="nn-article-tag">Developer Basics</span>
+            <h3>Unix Timestamps Explained</h3>
+            <p>Understand seconds, epoch milliseconds, UTC normalization and common leap second edge cases in system programming.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 11 -->
+          <a class="nn-article-card" href="articles/hex-vs-rgb-colors.html" data-article-card data-search-text="design basics hex vs rgb color codes css web design">
+            <span class="nn-article-tag">Design Basics</span>
+            <h3>HEX vs RGB Color Codes</h3>
+            <p>Explore hexadecimal base-16 channels versus 8-bit RGB color notation and their practical usage across CSS workflows.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 12 -->
+          <a class="nn-article-card" href="articles/compress-images-for-web.html" data-article-card data-search-text="image optimization compress images web quality bytes loading">
+            <span class="nn-article-tag">Optimization</span>
+            <h3>Compress Images for Web Without Ruining Quality</h3>
+            <p>Resize pixel dimensions, select appropriate lossy thresholds, and benchmark compression savings before asset delivery.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 13 -->
+          <a class="nn-article-card" href="articles/merge-pdf-privately.html" data-article-card data-search-text="pdf workflow merge privately combine documents browser local">
+            <span class="nn-article-tag">PDF Workflow</span>
+            <h3>Merge PDF Files With Privacy in Mind</h3>
+            <p>Prepare source documents, arrange page sequences, and compile consolidated PDFs locally in your browser session.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+          <!-- 14 -->
+          <a class="nn-article-card" href="articles/qr-code-best-practices.html" data-article-card data-search-text="qr codes best practices generator scan contrast resolution">
+            <span class="nn-article-tag">QR Codes</span>
+            <h3>QR Code Best Practices</h3>
+            <p>Design scannable matrix barcodes with adequate quiet zones, high error correction levels, and strong foreground contrast.</p>
+            <div class="nn-article-link">
+              <span>Read article →</span>
+            </div>
+          </a>
+
+        </div>
+
+        <div class="nn-no-results" id="article-no-results">
+          <p>No matching article found. Try searching for "pdf", "gaming", "images", "privacy", or "calculators".</p>
+        </div>
+
+        <!-- MORE TO EXPLORE / INTERNAL LINKING BAND -->
+        <div class="nn-info-band">
+          <div>
+            <span class="nn-kicker">MOVE FROM READING TO DOING</span>
+            <p>Ready to put these concepts into practice? Open our interactive tools or explore step-by-step guides.</p>
+          </div>
+          <div class="nn-info-band-actions">
+            <a class="nn-btn-action primary" href="tools.html">Open Tools Directory →</a>
+            <a class="nn-btn-action" href="categories.html">Browse Categories →</a>
+            <a class="nn-btn-action" href="guides.html">Practical Guides →</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="nn-footer">
+    <div class="nn-shell nn-footer-main">
+      <div>
+        <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
+          <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
+          <span class="nn-brand-copy">
+            <strong>NEXUSNOVA TOOLS</strong>
+            <small>FOCUSED DIGITAL UTILITIES</small>
+          </span>
+        </a>
+        <p class="nn-footer-copy">
+          A clean directory of focused browser utilities and verified workflow guides. Search by task, browse by domain, and access practical web tools without clutter.
+        </p>
+      </div>
+
+      <nav class="nn-footer-links" aria-label="Footer navigation">
+        <a href="tools.html">Tools directory</a>
+        <a href="categories.html">Categories</a>
+        <a href="articles.html">Articles</a>
+        <a href="guides.html">Guides</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+
+    <div class="nn-shell nn-footer-bottom">
+      <span>© <span data-year></span> NexusNova Tools</span>
+      <span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span>
+    </div>
+  </footer>
+
+  <!-- CLIENT-SIDE FILTER & MOBILE NAV SCRIPT -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 1. Year update
+      const yearEl = document.querySelector('[data-year]');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      // 2. Mobile Nav Toggle
+      const menuBtn = document.querySelector('[data-nn-menu]');
+      const navEl = document.querySelector('[data-nn-nav]');
+      if (menuBtn && navEl) {
+        menuBtn.addEventListener('click', function () {
+          const isOpen = navEl.classList.toggle('is-open');
+          menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+      }
+
+      // 3. Instant Article Filter
+      const searchInput = document.getElementById('article-search-input');
+      const searchForm = document.getElementById('article-search-form');
+      const cards = Array.from(document.querySelectorAll('[data-article-card]'));
+      const countEl = document.getElementById('article-search-count');
+      const noResultsEl = document.getElementById('article-no-results');
+
+      function filterArticles() {
+        const query = (searchInput.value || '').trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach(function (card) {
+          const text = (card.getAttribute('data-search-text') || '').toLowerCase();
+          const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+          const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
+          const tag = (card.querySelector('.nn-article-tag')?.textContent || '').toLowerCase();
+          const match = !query || text.includes(query) || title.includes(query) || desc.includes(query) || tag.includes(query);
+
+          if (match) {
+            card.removeAttribute('hidden');
+            visibleCount++;
+          } else {
+            card.setAttribute('hidden', '');
+          }
+        });
+
+        if (countEl) {
+          countEl.textContent = visibleCount + ' articles available';
+        }
+        if (noResultsEl) {
+          if (visibleCount === 0) {
+            noResultsEl.classList.add('is-visible');
+          } else {
+            noResultsEl.classList.remove('is-visible');
+          }
+        }
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener('input', filterArticles);
+      }
+      if (searchForm) {
+        searchForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          filterArticles();
+        });
+      }
+
+      // 4. Ctrl / Cmd + K Shortcut
+      document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>
