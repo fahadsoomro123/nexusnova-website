@@ -439,16 +439,17 @@ async function issueHumanProofCredential(request, env) {
 }
 
 async function verifyHumanProofCredential(request, env) {
+  const cors = corsHeaders(request);
   const url = new URL(request.url);
   const token = url.searchParams.get('token') || url.searchParams.get('credential') || '';
   const credentialSecret = getCredentialSecret(env);
   if (!credentialSecret || !token) {
-    return json({ ok: false, verified: false, error: 'credential_not_verifiable' }, 400);
+    return json({ ok: false, verified: false, error: 'credential_not_verifiable' }, 400, cors);
   }
 
   const parts = token.split('.');
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    return json({ ok: false, verified: false, error: 'invalid_credential' }, 400);
+    return json({ ok: false, verified: false, error: 'invalid_credential' }, 400, cors);
   }
 
   let unsigned;
@@ -463,10 +464,10 @@ async function verifyHumanProofCredential(request, env) {
   const expected = await hmacHex(credentialSecret, unsigned);
   const provided = parts[1].trim().toLowerCase();
   if (!timingSafeEqualText(expected.toLowerCase(), provided)) {
-    return json({ ok: true, verified: false, error: 'invalid_signature' }, 200);
+    return json({ ok: true, verified: false, error: 'invalid_signature' }, 200, cors);
   }
 
-  return json({ ok: true, verified: true, credential });
+  return json({ ok: true, verified: true, credential }, 200, cors);
 }
 
 async function webhook(request, env) {
