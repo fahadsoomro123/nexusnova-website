@@ -30,7 +30,7 @@ body::before{opacity:.18!important;background-image:linear-gradient(rgba(61,74,1
 .site-header{background:rgba(250,252,255,.92)!important;border-bottom-color:rgba(38,51,93,.10)!important;box-shadow:0 7px 26px rgba(45,55,110,.05)!important}
 .site-header.scrolled{background:rgba(250,252,255,.98)!important;border-color:var(--line)!important}
 .nav-wrap{min-height:62px!important}
-.brand{color:#17213a!important}.brand-mark{width:35px!important;height:35px!important;border-radius:11px!important;background:linear-gradient(145deg,#6558ff,#0c789e 58%,#744bd8)!important;color:white!important;box-shadow:0 8px 22px rgba(84,79,190,.20)!important}.brand small{color:#5f6980!important}
+.brand{color:#17213a!important}.brand-mark{width:182px!important;height:42px!important;border-radius:0!important;background:transparent url("../logo.png") center/contain no-repeat!important;color:transparent!important;box-shadow:none!important}.brand .brand-copy{display:none!important}.brand{gap:0!important}.brand small{color:#5f6980!important}
 .nav a{color:#4d5a75!important;padding:8px 11px!important;font-size:13px!important}.nav a:hover,.nav a[aria-current="page"]{background:rgba(101,88,255,.08)!important;color:#17213a!important}.menu-btn{background:white!important;color:#17213a!important;border-color:var(--line)!important}
 .btn{min-height:42px!important;padding:0 15px!important;border-radius:12px!important;background:white!important;color:#24304d!important;border-color:var(--line)!important;box-shadow:0 5px 16px rgba(45,55,110,.06)!important}.hero-actions .btn:hover,.hero-actions a.btn:hover,.hero-actions button.btn:hover,.cta .btn:hover,.cta a.btn:hover,.cta button.btn:hover{background:#fbfcff!important}.hero-actions .btn-primary:hover,.hero-actions a.btn-primary:hover,.hero-actions button.btn-primary:hover,.cta .btn-primary:hover,.cta a.btn-primary:hover,.cta button.btn-primary:hover{background:#1d4ed8!important;background-color:#1d4ed8!important;color:#ffffff!important}.btn-primary{color:white!important;border-color:transparent!important;background:linear-gradient(135deg,#6558ff,#0c789e 52%,#744bd8)!important;box-shadow:0 10px 24px rgba(82,76,190,.20)!important}
 .gradient-text{background:linear-gradient(95deg,#4239bb 0%,#6558ff 38%,#0c789e 67%,#744bd8 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
@@ -170,3 +170,7 @@ div.nn-consent-reopen {
   background-color: #1d4ed8 !important;
   color: #ffffff !important;
 }
+
+
+/* Keep the selected full NexusNova logo on every compact shared header. */
+@media(max-width:680px){.site-header .brand-mark{width:154px!important;height:36px!important}}
