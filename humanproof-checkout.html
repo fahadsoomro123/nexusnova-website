@@ -117,11 +117,14 @@
     help.className='hp-commerce-muted';
     help.textContent='Connecting securely to Safepay Live…';
 
+    const controller=new AbortController();
+    const timeoutId=setTimeout(()=>controller.abort(),20000);
     try{
       const response=await fetch(WORKER+'/api/safepay/create-checkout',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({plan:key})
+        body:JSON.stringify({plan:key}),
+        signal:controller.signal
       });
       const data=await response.json().catch(()=>({}));
       if(!response.ok||!data.checkout_url){
@@ -143,7 +146,11 @@
       btn.disabled=false;
       btn.textContent='Try Safepay again';
       help.className='hp-commerce-muted hp-pay-error';
-      help.textContent='Safepay checkout could not start. Please try again. If it continues, contact NexusNova support.';
+      help.textContent=error?.name==='AbortError'
+        ? 'Safepay checkout timed out. Please try again.'
+        : 'Safepay checkout could not start. Please try again. If it continues, contact NexusNova support.';
+    }finally{
+      clearTimeout(timeoutId);
     }
   });
 })();
