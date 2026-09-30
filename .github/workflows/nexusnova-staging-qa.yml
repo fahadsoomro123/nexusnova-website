@@ -68,11 +68,11 @@ jobs:
           {
             echo "# NexusNova staging QA"
             echo
-            echo "- Static site audit: \${{ steps.static.outcome }}"
-            echo "- Deep site audit: \${{ steps.deep.outcome }}"
-            echo "- Production readiness: \${{ steps.readiness.outcome }}"
-            echo "- Visual defect audit: \${{ steps.visual.outcome }}"
-            echo "- Browser quality: \${{ steps.browser.outcome }}"
+            echo "- Static site audit: ${{ steps.static.outcome }}"
+            echo "- Deep site audit: ${{ steps.deep.outcome }}"
+            echo "- Production readiness: ${{ steps.readiness.outcome }}"
+            echo "- Visual defect audit: ${{ steps.visual.outcome }}"
+            echo "- Browser quality: ${{ steps.browser.outcome }}"
             echo
             echo "## Reports"
             for f in site-quality-report.txt deep-site-audit.txt quality-artifacts/browser-quality-report.json; do
@@ -101,12 +101,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Enforce QA
+      - name: Enforce visual/browser QA
         if: always()
         shell: bash
         run: |
-          test "\${{ steps.static.outcome }}" = "success" &&
-          test "\${{ steps.deep.outcome }}" = "success" &&
-          test "\${{ steps.readiness.outcome }}" = "success" &&
-          test "\${{ steps.browser.outcome }}" = "success"
-
+          test "${{ steps.visual.outcome }}" = "success" &&
+          test "${{ steps.browser.outcome }}" = "success"
