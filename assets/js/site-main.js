@@ -66,9 +66,10 @@
     reopen.textContent='Privacy choices';
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
-    const footerLinks=document.querySelector('.site-footer .footer-links');
-    if(footerLinks)footerLinks.appendChild(reopen);
-    else document.body.appendChild(reopen);
+    const footer=document.querySelector('.site-footer');
+    const footerGroups=footer?.querySelectorAll('.nn-footer-links,.footer-links')||[];
+    const footerLinks=footerGroups.length?footerGroups[footerGroups.length-1]:null;
+    if(footerLinks)footerLinks.appendChild(reopen);else if(footer)footer.appendChild(reopen);else document.body.appendChild(reopen);
     reopen.addEventListener('click',()=>{
       banner.hidden=false;
       banner.querySelector('[data-consent-allow]')?.focus();
@@ -91,11 +92,11 @@
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
-  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');
+  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');const hasUnifiedToolShell=!!document.querySelector('.nn-header,[data-nexusnova-tool-shell],link[data-nexusnova-tool-shell]');
   document.documentElement.classList.add('nexusnova-scifi');
   /* Homepage already ships these rules in home-bundle.css; other surfaces
      keep their existing per-page CSS loading. */
-  if(!isHome&&!hasShellBundle){
+  if(!isHome&&!hasShellBundle&&!hasUnifiedToolShell){
     const styles=[
       ['scifi',`${base}assets/css/scifi.css`],
       ['motion',`${base}assets/css/motion.css`],
