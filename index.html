@@ -96,14 +96,15 @@
       background:transparent;color:var(--nn-text);font-size:14px
     }
     .nn-search-input::placeholder{color:#94a3b8}
-    .nn-search-shortcut{margin-right:10px;padding:3px 6px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:#64748b}
+    .nn-search-inline-submit{width:40px;height:40px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}.nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}.nn-search-inline-submit svg{width:17px;height:17px;display:block}
     .nn-search-submit{
-      min-width:94px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);
-      background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850
+      min-width:112px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);
+      background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:7px
     }
     .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
+    .nn-search-submit svg{width:15px;height:15px;display:block;flex:0 0 auto}
     .nn-search-suggestions{
-      position:absolute;top:53px;left:0;right:102px;display:grid;gap:2px;
+      position:absolute;top:53px;left:0;right:120px;display:grid;gap:2px;
       padding:5px;border:1px solid var(--nn-line);background:#fff;max-height:320px;overflow:auto
     }
     .nn-search-suggestions[hidden]{display:none}
@@ -118,7 +119,6 @@
     .nn-search-result-meta{display:flex;gap:7px;margin-top:1px;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:800;text-transform:uppercase}
     .nn-search-result-key{padding:2px 5px;border:1px solid var(--nn-line);font-size:8px}
     .nn-search-empty{padding:13px;color:#64748b;font-size:11px}
-    .nn-search-note{display:flex;flex-wrap:wrap;gap:10px;margin-top:7px;color:var(--nn-subtle);font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 
     .nn-humanproof-card{
       margin-top:18px;border:1px solid var(--nn-line);background:#fff;
@@ -334,7 +334,6 @@
       .nn-search-form{grid-template-columns:1fr}
       .nn-search-submit{width:100%}
       .nn-search-suggestions{right:0;top:104px}
-      .nn-search-shortcut{display:inline-flex}
       .nn-footer-links{grid-template-columns:1fr}
     }
   </style>
@@ -346,7 +345,6 @@
         <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
         <span class="nn-brand-copy">
           <strong>NEXUSNOVA TOOLS</strong>
-          <small>MASTER DIRECTORY • CLIENT SEARCH</small>
         </span>
       </a>
       <nav class="nn-nav" id="nn-primary-nav" aria-label="Primary navigation">
@@ -368,23 +366,19 @@
           <div>
             <span class="nn-step-label">STEP 1 • SEARCH</span>
             <h1 id="search-title">Find a NexusNova tool</h1>
-            <p class="nn-step-copy">Search the full 94-tool directory by title, task, alias or common typo. The client-side search opens the matching route directly.</p>
           </div>
         </div>
         <div class="nn-search-wrap">
           <div class="nn-search" data-nexusnova-search-root>
             <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search all NexusNova tools" novalidate>
-              <label class="nn-search-field" for="nexusnova-search-input">
+              <div class="nn-search-field">
                 <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m20 20-4.3-4.3m2.1-5.1a7.2 7.2 0 1 1 14.4 0 7.2 7.2 0 0 1-14.4 0Z"/></svg>
-                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="Try salary tax, bijli bill, fbr atl, WhatsApp link or xray…" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
-                <span class="nn-search-shortcut" aria-hidden="true">Ctrl K</span>
-              </label>
-              <button class="nn-search-submit" type="submit">Find tool</button>
+                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
+                <button class="nn-search-inline-submit" type="submit" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m20 20-4.3-4.3m2.1-5.1a7.2 7.2 0 1 1 14.4 0 7.2 7.2 0 0 1-14.4 0Z"/></svg></button>
+              </div>
+              <button class="nn-search-submit" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m20 20-4.3-4.3m2.1-5.1a7.2 7.2 1 1 1 14.4 0 7.2 7.2 0 0 1-14.4 0Z"/></svg><span>Search tool</span></button>
               <div class="nn-search-suggestions" id="nn-search-suggestions" role="listbox" aria-label="NexusNova tool suggestions" hidden></div>
             </form>
-            <div class="nn-search-note">
-              <span>↑↓ navigate</span><span>enter open</span><span>esc close</span><span>fuzzy typo recovery</span>
-            </div>
           </div>
         </div>
       </div>
@@ -396,18 +390,14 @@
         <article class="nn-humanproof-card">
           <div class="nn-humanproof-row">
             <div class="nn-humanproof-copy">
-              <span class="nn-step-label">STEP 2 • HUMANPROOF</span>
               <h2 id="humanproof-title">HumanProof — live human verification</h2>
-              <p>Compact entry point for the live-human approval flow, with direct production SafePay checkout links and the existing 360° interactive head surface.</p>
               <div class="nn-humanproof-actions">
                 <a class="primary" href="humanproof.html">Open HumanProof</a>
                 <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=personal">Personal $1.00</a>
                 <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=starter">Starter $9.99</a>
                 <a href="https://nexusnovatools.com/humanproof-checkout.html?plan=growth">Growth $24.99</a>
               </div>
-              <div class="nn-humanproof-pricing">
-                <span>PRODUCTION CHECKOUT</span><span>USD</span><span>SAFEpay</span>
-              </div>
+
             </div>
             <div class="nn-humanproof-stage" aria-label="Interactive 360 degree HumanProof head">
               <div class="nn-proof-360-holder" data-hp-360-holder data-hp-360-autostart>
@@ -431,7 +421,7 @@
       <div class="nn-shell">
         <div class="nn-pakistan-highlight-head">
           <div>
-            <span class="nn-step-label">CORE PAKISTAN PUBLIC TOOLS</span>
+
             <h2 id="pakistan-highlight-title">Government jobs, FBR status and income tax</h2>
             <p>Three high-priority Pakistan utilities are surfaced here before the complete directory so visitors can reach them without searching or opening another hub.</p>
           </div>
@@ -464,20 +454,9 @@
     </section>
 
     <!-- STEP 3: COMPLETE TOOLS DIRECTORY -->
-    <section class="nn-directory" id="master-directory" aria-labelledby="master-directory-title">
+    <section class="nn-directory" id="master-directory" aria-label="NexusNova tool directory">
       <div class="nn-shell">
-        <div class="nn-step-head">
-          <div>
-            <span class="nn-step-label">STEP 3 • COMPLETE TOOL DIRECTORY</span>
-            <h2 id="master-directory-title">All 94 listed tools, directly clickable</h2>
-            <p class="nn-step-copy">The directory is fully expanded on this page. Every listed route remains visible and clickable; the search above is an additional shortcut, not a replacement for the directory.</p>
-          </div>
-        </div>
 
-        <div class="nn-directory-intro">
-          <span class="nn-step-label">VISIBLE CATALOG</span>
-          <p>Images, PDF &amp; documents, calculators, Pakistan tools, security, developer/data, productivity, gaming and live information are presented as flat groups with no collapsed cards or click-to-reveal states.</p>
-        </div>
 
         <div class="nn-group-list">
 
