@@ -1,6 +1,6 @@
 const HOME='https://iris.fbr.gov.pk/';
 const API='https://api.fbr.gov.pk/iris2ovs/v1/getdata';
-const ORIGINS=new Set(['https://rawcdn.githack.com','https://raw.githack.com','https://nexusnovatools.com','https://www.nexusnovatools.com']);
+const ORIGINS=new Set(['https://rawcdn.githack.com','https://raw.githack.com','http://127.0.0.1:8000','http://localhost:8000','https://nexusnovatools.com','https://www.nexusnovatools.com']);
 const WINDOW=60000, MAX=8, CACHE=300000;
 let tokenCache={token:'',expiresAt:0};
 const rate=new Map();

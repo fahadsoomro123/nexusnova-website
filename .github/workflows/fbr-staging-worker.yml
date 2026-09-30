@@ -45,17 +45,18 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install chromium
-          export FBR_PREVIEW_URL="https://rawcdn.githack.com/fahadsoomro123/nexusnova-website/${GITHUB_SHA}/fbr-atl-status-checker.html"
+          python -m http.server 8000 >/tmp/fbr-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
           python - <<'PY'
-          import os
           from playwright.sync_api import sync_playwright
-          url=os.environ['FBR_PREVIEW_URL']
           with sync_playwright() as p:
               b=p.chromium.launch(headless=True)
               page=b.new_page()
-              page.goto(url, wait_until='networkidle', timeout=30000)
-              page.fill('#atl-identifier','1234512345671')
-              page.click('button[type="submit"]')
+              page.goto('http://127.0.0.1:8000/fbr-atl-status-checker.html', wait_until='networkidle', timeout=30000)
+              page.locator('#atl-identifier').fill('1234512345671')
+              page.locator('button[type="submit"]').click()
               page.wait_for_function("document.querySelector('[data-atl-result]')?.innerText && !document.querySelector('[data-atl-result]').innerText.includes('Checking FBR')", timeout=30000)
               result=page.locator('[data-atl-result]').inner_text()
               print('FBR E2E RESULT:', result)
