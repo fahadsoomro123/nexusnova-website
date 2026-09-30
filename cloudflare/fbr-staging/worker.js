@@ -1,17 +1,36 @@
-const TARGET='https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/fbr/atl-status';
-const ALLOWED=new Set(['https://rawcdn.githack.com','https://raw.githack.com','https://nexusnovatools.com','https://www.nexusnovatools.com']);
-export default { async fetch(request) {
-  const url=new URL(request.url), origin=String(request.headers.get('Origin')||'');
-  if(url.pathname!=='/api/fbr/atl-status') return new Response('Not Found',{status:404});
-  if(!ALLOWED.has(origin)) return json(origin,{ok:false,error:'Request origin is not allowed.'},403);
-  if(request.method==='OPTIONS') return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'600','Vary':'Origin'}});
-  if(request.method!=='POST') return json(origin,{ok:false,error:'Method not allowed.'},405,{'Allow':'POST, OPTIONS'});
-  let body='';
-  try { body=await request.text(); if(body.length>4096) return json(origin,{ok:false,error:'The verification request is too large.'},413); JSON.parse(body||'{}'); } catch { return json(origin,{ok:false,error:'The verification request is invalid.'},400); }
-  try {
-    const upstream=await fetch(TARGET,{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://nexusnovatools.com',Accept:'application/json'},body});
-    const text=await upstream.text();
-    return new Response(text,{status:upstream.status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':origin,'Vary':'Origin'}});
-  } catch { return json(origin,{ok:false,error:'FBR verification service is temporarily unavailable.'},503); }
+const HOME='https://iris.fbr.gov.pk/';
+const API='https://api.fbr.gov.pk/iris2ovs/v1/getdata';
+const ORIGINS=new Set(['https://rawcdn.githack.com','https://raw.githack.com','https://nexusnovatools.com','https://www.nexusnovatools.com']);
+const WINDOW=60000, MAX=8, CACHE=300000;
+let tokenCache={token:'',expiresAt:0};
+const rate=new Map();
+function response(origin,data,status=200,extra={}){return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':origin,'Vary':'Origin',...extra}})}
+export default {async fetch(request){
+  const url=new URL(request.url),origin=String(request.headers.get('Origin')||'');
+  if(!ORIGINS.has(origin)) return response(origin,{ok:false,error:'Request origin is not allowed.'},403);
+  if(request.method==='OPTIONS') return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Access-Control-Max-Age':'600','Vary':'Origin'}});
+  if(url.pathname==='/health'&&request.method==='GET'){try{await getToken(false);return response(origin,{ok:true,tokenReady:true,source:'FBR IRIS 2.0'})}catch{return response(origin,{ok:false,tokenReady:false,error:'FBR token discovery failed.'},503)}}
+  if(url.pathname!=='/api/fbr/atl-status') return response(origin,{ok:false,error:'Not found.'},404);
+  if(request.method!=='POST') return response(origin,{ok:false,error:'Method not allowed.'},405,{'Allow':'POST, OPTIONS'});
+  const ip=String(request.headers.get('CF-Connecting-IP')||'anonymous'),now=Date.now(),recent=(rate.get(ip)||[]).filter(t=>now-t<WINDOW);
+  if(recent.length>=MAX) return response(origin,{ok:false,error:'Too many FBR checks. Please wait and try again.'},429,{'Retry-After':'60'});
+  recent.push(now);rate.set(ip,recent);
+  let body;try{const text=await request.text();if(text.length>4096)throw Error('large');body=JSON.parse(text||'{}')}catch{return response(origin,{ok:false,error:'The verification request is invalid.'},400)}
+  const type=String(body?.identifierType||'').trim(),id=normalize(type,body?.identifier);
+  if(!['CNIC','NTN','Passport No.','Reg/Inc. No.'].includes(type)||!valid(type,id)) return response(origin,{ok:false,error:'Enter a valid identification number for the selected type.'},400);
+  const payload=JSON.stringify({protocolId:'1004',outputType:'4',identifierType:type,identifier:id,date:fbrDate()});
+  let upstream;try{let token=await getToken(false);upstream=await call(token,payload);if(upstream.status===401){token=await getToken(true);upstream=await call(token,payload)}}catch(error){console.error('FBR upstream unavailable',String(error?.message||error||'unknown'));return response(origin,{ok:false,error:'FBR verification is temporarily unavailable. Please try again.'},503)}
+  const text=await upstream.text();if(!upstream.ok){console.error('FBR upstream status',upstream.status);return response(origin,{ok:false,error:upstream.status===404?'No FBR verification result was returned.':'FBR verification could not be completed right now.'},upstream.status===404?404:502)}
+  let data;try{data=JSON.parse(text)}catch{ return response(origin,{ok:false,error:'FBR returned an unexpected response.'},502)}
+  const parsed=parse(data);return response(origin,{ok:true,identifierType:type,identifierLast4:id.slice(-4),status:parsed.status,statusText:parsed.text,registrationNo:parsed.registrationNo||null,checkedAt:new Date().toISOString(),source:'FBR IRIS 2.0'});
 }};
-function json(origin,data,status=200,extra={}) { return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':origin,'Vary':'Origin',...extra}}); }
+async function call(token,payload){return fetch(API,{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json, text/plain, */*','Content-Type':'application/json',Origin:HOME,Referer:HOME,'User-Agent':'Mozilla/5.0'},body:payload})}
+function normalize(type,value){const raw=String(value??'').trim();if(type==='CNIC'||type==='NTN')return raw.replace(/[^0-9]/g,'');return raw.replace(/\s+/g,' ').slice(0,20)}
+function valid(type,value){if(type==='CNIC')return /^\d{13}$/.test(value);if(type==='NTN')return /^\d{7}$/.test(value);return /^[A-Za-z0-9][A-Za-z0-9 ./_-]{0,19}$/.test(value)}
+function fbrDate(){const d=new Date(Date.now()+18000000),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return String(d.getUTCDate()).padStart(2,'0')+','+m[d.getUTCMonth()]+','+d.getUTCFullYear()}
+async function getToken(force){if(!force&&tokenCache.token&&Date.now()<tokenCache.expiresAt)return tokenCache.token;const hr=await fetch(HOME,{headers:{Accept:'text/html','User-Agent':'Mozilla/5.0'}});if(!hr.ok)throw Error('home-'+hr.status);const html=await hr.text();const refs=[...html.matchAll(/(?:src|href)=["']([^"']+\.js(?:\?[^"']*)?)["']/gi)].map(m=>new URL(m[1],HOME).toString());const candidates=[...new Set(refs)].sort((a,b)=>Number(/\/main(?:\.|-)/i.test(b))-Number(/\/main(?:\.|-)/i.test(a)));for(const url of candidates){try{const r=await fetch(url,{headers:{Accept:'application/javascript,text/javascript,*/*;q=0.8','User-Agent':'Mozilla/5.0'}});if(!r.ok)continue;const source=await r.text();const token=extract(source);if(token){tokenCache={token,expiresAt:Date.now()+CACHE};return token}}catch{}}throw Error('token-not-found')}
+function extract(source){const text=String(source||''),lower=text.toLowerCase();for(const key of ['authorization_key_verifcation','authorization_key_verification']){const i=lower.indexOf(key);if(i>=0){const slice=text.slice(i,i+5000),direct=slice.match(/authorization_key_verif(?:cation|ication)\s*[:=]\s*["']([^"']+)["']/i);if(direct)return direct[1];const jwt=slice.match(/eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/);if(jwt)return jwt[0]}}const jwt=text.match(/eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/);return jwt?jwt[0]:''}
+function parse(data){const fields=new Map(),parts=[];walk(data?.response!==undefined?data.response:data,'',fields,parts);const raw=find(fields,['filing status','atl status','status'])||parts.join(' '),low=raw.toLowerCase();let result;if(!raw)result={status:'unknown',text:'FBR returned no readable status.'};else if(/no record exists|not found|no record/.test(low))result={status:'not-found',text:'No ATL record found for this identifier.'};else if(/late filer|late-filer|latefiler/.test(low))result={status:'late-filer',text:'Late Filer'};else if(/non.?atl|not active|inactive|non.?filer/.test(low))result={status:'inactive',text:'Not Active / Non-ATL'};else if(/\bactive\b/.test(low))result={status:'active',text:'Active Taxpayer'};else result={status:'unknown',text:raw};return{status:result.status,text:result.text,registrationNo:find(fields,['registration no','registration number'])}}
+function walk(node,key,fields,parts){if(node==null)return;if(Array.isArray(node)){for(const x of node)walk(x,'',fields,parts);return}if(typeof node==='object'){const title=strip(node.Title||node.title||key),value=strip(node.Value||node.value||''),res=strip(node.Response||node.response||'');if(title&&value){fields.set(title.toLowerCase(),value);parts.push(title+' '+value)}else if(res)parts.push(res);for(const [k,v] of Object.entries(node))if(!['Title','title','Value','value','Response','response'].includes(k))walk(v,k,fields,parts);return}const t=strip(node);if(t)parts.push((key?key+' ':'')+t)}
+function find(fields,names){for(const [k,v] of fields)if(names.some(n=>k.includes(n)))return v;return ''}
+function strip(v){return String(v??'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim()}

@@ -24,25 +24,17 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: cloudflare/fbr-staging
           command: deploy
-      - name: Smoke-test staging CORS proxy
+      - name: Smoke-test live FBR token discovery and staging CORS
         shell: bash
         run: |
           set -euo pipefail
-          base='https://nexusnova-fbr-staging.fahadsoomro123.workers.dev/api/fbr/atl-status'
+          base='https://nexusnova-fbr-staging.fahadsoomro123.workers.dev'
           sleep 10
-          curl --fail --silent --show-error --max-time 20 -X OPTIONS \
-            -H 'Origin: https://rawcdn.githack.com' \
-            -H 'Access-Control-Request-Method: POST' \
-            -H 'Access-Control-Request-Headers: content-type' \
-            "$base" >/dev/null
+          curl --fail --silent --show-error --max-time 30 -H 'Origin: https://rawcdn.githack.com' "$base/health"
+          echo
           body_file="$(mktemp)"
-          code="$(curl --silent --show-error --max-time 20 -X POST \
-            -H 'Origin: https://rawcdn.githack.com' \
-            -H 'Content-Type: application/json' \
-            -o "$body_file" -w '%{http_code}' \
-            -d '{"identifierType":"CNIC","identifier":"123"}' \
-            "$base")"
+          code="$(curl --silent --show-error --max-time 20 -X POST -H 'Origin: https://rawcdn.githack.com' -H 'Content-Type: application/json' -o "$body_file" -w '%{http_code}' -d '{"identifierType":"CNIC","identifier":"123"}' "$base/api/fbr/atl-status")"
           echo "POST_HTTP_CODE=$code"
           cat "$body_file"
           echo
-          python -c "import json,sys; json.load(open(sys.argv[1],encoding='utf-8')); print('FBR staging proxy returned valid JSON.')" "$body_file"
+          test "$code" = '400'
