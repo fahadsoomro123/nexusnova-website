@@ -40,7 +40,6 @@ jobs:
 
       - name: Site-wide visual defect audit
         id: visual
-        continue-on-error: true
         run: python .github/scripts/staging_visual_defect_audit.py
 
       - name: Build audit summary
@@ -82,8 +81,3 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Enforce visual QA
-        if: always()
-        shell: bash
-        run: |
-          test "${{ steps.visual.outcome }}" = "success"
