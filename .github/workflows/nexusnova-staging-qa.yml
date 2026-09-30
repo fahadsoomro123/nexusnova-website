@@ -50,10 +50,16 @@ jobs:
           echo $! > /tmp/nexusnova-http.pid
           sleep 2
 
+
+      - name: Site-wide visual defect audit
+        id: visual
+        continue-on-error: true
+        run: python .github/scripts/staging_visual_defect_audit.py
+
       - name: Browser quality guard
         id: browser
         continue-on-error: true
-        run: python .github/scripts/browser_quality_guard.py
+        run: timeout 180s python .github/scripts/browser_quality_guard.py || { echo 'Browser quality guard timed out or failed; source audits remain available.'; exit 1; }
 
       - name: Build audit summary
         if: always()
@@ -65,6 +71,7 @@ jobs:
             echo "- Static site audit: \${{ steps.static.outcome }}"
             echo "- Deep site audit: \${{ steps.deep.outcome }}"
             echo "- Production readiness: \${{ steps.readiness.outcome }}"
+            echo "- Visual defect audit: \${{ steps.visual.outcome }}"
             echo "- Browser quality: \${{ steps.browser.outcome }}"
             echo
             echo "## Reports"
@@ -88,6 +95,8 @@ jobs:
             deep-site-audit.txt
             deep-site-audit.json
             quality-artifacts/**
+            staging-visual-defect-audit.txt
+            staging-visual-defect-audit.json
             /tmp/nexusnova-http.log
           if-no-files-found: warn
           retention-days: 14
