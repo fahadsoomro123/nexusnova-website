@@ -34,6 +34,22 @@
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
 
   // Keep every visible footer Contact link consistent across the entire site.
+  // Enforce the selected NexusNova logo at runtime on every shared header variant.
+  const enforceSelectedHeaderLogo=()=>{
+    const base=(document.querySelector('base')?.href||document.baseURI);
+    const logoUrl=new URL((/\/(guides|articles|tech)\//.test(location.pathname)?'../':'')+'assets/logo.png',base).href;
+    document.querySelectorAll('.site-header .brand-mark,.site-header .mark,nav.nav .brand .mark,.header .brandmark').forEach(mark=>{
+      mark.style.backgroundImage='url("'+logoUrl.replace(/"/g,'%22')+'")';
+      mark.style.backgroundSize='contain';
+      mark.style.backgroundPosition='center';
+      mark.style.backgroundRepeat='no-repeat';
+      mark.style.color='transparent';
+      mark.style.fontSize='0';
+      mark.style.boxShadow='none';
+    });
+  };
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceSelectedHeaderLogo,{once:true});else enforceSelectedHeaderLogo();
+
   const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterContact,{once:true});else normalizeFooterContact();
 
