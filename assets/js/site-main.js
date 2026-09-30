@@ -143,18 +143,43 @@
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
     ['Instagram','@nexusnovatools','https://www.instagram.com/nexusnovatools/'],
-    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools'],
-    ['YouTube','@NexusNovaTools','https://youtube.com'],
-    ['LinkedIn','NexusNovaTools','https://linkedin.com']
+    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools']
   ];
   const footerGrid=document.querySelector('.site-footer .footer-console,.site-footer .footer-grid');
-  if(footerGrid&&!footerGrid.querySelector('[data-social-links]')){
+  if(footerGrid&&!footerGrid.querySelector('[data-social-links],.nn-social-block,.nn-social-links')){
     const brandColumn=footerGrid.firstElementChild;
     if(brandColumn){
-      const title=document.createElement('div');title.className='footer-title';title.dataset.socialLinks='';title.textContent='Follow NexusNova';brandColumn.appendChild(title);
-      const links=document.createElement('div');links.className='footer-links';links.setAttribute('aria-label','Official NexusNova social profiles');
-      socialProfiles.forEach(([platform,handle,href])=>{const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='me noopener noreferrer';link.textContent=`${platform} · ${handle}`;links.appendChild(link)});
-      brandColumn.appendChild(links);
+      if(!document.querySelector('style[data-nexusnova-global-social]')){
+        const style=document.createElement('style');
+        style.dataset.nexusnovaGlobalSocial='';
+        style.textContent='.nn-social-block{margin-top:16px}.nn-social-title{margin:0 0 8px;font-size:14px;font-weight:850;color:#334155}.nn-social-row{display:flex;flex-wrap:wrap;gap:6px}.nn-global-social{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 8px;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:9px;font-weight:800;text-decoration:none}.nn-global-social:hover{border-color:#ddd6fe;background:#faf7ff;color:#6d28d9}.nn-global-social-icon{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;color:#fff;flex:0 0 auto}.nn-global-social-icon svg{width:13px;height:13px;display:block;fill:currentColor}.nn-global-social-handle{display:block;margin-top:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:8px;color:#64748b;font-weight:750}.nn-global-social-x .nn-global-social-icon{background:#111827}.nn-global-social-facebook .nn-global-social-icon{background:#1877f2}.nn-global-social-instagram .nn-global-social-icon{background:linear-gradient(145deg,#833ab4,#fd1d1d 58%,#fcb045)}.nn-global-social-telegram .nn-global-social-icon{background:#229ed9}.nn-global-social-instagram svg rect,.nn-global-social-instagram svg circle{fill:none;stroke:#fff;stroke-width:2}.nn-global-social-instagram svg .ig-dot{fill:#fff;stroke:none}';
+        document.head.appendChild(style);
+      }
+      const wrapper=document.createElement('div');
+      wrapper.className='nn-social-block';
+      wrapper.dataset.socialLinks='';
+      const title=document.createElement('div');
+      title.className='nn-social-title';
+      title.textContent='Follow NexusNova';
+      wrapper.appendChild(title);
+      const links=document.createElement('div');
+      links.className='nn-social-row';
+      links.setAttribute('aria-label','Official NexusNova social profiles');
+      const icons={
+        X:'<path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"/>',
+        Facebook:'<path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"/>',
+        Instagram:'<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.9" r="1" class="ig-dot"/>',
+        Telegram:'<path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"/>'
+      };
+      socialProfiles.forEach(([platform,handle,href])=>{
+        const link=document.createElement('a');
+        link.className='nn-global-social nn-global-social-'+platform.toLowerCase();
+        link.href=href;link.target='_blank';link.rel='me noopener noreferrer';
+        link.innerHTML='<span class="nn-global-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true">'+icons[platform]+'</svg></span><span><strong>'+platform+'</strong><span class="nn-global-social-handle">'+handle+'</span></span>';
+        links.appendChild(link);
+      });
+      wrapper.appendChild(links);
+      brandColumn.appendChild(wrapper);
     }
   }
 
