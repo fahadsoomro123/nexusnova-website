@@ -85,7 +85,7 @@ def audit_one(page):
     launch_img='websitelaunches.com/badge/' in raw
     direct_footer_duplicate=parser.top_footer_lists>0 and parser.footer_has_structured
     inline_urls=[]
-    for u in re.findall(r'url\\(\\s*["\\\']?([^"\\\')]+)',raw,re.I):
+    for u in re.findall(r"""url\(\s*["']?([^"')]+)""", raw, re.I):
         if not re.match(r'^(?:https?:|data:|blob:|#)',u,re.I):
             t=resolve_ref(page,u)
             if t and t not in files: inline_urls.append((u,t))
