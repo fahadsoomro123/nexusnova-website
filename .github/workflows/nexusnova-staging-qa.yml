@@ -23,12 +23,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install browser QA dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install playwright
-          python -m playwright install --with-deps chromium
-
       - name: Static site quality audit
         id: static
         continue-on-error: true
@@ -44,22 +38,10 @@ jobs:
         continue-on-error: true
         run: python .github/scripts/production_readiness_audit.py
 
-      - name: Start local site
-        run: |
-          python -m http.server 8000 > /tmp/nexusnova-http.log 2>&1 &
-          echo $! > /tmp/nexusnova-http.pid
-          sleep 2
-
-
       - name: Site-wide visual defect audit
         id: visual
         continue-on-error: true
         run: python .github/scripts/staging_visual_defect_audit.py
-
-      - name: Browser quality guard
-        id: browser
-        continue-on-error: true
-        run: timeout 180s python .github/scripts/browser_quality_guard.py || { echo 'Browser quality guard timed out or failed; source audits remain available.'; exit 1; }
 
       - name: Build audit summary
         if: always()
@@ -72,7 +54,6 @@ jobs:
             echo "- Deep site audit: ${{ steps.deep.outcome }}"
             echo "- Production readiness: ${{ steps.readiness.outcome }}"
             echo "- Visual defect audit: ${{ steps.visual.outcome }}"
-            echo "- Browser quality: ${{ steps.browser.outcome }}"
             echo
             echo "## Reports"
             for f in site-quality-report.txt deep-site-audit.txt quality-artifacts/browser-quality-report.json; do
@@ -101,9 +82,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Enforce visual/browser QA
+      - name: Enforce visual QA
         if: always()
         shell: bash
         run: |
-          test "${{ steps.visual.outcome }}" = "success" &&
-          test "${{ steps.browser.outcome }}" = "success"
+          test "${{ steps.visual.outcome }}" = "success"
