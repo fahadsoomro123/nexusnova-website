@@ -260,11 +260,11 @@
     .nn-content{padding-top:28px}
     .nn-content-intro{margin-bottom:12px}
     .nn-content-intro p{margin:4px 0 0;color:var(--nn-muted);font-size:12px}
-    .nn-content-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-    .nn-content-column{min-width:0;border:1px solid var(--nn-line);background:#fff}
-    .nn-content-column-head{padding:12px;border-bottom:1px solid var(--nn-line)}
+    .nn-content-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+    .nn-content-column{display:flex;flex-direction:column;min-width:0;height:100%;border:1px solid var(--nn-line);background:#fff}
+    .nn-content-column-head{min-height:78px;padding:12px;border-bottom:1px solid var(--nn-line)}
     .nn-content-column-head p{margin:4px 0 0;color:var(--nn-muted);font-size:11px}
-    .nn-content-list{display:grid}
+    .nn-content-list{display:grid;flex:1}
     .nn-content-item{display:grid;gap:4px;padding:11px 12px;border-bottom:1px solid var(--nn-line)}
     .nn-content-item:last-child{border-bottom:0}
     .nn-content-item:hover,.nn-content-item:focus-visible{background:#fafafa;outline:0}
@@ -1323,14 +1323,8 @@
     </section>
 
     <!-- STEP 4: EDITORIAL CONTENT -->
-    <section class="nn-content" id="content-library" aria-labelledby="content-library-title">
+    <section class="nn-content" id="content-library" aria-label="Categories, articles and practical guides">
       <div class="nn-shell">
-        <div class="nn-content-intro">
-
-          <h2 id="content-library-title">Categories, articles and practical guides</h2>
-
-        </div>
-
         <div class="nn-content-grid">
           <section class="nn-content-column" aria-labelledby="category-links-title">
             <div class="nn-content-column-head">
