@@ -585,8 +585,8 @@
     .nn-search-result-icon{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:var(--nn-purple)}
     .nn-search-result-main{min-width:0}.nn-search-result-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:850}.nn-search-result-meta{display:flex;gap:7px;margin-top:1px;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:800;text-transform:uppercase}.nn-search-empty{padding:13px;color:#64748b;font-size:11px}
     .nn-directory{padding-top:24px}.nn-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 10px}.nn-section-head p{display:none}.nn-section-head h2{margin:4px 0 0;font-size:18px;line-height:1.2;font-weight:850;letter-spacing:-.015em}
-    .nn-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;border:1px solid var(--nn-line);background:var(--nn-line)}
-    .nn-guide-card{min-width:0;min-height:190px;display:flex;flex-direction:column;padding:15px;background:#fff;border:0;border-radius:0;box-shadow:none}
+    .nn-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;background:transparent}
+    .nn-guide-card{min-width:0;min-height:190px;display:flex;flex-direction:column;padding:15px;background:#fff;border:1px solid var(--nn-line);border-radius:0;box-shadow:none}
     .nn-guide-card:hover{transform:none;box-shadow:none;background:#fdfcff;outline:1px solid #ddd6fe;outline-offset:-1px}
     .nn-guide-card[hidden]{display:none}
     .nn-guide-tag{align-self:flex-start;padding:0;border:0;border-radius:0;background:transparent;color:var(--nn-subtle);font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
@@ -601,6 +601,9 @@
     @media(max-width:420px){.nn-footer-links{grid-template-columns:1fr}}
     body{background:#fff}
     .nn-hero{background:#fff;border:0;min-height:0;box-shadow:none}
+      /* GLOBAL EMPTY-GRID-CELL FIX */
+    .nn-master-tool-grid,.nn-pakistan-highlight-grid,.nn-category-grid,.nn-article-grid,.nn-guide-grid{gap:8px;background:transparent;border:0}
+    .nn-master-tool,.nn-pakistan-highlight-card,.nn-cat-card,.nn-article-card,.nn-guide-card{border:1px solid var(--nn-line)}
   </style>
 </head>
 <body>
@@ -615,12 +618,13 @@
         </span>
       </a>
 <nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
-        <a href="/">Home</a>
-        <a href="tools.html">Tools</a>
-        <a href="categories.html">Categories</a>
-        <a href="articles.html">Articles</a>
-        <a href="guides.html" aria-current="page">Guides</a>
-      </nav>
+  <a href="/">Home</a>
+  <a href="/#master-directory">All Tools</a>
+  <a href="/#content-library">Content</a>
+  <a href="categories.html">Categories</a>
+  <a href="articles.html">Articles</a>
+  <a href="guides.html" aria-current="page">Guides</a>
+</nav>
     </div>
   </header>
 
@@ -656,10 +660,10 @@
             <p>Choose distinct evaluation criteria, assign objective relative weights, score multiple options systematically, and test whether rankings survive sensitivity adjustments.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/weighted-decision-matrix.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="decision-matrix-calculator.html">
-                Use Calculator â†—
+                Use Calculator &#8599;
               </a>
             </div>
           </article>
@@ -671,10 +675,10 @@
             <p>Master percentage-of, discount deductions, cumulative increase/decrease, and relative change formulas with clear step-by-step arithmetic examples.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/percentage-basics.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="percentage-calculator.html">
-                Use Calculator â†—
+                Use Calculator &#8599;
               </a>
             </div>
           </article>
@@ -686,10 +690,10 @@
             <p>Understand password entropy, length versus character complexity, cryptographic salting, and why credential reuse exposes accounts to stuffing vectors.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/password-security.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="password-strength-checker.html">
-                Check Strength â†—
+                Check Strength &#8599;
               </a>
             </div>
           </article>
@@ -701,10 +705,10 @@
             <p>Understand scientific conversion factors between metric and imperial standards, and prevent common precision errors in length, mass, and thermal conversions.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/unit-conversion.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="unit-converter.html">
-                Use Converter â†—
+                Use Converter &#8599;
               </a>
             </div>
           </article>
@@ -716,10 +720,10 @@
             <p>Learn how pixel dimensions, chromatic subsampling, lossy quantization, and modern formats like WebP affect bandwidth load times without visual fidelity loss.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/image-compression.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="image-compressor.html">
-                Use Compressor â†—
+                Use Compressor &#8599;
               </a>
             </div>
           </article>
@@ -731,10 +735,10 @@
             <p>Understand page sequencing, A4 margin placement, dpi print scaling, client-side rendering boundaries, and what image-to-PDF converters do behind the scenes.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/jpg-to-pdf.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="jpg-to-pdf.html">
-                Use JPG to PDF â†—
+                Use JPG to PDF &#8599;
               </a>
             </div>
           </article>
@@ -746,10 +750,10 @@
             <p>Structure professional experience with measurable outcomes, eliminate visual clutter, optimize hierarchy for applicant tracking systems, and proofread thoroughly.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/resume-writing.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="resume-builder.html">
-                Use Builder â†—
+                Use Builder &#8599;
               </a>
             </div>
           </article>
@@ -761,10 +765,10 @@
             <p>Structure system instructions, define strict role constraints, supply concrete few-shot examples, and format outputs predictably for downstream workflows.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/ai-prompting.html">
-                <span>Read guide â†’</span>
+                <span>Read guide &#8594;</span>
               </a>
               <a class="nn-tool-pill" href="ai-prompt-builder.html">
-                Use Prompt Builder â†—
+                Use Prompt Builder &#8599;
               </a>
             </div>
           </article>
@@ -794,7 +798,7 @@
         <a href="tools.html">Tools directory</a>
         <a href="categories.html">Categories</a>
         <a href="articles.html">Articles</a>
-        <a href="guides.html">Guides</a>
+        <a href="guides.html" aria-current="page">Guides</a>
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
         <a href="contact.html">Contact</a>
@@ -802,7 +806,7 @@
     </div>
 
     <div class="nn-shell nn-footer-bottom">
-      <span>Â© <span data-year></span> NexusNova Tools</span>
+      <span>&copy; <span data-year></span> NexusNova Tools</span>
       <span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span>
     </div>
   </footer><script>document.addEventListener("DOMContentLoaded",function(){const y=document.querySelector("[data-year]");if(y)y.textContent=new Date().getFullYear();const i=document.getElementById("guide-search-input"),f=document.getElementById("guide-search-form"),p=document.getElementById("nn-guide-search-suggestions"),c=[...document.querySelectorAll("[data-guide-card]")],count=document.getElementById("guide-search-count"),none=document.getElementById("guide-no-results");if(!(i&&f&&p&&window.NexusNovaSearchCore))return;const core=new NexusNovaSearchCore({maxResults:8});function results(v){const q=String(v||"").trim();return q?core.query(q).filter(r=>r.type==="guide").slice(0,8):[]}function filterCards(){const q=String(i.value||"").trim();if(!q){c.forEach(x=>x.removeAttribute("hidden"));if(count)count.textContent="8 guides";if(none)none.classList.remove("is-visible");return}const urls=new Set(results(q).map(r=>r.url));let visible=0;c.forEach(x=>{const show=urls.has(x.getAttribute("data-search-url")||"");x.toggleAttribute("hidden",!show);if(show)visible++});if(count)count.textContent=visible+" matching guides";if(none)none.classList.toggle("is-visible",visible===0)}core.bindDropdown({input:i,form:f,panel:p,maxResults:8,filterType:"guide"});i.addEventListener("input",filterCards);filterCards()});</script>

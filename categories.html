@@ -246,8 +246,8 @@
     /* CATEGORIES GRID */
     .nn-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:10px}.nn-section-head h2{margin:4px 0 0;font-size:18px;line-height:1.2;letter-spacing:-.015em;font-weight:850}.nn-section-head p{display:none}
 
-    .nn-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--nn-line)}
-    .nn-cat-card{min-width:0;min-height:188px;display:flex;flex-direction:column;padding:14px;background:#fff;border:0;color:var(--nn-text);transition:background .16s ease;box-shadow:none}
+    .nn-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:transparent}
+    .nn-cat-card{min-width:0;min-height:188px;display:flex;flex-direction:column;padding:14px;background:#fff;border:1px solid var(--nn-line);color:var(--nn-text);transition:background .16s ease;box-shadow:none}
     .nn-cat-card:hover,.nn-cat-card:focus-visible{background:#fdfcff;outline:1px solid var(--nn-purple-line);outline-offset:-1px}
     .nn-cat-card[hidden]{display:none}
     .nn-cat-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -332,6 +332,9 @@
       .nn-footer-links{grid-template-columns:1fr}
       .nn-brand-logo-img{height:34px}
     }
+      /* GLOBAL EMPTY-GRID-CELL FIX */
+    .nn-master-tool-grid,.nn-pakistan-highlight-grid,.nn-category-grid,.nn-article-grid,.nn-guide-grid{gap:8px;background:transparent;border:0}
+    .nn-master-tool,.nn-pakistan-highlight-card,.nn-cat-card,.nn-article-card,.nn-guide-card{border:1px solid var(--nn-line)}
   </style>
 </head>
 <body>
@@ -349,12 +352,13 @@
       <button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button>
 
       <nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
-        <a href="/">Home</a>
-        <a href="tools.html">Tools</a>
-        <a href="categories.html" aria-current="page">Categories</a>
-        <a href="articles.html">Articles</a>
-        <a href="guides.html">Guides</a>
-      </nav>
+  <a href="/">Home</a>
+  <a href="/#master-directory">All Tools</a>
+  <a href="/#content-library">Content</a>
+  <a href="categories.html" aria-current="page">Categories</a>
+  <a href="articles.html">Articles</a>
+  <a href="guides.html">Guides</a>
+</nav>
     </div>
   </header>
 
@@ -537,7 +541,7 @@
 
       <nav class="nn-footer-links" aria-label="Footer navigation">
         <a href="tools.html">Tools directory</a>
-        <a href="categories.html">Categories</a>
+        <a href="categories.html" aria-current="page">Categories</a>
         <a href="articles.html">Articles</a>
         <a href="guides.html">Guides</a>
         <a href="privacy.html">Privacy</a>

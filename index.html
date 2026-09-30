@@ -180,9 +180,9 @@
     .nn-pakistan-highlight-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:1px;
-      border:1px solid var(--nn-line);
-      background:var(--nn-line);
+      gap:8px;
+      border:0;
+      background:transparent;
     }
     .nn-pakistan-highlight-card{
       min-width:0;
@@ -190,6 +190,7 @@
       flex-direction:column;
       padding:14px;
       background:#fff;
+      border:1px solid var(--nn-line);
     }
     .nn-pakistan-highlight-card:hover,
     .nn-pakistan-highlight-card:focus-visible{
@@ -244,10 +245,10 @@
     }
     .nn-master-group-head h3{margin-top:2px}
     .nn-group-count{font-family:var(--nn-mono);font-size:8px;font-weight:850;color:#64748b}
-    .nn-master-tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--nn-line)}
+    .nn-master-tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;background:transparent}
     .nn-master-tool{
       min-width:0;min-height:168px;display:flex;flex-direction:column;
-      padding:13px;background:#fff;border:0
+      padding:13px;background:#fff;border:1px solid var(--nn-line)
     }
     .nn-master-tool:hover,.nn-master-tool:focus-visible{background:#fdfcff;outline:1px solid #ddd6fe;outline-offset:-1px}
     .nn-master-tool-no{font-family:var(--nn-mono);font-size:8px;font-weight:900;color:#cbd5e1}
@@ -336,6 +337,9 @@
       .nn-search-suggestions{right:0;top:104px}
       .nn-footer-links{grid-template-columns:1fr}
     }
+      /* GLOBAL EMPTY-GRID-CELL FIX */
+    .nn-master-tool-grid,.nn-pakistan-highlight-grid,.nn-category-grid,.nn-article-grid,.nn-guide-grid{gap:8px;background:transparent;border:0}
+    .nn-master-tool,.nn-pakistan-highlight-card,.nn-cat-card,.nn-article-card,.nn-guide-card{border:1px solid var(--nn-line)}
   </style>
 </head>
 <body>
