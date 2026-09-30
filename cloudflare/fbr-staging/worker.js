@@ -24,7 +24,7 @@ export default {async fetch(request){
   let data;try{data=JSON.parse(text)}catch{ return response(origin,{ok:false,error:'FBR returned an unexpected response.'},502)}
   const parsed=parse(data);return response(origin,{ok:true,identifierType:type,identifierLast4:id.slice(-4),status:parsed.status,statusText:parsed.text,registrationNo:parsed.registrationNo||null,checkedAt:new Date().toISOString(),source:'FBR IRIS 2.0'});
 }};
-async function call(token,payload){return fetch(API,{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json, text/plain, */*','Content-Type':'application/json',Origin:HOME,Referer:HOME,'User-Agent':'Mozilla/5.0'},body:payload})}
+async function call(token,payload){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),50000);try{return await fetch(API,{method:'POST',headers:{Authorization:'Bearer '+token,Accept:'application/json, text/plain, */*','Content-Type':'application/json',Origin:HOME,Referer:HOME,'User-Agent':'Mozilla/5.0'},body:payload,signal:controller.signal})}finally{clearTimeout(timer)}}
 function normalize(type,value){const raw=String(value??'').trim();if(type==='CNIC'||type==='NTN')return raw.replace(/[^0-9]/g,'');return raw.replace(/\s+/g,' ').slice(0,20)}
 function valid(type,value){if(type==='CNIC')return /^\d{13}$/.test(value);if(type==='NTN')return /^\d{7}$/.test(value);return /^[A-Za-z0-9][A-Za-z0-9 ./_-]{0,19}$/.test(value)}
 function fbrDate(){const d=new Date(Date.now()+18000000),m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return String(d.getUTCDate()).padStart(2,'0')+','+m[d.getUTCMonth()]+','+d.getUTCFullYear()}
