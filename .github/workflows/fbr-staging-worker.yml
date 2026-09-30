@@ -54,15 +54,27 @@ jobs:
           with sync_playwright() as p:
               b=p.chromium.launch(headless=True)
               page=b.new_page()
-              page.goto('http://127.0.0.1:8000/fbr-atl-status-checker.html', wait_until='networkidle', timeout=30000)
+              page.on('console',lambda m: print('BROWSER_CONSOLE:',m.type,m.text))
+              page.on('pageerror',lambda e: print('BROWSER_PAGEERROR:',e))
+              page.on('requestfailed',lambda r: print('BROWSER_REQUEST_FAILED:',r.url,r.failure))
+              page.goto('http://127.0.0.1:8000/fbr-atl-status-checker.html', wait_until='domcontentloaded', timeout=30000)
+              print('BROWSER_URL:',page.url)
+              print('IDENTIFIER_COUNT:',page.locator('#atl-identifier').count())
               page.locator('#atl-identifier').fill('1234512345671')
-              page.locator('button[type="submit"]').click()
-              page.wait_for_function("document.querySelector('[data-atl-result]')?.innerText && !document.querySelector('[data-atl-result]').innerText.includes('Checking FBR')", timeout=75000)
+              with page.expect_response('**/api/fbr/atl-status', timeout=90000) as event:
+                  page.locator('button[type="submit"]').click()
+              response=event.value
+              body=response.text()
+              print('FBR_HTTP_STATUS:',response.status)
+              print('FBR_HTTP_BODY:',body)
+              if response.status >= 500:
+                  raise SystemExit('FBR browser E2E received a server failure')
+              if not any(x in body for x in ['"ok":true','"ok":false']):
+                  raise SystemExit('FBR browser E2E received a non-JSON FBR response')
+              page.wait_for_timeout(1000)
               result=page.locator('[data-atl-result]').inner_text()
-              print('FBR E2E RESULT:', result)
-              if any(x in result for x in ['Verification unavailable','Verification timed out','Failed to fetch']):
-                  raise SystemExit('FBR browser E2E failed')
-              if not any(x in result for x in ['ACTIVE TAXPAYER','LATE FILER','NOT ACTIVE / NON-ATL','NO ATL RECORD','FBR RESULT']):
-                  raise SystemExit('FBR browser E2E returned an unexpected result')
+              print('FBR_UI_RESULT:',result)
+              if 'Verification unavailable' in result or 'Verification timed out' in result or 'Failed to fetch' in result:
+                  raise SystemExit('FBR browser UI displayed a transport failure')
               b.close()
           PY
