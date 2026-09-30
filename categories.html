@@ -138,9 +138,7 @@
     }
     .nn-hero-grid{
       display:grid;
-      grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);
-      gap:46px;
-      align-items:end;
+      grid-template-columns:minmax(0,1fr);
     }
     .nn-kicker{
       display:inline-flex;
@@ -538,7 +536,7 @@
         <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
         <span class="nn-brand-copy">
           <strong>NEXUSNOVA TOOLS</strong>
-          <small>ENTERPRISE GRID • CLIENT SEARCH</small>
+
         </span>
       </a>
 
@@ -559,50 +557,19 @@
     <section class="nn-hero">
       <div class="nn-shell nn-hero-grid">
         <div>
-          <span class="nn-kicker">BROWSE BY TASK DOMAIN</span>
           <h1>Tool <span>Categories</span></h1>
-          <p class="nn-hero-copy">Choose a category to reach a focused tool hub, or search by task to jump directly to what you need without scanning hundreds of items.</p>
 
           <div class="nn-search">
             <form class="nn-search-form" id="category-search-form" role="search" aria-label="Filter tool categories">
               <label class="nn-search-field" for="category-search-input">
-                <span class="nn-search-icon" aria-hidden="true">⌕</span>
+                <span class="nn-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg></span>
                 <input class="nn-search-input" id="category-search-input" type="search" placeholder="Filter categories by name or keyword…" autocomplete="off" spellcheck="false">
-                <span class="nn-search-shortcut">CTRL / ⌘ K</span>
               </label>
               <button class="nn-search-submit" type="submit">Filter</button>
             </form>
-            <div class="nn-search-meta">
-              <span>Instant client-side filter • no reload</span>
-              <span class="nn-search-count" id="category-search-count">9 categories visible</span>
-            </div>
           </div>
         </div>
 
-        <aside class="nn-hero-side">
-          <span class="nn-side-label">NAVIGATION HUBS</span>
-          <h2>Focused access to every digital utility.</h2>
-          <p>NexusNova groups tools by objective so users never encounter an overwhelming, disorganized wall of links.</p>
-
-          <div class="nn-stat-grid">
-            <div class="nn-stat">
-              <span class="nn-stat-label">DOMAINS</span>
-              <span class="nn-stat-value">9 Category Hubs</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">TOOLS INDEX</span>
-              <span class="nn-stat-value">94 Direct Routes</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">STRUCTURE</span>
-              <span class="nn-stat-value">Task-first grouping</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">PRIVACY</span>
-              <span class="nn-stat-value">In-browser execution</span>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
 
@@ -610,36 +577,9 @@
     <section class="nn-main">
       <div class="nn-shell">
 
-        <!-- EDITORIAL / ADSENSE ARCHITECTURE BLOCK -->
-        <section class="nn-editorial" aria-labelledby="editorial-architecture-title">
-          <article class="nn-editorial-card">
-            <div class="nn-editorial-grid">
-              <div>
-                <span class="nn-kicker">CATEGORY ARCHITECTURE</span>
-                <h2 id="editorial-architecture-title">How NexusNova Tools are organized.</h2>
-              </div>
-              <p>To avoid confusing interface clutter and cognitive fatigue, NexusNova classifies all browser utilities into nine core operational categories. Each hub represents a self-contained workflow: image manipulation, PDF document handling, financial and numerical calculators, localized Pakistan civic utilities, cyber-security network analyzers, developer formatting scripts, productivity tools, gaming performance utilities, and real-time live data tickers. Visitors can quickly discover relevant utilities without navigating complex submenus or broken redirect chains.</p>
-            </div>
-          </article>
-
-          <article class="nn-editorial-card">
-            <div class="nn-editorial-grid">
-              <div>
-                <span class="nn-kicker">EDITORIAL CURATION</span>
-                <h2>Dedicated workspaces for every practical task.</h2>
-              </div>
-              <p>Every category hub provides dedicated access to clean, zero-friction tools designed for fast in-browser execution. Whether calculating withholding taxes on monthly salaries, converting image assets for web deployment, or inspecting DNS host records, each tool maintains its verified direct canonical URL. Users can bookmark specific category hubs or jump straight into individual tools without losing their navigation context.</p>
-            </div>
-          </article>
-        </section>
-
         <!-- CATEGORY CARDS SECTION -->
         <div class="nn-section-head">
-          <div>
-            <span class="nn-kicker">TASK DOMAINS</span>
-            <h2>All Tool Categories</h2>
-          </div>
-          <p>Click any category card to open its dedicated hub page and browse all tools in that specific domain.</p>
+          <h2>All Tool Categories</h2>
         </div>
 
         <div class="nn-category-grid" id="category-cards-grid">
@@ -647,7 +587,7 @@
           <!-- 1. IMAGES -->
           <a class="nn-cat-card" href="image-tools.html" data-category-card data-search-text="images image compressor conversion resize ocr metadata webp png jpg">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">▧</span>
+              <span class="nn-cat-icon">IMG</span>
               <span class="nn-cat-count">12 tools</span>
             </div>
             <h3>Images</h3>
@@ -660,7 +600,7 @@
           <!-- 2. PDF & DOCUMENTS -->
           <a class="nn-cat-card" href="pdf-tools.html" data-category-card data-search-text="pdf documents merge split compress convert pdf-tools">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">▤</span>
+              <span class="nn-cat-icon">PDF</span>
               <span class="nn-cat-count">4 tools</span>
             </div>
             <h3>PDF & Documents</h3>
@@ -673,7 +613,7 @@
           <!-- 3. CALCULATORS -->
           <a class="nn-cat-card" href="calculator-tools.html" data-category-card data-search-text="calculators math finance loan percentage age bmi scientific calculator-tools">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">∑</span>
+              <span class="nn-cat-icon">CALC</span>
               <span class="nn-cat-count">23 tools</span>
             </div>
             <h3>Calculators</h3>
@@ -699,7 +639,7 @@
           <!-- 5. SECURITY & NETWORK -->
           <a class="nn-cat-card" href="network-tools.html" data-category-card data-search-text="security network dns lookup ssl certificate ip check cidr qr code url xray network-tools">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">⌁</span>
+              <span class="nn-cat-icon">SEC</span>
               <span class="nn-cat-count">12 tools</span>
             </div>
             <h3>Security & Network</h3>
@@ -712,7 +652,7 @@
           <!-- 6. DEVELOPER & DATA -->
           <a class="nn-cat-card" href="developer-tools.html" data-category-card data-search-text="developer data json formatter base64 encoder uuid generator sha hash timestamp">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">{}</span>
+              <span class="nn-cat-icon">DEV</span>
               <span class="nn-cat-count">3 tools</span>
             </div>
             <h3>Developer & Data</h3>
@@ -725,7 +665,7 @@
           <!-- 7. PRODUCTIVITY -->
           <a class="nn-cat-card" href="productivity-tools.html" data-category-card data-search-text="productivity whatsapp link generator word counter text diff notes timer list">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">✦</span>
+              <span class="nn-cat-icon">PRO</span>
               <span class="nn-cat-count">13 tools</span>
             </div>
             <h3>Productivity</h3>
@@ -738,7 +678,7 @@
           <!-- 8. GAMING -->
           <a class="nn-cat-card" href="gaming.html" data-category-card data-search-text="gaming mouse sensitivity edpi converter fps reaction time gaming-tools">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">◈</span>
+              <span class="nn-cat-icon">GAME</span>
               <span class="nn-cat-count">7 tools</span>
             </div>
             <h3>Gaming</h3>
@@ -751,7 +691,7 @@
           <!-- 9. LIVE INFORMATION -->
           <a class="nn-cat-card" href="live.html" data-category-card data-search-text="live information currency rates gold fuel aqi weather earthquakes pakistan">
             <div class="nn-cat-card-top">
-              <span class="nn-cat-icon">●</span>
+              <span class="nn-cat-icon">LIVE</span>
               <span class="nn-cat-count">12 tools</span>
             </div>
             <h3>Live Information</h3>
@@ -767,12 +707,7 @@
           <p>No matching category found. Try searching for "images", "calculators", "pakistan", or "security".</p>
         </div>
 
-        <!-- FULL DIRECTORY CALLOUT BAND -->
         <div class="nn-info-band">
-          <div>
-            <span class="nn-kicker">LOOKING FOR A SPECIFIC TOOL?</span>
-            <p>Prefer browsing the complete unfiltered list of 94 tools? Open our master tools directory.</p>
-          </div>
           <a href="tools.html">Browse All 94 Tools Directory →</a>
         </div>
 
@@ -788,12 +723,8 @@
           <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
           <span class="nn-brand-copy">
             <strong>NEXUSNOVA TOOLS</strong>
-            <small>FOCUSED DIGITAL UTILITIES</small>
           </span>
         </a>
-        <p class="nn-footer-copy">
-          A clean directory of focused browser utilities. Search by task, browse by category, and access practical web tools without interface clutter.
-        </p>
       </div>
 
       <nav class="nn-footer-links" aria-label="Footer navigation">
