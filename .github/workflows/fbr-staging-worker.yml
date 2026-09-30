@@ -38,3 +38,30 @@ jobs:
           cat "$body_file"
           echo
           test "$code" = '400'
+
+      - name: End-to-end browser test for FBR checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install chromium
+          export FBR_PREVIEW_URL="https://rawcdn.githack.com/fahadsoomro123/nexusnova-website/${GITHUB_SHA}/fbr-atl-status-checker.html"
+          python - <<'PY'
+          import os
+          from playwright.sync_api import sync_playwright
+          url=os.environ['FBR_PREVIEW_URL']
+          with sync_playwright() as p:
+              b=p.chromium.launch(headless=True)
+              page=b.new_page()
+              page.goto(url, wait_until='networkidle', timeout=30000)
+              page.fill('#atl-identifier','1234512345671')
+              page.click('button[type="submit"]')
+              page.wait_for_function("document.querySelector('[data-atl-result]')?.innerText && !document.querySelector('[data-atl-result]').innerText.includes('Checking FBR')", timeout=30000)
+              result=page.locator('[data-atl-result]').inner_text()
+              print('FBR E2E RESULT:', result)
+              if any(x in result for x in ['Verification unavailable','Verification timed out','Failed to fetch']):
+                  raise SystemExit('FBR browser E2E failed')
+              if not any(x in result for x in ['ACTIVE TAXPAYER','LATE FILER','NOT ACTIVE / NON-ATL','NO ATL RECORD','FBR RESULT']):
+                  raise SystemExit('FBR browser E2E returned an unexpected result')
+              b.close()
+          PY
