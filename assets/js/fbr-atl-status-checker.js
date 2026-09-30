@@ -23,14 +23,35 @@
   const updateFields=()=>{const type=typeSelect.value;const cfg=TYPES[type];label.textContent=cfg.label;input.placeholder=cfg.placeholder;input.inputMode=cfg.inputMode;input.maxLength=20;help.textContent=cfg.help;input.value=type==='CNIC'?formatCNIC(input.value):clean(type,input.value);result.innerHTML='';result.className='nn-simple-result';};
   typeSelect.addEventListener('change',updateFields);
   input.addEventListener('input',()=>{const type=typeSelect.value;input.value=type==='CNIC'?formatCNIC(input.value):clean(type,input.value);});
-  form.addEventListener('submit',async event=>{event.preventDefault();const type=typeSelect.value;
-    if(PREVIEW_MODE){setMessage('','Staging FBR lookup','Using the isolated NexusNova FBR staging service for this preview.');}const id=clean(type,input.value);if(!valid(type,id)){setMessage('error','Check your input',type==='CNIC'?'Enter all 13 CNIC digits.':type==='NTN'?'Enter all 7 NTN digits.':'Enter a valid '+type+'.');input.focus();return;}button.disabled=true;button.textContent='Checking FBR…';setMessage('','Checking FBR','Contacting the official FBR verification service…');
-    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),60000);let response;try{response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifierType:type,identifier:id}),signal:controller.signal});}finally{clearTimeout(timeout)}const data=await response.json().catch(()=>({}));if(!response.ok||!data.ok)throw new Error(data.error||'FBR verification is temporarily unavailable.');
-      const status=data.status||'unknown';const title=status==='active'?'ACTIVE TAXPAYER':status==='late-filer'?'LATE FILER':status==='inactive'?'NOT ACTIVE / NON-ATL':status==='not-found'?'NO ATL RECORD':'FBR RESULT';
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const type=typeSelect.value;
+    const id=clean(type,input.value);
+    if(!valid(type,id)){
+      setMessage('error','Check your input',type==='CNIC'?'Enter all 13 CNIC digits.':type==='NTN'?'Enter all 7 NTN digits.':'Enter a valid '+type+'.');
+      input.focus();
+      return;
+    }
+    button.disabled=true;
+    button.textContent='Checking FBR…';
+    setMessage('','Checking FBR','Contacting the official FBR verification service…');
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),60000);
+    try{
+      const response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifierType:type,identifier:id}),signal:controller.signal});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok)throw new Error(data.error||'FBR verification is temporarily unavailable.');
+      const status=data.status||'unknown';
+      const title=status==='active'?'ACTIVE TAXPAYER':status==='late-filer'?'LATE FILER':status==='inactive'?'NOT ACTIVE / NON-ATL':status==='not-found'?'NO ATL RECORD':'FBR RESULT';
       setMessage(status==='active'?'success':status==='late-filer'?'warning':status==='inactive'||status==='not-found'?'error':'warning',title,data.statusText||'FBR returned a result.');
       result.innerHTML+='<div class="nn-atl-meta"><span>Type: '+esc(data.identifierType||type)+'</span><span>Checked: '+esc(new Date(data.checkedAt||Date.now()).toLocaleString())+'</span>'+(data.registrationNo?'<span>Registration: '+esc(data.registrationNo)+'</span>':'')+'</div>';
-    }catch(error){setMessage('error',error?.name==='AbortError'?'Verification timed out':'Verification unavailable',error?.name==='AbortError'?'FBR did not respond within 60 seconds. Please try again or use the official FBR portal.':error.message||'FBR verification could not be completed right now. Please try again or use the official FBR portal.');}
-    finally{button.disabled=false;button.textContent='Check FBR Status';}
+    }catch(error){
+      setMessage('error',error?.name==='AbortError'?'Verification timed out':'Verification unavailable',error?.name==='AbortError'?'FBR did not respond within 60 seconds. Please try again or use the official FBR portal.':error.message||'FBR verification could not be completed right now. Please try again or use the official FBR portal.');
+    }finally{
+      clearTimeout(timeout);
+      button.disabled=false;
+      button.textContent='Check FBR Status';
+    }
   });
   updateDate();updateFields();
 })();
