@@ -79,16 +79,21 @@ def audit_one(page):
     missing=[]
     for tag,ref in parser.refs:
         target=resolve_ref(page,ref)
+        if target and any(target==d or target.startswith(d + '/') for d in SKIP_DIRS):
+            continue
         if target and target not in files:
             missing.append({'tag':tag,'ref':ref,'resolved':target})
     legacy_html=bool(re.search(r'class=["\'][^"\']*\b(?:brand-mark|mark)\b[^"\']*["\'][^>]*>\s*N\s*<',raw,re.I))
     launch_img='websitelaunches.com/badge/' in raw
     direct_footer_duplicate=parser.top_footer_lists>0 and parser.footer_has_structured
     inline_urls=[]
-    for u in re.findall(r"""url\(\s*["']?([^"')]+)""", raw, re.I):
-        if not re.match(r'^(?:https?:|data:|blob:|#)',u,re.I):
-            t=resolve_ref(page,u)
-            if t and t not in files: inline_urls.append((u,t))
+    style_blocks=re.findall(r'<style\b[^>]*>([\s\S]*?)</style>',raw,re.I)
+    for css in style_blocks:
+        for u in re.findall(r"""url\(\s*["']?([^"')]+)""", css, re.I):
+            if not re.match(r'^(?:https?:|data:|blob:|#)',u,re.I):
+                t=resolve_ref(page,u)
+                if t and not any(t==d or t.startswith(d + '/') for d in SKIP_DIRS) and t not in files:
+                    inline_urls.append((u,t))
     return {'page':page,'missing':missing,'inline_missing':inline_urls,'legacy_mark_html':legacy_html,
             'website_launches_image':launch_img,'footer_duplicate_risk':direct_footer_duplicate,
             'external_images':parser.external_images}
