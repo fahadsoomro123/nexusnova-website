@@ -24,3 +24,23 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: cloudflare/fbr-staging
           command: deploy
+      - name: Smoke-test staging CORS proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnova-fbr-staging.fahadsoomro123.workers.dev/api/fbr/atl-status'
+          sleep 10
+          curl --fail --silent --show-error --max-time 20 -X OPTIONS \
+            -H 'Origin: https://rawcdn.githack.com' \
+            -H 'Access-Control-Request-Method: POST' \
+            -H 'Access-Control-Request-Headers: content-type' \
+            "$base" >/dev/null
+          body_file="$(mktemp)"
+          code="$(curl --silent --show-error --max-time 20 -X POST \
+            -H 'Origin: https://rawcdn.githack.com' \
+            -H 'Content-Type: application/json' \
+            -o "$body_file" -w '%{http_code}' \
+            -d '{"identifierType":"CNIC","identifier":"123"}' \
+            "$base")"
+          test "$code" = '400'
+          python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); assert d.get('ok') is False; print('FBR staging CORS proxy healthy:', d.get('error'))" "$body_file"
