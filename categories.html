@@ -58,7 +58,7 @@
     }
 
     a{color:inherit;text-decoration:none}
-    .nn-shell{width:min(var(--nn-max),calc(100% - 36px));margin-inline:auto}
+    .nn-shell{width:min(var(--nn-max),calc(100% - 32px));margin-inline:auto}
 
     /* HEADER */
     .nn-header{
@@ -69,14 +69,8 @@
       background:rgba(255,255,255,.91);
       backdrop-filter:blur(18px);
     }
-    .nn-header-row{
-      min-height:72px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:28px;
-    }
-    .nn-brand{display:inline-flex;align-items:center;gap:12px;min-width:0}
+    .nn-header-row{min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .nn-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
     .nn-brand-logo-img{
       height:40px;
       width:auto;
@@ -86,14 +80,7 @@
       margin-left:-8px;
     }
     .nn-brand-copy{display:grid;gap:2px;min-width:0}
-    .nn-brand-copy strong{
-      color:var(--nn-text);
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:.045em;
-      line-height:1.05;
-      white-space:nowrap;
-    }
+    .nn-brand-copy strong{font-size:12px;font-weight:850;letter-spacing:.04em;line-height:1.1;white-space:nowrap}
     .nn-brand-copy small{
       color:var(--nn-muted);
       font-family:var(--nn-mono);
@@ -131,11 +118,7 @@
     }
 
     /* HERO */
-    .nn-hero{
-      padding:74px 0 46px;
-      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(248,250,252,.92));
-      border-bottom:1px solid rgba(226,232,240,.92);
-    }
+    .nn-hero{padding:24px 0 0;background:transparent;border:0}
     .nn-hero-grid{
       display:grid;
       grid-template-columns:minmax(0,1fr);
@@ -151,81 +134,33 @@
       letter-spacing:.09em;
       text-transform:uppercase;
     }
-    .nn-hero h1{
-      margin:10px 0 16px;
-      max-width:760px;
-      font-size:clamp(40px,5.8vw,68px);
-      line-height:1.03;
-      letter-spacing:-.045em;
-    }
+    .nn-hero h1{margin:4px 0 0;max-width:760px;font-size:18px;line-height:1.2;letter-spacing:-.015em;font-weight:850}
     .nn-hero h1 span{color:var(--nn-purple)}
-    .nn-hero-copy{max-width:760px;margin:0;color:#475569;font-size:18px}
+    .nn-hero-copy{display:none}
 
     /* HERO SEARCH & FILTER */
-    .nn-search{position:relative;margin-top:26px;z-index:30}
-    .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px}
-    .nn-search-field{
-      position:relative;
-      display:flex;
-      align-items:center;
-      min-width:0;
-      border:1px solid var(--nn-line-strong);
-      border-radius:15px;
-      background:#fff;
-      box-shadow:0 12px 28px rgba(15,23,42,.055);
-    }
-    .nn-search-icon{
-      width:18px;
-      height:18px;
-      margin-left:15px;
-      flex:0 0 auto;
-      color:#64748b;
-      display:grid;
-      place-items:center;
-      font-size:17px;
-    }
-    .nn-search-input{
-      width:100%;
-      min-width:0;
-      height:58px;
-      padding:0 14px;
-      border:0;
-      outline:0;
-      background:transparent;
-      color:var(--nn-text);
-      font:inherit;
-      font-size:15px;
-      font-weight:650;
-    }
-    .nn-search-shortcut{
-      margin-right:11px;
-      padding:4px 7px;
-      border:1px solid var(--nn-line);
-      border-radius:7px;
-      background:#f8fafc;
-      color:#64748b;
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:850;
-      white-space:nowrap;
-    }
-    .nn-search-submit{
-      min-width:122px;
-      height:58px;
-      padding:0 18px;
-      border:1px solid var(--nn-purple);
-      border-radius:15px;
-      background:var(--nn-purple);
-      color:#fff;
-      font-size:13px;
-      font-weight:900;
-      cursor:pointer;
-      transition:.15s ease;
-    }
-    .nn-search-submit:hover{
-      background:var(--nn-purple-dark);
-      border-color:var(--nn-purple-dark);
-    }
+    .nn-search{position:relative;margin-top:12px;z-index:50}
+    .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+    .nn-search-field{min-width:0;display:flex;align-items:center;border:1px solid var(--nn-line-strong);background:#fff}
+    .nn-search-icon{width:17px;height:17px;margin-left:12px;flex:0 0 auto;color:#64748b;display:grid;place-items:center}
+    .nn-search-icon svg{width:17px;height:17px;display:block}
+    .nn-search-input{width:100%;min-width:0;height:46px;padding:0 12px;border:0;outline:0;background:transparent;color:var(--nn-text);font-size:14px}
+    .nn-search-input::placeholder{color:#94a3b8}
+    .nn-search-inline-submit{width:40px;height:40px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}
+    .nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}
+    .nn-search-inline-submit svg{width:17px;height:17px;display:block}
+    .nn-search-submit{min-width:112px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+    .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
+    .nn-search-submit svg{width:15px;height:15px;display:block;flex:0 0 auto}
+    .nn-search-suggestions{position:absolute;top:53px;left:0;right:120px;display:grid;gap:2px;padding:5px;border:1px solid var(--nn-line);background:#fff;max-height:320px;overflow:auto;box-shadow:0 12px 28px rgba(15,23,42,.08)}
+    .nn-search-suggestions[hidden]{display:none}
+    .nn-search-result{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:44px;padding:6px 8px;border:1px solid transparent}
+    .nn-search-result:hover,.nn-search-result:focus-visible,.nn-search-result.is-active{border-color:#ddd6fe;background:#faf7ff}
+    .nn-search-result-icon{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:var(--nn-purple)}
+    .nn-search-result-main{min-width:0}
+    .nn-search-result-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:850}
+    .nn-search-result-meta{display:flex;gap:7px;margin-top:1px;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:800;text-transform:uppercase}
+    .nn-search-empty{padding:13px;color:#64748b;font-size:11px}
     .nn-search-meta{
       display:flex;
       flex-wrap:wrap;
@@ -287,7 +222,7 @@
     }
 
     /* MAIN SECTION */
-    .nn-main{padding:48px 0 68px}
+    .nn-main{padding:24px 0 56px}
 
     /* EDITORIAL / ADSENSE QUALITY BLOCK */
     .nn-editorial{margin-bottom:42px}
@@ -309,93 +244,18 @@
     .nn-editorial-card p{margin:0;color:var(--nn-muted);font-size:14px}
 
     /* CATEGORIES GRID */
-    .nn-section-head{
-      display:flex;
-      align-items:end;
-      justify-content:space-between;
-      gap:22px;
-      margin-bottom:24px;
-    }
-    .nn-section-head h2{margin:7px 0 0;font-size:32px;letter-spacing:-.025em}
-    .nn-section-head p{max-width:600px;margin:0;color:var(--nn-muted)}
+    .nn-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:10px}.nn-section-head h2{margin:4px 0 0;font-size:18px;line-height:1.2;letter-spacing:-.015em;font-weight:850}.nn-section-head p{display:none}
 
-    .nn-category-grid{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:18px;
-    }
-    .nn-cat-card{
-      display:flex;
-      flex-direction:column;
-      min-height:260px;
-      padding:24px;
-      border:1px solid var(--nn-line);
-      border-radius:22px;
-      background:#fff;
-      color:var(--nn-text);
-      box-shadow:0 10px 28px rgba(15,23,42,.04);
-      transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;
-    }
-    .nn-cat-card:hover,
-    .nn-cat-card:focus-visible{
-      transform:translateY(-3px);
-      border-color:var(--nn-purple-line);
-      background:#fdfcff;
-      box-shadow:0 18px 42px rgba(109,40,217,.09);
-      outline:none;
-    }
+    .nn-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--nn-line)}
+    .nn-cat-card{min-width:0;min-height:188px;display:flex;flex-direction:column;padding:14px;background:#fff;border:0;color:var(--nn-text);transition:background .16s ease;box-shadow:none}
+    .nn-cat-card:hover,.nn-cat-card:focus-visible{background:#fdfcff;outline:1px solid var(--nn-purple-line);outline-offset:-1px}
     .nn-cat-card[hidden]{display:none}
-    .nn-cat-card-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-    .nn-cat-icon{
-      display:inline-grid;
-      place-items:center;
-      width:44px;
-      height:44px;
-      border-radius:12px;
-      background:var(--nn-purple-soft);
-      color:var(--nn-purple);
-      font-size:18px;
-      font-weight:900;
-    }
-    .nn-cat-count{
-      display:inline-flex;
-      align-items:center;
-      padding:4px 9px;
-      border:1px solid var(--nn-line);
-      border-radius:999px;
-      background:#f8fafc;
-      color:var(--nn-muted);
-      font-family:var(--nn-mono);
-      font-size:10px;
-      font-weight:800;
-    }
-    .nn-cat-card h3{
-      margin:18px 0 8px;
-      font-size:20px;
-      font-weight:850;
-      line-height:1.2;
-    }
-    .nn-cat-card p{
-      margin:0;
-      color:var(--nn-muted);
-      font-size:14px;
-      line-height:1.55;
-    }
-    .nn-cat-card-action{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      margin-top:auto;
-      padding-top:20px;
-      color:var(--nn-purple);
-      font-size:12px;
-      font-weight:900;
-    }
+    .nn-cat-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .nn-cat-icon{display:inline-grid;place-items:center;width:34px;height:30px;border:1px solid var(--nn-line);background:#fff;color:var(--nn-purple);font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.04em}
+    .nn-cat-count{display:inline-flex;align-items:center;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:850}
+    .nn-cat-card h3{margin:10px 0 5px;font-size:14px;line-height:1.25;font-weight:850}
+    .nn-cat-card p{margin:0;color:var(--nn-muted);font-size:11px;line-height:1.5}
+    .nn-cat-card-action{display:inline-flex;align-items:center;gap:6px;margin-top:auto;padding-top:10px;color:var(--nn-purple);font-size:10px;font-weight:850}
     .nn-cat-card-action span{transition:transform .16s ease}
     .nn-cat-card:hover .nn-cat-card-action span{transform:translateX(4px)}
 
@@ -412,19 +272,7 @@
     .nn-no-results.is-visible{display:block}
 
     /* BOTTOM INFO BAND */
-    .nn-info-band{
-      margin-top:42px;
-      padding:24px 28px;
-      border:1px solid var(--nn-line);
-      border-radius:20px;
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:20px;
-      flex-wrap:wrap;
-      box-shadow:0 8px 24px rgba(15,23,42,.035);
-    }
+    .nn-info-band{margin-top:12px;padding:11px 12px;border-top:1px solid var(--nn-line);border-bottom:1px solid var(--nn-line);background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:12px}
     .nn-info-band p{margin:0;color:var(--nn-muted);font-size:14px}
     .nn-info-band a{
       display:inline-flex;
@@ -441,12 +289,7 @@
       border-top:1px solid var(--nn-line);
       background:#fff;
     }
-    .nn-footer-main{
-      padding:34px 0 26px;
-      display:grid;
-      grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);
-      gap:36px;
-    }
+    .nn-footer-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:24px;padding:22px 0}
     .nn-footer .nn-brand-logo-img{
       height:26px;
       width:auto;
@@ -455,74 +298,37 @@
       object-fit:contain;
       margin-left:0;
     }
-    .nn-footer-copy{
-      max-width:560px;
-      margin:15px 0 0;
-      color:var(--nn-muted);
-      font-size:13px;
-    }
-    .nn-footer-links{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:9px 18px;
-      align-content:start;
-    }
-    .nn-footer-links a{color:#64748b;font-size:11px;font-weight:800}
+    .nn-footer-copy{display:none}
+    .nn-footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;align-content:start}.nn-footer-links a{color:#64748b;font-size:10px;font-weight:800}
     .nn-footer-links a:hover{color:var(--nn-purple)}
-    .nn-footer-bottom{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-      padding:16px 0 20px;
-      border-top:1px solid var(--nn-line);
-      color:#94a3b8;
-      font-family:var(--nn-mono);
-      font-size:9px;
-      font-weight:800;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-    }
+    .nn-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0 14px;border-top:1px solid var(--nn-line);color:#94a3b8;font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
 
     /* RESPONSIVE */
     @media(max-width:960px){
       .nn-hero-grid{grid-template-columns:1fr}
       .nn-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .nn-editorial-grid{grid-template-columns:1fr}
     }
     @media(max-width:720px){
       .nn-shell{width:min(var(--nn-max),calc(100% - 22px))}
-      .nn-header-row{min-height:64px}
-      .nn-nav{
-        display:none;
-        position:absolute;
-        left:11px;
-        right:11px;
-        top:64px;
-        padding:8px;
-        flex-direction:column;
-        align-items:stretch;
-        border:1px solid var(--nn-line);
-        border-radius:14px;
-        background:#fff;
-        box-shadow:0 18px 46px rgba(15,23,42,.12);
-      }
-      .nn-nav.is-open{display:flex}
-      .nn-nav a{padding:11px 12px}
-      .nn-menu{display:block}
+      .nn-header-row{min-height:60px;flex-direction:column;align-items:stretch;gap:5px;padding:8px 0 7px}
+      .nn-brand{width:100%}
+      .nn-brand-copy strong{white-space:normal}
+      .nn-nav{width:100%;min-width:0;display:flex;position:static;justify-content:flex-start;align-items:center;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;gap:2px}
+      .nn-nav::-webkit-scrollbar{display:none}
+      .nn-nav a{flex:0 0 auto;padding:6px 7px;font-size:11px}
+      .nn-menu{display:none}
       .nn-brand-copy small{display:none}
-      .nn-hero{padding:56px 0 34px}
+      .nn-hero{padding:20px 0 0}
       .nn-search-form{grid-template-columns:1fr}
       .nn-search-submit{width:100%}
-      .nn-search-shortcut{display:none}
       .nn-category-grid{grid-template-columns:1fr}
-      .nn-section-head{align-items:start;flex-direction:column}
-      .nn-section-head h2{font-size:28px}
-      .nn-footer-main{grid-template-columns:1fr;gap:22px}
-      .nn-footer-links{grid-template-columns:1fr 1fr}
+      .nn-section-head{align-items:flex-start;flex-direction:column}
+      .nn-footer-main{grid-template-columns:1fr;gap:16px}
+      .nn-footer-links{grid-template-columns:repeat(2,minmax(0,1fr))}
       .nn-footer-bottom{align-items:flex-start;flex-direction:column;gap:8px}
     }
     @media(max-width:420px){
+      .nn-search-suggestions{right:0;top:53px}
       .nn-footer-links{grid-template-columns:1fr}
       .nn-brand-logo-img{height:34px}
     }
@@ -560,12 +366,14 @@
           <h1>Tool <span>Categories</span></h1>
 
           <div class="nn-search">
-            <form class="nn-search-form" id="category-search-form" role="search" aria-label="Filter tool categories">
-              <label class="nn-search-field" for="category-search-input">
-                <span class="nn-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg></span>
-                <input class="nn-search-input" id="category-search-input" type="search" placeholder="Filter categories by name or keyword…" autocomplete="off" spellcheck="false">
-              </label>
-              <button class="nn-search-submit" type="submit">Filter</button>
+            <form class="nn-search-form" id="category-search-form" data-nexusnova-search role="search" aria-label="Search NexusNova tools and categories" novalidate>
+              <div class="nn-search-field">
+                <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg>
+                <input class="nn-search-input" id="category-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Search NexusNova tools and categories" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
+                <button class="nn-search-inline-submit" type="submit" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg></button>
+              </div>
+              <button class="nn-search-submit" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg><span>Search tool</span></button>
+              <div class="nn-search-suggestions" id="nn-search-suggestions" role="listbox" aria-label="NexusNova search suggestions" hidden></div>
             </form>
           </div>
         </div>
@@ -744,80 +552,108 @@
     </div>
   </footer>
 
-  <!-- CLIENT-SIDE FILTER & MOBILE NAV SCRIPT -->
+  <script src="assets/js/search-core.js"></script>
+  <!-- POWERFUL SEARCH & MOBILE NAV SCRIPT -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // 1. Year update
+      'use strict';
+
       const yearEl = document.querySelector('[data-year]');
       if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-      // 2. Mobile Nav Toggle
       const menuBtn = document.querySelector('[data-nn-menu]');
       const navEl = document.querySelector('[data-nn-nav]');
       if (menuBtn && navEl) {
         menuBtn.addEventListener('click', function () {
           const isOpen = navEl.classList.toggle('is-open');
           menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          menuBtn.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+        });
+        navEl.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            navEl.classList.remove('is-open');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            menuBtn.setAttribute('aria-label', 'Open navigation');
+          });
         });
       }
 
-      // 3. Instant Category Filter
-      const searchInput = document.getElementById('category-search-input');
-      const searchForm = document.getElementById('category-search-form');
+      const input = document.getElementById('category-search-input');
+      const form = document.getElementById('category-search-form');
+      const panel = document.getElementById('nn-search-suggestions');
       const cards = Array.from(document.querySelectorAll('[data-category-card]'));
-      const countEl = document.getElementById('category-search-count');
-      const noResultsEl = document.getElementById('category-no-results');
+      const noResults = document.getElementById('category-no-results');
+      const core = window.NexusNovaSearchCore ? new window.NexusNovaSearchCore({ maxResults: 8 }) : null;
 
-      function filterCategories() {
-        const query = (searchInput.value || '').trim().toLowerCase();
-        let visibleCount = 0;
+      const categoryAliases = new Map([
+        ['Security', 'Security & Network'],
+        ['Security & Network', 'Security & Network']
+      ]);
+      const cardByTitle = new Map(cards.map(function (card) {
+        return [String(card.querySelector('h3')?.textContent || '').trim().toLowerCase(), card];
+      }));
+      const cardByHref = new Map(cards.map(function (card) {
+        return [String(card.getAttribute('href') || '').trim(), card];
+      }));
+
+      function setCardVisibility(query) {
+        const value = String(query || '').trim();
+        if (!value || !core) {
+          cards.forEach(function (card) { card.removeAttribute('hidden'); });
+          if (noResults) noResults.classList.remove('is-visible');
+          return;
+        }
+
+        const results = core.query(value);
+        const wanted = new Set();
+
+        results.forEach(function (result) {
+          if (result.type === 'category') {
+            const card = cardByHref.get(result.url) || cardByTitle.get(String(result.displayTitle || result.title || '').replace(/^\[[^\]]+\]\s*/, '').trim().toLowerCase());
+            if (card) wanted.add(card);
+            return;
+          }
+          const category = categoryAliases.get(result.category || '') || result.category || '';
+          if (category) {
+            const card = cardByTitle.get(category.toLowerCase());
+            if (card) wanted.add(card);
+          }
+        });
+
+        if (!wanted.size) {
+          cards.forEach(function (card) {
+            const haystack = String(card.getAttribute('data-search-text') || '') + ' ' + String(card.querySelector('h3')?.textContent || '') + ' ' + String(card.querySelector('p')?.textContent || '');
+            const normalized = core.normalize(haystack);
+            const tokens = core.tokenize(value);
+            const match = tokens.length && tokens.every(function (token) { return normalized.includes(token); });
+            if (match) wanted.add(card);
+          });
+        }
 
         cards.forEach(function (card) {
-          const text = (card.getAttribute('data-search-text') || '').toLowerCase();
-          const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
-          const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
-          const match = !query || text.includes(query) || title.includes(query) || desc.includes(query);
-
-          if (match) {
-            card.removeAttribute('hidden');
-            visibleCount++;
-          } else {
-            card.setAttribute('hidden', '');
-          }
+          card.toggleAttribute('hidden', !wanted.has(card));
         });
-
-        if (countEl) {
-          countEl.textContent = visibleCount + ' categories visible';
-        }
-        if (noResultsEl) {
-          if (visibleCount === 0) {
-            noResultsEl.classList.add('is-visible');
-          } else {
-            noResultsEl.classList.remove('is-visible');
-          }
-        }
+        if (noResults) noResults.classList.toggle('is-visible', wanted.size === 0);
       }
 
-      if (searchInput) {
-        searchInput.addEventListener('input', filterCategories);
+      if (core && input && form && panel) {
+        core.bindDropdown({ input: input, form: form, panel: panel, maxResults: 8 });
+        input.addEventListener('input', function () { setCardVisibility(input.value); });
+      } else if (input) {
+        input.addEventListener('input', function () { setCardVisibility(input.value); });
       }
-      if (searchForm) {
-        searchForm.addEventListener('submit', function (e) {
-          e.preventDefault();
-          filterCategories();
+
+      cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+          input?.blur();
         });
-      }
-
-      // 4. Ctrl / Cmd + K Shortcut
-      document.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-          e.preventDefault();
-          if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-          }
-        }
       });
+
+      if (input && form) {
+        form.addEventListener('submit', function () {
+          setCardVisibility(input.value);
+        });
+      }
     });
   </script>
 </body>
