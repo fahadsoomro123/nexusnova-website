@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Practical Guides for Online Tools — NexusNova Tools</title>
+  <title>Practical Guides for Online Tools â€” NexusNova Tools</title>
   <meta name="description" content="Practical guides for weighted decisions, percentages, unit conversion, passwords, image compression, JPG to PDF, resumes and AI prompting, linked to free tools.">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta name="theme-color" content="#f8fafc">
@@ -11,15 +11,16 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NexusNova Tools">
-  <meta property="og:title" content="Practical Guides — NexusNova Tools">
+  <meta property="og:title" content="Practical Guides â€” NexusNova Tools">
   <meta property="og:description" content="Understand useful digital tasks, formulas and workflows, then open the matching free browser tool.">
   <meta property="og:url" content="https://nexusnovatools.com/guides.html">
   <meta property="og:image" content="https://nexusnovatools.com/assets/logo.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Practical Guides for Online Tools — NexusNova Tools">
+  <meta name="twitter:title" content="Practical Guides for Online Tools â€” NexusNova Tools">
   <meta name="twitter:description" content="Step-by-step methodologies and practical explanations linked to free web tools.">
   <meta name="twitter:image" content="https://nexusnovatools.com/assets/logo.png">
   <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/search-core.js" defer></script>
 
   <style>
     :root{
@@ -559,6 +560,47 @@
       .nn-footer-links{grid-template-columns:1fr}
       .nn-brand-logo-img{height:34px}
     }
+
+    /* COMPACT NEXUSNOVA DIRECTORY OVERRIDES */
+    .nn-hero{padding:24px 0 0;background:transparent}
+    .nn-hero-grid{grid-template-columns:1fr}
+    .nn-hero-side{display:none}
+    .nn-hero h1{margin:4px 0 0;font-size:30px;line-height:1.16;letter-spacing:-.025em;font-weight:850}
+    .nn-main{padding:0 0 56px}
+    .nn-search{position:relative;z-index:50;margin-top:10px}
+    .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+    .nn-search-field{min-width:0;display:flex;align-items:center;border:1px solid var(--nn-line-strong);border-radius:0;background:#fff}
+    .nn-search-icon{width:17px;height:17px;margin-left:12px;flex:0 0 auto;color:#64748b}
+    .nn-search-input{width:100%;min-width:0;height:46px;padding:0 12px;border:0;outline:0;background:transparent;color:var(--nn-text);font-size:14px}
+    .nn-search-input::placeholder{color:#94a3b8}
+    .nn-search-inline-submit{width:40px;height:40px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}
+    .nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}
+    .nn-search-inline-submit svg{width:17px;height:17px;display:block}
+    .nn-search-submit{min-width:128px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);border-radius:0;background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center}
+    .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
+    .nn-search-suggestions{position:absolute;top:53px;left:0;right:136px;display:grid;gap:2px;padding:5px;border:1px solid var(--nn-line);border-radius:0;background:#fff;max-height:320px;overflow:auto}
+    .nn-search-suggestions[hidden]{display:none}
+    .nn-search-result{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:44px;padding:6px 8px;border:1px solid transparent}
+    .nn-search-result:hover,.nn-search-result:focus-visible,.nn-search-result.is-active{border-color:#ddd6fe;background:#faf7ff}
+    .nn-search-result-icon{display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--nn-line);font-family:var(--nn-mono);font-size:9px;color:var(--nn-purple)}
+    .nn-search-result-main{min-width:0}.nn-search-result-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:850}.nn-search-result-meta{display:flex;gap:7px;margin-top:1px;color:#64748b;font-family:var(--nn-mono);font-size:8px;font-weight:800;text-transform:uppercase}.nn-search-empty{padding:13px;color:#64748b;font-size:11px}
+    .nn-directory{padding-top:24px}.nn-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 10px}.nn-section-head p{display:none}.nn-section-head h2{margin:4px 0 0;font-size:18px;line-height:1.2;font-weight:850;letter-spacing:-.015em}
+    .nn-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;border:1px solid var(--nn-line);background:var(--nn-line)}
+    .nn-guide-card{min-width:0;min-height:190px;display:flex;flex-direction:column;padding:15px;background:#fff;border:0;border-radius:0;box-shadow:none}
+    .nn-guide-card:hover{transform:none;box-shadow:none;background:#fdfcff;outline:1px solid #ddd6fe;outline-offset:-1px}
+    .nn-guide-card[hidden]{display:none}
+    .nn-guide-tag{align-self:flex-start;padding:0;border:0;border-radius:0;background:transparent;color:var(--nn-subtle);font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .nn-guide-card h3{margin:7px 0 6px;font-size:15px;line-height:1.28;font-weight:850;letter-spacing:-.01em}
+    .nn-guide-card p{margin:0;color:var(--nn-muted);font-size:11px;line-height:1.5}
+    .nn-guide-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:12px;border-top:0}
+    .nn-guide-link{color:var(--nn-purple);font-size:10px;font-weight:850}.nn-tool-pill{padding:6px 9px;border:1px solid var(--nn-line);border-radius:0;background:#fff;font-size:10px;font-weight:800;color:#475569}.nn-tool-pill:hover{color:var(--nn-purple);border-color:#ddd6fe;background:#faf7ff}
+    .nn-no-results{display:none;margin-top:12px;padding:18px;border:1px dashed var(--nn-line-strong);border-radius:0;background:#fff;color:var(--nn-muted);font-size:11px}.nn-no-results.is-visible{display:block}
+    .nn-footer{margin-top:34px;border-top:1px solid var(--nn-line);background:#fff}.nn-footer-main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:24px;padding:22px 0}.nn-footer .nn-brand-logo-img{height:26px;width:auto;display:block;max-width:none;object-fit:contain;margin-left:0}.nn-footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;align-content:start}.nn-footer-links a{font-size:10px;color:#64748b;font-weight:800}.nn-footer-links a:hover{color:var(--nn-purple)}.nn-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0 14px;border-top:1px solid var(--nn-line);color:#94a3b8;font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}.nn-footer-domain{color:var(--nn-purple)}
+    @media(max-width:1000px){.nn-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.nn-shell{width:min(var(--nn-max),calc(100% - 22px))}.nn-header-row{flex-direction:column;align-items:stretch;gap:5px;padding:8px 0 7px}.nn-brand{width:100%}.nn-nav{width:100%;min-width:0;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding-bottom:1px}.nn-nav::-webkit-scrollbar{display:none}.nn-nav a{flex:0 0 auto;padding:6px 7px;font-size:11px}.nn-step{padding-top:18px}.nn-step-head h1{font-size:25px}.nn-search-form{grid-template-columns:1fr}.nn-search-submit{width:100%}.nn-search-suggestions{right:0}.nn-guide-grid{grid-template-columns:1fr}.nn-footer-main{grid-template-columns:1fr}.nn-footer-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:420px){.nn-footer-links{grid-template-columns:1fr}}
+    body{background:#fff}
+    .nn-hero{background:#fff;border:0;min-height:0;box-shadow:none}
   </style>
 </head>
 <body>
@@ -569,13 +611,10 @@
         <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
         <span class="nn-brand-copy">
           <strong>NEXUSNOVA TOOLS</strong>
-          <small>ENTERPRISE GRID • CLIENT SEARCH</small>
+
         </span>
       </a>
-
-      <button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button>
-
-      <nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
+<nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation">
         <a href="/">Home</a>
         <a href="tools.html">Tools</a>
         <a href="categories.html">Categories</a>
@@ -590,85 +629,23 @@
     <section class="nn-hero">
       <div class="nn-shell nn-hero-grid">
         <div>
-          <span class="nn-kicker">NEXUSNOVA PRACTICAL GUIDES</span>
-          <h1>Understand the Task, <span>Not Just the Output</span></h1>
-          <p class="nn-hero-copy">Original step-by-step methodologies and practical explanations linked directly to tools you can use immediately. We prioritize mathematical formulas, algorithmic trade-offs, and in-browser privacy.</p>
-
-          <div class="nn-search">
-            <form class="nn-search-form" id="guide-search-form" role="search" aria-label="Filter practical guides">
-              <label class="nn-search-field" for="guide-search-input">
-                <span class="nn-search-icon" aria-hidden="true">⌕</span>
-                <input class="nn-search-input" id="guide-search-input" type="search" placeholder="Search guides by task, tool or methodology…" autocomplete="off" spellcheck="false">
-                <span class="nn-search-shortcut">CTRL / ⌘ K</span>
-              </label>
-              <button class="nn-search-submit" type="submit">Filter</button>
-            </form>
-            <div class="nn-search-meta">
-              <span>Instant client-side filter • no reload</span>
-              <span class="nn-search-count" id="guide-search-count">8 practical guides available</span>
-            </div>
-          </div>
+          <span class="nn-kicker">GUIDES</span>
+          <h1>Guides</h1>
+<div class="nn-search"><form class="nn-search-form" id="guide-search-form" data-nexusnova-search role="search" aria-label="Search guides" novalidate><label class="nn-search-field" for="guide-search-input"><svg class="nn-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="7.2"></circle><path d="M16.1 16.1L20 20"></path></svg><input class="nn-search-input" id="guide-search-input" data-nexusnova-search-input type="search" placeholder="Search guides..." autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="nn-guide-search-suggestions" aria-expanded="false"><button class="nn-search-inline-submit" type="submit" aria-label="Search guides"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.2"></circle><path d="M16.1 16.1L20 20"></path></svg></button></label><button class="nn-search-submit" type="submit">Search tool</button></form><div class="nn-search-suggestions" id="nn-guide-search-suggestions" role="listbox" aria-label="Guide search suggestions" hidden></div></div>
         </div>
-
-        <aside class="nn-hero-side">
-          <span class="nn-side-label">PUBLISHING STANDARDS</span>
-          <h2>Grounding every tool in clear methodology.</h2>
-          <p>Guides explain the underlying math, edge cases and limitations before you enter data into a browser calculator.</p>
-
-          <div class="nn-stat-grid">
-            <div class="nn-stat">
-              <span class="nn-stat-label">GUIDES</span>
-              <span class="nn-stat-value">8 Step-by-Step</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">INTEGRATION</span>
-              <span class="nn-stat-value">1:1 Tool Mapping</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">FOCUS</span>
-              <span class="nn-stat-value">Zero Filler Content</span>
-            </div>
-            <div class="nn-stat">
-              <span class="nn-stat-label">GOVERNANCE</span>
-              <span class="nn-stat-value">Editorial Policy</span>
-            </div>
-          </div>
-        </aside>
-      </div>
+</div>
     </section>
 
     <!-- MAIN BODY -->
     <section class="nn-main">
       <div class="nn-shell">
-
-        <!-- EDITORIAL / ADSENSE QUALITY BLOCK -->
-        <section class="nn-editorial" aria-labelledby="guides-editorial-title">
-          <article class="nn-editorial-card">
-            <div class="nn-editorial-grid">
-              <div>
-                <span class="nn-kicker">EDUCATIONAL RIGOR</span>
-                <h2 id="guides-editorial-title">Direct connection between theory and execution.</h2>
-              </div>
-              <div>
-                <p>NexusNova guides exist to eliminate the uncertainty behind automated online tools. When you calculate percentages, compute weighted matrix decisions, or convert units, knowing the underlying formula ensures your business or academic results are sound. Every guide provides plain-language explanations, numerical walkthroughs, common pitfall warnings, and a direct button to launch the corresponding zero-friction utility.</p>
-                <div class="nn-editorial-links">
-                  <a href="editorial-policy.html">Read Editorial Policy →</a>
-                  <a href="tool-methodology.html">Review Tool Methodology →</a>
-                  <a href="editorial-team.html">Editorial Accountability →</a>
-                </div>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <!-- GUIDES GRID -->
+<!-- GUIDES GRID -->
         <div class="nn-section-head">
           <div>
-            <span class="nn-kicker">CURATED GUIDES</span>
-            <h2>All Practical Guides</h2>
+            <span class="nn-kicker">LIBRARY</span>
+            <h2>All guides</h2>
           </div>
-          <p>Read the comprehensive methodology, then launch the dedicated tool with a single click.</p>
-        </div>
+</div>
 
         <div class="nn-guide-grid" id="guides-cards-grid">
 
@@ -679,10 +656,10 @@
             <p>Choose distinct evaluation criteria, assign objective relative weights, score multiple options systematically, and test whether rankings survive sensitivity adjustments.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/weighted-decision-matrix.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="decision-matrix-calculator.html">
-                Use Calculator ↗
+                Use Calculator â†—
               </a>
             </div>
           </article>
@@ -694,10 +671,10 @@
             <p>Master percentage-of, discount deductions, cumulative increase/decrease, and relative change formulas with clear step-by-step arithmetic examples.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/percentage-basics.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="percentage-calculator.html">
-                Use Calculator ↗
+                Use Calculator â†—
               </a>
             </div>
           </article>
@@ -709,10 +686,10 @@
             <p>Understand password entropy, length versus character complexity, cryptographic salting, and why credential reuse exposes accounts to stuffing vectors.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/password-security.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="password-strength-checker.html">
-                Check Strength ↗
+                Check Strength â†—
               </a>
             </div>
           </article>
@@ -724,10 +701,10 @@
             <p>Understand scientific conversion factors between metric and imperial standards, and prevent common precision errors in length, mass, and thermal conversions.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/unit-conversion.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="unit-converter.html">
-                Use Converter ↗
+                Use Converter â†—
               </a>
             </div>
           </article>
@@ -739,10 +716,10 @@
             <p>Learn how pixel dimensions, chromatic subsampling, lossy quantization, and modern formats like WebP affect bandwidth load times without visual fidelity loss.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/image-compression.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="image-compressor.html">
-                Use Compressor ↗
+                Use Compressor â†—
               </a>
             </div>
           </article>
@@ -754,10 +731,10 @@
             <p>Understand page sequencing, A4 margin placement, dpi print scaling, client-side rendering boundaries, and what image-to-PDF converters do behind the scenes.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/jpg-to-pdf.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="jpg-to-pdf.html">
-                Use JPG to PDF ↗
+                Use JPG to PDF â†—
               </a>
             </div>
           </article>
@@ -769,10 +746,10 @@
             <p>Structure professional experience with measurable outcomes, eliminate visual clutter, optimize hierarchy for applicant tracking systems, and proofread thoroughly.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/resume-writing.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="resume-builder.html">
-                Use Builder ↗
+                Use Builder â†—
               </a>
             </div>
           </article>
@@ -784,10 +761,10 @@
             <p>Structure system instructions, define strict role constraints, supply concrete few-shot examples, and format outputs predictably for downstream workflows.</p>
             <div class="nn-guide-actions">
               <a class="nn-guide-link" href="guides/ai-prompting.html">
-                <span>Read guide →</span>
+                <span>Read guide â†’</span>
               </a>
               <a class="nn-tool-pill" href="ai-prompt-builder.html">
-                Use Prompt Builder ↗
+                Use Prompt Builder â†—
               </a>
             </div>
           </article>
@@ -797,42 +774,7 @@
         <div class="nn-no-results" id="guide-no-results">
           <p>No matching guide found. Try searching for "decisions", "math", "password", "resume", or "prompt".</p>
         </div>
-
-        <!-- COMPANION UTILITIES -->
-        <section class="nn-companion-section">
-          <div class="nn-section-head">
-            <div>
-              <span class="nn-kicker">CONNECTED UTILITIES</span>
-              <h2>Tools Mentioned in Our Guides</h2>
-            </div>
-            <p>Jump directly to the utility without reading the full methodology article.</p>
-          </div>
-
-          <div class="nn-companion-grid">
-            <a class="nn-companion-card" href="decision-matrix-calculator.html">
-              <span>Planning</span>
-              <h4>Decision Matrix Calculator</h4>
-              <p>Rank multiple options with transparent weighted criteria.</p>
-            </a>
-            <a class="nn-companion-card" href="text-to-pdf.html">
-              <span>PDF</span>
-              <h4>Text to PDF</h4>
-              <p>Turn plain text into a downloadable PDF locally in browser.</p>
-            </a>
-            <a class="nn-companion-card" href="qr-code-generator.html">
-              <span>QR</span>
-              <h4>QR Code Generator</h4>
-              <p>Generate scannable QR codes with custom styling and error correction.</p>
-            </a>
-            <a class="nn-companion-card" href="image-to-text-ocr.html">
-              <span>OCR</span>
-              <h4>Image to Text OCR</h4>
-              <p>Extract copyable text from screenshots, documents and images.</p>
-            </a>
-          </div>
-        </section>
-
-      </div>
+</div>
     </section>
   </main>
 
@@ -844,13 +786,9 @@
           <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
           <span class="nn-brand-copy">
             <strong>NEXUSNOVA TOOLS</strong>
-            <small>FOCUSED DIGITAL UTILITIES</small>
-          </span>
+</span>
         </a>
-        <p class="nn-footer-copy">
-          Practical step-by-step guides connected to free browser tools and clear methodology notes. Search by task, browse by category, and access practical web tools without clutter.
-        </p>
-      </div>
+</div>
 
       <nav class="nn-footer-links" aria-label="Footer navigation">
         <a href="tools.html">Tools directory</a>
@@ -864,87 +802,9 @@
     </div>
 
     <div class="nn-shell nn-footer-bottom">
-      <span>© <span data-year></span> NexusNova Tools</span>
+      <span>Â© <span data-year></span> NexusNova Tools</span>
       <span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span>
     </div>
-  </footer>
-
-  <!-- CLIENT-SIDE FILTER & MOBILE NAV SCRIPT -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // 1. Year update
-      const yearEl = document.querySelector('[data-year]');
-      if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-      // 2. Mobile Nav Toggle
-      const menuBtn = document.querySelector('[data-nn-menu]');
-      const navEl = document.querySelector('[data-nn-nav]');
-      if (menuBtn && navEl) {
-        menuBtn.addEventListener('click', function () {
-          const isOpen = navEl.classList.toggle('is-open');
-          menuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-      }
-
-      // 3. Instant Guide Filter
-      const searchInput = document.getElementById('guide-search-input');
-      const searchForm = document.getElementById('guide-search-form');
-      const cards = Array.from(document.querySelectorAll('[data-guide-card]'));
-      const countEl = document.getElementById('guide-search-count');
-      const noResultsEl = document.getElementById('guide-no-results');
-
-      function filterGuides() {
-        const query = (searchInput.value || '').trim().toLowerCase();
-        let visibleCount = 0;
-
-        cards.forEach(function (card) {
-          const text = (card.getAttribute('data-search-text') || '').toLowerCase();
-          const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
-          const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
-          const tag = (card.querySelector('.nn-guide-tag')?.textContent || '').toLowerCase();
-          const match = !query || text.includes(query) || title.includes(query) || desc.includes(query) || tag.includes(query);
-
-          if (match) {
-            card.removeAttribute('hidden');
-            visibleCount++;
-          } else {
-            card.setAttribute('hidden', '');
-          }
-        });
-
-        if (countEl) {
-          countEl.textContent = visibleCount + ' practical guides available';
-        }
-        if (noResultsEl) {
-          if (visibleCount === 0) {
-            noResultsEl.classList.add('is-visible');
-          } else {
-            noResultsEl.classList.remove('is-visible');
-          }
-        }
-      }
-
-      if (searchInput) {
-        searchInput.addEventListener('input', filterGuides);
-      }
-      if (searchForm) {
-        searchForm.addEventListener('submit', function (e) {
-          e.preventDefault();
-          filterGuides();
-        });
-      }
-
-      // 4. Ctrl / Cmd + K Shortcut
-      document.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-          e.preventDefault();
-          if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-          }
-        }
-      });
-    });
-  </script>
+  </footer><script>document.addEventListener("DOMContentLoaded",function(){const y=document.querySelector("[data-year]");if(y)y.textContent=new Date().getFullYear();const i=document.getElementById("guide-search-input"),f=document.getElementById("guide-search-form"),p=document.getElementById("nn-guide-search-suggestions"),c=[...document.querySelectorAll("[data-guide-card]")],count=document.getElementById("guide-search-count"),none=document.getElementById("guide-no-results");if(!(i&&f&&p&&window.NexusNovaSearchCore))return;const core=new NexusNovaSearchCore({maxResults:8});function results(v){const q=String(v||"").trim();return q?core.query(q).filter(r=>r.type==="guide").slice(0,8):[]}function filterCards(){const q=String(i.value||"").trim();if(!q){c.forEach(x=>x.removeAttribute("hidden"));if(count)count.textContent="8 guides";if(none)none.classList.remove("is-visible");return}const urls=new Set(results(q).map(r=>r.url));let visible=0;c.forEach(x=>{const show=urls.has(x.getAttribute("data-search-url")||"");x.toggleAttribute("hidden",!show);if(show)visible++});if(count)count.textContent=visible+" matching guides";if(none)none.classList.toggle("is-visible",visible===0)}core.bindDropdown({input:i,form:f,panel:p,maxResults:8,filterType:"guide"});i.addEventListener("input",filterCards);filterCards()});</script>
 </body>
 </html>
