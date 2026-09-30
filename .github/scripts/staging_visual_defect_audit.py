@@ -98,6 +98,23 @@ def audit_one(page):
             'website_launches_image':launch_img,'footer_duplicate_risk':direct_footer_duplicate,
             'external_images':parser.external_images}
 
+
+def audit_css_assets():
+    """Check local url(...) references inside public CSS files."""
+    css_reports=[]
+    for page in sorted(files):
+        if not page.lower().endswith('.css'):
+            continue
+        raw=Path(page).read_text(encoding='utf-8',errors='replace')
+        for u in re.findall(r"""url\(\s*["']?([^"')]+)""",raw,re.I):
+            ref=html_lib.unescape(u.strip())
+            if not ref or re.match(r'^(?:https?:|data:|blob:|#|//)',ref,re.I):
+                continue
+            target=resolve_ref(page,ref)
+            if target and not any(target==d or target.startswith(d + '/') for d in SKIP_DIRS) and target not in files:
+                css_reports.append({'file':page,'ref':ref,'resolved':target})
+    return css_reports
+
 reports=[]
 for page in sorted(htmls):
     reports.append(audit_one(page))
@@ -115,8 +132,10 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:
     for u,(status,meta) in zip(urls,ex.map(check,urls)):
         external[u]={'status':status,'meta':meta}
 
+css_missing=audit_css_assets()
 summary={
  'pages_scanned':len(htmls),
+ 'css_missing_asset_refs':css_missing,
  'missing_asset_refs':[r for r in reports if r['missing'] or r['inline_missing']],
  'legacy_mark_pages':[r['page'] for r in reports if r['legacy_mark_html']],
  'website_launches_refs':[r['page'] for r in reports if r['website_launches_image']],
@@ -128,6 +147,7 @@ lines=[
  'NEXUSNOVA STAGING VISUAL-DEFECT AUDIT',
  f"HTML pages scanned: {summary['pages_scanned']}",
  f"Missing local asset pages: {len(summary['missing_asset_refs'])}",
+ f"Missing CSS asset refs: {len(summary['css_missing_asset_refs'])}",
  f"Legacy N-mark pages: {len(summary['legacy_mark_pages'])}",
  f"WebsiteLaunches image refs: {len(summary['website_launches_refs'])}",
  f"Footer duplicate-risk pages: {len(summary['footer_duplicate_risk_pages'])}",
@@ -136,6 +156,9 @@ lines=[
  '',
  'MISSING ASSETS',
  *[f"{r['page']}: {r['missing'] or r['inline_missing']}" for r in summary['missing_asset_refs']],
+ '',
+ 'MISSING CSS ASSETS',
+ *[f"{r['file']}: {r['ref']} -> {r['resolved']}" for r in summary['css_missing_asset_refs']],
  '',
  'LEGACY N MARKS',
  *summary['legacy_mark_pages'],
@@ -151,5 +174,5 @@ lines=[
 ]
 Path('staging-visual-defect-audit.txt').write_text('\n'.join(lines)+'\n',encoding='utf-8')
 print('\n'.join(lines))
-if summary['missing_asset_refs'] or summary['footer_duplicate_risk_pages'] or any(v['status']!=200 for v in external.values()):
+if summary['missing_asset_refs'] or summary['css_missing_asset_refs'] or summary['footer_duplicate_risk_pages'] or any(v['status']!=200 for v in external.values()):
     raise SystemExit(1)
