@@ -1,0 +1,38 @@
+name: Restore NexusNova staging snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type RESTORE to restore the locked staging snapshot
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: ${{ inputs.confirm == 'RESTORE' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore locked snapshot
+        env:
+          SOURCE_REF: refs/heads/nexusnova-redesign-locked-2026-10-02
+          TARGET_REF: refs/heads/nexusnova-clean-redesign
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init restore-work
+          cd restore-work
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          git fetch --no-tags origin "${SOURCE_REF}"
+          SNAPSHOT_SHA="$(git rev-parse FETCH_HEAD)"
+          echo "Restoring ${TARGET_REF} to ${SNAPSHOT_SHA}"
+          git push --force origin "FETCH_HEAD:${TARGET_REF}"
+          echo "RESTORE_OK=${SNAPSHOT_SHA}" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Refuse accidental restore request
+        if: ${{ inputs.confirm != 'RESTORE' }}
+        run: echo "Nothing changed. Confirmation word was not RESTORE."

@@ -1,0 +1,14 @@
+{
+  "system": "NexusNova staging restore lock",
+  "targetBranch": "nexusnova-clean-redesign",
+  "lockedSourceBranch": "nexusnova-redesign-locked-2026-10-02",
+  "restoreMethod": "GitHub Actions workflow: Restore NexusNova staging snapshot",
+  "confirmation": "RESTORE",
+  "scope": {
+    "categoryHubs": 9,
+    "articleDetailPages": 34,
+    "guideDetailPages": 8,
+    "topLevelContentHubsAdjusted": 3,
+    "sharedShellAssets": ["assets/css/nn-inner-shell.css","assets/js/nn-inner-shell.js"]
+  }
+}
