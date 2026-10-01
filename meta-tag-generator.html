@@ -16,8 +16,6 @@
 
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="assets/css/site.css">
-<link rel="stylesheet" href="assets/css/scifi.css">
-
 <style>
 .meta-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .meta-card,.meta-output{padding:24px;border:1px solid #dbe6f2;border-radius:26px;background:#fff;box-shadow:0 18px 48px rgba(15,23,42,.08)}
@@ -41,30 +39,11 @@
 <meta name="twitter:description" content="Build copy-ready SEO and social meta tags with live previews.">
 <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
 
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
 </head>
-<body>
+<body class="nn-inner-page">
 
-<header class="site-header" data-header>
-  <div class="container nav-wrap">
-    <a class="brand" href="index.html">
-      <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;">
-      <span class="brand-copy">
-        <strong>NEXUSNOVA TOOLS</strong>
-        <small>FAST EVERYDAY UTILITIES</small>
-      </span>
-    </a>
-
-    <button class="menu-btn" type="button" data-menu-btn aria-expanded="false">☰</button>
-
-    <nav class="nav" data-nav aria-label="Primary navigation">
-      <a href="index.html">Home</a>
-      <a href="tools.html">Tools</a>
-      <a href="categories.html">Categories</a>
-      <a href="articles.html">Articles</a>
-      <a href="guides.html">Guides</a>
-    </nav>
-  </div>
-</header>
+<header class="nn-header" data-nn-header><div class="nn-shell nn-header-row"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button><nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="index.html#master-directory">All Tools</a><a href="index.html#content-library">Content</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
 
 <main>
 
@@ -311,21 +290,7 @@
 
 </main>
 
-<footer class="site-footer">
-  <div class="container footer-bottom">
-    <span>© <span data-year></span> NexusNova Tools.</span>
-    <a href="tool-methodology.html">Methodology</a>
-  </div>
-
-      <ul class="footer-links" style="list-style:none;margin:0;padding:0">
-        <li><a href="/terms.html">Terms</a> & <a href="/refund-policy.html">Refund Policy</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/editorial-policy.html">Editorial Policy</a></li>
-        <li><a href="/tool-methodology.html">Tool Methodology</a></li>
-        <li><a href="/privacy.html">Privacy</a></li>
-        <li><a href="/contact.html">Contact Us & Support</a></li>
-      </ul>
-</footer>
+<footer class="nn-footer"><div class="nn-shell nn-footer-main"><div class="nn-footer-brand"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img nn-footer-logo"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p>Practical browser tools, guides and utilities with clear limits and useful workflows.</p></div><nav class="nn-footer-links" aria-label="Footer navigation"><div><span class="nn-footer-title">Explore</span><a href="tools.html">Tools directory</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></div><div><span class="nn-footer-title">Trust</span><a href="tool-methodology.html">Tool Methodology</a><a href="editorial-policy.html">Editorial Policy</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></div><div><span class="nn-footer-title">Follow</span><a href="https://x.com/NexusNovaTools">X · @NexusNovaTools</a><a href="https://www.facebook.com/NexusNovaTools">Facebook · NexusNovaTools</a><a href="https://www.instagram.com/nexusnovatools/">Instagram · @nexusnovatools</a><a href="https://t.me/NexusNovaTools">Telegram · @NexusNovaTools</a></div></nav></div><div class="nn-shell nn-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
 
 <script src="assets/js/main.js" defer></script>
 
@@ -439,5 +404,6 @@
 })();
 </script>
 
+<script src="assets/js/nn-inner-shell.js" defer></script>
 </body>
 </html>
