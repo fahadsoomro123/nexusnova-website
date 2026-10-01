@@ -1,0 +1,39 @@
+name: Migrate all 94 tool shells
+on:
+  push:
+    branches: [nexusnova-clean-redesign]
+permissions:
+  contents: write
+jobs:
+  migrate:
+    if: contains(github.event.head_commit.message, '[RUN-INNER-SHELL]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: python3 scripts/migrate-tool-shell.py
+      - name: Verify
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('assets/js/search-core.js').read_text()
+          u=list(dict.fromkeys(re.findall(r'\{\s*title:.*?url:"([^"]+)"[^}]*type:"tool"',s)))
+          u=[x for x in u if x.endswith('.html') and '/' not in x]
+          assert len(u)==94
+          for x in u:
+            c=Path(x).read_text()
+            assert c.count('<header class="nn-header"')==1 and c.count('<footer class="nn-footer"')==1, x
+            assert 'class="site-header"' not in c and 'class="site-footer"' not in c, x
+            assert 'scifi.css' not in c and 'compact-2026.css' not in c and 'motion.css' not in c, x
+          print('QA_TOOL_SHELLS=94')
+          PY
+      - name: Commit
+        run: |
+          git config user.name "nexusnova-inner-shell"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "redesign: migrate all 94 tool shells [AUTO INNER SHELL]"
+          git push origin HEAD:nexusnova-clean-redesign
+          git push --force origin HEAD:nexusnova-redesign-locked-2026-10-02
