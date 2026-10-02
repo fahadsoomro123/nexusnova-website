@@ -105,7 +105,7 @@ function pathPass(s,p,now){
  if(now<st.readyAt)return false;
  if(st.baselineCount<8)return false;
  const by=p.yaw-(st.baselineYaw||0),bp=p.pitch-(st.baselinePitch||0),target=st.path[st.pathIndex];
- const matched=target==='left'?by<-.20&&Math.abs(bp)<.45:target==='right'?by>.20&&Math.abs(bp)<.45:Math.abs(by)<.10&&Math.abs(bp)<.22;
+ const matched=target==='left'?by>.20&&Math.abs(bp)<.45:target==='right'?by<-.20&&Math.abs(bp)<.45:Math.abs(by)<.10&&Math.abs(bp)<.22;
  if(st.phase==='neutral'){
    if(target==='center' && matched){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
    else if(target!=='center' && Math.abs(by)<.11&&Math.abs(bp)<.24){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
