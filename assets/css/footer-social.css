@@ -257,3 +257,31 @@
 @media (min-width:1600px){
   :root{--nn-global-gutter:40px}
 }
+
+
+/* ===== GLOBAL TOOL SYMBOL SAFETY BOUNDARY ===== */
+.nn-tool-symbol{
+  display:grid!important;
+  place-items:center!important;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  min-height:52px!important;
+  max-height:52px!important;
+  flex:0 0 52px!important;
+  overflow:hidden!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+}
+.nn-tool-symbol svg{
+  display:block!important;
+  width:27px!important;
+  height:27px!important;
+  min-width:27px!important;
+  max-width:27px!important;
+  min-height:27px!important;
+  max-height:27px!important;
+  flex:0 0 27px!important;
+  overflow:visible!important;
+}
