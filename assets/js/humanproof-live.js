@@ -11,13 +11,25 @@ const challenges=[
 ];
 function secureRandomInt(max){const buf=new Uint32Array(1);crypto.getRandomValues(buf);return Math.floor((buf[0]/4294967296)*max)}
 function shuffleSecure(list){const a=[...list];for(let i=a.length-1;i>0;i--){const j=secureRandomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
-function pick(){let s;do{s=shuffleSecure(challenges).slice(0,3)}while(!s.some(x=>x.k==='turnLeft'||x.k==='turnRight'));return s}
+function makePath(){
+ const dirs=['left','right','center'];let path=[],last='',targetLen=5+secureRandomInt(3);
+ do{
+   path=[];last='';
+   while(path.length<targetLen){const pool=dirs.filter(x=>x!==last);const d=pool[secureRandomInt(pool.length)];path.push(d);last=d}
+ }while(path.filter(x=>x!=='center').length<3);
+ return path;
+}
+function pick(){
+ let s;do{s=shuffleSecure(challenges).slice(0,3)}while(!s.some(x=>x.k==='turnLeft'||x.k==='turnRight'));
+ return shuffleSecure([...s,{k:'path',t:'Follow the live direction sequence'}]);
+}
 function makeChallengeState(k){
- const blink=k==='blink',now=performance.now();
+ const blink=k==='blink',now=performance.now(),path=k==='path';
  return{phase:'neutral',startedAt:now,neutralSince:0,activeSince:0,returnSince:0,
    holdMs:blink?90+secureRandomInt(110):240+secureRandomInt(240),
    readyAt:now+650+secureRandomInt(700),deadline:0,revealed:false,
-   baselineValue:null,baselineYawSum:0,baselinePitchSum:0,baselineCount:0,activeSeen:false
+   baselineValue:null,baselineYawSum:0,baselinePitchSum:0,baselineCount:0,activeSeen:false,
+   path:path?makePath():null,pathIndex:0,pathSince:0,pathHoldMs:path?420+secureRandomInt(360):0
  }
 }
 function resize(){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.round(r.width*d),h=Math.round(r.height*d);if(c.width!==w||c.height!==h){c.width=w;c.height=h}ctx.setTransform(d,0,0,d,0,0)}
@@ -89,8 +101,43 @@ function isActive(k,s,p,st){
  if(k==='turnLeft'||k==='turnRight')return v>activeThreshold(k,st)&&Math.abs(p.pitch-(st?.baselinePitch||0))<.45;
  return v>activeThreshold(k,st);
 }
+function pathPass(s,p,now){
+ const st=challengeState;if(!st||!st.path)return false;
+ if(st.deadline&&now>st.deadline)return false;
+ if(st.baselineCount<24)updateBaseline('turnLeft',s,p,st);
+ if(now<st.readyAt)return false;
+ if(st.baselineCount<8)return false;
+ const by=p.yaw-(st.baselineYaw||0),bp=p.pitch-(st.baselinePitch||0),target=st.path[st.pathIndex];
+ const matched=target==='left'?by<-.20&&Math.abs(bp)<.45:target==='right'?by>.20&&Math.abs(bp)<.45:Math.abs(by)<.10&&Math.abs(bp)<.22;
+ if(st.phase==='neutral'){
+   if(target==='center' && matched){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
+   else if(target!=='center' && Math.abs(by)<.11&&Math.abs(bp)<.24){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
+   else st.neutralSince=0;
+   return false;
+ }
+ if(st.phase==='armed'){
+   if(matched){st.activeSince=st.activeSince||now;if(now-st.activeSince>=st.pathHoldMs){st.activeSeen=true;st.phase='return';st.returnSince=0}}
+   else st.activeSince=0;
+   return false;
+ }
+ if(st.phase==='return'){
+   const neutral=Math.abs(by)<.11&&Math.abs(bp)<.24;
+   if(neutral){st.returnSince=st.returnSince||now;if(now-st.returnSince>=260){
+     st.pathIndex++;
+     if(st.pathIndex>=st.path.length)return true;
+     st.phase='neutral';st.neutralSince=0;st.activeSince=0;st.returnSince=0;st.activeSeen=false;st.pathHoldMs=420+secureRandomInt(360);st.readyAt=now+180+secureRandomInt(260);st.deadline=now+6500+secureRandomInt(3500);updatePathPrompt();
+   }}else st.returnSince=0;
+ }
+ return false;
+}
+function updatePathPrompt(){
+ const st=challengeState;if(!st?.path)return;
+ const labels={left:'LEFT',right:'RIGHT',center:'CENTER'};
+ prompt.textContent=`Follow the live direction sequence • ${st.pathIndex+1}/${st.path.length}: ${labels[st.path[st.pathIndex]]}`;
+}
 function challengePass(k,s,p,now){
  const st=challengeState;if(!st)return false;
+ if(k==='path')return pathPass(s,p,now);
  if(st.deadline&&now>st.deadline)return false;
  if(st.baselineCount<24)updateBaseline(k,s,p,st);
  if(now<st.readyAt)return false;
@@ -122,14 +169,16 @@ function retryChallenge(){
  if(challengeRetries>=1){failVerification('We could not confirm the challenge after a second attempt. Please try again.');return}
  challengeRetries++;
  const used=seq.filter((_,i)=>i!==idx).map(x=>x.k),previous=seq[idx]?.k;
- const pool=challenges.filter(x=>x.k!==previous&&!used.includes(x.k));
- seq[idx]=(pool.length?pool:challenges.filter(x=>x.k!==previous))[secureRandomInt(pool.length?pool.length:Math.max(1,challenges.length-1))];
+ if(previous==='path'){seq[idx]={k:'path',t:'Follow the live direction sequence'}}else{
+   const pool=challenges.filter(x=>x.k!==previous&&!used.includes(x.k));
+   seq[idx]=(pool.length?pool:challenges.filter(x=>x.k!==previous))[secureRandomInt(pool.length?pool.length:Math.max(1,challenges.length-1))];
+ }
  state.textContent='NEW CHALLENGE';prompt.textContent='New challenge incoming…';showChallenge();
 }
 function showChallenge(){
  challengeState=makeChallengeState(seq[idx].k);
  prompt.textContent='Get ready…';
- setProgress(idx===0?50:idx===1?75:90);
+ setProgress(Math.min(90,40+idx*15));
 }
 function failVerification(message){
  run=false;
@@ -168,7 +217,7 @@ function loop(){
  if(res?.faceLandmarks?.length===1&&faceQuality(res.faceLandmarks[0])){
    if(!faceSince)faceSince=now;
    if(lastDetectionAt&&now-lastDetectionAt>700){
-     if(challengeState){challengeState.phase='neutral';challengeState.neutralSince=0;challengeState.activeSince=0;challengeState.returnSince=0;challengeState.readyAt=now+700+secureRandomInt(700);challengeState.startedAt=now;challengeState.deadline=0;challengeState.revealed=false}
+     if(challengeState){challengeState.phase='neutral';challengeState.neutralSince=0;challengeState.activeSince=0;challengeState.returnSince=0;challengeState.readyAt=now+700+secureRandomInt(700);challengeState.startedAt=now;challengeState.deadline=0;challengeState.revealed=false;challengeState.pathIndex=0;challengeState.pathSince=0}
    }
    lastDetectionAt=now;frameSamples++;
    const landmarks=res.faceLandmarks[0],scores=score(res),pose=poseScore(landmarks);
@@ -181,7 +230,7 @@ function loop(){
    if(age>3.25&&frameSamples>=36&&idx===0&&!challengeState)showChallenge();
    if(challengeState){
      if(challengeState.revealed&&challengeState.deadline&&now>challengeState.deadline){retryChallenge();return}
-     if(!challengeState.revealed&&now>=challengeState.readyAt){challengeState.revealed=true;challengeState.deadline=now+(seq[idx].k==='blink'?10000:12000);prompt.textContent=seq[idx].t}
+     if(!challengeState.revealed&&now>=challengeState.readyAt){challengeState.revealed=true;challengeState.deadline=now+(seq[idx].k==='blink'?10000:seq[idx].k==='path'?6500+secureRandomInt(3500):12000);if(seq[idx].k==='path')updatePathPrompt();else prompt.textContent=seq[idx].t}
      if(challengeState.revealed&&challengePass(seq[idx].k,scores,pose,now)){
        idx++;hold=0;challengeRetries=0;
        if(idx>=seq.length){
