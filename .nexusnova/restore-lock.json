@@ -1,33 +1,33 @@
 {
-  "system":"NexusNova redesign recovery lock",
-  "snapshotSha":"321a014331d805e766a988dfa58e70fbc1489475",
-  "stagingBranch":"nexusnova-clean-redesign",
-  "lockedRecoveryBranch":"nexusnova-redesign-locked-2026-10-02",
-  "productionBranch":"main",
-  "inventory":{
-    "htmlFiles":226,
-    "toolRegistry":94,
-    "categoryHubs":9,
-    "articleDetailPages":34,
-    "guideDetailPages":8,
-    "sharedInnerShellAssets":[
+  "system": "NexusNova redesign recovery lock",
+  "snapshotSha": "6fb73f920075692c1555c2412065a8f75558d124",
+  "stagingBranch": "nexusnova-clean-redesign",
+  "lockedRecoveryBranch": "nexusnova-redesign-locked-2026-10-02-light-bg",
+  "productionBranch": "main",
+  "inventory": {
+    "htmlFiles": 226,
+    "toolRegistry": 94,
+    "categoryHubs": 9,
+    "articleDetailPages": 34,
+    "guideDetailPages": 8,
+    "sharedInnerShellAssets": [
       "assets/css/nn-inner-shell.css",
       "assets/js/nn-inner-shell.js"
     ]
   },
-  "restore":{
-    "workflow":".github/workflows/restore-staging.yml",
-    "operatorConfirmation":"RESTORE",
-    "target":"nexusnova-clean-redesign",
-    "source":"nexusnova-redesign-locked-2026-10-02"
+  "restore": {
+    "workflow": ".github/workflows/restore-staging.yml",
+    "operatorConfirmation": "RESTORE",
+    "target": "nexusnova-clean-redesign",
+    "source": "nexusnova-redesign-locked-2026-10-02-light-bg"
   },
-  "acceptance":{
-    "sourceStaticMigration":"PASS",
-    "94ToolShellWorkflow":"PASS",
-    "contentDetailShellMigration":"PASS",
-    "browserRenderVerification":"PENDING_DESKTOP_OFFLINE"
+  "acceptance": {
+    "sourceStaticMigration": "PASS",
+    "94ToolShellWorkflow": "PASS",
+    "contentDetailShellMigration": "PASS",
+    "browserRenderVerification": "PENDING_DESKTOP_OFFLINE"
   },
-  "rules":[
+  "rules": [
     "Do not modify main for redesign work.",
     "Treat this recovery branch as the locked snapshot.",
     "Do not overwrite the recovery branch with experimental work.",
