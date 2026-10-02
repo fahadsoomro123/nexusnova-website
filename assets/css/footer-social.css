@@ -230,3 +230,30 @@
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* ===== GLOBAL CONTENT WIDTH SYSTEM ===== */
+:root{
+  --nn-global-content-max:1440px;
+  --nn-global-gutter:32px;
+}
+.container,
+.nn-shell,
+.nn-inner-page .container{
+  width:min(var(--nn-global-content-max),calc(100% - (var(--nn-global-gutter) * 2)))!important;
+  margin-inline:auto!important;
+}
+.nn-inner-page .page-hero .container{
+  max-width:var(--nn-global-content-max)!important;
+}
+@media (max-width:760px){
+  :root{--nn-global-gutter:11px}
+  .container,
+  .nn-shell,
+  .nn-inner-page .container{
+    width:min(var(--nn-global-content-max),calc(100% - (var(--nn-global-gutter) * 2)))!important;
+  }
+}
+@media (min-width:1600px){
+  :root{--nn-global-gutter:40px}
+}
