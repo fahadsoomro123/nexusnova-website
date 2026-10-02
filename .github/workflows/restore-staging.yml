@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Restore locked snapshot
         env:
-          SOURCE_REF: refs/heads/nexusnova-redesign-locked-2026-10-02
+          SOURCE_REF: refs/heads/nexusnova-redesign-locked-2026-10-02-light-bg
           TARGET_REF: refs/heads/nexusnova-clean-redesign
           REPO: ${{ github.repository }}
           TOKEN: ${{ github.token }}
