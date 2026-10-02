@@ -26,7 +26,7 @@ function makeChallengeState(k){
    holdMs:blink?90+secureRandomInt(110):240+secureRandomInt(240),
    readyAt:now+650+secureRandomInt(700),deadline:0,revealed:false,
    baselineValue:null,baselineYawSum:0,baselinePitchSum:0,baselineCount:0,activeSeen:false,
-   path:path?makePath():null,pathIndex:0,pathSince:0,pathHoldMs:path?330+secureRandomInt(300):0
+   path:path?makePath():null,pathIndex:0,pathSince:0,pathHoldMs:path?140+secureRandomInt(120):0
  }
 }
 function resize(){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.round(r.width*d),h=Math.round(r.height*d);if(c.width!==w||c.height!==h){c.width=w;c.height=h}ctx.setTransform(d,0,0,d,0,0)}
@@ -105,11 +105,14 @@ function pathPass(s,p,now){
  if(now<st.readyAt)return false;
  if(st.baselineCount<8)return false;
  const by=p.yaw-(st.baselineYaw||0),bp=p.pitch-(st.baselinePitch||0),target=st.path[st.pathIndex];
- const matched=target==='left'?by>.20&&Math.abs(bp)<.45:target==='right'?by<-.20&&Math.abs(bp)<.45:Math.abs(by)<.10&&Math.abs(bp)<.22;
+ const matched=target==='left'?by>.09&&Math.abs(bp)<.50:target==='right'?by<-.09&&Math.abs(bp)<.50:Math.abs(by)<.12&&Math.abs(bp)<.26;
  if(st.phase==='neutral'){
-   if(target==='center' && matched){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
-   else if(target!=='center' && Math.abs(by)<.11&&Math.abs(bp)<.24){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=260)st.phase='armed'}
-   else st.neutralSince=0;
+   if(target==='center'){
+     if(matched){st.neutralSince=st.neutralSince||now;if(now-st.neutralSince>=140)st.phase='armed'}
+     else st.neutralSince=0;
+   }else{
+     st.phase='armed';
+   }
    return false;
  }
  if(st.phase==='armed'){
@@ -118,11 +121,11 @@ function pathPass(s,p,now){
    return false;
  }
  if(st.phase==='return'){
-   const neutral=Math.abs(by)<.11&&Math.abs(bp)<.24;
-   if(neutral){st.returnSince=st.returnSince||now;if(now-st.returnSince>=260){
+   const neutral=Math.abs(by)<.12&&Math.abs(bp)<.26;
+   if(neutral){st.returnSince=st.returnSince||now;if(now-st.returnSince>=180){
      st.pathIndex++;
      if(st.pathIndex>=st.path.length)return true;
-     st.phase='neutral';st.neutralSince=0;st.activeSince=0;st.returnSince=0;st.activeSeen=false;st.pathHoldMs=330+secureRandomInt(300);st.readyAt=now+120+secureRandomInt(220);st.deadline=now+5500+secureRandomInt(2500);updatePathPrompt();
+     st.phase='neutral';st.neutralSince=0;st.activeSince=0;st.returnSince=0;st.activeSeen=false;st.pathHoldMs=140+secureRandomInt(120);st.readyAt=now+90+secureRandomInt(160);st.deadline=now+7000+secureRandomInt(2000);updatePathPrompt();
    }}else st.returnSince=0;
  }
  return false;
