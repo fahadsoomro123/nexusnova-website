@@ -255,7 +255,9 @@ if(page==='index.html'){
 }
   const pageFile=(location.pathname.split('/').pop()||'').toLowerCase();
   const hubFiles=new Set(['','index.html','live.html','currency-rates.html','gold-rates.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
-  if(pageFile&&!hubFiles.has(pageFile)){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
+  const contentHubFiles=new Set(['image-tools.html','pdf-tools.html','calculator-tools.html','pakistan-tools.html','network-tools.html','productivity-tools.html','live.html','new-tools.html','widgets.html','labs.html','daily-tools-directory.html']);
+  const contentPath=/\/(?:articles|guides|tech)\//.test(location.pathname);
+  if(pageFile&&!hubFiles.has(pageFile)&&!contentHubFiles.has(pageFile)&&!contentPath){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
 
   const searchIndex=[
     ['gold-rates.html','Gold Rates','gold xau pakistan pkr tola 24k 22k sarafa'],
