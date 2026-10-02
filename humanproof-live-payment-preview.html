@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>NexusNova HumanProof â€” Live Verification + Payment Preview</title><meta name="robots" content="noindex,nofollow">
+<title>NexusNova HumanProof — Live Verification + Payment Preview</title><meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#050a12">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/css/humanproof.css?v=20260909-1">
@@ -16,9 +16,9 @@
 <nav class="nav"><div class="wrap navin"><a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><div><b>NEXUSNOVA HUMANPROOF</b><small>VERIFIED ACTION</small></div></a><div class="navlinks"><a class="navcta" href="#live-verification">Live Verification</a></div></div></nav>
 <main id="top">
 <section class="hero"><div class="wrap heroGrid">
-<div><span class="eyebrow"><i class="dot"></i> LIVE SELF-SERVE FLOW PREVIEW</span><h1><span class="grad">Verify once.</span><br>Pay on the same screen.</h1><p class="lead">Complete the real live-human challenge. As soon as HumanProof confirms the live response, checkout opens below the camera â€” no payment email loop.</p><div class="trust"><span>Real camera challenge</span><span>Payment opens after success</span><span>Production unchanged</span></div></div>
+<div><span class="eyebrow"><i class="dot"></i> LIVE SELF-SERVE FLOW PREVIEW</span><h1><span class="grad">Verify once.</span><br>Pay on the same screen.</h1><p class="lead">Complete the real live-human challenge. As soon as HumanProof confirms the live response, checkout opens below the camera — no payment email loop.</p><div class="trust"><span>Real camera challenge</span><span>Payment opens after success</span><span>Production unchanged</span></div></div>
 <div class="verifyShell" id="live-verification">
-<div class="verifyTop"><span>LIVE VERIFICATION</span><span class="live">â— CAMERA READY</span></div>
+<div class="verifyTop"><span>LIVE VERIFICATION</span><span class="live">● CAMERA READY</span></div>
 <div class="camera" id="camera"><video id="v" autoplay playsinline muted></video><canvas id="c"></canvas><div class="camState" id="state">SYSTEM STANDBY</div><div class="camPrompt"><small>LIVE RESPONSE CHECK</small><b id="prompt">Ready when you are.</b></div></div>
 <div class="verifyMeta"><span>SEQUENCE PROGRESS</span><strong id="progress">0%</strong></div>
 <div class="verifyControls"><button class="verifyStart" id="start" type="button">START VERIFICATION</button><button class="verifyReset" id="reset" type="button">RESET</button></div>
@@ -26,17 +26,17 @@
 <div class="notice">Preview uses the current HumanProof live camera code. It does not issue a production receipt or API key.</div>
 
 <section class="hpPay" id="hpPay" aria-live="polite">
-<div class="hpPayTop"><div><h3>Complete payment</h3><p>Choose a payment method. Final amount will come from the selected HumanProof plan when pricing is approved.</p></div><span class="hpVerified">âœ“ HUMAN CONFIRMED</span></div>
+<div class="hpPayTop"><div><h3>Complete payment</h3><p>Choose a payment method. Final amount will come from the selected HumanProof plan when pricing is approved.</p></div><span class="hpVerified">✓ HUMAN CONFIRMED</span></div>
 <div class="hpMethods"><button class="hpMethod" disabled>Card / Safepay<small>Production KYC activation pending</small></button><button class="hpMethod active" data-method="easypaisa">EasyPaisa<small>Manual transfer fallback</small></button><button class="hpMethod" data-method="ubl">UBL Bank<small>Manual bank transfer fallback</small></button></div>
 <div class="hpDetails" id="hpDetails"></div>
 <div class="hpRef"><label for="hpRef">TRANSACTION / REFERENCE ID</label><input id="hpRef" autocomplete="off" placeholder="Enter reference after transfer"></div>
-<button class="hpContinue" id="hpContinue" type="button">I'VE PAID â€” CONTINUE</button>
+<button class="hpContinue" id="hpContinue" type="button">I'VE PAID — CONTINUE</button>
 <div class="hpFine">Automatic receipt/API activation will only happen after server-side payment confirmation. A typed reference by itself is never treated as proof of payment.</div>
 <div class="hpResult" id="hpResult">Reference captured in this preview only. No receipt/API key has been issued because the payment has not been independently confirmed.</div>
 </section>
 </div>
 </div></section>
-<div class="hpPreviewNote">NOINDEX PREVIEW â€¢ CURRENT PRODUCTION HUMANPROOF PAGE IS UNCHANGED</div>
+<div class="hpPreviewNote">NOINDEX PREVIEW • CURRENT PRODUCTION HUMANPROOF PAGE IS UNCHANGED</div>
 </main>
 <script type="module" src="assets/js/humanproof-live.js?v=20260909-1"></script>
 <script>

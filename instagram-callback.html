@@ -24,9 +24,9 @@
 <body>
   <main class="card" role="status" aria-live="polite">
     <div class="brand">NexusNova secure connection</div>
-    <h1>Finishing Instagram connectionâ€¦</h1>
+    <h1>Finishing Instagram connection…</h1>
     <p>NexusNova is securely verifying the Instagram authorization with the server. The Instagram app secret never enters browser code.</p>
-    <div class="status" id="status">Checking authorization responseâ€¦</div>
+    <div class="status" id="status">Checking authorization response…</div>
     <a href="account.html" id="back">Return to account dashboard</a>
   </main>
   <script type="module">
@@ -58,7 +58,7 @@
       if (oauthError) throw new Error(oauthErrorDescription || 'Instagram authorization was cancelled or denied.');
       if (!code || !state) throw new Error('Instagram did not return a complete authorization response. Please try again.');
 
-      status.textContent = 'Authorization received. Verifying your NexusNova accountâ€¦';
+      status.textContent = 'Authorization received. Verifying your NexusNova account…';
       const app = getApps()[0] || initializeApp(firebaseConfig);
       const auth = getAuth(app);
       if (typeof auth.authStateReady === 'function') await auth.authStateReady();
@@ -66,7 +66,7 @@
       if (!user) throw new Error('Your NexusNova sign-in session expired. Sign in again and retry Instagram.');
 
       const idToken = await user.getIdToken(true);
-      status.textContent = 'Verifying Instagram identity with NexusNova serverâ€¦';
+      status.textContent = 'Verifying Instagram identity with NexusNova server…';
       const response = await fetch(`${API_BASE}/api/instagram/link`, {
         method: 'POST',
         headers: {
@@ -86,7 +86,7 @@
         throw error;
       }
 
-      status.textContent = 'Instagram connected successfully. Returning to your dashboardâ€¦';
+      status.textContent = 'Instagram connected successfully. Returning to your dashboard…';
       setTimeout(() => location.replace(`account.html?instagram_linked=1&v=${Date.now()}`), 250);
     }
 

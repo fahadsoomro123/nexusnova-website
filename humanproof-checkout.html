@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>HumanProof Checkout â€” NexusNova</title>
+<title>HumanProof Checkout — NexusNova</title>
 <meta name="description" content="Review your NexusNova HumanProof plan, digital delivery terms and payment policies before secure Safepay checkout.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="theme-color" content="#f7f9ff">
@@ -23,11 +23,11 @@
 <link rel="stylesheet" href="/assets/css/footer-social.css">
 </head>
 <body>
-<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>TOOLS â€¢ HUMANPROOF â€¢ LIVE</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="humanproof.html#pricing">Pricing</a><a href="contact.html">Support</a></nav></div></header>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>TOOLS • HUMANPROOF • LIVE</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="humanproof.html#pricing">Pricing</a><a href="contact.html">Support</a></nav></div></header>
 
 <main class="hp-commerce-main">
 <div class="hp-commerce-wrap">
-<a class="hp-commerce-back" href="humanproof.html#pricing">â† Change plan</a>
+<a class="hp-commerce-back" href="humanproof.html#pricing">← Change plan</a>
 <div class="hp-commerce-head"><div><span class="hp-commerce-kicker">SECURE DIGITAL CHECKOUT</span><h2>Review your HumanProof order.</h2></div><p>Pricing, delivery, refund and cancellation information stays visible before payment.</p></div>
 
 <div class="hp-commerce-order">
@@ -121,9 +121,9 @@
     if(!agree.checked||busy)return;
     busy=true;
     btn.disabled=true;
-    btn.textContent='Creating secure checkoutâ€¦';
+    btn.textContent='Creating secure checkout…';
     help.className='hp-commerce-muted';
-    help.textContent='Connecting securely to Safepay Liveâ€¦';
+    help.textContent='Connecting securely to Safepay Live…';
 
     const controller=new AbortController();
     const timeoutId=setTimeout(()=>controller.abort(),20000);
@@ -140,7 +140,7 @@
         throw new Error(code);
       }
       help.className='hp-commerce-muted hp-pay-ready';
-      help.textContent='Secure checkout created. Redirecting to Safepayâ€¦';
+      help.textContent='Secure checkout created. Redirecting to Safepay…';
       try{
         sessionStorage.setItem('humanproof_plan',key);
         localStorage.setItem('humanproof_plan',key);

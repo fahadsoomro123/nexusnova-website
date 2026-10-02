@@ -23,9 +23,9 @@
 <body>
   <main class="card" role="status" aria-live="polite">
     <div class="brand">NexusNova secure connection</div>
-    <h1>Connecting Instagramâ€¦</h1>
+    <h1>Connecting Instagram…</h1>
     <p>This page starts a fresh server-verified Instagram Business Login for your signed-in NexusNova account.</p>
-    <div class="status" id="status">Preparing secure Instagram authorizationâ€¦</div>
+    <div class="status" id="status">Preparing secure Instagram authorization…</div>
     <a href="account.html">Return to account dashboard</a>
   </main>
   <script type="module">
@@ -71,7 +71,7 @@
       if (!/^https:\/\/www\.instagram\.com\/oauth\/authorize(?:\/|\?|$)/.test(authUrl)) {
         throw new Error('Instagram sign-in URL could not be prepared securely.');
       }
-      status.textContent = 'Opening Instagramâ€¦';
+      status.textContent = 'Opening Instagram…';
       location.replace(authUrl);
     }
   </script>

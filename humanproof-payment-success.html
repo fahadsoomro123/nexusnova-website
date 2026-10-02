@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>HumanProof Payment Confirmation â€” NexusNova</title>
+<title>HumanProof Payment Confirmation — NexusNova</title>
 <meta name="description" content="Safepay checkout return and server-verified payment status for NexusNova HumanProof.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="theme-color" content="#f7f9ff">
@@ -18,16 +18,16 @@
 <link rel="stylesheet" href="/assets/css/footer-social.css">
 </head>
 <body>
-<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF â€¢ PAYMENT STATUS</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • PAYMENT STATUS</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
 <main class="hp-result-wrap">
 <section class="hp-result-card">
-<span class="hp-result-badge">SAFEpay LIVE â€¢ PRODUCTION</span>
-<h1 style="margin:14px 0 8px">Checking your Safepay paymentâ€¦</h1>
+<span class="hp-result-badge">SAFEpay LIVE • PRODUCTION</span>
+<h1 style="margin:14px 0 8px">Checking your Safepay payment…</h1>
 <p class="hp-commerce-muted">Safepay has returned you to NexusNova. This page checks the tracker from the NexusNova server before showing a confirmed state.</p>
-<div id="stateBox" class="hp-result-state"><strong id="stateTitle">Verifying payment</strong><span id="stateCopy">Waiting for Safepay server statusâ€¦</span></div>
+<div id="stateBox" class="hp-result-state"><strong id="stateTitle">Verifying payment</strong><span id="stateCopy">Waiting for Safepay server status…</span></div>
 <div class="hp-result-meta">
-<div><span>Order</span><code id="orderId">â€”</code></div>
-<div><span>Tracker</span><code id="trackerId">Waiting for redirect dataâ€¦</code></div>
+<div><span>Order</span><code id="orderId">—</code></div>
+<div><span>Tracker</span><code id="trackerId">Waiting for redirect data…</code></div>
 <div><span>Environment</span><strong>Live / Production</strong></div>
 </div>
 <p class="hp-commerce-muted">A browser redirect by itself never creates a paid HumanProof result. Payment status is checked server-side, and signed Safepay webhooks remain enabled for payment events.</p>
@@ -55,9 +55,9 @@
 (()=>{
   const WORKER='https://nexusnova-safepay.fahadsoomro123.workers.dev';
   const qs=new URLSearchParams(location.search);
-  const orderId=qs.get('order_id')||sessionStorage.getItem('humanproof_order_id')||localStorage.getItem('humanproof_order_id')||'â€”';
+  const orderId=qs.get('order_id')||sessionStorage.getItem('humanproof_order_id')||localStorage.getItem('humanproof_order_id')||'—';
   const tracker=qs.get('tracker')||sessionStorage.getItem('humanproof_tracker')||localStorage.getItem('humanproof_tracker')||'';
-  try{if(orderId&&orderId!=='â€”')localStorage.setItem('humanproof_order_id',orderId);if(tracker)localStorage.setItem('humanproof_tracker',tracker);}catch{}
+  try{if(orderId&&orderId!=='—')localStorage.setItem('humanproof_order_id',orderId);if(tracker)localStorage.setItem('humanproof_tracker',tracker);}catch{}
   const returnLink=document.getElementById('returnToHumanProof');
   if(returnLink&&tracker){
     returnLink.href='humanproof.html?order_id='+encodeURIComponent(orderId)+'&tracker='+encodeURIComponent(tracker);
@@ -90,7 +90,7 @@
       }
       if(r.ok&&attempts<10){
         stateTitle.textContent='Payment processing';
-        stateCopy.textContent='Safepay state: '+(data.state||'pending')+'. Checking againâ€¦';
+        stateCopy.textContent='Safepay state: '+(data.state||'pending')+'. Checking again…';
         setTimeout(check,2000);
         return;
       }
