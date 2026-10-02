@@ -12,15 +12,12 @@ const challenges=[
 function secureRandomInt(max){const buf=new Uint32Array(1);crypto.getRandomValues(buf);return Math.floor((buf[0]/4294967296)*max)}
 function shuffleSecure(list){const a=[...list];for(let i=a.length-1;i>0;i--){const j=secureRandomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 function makePath(){
- const dirs=['left','right','center'];let path=[],last='',targetLen=5+secureRandomInt(3);
- do{
-   path=[];last='';
-   while(path.length<targetLen){const pool=dirs.filter(x=>x!==last);const d=pool[secureRandomInt(pool.length)];path.push(d);last=d}
- }while(path.filter(x=>x!=='center').length<3);
- return path;
+ const first=secureRandomInt(2)?'left':'right',second=first==='left'?'right':'left';
+ const patterns=[[first,'center',second],[first,second,'center']];
+ return patterns[secureRandomInt(patterns.length)];
 }
 function pick(){
- let s;do{s=shuffleSecure(challenges).slice(0,3)}while(!s.some(x=>x.k==='turnLeft'||x.k==='turnRight'));
+ const s=shuffleSecure(challenges).slice(0,2);
  return shuffleSecure([...s,{k:'path',t:'Follow the live direction sequence'}]);
 }
 function makeChallengeState(k){
@@ -29,7 +26,7 @@ function makeChallengeState(k){
    holdMs:blink?90+secureRandomInt(110):240+secureRandomInt(240),
    readyAt:now+650+secureRandomInt(700),deadline:0,revealed:false,
    baselineValue:null,baselineYawSum:0,baselinePitchSum:0,baselineCount:0,activeSeen:false,
-   path:path?makePath():null,pathIndex:0,pathSince:0,pathHoldMs:path?420+secureRandomInt(360):0
+   path:path?makePath():null,pathIndex:0,pathSince:0,pathHoldMs:path?330+secureRandomInt(300):0
  }
 }
 function resize(){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.round(r.width*d),h=Math.round(r.height*d);if(c.width!==w||c.height!==h){c.width=w;c.height=h}ctx.setTransform(d,0,0,d,0,0)}
@@ -125,7 +122,7 @@ function pathPass(s,p,now){
    if(neutral){st.returnSince=st.returnSince||now;if(now-st.returnSince>=260){
      st.pathIndex++;
      if(st.pathIndex>=st.path.length)return true;
-     st.phase='neutral';st.neutralSince=0;st.activeSince=0;st.returnSince=0;st.activeSeen=false;st.pathHoldMs=420+secureRandomInt(360);st.readyAt=now+180+secureRandomInt(260);st.deadline=now+6500+secureRandomInt(3500);updatePathPrompt();
+     st.phase='neutral';st.neutralSince=0;st.activeSince=0;st.returnSince=0;st.activeSeen=false;st.pathHoldMs=330+secureRandomInt(300);st.readyAt=now+120+secureRandomInt(220);st.deadline=now+5500+secureRandomInt(2500);updatePathPrompt();
    }}else st.returnSince=0;
  }
  return false;
@@ -177,8 +174,8 @@ function retryChallenge(){
 }
 function showChallenge(){
  challengeState=makeChallengeState(seq[idx].k);
- prompt.textContent='Get ready…';
- setProgress(Math.min(90,40+idx*15));
+ prompt.textContent=seq[idx].k==='path'?'Watch for the next live instruction':'Get ready…';
+ setProgress(Math.min(90,40+idx*20));
 }
 function failVerification(message){
  run=false;
