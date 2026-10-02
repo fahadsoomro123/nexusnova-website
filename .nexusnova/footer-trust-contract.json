@@ -1,22 +1,32 @@
 {
-  "title": "Global Trust Footer Contract",
-  "recordedAt": "2026-10-02T11:54:00+05:00",
+  "title": "Global Footer Trust and Navigation Contract",
+  "recordedAt": "2026-10-02T12:18:00+05:00",
   "scope": "Every HTML page and subpage on nexusnova-clean-redesign",
-  "requiredSection": "Trust",
-  "requiredLinks": [
+  "removeFromFooter": [
+    "All Tools",
+    "Content",
+    "Tools Directory",
+    "Categories",
+    "Articles",
+    "Guides",
+    "HumanProof"
+  ],
+  "requiredTrustLinks": [
     {"label": "Terms", "href": "/terms.html"},
     {"label": "Refund Policy", "href": "/refund-policy.html"},
     {"label": "About", "href": "/about.html"},
+    {"label": "Editorial Team", "href": "/editorial-team.html"},
     {"label": "Editorial Policy", "href": "/editorial-policy.html"},
     {"label": "Tool Methodology", "href": "/tool-methodology.html"},
+    {"label": "FAQ", "href": "/faq.html"},
     {"label": "Privacy", "href": "/privacy.html"},
-    {"label": "Contact Us & Support", "href": "/contact.html"}
+    {"label": "Contact Us & Support", "href": "/contact.html"},
+    {"label": "Disclaimer", "href": "/disclaimer.html"}
   ],
-  "implementation": {
-    "sharedShell": "assets/js/nn-inner-shell.js",
-    "sharedShellStyles": "assets/css/nn-inner-shell.css",
-    "homepage": "index.html",
-    "rule": "Preserve existing footer content and behavior; normalize the Trust section on redesigned .nn-footer shells."
+  "normalization": {
+    "script": ".github/scripts/global_footer_normalizer.py",
+    "workflow": ".github/workflows/global-footer-normalizer.yml",
+    "method": "Replace an existing Trust footer group in place; otherwise add Trust within an existing footer nav or before the footer-bottom block, while preserving unrelated footer content."
   },
   "safety": {
     "productionBranch": "main",

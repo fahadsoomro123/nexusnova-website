@@ -6,64 +6,54 @@ document.addEventListener("DOMContentLoaded",function(){
       { label:"Terms", href:"/terms.html" },
       { label:"Refund Policy", href:"/refund-policy.html" },
       { label:"About", href:"/about.html" },
+      { label:"Editorial Team", href:"/editorial-team.html" },
       { label:"Editorial Policy", href:"/editorial-policy.html" },
       { label:"Tool Methodology", href:"/tool-methodology.html" },
+      { label:"FAQ", href:"/faq.html" },
       { label:"Privacy", href:"/privacy.html" },
-      { label:"Contact Us & Support", href:"/contact.html" }
+      { label:"Contact Us & Support", href:"/contact.html" },
+      { label:"Disclaimer", href:"/disclaimer.html" }
     ];
-    const destinationSet = new Set(trustDestinations.map(function(item){ return item.href; }));
 
     document.querySelectorAll(".nn-footer .nn-footer-links").forEach(function(nav){
-      Array.from(nav.children).forEach(function(child){
-        if(child.tagName !== "A") return;
-        const href = child.getAttribute("href") || "";
-        if(destinationSet.has(href)) child.remove();
-      });
+      if(nav.querySelector(".nn-footer-trust")) return;
 
-      let trustGroup = null;
-      Array.from(nav.children).forEach(function(child){
-        const title = child.querySelector && child.querySelector(".nn-footer-title");
-        if(title && title.textContent.trim().toLowerCase() === "trust"){
-          trustGroup = child;
-        }
-      });
-
-      if(!trustGroup){
-        trustGroup = document.createElement("div");
-        nav.appendChild(trustGroup);
-      }
-
-      trustGroup.replaceChildren();
+      const trustGroup = document.createElement("div");
+      trustGroup.className = "nn-footer-trust";
 
       const title = document.createElement("span");
-      title.className = "nn-footer-title";
+      title.className = "nn-footer-trust-title";
       title.textContent = "Trust";
       trustGroup.appendChild(title);
 
-      function makeLink(label, href){
+      const links = document.createElement("div");
+      links.className = "nn-footer-trust-links";
+
+      function makeLink(item){
         const link = document.createElement("a");
-        link.href = href;
-        link.textContent = label;
+        link.href = item.href;
+        link.textContent = item.label;
         let currentPath = window.location.pathname;
         while(currentPath.length > 1 && currentPath.endsWith("/")){
           currentPath = currentPath.slice(0,-1);
         }
-        if(currentPath === href){
-          link.setAttribute("aria-current", "page");
-        }
+        if(currentPath === item.href) link.setAttribute("aria-current","page");
         return link;
       }
 
       const pair = document.createElement("span");
       pair.className = "nn-footer-trust-pair";
-      pair.appendChild(makeLink("Terms", "/terms.html"));
+      pair.appendChild(makeLink(trustDestinations[0]));
       pair.appendChild(document.createTextNode(" & "));
-      pair.appendChild(makeLink("Refund Policy", "/refund-policy.html"));
-      trustGroup.appendChild(pair);
+      pair.appendChild(makeLink(trustDestinations[1]));
+      links.appendChild(pair);
 
       trustDestinations.slice(2).forEach(function(item){
-        trustGroup.appendChild(makeLink(item.label, item.href));
+        links.appendChild(makeLink(item));
       });
+
+      trustGroup.appendChild(links);
+      nav.appendChild(trustGroup);
     });
   }
   ensureTrustFooter();

@@ -153,3 +153,11 @@ h3{font-size:21px}
 .site-header .brand .brand-copy{display:none!important}
 .site-header .brand{gap:0}
 @media(max-width:680px){.site-header .brand-mark{width:154px;height:36px}}
+
+/* ===== GLOBAL FOOTER TRUST CONTRACT ===== */
+.nn-footer-trust{display:grid;align-content:start;gap:7px;min-width:0}
+.nn-footer-trust-title{color:#475569;font-family:var(--nn-mono,ui-monospace,monospace);font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.nn-footer-trust-links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.nn-footer-trust-links a{color:#475569 !important;font-size:10px;font-weight:750;text-decoration:none}
+.nn-footer-trust-links a:hover{color:#6d28d9 !important}
+.nn-footer-trust-pair{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
