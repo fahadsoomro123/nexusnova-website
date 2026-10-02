@@ -1,11 +1,12 @@
 {
-  "title": "Global Footer Trust and Navigation Contract",
-  "recordedAt": "2026-10-02T12:42:00+05:00",
+  "title": "Global Footer Trust, Social and Navigation Contract",
+  "recordedAt": "2026-10-02T16:52:00+05:00",
   "scope": "Every HTML page and subpage on nexusnova-clean-redesign",
-  "sourceAudit": {
-    "htmlFilesInspected": 226,
-    "footerNormalizationValidationFailures": 0,
-    "normalizationState": "Applied to the complete 226-file HTML inventory in the final working tree before commit."
+  "approvedBlueprint": {
+    "desktopOrder": ["Brand", "Trust", "Follow NexusNova"],
+    "bottomBar": ["Copyright", "NEXUSNOVATOOLS.COM"],
+    "mobileOrder": ["Brand", "Trust", "Follow NexusNova", "Copyright"],
+    "principle": "Brand/logo is a separate sibling section and must always render before Trust and Follow NexusNova."
   },
   "removeFromFooter": [
     "All Tools",
@@ -28,23 +29,28 @@
     {"label": "Contact Us & Support", "href": "/contact.html"},
     {"label": "Disclaimer", "href": "/disclaimer.html"}
   ],
-  "implementation": {
-    "staticFooterPolicy": "Use the same ten Trust destinations in every page and subpage footer.",
-    "socialFooterPolicy": "Use the same Follow NexusNova block in every page and subpage footer with four separate platform cards showing platform name, handle and official URL.",
-    "socialProfiles": [
+  "socialFooter": {
+    "title": "Follow NexusNova",
+    "layout": "Separate 2x2 cards on desktop; responsive stack on narrow mobile.",
+    "profiles": [
       {"platform": "X", "handle": "@NexusNovaTools", "href": "https://x.com/NexusNovaTools"},
       {"platform": "Facebook", "handle": "NexusNovaTools", "href": "https://www.facebook.com/NexusNovaTools/"},
       {"platform": "Instagram", "handle": "@nexusnovatools", "href": "https://www.instagram.com/nexusnovatools/"},
       {"platform": "Telegram", "handle": "@NexusNovaTools", "href": "https://t.me/NexusNovaTools"}
-    ],
-    "socialStylesheet": "assets/css/footer-social.css",
-    "sharedInnerRuntime": "assets/js/nn-inner-shell.js",
-    "sharedInnerStyles": "assets/css/nn-inner-shell.css",
-    "rule": "Preserve unrelated footer content; remove only the specified legacy navigation items and replace/append the Trust group without duplicate Trust entries, while keeping one consistent social block."
+    ]
+  },
+  "implementation": {
+    "stylesheet": "assets/css/footer-social.css",
+    "globalFooterClass": "nn-global-footer",
+    "rule": "Use one consistent Brand -> Trust -> Follow footer architecture across all page families. Preserve useful page-specific footer links under a small More group inside Brand when present. Never place the social block inside or below the Brand block."
   },
   "verification": {
-    "source": "PASS",
-    "browserRender": "Representative real-Chrome screenshot captured locally; full GitHub browser-render workflow configured separately."
+    "htmlFilesInspected": 226,
+    "globalFooterStructurePass": 226,
+    "nonFooterContentPreserved": 226,
+    "trustAndSocialContentPass": 226,
+    "representativeChromeDesktopCapture": "PASS",
+    "mobileResponsiveRules": "Present and source-verified; real device viewport capture not claimed."
   },
   "safety": {
     "productionBranch": "main",
