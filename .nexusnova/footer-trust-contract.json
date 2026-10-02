@@ -30,9 +30,17 @@
   ],
   "implementation": {
     "staticFooterPolicy": "Use the same ten Trust destinations in every page and subpage footer.",
+    "socialFooterPolicy": "Use the same Follow NexusNova block in every page and subpage footer with four separate platform cards showing platform name, handle and official URL.",
+    "socialProfiles": [
+      {"platform": "X", "handle": "@NexusNovaTools", "href": "https://x.com/NexusNovaTools"},
+      {"platform": "Facebook", "handle": "NexusNovaTools", "href": "https://www.facebook.com/NexusNovaTools/"},
+      {"platform": "Instagram", "handle": "@nexusnovatools", "href": "https://www.instagram.com/nexusnovatools/"},
+      {"platform": "Telegram", "handle": "@NexusNovaTools", "href": "https://t.me/NexusNovaTools"}
+    ],
+    "socialStylesheet": "assets/css/footer-social.css",
     "sharedInnerRuntime": "assets/js/nn-inner-shell.js",
     "sharedInnerStyles": "assets/css/nn-inner-shell.css",
-    "rule": "Preserve unrelated footer content; remove only the specified legacy navigation items and replace/append the Trust group without duplicate Trust entries."
+    "rule": "Preserve unrelated footer content; remove only the specified legacy navigation items and replace/append the Trust group without duplicate Trust entries, while keeping one consistent social block."
   },
   "verification": {
     "source": "PASS",
