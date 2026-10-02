@@ -174,7 +174,7 @@ function retryChallenge(){
 }
 function showChallenge(){
  challengeState=makeChallengeState(seq[idx].k);
- prompt.textContent=seq[idx].k==='path'?'Watch for the next live instruction':'Get ready…';
+ if(seq[idx].k==='path')updatePathPrompt();else prompt.textContent=seq[idx].t;
  setProgress(Math.min(90,40+idx*20));
 }
 function failVerification(message){
