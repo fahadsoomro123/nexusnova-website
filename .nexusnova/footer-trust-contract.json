@@ -1,0 +1,25 @@
+{
+  "title": "Global Trust Footer Contract",
+  "recordedAt": "2026-10-02T11:54:00+05:00",
+  "scope": "Every HTML page and subpage on nexusnova-clean-redesign",
+  "requiredSection": "Trust",
+  "requiredLinks": [
+    {"label": "Terms", "href": "/terms.html"},
+    {"label": "Refund Policy", "href": "/refund-policy.html"},
+    {"label": "About", "href": "/about.html"},
+    {"label": "Editorial Policy", "href": "/editorial-policy.html"},
+    {"label": "Tool Methodology", "href": "/tool-methodology.html"},
+    {"label": "Privacy", "href": "/privacy.html"},
+    {"label": "Contact Us & Support", "href": "/contact.html"}
+  ],
+  "implementation": {
+    "sharedShell": "assets/js/nn-inner-shell.js",
+    "sharedShellStyles": "assets/css/nn-inner-shell.css",
+    "homepage": "index.html",
+    "rule": "Preserve existing footer content and behavior; normalize the Trust section on redesigned .nn-footer shells."
+  },
+  "safety": {
+    "productionBranch": "main",
+    "redesignBranch": "nexusnova-clean-redesign"
+  }
+}

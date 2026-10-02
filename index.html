@@ -286,6 +286,10 @@
     .nn-footer-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;align-content:start}
     .nn-footer-links a{font-size:10px;color:#64748b;font-weight:800}
     .nn-footer-links a:hover{color:var(--nn-purple)}
+     .nn-footer-links>div{display:grid;align-content:start;gap:6px}
+     .nn-footer-title{color:var(--nn-text);font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+     .nn-footer-trust-pair{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+     .nn-footer-trust{display:grid;align-content:start;gap:6px}
     .nn-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0 14px;border-top:1px solid var(--nn-line);color:#94a3b8;font-family:var(--nn-mono);font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
     .nn-footer-domain{color:var(--nn-purple)}
 
@@ -1560,10 +1564,8 @@
         <a href="articles.html">Articles</a>
         <a href="guides.html">Guides</a>
         <a href="humanproof.html">HumanProof</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-      </nav>
+              <div class="nn-footer-trust"><span class="nn-footer-title">Trust</span><span class="nn-footer-trust-pair"><a href="/terms.html">Terms</a> <span aria-hidden="true">&amp;</span> <a href="/refund-policy.html">Refund Policy</a></span><a href="/about.html">About</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/tool-methodology.html">Tool Methodology</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact Us &amp; Support</a></div>
+</nav>
     </div>
     <div class="nn-shell nn-footer-bottom">
       <span>© <span data-year></span> NexusNova Tools</span>
