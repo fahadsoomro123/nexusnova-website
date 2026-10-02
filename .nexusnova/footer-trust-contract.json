@@ -1,7 +1,12 @@
 {
   "title": "Global Footer Trust and Navigation Contract",
-  "recordedAt": "2026-10-02T12:18:00+05:00",
+  "recordedAt": "2026-10-02T12:42:00+05:00",
   "scope": "Every HTML page and subpage on nexusnova-clean-redesign",
+  "sourceAudit": {
+    "htmlFilesInspected": 226,
+    "footerNormalizationValidationFailures": 0,
+    "normalizationState": "Applied to the complete 226-file HTML inventory in the final working tree before commit."
+  },
   "removeFromFooter": [
     "All Tools",
     "Content",
@@ -23,10 +28,15 @@
     {"label": "Contact Us & Support", "href": "/contact.html"},
     {"label": "Disclaimer", "href": "/disclaimer.html"}
   ],
-  "normalization": {
-    "script": ".github/scripts/global_footer_normalizer.py",
-    "workflow": ".github/workflows/global-footer-normalizer.yml",
-    "method": "Replace an existing Trust footer group in place; otherwise add Trust within an existing footer nav or before the footer-bottom block, while preserving unrelated footer content."
+  "implementation": {
+    "staticFooterPolicy": "Use the same ten Trust destinations in every page and subpage footer.",
+    "sharedInnerRuntime": "assets/js/nn-inner-shell.js",
+    "sharedInnerStyles": "assets/css/nn-inner-shell.css",
+    "rule": "Preserve unrelated footer content; remove only the specified legacy navigation items and replace/append the Trust group without duplicate Trust entries."
+  },
+  "verification": {
+    "source": "PASS",
+    "browserRender": "Representative real-Chrome screenshot captured locally; full GitHub browser-render workflow configured separately."
   },
   "safety": {
     "productionBranch": "main",

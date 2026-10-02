@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -23,7 +23,7 @@ frame.addEventListener('load',()=>{
   const brandStrong=d.querySelector('.brandcopy strong');
   const brandSmall=d.querySelector('.brandcopy small');
   if(brandStrong)brandStrong.textContent='NEXUSNOVA';
-  if(brandSmall)brandSmall.textContent='TOOLS • HUMANPROOF';
+  if(brandSmall)brandSmall.textContent='TOOLS â€¢ HUMANPROOF';
 
   const links=d.querySelector('.links');
   if(links)links.innerHTML='<a class="active" href="#">Home</a><a href="#nn-tools-index">Tools</a><a href="#nn-proof">HumanProof</a><a href="#nn-ecosystem">App</a><a href="#">Articles</a><a class="sign" href="#">Sign in</a>';
@@ -37,7 +37,7 @@ frame.addEventListener('load',()=>{
   if(heroCopy)heroCopy.textContent='A deliberate live-human step for sensitive digital actions, bound to the exact action without turning every flow into identity verification.';
   if(actions)actions.innerHTML='<a class="btn primary" href="#nn-proof">Verify an action</a><a class="btn" href="#nn-tools-index">Explore tools</a>';
   if(trust)trust.innerHTML='<span><i></i>Live human step</span><span><i></i>Exact-action bound</span><span><i></i>Privacy first</span>';
-  if(command)command.innerHTML='<span>Need a practical browser tool?</span><b>Browse the index →</b>';
+  if(command)command.innerHTML='<span>Need a practical browser tool?</span><b>Browse the index â†’</b>';
 
   const hero=d.querySelector('.hero');
   const receipt=d.querySelector('.receipt-section');
@@ -54,12 +54,12 @@ frame.addEventListener('load',()=>{
         <p>Jump straight to the kind of utility you need. The full catalogue stays on the Tools page; the homepage only surfaces the main paths.</p>
       </div>
       <div class="nn-index-list">
-        <a href="#"><span>01</span><strong>AI & Writing</strong><em>assist, rewrite, summarize</em><b>↗</b></a>
-        <a href="#"><span>02</span><strong>Calculators</strong><em>daily, finance, health</em><b>↗</b></a>
-        <a href="#"><span>03</span><strong>PDF & Documents</strong><em>practical document utilities</em><b>↗</b></a>
-        <a href="#"><span>04</span><strong>Converters</strong><em>units, formats, quick conversions</em><b>↗</b></a>
-        <a href="#"><span>05</span><strong>Live & Local</strong><em>fresh context and local utilities</em><b>↗</b></a>
-        <a href="#"><span>06</span><strong>Utility & Privacy</strong><em>focused everyday tools</em><b>↗</b></a>
+        <a href="#"><span>01</span><strong>AI & Writing</strong><em>assist, rewrite, summarize</em><b>â†—</b></a>
+        <a href="#"><span>02</span><strong>Calculators</strong><em>daily, finance, health</em><b>â†—</b></a>
+        <a href="#"><span>03</span><strong>PDF & Documents</strong><em>practical document utilities</em><b>â†—</b></a>
+        <a href="#"><span>04</span><strong>Converters</strong><em>units, formats, quick conversions</em><b>â†—</b></a>
+        <a href="#"><span>05</span><strong>Live & Local</strong><em>fresh context and local utilities</em><b>â†—</b></a>
+        <a href="#"><span>06</span><strong>Utility & Privacy</strong><em>focused everyday tools</em><b>â†—</b></a>
       </div>
     </div>`;
   if(hero)hero.insertAdjacentElement('afterend',index);
@@ -84,16 +84,16 @@ frame.addEventListener('load',()=>{
         <p>Browser utilities, the NexusNova Android app and HumanProof sit inside one practical ecosystem instead of competing for attention on the homepage.</p>
       </div>
       <div class="nn-eco-grid">
-        <a href="#"><span class="nn-eco-no">01</span><div><strong>Online Tools</strong><small>Fast browser utilities for everyday work.</small></div><b>Explore →</b></a>
-        <a href="#"><span class="nn-eco-no">02</span><div><strong>NexusNova App</strong><small>Your compact Android utility hub.</small></div><b>Open →</b></a>
-        <a href="#nn-proof"><span class="nn-eco-no">03</span><div><strong>HumanProof</strong><small>Conscious approval bound to the exact action.</small></div><b>Learn →</b></a>
+        <a href="#"><span class="nn-eco-no">01</span><div><strong>Online Tools</strong><small>Fast browser utilities for everyday work.</small></div><b>Explore â†’</b></a>
+        <a href="#"><span class="nn-eco-no">02</span><div><strong>NexusNova App</strong><small>Your compact Android utility hub.</small></div><b>Open â†’</b></a>
+        <a href="#nn-proof"><span class="nn-eco-no">03</span><div><strong>HumanProof</strong><small>Conscious approval bound to the exact action.</small></div><b>Learn â†’</b></a>
       </div>
     </div>`;
   if(receipt)receipt.insertAdjacentElement('afterend',ecosystem);
 
   const footer=d.createElement('footer');
   footer.className='nn-footer';
-  footer.innerHTML='<div class="wrap"><strong>NEXUSNOVA</strong><span>Free online tools • AI utilities • Android app • HumanProof</span><small>nexusnovatools.com</small></div>';
+  footer.innerHTML='<div class="wrap"><strong>NEXUSNOVA</strong><span>Free online tools â€¢ AI utilities â€¢ Android app â€¢ HumanProof</span><small>nexusnovatools.com</small></div>';
   const main=d.querySelector('main');
   if(main)main.insertAdjacentElement('afterend',footer);
 
@@ -240,14 +240,6 @@ frame.addEventListener('load',()=>{
 </html>
 
 <footer class="site-footer">
-  <div class="container">
-    <ul class="footer-links" style="list-style:none;margin:0;padding:0">
-        <li><a href="/terms.html">Terms</a> & <a href="/refund-policy.html">Refund Policy</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/editorial-policy.html">Editorial Policy</a></li>
-        <li><a href="/tool-methodology.html">Tool Methodology</a></li>
-        <li><a href="/privacy.html">Privacy</a></li>
-        <li><a href="/contact.html">Contact Us & Support</a></li>
-      </ul>
-  </div>
+
+<div class="nn-footer-trust"><span class="nn-footer-trust-title">Trust</span><div class="nn-footer-trust-links"><span class="nn-footer-trust-pair"><a href="/terms.html">Terms</a><span aria-hidden="true"> &amp; </span><a href="/refund-policy.html">Refund Policy</a></span><a href="/about.html">About</a><a href="/editorial-team.html">Editorial Team</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/tool-methodology.html">Tool Methodology</a><a href="/faq.html">FAQ</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact Us & Support</a><a href="/disclaimer.html">Disclaimer</a></div></div>
 </footer>
