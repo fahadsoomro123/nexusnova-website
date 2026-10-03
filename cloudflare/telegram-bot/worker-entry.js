@@ -17,6 +17,7 @@ const FBR_ATL_ORIGINS = new Set([
 ]);
 let fbrVerificationCache = { token: '', expiresAt: 0 };
 const FBR_TOKEN_CACHE_MS = 5 * 60 * 1000;
+const FBR_VERIFICATION_BRIDGE='https://nexusnova-fbr-staging.fahadsoomro123.workers.dev/api/fbr/atl-status';
 const FBR_ATL_LIMIT_WINDOW_MS = 60 * 1000;
 const FBR_ATL_LIMIT_MAX = 8;
 const fbrAtlRateCache = new Map();
@@ -136,6 +137,20 @@ async function fbrAtlStatus(request) {
   const validTypes = new Set(['CNIC', 'NTN', 'Passport No.', 'Reg/Inc. No.']);
   if (!validTypes.has(identifierType) || !isValidFbrIdentifier(identifierType, identifier)) {
     return fbrJson(origin, { ok: false, code: 'invalid-identifier', error: 'Enter a valid identification number for the selected type.' }, 400);
+  }
+
+  try {
+    const bridgeResponse = await fetch(FBR_VERIFICATION_BRIDGE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: origin },
+      body: JSON.stringify({ identifierType, identifier })
+    });
+    const bridgeData = await bridgeResponse.json().catch(() => null);
+    if (bridgeResponse.ok && bridgeData && bridgeData.ok) {
+      return fbrJson(origin, bridgeData, 200);
+    }
+  } catch (error) {
+    console.error('FBR bridge unavailable', String(error && error.message || error || 'unknown'));
   }
 
   const payload = JSON.stringify({
