@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '*.html'
+      - '.github/scripts/premium_social_campaign.py'
+      - '.github/scripts/prepare_new_tool_social.py'
 
 permissions:
   contents: read
@@ -91,15 +93,34 @@ jobs:
         if: steps.detect.outputs.count != '0'
         run: |
           python -m py_compile .github/scripts/prepare_new_tool_social.py
+          python -m py_compile .github/scripts/premium_social_campaign.py
           python -m py_compile .github/scripts/distribute_update.py
           python -m py_compile .github/scripts/distribute_social_growth.py
 
-      - name: Generate Instagram-safe launch cards
+      - name: Generate relevant hyper-realistic 3D launch creatives
         if: steps.detect.outputs.count != '0'
         run: |
           while IFS= read -r file; do
             [ -n "$file" ] || continue
             python .github/scripts/prepare_new_tool_social.py "$file"
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+
+          item=json.loads(Path('social-growth-publish.json').read_text(encoding='utf-8'))
+          provider=str(item.get('image_provider',''))
+          if not (provider.startswith('pollinations-') or provider == 'cached-ai-exact'):
+              raise SystemExit(f'Refusing non-AI/non-exact creative provider: {provider}')
+          image=Path(str(item.get('generated_image','')))
+          if not image.exists():
+              raise SystemExit(f'Missing generated creative: {image}')
+          with Image.open(image) as im:
+              if im.size != (1080,1350) or im.mode != 'RGB':
+                  raise SystemExit(f'Invalid 4:5 creative: {im.size} {im.mode}')
+              im.verify()
+          print('Relevant 3D creative gate passed:', item['title'], provider)
+          PY
           done < new-tool-files.txt
 
       - name: Publish launch cards to website
