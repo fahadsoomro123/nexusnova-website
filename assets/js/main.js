@@ -10,25 +10,48 @@
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-  window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
-  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  let analyticsLoaded=false;
-  const loadAnalytics=(granted=true)=>{
-    if(!granted||analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
-    analyticsLoaded=true;
-    window.gtag('consent','update',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
-    window.gtag('config',measurementId,{send_page_view:true,allow_google_signals:false,allow_ad_personalization_signals:false});
-    window.gtag('js',new Date());
-    const script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);script.dataset.nexusnovaGa4='';document.head.appendChild(script);
-  };
-  const denyAnalytics=()=>window.gtag('consent','update',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
-  const autoEnable=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'||new Date().getTimezoneOffset()===-300}catch(_){return new Date().getTimezoneOffset()===-300}};
-  window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
-  const enable=()=>{const choice=readChoice();if(choice==='granted')loadAnalytics(true);else if(choice==='denied')denyAnalytics();else if(autoEnable()){window.__nexusnovaAnalyticsAutoEnabled=true;try{window.dispatchEvent(new Event('nexusnova-analytics-auto-enabled'))}catch(_){ }loadAnalytics(true);}};
-  ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
-  const deferred=()=>{const arm=()=>window.setTimeout(enable,5000);if('requestIdleCallback' in window)window.requestIdleCallback(arm,{timeout:2000});else arm();};
-  if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});else deferred();
+  window.gtag('consent','default',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied',
+    wait_for_update:500
+  });
+  window.gtag('js',new Date());
 
+  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}}; 
+  let analyticsLoaded=false;
+  const loadAnalytics=()=>{
+    window.gtag('consent','update',{
+      analytics_storage:'granted',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+    if(analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
+    analyticsLoaded=true;
+    const analyticsScript=document.createElement('script');
+    analyticsScript.async=true;
+    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    analyticsScript.dataset.nexusnovaGa4='';
+    analyticsScript.onload=()=>window.gtag('config',measurementId,{
+      send_page_view:true,
+      allow_google_signals:false,
+      allow_ad_personalization_signals:false
+    });
+    document.head.appendChild(analyticsScript);
+  };
+  const denyAnalytics=()=>window.gtag('consent','update',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied'
+  });
+  const shouldAutoEnableAnalytics=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'}catch(_){return false}};
+  const initialChoice=readChoice();
+  if(initialChoice==='granted'||(!initialChoice&&shouldAutoEnableAnalytics()))loadAnalytics();
+  else denyAnalytics();
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
   const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
