@@ -84,8 +84,11 @@
     }
   };
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
-  else mountChoices();
+  const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  if(!isHome){
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
+    else mountChoices();
+  }
 })();
 
 (()=>{
@@ -346,8 +349,6 @@ if(page==='index.html'){
     }
   };
   deferHomeTask(loadAuthHeader,1200);
-const loadNovaAssistant=()=>{if(document.querySelector('script[data-nova-assistant]'))return;const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)};
-if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
 })();
 
