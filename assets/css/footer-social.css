@@ -285,3 +285,22 @@
   flex:0 0 27px!important;
   overflow:visible!important;
 }
+
+
+/* ===== SOCIAL BRAND COLOUR TREATMENT ===== */
+.nn-global-footer .nn-footer-social .nn-social-x .nn-social-icon,
+.nn-global-footer .nn-footer-social .nn-social-facebook .nn-social-icon,
+.nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon,
+.nn-global-footer .nn-footer-social .nn-social-telegram .nn-social-icon{
+  display:grid!important;
+  place-items:center!important;
+  color:#fff!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-x .nn-social-icon{background:#000!important}
+.nn-global-footer .nn-footer-social .nn-social-facebook .nn-social-icon{background:#1877f2!important}
+.nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon{background:linear-gradient(145deg,#833ab4 0%,#fd1d1d 58%,#fcb045 100%)!important}
+.nn-global-footer .nn-footer-social .nn-social-telegram .nn-social-icon{background:#229ed9!important}
+.nn-global-footer .nn-footer-social .nn-social-icon svg{color:#fff!important;fill:currentColor!important}
+.nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg rect,
+.nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg circle{fill:none!important;stroke:#fff!important;stroke-width:2!important}
+.nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg .ig-dot{fill:#fff!important;stroke:none!important}
