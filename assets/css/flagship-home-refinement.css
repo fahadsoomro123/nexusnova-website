@@ -89,6 +89,40 @@
   font-weight:850;
 }
 
+/* HumanProof product boundary + secondary discovery anchors. */
+.nn-humanproof-card{
+  border-color:#ddd6fe;
+  background:linear-gradient(180deg,#faf7ff 0,#fff 72px);
+  box-shadow:inset 0 2px 0 var(--nn-purple);
+}
+.nn-humanproof-copy{
+  min-width:0;
+}
+.nn-humanproof-actions a{
+  min-height:40px;
+}
+.nn-humanproof-actions a:focus-visible{
+  outline:2px solid rgba(109,40,217,.28);
+  outline-offset:2px;
+}
+.nn-nav a{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+}
+.nn-nav a:focus-visible{
+  outline:2px solid rgba(109,40,217,.28);
+  outline-offset:2px;
+}
+.nn-content-grid>*,
+.nn-content-item{
+  min-width:0;
+}
+.nn-content-item:focus-visible{
+  outline:2px solid rgba(109,40,217,.22);
+  outline-offset:-2px;
+}
+
 /* Search prominence + compact tool hierarchy. */
 .nn-search-field{
   transition:border-color .16s ease,box-shadow .16s ease;
