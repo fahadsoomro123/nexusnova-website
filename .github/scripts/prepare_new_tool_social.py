@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html as html_lib
 import json
+import os
 import re
+import sys
 import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+import premium_social_campaign as creative_engine  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "social-growth-publish.json"
@@ -58,40 +65,31 @@ def tool_info(file_name: str) -> dict:
     return {"path": path, "file": file_name, "slug": slug, "title": title, "description": description, "url": url}
 
 
-def make_card(info: dict) -> str:
+def make_card(info: dict) -> tuple[str, str]:
     GENERATED.mkdir(parents=True, exist_ok=True)
-    rel = f"assets/generated/tool-launch-{info['slug']}-1080x1350.png"
+    rel = f"assets/generated/tool-launch-{info['slug']}-1080x1350.jpg"
     out = ROOT / rel
 
-    canvas = Image.new("RGB", (1080, 1350), (10, 17, 31))
-    draw = ImageDraw.Draw(canvas)
-    draw.rounded_rectangle((70, 70, 1010, 1280), radius=52, fill=(19, 31, 52), outline=(72, 105, 160), width=3)
-    draw.rounded_rectangle((110, 120, 455, 188), radius=28, fill=(35, 72, 118))
-    draw.text((145, 136), "NEW FREE TOOL", font=load_font(30, True), fill=(245, 249, 255))
+    visual_direction = creative_engine.visual_direction(info)
+    prompt = (
+        f"Hyper-realistic 3D product advertisement for the NexusNova tool "
+        f"'{info['title']}'. {visual_direction} "
+        f"Use this page description as the factual visual brief: {info['description']} "
+        "Premium purple technology aesthetic, photoreal materials, physically plausible "
+        "studio lighting, realistic glass and metal surfaces, cinematic depth of field, "
+        "high-end SaaS campaign photography/rendering, polished 4:5 composition. "
+        "Show the actual use-case rather than a generic abstract dashboard. "
+        "No readable text, no logo, no watermark, no celebrity/person likeness."
+    )
 
-    title_font = load_font(70, True)
-    body_font = load_font(36, False)
-    brand_font = load_font(32, True)
-    small_font = load_font(26, False)
-
-    title_lines = textwrap.wrap(info["title"], width=22)[:4]
-    y = 260
-    for line in title_lines:
-        draw.text((110, y), line, font=title_font, fill=(255, 255, 255))
-        y += 86
-
-    y += 28
-    desc_lines = textwrap.wrap(info["description"], width=45)[:5]
-    for line in desc_lines:
-        draw.text((112, y), line, font=body_font, fill=(196, 210, 232))
-        y += 50
-
-    draw.rounded_rectangle((110, 1010, 970, 1130), radius=30, fill=(11, 22, 39), outline=(72, 105, 160), width=2)
-    draw.text((145, 1040), "Open in your browser • No install needed", font=small_font, fill=(219, 230, 246))
-    draw.text((110, 1195), "NEXUSNOVA TOOLS", font=brand_font, fill=(255, 255, 255))
-    draw.text((110, 1240), "nexusnovatools.com", font=small_font, fill=(159, 183, 218))
-    canvas.save(out, format="PNG", optimize=True)
-    return rel
+    seed = int(hashlib.sha256(info["url"].encode("utf-8")).hexdigest()[:8], 16)
+    background, provider = creative_engine.download_ai_background(prompt, seed)
+    copy = {
+        "kicker": "NEW TOOL",
+        "platform_copy": {},
+    }
+    creative_engine.render_branded(background, info, copy, out)
+    return rel, provider
 
 
 def main() -> None:
@@ -100,7 +98,7 @@ def main() -> None:
     args = parser.parse_args()
 
     info = tool_info(args.file)
-    image_rel = make_card(info)
+    image_rel, image_provider = make_card(info)
     campaign = f"tool_launch_{datetime.now(timezone.utc).strftime('%Y%m%d')}_{info['slug']}"
     summary = info["description"]
     payload = {
@@ -112,6 +110,7 @@ def main() -> None:
         "summary": summary,
         "url": info["url"],
         "instagram_image": f"https://nexusnovatools.com/{image_rel}",
+        "social_image": f"https://nexusnovatools.com/{image_rel}",
         "hashtags": ["NexusNova", "OnlineTools", "FreeTools", "Productivity"],
         "platform_copy": {
             "telegram": f"🆕 New NexusNova tool: {info['title']}\n\n{summary}\n\nFree to use in your browser.",
@@ -121,6 +120,7 @@ def main() -> None:
         },
         "source_file": info["file"],
         "generated_image": image_rel,
+        "image_provider": image_provider,
     }
     OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(payload, indent=2, ensure_ascii=False))

@@ -193,7 +193,7 @@ jobs:
           slot=int(item.get('slot',0))
           if slot not in range(1,6): raise SystemExit('invalid slot')
           provider=str(item.get('image_provider',''))
-          allowed = provider.startswith('pollinations-') or provider in {'cached-ai-library','emergency-branded'}
+          allowed = provider.startswith('pollinations-') or provider == 'cached-ai-exact'
           if not allowed:
               raise SystemExit(f'Unrecognized social image provider: {provider}')
           if len(item.get('hashtags') or []) < 3: raise SystemExit('need at least 3 hashtags')
@@ -201,7 +201,7 @@ jobs:
           image=Path(f'assets/generated/premium-social-slot-{slot}.jpg')
           with Image.open(image) as im:
               if im.size != (1080,1350): raise SystemExit(f'wrong social image size: {im.size}')
-          print('Premium social quality gate passed:', item['campaign'], provider)
+          print('Premium social quality gate passed:', item['campaign'], provider, '| fresh/relevant 3D creative required')
           PY
 
       - name: Recheck dedupe before publishing

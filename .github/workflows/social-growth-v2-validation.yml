@@ -8,6 +8,9 @@ on:
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/distribute_social_growth.py'
       - '.github/scripts/distribute_update.py'
+      - '.github/scripts/premium_social_campaign.py'
+      - '.github/scripts/premium_social_resilient.py'
+      - '.github/scripts/prepare_new_tool_social.py'
       - '.github/scripts/social_audience_metrics.py'
       - '.github/workflows/traffic-autopilot.yml'
       - '.github/workflows/social-audience-watch.yml'
@@ -40,6 +43,65 @@ jobs:
           python -m py_compile .github/scripts/distribute_social_growth.py
           python -m py_compile .github/scripts/social_audience_metrics.py
           python -m py_compile .github/scripts/distribute_update.py
+          python -m py_compile .github/scripts/premium_social_campaign.py
+          python -m py_compile .github/scripts/premium_social_resilient.py
+          python -m py_compile .github/scripts/prepare_new_tool_social.py
+
+
+
+      - name: Fresh-content priority and creative-policy smoke test
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path('.github/scripts/premium_social_campaign.py')
+          spec = importlib.util.spec_from_file_location('premium_social_campaign', path)
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+
+          now = datetime.now(timezone.utc)
+          fresh_article = {
+              'url': 'https://nexusnovatools.com/articles/new-article.html',
+              'path': '/articles/new-article.html',
+              'title': 'New Article About a Useful Workflow',
+              'summary': 'A newly published article.',
+              'content_kind': 'article',
+              'git_updated_at': (now - timedelta(hours=20)).isoformat().replace('+00:00', 'Z'),
+          }
+          old_tool = {
+              'url': 'https://nexusnovatools.com/pdf-tools.html',
+              'path': '/pdf-tools.html',
+              'title': 'Free PDF Tools',
+              'summary': 'A well-known older tool page.',
+              'content_kind': 'tool',
+              'git_updated_at': (now - timedelta(days=60)).isoformat().replace('+00:00', 'Z'),
+          }
+
+          mod.candidate_urls = lambda: [fresh_article['url'], old_tool['url']]
+          mod.local_metadata = lambda url: fresh_article if url == fresh_article['url'] else old_tool
+          mod.load_json = lambda _path, _default: {'version': 1, 'posts': []}
+
+          selected = mod.choose_candidate(1)
+          if selected['url'] != fresh_article['url']:
+              raise SystemExit(f"Fresh article was not prioritized: {selected['url']}")
+          if selected.get('content_kind') != 'article':
+              raise SystemExit('Fresh candidate kind classification failed.')
+          print('Fresh-content priority smoke test passed.')
+          PY
+
+      - name: Verify no unrelated-image fallback remains
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          resilient=Path('.github/scripts/premium_social_resilient.py').read_text(encoding='utf-8')
+          if '_emergency_background' in resilient or 'cached-ai-library' in resilient:
+              raise SystemExit('Unrelated or generic social-image fallback is still present.')
+          if 'Relevant AI creative unavailable' not in resilient:
+              raise SystemExit('Relevant-image refusal guard is missing.')
+          print('No unrelated-image fallback: PASS')
+          PY
 
       - name: Credential-free metrics smoke test
         env:
