@@ -5,30 +5,40 @@
   enforceCleanCanonical();
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceCleanCanonical,{once:true});
   const measurementId='G-YLPFKWSS12';
-  const consentKey='nexusnova_analytics_consent_v1';
-  if(window.__nexusnovaConsentReady)return;
+  if(window.__nexusnovaGa4BootstrapReady)return;
+  window.__nexusnovaGa4BootstrapReady=true;
+
+  /* Historical GA4 bootstrap: immediate collection, matching the 19 September 2026
+     production behavior before the later performance deferral experiments. */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-  window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
-  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  let analyticsLoaded=false;
-  const loadAnalytics=(granted=true)=>{
-    if(!granted||analyticsLoaded||document.querySelector('script[data-nexusnova-ga4]'))return;
-    analyticsLoaded=true;
-    window.gtag('consent','update',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
-    window.gtag('config',measurementId,{send_page_view:true,allow_google_signals:false,allow_ad_personalization_signals:false});
-    window.gtag('js',new Date());
-    const script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);script.dataset.nexusnovaGa4='';document.head.appendChild(script);
-  };
-  const denyAnalytics=()=>window.gtag('consent','update',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
-  const autoEnable=()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone==='Asia/Karachi'||new Date().getTimezoneOffset()===-300}catch(_){return new Date().getTimezoneOffset()===-300}};
-  window.__nexusnovaLoadAnalytics=granted=>loadAnalytics(Boolean(granted));
-  const enable=()=>{const choice=readChoice();if(choice==='granted')loadAnalytics(true);else if(choice==='denied')denyAnalytics();else if(autoEnable()){window.__nexusnovaAnalyticsAutoEnabled=true;try{window.dispatchEvent(new Event('nexusnova-analytics-auto-enabled'))}catch(_){ }loadAnalytics(true);}};
-  ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,enable,{once:true,passive:true}));
-  const deferred=()=>{const arm=()=>window.setTimeout(enable,5000);if('requestIdleCallback' in window)window.requestIdleCallback(arm,{timeout:2000});else arm();};
-  if(document.readyState==='loading')window.addEventListener('load',deferred,{once:true});else deferred();
 
+  if(!document.querySelector('script[data-nexusnova-ga4]')){
+    window.gtag('js',new Date());
+    const analyticsScript=document.createElement('script');
+    analyticsScript.async=true;
+    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    analyticsScript.dataset.nexusnovaGa4='';
+    analyticsScript.onload=()=>window.gtag('config',measurementId,{
+      send_page_view:true,
+      allow_google_signals:false,
+      allow_ad_personalization_signals:false
+    });
+    document.head.appendChild(analyticsScript);
+  }
+
+  /* Keep the current privacy-settings UI bridge functional while the historical
+     GA4 loader remains automatic. */
+  window.__nexusnovaLoadAnalytics=granted=>{
+    if(!granted||document.querySelector('script[data-nexusnova-ga4]'))return;
+    window.gtag('consent','update',{
+      analytics_storage:'granted',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+  };
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
   const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
