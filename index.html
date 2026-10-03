@@ -25,6 +25,7 @@
   <script>(()=>{const signal=`${location.hash} ${location.search}`;const inTelegram=/tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal)||!!window.TelegramWebviewProxy||!!window.TelegramWebview;if(!inTelegram)return;const sdk=document.createElement('script');sdk.src='assets/js/vendor/telegram-web-app.js';sdk.async=true;sdk.onload=()=>{const bridge=document.createElement('script');bridge.src='assets/js/telegram-webapp.js?v=20260826-5';bridge.async=false;document.head.appendChild(bridge)};document.head.appendChild(sdk)})();</script>
   <script src="assets/js/main.js?v=20260921-perf23" defer></script>
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css">
+  <link rel="stylesheet" href="assets/css/flagship-home-refinement.css">
 
   <style>
     :root{
@@ -89,24 +90,24 @@
     .nn-search{position:relative;z-index:50}
     .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
     .nn-search-field{
-      min-width:0;display:flex;align-items:center;
+      min-width:0;min-height:52px;display:flex;align-items:center;
       border:1px solid var(--nn-line-strong);background:#fff;
     }
     .nn-search-icon{width:17px;height:17px;margin-left:12px;flex:0 0 auto;color:#64748b}
     .nn-search-input{
-      width:100%;min-width:0;height:46px;padding:0 12px;border:0;outline:0;
-      background:transparent;color:var(--nn-text);font-size:14px
+      width:100%;min-width:0;height:52px;padding:0 12px;border:0;outline:0;
+      background:transparent;color:var(--nn-text);font-size:15px
     }
     .nn-search-input::placeholder{color:#94a3b8}
-    .nn-search-inline-submit{width:40px;height:40px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}.nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}.nn-search-inline-submit svg{width:17px;height:17px;display:block}
+    .nn-search-inline-submit{width:44px;height:44px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}.nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}.nn-search-inline-submit svg{width:17px;height:17px;display:block}
     .nn-search-submit{
-      min-width:112px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);
+      min-width:120px;height:52px;padding:0 15px;border:1px solid var(--nn-purple);
       background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:7px
     }
     .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
     .nn-search-submit svg{width:15px;height:15px;display:block;flex:0 0 auto}
     .nn-search-suggestions{
-      position:absolute;top:53px;left:0;right:120px;display:grid;gap:2px;
+      position:absolute;top:59px;left:0;right:128px;display:grid;gap:2px;
       padding:5px;border:1px solid var(--nn-line);background:#fff;max-height:320px;overflow:auto
     }
     .nn-search-suggestions[hidden]{display:none}
@@ -340,14 +341,14 @@
     @media(max-width:420px){
       .nn-search-form{grid-template-columns:1fr}
       .nn-search-submit{width:100%}
-      .nn-search-suggestions{right:0;top:104px}
+      .nn-search-suggestions{right:0;top:112px}
       .nn-footer-links{grid-template-columns:1fr}
     }
       /* GLOBAL EMPTY-GRID-CELL FIX */
     .nn-master-tool-grid,.nn-pakistan-highlight-grid,.nn-category-grid,.nn-article-grid,.nn-guide-grid{gap:8px;background:transparent;border:0}
     .nn-master-tool,.nn-pakistan-highlight-card,.nn-cat-card,.nn-article-card,.nn-guide-card{border:1px solid var(--nn-line)}
   </style>
-<link rel="stylesheet" href="/assets/css/footer-social.css">
+<link rel="stylesheet" href="assets/css/footer-social.css">
 </head>
 <body>
   <header class="nn-header">
@@ -376,6 +377,7 @@
         <div class="nn-step-head">
           <div>
             <h1 id="search-title">Find a NexusNova tool</h1>
+            <p class="nn-flagship-intro">Free online tools for everyday digital tasks, from images and PDFs to calculations, Pakistan utilities, security checks and productivity workflows. Search by tool name or what you are trying to get done.</p>
           </div>
         </div>
         <div class="nn-search-wrap">
@@ -383,13 +385,76 @@
             <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search all NexusNova tools" novalidate>
               <div class="nn-search-field">
                 <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg>
-                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
+                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="What do you want to do?" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
                 <button class="nn-search-inline-submit" type="submit" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg></button>
               </div>
               <button class="nn-search-submit" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg><span>Search tool</span></button>
               <div class="nn-search-suggestions" id="nn-search-suggestions" role="listbox" aria-label="NexusNova tool suggestions" hidden></div>
             </form>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLAGSHIP FEATURED TOOLS: additive discovery layer; original directory remains intact -->
+    <section class="nn-featured-tools" aria-labelledby="featured-tools-title">
+      <div class="nn-shell">
+        <div class="nn-featured-head">
+          <div>
+            <span class="nn-step-label">FEATURED TOOLS</span>
+            <h2 id="featured-tools-title">Start with a useful tool</h2>
+            <p class="nn-featured-copy">A small set of high-intent entry points before the full directory. The complete tool index remains below, with every existing route preserved.</p>
+          </div>
+        </div>
+        <div class="nn-featured-grid">
+          <a class="nn-featured-card" href="image-compressor.html">
+            <span class="nn-featured-kicker">Images</span>
+            <h3>Image Compressor</h3>
+            <p>Reduce image file size and resize common formats for web and everyday sharing.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="merge-pdf.html">
+            <span class="nn-featured-kicker">PDF</span>
+            <h3>Merge PDF</h3>
+            <p>Combine multiple PDF files into one document directly from the browser.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="fbr-tax-calculator-pakistan.html">
+            <span class="nn-featured-kicker">Pakistan</span>
+            <h3>FBR Income Tax Calculator</h3>
+            <p>Estimate Pakistan income tax using the calculator's supported tax-year inputs and method.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="qr-code-generator.html">
+            <span class="nn-featured-kicker">Security + Utility</span>
+            <h3>QR Code Generator</h3>
+            <p>Create a QR code for a link or supported text without navigating away from NexusNova.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="password-generator.html">
+            <span class="nn-featured-kicker">Security</span>
+            <h3>Password Generator</h3>
+            <p>Generate passwords with configurable character options for everyday account setup.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="whatsapp-link-generator.html">
+            <span class="nn-featured-kicker">Productivity</span>
+            <h3>WhatsApp Link Generator</h3>
+            <p>Build a shareable WhatsApp chat link with a prepared message and phone number.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="ai-prompt-builder.html">
+            <span class="nn-featured-kicker">AI + Productivity</span>
+            <h3>AI Prompt Builder</h3>
+            <p>Turn a rough task into a clearer structured prompt before sending it to an AI service.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
+          <a class="nn-featured-card" href="edpi-calculator.html">
+            <span class="nn-featured-kicker">Gaming</span>
+            <h3>Gaming eDPI Calculator</h3>
+            <p>Calculate effective DPI from mouse DPI and in-game sensitivity for supported games.</p>
+            <span class="nn-featured-open">Open tool →</span>
+          </a>
         </div>
       </div>
     </section>
@@ -470,14 +535,14 @@
 
         <div class="nn-group-list">
 
-      <section class="nn-master-group" id="group-images" aria-labelledby="group-images-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-images" aria-labelledby="group-images-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-images-title">Images</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="image-compressor.html" data-master-tool data-title="Image Compressor" data-search="Image Compressor | Images | image compressor">
@@ -576,16 +641,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-pdf-documents" aria-labelledby="group-pdf-documents-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-pdf-documents" aria-labelledby="group-pdf-documents-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-pdf-documents-title">PDF &amp; Documents</h3>
           </div>
           <span class="nn-group-count">4 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="jpg-to-pdf.html" data-master-tool data-title="JPG to PDF" data-search="JPG to PDF | PDF &amp; Documents | jpg to pdf">
@@ -620,16 +685,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-calculators" aria-labelledby="group-calculators-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-calculators" aria-labelledby="group-calculators-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-calculators-title">Calculators</h3>
           </div>
           <span class="nn-group-count">23 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="ai-token-calculator.html" data-master-tool data-title="AI Token Calculator" data-search="AI Token Calculator | Calculators | ai token calculator">
@@ -816,16 +881,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-pakistan-tools" aria-labelledby="group-pakistan-tools-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-pakistan-tools" aria-labelledby="group-pakistan-tools-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-pakistan-tools-title">Pakistan Tools</h3>
           </div>
           <span class="nn-group-count">8 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="salary-tax-calculator-pakistan.html" data-master-tool data-title="Pakistan Salary Tax Calculator" data-search="Pakistan Salary Tax Calculator | Pakistan Tools | salary tax calculator pakistan | salery | income tax | fbr tax | fbr atl | salary calculator">
@@ -892,16 +957,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-security" aria-labelledby="group-security-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-security" aria-labelledby="group-security-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-security-title">Security</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="qr-code-generator.html" data-master-tool data-title="QR Code Generator" data-search="QR Code Generator | Security | qr code generator">
@@ -1000,16 +1065,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-developer-data" aria-labelledby="group-developer-data-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-developer-data" aria-labelledby="group-developer-data-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-developer-data-title">Developer &amp; Data</h3>
           </div>
           <span class="nn-group-count">3 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="csv-json-converter.html" data-master-tool data-title="CSV to JSON Converter" data-search="CSV to JSON Converter | Developer &amp; Data | csv json converter">
@@ -1036,16 +1101,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-productivity" aria-labelledby="group-productivity-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-productivity" aria-labelledby="group-productivity-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-productivity-title">Productivity</h3>
           </div>
           <span class="nn-group-count">13 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="magic-drop.html" data-master-tool data-title="Magic Drop" data-search="Magic Drop | Productivity | magic drop">
@@ -1152,16 +1217,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-gaming" aria-labelledby="group-gaming-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-gaming" aria-labelledby="group-gaming-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-gaming-title">Gaming</h3>
           </div>
           <span class="nn-group-count">7 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="reaction-time-test.html" data-master-tool data-title="Reaction Time Test" data-search="Reaction Time Test | Gaming | reaction time test">
@@ -1220,16 +1285,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-live-information" aria-labelledby="group-live-information-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-live-information" aria-labelledby="group-live-information-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-live-information-title">Live Information</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="live.html" data-master-tool data-title="Pakistan Today Dashboard" data-search="Pakistan Today Dashboard | Live Information | live">
@@ -1328,7 +1393,7 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
         </div>
       </div>
     </section>
@@ -1547,7 +1612,7 @@
     </section>
   </main>
 
-  <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="/assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+  <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>
 <a href="/editorial-team.html">Editorial Team</a>

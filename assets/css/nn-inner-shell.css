@@ -1,3 +1,5 @@
+@import url("./footer-social.css");
+
 :root{
   --nn-bg:#f8fafc;
   --nn-surface:#ffffff;
@@ -187,4 +189,38 @@
   .nn-inner-page .article-grid{grid-template-columns:1fr}
   .nn-footer-links{grid-template-columns:1fr 1fr}
   .nn-footer-bottom{align-items:flex-start;flex-direction:column}
+}
+
+
+/* Footer fallback asset safety for temporary/static preview hosts. */
+.nn-global-footer .nn-footer-brand-logo{
+  content:url('../logo.png')!important;
+  width:auto!important;
+  height:34px!important;
+  max-width:180px!important;
+  max-height:34px!important;
+  display:block!important;
+  object-fit:contain!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-icon{
+  width:24px!important;
+  height:24px!important;
+  min-width:24px!important;
+  max-width:24px!important;
+  min-height:24px!important;
+  max-height:24px!important;
+  flex:0 0 24px!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-icon svg{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  min-height:18px!important;
+  max-height:18px!important;
+  flex:0 0 18px!important;
+  display:block!important;
 }
