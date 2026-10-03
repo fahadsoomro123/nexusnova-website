@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.parse
 import urllib.request
@@ -39,10 +40,13 @@ ANGLES = {
     5: ("SMARTER WORKFLOW", "Position the page as a polished productivity shortcut with a clear CTA."),
 }
 PRIORITY_WORDS = {
-    "pdf": 9, "image": 8, "qr": 8, "currency": 8, "gold": 8, "weather": 7,
+    "pdf": 7, "image": 7, "qr": 8, "currency": 8, "gold": 8, "weather": 7,
     "calculator": 7, "meeting": 7, "resume": 7, "whatsapp": 7, "converter": 6,
     "network": 6, "dns": 6, "ssl": 6, "live": 6, "crypto": 6,
 }
+
+FRESH_TOOL_DAYS = 14
+FRESH_EDITORIAL_DAYS = 21
 
 
 def load_json(path: Path, default):
@@ -66,6 +70,81 @@ def slot_number() -> int:
     except Exception:
         value = 1
     return min(5, max(1, value))
+
+
+def git_last_changed(rel_path: str) -> datetime | None:
+    try:
+        proc = subprocess.run(
+            ["git", "log", "-1", "--format=%aI", "--", rel_path.lstrip("/")],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=8,
+        )
+        stamp = proc.stdout.strip()
+        return datetime.fromisoformat(stamp.replace("Z", "+00:00")).astimezone(timezone.utc) if stamp else None
+    except Exception:
+        return None
+
+
+def infer_content_kind(path: str, text: str) -> str:
+    lowered = path.lower()
+    if lowered.startswith("/articles/"):
+        return "article"
+    if lowered.startswith("/guides/"):
+        return "guide"
+    if lowered == "/" or lowered == "/index.html":
+        return "homepage"
+    if lowered.startswith("/tech/"):
+        return "tech"
+    if "webapplication" in text.lower() and "tool-card" in text.lower():
+        return "tool"
+    return "resource"
+
+
+def candidate_urls() -> list[str]:
+    urls = sitemap_urls()
+    seen = set(urls)
+    for pattern in ("*.html", "articles/*.html", "guides/*.html", "tech/*.html"):
+        for path in ROOT.glob(pattern):
+            if path.is_file():
+                rel = "/" + str(path.relative_to(ROOT)).replace("\\", "/")
+                url = f"{SITE}{rel}"
+                if url not in seen:
+                    urls.append(url)
+                    seen.add(url)
+    return urls
+
+
+def visual_direction(item: dict) -> str:
+    text = f"{item.get('title','')} {item.get('summary','')} {item.get('path','')}".lower()
+    if any(x in text for x in ("fbr", "atl", "tax", "cnic")):
+        return "Show a secure Pakistan tax-status dashboard with a masked identifier, a clear status indicator, official-document visual cues and realistic glass UI."
+    if any(x in text for x in ("job", "career")):
+        return "Show a Pakistani jobs discovery scene with realistic job cards, role/location/salary chips, a modern search interface and a professional workspace."
+    if any(x in text for x in ("electric", "bill", "meter")):
+        return "Show a realistic electricity meter and monthly bill interface with usage figures, tariff rows and a clean calculator result."
+    if any(x in text for x in ("fuel", "petrol", "diesel")):
+        return "Show a premium fuel-price dashboard with petrol and diesel pump imagery, price cards and a polished live-data interface."
+    if "gold" in text:
+        return "Show realistic gold bars beside a live price dashboard with PKR and market context, with no investment claims."
+    if any(x in text for x in ("currency", "exchange", "forex")):
+        return "Show a realistic currency-exchange dashboard with PKR and major currency symbols, rate cards and a modern financial interface."
+    if any(x in text for x in ("weather", "rain")):
+        return "Show a photoreal weather workstation with satellite/radar map panels, clouds and a city forecast interface."
+    if "qr" in text:
+        return "Show a realistic smartphone and glowing QR code scene, with a security/checking workflow represented in 3D."
+    if any(x in text for x in ("resume", "cv")):
+        return "Show a polished resume document being assembled in a realistic desktop workspace, with a finished PDF preview."
+    if any(x in text for x in ("image", "photo")):
+        return "Show a realistic camera/photo workflow with a floating image frame and relevant editing controls in a polished 3D workstation."
+    if any(x in text for x in ("pdf", "document")):
+        return "Show realistic printed pages and a digital PDF workspace with a clear before/after transformation relevant to the exact task."
+    if any(x in text for x in ("network", "dns", "ssl", "ip")):
+        return "Show a realistic network operations workspace with nodes, packets and a clear diagnostic result."
+    if any(x in text for x in ("whatsapp", "social")):
+        return "Show a realistic smartphone messaging/share workflow with a clean link-generation interface and a polished 3D device setup."
+    return "Create a realistic 3D product visualization of the exact tool's real-world outcome using the page description as the visual brief."
 
 
 def local_metadata(url: str) -> dict | None:
@@ -92,7 +171,16 @@ def local_metadata(url: str) -> dict | None:
     description = clean(desc_match.group(1) if desc_match else "", 230)
     if not title:
         return None
-    return {"url": f"{SITE}{path}", "path": path, "title": title, "summary": description}
+    kind = infer_content_kind(path, text)
+    changed_at = git_last_changed(rel)
+    return {
+        "url": f"{SITE}{path}",
+        "path": path,
+        "title": title,
+        "summary": description,
+        "content_kind": kind,
+        "git_updated_at": changed_at.isoformat().replace("+00:00", "Z") if changed_at else "",
+    }
 
 
 def sitemap_urls() -> list[str]:
@@ -132,35 +220,78 @@ def choose_candidate(slot: int) -> dict:
         history = []
 
     rows: list[dict] = []
-    for url in sitemap_urls():
+    for url in candidate_urls():
         item = local_metadata(url)
         if not item:
             continue
-        age = recent_age_days(history, item["url"], now)
-        if age is not None and age < 4:
+
+        post_age = recent_age_days(history, item["url"], now)
+        if post_age is not None and post_age < 4:
             continue
+
+        changed_age = None
+        stamp = str(item.get("git_updated_at") or "").strip()
+        if stamp:
+            try:
+                changed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                changed_age = max(0.0, (now - changed).total_seconds() / 86400)
+            except Exception:
+                pass
+
         lowered = f"{item['title']} {item['path']}".lower()
-        score = 20.0
-        score += sum(weight for word, weight in PRIORITY_WORDS.items() if word in lowered)
-        if age is None:
-            score += 22
+        score = 20.0 + sum(weight for word, weight in PRIORITY_WORDS.items() if word in lowered)
+
+        if post_age is None:
+            score += 35
         else:
-            score += min(18, age * 1.4)
-        entropy = hashlib.sha256(f"{now:%Y-%m-%d}:{slot}:{item['url']}".encode()).digest()[0] / 255
+            score += min(16, post_age * 1.15)
+
+        kind = item.get("content_kind")
+        if changed_age is not None:
+            if kind == "tool":
+                if changed_age <= 3:
+                    score += 150
+                elif changed_age <= 7:
+                    score += 110
+                elif changed_age <= FRESH_TOOL_DAYS:
+                    score += 70
+            elif kind in {"article", "guide"}:
+                if changed_age <= 3:
+                    score += 135
+                elif changed_age <= 7:
+                    score += 100
+                elif changed_age <= FRESH_EDITORIAL_DAYS:
+                    score += 60
+            elif changed_age <= 7:
+                score += 25
+
+        if post_age is None and changed_age is not None and changed_age <= 30:
+            score += 55
+
+        entropy = hashlib.sha256(
+            f"{now:%Y-%m-%d}:{slot}:{item['url']}".encode()
+        ).digest()[0] / 255
         score += entropy * 7
+
         item["score"] = round(score, 2)
+        item["post_age_days"] = None if post_age is None else round(post_age, 2)
+        item["changed_age_days"] = None if changed_age is None else round(changed_age, 2)
         rows.append(item)
 
     if not rows:
-        for url in sitemap_urls():
-            item = local_metadata(url)
-            if item:
-                item["score"] = 1
-                rows.append(item)
-    if not rows:
         raise SystemExit("Premium social campaign: no safe indexable page candidate found")
+
     rows.sort(key=lambda row: row["score"], reverse=True)
-    return rows[0]
+    selected = rows[0]
+    print(
+        "Selected social candidate:",
+        selected["url"],
+        "| kind=", selected.get("content_kind"),
+        "| post_age_days=", selected.get("post_age_days"),
+        "| changed_age_days=", selected.get("changed_age_days"),
+        "| score=", selected.get("score"),
+    )
+    return selected
 
 
 def fetch_trends(limit: int = 12) -> list[str]:
@@ -200,7 +331,7 @@ def fallback_copy(item: dict, slot: int) -> dict:
             "facebook": clean(f"{title}\n\n{summary}\n\nA practical browser-based shortcut from NexusNova Tools. Try it and save it for later.", 700),
             "instagram": clean(f"{title}\n\n{summary}\n\nA clean browser shortcut worth saving. Explore it on NexusNova Tools.", 1500),
         },
-        "image_prompt": f"Premium futuristic editorial technology visual representing {title}; clean cinematic composition, dark navy and electric cyan ambience, sophisticated glass interfaces, realistic depth, no readable text, no logos, no watermark, no people, professional SaaS campaign aesthetic.",
+        "image_prompt": f"Hyper-realistic 3D commercial technology visual for {title}; {visual_direction(item)} Photoreal materials, physically plausible lighting, cinematic depth of field, premium purple SaaS aesthetic, no readable text, no logos, no watermark, no people.",
         "copy_provider": "deterministic",
     }
 
@@ -250,7 +381,14 @@ Rules:
         tags.extend(x for x in ["OnlineTools", "Productivity"] if x not in tags)
 
     image_prompt = clean(data.get("image_prompt", ""), 900)
-    if not image_prompt:
+    if image_prompt:
+        image_prompt = clean(
+            f"{image_prompt} Hyper-realistic 3D commercial render. {visual_direction(item)} "
+            "Photoreal materials, physically plausible lighting, cinematic depth of field, premium purple NexusNova styling; "
+            "no readable text, no logo, no watermark, no people.",
+            900,
+        )
+    else:
         image_prompt = fallback_copy(item, slot)["image_prompt"]
     return {
         "hook": clean(data.get("hook") or data.get("x") or item["title"], 200),
@@ -355,9 +493,9 @@ def render_branded(background: Image.Image, item: dict, copy: dict, target: Path
     cta_font = get_font(29, True)
 
     draw.text((100, 92), "NEXUSNOVA TOOLS", font=brand_font, fill=(242, 250, 255, 255))
-    draw.text((785, 101), "AI VISUAL", font=small_font, fill=(151, 227, 255, 255))
+    draw.text((785, 101), "AI VISUAL", font=small_font, fill=(196, 181, 253, 255))
 
-    draw.text((78, 845), copy["kicker"], font=small_font, fill=(132, 231, 255, 255))
+    draw.text((78, 845), copy["kicker"], font=small_font, fill=(167, 139, 250, 255))
     y = 900
     for line in wrap(draw, item["title"], title_font, 900, 3):
         draw.text((78, y), line, font=title_font, fill=(255, 255, 255, 255))
@@ -367,8 +505,8 @@ def render_branded(background: Image.Image, item: dict, copy: dict, target: Path
         for line in wrap(draw, summary, body_font, 900, 2):
             draw.text((80, y + 10), line, font=body_font, fill=(214, 226, 238, 255))
             y += 42
-    draw.rounded_rectangle((78, 1232, 610, 1300), radius=30, fill=(235, 247, 255, 236))
-    draw.text((112, 1249), "Explore free • nexusnovatools.com", font=cta_font, fill=(8, 27, 46, 255))
+    draw.rounded_rectangle((78, 1232, 610, 1300), radius=30, fill=(109, 40, 217, 240))
+    draw.text((112, 1249), "Explore free • nexusnovatools.com", font=cta_font, fill=(255, 255, 255, 255))
 
     target.parent.mkdir(parents=True, exist_ok=True)
     composed.convert("RGB").save(target, "JPEG", quality=93, optimize=True, progressive=True)
