@@ -258,23 +258,34 @@ async function getFbrVerificationToken(forceRefresh) {
       Number(/\/main(?:\.|-)/i.test(a))
   );
 
+  const ranges = [
+    'bytes=3500000-4499999',
+    'bytes=2500000-3499999',
+    'bytes=4500000-5499999',
+    'bytes=1500000-2499999',
+    'bytes=5500000-6499999'
+  ];
+
   for (const url of candidates) {
     try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/javascript,text/javascript,*/*;q=0.8',
-          'User-Agent': 'Mozilla/5.0'
+      for (const range of ranges) {
+        const response = await fetch(url, {
+          headers: {
+            Range: range,
+            Accept: 'application/javascript,text/javascript,*/*;q=0.8',
+            'User-Agent': 'Mozilla/5.0'
+          }
+        });
+        if (response.status !== 206) continue;
+        const source = await response.text();
+        const token = extractFbrVerificationToken(source);
+        if (token) {
+          fbrVerificationCache = {
+            token,
+            expiresAt: Date.now() + FBR_TOKEN_CACHE_MS
+          };
+          return token;
         }
-      });
-      if (!response.ok) continue;
-      const source = await response.text();
-      const token = extractFbrVerificationToken(source);
-      if (token) {
-        fbrVerificationCache = {
-          token,
-          expiresAt: Date.now() + FBR_TOKEN_CACHE_MS
-        };
-        return token;
       }
     } catch (_) {
       // Try the next candidate script.
