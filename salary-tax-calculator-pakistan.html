@@ -21,6 +21,21 @@
 {"@type":"WebApplication","name":"Pakistan Salary Tax Calculator — Tax Year 2027","url":"https://nexusnovatools.com/salary-tax-calculator-pakistan.html","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Browser-side salaried income-tax estimate for Pakistan Tax Year 2027 using Finance Act 2026 slabs."},
 {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://nexusnovatools.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://nexusnovatools.com/tools.html"},{"@type":"ListItem","position":3,"name":"Pakistan Salary Tax Calculator","item":"https://nexusnovatools.com/salary-tax-calculator-pakistan.html"}]}
 ]}</script>
+
+<style>
+.sal-data-freshness{margin-top:20px;padding-top:18px;border-top:1px solid var(--sal-line)}
+.sal-data-freshness-head{margin:0 0 12px}
+.sal-data-freshness-head span{display:block;color:var(--sal-muted);font-size:8px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}
+.sal-data-freshness-head h3{margin:4px 0 0;color:var(--sal-text);font-size:14px;line-height:1.3;letter-spacing:-.015em}
+.sal-data-freshness-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.sal-freshness-item{min-width:0;padding:11px 12px;border:1px solid var(--sal-line);border-radius:13px;background:#fff}
+.sal-freshness-label{display:block;color:var(--sal-muted);font-size:9px;font-weight:900;letter-spacing:.065em;text-transform:uppercase}
+.sal-freshness-value{display:block;margin-top:4px;color:var(--sal-text);font-size:11px;font-weight:750;line-height:1.45;overflow-wrap:anywhere}
+.sal-freshness-value.is-source{color:var(--sal-purple)}
+.sal-data-freshness a{color:var(--sal-purple);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.sal-data-freshness a:hover{color:#5b21b6}
+@media(max-width:680px){.sal-data-freshness{margin-top:16px;padding-top:16px}.sal-data-freshness-grid{grid-template-columns:1fr}.sal-freshness-item{padding:10px 11px}}
+</style>
 </head>
 <body class="nn-salary-page">
 <header class="nn-header">
@@ -68,6 +83,21 @@
 <div class="sal-actions"><button class="sal-button" type="submit">Calculate My Tax →</button></div>
 <div class="sal-result" data-salary-tax-result aria-live="polite"></div>
 </form>
+<section class="sal-data-freshness" aria-labelledby="salary-data-freshness-title">
+<div class="sal-data-freshness-head">
+<span>DATA FRESHNESS</span>
+<h3 id="salary-data-freshness-title">Tax data and source information</h3>
+</div>
+<div class="sal-data-freshness-grid">
+<div class="sal-freshness-item"><span class="sal-freshness-label">Last verified</span><span class="sal-freshness-value">[DATE PLACEHOLDER]</span></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Source</span><span class="sal-freshness-value">Federal Board of Revenue (FBR)</span></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Data updated</span><span class="sal-freshness-value">[DATE PLACEHOLDER]</span></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Calculation method</span><span class="sal-freshness-value">FBR Tax Year 2027 / Finance Act 2026 basis</span></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Applicable period</span><span class="sal-freshness-value">Tax Year 2027</span></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Official source</span><a class="sal-freshness-value is-source" href="https://www.fbr.gov.pk/Budget2026-27/FinanceAct.html" rel="noopener noreferrer">Federal Board of Revenue (FBR)</a></div>
+<div class="sal-freshness-item"><span class="sal-freshness-label">Next review</span><span class="sal-freshness-value">[DATE PLACEHOLDER]</span></div>
+</div>
+</section>
 </section><aside class="sal-side" aria-label="Calculator notes">
 <article class="sal-card sal-note"><span class="sal-note-tag">01 • INPUT</span><h3>Use taxable salary</h3><p>Gross salary and taxable salary can differ because allowances, benefits, exemptions and deductions may apply.</p></article>
 <article class="sal-card sal-note"><span class="sal-note-tag">02 • OUTPUT</span><h3>Monthly tax is an average</h3><p>The calculator divides the estimated annual tax by 12. Actual payroll withholding can differ because employers annualize pay and account for changes.</p></article>
