@@ -77,7 +77,7 @@
 
     const choice=readChoice();
     if(choice==='granted'||choice==='denied'){
-      window.setTimeout(()=>loadAnalytics(choice==='granted'),12000);
+      window.setTimeout(()=>loadAnalytics(choice==='granted'),0);
       hide();
     }else{
       // Keep consent UI closed by default. Users can open it from the footer "Privacy choices" control.
@@ -86,10 +86,8 @@
   };
 
   const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
-  if(!isHome){
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
-    else mountChoices();
-  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
+  else mountChoices();
 })();
 
 (()=>{
