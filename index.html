@@ -90,24 +90,24 @@
     .nn-search{position:relative;z-index:50}
     .nn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
     .nn-search-field{
-      min-width:0;display:flex;align-items:center;
+      min-width:0;min-height:52px;display:flex;align-items:center;
       border:1px solid var(--nn-line-strong);background:#fff;
     }
     .nn-search-icon{width:17px;height:17px;margin-left:12px;flex:0 0 auto;color:#64748b}
     .nn-search-input{
-      width:100%;min-width:0;height:46px;padding:0 12px;border:0;outline:0;
-      background:transparent;color:var(--nn-text);font-size:14px
+      width:100%;min-width:0;height:52px;padding:0 12px;border:0;outline:0;
+      background:transparent;color:var(--nn-text);font-size:15px
     }
     .nn-search-input::placeholder{color:#94a3b8}
-    .nn-search-inline-submit{width:40px;height:40px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}.nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}.nn-search-inline-submit svg{width:17px;height:17px;display:block}
+    .nn-search-inline-submit{width:44px;height:44px;margin-right:3px;padding:0;border:0;background:transparent;color:#64748b;display:grid;place-items:center;flex:0 0 auto}.nn-search-inline-submit:hover{color:var(--nn-purple);background:#faf7ff}.nn-search-inline-submit svg{width:17px;height:17px;display:block}
     .nn-search-submit{
-      min-width:112px;height:46px;padding:0 15px;border:1px solid var(--nn-purple);
+      min-width:120px;height:52px;padding:0 15px;border:1px solid var(--nn-purple);
       background:var(--nn-purple);color:#fff;font-size:12px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:7px
     }
     .nn-search-submit:hover{background:var(--nn-purple-dark);border-color:var(--nn-purple-dark)}
     .nn-search-submit svg{width:15px;height:15px;display:block;flex:0 0 auto}
     .nn-search-suggestions{
-      position:absolute;top:53px;left:0;right:120px;display:grid;gap:2px;
+      position:absolute;top:59px;left:0;right:128px;display:grid;gap:2px;
       padding:5px;border:1px solid var(--nn-line);background:#fff;max-height:320px;overflow:auto
     }
     .nn-search-suggestions[hidden]{display:none}
@@ -341,7 +341,7 @@
     @media(max-width:420px){
       .nn-search-form{grid-template-columns:1fr}
       .nn-search-submit{width:100%}
-      .nn-search-suggestions{right:0;top:104px}
+      .nn-search-suggestions{right:0;top:112px}
       .nn-footer-links{grid-template-columns:1fr}
     }
       /* GLOBAL EMPTY-GRID-CELL FIX */
@@ -385,7 +385,7 @@
             <form class="nn-search-form" data-nexusnova-search role="search" aria-label="Search all NexusNova tools" novalidate>
               <div class="nn-search-field">
                 <svg class="nn-search-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg>
-                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
+                <input class="nn-search-input" id="nexusnova-search-input" data-nexusnova-search-input type="search" inputmode="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" placeholder="What do you want to do?" aria-label="Search NexusNova tools" aria-autocomplete="list" aria-controls="nn-search-suggestions" aria-expanded="false" aria-activedescendant="">
                 <button class="nn-search-inline-submit" type="submit" aria-label="Search" title="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg></button>
               </div>
               <button class="nn-search-submit" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M20 20l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg><span>Search tool</span></button>
@@ -535,14 +535,14 @@
 
         <div class="nn-group-list">
 
-      <section class="nn-master-group" id="group-images" aria-labelledby="group-images-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-images" aria-labelledby="group-images-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-images-title">Images</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="image-compressor.html" data-master-tool data-title="Image Compressor" data-search="Image Compressor | Images | image compressor">
@@ -641,16 +641,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-pdf-documents" aria-labelledby="group-pdf-documents-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-pdf-documents" aria-labelledby="group-pdf-documents-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-pdf-documents-title">PDF &amp; Documents</h3>
           </div>
           <span class="nn-group-count">4 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="jpg-to-pdf.html" data-master-tool data-title="JPG to PDF" data-search="JPG to PDF | PDF &amp; Documents | jpg to pdf">
@@ -685,16 +685,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-calculators" aria-labelledby="group-calculators-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-calculators" aria-labelledby="group-calculators-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-calculators-title">Calculators</h3>
           </div>
           <span class="nn-group-count">23 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="ai-token-calculator.html" data-master-tool data-title="AI Token Calculator" data-search="AI Token Calculator | Calculators | ai token calculator">
@@ -881,16 +881,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-pakistan-tools" aria-labelledby="group-pakistan-tools-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-pakistan-tools" aria-labelledby="group-pakistan-tools-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-pakistan-tools-title">Pakistan Tools</h3>
           </div>
           <span class="nn-group-count">8 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="salary-tax-calculator-pakistan.html" data-master-tool data-title="Pakistan Salary Tax Calculator" data-search="Pakistan Salary Tax Calculator | Pakistan Tools | salary tax calculator pakistan | salery | income tax | fbr tax | fbr atl | salary calculator">
@@ -957,16 +957,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-security" aria-labelledby="group-security-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-security" aria-labelledby="group-security-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-security-title">Security</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="qr-code-generator.html" data-master-tool data-title="QR Code Generator" data-search="QR Code Generator | Security | qr code generator">
@@ -1065,16 +1065,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-developer-data" aria-labelledby="group-developer-data-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-developer-data" aria-labelledby="group-developer-data-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-developer-data-title">Developer &amp; Data</h3>
           </div>
           <span class="nn-group-count">3 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="csv-json-converter.html" data-master-tool data-title="CSV to JSON Converter" data-search="CSV to JSON Converter | Developer &amp; Data | csv json converter">
@@ -1101,16 +1101,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-productivity" aria-labelledby="group-productivity-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-productivity" aria-labelledby="group-productivity-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-productivity-title">Productivity</h3>
           </div>
           <span class="nn-group-count">13 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="magic-drop.html" data-master-tool data-title="Magic Drop" data-search="Magic Drop | Productivity | magic drop">
@@ -1217,16 +1217,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-gaming" aria-labelledby="group-gaming-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-gaming" aria-labelledby="group-gaming-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-gaming-title">Gaming</h3>
           </div>
           <span class="nn-group-count">7 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="reaction-time-test.html" data-master-tool data-title="Reaction Time Test" data-search="Reaction Time Test | Gaming | reaction time test">
@@ -1285,16 +1285,16 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
 
-      <section class="nn-master-group" id="group-live-information" aria-labelledby="group-live-information-title">
-        <div class="nn-master-group-head">
+      <details class="nn-master-group" id="group-live-information" aria-labelledby="group-live-information-title">
+        <summary class="nn-master-group-head">
           <div>
 
             <h3 id="group-live-information-title">Live Information</h3>
           </div>
           <span class="nn-group-count">12 tools</span>
-        </div>
+        </summary>
         <div class="nn-master-tool-grid">
 
         <a class="nn-master-tool" href="live.html" data-master-tool data-title="Pakistan Today Dashboard" data-search="Pakistan Today Dashboard | Live Information | live">
@@ -1393,7 +1393,7 @@
           <span class="nn-master-tool-open">Open tool <span aria-hidden="true">→</span></span>
         </a>
         </div>
-      </section>
+      </details>
         </div>
       </div>
     </section>

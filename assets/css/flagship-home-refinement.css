@@ -89,7 +89,39 @@
   font-weight:850;
 }
 
+/* Search prominence + compact tool hierarchy. */
+.nn-search-field{
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.nn-search-field:focus-within{
+  border-color:#a78bfa;
+  box-shadow:0 0 0 3px rgba(109,40,217,.10);
+}
+.nn-master-group>summary{
+  min-height:48px;
+  list-style:none;
+  cursor:pointer;
+}
+.nn-master-group>summary::-webkit-details-marker{display:none}
+.nn-master-group>summary::after{
+  content:'+';
+  margin-left:auto;
+  color:var(--nn-purple);
+  font-family:var(--nn-mono);
+  font-size:13px;
+  font-weight:900;
+}
+.nn-master-group[open]>summary::after{content:'−'}
+.nn-master-group>summary:focus-visible{
+  outline:2px solid rgba(109,40,217,.22);
+  outline-offset:-3px;
+}
+.nn-master-group[open]>.nn-master-tool-grid{
+  padding:10px;
+}
+
 /* Secondary-block rhythm: keep utility sections dense, readable and predictable. */
+
 body .nn-main .nn-pakistan-highlight{
   padding-top:20px;
 }
