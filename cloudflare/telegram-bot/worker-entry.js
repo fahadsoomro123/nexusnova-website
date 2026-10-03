@@ -309,8 +309,6 @@ function extractFbrVerificationToken(source) {
   );
   return jwt ? jwt[0] : '';
 }
-ationCache.token;
-}
 
 function parseFbrAtlResponse(data) {
   const fields = new Map();
