@@ -6,7 +6,7 @@
 <title>NexusNova HumanProof — Live Human Verification & Pricing</title>
 <meta name="description" content="NexusNova HumanProof adds live-human approval, exact-action binding and auditable receipts for sensitive digital actions, with transparent launch pricing.">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#f7f9ff">
+<meta name="theme-color" content="#f8fafc">
 <link rel="canonical" href="https://nexusnovatools.com/humanproof.html">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -19,58 +19,8 @@
 <meta name="twitter:title" content="NexusNova HumanProof — Verified Action">
 <meta name="twitter:description" content="Live-human approval for sensitive digital actions with transparent launch pricing.">
 <meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg">
-<link rel="stylesheet" href="assets/css/humanproof.css?v=20260927-hpbtn2">
-<link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20260927-hpbtn2">
-<style id="humanproof-live-commerce-css">
-#live-verification .verifyStart:disabled{opacity:.58;cursor:not-allowed;filter:grayscale(.18)}
-.hp-live-payment{margin-top:10px;padding:11px 13px;border-radius:13px;border:1px solid rgba(101,88,255,.18);background:rgba(101,88,255,.05);font-size:12px;line-height:1.5;color:#4f587c}
-.hp-live-payment strong{display:block;margin-bottom:3px;color:#25315f}
-.hp-credential{margin-top:16px}
-.hp-credential-card{position:relative;overflow:hidden;border-radius:24px;padding:22px;background:
- radial-gradient(circle at 14% 10%,rgba(186,243,218,.80),transparent 31%),
- radial-gradient(circle at 84% 12%,rgba(209,198,255,.74),transparent 30%),
- radial-gradient(circle at 82% 86%,rgba(244,180,203,.63),transparent 34%),
- linear-gradient(135deg,#e9fff3 0%,#90d9ba 30%,#d7caff 57%,#efb3ca 78%,#fff0d5 100%);
- border:1px solid rgba(181,139,49,.72);
- box-shadow:0 20px 50px rgba(45,59,93,.18),inset 0 1px rgba(255,255,255,.95)}
-.hp-credential-card:before{content:"";position:absolute;inset:9px;border:1px solid rgba(180,139,47,.43);border-radius:18px;pointer-events:none}
-.hp-credential-top,.hp-credential-body,.hp-credential-foot{position:relative;z-index:2}
-.hp-credential-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
-.hp-credential-brand{font-weight:1000;letter-spacing:.1em;color:#1e5a4a;font-size:13px}
-.hp-credential-kicker{margin-top:4px;font-size:9px;letter-spacing:.16em;font-weight:900;color:#6a6682}
-.hp-credential-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.58);border:1px solid rgba(62,119,96,.18);font-size:9px;letter-spacing:.10em;font-weight:1000;color:#256148}
-.hp-credential-badge i{width:7px;height:7px;border-radius:50%;background:#0b8d66;box-shadow:0 0 0 3px rgba(11,141,102,.14)}
-.hp-credential-body{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:18px;margin-top:22px}
-.hp-credential-title{font-size:38px;line-height:.9;letter-spacing:-.055em;font-weight:1000;color:#183f35;text-transform:uppercase}
-.hp-credential-title span{display:block;font-size:.68em;color:#806018;margin-top:6px}
-.hp-credential-proof{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.52);border:1px solid rgba(62,119,96,.16);font-size:10px;letter-spacing:.08em;font-weight:1000;color:#17624b}
-.hp-credential-action{margin-top:18px;padding-top:10px;border-top:1px solid rgba(49,93,76,.20)}
-.hp-credential-action small{display:block;font-size:8px;letter-spacing:.14em;font-weight:900;color:#6c6a80}
-.hp-credential-action strong{display:block;margin-top:4px;font-size:15px;color:#234c40}
-.hp-credential-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
-.hp-credential-meta div{padding-top:7px;border-top:1px solid rgba(49,93,76,.17)}
-.hp-credential-meta small{display:block;font-size:7px;letter-spacing:.12em;font-weight:900;color:#737287}
-.hp-credential-meta b{display:block;margin-top:3px;font-size:9px;color:#285247;overflow-wrap:anywhere}
-.hp-credential-qr{align-self:center;justify-self:end;width:112px;padding:9px;border-radius:16px;background:linear-gradient(145deg,#f3d977,#a97918 55%,#efd573);border:1px solid rgba(112,75,13,.28);box-shadow:inset 1px 1px 2px rgba(255,255,231,.88),0 7px 15px rgba(74,68,46,.15)}
-.hp-credential-qr-inner{padding:7px;border-radius:10px;background:#fbfffc;box-shadow:inset 0 1px 3px rgba(42,70,59,.12)}
-#hpCredentialQR canvas,#hpCredentialQR img{display:block!important;width:100%!important;height:100%!important;image-rendering:pixelated}
-.hp-credential-scan{margin-top:6px;text-align:center;font-size:7px;letter-spacing:.14em;font-weight:1000;color:#74571a}
-.hp-credential-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:18px;padding-top:10px;border-top:1px solid rgba(49,93,76,.18);font-size:8px;color:#5f6871}
-.hp-credential-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.hp-credential-actions .btn{padding:9px 12px;font-size:12px}
-@media(max-width:700px){.hp-credential-body{grid-template-columns:1fr}.hp-credential-qr{justify-self:start}.hp-credential-meta{grid-template-columns:1fr 1fr}.hp-credential-title{font-size:31px}.hp-credential-top{flex-direction:column}}
-@media print{
-body>*:not(#top){display:none!important}
-nav,.section:not(.hero),footer{display:none!important}
-.heroGrid>div:first-child{display:none!important}
-.hero{padding:0!important;background:#fff!important}
-.verifyShell{box-shadow:none!important;min-height:0!important}
-.verifyShell>*:not(#credential){display:none!important}
-#credential[hidden]{display:block!important}
-.hp-credential-actions{display:none!important}
-.hp-credential-card{box-shadow:none!important}
-}
-</style>
+<link rel="stylesheet" href="assets/css/humanproof.css?v=20261002-hpfix2">
+<link rel="stylesheet" href="assets/css/humanproof-commerce.css?v=20261002-hpfix2">
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -103,8 +53,7 @@ nav,.section:not(.hero),footer{display:none!important}
       "offers":[
         {"@type":"Offer","name":"Personal","price":"1.00","priceCurrency":"USD","description":"One production HumanProof verified action and digital receipt."},
         {"@type":"Offer","name":"Business Starter","price":"9.99","priceCurrency":"USD","description":"100 HumanProof verification credits."},
-        {"@type":"Offer","name":"Business Growth","price":"24.99","priceCurrency":"USD","description":"500 HumanProof verification credits."},
-        {"@type":"Offer","name":"Enterprise","price":"79.00","priceCurrency":"USD","description":"Enterprise launch pricing starts from 2,000 verification credits."}
+        {"@type":"Offer","name":"Growth","price":"24.99","priceCurrency":"USD","description":"500 HumanProof verification credits."}
       ]
     },
     {
@@ -117,12 +66,76 @@ nav,.section:not(.hero),footer{display:none!important}
   ]
 }
 </script>
+<style id="hp-simple-pricing-css">
+.hp-simple-pricing{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+.hp-simple-plan{
+  padding:22px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 10px 28px rgba(45,55,110,.06);
+}
+.hp-simple-plan h3{
+  margin:9px 0 12px;
+  color:#17213a;
+  font-size:22px;
+}
+.hp-simple-plan p{
+  min-height:42px;
+  margin:0 0 18px;
+  color:#5c6780;
+  font-size:12px;
+}
+.hp-simple-price{
+  margin-bottom:12px;
+  color:#17213a;
+  font-size:32px;
+  font-weight:950;
+  letter-spacing:-.04em;
+}
+.hp-simple-price small{
+  color:#68748d;
+  font-size:10px;
+  letter-spacing:.08em;
+}
+.hp-simple-pay{
+  width:100%;
+  min-height:48px;
+  font-size:13px;
+}
+@media(max-width:860px){
+  .hp-simple-pricing{grid-template-columns:1fr}
+}
+</style>
+<link rel="stylesheet" href="/assets/css/footer-social.css">
+<style id="hp-nav-responsive-fix">
+.nav{display:block!important}
+.hp-mobile-menu{display:none;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 11px;border:1px solid rgba(38,51,93,.14);border-radius:11px;background:#fff;color:#17213a;font:800 11px/1 inherit;cursor:pointer}
+.hp-mobile-menu span:first-child{font-size:18px;line-height:1}
+@media(max-width:720px){
+  .nav{width:calc(100% - 16px);margin:8px auto 0;top:6px;border-radius:16px}
+  .navin{min-height:60px;padding:8px 10px;flex-wrap:wrap;gap:8px}
+  .brand{min-width:0;flex:1}
+  .brand .nn-brand-logo-img{height:36px!important;width:auto!important;max-width:210px}
+  .brand>div{display:none!important}
+  .hp-mobile-menu{display:inline-flex;flex:0 0 auto}
+  .navlinks{display:none!important;width:100%;flex-direction:column;align-items:stretch;gap:4px;padding:8px;border-top:1px solid rgba(38,51,93,.10)}
+  .navlinks.is-open{display:flex!important}
+  .navlinks a{width:100%;padding:11px 12px;border-radius:10px}
+  .navlinks .navcta{text-align:center}
+}
+</style>
 </head>
 <body>
 <nav class="nav">
   <div class="wrap navin">
-    <a class="brand" href="/"><div class="mark">N</div><div><b>NEXUSNOVA HUMANPROOF</b><small>VERIFIED ACTION</small></div></a>
-    <div class="navlinks">
+    <a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><div><b>NEXUSNOVA HUMANPROOF</b><small>VERIFIED ACTION</small></div></a>
+    <button class="hp-mobile-menu" id="hp-mobile-menu" type="button" aria-expanded="false" aria-controls="hp-navlinks" aria-label="Open HumanProof navigation"><span aria-hidden="true">☰</span><span>Menu</span></button>
+    <div class="navlinks" id="hp-navlinks">
       <a href="#how">How it works</a><a href="#live-verification">Verification</a><a href="#pricing">Pricing</a><a href="#developers">Developers</a><a href="#security">Security</a>
       <a class="navcta" href="#pricing">View Pricing</a>
     </div>
@@ -132,14 +145,6 @@ nav,.section:not(.hero),footer{display:none!important}
 <main id="top">
 <section class="hero">
   <div class="wrap heroGrid">
-    <div>
-      <span class="eyebrow"><i class="dot"></i> HUMAN APPROVAL FOR HIGH-RISK ACTIONS</span>
-      <h1><span class="grad">HumanProof:</span><br>Live approval for sensitive actions.</h1>
-      <p class="lead">NexusNova HumanProof is a live-human approval layer for sensitive digital actions. Confirm a real person is present, bind approval to the exact action, and build an auditable verification record around the decision.</p>
-      <div class="ctaRow"><a class="btn primary" href="#live-verification">Start Live Verification</a><a class="btn secondary" href="#pricing">View Launch Pricing</a></div>
-      <div class="trust"><span>Live human response</span><span>Exact-action binding</span><span>Worldwide USD pricing</span></div>
-    </div>
-
     <div class="verifyShell" id="live-verification">
       <div class="verifyTop"><span>LIVE VERIFICATION</span><span class="live">● CAMERA READY</span></div>
       <div class="camera" id="camera">
@@ -148,49 +153,17 @@ nav,.section:not(.hero),footer{display:none!important}
         <div class="camState" id="state">SYSTEM STANDBY</div>
         <div class="camPrompt"><small>LIVE RESPONSE CHECK</small><b id="prompt">Ready when you are.</b></div>
       </div>
-      <div class="verifyMeta"><span>SEQUENCE PROGRESS</span><strong id="progress">0%</strong></div>
+      <div class="verifyMeta">
+        <span>SEQUENCE PROGRESS</span>
+        <div class="verifyProgress" role="progressbar" aria-label="Verification progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progressBar"></span></div>
+        <strong id="progress">0%</strong>
+      </div>
       <div class="verifyControls">
         <button class="verifyStart" id="start" type="button">START VERIFICATION</button>
         <button class="verifyReset" id="reset" type="button">RESET</button>
       </div>
       <div class="ok" id="ok">PENDING PAYMENT • NOT VERIFIED. No HumanProof result has been issued. Production verification requires an activated paid flow and server confirmation.</div>
       <div class="err" id="err"></div>
-      <div class="notice">Complete payment first. Once the server confirms your payment, the live-human verification step unlocks and a HumanProof digital credential is shown after the challenge is completed.</div>
-      <div id="paymentGate" class="hp-live-payment" role="status"><strong>Payment required</strong>Choose a HumanProof plan below to unlock the live verification step.</div>
-      <div id="credential" class="hp-credential" hidden>
-        <article class="hp-credential-card" id="credentialCard">
-          <div class="hp-credential-top">
-            <div>
-              <div class="hp-credential-brand">NEXUSNOVA HUMANPROOF</div>
-              <div class="hp-credential-kicker">VERIFIED ACTION • DIGITAL CREDENTIAL</div>
-            </div>
-            <span class="hp-credential-badge"><i></i> PAID • SERVER-SIGNED</span>
-          </div>
-          <div class="hp-credential-body">
-            <div>
-              <div class="hp-credential-title">HumanProof<span>Verified</span></div>
-              <div class="hp-credential-proof">✓ LIVE HUMAN CHALLENGE COMPLETED</div>
-              <div class="hp-credential-action"><small>VERIFICATION</small><strong>Human presence + conscious approval</strong></div>
-              <div class="hp-credential-meta">
-                <div><small>VERIFICATION ID</small><b id="credentialId">—</b></div>
-                <div><small>ORDER</small><b id="credentialOrder">—</b></div>
-                <div><small>ISSUED</small><b id="credentialIssued">—</b></div>
-                <div><small>PAYMENT</small><b>SAFEpay • CONFIRMED</b></div>
-                <div><small>ENVIRONMENT</small><b>LIVE / PRODUCTION</b></div>
-                <div><small>STATUS</small><b>VERIFIED ACTION</b></div>
-              </div>
-            </div>
-            <aside>
-              <div class="hp-credential-qr"><div class="hp-credential-qr-inner"><div id="hpCredentialQR" aria-label="Payment verification QR"></div></div><div class="hp-credential-scan">SCAN TO VERIFY PAYMENT</div></div>
-            </aside>
-          </div>
-          <div class="hp-credential-foot"><span>Digital service • Not KYC or legal identity proof</span><span>NexusNova Tools</span></div>
-        </article>
-        <div class="hp-credential-actions">
-          <button class="btn primary" id="printCredential" type="button">Print / Save Card</button>
-          <button class="btn secondary" id="newVerification" type="button">Start New</button>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -214,16 +187,41 @@ nav,.section:not(.hero),footer{display:none!important}
   </div>
 </div></section>
 
-<section class="section" id="pricing"><div class="wrap">
-  <div class="hp-commerce-head"><div><span class="hp-commerce-kicker">STARTUP LAUNCH PRICING • WORLDWIDE</span><h2>Low-friction pricing for early users.</h2></div><p>These introductory USD prices are intentionally lower while HumanProof builds real production usage, reliability data and customer feedback. Future purchases may use revised pricing.</p></div>
-  <div class="hp-commerce-plans">
-    <article class="hp-commerce-plan"><span class="hp-commerce-kicker">INDIVIDUAL</span><h3>Personal</h3><p class="hp-commerce-plan-copy">For one important remote action that needs a live-human approval step.</p><div class="hp-commerce-price">$1.00 <small>USD</small></div><div class="hp-commerce-unit">per successful verified action</div><ul><li>1 production HumanProof action</li><li>Exact-action binding</li><li>Digital receipt / flagship credential</li><li>Shareable result reference</li></ul><a class="btn" href="humanproof-checkout.html?plan=personal">Choose Personal</a></article>
-    <article class="hp-commerce-plan is-featured"><span class="hp-commerce-plan-tag">BEST START</span><span class="hp-commerce-kicker">SMALL BUSINESS</span><h3>Business Starter</h3><p class="hp-commerce-plan-copy">For startups, small SaaS products and teams testing HumanProof inside real workflows.</p><div class="hp-commerce-price">$9.99 <small>USD</small></div><div class="hp-commerce-unit">100 verification credits • launch pack</div><ul><li>100 verification credits</li><li>Verification links</li><li>Web widget / SDK access as available</li><li>Receipt and audit history</li></ul><a class="btn primary" href="humanproof-checkout.html?plan=starter">Choose Starter</a></article>
-    <article class="hp-commerce-plan"><span class="hp-commerce-kicker">GROWING TEAMS</span><h3>Business Growth</h3><p class="hp-commerce-plan-copy">For products with repeated approval workflows and higher early-stage volume.</p><div class="hp-commerce-price">$24.99 <small>USD</small></div><div class="hp-commerce-unit">500 verification credits • launch pack</div><ul><li>500 verification credits</li><li>REST API integration model as available</li><li>Audit and receipt logs</li><li>Priority integration guidance</li></ul><a class="btn" href="humanproof-checkout.html?plan=growth">Choose Growth</a></article>
-    <article class="hp-commerce-plan"><span class="hp-commerce-kicker">HIGHER VOLUME</span><h3>Enterprise</h3><p class="hp-commerce-plan-copy">For security-sensitive teams needing larger volume, governance and custom integration.</p><div class="hp-commerce-price">$79 <small>USD</small></div><div class="hp-commerce-unit">from 2,000 credits • launch pricing</div><ul><li>2,000+ verification credits</li><li>Team and governance support</li><li>Custom integration scope</li><li>Volume terms and contract billing</li></ul><a class="btn" href="contact.html">Contact Enterprise</a></article>
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="sectionHead">
+      <span class="kicker">SAFEpay LIVE • PRODUCTION</span>
+      <h2>Simple pricing. Direct checkout.</h2>
+      <p>Choose a plan below. Each button takes you directly to the secure SafePay checkout for that plan.</p>
+    </div>
+
+    <div class="hp-simple-pricing">
+      <article class="hp-simple-plan">
+        <span class="hp-commerce-kicker">INDIVIDUAL</span>
+        <h3>Personal</h3>
+        <div class="hp-simple-price">$1.00 <small>USD</small></div>
+        <p>One production HumanProof verified action.</p>
+        <a class="btn primary hp-simple-pay" href="humanproof-checkout.html?plan=personal">Checkout via SafePay</a>
+      </article>
+
+      <article class="hp-simple-plan">
+        <span class="hp-commerce-kicker">SMALL BUSINESS</span>
+        <h3>Business Starter</h3>
+        <div class="hp-simple-price">$9.99 <small>USD</small></div>
+        <p>100 HumanProof verification credits.</p>
+        <a class="btn primary hp-simple-pay" href="humanproof-checkout.html?plan=starter">Checkout via SafePay</a>
+      </article>
+
+      <article class="hp-simple-plan">
+        <span class="hp-commerce-kicker">GROWING TEAMS</span>
+        <h3>Growth</h3>
+        <div class="hp-simple-price">$24.99 <small>USD</small></div>
+        <p>500 HumanProof verification credits.</p>
+        <a class="btn primary hp-simple-pay" href="humanproof-checkout.html?plan=growth">Checkout via SafePay</a>
+      </article>
+    </div>
   </div>
-  <div class="hp-commerce-disclosure" style="margin-top:12px"><strong>Rollout transparency:</strong> Safepay production checkout is now enabled. Live payment testing is available through the secure checkout. The public camera challenge alone is not presented as a completed production verification.</div>
-</div></section>
+</section>
 
 <section class="section"><div class="wrap">
   <div class="sectionHead"><span class="kicker">Policies & customer support</span><h2>Important information stays visible before checkout.</h2><p>HumanProof is a digital service. There is no physical shipping, and commercial terms are linked before payment.</p></div>
@@ -257,7 +255,6 @@ nav,.section:not(.hero),footer{display:none!important}
     <div class="feature"><b>Action-specific proof</b><p>The goal is not only “a human was present,” but “a human approved this exact action.”</p></div>
     <div class="feature"><b>No identity claim by default</b><p>HumanProof is positioned around presence and conscious approval, not automatic real-world identity claims.</p></div>
   </div>
-  <div class="transparency" style="margin-top:12px"><strong>Realistic limitation</strong><p>No liveness check is 100% secure or automatically deepfake-proof. Camera quality, accessibility needs, presentation attacks, compromised devices and implementation mistakes can affect results. HumanProof should be one risk-control layer alongside other appropriate controls.</p></div>
 </div></section>
 
 <section class="section"><div class="wrap">
@@ -275,15 +272,10 @@ nav,.section:not(.hero),footer{display:none!important}
 </div></section>
 
 <section class="section"><div class="wrap">
-  <div class="sectionHead"><span class="kicker">What HumanProof is — and is not</span><h2>Clear claims matter in security products.</h2></div>
-  <div class="transparency"><strong>Current public capability</strong><p>The page provides a working browser camera interaction with live facial-motion challenges. It is not bank-grade identity verification, does not identify a person by legal name, and does not yet expose a public production receipt API. Paid production access depends on the hardened backend and activated live checkout path.</p></div>
-</div></section>
-
-<section class="section"><div class="wrap">
   <div class="sectionHead"><span class="kicker">FAQ</span><h2>HumanProof, explained simply.</h2></div>
   <div class="faq">
     <details><summary>Is HumanProof face recognition or KYC?</summary><p>No. The product is focused on showing that a live human consciously approved a specific action. It does not by itself establish legal identity or KYC status.</p></details>
-    <details><summary>Does the public flow equal production-grade liveness?</summary><p>No. It is a live browser interaction and evaluation surface. Production security requires stronger backend and anti-replay controls.</p></details>
+    <details><summary>Does the public flow equal production-grade liveness?</summary><p>No. Production security requires stronger backend and anti-replay controls.</p></details>
     <details><summary>Do normal NexusNova tools become paid?</summary><p>No. Normal NexusNova browser tools remain free. The listed prices apply to production HumanProof verification services.</p></details>
     <details><summary>Is the flagship credential included?</summary><p>Yes for completed production results where a credential is issued. Preview or sample credentials are not proof of verification.</p></details>
     <details><summary>Can a business integrate HumanProof without a separate app?</summary><p>The commercial direction includes verification links, an embedded web widget/SDK and a REST API as those production integrations become available.</p></details>
@@ -291,30 +283,37 @@ nav,.section:not(.hero),footer{display:none!important}
   </div>
 </div></section>
 
-<section class="section"><div class="wrap final">
-  <span class="kicker">NexusNova HumanProof</span>
-  <h2>Put a real human back in the approval loop.</h2>
-  <p>Verify presence. Bind the action. Return proof.</p>
-  <div class="ctaRow" style="justify-content:center"><a class="btn primary" href="#live-verification">Start Live Verification</a><a class="btn secondary" href="#pricing">View Pricing</a></div>
-</div></section>
 </main>
 
-<footer class="footer"><div class="wrap footerin">
-  <span>© NexusNova Tools • HumanProof Verified Action</span>
-  <div class="footerlinks"><a href="/">Home</a><a href="#pricing">Pricing</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund-policy.html">Refund</a><a href="cancellation-policy.html">Cancellation</a><a href="digital-delivery-policy.html">Digital Delivery</a><a href="contact.html">Contact Us &amp; Support</a></div>
-</div>
-      <ul class="footer-links" style="list-style:none;margin:0;padding:0">
-        <li><a href="/terms.html">Terms</a> & <a href="/refund-policy.html">Refund Policy</a></li>
-        <li><a href="/about.html">About</a></li>
-        <li><a href="/editorial-policy.html">Editorial Policy</a></li>
-        <li><a href="/tool-methodology.html">Tool Methodology</a></li>
-        <li><a href="/privacy.html">Privacy</a></li>
-        <li><a href="/contact.html">Contact Us & Support</a></li>
-      </ul>
-</footer>
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="/assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p><div class="nn-footer-more"><span class="nn-footer-more-title">More</span><div class="nn-footer-more-links"><a href="/">Home</a><a href="#pricing">Pricing</a><a href="cancellation-policy.html">Cancellation</a><a href="digital-delivery-policy.html">Digital Delivery</a></div></div></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<a href="/refund-policy.html">Refund Policy</a>
+<a href="/about.html">About</a>
+<a href="/editorial-team.html">Editorial Team</a>
+<a href="/editorial-policy.html">Editorial Policy</a>
+<a href="/tool-methodology.html">Tool Methodology</a>
+<a href="/faq.html">FAQ</a>
+<a href="/privacy.html">Privacy</a>
+<a href="/contact.html">Contact Us & Support</a>
+<a href="/disclaimer.html">Disclaimer</a></div></nav><section class="nn-footer-social">
+  <div class="nn-social-title">Follow NexusNova</div>
+  <div class="nn-social-row" aria-label="Official NexusNova social profiles">
+    <a class="nn-social nn-social-x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="X @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"></path></svg></span><span><strong>X</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
+    <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+  </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script type="module" src="assets/js/humanproof-live-20260929-livefix.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.getElementById('hp-mobile-menu'),nav=document.getElementById('hp-navlinks');
+  if(!btn||!nav)return;
+  const close=()=>{nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open HumanProof navigation')};
+  btn.addEventListener('click',()=>{const open=!nav.classList.contains('is-open');nav.classList.toggle('is-open',open);btn.setAttribute('aria-expanded',String(open));btn.setAttribute('aria-label',open?'Close HumanProof navigation':'Open HumanProof navigation')});
+  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+});
+</script>
+<script type="module" src="assets/js/humanproof-live.js?v=20261003-hpstrong8"></script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>

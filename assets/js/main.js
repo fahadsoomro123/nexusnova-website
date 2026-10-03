@@ -34,38 +34,36 @@
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
 
   // Keep every visible footer Contact link consistent across the entire site.
+  // Enforce the selected NexusNova logo at runtime on every shared header variant.
+  const enforceSelectedHeaderLogo=()=>{
+    const base=(document.querySelector('base')?.href||document.baseURI);
+    const logoUrl=new URL((/\/(guides|articles|tech)\//.test(location.pathname)?'../':'')+'assets/logo.png',base).href;
+    document.querySelectorAll('.site-header .brand-mark,.site-header .mark,nav.nav .brand .mark,.header .brandmark').forEach(mark=>{
+      mark.style.backgroundImage='url("'+logoUrl.replace(/"/g,'%22')+'")';
+      mark.style.backgroundSize='contain';
+      mark.style.backgroundPosition='center';
+      mark.style.backgroundRepeat='no-repeat';
+      mark.style.color='transparent';
+      mark.style.fontSize='0';
+      mark.style.boxShadow='none';
+    });
+  };
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceSelectedHeaderLogo,{once:true});else enforceSelectedHeaderLogo();
+
   const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterContact,{once:true});else normalizeFooterContact();
 
-  // Global Website Launches trust badge: render once in the existing footer without changing footer structure.
-  const mountWebsiteLaunchesBadge=()=>{
-    if(document.querySelector('[data-nexusnova-website-launches-badge]'))return;
-    const footer=document.querySelector('.site-footer');
-    if(!footer)return;
-    const badgeWrap=document.createElement('div');
-    badgeWrap.dataset.nexusnovaWebsiteLaunchesBadge='';
-    badgeWrap.className='nn-website-launches-badge';
-    badgeWrap.innerHTML='<a href="https://websitelaunches.com/site/nexusnovatools.com" target="_blank" rel="noopener" aria-label="View NexusNova Tools public launch record"><img src="https://websitelaunches.com/badge/nexusnovatools.com.svg" alt="Established online - Public launch record" width="255" height="55" loading="lazy" decoding="async"></a>';
-    footer.insertBefore(badgeWrap,footer.querySelector('.footer-bottom')||footer.lastElementChild);
+  // Keep legacy footer link lists from duplicating the structured footer on compact pages.
+  const normalizeFooterStructure=()=>{
+    document.querySelectorAll('.site-footer').forEach(footer=>{
+      const structured=footer.querySelector('.footer-console,.footer-grid');
+      const orphan=footer.querySelector(':scope > .footer-links');
+      if(structured&&orphan)orphan.remove();
+    });
   };
-  const ensureWebsiteLaunchesBadgeStyles=()=>{
-    if(document.querySelector('style[data-nexusnova-website-launches-style]'))return;
-    const style=document.createElement('style');
-    style.dataset.nexusnovaWebsiteLaunchesStyle='';
-    style.textContent=[
-      '.nn-website-launches-badge{display:flex;justify-content:center;align-items:center;margin:18px auto 12px;padding:0 12px;text-align:center}',
-      '.nn-website-launches-badge a{display:inline-flex;align-items:center;justify-content:center;line-height:0}',
-      '.nn-website-launches-badge img{display:block;max-width:100%;height:auto;width:255px}',
-      '@media(max-width:560px){.nn-website-launches-badge{margin:16px auto 10px}.nn-website-launches-badge img{width:min(255px,100%)}}'
-    ].join('');
-    document.head.appendChild(style);
-  };
-  const initWebsiteLaunchesBadge=()=>{
-    ensureWebsiteLaunchesBadgeStyles();
-    mountWebsiteLaunchesBadge();
-  };
-  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',initWebsiteLaunchesBadge,{once:true});else initWebsiteLaunchesBadge();
+  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterStructure,{once:true});else normalizeFooterStructure();
 
+  // Global share action: one compact button, no in-page share panel.
   // Global share action: one compact button, no in-page share panel.
   const mountShareWidget=()=>{
     if(document.querySelector('[data-nexusnova-share-widget]'))return;
@@ -149,8 +147,8 @@
   else scheduleShare();
 
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);const base=inSubdir?'../':'';
-  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20260921-nav19';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
-  const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260921-social3';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
+  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20260930-nav20';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
+  const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260930-social4';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
 })();
