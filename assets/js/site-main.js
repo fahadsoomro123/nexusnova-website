@@ -80,7 +80,8 @@
       window.setTimeout(()=>loadAnalytics(choice==='granted'),12000);
       hide();
     }else{
-      banner.hidden=false;
+      // Keep consent UI closed by default. Users can open it from the footer "Privacy choices" control.
+      banner.hidden=true;
     }
   };
 
