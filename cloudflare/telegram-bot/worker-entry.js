@@ -234,7 +234,10 @@ function isValidFbrIdentifier(type, value) {
 function currentFbrDate() {
   const date = new Date(Date.now() + 5 * 60 * 60 * 1000);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return String(date.getUTCDate()).padStart(2, '0') + ',' + months[date.getUTCMonth()] + ',' + date.gasync function getFbrVerificationToken(forceRefresh) {
+  return String(date.getUTCDate()).padStart(2, '0') + ',' + months[date.getUTCMonth()] + ',' + date.getUTCFullYear();
+}
+
+async function getFbrVerificationToken(forceRefresh) {
   if (!forceRefresh && fbrVerificationCache.token && Date.now() < fbrVerificationCache.expiresAt) {
     return fbrVerificationCache.token;
   }
