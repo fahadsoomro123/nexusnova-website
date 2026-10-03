@@ -5,20 +5,31 @@
   enforceCleanCanonical();
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceCleanCanonical,{once:true});
   const measurementId='G-YLPFKWSS12';
+  const consentKey='nexusnova_analytics_consent_v1';
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
-  /* Historical GA4 bootstrap: immediate collection, matching the 19 September 2026
-     production behavior before the later performance deferral experiments. */
+  /* Advanced consent mode:
+     - Load GA4 immediately so visitors who have not opted in still generate
+       privacy-preserving cookieless measurement pings.
+     - Keep analytics storage denied until the visitor explicitly grants it.
+     - Advertising and personalization remain denied. */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  window.gtag('consent','default',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied',
+    wait_for_update:500
+  });
 
   if(!document.querySelector('script[data-nexusnova-ga4]')){
     window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
-    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
     analyticsScript.dataset.nexusnovaGa4='';
     analyticsScript.onload=()=>window.gtag('config',measurementId,{
       send_page_view:true,
@@ -28,17 +39,17 @@
     document.head.appendChild(analyticsScript);
   }
 
-  /* Keep the current privacy-settings UI bridge functional while the historical
-     GA4 loader remains automatic. */
+  /* Privacy UI bridge: only explicit user approval unlocks full analytics
+     storage/measurement. Denial never blocks the anonymous basic ping. */
   window.__nexusnovaLoadAnalytics=granted=>{
-    if(!granted||document.querySelector('script[data-nexusnova-ga4]'))return;
     window.gtag('consent','update',{
-      analytics_storage:'granted',
+      analytics_storage:granted?'granted':'denied',
       ad_storage:'denied',
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
   };
+
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
   const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
