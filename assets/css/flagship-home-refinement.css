@@ -123,6 +123,39 @@
   outline-offset:-2px;
 }
 
+/* Footer asset safety boundary: keep social SVGs and the brand mark bounded
+   even when the companion footer stylesheet is unavailable in a temporary preview host. */
+.nn-global-footer .nn-footer-social .nn-social-icon{
+  width:24px!important;
+  height:24px!important;
+  min-width:24px!important;
+  max-width:24px!important;
+  min-height:24px!important;
+  max-height:24px!important;
+  flex:0 0 24px!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-icon svg{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  min-height:18px!important;
+  max-height:18px!important;
+  flex:0 0 18px!important;
+  display:block!important;
+}
+.nn-global-footer .nn-footer-brand-logo{
+  width:auto!important;
+  height:34px!important;
+  max-width:180px!important;
+  max-height:34px!important;
+  display:block!important;
+  object-fit:contain!important;
+}
+
 /* Search prominence + compact tool hierarchy. */
 .nn-search-field{
   transition:border-color .16s ease,box-shadow .16s ease;
