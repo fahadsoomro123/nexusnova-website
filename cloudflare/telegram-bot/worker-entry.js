@@ -138,22 +138,21 @@ async function fbrAtlStatus(request) {
     return fbrJson(origin, { ok: false, code: 'invalid-identifier', error: 'Enter a valid identification number for the selected type.' }, 400);
   }
 
-  const payload = JSON.stringify({ protocolId: '1004', outputType: '4', identifierType: identifierType, identifier: identifier, date: currentFbrDate() });
+  const payload = JSON.stringify({
+    protocolId: '1004',
+    outputType: '4',
+    identifierType,
+    identifier,
+    date: currentFbrDate()
+  });
+
   let upstream;
   try {
-    const token = await getFbrVerificationToken(false);
-    upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, Accept: 'application/json, text/plain, */*', 'Content-Type': 'application/json', Origin: 'https://iris.fbr.gov.pk', Referer: 'https://iris.fbr.gov.pk/', 'User-Agent': 'Mozilla/5.0' },
-      body: payload
-    });
+    let token = await getFbrVerificationToken(false);
+    upstream = await callFbrUpstream(token, payload);
     if (upstream.status === 401) {
-      const freshToken = await getFbrVerificationToken(true);
-      upstream = await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + freshToken, Accept: 'application/json, text/plain, */*', 'Content-Type': 'application/json', Origin: 'https://iris.fbr.gov.pk', Referer: 'https://iris.fbr.gov.pk/', 'User-Agent': 'Mozilla/5.0' },
-        body: payload
-      });
+      token = await getFbrVerificationToken(true);
+      upstream = await callFbrUpstream(token, payload);
     }
   } catch (error) {
     console.error('FBR ATL upstream unavailable', String(error && error.message || error || 'unknown'));
@@ -163,18 +162,24 @@ async function fbrAtlStatus(request) {
   const upstreamText = await upstream.text();
   if (!upstream.ok) {
     console.error('FBR ATL upstream returned', upstream.status);
-    return fbrJson(origin, { ok: false, code: upstream.status === 401 ? 'fbr-auth-expired' : 'fbr-upstream-error', error: upstream.status === 404 ? 'No FBR verification result was returned.' : 'FBR verification could not be completed right now.' }, upstream.status === 404 ? 404 : 502);
+    return fbrJson(origin, {
+      ok: false,
+      code: upstream.status === 401 ? 'fbr-auth-expired' : 'fbr-upstream-error',
+      error: upstream.status === 404 ? 'No FBR verification result was returned.' : 'FBR verification could not be completed right now.'
+    }, upstream.status === 404 ? 404 : 502);
   }
 
   let data;
-  try { data = JSON.parse(upstreamText); } catch {
+  try {
+    data = JSON.parse(upstreamText);
+  } catch {
     return fbrJson(origin, { ok: false, code: 'fbr-invalid-response', error: 'FBR returned an unexpected response.' }, 502);
   }
 
   const parsed = parseFbrAtlResponse(data);
   return fbrJson(origin, {
     ok: true,
-    identifierType: identifierType,
+    identifierType,
     identifierLast4: identifier.slice(-4),
     status: parsed.status,
     statusText: parsed.statusText,
@@ -182,6 +187,28 @@ async function fbrAtlStatus(request) {
     checkedAt: new Date().toISOString(),
     source: 'FBR IRIS 2.0'
   });
+}
+
+async function callFbrUpstream(token, payload) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 50000);
+  try {
+    return await fetch('https://api.fbr.gov.pk/iris2ovs/v1/getdata', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        Origin: 'https://iris.fbr.gov.pk',
+        Referer: 'https://iris.fbr.gov.pk/',
+        'User-Agent': 'Mozilla/5.0'
+      },
+      body: payload,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function fbrJson(origin, data, status, extraHeaders) {
@@ -207,24 +234,79 @@ function isValidFbrIdentifier(type, value) {
 function currentFbrDate() {
   const date = new Date(Date.now() + 5 * 60 * 60 * 1000);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return String(date.getUTCDate()).padStart(2, '0') + ',' + months[date.getUTCMonth()] + ',' + date.getUTCFullYear();
+  return String(date.getUTCDate()).padStart(2, '0') + ',' + months[date.getUTCMonth()] + ',' + date.gasync function getFbrVerificationToken(forceRefresh) {
+  if (!forceRefresh && fbrVerificationCache.token && Date.now() < fbrVerificationCache.expiresAt) {
+    return fbrVerificationCache.token;
+  }
+
+  const home = await fetch('https://iris.fbr.gov.pk/', {
+    redirect: 'follow',
+    headers: { Accept: 'text/html', 'User-Agent': 'Mozilla/5.0' }
+  });
+  if (!home.ok) throw new Error('fbr-home-' + home.status);
+
+  const html = await home.text();
+  const refs = [...html.matchAll(/(?:src|href)=["']([^"']+\.js(?:\?[^"']*)?)["']/gi)]
+    .map((match) => new URL(match[1], 'https://iris.fbr.gov.pk/').toString());
+
+  const candidates = [...new Set(refs)].sort(
+    (a, b) =>
+      Number(/\/main(?:\.|-)/i.test(b)) -
+      Number(/\/main(?:\.|-)/i.test(a))
+  );
+
+  for (const url of candidates) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'application/javascript,text/javascript,*/*;q=0.8',
+          'User-Agent': 'Mozilla/5.0'
+        }
+      });
+      if (!response.ok) continue;
+      const source = await response.text();
+      const token = extractFbrVerificationToken(source);
+      if (token) {
+        fbrVerificationCache = {
+          token,
+          expiresAt: Date.now() + FBR_TOKEN_CACHE_MS
+        };
+        return token;
+      }
+    } catch (_) {
+      // Try the next candidate script.
+    }
+  }
+
+  throw new Error('fbr-verification-token-not-found');
 }
 
-async function getFbrVerificationToken(forceRefresh) {
-  if (!forceRefresh && fbrVerificationCache.token && Date.now() < fbrVerificationCache.expiresAt) return fbrVerificationCache.token;
-  const home = await fetch('https://iris.fbr.gov.pk/', { redirect: 'follow' });
-  if (!home.ok) throw new Error('fbr-home-' + home.status);
-  const html = await home.text();
-  const match = html.match(/(?:src|href)=["']([^"']*main\.[A-Za-z0-9._-]+\.js)["']/i);
-  if (!match) throw new Error('fbr-main-bundle-not-found');
-  const bundleUrl = new URL(match[1], 'https://iris.fbr.gov.pk/').toString();
-  const bundle = await fetch(bundleUrl, { redirect: 'follow' });
-  if (!bundle.ok) throw new Error('fbr-main-' + bundle.status);
-  const source = await bundle.text();
-  const tokenMatch = source.match(/authorization_key_verifcation:["']([^"']+)["']/);
-  if (!tokenMatch) throw new Error('fbr-verification-token-not-found');
-  fbrVerificationCache = { token: tokenMatch[1], expiresAt: Date.now() + FBR_TOKEN_CACHE_MS };
-  return fbrVerificationCache.token;
+function extractFbrVerificationToken(source) {
+  const text = String(source || '');
+  const lower = text.toLowerCase();
+
+  for (const key of ['authorization_key_verifcation', 'authorization_key_verification']) {
+    const index = lower.indexOf(key);
+    if (index < 0) continue;
+
+    const slice = text.slice(index, index + 5000);
+    const direct = slice.match(
+      /authorization_key_verif(?:cation|ication)\s*[:=]\s*["']([^"']+)["']/i
+    );
+    if (direct) return direct[1];
+
+    const jwt = slice.match(
+      /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/
+    );
+    if (jwt) return jwt[0];
+  }
+
+  const jwt = text.match(
+    /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/
+  );
+  return jwt ? jwt[0] : '';
+}
+ationCache.token;
 }
 
 function parseFbrAtlResponse(data) {
