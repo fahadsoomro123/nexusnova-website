@@ -1,0 +1,287 @@
+
+
+/* ===== APPROVED GLOBAL FOOTER BLUEPRINT ===== */
+.nn-global-footer{
+  border-top:1px solid #e2e8f0!important;
+  background:#fff!important;
+  color:#334155!important;
+  margin-top:34px!important;
+}
+.nn-global-footer .nn-global-footer-main{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.15fr) minmax(250px,.95fr) minmax(0,1.15fr)!important;
+  gap:32px!important;
+  align-items:start!important;
+  padding:28px 0 24px!important;
+}
+.nn-global-footer .nn-footer-brand,
+.nn-global-footer .nn-footer-trust,
+.nn-global-footer .nn-footer-social{
+  min-width:0!important;
+}
+.nn-global-footer .nn-footer-brand-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-width:0!important;
+  color:#111827!important;
+  text-decoration:none!important;
+}
+.nn-global-footer .nn-footer-brand-logo{
+  width:auto!important;
+  height:34px!important;
+  max-width:180px!important;
+  display:block!important;
+  object-fit:contain!important;
+  flex:0 0 auto!important;
+}
+.nn-global-footer .nn-footer-brand-copy{
+  display:grid!important;
+  gap:2px!important;
+  min-width:0!important;
+}
+.nn-global-footer .nn-footer-brand-copy strong{
+  color:#111827!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  letter-spacing:.04em!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+.nn-global-footer .nn-footer-brand-copy small{
+  color:#64748b!important;
+  font:800 8px/1.1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important;
+  letter-spacing:.07em!important;
+  white-space:nowrap!important;
+}
+.nn-global-footer .nn-footer-copy{
+  margin:10px 0 0!important;
+  max-width:430px!important;
+  color:#64748b!important;
+  font-size:11px!important;
+  line-height:1.55!important;
+}
+.nn-global-footer .nn-footer-section-title,
+.nn-global-footer .nn-social-title{
+  margin:0 0 10px!important;
+  color:#334155!important;
+  font-family:inherit!important;
+  font-size:14px!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+}
+.nn-global-footer .nn-footer-trust-title{
+  display:block!important;
+  margin:0 0 10px!important;
+  color:#334155!important;
+  font:900 9px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important;
+  letter-spacing:.12em!important;
+  text-transform:uppercase!important;
+}
+.nn-global-footer .nn-footer-trust-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  column-gap:20px!important;
+  row-gap:7px!important;
+  align-items:start!important;
+}
+.nn-global-footer .nn-footer-trust-grid a{
+  display:block!important;
+  min-width:0!important;
+  color:#475569!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1.35!important;
+  text-decoration:none!important;
+  overflow-wrap:anywhere!important;
+}
+.nn-global-footer .nn-footer-trust-grid a:hover,
+.nn-global-footer .nn-footer-more-links a:hover{
+  color:#6d28d9!important;
+}
+.nn-global-footer .nn-footer-more{
+  margin-top:16px!important;
+  padding-top:12px!important;
+  border-top:1px solid #eef2f7!important;
+}
+.nn-global-footer .nn-footer-more-title{
+  display:block!important;
+  margin:0 0 7px!important;
+  color:#64748b!important;
+  font:900 8px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important;
+  letter-spacing:.1em!important;
+  text-transform:uppercase!important;
+}
+.nn-global-footer .nn-footer-more-links{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px 12px!important;
+}
+.nn-global-footer .nn-footer-more-links a{
+  color:#475569!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1.35!important;
+  text-decoration:none!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-block,
+.nn-global-footer .nn-footer-social [data-social-links]{
+  margin:0!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-title{
+  margin-bottom:10px!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-row{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+.nn-global-footer .nn-footer-social .nn-social{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  min-width:0!important;
+  min-height:42px!important;
+  padding:6px 8px!important;
+  border:1px solid #e2e8f0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#334155!important;
+  text-decoration:none!important;
+  box-sizing:border-box!important;
+}
+.nn-global-footer .nn-footer-social .nn-social:hover{
+  border-color:#ddd6fe!important;
+  background:#faf7ff!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-icon{
+  width:24px!important;
+  height:24px!important;
+  border-radius:6px!important;
+  flex:0 0 auto!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-handle{
+  font-size:7px!important;
+  line-height:1.15!important;
+}
+.nn-global-footer .nn-footer-social .nn-social strong{
+  font-size:9px!important;
+  line-height:1.1!important;
+}
+.nn-global-footer .nn-global-footer-bottom{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  min-height:43px!important;
+  padding:11px 0 14px!important;
+  border-top:1px solid #e2e8f0!important;
+  color:#94a3b8!important;
+  font:800 8px/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+.nn-global-footer .nn-footer-domain{color:#6d28d9!important}
+.nn-global-footer .nn-footer-bottom,
+.nn-global-footer .footer-bottom{display:none!important}
+
+@media (max-width:980px){
+  .nn-global-footer .nn-global-footer-main{
+    grid-template-columns:minmax(0,1fr) minmax(260px,1fr)!important;
+    gap:24px!important;
+  }
+  .nn-global-footer .nn-footer-social{
+    grid-column:1 / -1!important;
+  }
+  .nn-global-footer .nn-footer-social .nn-social-row{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
+@media (max-width:700px){
+  .nn-global-footer .nn-global-footer-main{
+    grid-template-columns:1fr!important;
+    gap:22px!important;
+    padding:23px 0 20px!important;
+  }
+  .nn-global-footer .nn-footer-social{
+    grid-column:auto!important;
+  }
+  .nn-global-footer .nn-footer-trust-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .nn-global-footer .nn-footer-social .nn-social-row{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .nn-global-footer .nn-global-footer-bottom{
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:5px!important;
+    padding:11px 0 14px!important;
+  }
+}
+@media (max-width:420px){
+  .nn-global-footer .nn-footer-trust-grid{
+    grid-template-columns:1fr!important;
+  }
+  .nn-global-footer .nn-footer-social .nn-social-row{
+    grid-template-columns:1fr!important;
+  }
+}
+
+
+/* ===== GLOBAL CONTENT WIDTH SYSTEM ===== */
+:root{
+  --nn-global-content-max:1440px;
+  --nn-global-gutter:32px;
+}
+.container,
+.nn-shell,
+.nn-inner-page .container{
+  width:min(var(--nn-global-content-max),calc(100% - (var(--nn-global-gutter) * 2)))!important;
+  margin-inline:auto!important;
+}
+.nn-inner-page .page-hero .container{
+  max-width:var(--nn-global-content-max)!important;
+}
+@media (max-width:760px){
+  :root{--nn-global-gutter:11px}
+  .container,
+  .nn-shell,
+  .nn-inner-page .container{
+    width:min(var(--nn-global-content-max),calc(100% - (var(--nn-global-gutter) * 2)))!important;
+  }
+}
+@media (min-width:1600px){
+  :root{--nn-global-gutter:40px}
+}
+
+
+/* ===== GLOBAL TOOL SYMBOL SAFETY BOUNDARY ===== */
+.nn-tool-symbol{
+  display:grid!important;
+  place-items:center!important;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  min-height:52px!important;
+  max-height:52px!important;
+  flex:0 0 52px!important;
+  overflow:hidden!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+}
+.nn-tool-symbol svg{
+  display:block!important;
+  width:27px!important;
+  height:27px!important;
+  min-width:27px!important;
+  max-width:27px!important;
+  min-height:27px!important;
+  max-height:27px!important;
+  flex:0 0 27px!important;
+  overflow:visible!important;
+}

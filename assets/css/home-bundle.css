@@ -665,3 +665,10 @@ button.nn-consent-reopen,
     opacity: 1 !important;
     visibility: visible !important;
 }
+
+/* Unified NexusNova selected-logo lock across the shared site header. */
+.site-header .brand .brand-mark{width:182px;height:42px;border-radius:0;display:block;background:transparent url("../logo.png") center/contain no-repeat!important;color:transparent!important;font-size:0!important;box-shadow:none!important}
+.site-header .brand .brand-mark .brand-network{display:none!important}
+.site-header .brand .brand-copy{display:none!important}
+.site-header .brand{gap:0!important}
+@media(max-width:680px){.site-header .brand .brand-mark{width:154px;height:36px}}

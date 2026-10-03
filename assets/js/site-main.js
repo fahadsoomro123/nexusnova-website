@@ -66,9 +66,10 @@
     reopen.textContent='Privacy choices';
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
-    const footerLinks=document.querySelector('.site-footer .footer-links');
-    if(footerLinks)footerLinks.appendChild(reopen);
-    else document.body.appendChild(reopen);
+    const footer=document.querySelector('.site-footer');
+    const footerGroups=footer?.querySelectorAll('.nn-footer-links,.footer-links')||[];
+    const footerLinks=footerGroups.length?footerGroups[footerGroups.length-1]:null;
+    if(footerLinks)footerLinks.appendChild(reopen);else if(footer)footer.appendChild(reopen);else document.body.appendChild(reopen);
     reopen.addEventListener('click',()=>{
       banner.hidden=false;
       banner.querySelector('[data-consent-allow]')?.focus();
@@ -91,11 +92,11 @@
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
   const base=inSubdir?'../':'';
   const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
-  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');
+  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');const hasUnifiedToolShell=!!document.querySelector('.nn-header,[data-nexusnova-tool-shell],link[data-nexusnova-tool-shell]');
   document.documentElement.classList.add('nexusnova-scifi');
   /* Homepage already ships these rules in home-bundle.css; other surfaces
      keep their existing per-page CSS loading. */
-  if(!isHome&&!hasShellBundle){
+  if(!isHome&&!hasShellBundle&&!hasUnifiedToolShell){
     const styles=[
       ['scifi',`${base}assets/css/scifi.css`],
       ['motion',`${base}assets/css/motion.css`],
@@ -143,18 +144,43 @@
     ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
     ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
     ['Instagram','@nexusnovatools','https://www.instagram.com/nexusnovatools/'],
-    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools'],
-    ['YouTube','@NexusNovaTools','https://youtube.com'],
-    ['LinkedIn','NexusNovaTools','https://linkedin.com']
+    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools']
   ];
   const footerGrid=document.querySelector('.site-footer .footer-console,.site-footer .footer-grid');
-  if(footerGrid&&!footerGrid.querySelector('[data-social-links]')){
+  if(footerGrid&&!footerGrid.querySelector('[data-social-links],.nn-social-block,.nn-social-links')){
     const brandColumn=footerGrid.firstElementChild;
     if(brandColumn){
-      const title=document.createElement('div');title.className='footer-title';title.dataset.socialLinks='';title.textContent='Follow NexusNova';brandColumn.appendChild(title);
-      const links=document.createElement('div');links.className='footer-links';links.setAttribute('aria-label','Official NexusNova social profiles');
-      socialProfiles.forEach(([platform,handle,href])=>{const link=document.createElement('a');link.href=href;link.target='_blank';link.rel='me noopener noreferrer';link.textContent=`${platform} · ${handle}`;links.appendChild(link)});
-      brandColumn.appendChild(links);
+      if(!document.querySelector('style[data-nexusnova-global-social]')){
+        const style=document.createElement('style');
+        style.dataset.nexusnovaGlobalSocial='';
+        style.textContent='.nn-social-block{margin-top:16px}.nn-social-title{margin:0 0 8px;font-size:14px;font-weight:850;color:#334155}.nn-social-row{display:flex;flex-wrap:wrap;gap:6px}.nn-global-social{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 8px;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:9px;font-weight:800;text-decoration:none}.nn-global-social:hover{border-color:#ddd6fe;background:#faf7ff;color:#6d28d9}.nn-global-social-icon{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;color:#fff;flex:0 0 auto}.nn-global-social-icon svg{width:13px;height:13px;display:block;fill:currentColor}.nn-global-social-handle{display:block;margin-top:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:8px;color:#64748b;font-weight:750}.nn-global-social-x .nn-global-social-icon{background:#111827}.nn-global-social-facebook .nn-global-social-icon{background:#1877f2}.nn-global-social-instagram .nn-global-social-icon{background:linear-gradient(145deg,#833ab4,#fd1d1d 58%,#fcb045)}.nn-global-social-telegram .nn-global-social-icon{background:#229ed9}.nn-global-social-instagram svg rect,.nn-global-social-instagram svg circle{fill:none;stroke:#fff;stroke-width:2}.nn-global-social-instagram svg .ig-dot{fill:#fff;stroke:none}';
+        document.head.appendChild(style);
+      }
+      const wrapper=document.createElement('div');
+      wrapper.className='nn-social-block';
+      wrapper.dataset.socialLinks='';
+      const title=document.createElement('div');
+      title.className='nn-social-title';
+      title.textContent='Follow NexusNova';
+      wrapper.appendChild(title);
+      const links=document.createElement('div');
+      links.className='nn-social-row';
+      links.setAttribute('aria-label','Official NexusNova social profiles');
+      const icons={
+        X:'<path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"/>',
+        Facebook:'<path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"/>',
+        Instagram:'<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.9" r="1" class="ig-dot"/>',
+        Telegram:'<path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"/>'
+      };
+      socialProfiles.forEach(([platform,handle,href])=>{
+        const link=document.createElement('a');
+        link.className='nn-global-social nn-global-social-'+platform.toLowerCase();
+        link.href=href;link.target='_blank';link.rel='me noopener noreferrer';
+        link.innerHTML='<span class="nn-global-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true">'+icons[platform]+'</svg></span><span><strong>'+platform+'</strong><span class="nn-global-social-handle">'+handle+'</span></span>';
+        links.appendChild(link);
+      });
+      wrapper.appendChild(links);
+      brandColumn.appendChild(wrapper);
     }
   }
 
@@ -181,7 +207,8 @@
     resume:'<path d="M6 3h12v18H6z"/><circle cx="10" cy="9" r="2"/><path d="M7.8 14c.7-1.4 1.5-2 2.2-2s1.5.6 2.2 2M14 8h2M14 11h2M9 17h7"/>',
     ai:'<path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2zM18 13l.8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8zM6 14l.7 1.8 1.8.7-1.8.7L6 19l-.7-1.8-1.8-.7 1.8-.7z"/>',
     code:'<path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4M14 5l-4 14"/>',
-    color:'<circle cx="8" cy="10" r="4"/><circle cx="16" cy="10" r="4"/><circle cx="12" cy="16" r="4"/>'
+    color:'<circle cx="8" cy="10" r="4"/><circle cx="16" cy="10" r="4"/><circle cx="12" cy="16" r="4"/>',
+    compress:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h6M9 12h4M9 16h2"/><path d="M19 8v6M16 11l3 3 3-3"/>'
   };
   const iconSvg=kind=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${iconArt[kind]||iconArt.code}</svg>`;
   const kindFor=el=>{
@@ -195,6 +222,7 @@
     if(/paper size|dpi/.test(hay)) return 'paper';
     if(/qr\b/.test(hay)) return 'qr';
     if(/pdf/.test(hay)) return 'pdf';
+    if(/compress|compression|resize|resizer|optimiz.*image/.test(hay)) return 'compress';
     if(/image|png|jpe?g|webp|photo/.test(hay)) return 'image';
     if(/resume|cv\b/.test(hay)) return 'resume';
     if(/ai prompt|prompt builder|artificial intelligence/.test(hay)) return 'ai';
@@ -222,12 +250,14 @@ if(page==='index.html'){
   window.setTimeout(decorateDock,1200);
   window.setTimeout(decorateHome,1200);
 }else{
-  document.querySelectorAll('.home-tool,.tool-card,.trend-card,.popular-card,.category-card').forEach(decorateCard);
+  document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard);
   decorateDock();
 }
   const pageFile=(location.pathname.split('/').pop()||'').toLowerCase();
   const hubFiles=new Set(['','index.html','live.html','currency-rates.html','gold-rates.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
-  if(pageFile&&!hubFiles.has(pageFile)){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
+  const contentHubFiles=new Set(['image-tools.html','pdf-tools.html','calculator-tools.html','pakistan-tools.html','network-tools.html','productivity-tools.html','live.html','new-tools.html','widgets.html','labs.html','daily-tools-directory.html']);
+  const contentPath=/\/(?:articles|guides|tech)\//.test(location.pathname);
+  if(pageFile&&!hubFiles.has(pageFile)&&!contentHubFiles.has(pageFile)&&!contentPath){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
 
   const searchIndex=[
     ['gold-rates.html','Gold Rates','gold xau pakistan pkr tola 24k 22k sarafa'],
@@ -317,7 +347,7 @@ if(page==='index.html'){
   };
   deferHomeTask(loadAuthHeader,1200);
 const loadNovaAssistant=()=>{if(document.querySelector('script[data-nova-assistant]'))return;const s=document.createElement('script');s.src=`${base}assets/js/assistant.js`;s.defer=true;s.dataset.novaAssistant='';document.body.appendChild(s)};
-if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}else loadNovaAssistant();
+if(page==='index.html'){['pointerdown','keydown'].forEach(type=>window.addEventListener(type,loadNovaAssistant,{once:true,passive:true}));window.addEventListener('scroll',loadNovaAssistant,{once:true,passive:true})}
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
 })();
 
