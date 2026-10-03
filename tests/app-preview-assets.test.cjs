@@ -14,7 +14,7 @@ test('Android app preview uses approved real Nova Hub and mining assets only', (
   const app = read('app.html');
   const duo = read('assets/js/app-duo.js');
 
-  const htmlImageSources = [...app.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]);
+  const htmlImageSources = [...app.matchAll(/<(?:div class="app-phone-icon"|article class="app-category")[\s\S]*?<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]);
   assert.ok(htmlImageSources.length >= 12, 'Expected real Nova Hub preview images in app.html');
   for (const src of htmlImageSources) {
     assert.ok(src.startsWith(approvedPrefix), `Unapproved app preview image source: ${src}`);

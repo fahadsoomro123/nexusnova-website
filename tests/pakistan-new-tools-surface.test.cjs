@@ -85,7 +85,7 @@ test('all three new Pakistan pages have canonical URLs and shared navigation',()
     const html=read(file);
     assert.match(html,/rel="canonical"/);
     assert.match(html,/href="index\.html"/);
-    assert.match(html,/href="tools\.html"/);
+    assert.match(html,/href="index\.html#master-directory"/);
     assert.match(html,/<main>/);
     assert.equal((html.match(/<\/main>/g)||[]).length,1);
   }
