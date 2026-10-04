@@ -56,7 +56,20 @@ document.addEventListener("DOMContentLoaded",function(){
       nav.appendChild(trustGroup);
     });
   }
+
+  function ensureWebsiteLaunchesBadge(){
+    const footer=document.querySelector(".nn-footer.nn-global-footer");
+    if(!footer||footer.querySelector(".nn-website-launches-badge")) return;
+    const main=footer.querySelector(".nn-global-footer-main");
+    const bottom=footer.querySelector(".nn-global-footer-bottom");
+    if(!main||!bottom) return;
+    const wrap=document.createElement("div");
+    wrap.className="nn-website-launches-badge";
+    wrap.innerHTML='<a href="https://websitelaunches.com/site/nexusnovatools.com" target="_blank" rel="noopener"><img src="https://websitelaunches.com/badge/nexusnovatools.com.svg" alt="Established online - Public launch record" width="255" height="55" loading="lazy" decoding="async"></a>';
+    footer.insertBefore(wrap,bottom);
+  }
   ensureTrustFooter();
+  ensureWebsiteLaunchesBadge();
   const menu=document.querySelector("[data-nn-menu]");
   const nav=document.querySelector("[data-nn-nav]");
   if(menu&&nav){
