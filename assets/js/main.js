@@ -5,40 +5,52 @@
   enforceCleanCanonical();
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceCleanCanonical,{once:true});
   const measurementId='G-YLPFKWSS12';
+  const consentKey='nexusnova_analytics_consent_v1';
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
-  /* Historical GA4 bootstrap: immediate collection, matching the 19 September 2026
-     production behavior before the later performance deferral experiments. */
+  /*
+   * NexusNova measurement policy:
+   * - Basic page/visit measurement is always enabled.
+   * - Advertising, Google Signals and ad personalization stay disabled.
+   * - The existing Privacy Choices control can record an explicit opt-in
+   *   for additional analytics events without ever turning basic counting off.
+   */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+
+  window.gtag('consent','default',{
+    analytics_storage:'granted',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied'
+  });
 
   if(!document.querySelector('script[data-nexusnova-ga4]')){
     window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
     analyticsScript.async=true;
-    analyticsScript.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+    analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
     analyticsScript.dataset.nexusnovaGa4='';
     analyticsScript.onload=()=>window.gtag('config',measurementId,{
       send_page_view:true,
       allow_google_signals:false,
-      allow_ad_personalization_signals:false
+      allow_ad_personalization_signals:false,
+      ads_data_redaction:true
     });
     document.head.appendChild(analyticsScript);
   }
 
-  /* Keep the current privacy-settings UI bridge functional while the historical
-     GA4 loader remains automatic. */
   window.__nexusnovaLoadAnalytics=granted=>{
-    if(!granted||document.querySelector('script[data-nexusnova-ga4]'))return;
-    window.gtag('consent','update',{
-      analytics_storage:'granted',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied'
-    });
+    if(granted){
+      try{localStorage.setItem(consentKey,'granted')}catch(_){}
+      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
+    }else{
+      try{localStorage.setItem(consentKey,'denied')}catch(_){}
+    }
   };
+
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
   const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
