@@ -1,7 +1,10 @@
 (()=>{
   'use strict';
   const tool=(location.pathname.split('/').pop()||'home').replace(/\.html$/i,'');
-  const allowed=()=>typeof window.gtag==='function';
+  const detailAllowed=()=>{
+    try{return localStorage.getItem('nexusnova_analytics_consent_v1')==='granted'}catch(_){return false}
+  };
+  const allowed=()=>typeof window.gtag==='function'&&detailAllowed();
   const send=(name,action)=>{
     if(!allowed())return;
     window.gtag('event',name,{tool,action});
