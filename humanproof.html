@@ -66,86 +66,51 @@
   ]
 }
 </script>
-<style id="hp-simple-pricing-css">
-.hp-simple-pricing{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:14px;
-}
-.hp-simple-plan{
-  padding:22px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:#fff;
-  box-shadow:0 10px 28px rgba(45,55,110,.06);
-}
-.hp-simple-plan h3{
-  margin:9px 0 12px;
-  color:#17213a;
-  font-size:22px;
-}
-.hp-simple-plan p{
-  min-height:42px;
-  margin:0 0 18px;
-  color:#5c6780;
-  font-size:12px;
-}
-.hp-simple-price{
-  margin-bottom:12px;
-  color:#17213a;
-  font-size:32px;
-  font-weight:950;
-  letter-spacing:-.04em;
-}
-.hp-simple-price small{
-  color:#68748d;
-  font-size:10px;
-  letter-spacing:.08em;
-}
-.hp-simple-pay{
-  width:100%;
-  min-height:48px;
-  font-size:13px;
-}
-@media(max-width:860px){
-  .hp-simple-pricing{grid-template-columns:1fr}
-}
-</style>
 <link rel="stylesheet" href="assets/css/footer-social.css">
-<style id="hp-nav-responsive-fix">
-.nav{display:block!important}
-.hp-mobile-menu{display:none;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 11px;border:1px solid rgba(38,51,93,.14);border-radius:11px;background:#fff;color:#17213a;font:800 11px/1 inherit;cursor:pointer}
-.hp-mobile-menu span:first-child{font-size:18px;line-height:1}
-@media(max-width:720px){
-  .nav{width:calc(100% - 16px);margin:8px auto 0;top:6px;border-radius:16px}
-  .navin{min-height:60px;padding:8px 10px;flex-wrap:wrap;gap:8px}
-  .brand{min-width:0;flex:1}
-  .brand .nn-brand-logo-img{height:36px!important;width:auto!important;max-width:210px}
-  .brand>div{display:none!important}
-  .hp-mobile-menu{display:inline-flex;flex:0 0 auto}
-  .navlinks{display:none!important;width:100%;flex-direction:column;align-items:stretch;gap:4px;padding:8px;border-top:1px solid rgba(38,51,93,.10)}
-  .navlinks.is-open{display:flex!important}
-  .navlinks a{width:100%;padding:11px 12px;border-radius:10px}
-  .navlinks .navcta{text-align:center}
-}
-</style>
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
+<link rel="stylesheet" href="assets/css/humanproof-flagship.css?v=20261004-hp1">
 </head>
-<body>
-<nav class="nav">
-  <div class="wrap navin">
-    <a class="brand" href="/"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img" style="height: 40px; width: auto; object-fit: contain;"><div><b>NEXUSNOVA HUMANPROOF</b><small>VERIFIED ACTION</small></div></a>
-    <button class="hp-mobile-menu" id="hp-mobile-menu" type="button" aria-expanded="false" aria-controls="hp-navlinks" aria-label="Open HumanProof navigation"><span aria-hidden="true">☰</span><span>Menu</span></button>
-    <div class="navlinks" id="hp-navlinks">
-      <a href="#how">How it works</a><a href="#live-verification">Verification</a><a href="#pricing">Pricing</a><a href="#developers">Developers</a><a href="#security">Security</a>
-      <a class="navcta" href="#pricing">View Pricing</a>
-    </div>
+<body class="nn-inner-page hp-page">
+<header class="nn-header" data-header>
+  <div class="nn-shell nn-header-row">
+    <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
+      <img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img">
+      <span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • VERIFIED ACTION</small></span>
+    </a>
+    <button class="nn-menu" type="button" data-nn-menu data-menu-btn aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button>
+    <nav class="nn-nav" id="nn-primary-nav" data-nn-nav data-nav aria-label="Primary navigation">
+      <a href="/">Home</a>
+      <a href="/tools.html">All Tools</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/articles.html">Articles</a>
+      <a href="/guides.html">Guides</a>
+      <a href="#pricing" aria-current="page">HumanProof</a>
+    </nav>
   </div>
-</nav>
+</header>
 
 <main id="top">
-<section class="hero">
+<section class="hero hp-hero">
   <div class="wrap heroGrid">
-    <h1>NexusNova HumanProof — Human Approval for Sensitive Workflows</h1>
+    <div class="hp-hero-copy">
+      <div class="breadcrumbs"><a href="/">Home</a><span>/</span><span>HumanProof</span></div>
+      <span class="kicker">NEXUSNOVA HUMANPROOF • VERIFIED ACTION</span>
+      <h1>Human approval for sensitive digital workflows.</h1>
+      <p class="hp-hero-lead">HumanProof adds a live-human approval step, binds that approval to the exact requested action, and supports auditable digital receipts without presenting the flow as legal identity verification or KYC.</p>
+      <div class="hp-hero-actions">
+        <a class="btn btn-primary" href="#live-verification">Start verification</a>
+        <a class="btn" href="#pricing">View pricing</a>
+        <a class="btn" href="#developers">Developer path</a>
+      </div>
+      <div class="hp-hero-facts" aria-label="HumanProof product facts">
+        <span>Live human response</span>
+        <span>Exact-action binding</span>
+        <span>Server-confirmed receipts</span>
+        <span>Privacy-minded positioning</span>
+      </div>
+      <div class="hp-hero-note"><strong>Important:</strong> the public browser flow is not itself a production-grade proof. Production security needs backend verification, anti-replay controls and trusted server confirmation.</div>
+    </div>
+
     <div class="verifyShell" id="live-verification">
       <div class="verifyTop"><span>LIVE VERIFICATION</span><span class="live">● CAMERA READY</span></div>
       <div class="camera" id="camera">
@@ -166,6 +131,16 @@
       <div class="ok" id="ok">PENDING PAYMENT • NOT VERIFIED. No HumanProof result has been issued. Production verification requires an activated paid flow and server confirmation.</div>
       <div class="err" id="err"></div>
     </div>
+  </div>
+</section>
+
+<section class="hp-quick-strip" aria-label="HumanProof navigation">
+  <div class="wrap hp-quick-strip-inner">
+    <a href="#how"><span>01</span> How it works</a>
+    <a href="#pricing"><span>02</span> Pricing</a>
+    <a href="#developers"><span>03</span> Developers</a>
+    <a href="#security"><span>04</span> Security</a>
+    <a href="#faq"><span>05</span> FAQ</a>
   </div>
 </section>
 
@@ -284,6 +259,21 @@
   </div>
 </div></section>
 
+<section class="section" id="related">
+  <div class="wrap">
+    <div class="sectionHead">
+      <span class="kicker">Related resources</span>
+      <h2>Continue with the part you actually need.</h2>
+      <p>HumanProof keeps product explanation, payment information and verification paths separate so each step remains understandable.</p>
+    </div>
+    <div class="related-grid">
+      <a class="related-card" href="humanproof-checkout.html?plan=personal"><span>CHECKOUT</span><strong>Review the Personal plan</strong><small>See pricing, policies and the secure SafePay checkout path.</small></a>
+      <a class="related-card" href="humanproof-verify.html"><span>VERIFY</span><strong>Check a credential</strong><small>Use the public server-side credential verification page.</small></a>
+      <a class="related-card" href="tool-methodology.html"><span>METHODS</span><strong>Read NexusNova methodology</strong><small>See how tools document calculations, assumptions and limitations.</small></a>
+      <a class="related-card" href="contact.html"><span>SUPPORT</span><strong>Contact NexusNova</strong><small>Find merchant and support information before or after purchase.</small></a>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p><div class="nn-footer-more"><span class="nn-footer-more-title">More</span><div class="nn-footer-more-links"><a href="/">Home</a><a href="#pricing">Pricing</a><a href="cancellation-policy.html">Cancellation</a><a href="digital-delivery-policy.html">Digital Delivery</a></div></div></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
@@ -304,16 +294,7 @@
     <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
   </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
 
-<script>
-document.addEventListener('DOMContentLoaded',()=>{
-  const btn=document.getElementById('hp-mobile-menu'),nav=document.getElementById('hp-navlinks');
-  if(!btn||!nav)return;
-  const close=()=>{nav.classList.remove('is-open');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Open HumanProof navigation')};
-  btn.addEventListener('click',()=>{const open=!nav.classList.contains('is-open');nav.classList.toggle('is-open',open);btn.setAttribute('aria-expanded',String(open));btn.setAttribute('aria-label',open?'Close HumanProof navigation':'Open HumanProof navigation')});
-  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-});
-</script>
+<script src="assets/js/nn-inner-shell.js" defer></script>
 <script type="module" src="assets/js/humanproof-live.js?v=20261003-hpstrong8"></script>
 <script src="assets/js/main.js" defer></script>
 </body>
