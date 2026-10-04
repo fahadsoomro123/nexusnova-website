@@ -304,3 +304,31 @@
 .nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg rect,
 .nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg circle{fill:none!important;stroke:#fff!important;stroke-width:2!important}
 .nn-global-footer .nn-footer-social .nn-social-instagram .nn-social-icon svg .ig-dot{fill:#fff!important;stroke:none!important}
+
+
+/* ===== WEBSITE LAUNCHES PUBLIC RECORD BADGE ===== */
+.nn-website-launches-badge{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:18px auto 12px;
+  padding:0 12px;
+  text-align:center;
+}
+.nn-website-launches-badge a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:0;
+}
+.nn-website-launches-badge img{
+  display:block;
+  width:255px;
+  max-width:100%;
+  height:auto;
+}
+@media(max-width:560px){
+  .nn-website-launches-badge{
+    margin:16px auto 10px;
+  }
+}
