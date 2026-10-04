@@ -140,33 +140,6 @@
   <!-- Nova Vault v14: living core, live inventory, single-screen OTA route. -->
   <!-- v14 release marker: 2026-08-31 living-vault -->
 
-<script type="module" id="nn-ota-route-trigger">
-import { NexusNovaOTAUpdater } from './assets/js/nn-ota-updater.js';
-const stage = document.getElementById('nx-stage');
-let updater = null;
-let shown = false;
-const maybeShowUpdate = async () => {
-  if (!stage || shown) return;
-  const route = String(stage.dataset.route || '');
-  if (!route || route === 'mine' || route === 'auth' || route === 'splash') return;
-  shown = true;
-  updater = new NexusNovaOTAUpdater({ feature: 'AI Video Studio' });
-  try {
-    const update = await updater.checkForUpdates();
-    if (!update) return;
-    const forceForCurrentInstalledVersion = updater.clientVersionCode > 0 && updater.clientVersionCode < 27000045;
-    const latestCommit = String(update.latestCommit || '99a8fd1328997efc94e93f7f0dd4ac2b82c8130d');
-    if (update.available || forceForCurrentInstalledVersion) {
-      updater.showUpdatePopup({ ...update, available: true, latestCommit, shortSha: latestCommit.slice(0, 7) });
-    }
-  } catch (error) {
-    console.warn('[NexusNova OTA] route popup check failed:', error);
-  }
-};
-if (stage) {
-  new MutationObserver(maybeShowUpdate).observe(stage, { attributes: true, attributeFilter: ['data-route'] });
-  void maybeShowUpdate();
-}
-</script>
+
 </body>
 </html>
