@@ -1,5 +1,6 @@
 import { icon } from '../../components/icons.js';
 import { novaApps } from '../hub/app-registry.js';
+import { NexusNovaOTAUpdater } from '../../assets/js/nn-ota-updater.js';
 
 let cleanup = null;
 const AI_PHOTO_ID = 'ai-photo-studio';
@@ -264,18 +265,21 @@ export async function appScreen({ id, backToHub, backToMine } = {}) {
       void enhanceAppSafely(id, body);
       if (aiPhotoRoute) document.body.classList.add('nx-ai-photo-route-active');
       const novaSidebarCleanup = id === 'ai' ? installNovaPremiumSidebar(root, body) : () => {};
+      const otaUpdater = miningOwned ? null : new NexusNovaOTAUpdater({ feature: aiVideoRoute ? 'AI Video Studio' : 'NOVA HUB' });
       let cleaned = false;
       const bodyCleanup = () => {
         if (cleaned) return;
         cleaned = true;
         if (aiPhotoRoute) document.body.classList.remove('nx-ai-photo-route-active');
         novaSidebarCleanup();
+        otaUpdater?.destroy();
         try { window.speechSynthesis?.cancel?.(); } catch {}
         body.__cleanup?.();
         if (cleanup === bodyCleanup) cleanup = null;
       };
       cleanup = bodyCleanup;
       root.__cleanup = bodyCleanup;
+      if (otaUpdater) void otaUpdater.checkAndNotify().catch(error => console.warn('[NexusNova OTA] popup check failed:', error));
     } catch (error) {
       if (aiPhotoRoute) document.body.classList.remove('nx-ai-photo-route-active');
       console.error(`[NexusNova Fresh] ${id} renderer:`, error);
