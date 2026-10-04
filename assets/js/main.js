@@ -9,20 +9,22 @@
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
-  /* Advanced consent mode:
-     - Load GA4 immediately so visitors who have not opted in still generate
-       privacy-preserving cookieless measurement pings.
-     - Keep analytics storage denied until the visitor explicitly grants it.
-     - Advertising and personalization remain denied. */
+  /*
+   * NexusNova measurement policy:
+   * - Basic page/visit measurement is always enabled.
+   * - Advertising, Google Signals and ad personalization stay disabled.
+   * - The existing Privacy Choices control can record an explicit opt-in
+   *   for additional analytics events without ever turning basic counting off.
+   */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+
   window.gtag('consent','default',{
-    analytics_storage:'denied',
+    analytics_storage:'granted',
     ad_storage:'denied',
     ad_user_data:'denied',
-    ad_personalization:'denied',
-    wait_for_update:500
+    ad_personalization:'denied'
   });
 
   if(!document.querySelector('script[data-nexusnova-ga4]')){
@@ -34,20 +36,19 @@
     analyticsScript.onload=()=>window.gtag('config',measurementId,{
       send_page_view:true,
       allow_google_signals:false,
-      allow_ad_personalization_signals:false
+      allow_ad_personalization_signals:false,
+      ads_data_redaction:true
     });
     document.head.appendChild(analyticsScript);
   }
 
-  /* Privacy UI bridge: only explicit user approval unlocks full analytics
-     storage/measurement. Denial never blocks the anonymous basic ping. */
   window.__nexusnovaLoadAnalytics=granted=>{
-    window.gtag('consent','update',{
-      analytics_storage:granted?'granted':'denied',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied'
-    });
+    if(granted){
+      try{localStorage.setItem(consentKey,'granted')}catch(_){}
+      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
+    }else{
+      try{localStorage.setItem(consentKey,'denied')}catch(_){}
+    }
   };
 
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
