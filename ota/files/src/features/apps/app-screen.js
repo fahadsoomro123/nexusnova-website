@@ -279,7 +279,15 @@ export async function appScreen({ id, backToHub, backToMine } = {}) {
       };
       cleanup = bodyCleanup;
       root.__cleanup = bodyCleanup;
-      if (otaUpdater) void otaUpdater.checkAndNotify().catch(error => console.warn('[NexusNova OTA] popup check failed:', error));
+      if (otaUpdater) {
+        void otaUpdater.checkForUpdates().then(update => {
+          if (!update) return;
+          const forceForStaleApp = otaUpdater.clientVersionCode > 0 && otaUpdater.clientVersionCode < 27000045 && Boolean(update.latestCommit);
+          if (update.available || forceForStaleApp) {
+            otaUpdater.showUpdatePopup({ ...update, available: true, shortSha: String(update.latestCommit || '').slice(0, 7) });
+          }
+        }).catch(error => console.warn('[NexusNova OTA] popup check failed:', error));
+      }
     } catch (error) {
       if (aiPhotoRoute) document.body.classList.remove('nx-ai-photo-route-active');
       console.error(`[NexusNova Fresh] ${id} renderer:`, error);
