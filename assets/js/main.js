@@ -26,6 +26,7 @@
     ad_user_data:'denied',
     ad_personalization:'denied'
   });
+  window.__nexusnovaConsentDefaulted=true;
 
   if(!document.querySelector('script[data-nexusnova-ga4]')){
     window.gtag('js',new Date());
