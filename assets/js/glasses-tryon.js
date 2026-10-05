@@ -122,7 +122,7 @@ function geometry(p,w,h,mir,name){
   return{style:s,styleName:name,center:{x:(le.x+re.x)/2,y:cy},
     left:{x:(le.x+re.x)/2-cd/2,y:cy,rx:rx*(1+yaw*.28),ry,top:s.l*ry,bottom:s.d*ry},
     right:{x:(le.x+re.x)/2+cd/2,y:cy,rx:rx*(1-yaw*.28),ry,top:s.l*ry,bottom:s.d*ry},
-    angle,bridge:Math.max(ipd*.025,ipd*s.b),rim:clamp(ipd*s.r,1.8,13),temple:ipd*.58*s.t,yaw
+    angle:ang,bridge:Math.max(ipd*.025,ipd*s.b),rim:clamp(ipd*s.r,1.8,13),temple:ipd*.58*s.t,yaw
   };
 }
 
