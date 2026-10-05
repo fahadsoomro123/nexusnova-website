@@ -5,7 +5,7 @@ const canvas=$('[data-canvas]'),ctx=canvas?.getContext('2d',{alpha:false,desynch
 if(!canvas||!ctx)return;
 const imageInput=$('[data-image-input]'),cameraToggle=$('[data-camera-toggle]'),exportBtn=$('[data-export]'),empty=$('[data-empty-state]'),status=$('[data-status]'),detectPill=$('[data-detection-status]'),resolution=$('[data-resolution]'),faceStatus=$('[data-face-status]'),engine=$('[data-engine-state]'),engineLine=$('.vg-engine-line');
 const styles=$$('[data-style]'),colors=$$('[data-color]');
-const BUNDLE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs',WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const BUNDLE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/vision_bundle.mjs',WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/wasm',MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 const L={ro:33,ri:133,li:362,lo:263,rt:159,rb:145,lt:386,lb:374,lf:234,rf:454};
 const S={
 classic:{h:.34,w:1,a:1,r:.032,b:.055,l:0,d:0,t:1,c:.28},
