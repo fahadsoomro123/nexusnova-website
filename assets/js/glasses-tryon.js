@@ -10,8 +10,8 @@ const faceStatus=$('[data-face-status]'),engine=$('[data-engine-state]'),engineL
 const cameraFrame=$('[data-camera-frame]'),scanPanel=$('[data-scan-panel]'),scanProgress=$('[data-scan-progress]'),scanPercent=$('[data-scan-percent]'),scanLabel=$('[data-scan-label]');
 const styles=$$('[data-style]'),colors=$$('[data-color]');
 
-const BUNDLE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32';
-const WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/wasm';
+const BUNDLE='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35';
+const WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm';
 const MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 const L={ro:33,ri:133,li:362,lo:263,rt:159,rb:145,lt:386,lb:374,lf:234,rf:454};
 const S={
@@ -20,7 +20,7 @@ round:{h:.37,w:.98,a:1.08,r:.033,b:.055,l:0,d:.02,t:.96},
 'cat-eye':{h:.33,w:1.02,a:1,r:.032,b:.055,l:.11,d:0,t:1},
 aviator:{h:.42,w:1.04,a:1.08,r:.029,b:.06,l:.01,d:.08,t:1.04}
 };
-const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',face:null,detected:false,vision:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:384,detH:216};
+const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',face:null,targetFace:null,detected:false,vision:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,lastFaceAt:0,detW:384,detH:216};
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2});
 const rgba=(h,a)=>{const n=parseInt(h.replace('#',''),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
@@ -97,21 +97,17 @@ const vision=new Vision();
 
 function applyDetection(result){
   const pts=result?.faceLandmarks?.[0]||null;
-  st.face=pts||null;st.detected=!!pts;
-  if(stage)stage.dataset.face=st.detected?'true':'false';
-  if(st.detected){
-    faceMsg('FACE LOCKED · AUTO FIT',true,true);
-    pill(st.source==='camera'?'FACE LOCKED':'FACE DETECTED','ready');
-    msg(st.source==='camera'?'Face locked. Live fitting is active.':'Face detected. Glasses automatically fitted.','success');
-    scanUi(100,'FACE SCAN COMPLETE');
+  if(pts){
+    st.targetFace=pts;
+    if(!st.face||st.face.length!==pts.length)st.face=pts.map(p=>({x:p.x,y:p.y,z:p.z||0}));
+    else for(let i=0;i<pts.length;i++){const q=pts[i],o=st.face[i];o.x+=(q.x-o.x)*.42;o.y+=(q.y-o.y)*.42;o.z+=(q.z-o.z)*.42}
+    st.lastFaceAt=performance.now();st.detected=true;
   }else{
-    faceMsg('FACE NOT DETECTED',true,false);
-    pill('SEARCHING FOR FACE','busy');
-    msg('Center your face inside the scan frame for automatic fitting.');
-    if(st.source==='image')scanUi(72,'SCANNING IMAGE');
+    st.detected=false;
   }
+  if(stage)stage.dataset.face=st.detected?'true':'false';
+  setFaceState();
 }
-
 function point(p,w,h,i,mir){const q=p[i];return q?{x:(mir?1-q.x:q.x)*w,y:q.y*h,z:q.z}:null}
 function geometry(p,w,h,mir,name){
   if(!p||p.length<300)return null;
@@ -178,8 +174,10 @@ function clearOverlay(){
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
 }
 function renderOverlay(){
-  clearOverlay();
-  if(st.face&&st.detected){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(st.source==='image'&&st.image)ctx.drawImage(st.image,0,0,canvas.width,canvas.height);
+  if(st.face&&st.targetFace&&(st.detected||performance.now()-st.lastFaceAt<260)){
     const g=geometry(st.face,canvas.width,canvas.height,st.source==='camera',st.style);
     if(g)renderer.draw(ctx,g,st.color);
   }
@@ -202,7 +200,7 @@ async function loadImage(file){
     eng('Preparing image scan','busy');pill('PREPARING IMAGE','busy');msg('Image loaded. Starting automatic face scan…');
     const img=new Image();img.decoding='async';img.src=u;
     await new Promise((r,j)=>{img.onload=r;img.onerror=()=>j(new Error('The browser could not decode this image.'))});
-    st.image=img;st.source='image';canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;res(canvas.width,canvas.height);
+    st.image=img;st.source='image';st.face=null;st.targetFace=null;st.detected=false;canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;res(canvas.width,canvas.height);
     stage.dataset.camera='false';stage.dataset.face='false';empty.hidden=true;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=false;
     faceMsg('ANALYZING FACE',true,false);scanUi(16,'SCANNING IMAGE');
     await vision.init();
@@ -217,7 +215,7 @@ async function loadImage(file){
 
 async function camera(){
   if(st.source==='camera'){
-    stop(st.stream);st.stream=null;video.pause();video.srcObject=null;st.source='none';st.face=null;st.detected=false;
+    stop(st.stream);st.stream=null;video.pause();video.srcObject=null;st.source='none';st.face=null;st.targetFace=null;st.detected=false;
     if(st.raf)cancelAnimationFrame(st.raf);st.raf=0;if(st.scanTimer)cancelAnimationFrame(st.scanTimer);st.scanTimer=0;
     stage.dataset.camera='false';stage.dataset.face='false';clearOverlay();empty.hidden=false;exportBtn.disabled=true;cameraToggle.textContent='LIVE CAMERA';resetScan();
     faceMsg('',false,false);pill('READY','ready');msg('Live camera stopped.');
@@ -226,31 +224,40 @@ async function camera(){
   try{
     if(!window.isSecureContext)throw new Error('Live camera requires a secure HTTPS page.');
     if(!navigator.mediaDevices?.getUserMedia)throw new Error('This browser does not expose camera access.');
-    if(st.source==='image')st.image=null;
-    eng('Preparing live vision','busy');pill('STARTING CAMERA','busy');msg('Preparing secure live camera…');
-    await vision.init();
-    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}},audio:false});
+
+    st.image=null;st.face=null;st.targetFace=null;st.detected=false;
+    eng('Starting secure camera','busy');pill('STARTING CAMERA','busy');msg('Opening your camera…');
+    const s=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'user'},width:{ideal:1280,max:1920},height:{ideal:720,max:1080},frameRate:{ideal:30,max:30}},
+      audio:false
+    });
     video.srcObject=s;await video.play();
     if(!video.videoWidth||!video.videoHeight)await new Promise(resolve=>video.addEventListener('loadeddata',resolve,{once:true}));
-    st.stream=s;st.video=video;st.source='camera';st.mirror=true;st.face=null;st.detected=false;
+
+    st.stream=s;st.video=video;st.source='camera';st.mirror=true;
     stage.dataset.camera='true';stage.dataset.face='false';empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
     canvas.width=video.videoWidth||1280;canvas.height=video.videoHeight||720;res(canvas.width,canvas.height);
-    faceMsg('SEARCHING FOR FACE',true,false);pill('SCANNING','busy');msg('Camera live. Center your face inside the scan frame.');scanUi(8,'SCANNING FACE');beginScan();
-    await vision.setMode('VIDEO');st.lastDetect=0;st.busy=false;cameraLoop();
+    faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
+
+    await vision.init();
+    await vision.setMode('VIDEO');
+    eng(`Live vision ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');
+    st.lastDetect=0;st.busy=false;cameraLoop();
   }catch(e){
-    stop(st.stream);st.stream=null;video.pause();video.srcObject=null;st.source='none';stage.dataset.camera='false';stage.dataset.face='false';
-    cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;resetScan();
+    stop(st.stream);st.stream=null;video.pause();video.srcObject=null;st.source='none';st.face=null;st.targetFace=null;st.detected=false;
+    stage.dataset.camera='false';stage.dataset.face='false';cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;resetScan();
     const name=e?.name||'';msg(name==='NotAllowedError'||name==='PermissionDeniedError'?'Camera permission was denied.':name==='NotFoundError'?'No camera was found.':e?.message||'Unable to start camera.','error');
-    pill('CAMERA ERROR','error');eng('Vision engine error','error');
+    pill('CAMERA ERROR','error');eng('Vision engine error','error');faceMsg('',false,false);
   }
 }
-
 function cameraLoop(){
   if(st.source!=='camera')return;
   if(video.readyState>=2){
-    if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){canvas.width=video.videoWidth||1280;canvas.height=video.videoHeight||720;res(canvas.width,canvas.height)}
+    if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){
+      canvas.width=video.videoWidth||1280;canvas.height=video.videoHeight||720;res(canvas.width,canvas.height)
+    }
     const now=performance.now();
-    if(!st.busy&&now-st.lastDetect>=180){
+    if(!st.busy&&now-st.lastDetect>=180&&vision.landmarker){
       st.busy=true;st.lastDetect=now;
       try{
         const source=prepareDetectionCanvas(video.videoWidth||1280,video.videoHeight||720);
@@ -264,7 +271,6 @@ function cameraLoop(){
   }
   if(st.source==='camera'&&document.visibilityState!=='hidden')st.raf=requestAnimationFrame(cameraLoop);
 }
-
 function compositeCameraExport(){
   const out=document.createElement('canvas'),w=video.videoWidth||canvas.width,h=video.videoHeight||canvas.height;out.width=w;out.height=h;
   const o=out.getContext('2d',{alpha:false}),mir=true;
@@ -274,7 +280,7 @@ function compositeCameraExport(){
 }
 function exportPng(){
   if(st.source==='none')return;
-  const source=st.source==='camera'?compositeCameraExport():canvas;
+  renderOverlay(); const source=st.source==='camera'?compositeCameraExport():canvas;
   source.toBlob?.(b=>{
     if(!b)return;const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='nexusnova-glasses-try-on.png';a.click();
     setTimeout(()=>URL.revokeObjectURL(u),1000);
