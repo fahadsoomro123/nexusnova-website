@@ -76,3 +76,11 @@ main,section,.container,.tool-card,.card,.article-main{min-width:0}.article,.art
 }
 
 @media(prefers-reduced-motion:reduce){.site-footer .footer-title[data-social-links]+.footer-links a::before{animation:none!important;transition:none!important;transform:none!important}.site-footer .footer-title[data-social-links]+.footer-links a::after{transition:none!important}}
+
+/* ===== NexusNova legal ampersand contrast lock ===== */
+.footer-links li:has(> a[href="/terms.html"]) {
+    color: #1e293b !important;
+}
+.footer-links li:has(> a[href="/terms.html"]) > a {
+    color: #1e293b !important;
+}

@@ -8,6 +8,7 @@ const app=getApps()[0]||initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 const TELEGRAM_SKIP_KEY='nexusnova_skip_telegram_autologin_v1';
+const AUTH_MARKER='nexusnova_auth_seen_v1';
 
 const dashboard=document.querySelector('[data-dashboard]');
 const loading=document.querySelector('[data-loading]');
@@ -258,7 +259,7 @@ async function resolveSignedOutWithTelegram(){
   }finally{resolvingSignedOut=false;}
 }
 
-onAuthStateChanged(auth,user=>{if(!user){resolveSignedOutWithTelegram();return;}try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}loadAccount(user);});
+onAuthStateChanged(auth,user=>{if(!user){try{localStorage.removeItem(AUTH_MARKER);}catch(_){}resolveSignedOutWithTelegram();return;}try{localStorage.setItem(AUTH_MARKER,'1');}catch(_){}try{sessionStorage.removeItem(TELEGRAM_SKIP_KEY);}catch(_){}loadAccount(user);});
 
 telegramLinkButton?.addEventListener('click',async()=>{
   const user=auth.currentUser;const bridge=window.NexusNovaTelegram;if(!user||!bridge?.isAvailable)return;
@@ -279,4 +280,4 @@ telegramLinkButton?.addEventListener('click',async()=>{
   }
 });
 
-document.querySelector('[data-signout]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-signout]');button.disabled=true;try{markTelegramAutoLoginSkippedForCurrentLaunch();await signOut(auth);location.replace('register.html?signedout=1');}catch(error){console.error('[NexusNova Dashboard]',error?.code||'signout-failed');button.disabled=false;}});
+document.querySelector('[data-signout]')?.addEventListener('click',async()=>{const button=document.querySelector('[data-signout]');button.disabled=true;try{markTelegramAutoLoginSkippedForCurrentLaunch();await signOut(auth);try{localStorage.removeItem(AUTH_MARKER);}catch(_){}location.replace('register.html?signedout=1');}catch(error){console.error('[NexusNova Dashboard]',error?.code||'signout-failed');button.disabled=false;}});

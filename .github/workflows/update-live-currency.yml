@@ -1,0 +1,91 @@
+name: NexusNova LIVE Currency Refresh
+
+on:
+  schedule:
+    - cron: '20 1 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/update_live_currency.mjs'
+      - '.github/workflows/update-live-currency.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/update_live_currency.mjs'
+      - '.github/workflows/update-live-currency.yml'
+      - 'assets/js/live-currency.js'
+      - 'assets/css/live.css'
+      - 'assets/data/live-currency.json'
+      - 'live.html'
+      - 'currency-rates.html'
+      - 'sitemap-live.xml'
+      - 'robots.txt'
+      - 'tests/live-currency.test.cjs'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-live-currency-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Refresh daily PKR reference rates
+        run: node .github/scripts/update_live_currency.mjs
+
+      - name: Validate repository syntax
+        run: npm run check
+
+      - name: Run repository tests
+        run: node --test tests/live-currency.test.cjs
+
+      # This publisher owns the live currency snapshot. Keep it independent of
+      # unrelated site-wide SEO findings so a valid data refresh is not blocked.
+
+      - name: Commit refreshed data when changed
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          if git diff --quiet -- assets/data/live-currency.json; then
+            echo "Currency dataset already matches the latest source response."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/live-currency.json
+          git commit -m "data: refresh NexusNova LIVE currency [skip ci]"
+
+          # The repository has other trusted automations that can update main at the
+          # same time. Keep only our committed currency change, rebase onto the newest
+          # main if a concurrent push wins the race, then retry without force-pushing.
+          git reset --hard HEAD
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Published refreshed currency data on attempt ${attempt}."
+              exit 0
+            fi
+            echo "main moved during publish; rebasing before retry ${attempt}/5."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+
+          echo "Unable to publish refreshed currency data after 5 safe retries."
+          exit 1

@@ -1,0 +1,49 @@
+name: NexusNova Final Compact Site Remediation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/final_compact_site.py'
+      - '.github/workflows/final-compact-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compact-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Sync latest main
+        run: git pull --rebase origin main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Compile remediation
+        run: python -m py_compile .github/scripts/final_compact_site.py
+      - name: Apply compact site remediation
+        run: python .github/scripts/final_compact_site.py
+      - name: Run static quality gates
+        run: |
+          python .github/scripts/site_quality_audit.py
+          python .github/scripts/adsense_readiness_audit.py
+      - name: Enforce no known pre-payment success wording
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -q 'HUMAN CONFIRMED' assets/js/humanproof-live.js
+          ! grep -q 'Human verification complete' assets/js/humanproof-live.js
+          grep -q 'PENDING PAYMENT' assets/js/humanproof-live.js
+          grep -q 'compact-2026.css' index.html
+      - name: Report proposed remediation without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Final Compact Site Remediation is audit-only; no repository write is permitted.'
+          git status --short
+          git diff --stat || true

@@ -252,3 +252,27 @@
     }));
   } catch (_) {}
 })(window);
+
+// Homepage-only NexusNova Android promotion loader. Kept isolated from Telegram auth behavior.
+(()=>{
+  if(typeof window==='undefined'||!window.location) return;
+  const pathname=String(window.location.pathname||'');
+  if(!pathname) return;
+  const page=(pathname.split('/').pop()||'index.html').toLowerCase();
+  if(page!=='index.html') return;
+  if(typeof document?.querySelector!=='function'||typeof document?.createElement!=='function'||!document.head) return;
+  if(!document.querySelector('link[data-home-app-promo]')){
+    const style=document.createElement('link');
+    style.rel='stylesheet';
+    style.href='assets/css/home-app-promo.css?v=20260830-2';
+    style.dataset.homeAppPromo='';
+    document.head.appendChild(style);
+  }
+  if(!document.querySelector('script[data-home-app-promo]')){
+    const script=document.createElement('script');
+    script.src='assets/js/home-app-promo.js?v=20260830-2';
+    script.defer=true;
+    script.dataset.homeAppPromo='';
+    document.head.appendChild(script);
+  }
+})();

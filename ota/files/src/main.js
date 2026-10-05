@@ -1,28 +1,22 @@
 import './core/browser-compat.js';
-import './core/release-mining-safety.js';
 import { icon } from './components/icons.js';
 import { createRouter } from './core/router.js';
 import { backend } from './core/backend-adapter.js';
 import { firebaseBackend } from './core/firebase-backend.js';
 import { authService } from './core/auth-service.js';
 import { adPolicy } from './core/ad-policy.js';
-import { nativeAds } from './core/native-ads.js';
 import { authScreen } from './features/auth/auth-screen.js';
 import { mineScreen, cleanupMineScreen } from './features/mine/mine-screen.js';
-import { hubScreen, requestHubReturnRestore } from './features/hub/hub-screen.js';
-import { mineApps } from './features/hub/app-registry.js';
-import NexusNovaOTAUpdater from './assets/js/nn-ota-updater.js?ota=nv18';
+import { hubScreen, requestHubReturnRestore } from './features/hub/hub-screen.js?ota=nxhub-924ef27b169d';
+import { mineApps } from './features/hub/app-registry.js?ota=nxhub-924ef27b169d';
 
 const stage = document.getElementById('nx-stage');
 const dock = document.querySelector('.nx-dock');
 const dockItems = [...document.querySelectorAll('.nx-dock__item')];
-const mineBrandPortal = document.getElementById('nx-mine-brand-portal');
 const mineAppIds = new Set(mineApps.map(app => app.id));
 const BOOT_SPLASH_MIN_MS = 1_350;
 const POST_LOGIN_SPLASH_MS = 900;
 const bootSplashStartedAt = performance.now();
-const globalOtaUpdater = new NexusNovaOTAUpdater({ feature: 'NexusNova' });
-const NATIVE_BUILD_INFO_WAIT_MS = 2_500;
 
 backend.attach(firebaseBackend);
 
@@ -30,7 +24,7 @@ let appScreenModulePromise = null;
 let appScreenModule = null;
 function loadAppScreenModule() {
   if (!appScreenModulePromise) {
-    appScreenModulePromise = import('./features/apps/app-screen.js?ota=nv18').then(module => {
+    appScreenModulePromise = import('./features/apps/app-screen.js').then(module => {
       appScreenModule = module;
       return module;
     }).catch(error => {
@@ -42,25 +36,7 @@ function loadAppScreenModule() {
   return appScreenModulePromise;
 }
 
-let novaVaultModulePromise = null;
-let novaVaultModule = null;
-function loadNovaVaultModule() {
-  if (!novaVaultModulePromise) {
-    novaVaultModulePromise = import('./features/apps/nova-vault-screen-v13.js?ota=nv15').then(module => {
-      novaVaultModule = module;
-      return module;
-    }).catch(error => {
-      novaVaultModulePromise = null;
-      novaVaultModule = null;
-      throw error;
-    });
-  }
-  return novaVaultModulePromise;
-}
-
 function cleanupActiveAppScreen() {
-  try { novaVaultModule?.cleanupNovaVaultScreen?.(); }
-  catch (error) { console.warn('[NexusNova Fresh] Vault cleanup:', error); }
   try { appScreenModule?.cleanupAppScreen?.(); }
   catch (error) { console.warn('[NexusNova Fresh] app cleanup:', error); }
 }
@@ -75,36 +51,6 @@ window.nexusPostNativeAction = window.nexusPostNativeAction || function(action, 
     return false;
   }
 };
-
-// Warm the existing native AdMob manager as soon as the Android bridge is ready.
-// Current public/phone test builds are hard-locked to Google's official TEST
-// inventory, so this only preloads test rewarded/interstitial ads and never
-// enables production ad units from web code.
-if (typeof window.NexusAndroid?.postMessage === 'function') {
-  setTimeout(() => {
-    try { nativeAds.requestStatus(); }
-    catch (error) { console.warn('[NexusNova Fresh] native test-ad warmup:', error); }
-  }, 450);
-}
-
-function openMineBrandPortal() {
-  try {
-    if (typeof window.NexusBrowserAndroid?.postMessage !== 'function') {
-      console.warn('[NexusNova Fresh] Nova Browser bridge unavailable');
-      return false;
-    }
-    window.NexusBrowserAndroid.postMessage(JSON.stringify({
-      action: 'open',
-      url: 'https://nexusnovatools.com/'
-    }));
-    return true;
-  } catch (error) {
-    console.warn('[NexusNova Fresh] Mine brand portal:', error);
-    return false;
-  }
-}
-
-mineBrandPortal?.addEventListener('click', openMineBrandPortal);
 
 const labels = {
   mine: ['MINE', 'mine'],
@@ -189,16 +135,6 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
 }
 
-async function waitForNativeBuildInfo(timeoutMs = NATIVE_BUILD_INFO_WAIT_MS) {
-  const deadline = performance.now() + Math.max(0, Number(timeoutMs) || 0);
-  while (performance.now() < deadline) {
-    const info = window.NexusNovaNativeInfo;
-    if (info?.buildCommit && Number(info?.versionCode) > 0) return info;
-    await wait(50);
-  }
-  return window.NexusNovaNativeInfo || null;
-}
-
 function parentRouteForApp(id) {
   return mineAppIds.has(String(id || '')) ? 'mine' : 'hub';
 }
@@ -246,6 +182,8 @@ router = createRouter({
   stage,
   routes: {
     auth: () => authScreen({ onSignedIn: handleSignedIn }),
+    // Every eligible app-open transition uses the same ad policy regardless of
+    // whether the entry came from Nova Hub, Mine quick access, or another app.
     mine: () => mineScreen({
       openHubApp: openAppWithAd,
       beforeMiningRenewal: continueMining => adPolicy.gateMiningRenewal(continueMining)
@@ -253,10 +191,6 @@ router = createRouter({
     hub: () => hubScreen({ openApp: openAppWithAd }),
     app: async payload => {
       try {
-        if (payload.id === 'nova-vault') {
-          const { novaVaultScreen } = await loadNovaVaultModule();
-          return novaVaultScreen({ backToMine });
-        }
         const { appScreen } = await loadAppScreenModule();
         return appScreen({ id: payload.id, backToHub, backToMine });
       } catch (error) {
@@ -275,7 +209,6 @@ router = createRouter({
     syncDock(route, payload);
     showDock(route !== 'auth');
     if (route !== 'app' && appScreenModulePromise) appScreenModulePromise.then(module => module.cleanupAppScreen()).catch(() => {});
-    if (route !== 'app' && novaVaultModulePromise) novaVaultModulePromise.then(module => module.cleanupNovaVaultScreen()).catch(() => {});
   }
 });
 
@@ -300,11 +233,13 @@ window.NexusNovaFresh = Object.freeze({
   }
 });
 
+/* Android MainActivity already asks NexusNovaUxSimplify.systemBack().
+   Keep that native contract, but give it a fresh implementation instead of
+   loading any legacy UX script. */
 window.NexusNovaUxSimplify = Object.freeze({
   systemBack() {
     if (!router?.current || router.current === 'auth' || router.current === 'mine') return false;
     if (router.current === 'app') {
-      if (window.NexusNovaAiPhotoNavigation?.handleBack?.()) return true;
       if (currentAppParent === 'hub') {
         requestHubReturnRestore();
         router.render('hub');
@@ -336,10 +271,6 @@ function waitForBootSplashMinimum() {
 
 async function boot() {
   renderCinematicSplash('boot');
-  await waitForNativeBuildInfo();
-  void globalOtaUpdater.checkAndNotify().catch(error => {
-    console.warn('[NexusNova OTA] startup check skipped:', error);
-  });
   const user = await authService.waitForUser();
   await waitForBootSplashMinimum();
   if (!user) {

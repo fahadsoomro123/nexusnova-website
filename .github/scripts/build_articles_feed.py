@@ -108,6 +108,12 @@ def page_to_item(path: Path) -> dict | None:
         return None
     parser = PageParser()
     parser.feed(html)
+
+    # Keep editorially quarantined/noindex pages out of the public machine feed.
+    # This aligns articles.json with search indexing and the manual review gate.
+    if "noindex" in parser.meta.get("robots", "").lower():
+        return None
+
     data = article_jsonld(parser)
     if not is_article(parser, data):
         return None

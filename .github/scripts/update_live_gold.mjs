@@ -1,0 +1,67 @@
+import fs from 'node:fs/promises';
+import {deriveGoldPkr} from './live_gold_math.mjs';
+
+const OUT='assets/data/live-gold.json';
+const HIST='assets/data/live-gold-history.json';
+const FX='assets/data/live-currency.json';
+const GOLD_URL='https://api.gold-api.com/price/XAU';
+const round=(value,digits=6)=>Number(value.toFixed(digits));
+
+async function fetchJson(url){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const response=await fetch(url,{headers:{'accept':'application/json','user-agent':'NexusNova-LIVE/1.0 (+https://nexusnovatools.com/live.html)'},signal:controller.signal});
+    if(!response.ok)throw new Error(`${url} returned HTTP ${response.status}`);
+    return await response.json();
+  }finally{clearTimeout(timer)}
+}
+
+const fxData=JSON.parse(await fs.readFile(FX,'utf8'));
+if(fxData?.status!=='ok'||!Array.isArray(fxData.rates))throw new Error('Published currency dataset is not ready');
+const usd=fxData.rates.find(item=>item.code==='USD');
+const usdPkr=Number(usd?.rate);
+if(!Number.isFinite(usdPkr)||usdPkr<=0)throw new Error('USD/PKR reference rate is missing or invalid');
+
+const gold=await fetchJson(GOLD_URL);
+const xauUsd=Number(gold?.price);
+if(gold?.symbol!=='XAU'||!Number.isFinite(xauUsd)||xauUsd<=0)throw new Error('Gold API returned invalid XAU data');
+const upstreamUpdatedAt=gold?.updatedAt;
+if(!upstreamUpdatedAt||Number.isNaN(new Date(upstreamUpdatedAt).getTime()))throw new Error('Gold API returned an invalid updatedAt timestamp');
+
+const derived=deriveGoldPkr(xauUsd,usdPkr);
+const payload={
+  schema_version:1,
+  status:'ok',
+  generated_at:new Date().toISOString(),
+  source:{
+    name:'Gold API',
+    url:'https://gold-api.com/',
+    api_url:GOLD_URL,
+    method:'Current XAU/USD reference price fetched by the NexusNova publishing workflow; PKR values are calculated using the published NexusNova USD/PKR daily reference rate'
+  },
+  xau:{symbol:'XAU',quote_currency:'USD',usd_per_troy_ounce:round(xauUsd,6),updated_at:upstreamUpdatedAt},
+  fx:{pair:'USD/PKR',usd_pkr:round(usdPkr,6),data_date:fxData.data_date||usd?.data_date||null,source:fxData.source?.name||'Frankfurter'},
+  international_derived_pkr:{basis:'International XAU/USD converted using published USD/PKR reference; not a Pakistan Sarafa board quote',...derived},
+  local_sarafa:{
+    status:'source_ready_key_required',
+    source:{
+      name:'Sarafa.pk Developer API',
+      url:'https://sarafa.pk/en/developers/',
+      api_base:'https://api.sarafa.pk',
+      endpoint:'GET /api/v1/public-rates/gold/cities/{location_slug}',
+      auth:'Server-side X-API-Key required'
+    },
+    message:'A dedicated Pakistan city-wise Sarafa market API source has been selected. NexusNova is not publishing its local quote until a server-side Sarafa.pk API key is configured and the first source response is validated.'
+  }
+};
+await fs.writeFile(OUT,`${JSON.stringify(payload,null,2)}\n`,'utf8');
+
+let history={schema_version:1,status:'ok',method:'NexusNova-owned daily snapshots captured by the scheduled current-price publisher; not an upstream historical-market API',points:[]};
+try{const existing=JSON.parse(await fs.readFile(HIST,'utf8'));if(Array.isArray(existing?.points))history={...history,...existing,points:existing.points}}catch(err){if(err?.code!=='ENOENT')throw err}
+const date=String(payload.generated_at).slice(0,10);
+const point={date,xau_usd:payload.xau.usd_per_troy_ounce,usd_pkr:payload.fx.usd_pkr,pkr_per_tola_24k:payload.international_derived_pkr.per_tola_24k,source_updated_at:payload.xau.updated_at};
+const points=history.points.filter(item=>item?.date!==date).concat(point).filter(item=>/^\d{4}-\d{2}-\d{2}$/.test(item?.date||'')).sort((a,b)=>a.date.localeCompare(b.date)).slice(-90);
+history={schema_version:1,status:'ok',method:'NexusNova-owned daily snapshots captured by the scheduled current-price publisher; not an upstream historical-market API',points};
+await fs.writeFile(HIST,`${JSON.stringify(history,null,2)}\n`,'utf8');
+console.log(`Wrote XAU/USD ${payload.xau.usd_per_troy_ounce} with international-derived PKR references and ${points.length} daily snapshot(s).`);

@@ -5,9 +5,11 @@ on:
     branches: [main]
     paths:
       - '*.html'
+      - '.github/scripts/premium_social_campaign.py'
+      - '.github/scripts/prepare_new_tool_social.py'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-new-tool-social-launch
@@ -15,26 +17,26 @@ concurrency:
 
 jobs:
   announce-new-tools:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
-      X_API_KEY: ${{ secrets.X_API_KEY }}
-      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
-      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'
       FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
       FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
       SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
     steps:
       - name: Checkout full history
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -91,15 +93,34 @@ jobs:
         if: steps.detect.outputs.count != '0'
         run: |
           python -m py_compile .github/scripts/prepare_new_tool_social.py
+          python -m py_compile .github/scripts/premium_social_campaign.py
           python -m py_compile .github/scripts/distribute_update.py
           python -m py_compile .github/scripts/distribute_social_growth.py
 
-      - name: Generate Instagram-safe launch cards
+      - name: Generate relevant hyper-realistic 3D launch creatives
         if: steps.detect.outputs.count != '0'
         run: |
           while IFS= read -r file; do
             [ -n "$file" ] || continue
             python .github/scripts/prepare_new_tool_social.py "$file"
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+
+          item=json.loads(Path('social-growth-publish.json').read_text(encoding='utf-8'))
+          provider=str(item.get('image_provider',''))
+          if not (provider.startswith('pollinations-') or provider == 'cached-ai-exact'):
+              raise SystemExit(f'Refusing non-AI/non-exact creative provider: {provider}')
+          image=Path(str(item.get('generated_image','')))
+          if not image.exists():
+              raise SystemExit(f'Missing generated creative: {image}')
+          with Image.open(image) as im:
+              if im.size != (1080,1350) or im.mode != 'RGB':
+                  raise SystemExit(f'Invalid 4:5 creative: {im.size} {im.mode}')
+              im.verify()
+          print('Relevant 3D creative gate passed:', item['title'], provider)
+          PY
           done < new-tool-files.txt
 
       - name: Publish launch cards to website
@@ -192,7 +213,7 @@ jobs:
 
       - name: Upload private social diagnostics
         if: always() && steps.detect.outputs.count != '0'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: nexusnova-new-tool-social-${{ github.run_id }}
           path: |

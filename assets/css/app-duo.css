@@ -1,0 +1,14 @@
+/* Two-phone NexusNova app hero: Nova Hub + real NVX Mining session screenshot. */
+.app-visual.app-visual-duo{display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.6vw,22px);min-height:500px;padding:8px 0;perspective:1400px}
+.app-visual-duo:before{width:78%;height:13%;bottom:1%}
+.app-visual-duo .app-floating-card{display:none}
+.app-visual-duo .app-device{width:min(238px,31vw);flex:0 0 auto}
+.app-visual-duo .app-device-tools{transform:translateX(7px) rotateY(-10deg) rotateX(4deg) rotateZ(-1.4deg)}
+.app-visual-duo .app-device-mining{transform:translateY(16px) translateX(-7px) rotateY(10deg) rotateX(4deg) rotateZ(1.4deg)}
+.app-device-mining-real .app-screen{padding:0;background:#02050a;display:grid;place-items:center}
+.app-device-mining-real .app-screen img{display:block;width:100%;height:100%;object-fit:contain;object-position:top center}
+.app-device-mining-real .app-device-glow{background:radial-gradient(circle,rgba(0,210,198,.26),transparent 68%)}
+@media(max-width:1100px) and (min-width:941px){.app-visual-duo .app-device{width:min(218px,30vw)}}
+@media(max-width:940px){.app-visual.app-visual-duo{min-height:490px}.app-visual-duo .app-device{width:min(225px,37vw)}}
+@media(max-width:620px){.app-visual.app-visual-duo{min-height:360px;gap:5px;padding-top:5px;overflow:visible}.app-visual-duo .app-device{width:min(174px,43vw);border-radius:30px;padding:6px}.app-visual-duo .app-device:before{inset:5px;border-radius:25px}.app-visual-duo .app-device:after{top:10px;height:14px}.app-visual-duo .app-screen{border-radius:24px;padding:34px 8px 8px}.app-visual-duo .app-device-mining-real .app-screen{padding:0}.app-visual-duo .app-device-tools{transform:translateX(3px) rotateY(-5deg) rotateX(2deg) rotateZ(-.8deg)}.app-visual-duo .app-device-mining{transform:translateY(9px) translateX(-3px) rotateY(5deg) rotateX(2deg) rotateZ(.8deg)}.app-visual-duo .app-screen-brand strong{font-size:11px}.app-visual-duo .app-screen-brand small,.app-visual-duo .app-online{font-size:5px}.app-visual-duo .app-hub-head{margin-top:9px}.app-visual-duo .app-hub-head strong{font-size:8px}.app-visual-duo .app-hub-head span{font-size:5px}.app-visual-duo .app-phone-icon-grid{gap:4px;margin-top:6px}.app-visual-duo .app-phone-icon{gap:2px;padding:3px 1px;border-radius:8px}.app-visual-duo .app-phone-icon img{width:29px;height:29px}.app-visual-duo .app-phone-icon b{font-size:5px}.app-visual-duo .app-phone-dock{margin-top:6px;padding:5px;border-radius:9px}.app-visual-duo .app-phone-dock span{font-size:4.8px}}
+@media(prefers-reduced-motion:reduce){.app-visual-duo .app-device-tools,.app-visual-duo .app-device-mining{transform:none}}

@@ -1,0 +1,67 @@
+name: NexusNova Deep Site Quality
+
+on:
+  push:
+    branches:
+      - main
+      - deep-site-audit-fix-20260903
+    paths:
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'sitemap*.xml'
+      - 'robots.txt'
+      - '.github/scripts/deep_site_audit.py'
+      - '.github/scripts/deep_site_audit_strict.py'
+      - '.github/workflows/deep-site-quality.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'sitemap*.xml'
+      - 'robots.txt'
+      - '.github/scripts/deep_site_audit.py'
+      - '.github/scripts/deep_site_audit_strict.py'
+      - '.github/workflows/deep-site-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deep-static-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+
+      - name: Run strict deep public-site audit
+        run: python .github/scripts/deep_site_audit_strict.py
+
+      - name: Add report to summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Deep Public-Site Audit' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f deep-site-audit.txt ]; then cat deep-site-audit.txt >> "$GITHUB_STEP_SUMMARY"; else echo 'Deep audit did not produce a report.' >> "$GITHUB_STEP_SUMMARY"; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-deep-site-audit-${{ github.run_id }}
+          path: |
+            deep-site-audit.json
+            deep-site-audit.txt
+          if-no-files-found: warn
+          retention-days: 30

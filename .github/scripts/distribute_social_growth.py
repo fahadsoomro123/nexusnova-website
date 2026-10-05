@@ -12,6 +12,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import distribute_update as base  # noqa: E402
+from buffer_publish import post_buffer_x  # noqa: E402
 
 PUBLISH = ROOT / "social-growth-publish.json"
 REPORT = ROOT / "social-distribution-report.json"
@@ -37,6 +38,10 @@ def safe_error(exc: Exception) -> str:
     return text[:350]
 
 
+def media_detail(result: dict) -> str:
+    return "HD image attached" if result.get("image_attached") else "text/link fallback"
+
+
 def main() -> None:
     if not PUBLISH.exists():
         print("No Social Growth v2 payload; falling back to standard social distributor.")
@@ -55,6 +60,14 @@ def main() -> None:
         outcomes.append({"platform": platform, "ok": ok, "detail": detail})
         print(f"{platform}: {'posted' if ok else 'skipped/failed'}{f' - {detail}' if detail else ''}")
 
+    image_url = base.social_image_url(item)
+    image_ready = bool(image_url)
+    if image_ready:
+        image_ready = base.wait_for_public_image(image_url, attempts=18, delay=10)
+        if not image_ready:
+            print("HD social creative was not public in time; safe text/link fallbacks remain enabled.")
+            image_url = ""
+
     tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     tg_chat = os.getenv("TELEGRAM_CHANNEL_ID", "").strip()
     if tg_token and tg_chat:
@@ -63,22 +76,27 @@ def main() -> None:
             message = str(platform_copy.get("telegram") or f"{hook}\n\n{summary}\n\nTry it: ").strip()
             if url:
                 message = f"{message}\n{url}".strip()
-            base.post_json(
-                f"https://api.telegram.org/bot{tg_token}/sendMessage",
-                {"chat_id": tg_chat, "text": message, "disable_web_page_preview": False},
-            )
-            record("telegram", True)
+            result = base.post_telegram(tg_token, tg_chat, message, image_url)
+            record("telegram", True, media_detail(result))
         except Exception as exc:
             record("telegram", False, safe_error(exc))
     else:
         record("telegram", False, "not configured")
 
+    x_copy = str(platform_copy.get("x") or hook).strip()
+    buffer_ready = bool(os.getenv("BUFFER_API_KEY", "").strip() and os.getenv("BUFFER_X_CHANNEL_ID", "").strip())
     x_names = ("X_API_KEY", "X_API_KEY_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET")
-    if all(os.getenv(name, "").strip() for name in x_names):
+    direct_x_ready = all(os.getenv(name, "").strip() for name in x_names)
+    if buffer_ready:
         try:
-            x_copy = str(platform_copy.get("x") or hook).strip()
-            base.post_x(x_copy, tracked_url(item, "x"), hashtags)
-            record("x", True)
+            result = post_buffer_x(x_copy, tracked_url(item, "x"), hashtags, image_url=image_url)
+            record("x", True, f"Buffer queue · {media_detail(result)}")
+        except Exception as exc:
+            record("x", False, safe_error(exc))
+    elif direct_x_ready:
+        try:
+            result = base.post_x(x_copy, tracked_url(item, "x"), hashtags, image_url=image_url)
+            record("x", True, f"direct X fallback · {media_detail(result)}")
         except Exception as exc:
             record("x", False, safe_error(exc))
     else:
@@ -99,26 +117,19 @@ def main() -> None:
         try:
             fb_copy = str(platform_copy.get("facebook") or f"{hook}\n\n{summary}").strip()
             fb_tags = " ".join(f"#{tag.lstrip('#')}" for tag in hashtags[:3])
-            base.post_form(
-                f"https://graph.facebook.com/v26.0/{urllib.parse.quote(assets['page_id'])}/feed",
-                {
-                    "message": f"{fb_copy}\n\n{fb_tags}".strip(),
-                    "link": tracked_url(item, "facebook"),
-                    "access_token": assets["page_token"],
-                },
-            )
-            record("facebook", True)
+            fb_message = f"{fb_copy}\n\n{fb_tags}".strip()
+            result = base.post_facebook(assets, fb_message, tracked_url(item, "facebook"), image_url)
+            record("facebook", True, media_detail(result))
         except Exception as exc:
             record("facebook", False, safe_error(exc))
 
-        if assets.get("instagram_id") and item.get("instagram_image"):
+        if assets.get("instagram_id") and base.social_image_url(item):
             try:
                 ig_item = dict(item)
                 ig_item["title"] = str(platform_copy.get("instagram") or hook).strip()
                 ig_item["summary"] = ""
-                # base.post_instagram handles public-media availability and publish status checks.
                 base.post_instagram(ig_item, assets, tracked_url(item, "instagram"))
-                record("instagram", True)
+                record("instagram", True, "HD image attached")
             except Exception as exc:
                 record("instagram", False, safe_error(exc))
         else:
@@ -137,6 +148,8 @@ def main() -> None:
         "campaign": item.get("campaign"),
         "format": item.get("format"),
         "url": item.get("url"),
+        "image_url": base.social_image_url(item),
+        "image_ready": image_ready,
         "outcomes": outcomes,
         "successful_destinations": sum(1 for row in outcomes if row["ok"] and row["platform"] != "meta_assets"),
     }
