@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WCAG Contrast Checker | NexusNova Tools</title>
+<meta name="description" content="Check text and background color contrast against WCAG 2.2 AA and AAA thresholds in your browser. Includes contrast ratio and large-text checks.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta property="og:image:alt" content="NexusNova Tools"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="WCAG Contrast Checker — NexusNova Tools"><meta property="og:description" content="Check text and background contrast against WCAG 2.2 thresholds locally in your browser."><meta property="og:url" content="https://nexusnovatools.com/contrast-checker.html">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:image:alt" content="NexusNova Tools"><meta name="twitter:title" content="WCAG Contrast Checker — NexusNova Tools"><meta name="twitter:description" content="Check color contrast and WCAG 2.2 thresholds in the browser.">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"WCAG Contrast Checker","url":"https://nexusnovatools.com/contrast-checker.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Check text and background contrast against WCAG 2.2 thresholds in the browser."}</script>
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
+<link rel="stylesheet" href="assets/css/footer-social.css">
+</head>
+<body class="nn-inner-page">
+<header class="nn-header" data-nn-header><div class="nn-shell nn-header-row"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button><nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="index.html#master-directory">All Tools</a><a href="index.html#content-library">Content</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><a href="developer-tools.html">Developer Tools</a><span aria-hidden="true">›</span><span aria-current="page">Contrast Checker</span></nav><span class="kicker">WEB ACCESSIBILITY // WCAG 2.2</span><h1>Check text and background contrast <span class="gradient-text">before you ship.</span></h1><p>Enter foreground and background colors to calculate the contrast ratio and see whether the pair meets common WCAG 2.2 AA or AAA thresholds.</p><span class="guide-tag">✓ Local browser processing</span></div></section>
+<section class="section"><div class="container">
+<div class="tool-card">
+<div class="form-row">
+<div class="field"><label for="fg">Text / foreground color</label><div class="color-row"><input id="fg" type="color" value="#111827"><input id="fg-text" type="text" value="#111827" inputmode="text" aria-label="Foreground hex color"></div></div>
+<div class="field"><label for="bg">Background color</label><div class="color-row"><input id="bg" type="color" value="#ffffff"><input id="bg-text" type="text" value="#ffffff" inputmode="text" aria-label="Background hex color"></div></div>
+</div>
+<div class="tool-actions"><button class="btn btn-primary" id="check" type="button">Check contrast</button><button class="btn" id="swap" type="button">Swap colors</button></div>
+<div id="sample" class="contrast-sample">NexusNova Tools<br><span>Accessible color pairs are easier to read.</span></div>
+<div class="result" id="contrast-result" aria-live="polite">Contrast ratio: 16.05:1</div>
+<div id="levels" class="contrast-levels"></div>
+</div>
+</div></section>
+<section class="section"><div class="container article">
+<h2>What the ratio means</h2>
+<p>The contrast ratio is calculated from the relative luminance of the foreground and background colors. A higher ratio means a stronger luminance difference. This tool reports the numeric ratio and compares it with common WCAG 2.2 text thresholds rather than judging the design as a whole.</p>
+<h2>WCAG 2.2 thresholds used here</h2>
+<p>For normal text, WCAG 2.2 Success Criterion 1.4.3 specifies at least 4.5:1 for Level AA and 7:1 for Level AAA. Large-scale text has a lower minimum of 3:1 for AA and 4.5:1 for AAA. These checks apply to text contrast; non-text interface components have different requirements.</p>
+<h2>How to use the result</h2>
+<p>Check the actual text size, weight and visual context before making a design decision. A passing ratio does not prove that an entire page conforms to WCAG because accessibility also covers focus indicators, keyboard access, semantics, resizing, motion, forms and many other requirements.</p>
+<h2>Contrast checker FAQ</h2>
+<details><summary>Does a passing color ratio mean my page is WCAG conformant?</summary><p>No. This tool checks color contrast only. WCAG conformance involves many additional success criteria, and different content can have different requirements.</p></details>
+<details><summary>What counts as large text for the WCAG check?</summary><p>WCAG defines large-scale text by font size and weight rather than by a single universal CSS pixel value. Use the current WCAG understanding guidance when making a formal accessibility assessment; this page only compares the ratio against the large-text thresholds.</p></details>
+<details><summary>Does this tool send my colors to a server?</summary><p>No. The calculation runs locally in the browser. Only the hexadecimal color values you enter are used by the page to calculate the ratio and preview the sample.</p></details>
+<p class="mini-note">Reference: <a href="https://www.w3.org/TR/WCAG22/" rel="noopener noreferrer">W3C Web Content Accessibility Guidelines (WCAG) 2.2</a>.</p>
+</div></section>
+</main>
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<a href="/refund-policy.html">Refund Policy</a>
+<a href="/about.html">About</a>
+<a href="/editorial-team.html">Editorial Team</a>
+<a href="/editorial-policy.html">Editorial Policy</a>
+<a href="/tool-methodology.html">Tool Methodology</a>
+<a href="/faq.html">FAQ</a>
+<a href="/privacy.html">Privacy</a>
+<a href="/contact.html">Contact Us & Support</a>
+<a href="/disclaimer.html">Disclaimer</a></div></nav><section class="nn-footer-social">
+  <div class="nn-social-title">Follow NexusNova</div>
+  <div class="nn-social-row" aria-label="Official NexusNova social profiles">
+    <a class="nn-social nn-social-x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="X @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"></path></svg></span><span><strong>X</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
+    <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+  </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
+<style>.color-row{display:flex;gap:8px;align-items:center}.color-row input[type=color]{width:48px;height:42px;padding:3px}.color-row input[type=text]{flex:1}.contrast-sample{margin-top:16px;padding:34px 24px;border-radius:18px;font-size:28px;font-weight:800;line-height:1.35}.contrast-sample span{font-size:16px;font-weight:500}.contrast-levels{display:grid;gap:8px;margin-top:14px}.contrast-level{padding:12px 14px;border:1px solid #dbe6f2;border-radius:12px;background:#fff}.pass{border-color:#b7e1c2;background:#f1fbf3}.fail{border-color:#f1c1c1;background:#fff5f5}</style>
+<script>
+(()=>{const $=id=>document.getElementById(id);
+function hex(v){const s=v.trim().replace(/^#/,'');if(!/^[0-9a-f]{6}$/i.test(s))throw new Error('Use a 6-digit hex color such as #1f2937.');return '#'+s.toLowerCase();}
+function srgb(v){const n=parseInt(v,16)/255;return n<=.03928?n/12.92:Math.pow((n+.055)/1.055,2.4);}
+function lum(c){const s=c.slice(1);return .2126*srgb(s.slice(0,2))+.7152*srgb(s.slice(2,4))+.0722*srgb(s.slice(4,6));}
+function run(){try{const f=hex($('fg-text').value),b=hex($('bg-text').value);$('fg-text').value=f;$('bg-text').value=b;$('fg').value=f;$('bg').value=b;const ratio=(Math.max(lum(f),lum(b))+.05)/(Math.min(lum(f),lum(b))+.05);$('contrast-result').textContent='Contrast ratio: '+ratio.toFixed(2)+':1';$('sample').style.color=f;$('sample').style.background=b;const checks=[['AA • normal text',4.5],['AAA • normal text',7],['AA • large text',3],['AAA • large text',4.5]];$('levels').innerHTML=checks.map(([name,need])=>'<div class="contrast-level '+(ratio>=need?'pass':'fail')+'"><strong>'+name+'</strong><div>'+ratio.toFixed(2)+':1 vs '+need+':1 required — '+(ratio>=need?'Pass':'Below threshold')+'</div></div>').join('');}catch(e){$('contrast-result').textContent=e.message;$('levels').innerHTML='';}}
+['fg','bg'].forEach(id=>$(id).addEventListener('input',()=>{$(id+'-text').value=$(id).value;run();}));['fg-text','bg-text'].forEach(id=>$(id).addEventListener('change',run));$('check').onclick=run;$('swap').onclick=()=>{const f=$('fg-text').value;$('fg-text').value=$('bg-text').value;$('bg-text').value=f;run();};run();
+})();
+</script><script src="assets/js/main.js" defer></script>
+<script src="assets/js/nn-inner-shell.js" defer></script>
+</body></html>

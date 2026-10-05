@@ -1,0 +1,182 @@
+name: NexusNova Website Beta Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/nexusnova-beta-start.yml'
+      - 'WEB-MASTER-CHECKLIST.md'
+      - 'package.json'
+      - 'tests/**'
+      - 'docs/**'
+      - '**/*.html'
+      - 'assets/**/*.js'
+      - 'assets/**/*.css'
+      - 'cloudflare/**/*.js'
+      - '.github/workflows/publish-nexusnova-apk-download.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-website-beta
+  cancel-in-progress: true
+
+jobs:
+  beta-smoke:
+    name: Public beta + regression test
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Verify JavaScript syntax
+        run: npm run check
+
+      - name: Account eligibility security regression
+        run: node --test tests/account-eligibility-security.test.cjs
+
+      - name: Account header auth-race regression
+        run: node --test tests/auth-header-account-race.test.cjs
+
+      - name: Google official auth wiring regression
+        run: node --test tests/google-auth.test.cjs
+
+      - name: X Apple Facebook official auth wiring regression
+        run: node --test tests/external-provider-auth.test.cjs
+
+      - name: Provider activation contract regression
+        run: node --test tests/provider-activation-doc.test.cjs
+
+      - name: Referral security regression
+        run: node --test tests/referral-security.test.cjs
+
+      - name: Website mining security regression
+        run: node --test tests/mining-web-security.test.cjs
+
+      - name: App preview approved-assets regression
+        run: node --test tests/app-preview-assets.test.cjs
+
+      - name: Major launch release-gate regression
+        run: node --test tests/major-launch-gate.test.cjs
+
+      - name: Future APK publish-gate regression
+        run: node --test tests/apk-publish-gate.test.cjs
+
+      - name: Telegram avatar regression
+        run: node --test tests/telegram-avatar.test.cjs
+
+      - name: Telegram WebApp regression
+        run: node --test tests/telegram-webapp.test.cjs
+
+      - name: Telegram wiring regression
+        run: node --test tests/telegram-wiring.test.cjs
+
+      - name: Telegram Worker regression
+        run: node --test tests/telegram-worker.test.cjs
+
+      - name: Verify public website surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          urls=(
+            'https://nexusnovatools.com/'
+            'https://nexusnovatools.com/tools.html'
+            'https://nexusnovatools.com/app.html'
+            'https://nexusnovatools.com/register.html'
+            'https://nexusnovatools.com/account.html'
+            'https://nexusnovatools.com/privacy.html'
+            'https://nexusnovatools.com/terms.html'
+            'https://nexusnovatools.com/faq.html'
+            'https://nexusnovatools.com/sitemap.xml'
+            'https://nexusnovatools.com/robots.txt'
+          )
+          for url in "${urls[@]}"; do
+            echo "Checking $url"
+            code="$(curl -L --retry 3 --retry-delay 3 --max-time 25 -sS -o /tmp/body -w '%{http_code}' "$url")"
+            test "$code" = '200'
+            test -s /tmp/body
+          done
+
+      - name: Verify Turnstile security config is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl --retry 3 --retry-delay 3 --max-time 25 -sS \
+            -H 'Origin: https://nexusnovatools.com' \
+            -H 'Accept: application/json' \
+            'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/auth/security-config')"
+          echo "$response" | python -c "import json,sys; d=json.load(sys.stdin); assert d.get('ok') is True; assert d.get('provider') == 'cloudflare-turnstile'; assert d.get('enabled') is True; assert bool(d.get('siteKey'))"
+
+      - name: Verify account eligibility route is live on Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          body_file="$(mktemp)"
+          code="$(curl --retry 3 --retry-delay 3 --max-time 25 -sS \
+            -H 'Origin: https://nexusnovatools.com' \
+            -H 'Accept: application/json' \
+            -o "$body_file" -w '%{http_code}' \
+            'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/account/eligibility')"
+          test "$code" = '401'
+          python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); assert d.get('ok') is False; assert d.get('code') == 'unauthenticated'; assert d.get('eligibleForValueActions') is False" "$body_file"
+
+      - name: Verify mining route is live on Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          body_file="$(mktemp)"
+          for attempt in 1 2 3 4 5 6; do
+            code="$(curl --max-time 25 -sS \
+              -H 'Origin: https://nexusnovatools.com' \
+              -H 'Content-Type: application/json' \
+              -H 'Accept: application/json' \
+              -o "$body_file" -w '%{http_code}' \
+              -X POST --data '{"action":"start"}' \
+              'https://nexusnova-telegram-bot.fahadsoomro123.workers.dev/api/mining/session' || true)"
+            if [ "$code" = '401' ]; then
+              python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); assert d.get('ok') is False; assert d.get('code') == 'unauthenticated'" "$body_file"
+              exit 0
+            fi
+            echo "Mining route not ready yet (HTTP $code), attempt $attempt/6"
+            sleep 10
+          done
+          echo 'Live mining Worker route did not become available in time.' >&2
+          cat "$body_file" >&2 || true
+          exit 1
+
+      - name: Verify beta truthfulness rules in repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          checklist = Path('WEB-MASTER-CHECKLIST.md').read_text(encoding='utf-8')
+          required = [
+              'Keep website tools public',
+              'Keep mining OFF after signup',
+              'Real account state only',
+              'Do not add fake functionality',
+              'Do not expose secrets/tokens',
+          ]
+          for phrase in required:
+              if phrase not in checklist:
+                  raise SystemExit(f'Missing beta safety rule: {phrase}')
+          print('Beta safety rules present.')
+          PY
+
+      - name: Beta summary
+        if: always()
+        shell: bash
+        run: |
+          echo '## NexusNova Website Beta' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Beta validation runs JS syntax checks, account eligibility + authenticated-header + official Google/X/Apple/Facebook wiring + provider-activation contract checks, referral/mining/app-preview/major-launch/future-APK/Telegram regressions, public page smoke checks, live Turnstile + account eligibility + mining Worker verification, and repository truthfulness rules.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo 'This is a beta regression gate only. It does not publish social launch posts, publish an APK, or claim full release completion.' >> "$GITHUB_STEP_SUMMARY"

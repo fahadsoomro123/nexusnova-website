@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HumanProof Credential Verification — NexusNova</title>
+<meta name="description" content="Public verification page for a server-signed NexusNova HumanProof credential.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f7f9ff">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/compact-2026.css?v=20260911-indigo4">
+<style>
+.wrap{max-width:860px;margin:0 auto;padding:56px 18px 80px}.card{background:#fff;border:1px solid rgba(69,78,130,.14);border-radius:24px;padding:28px;box-shadow:0 18px 50px rgba(42,53,110,.08)}.badge{display:inline-flex;padding:7px 11px;border-radius:999px;background:rgba(11,141,102,.09);color:#17623c;font-size:11px;font-weight:900;letter-spacing:.08em}.state{margin:18px 0;padding:18px;border-radius:16px;background:#f5f7ff;border:1px solid rgba(69,78,130,.12)}.state strong{display:block;font-size:19px;margin-bottom:5px}.meta{display:grid;gap:0;margin-top:18px}.row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid rgba(69,78,130,.09)}.row span:first-child{color:#6d7287}.row code{font-size:12px;text-align:right;overflow-wrap:anywhere}.ok{background:#effaf4;border-color:#b9e6cd}.err{background:#fff4f4;border-color:#efcaca}.fine{margin-top:14px;color:#6d7287;font-size:13px;line-height:1.55}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+</style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="/"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>HUMANPROOF • VERIFICATION</small></span></a><nav class="nav" aria-label="Primary navigation"><a href="humanproof.html">HumanProof</a><a href="contact.html">Support</a></nav></div></header>
+<main class="wrap">
+<section class="card">
+<span class="badge">SERVER-SIGNED CREDENTIAL</span>
+<h1 style="margin:14px 0 8px">HumanProof Credential Verification</h1>
+<p style="margin:0;color:#5f6880">This page verifies the credential signature directly through the NexusNova server.</p>
+<div id="state" class="state"><strong>Verifying credential…</strong><span>Checking the signature and payment record.</span></div>
+<div id="meta" class="meta" hidden>
+<div class="row"><span>Credential ID</span><code id="credentialId">—</code></div>
+<div class="row"><span>Order</span><code id="orderId">—</code></div>
+<div class="row"><span>Payment</span><code id="payment">—</code></div>
+<div class="row"><span>Amount</span><code id="amount">—</code></div>
+<div class="row"><span>Issued</span><code id="issued">—</code></div>
+<div class="row"><span>Verification method</span><code id="method">—</code></div>
+<div class="row"><span>Identity / KYC</span><code id="kyc">Not established</code></div>
+</div>
+<p class="fine">This credential confirms that NexusNova’s server signed a record after confirming the SafePay payment and receiving the completed HumanProof browser challenge result. It is not legal identity proof or KYC.</p>
+<div class="actions"><a class="btn btn-primary" href="humanproof.html">Open HumanProof</a><a class="btn" href="contact.html">Contact support</a></div>
+</section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-bottom"><span>© NexusNova Tools</span><span>Public credential verification</span></div></div></footer>
+<script>
+(()=>{
+  const WORKER='https://nexusnova-safepay.fahadsoomro123.workers.dev';
+  const token=new URLSearchParams(location.search).get('credential')||'';
+  const state=document.getElementById('state'),meta=document.getElementById('meta');
+  const set=(id,v)=>document.getElementById(id).textContent=v??'—';
+  if(!token){state.classList.add('err');state.innerHTML='<strong>Credential not found</strong><span>No credential token was provided.</span>';return}
+  fetch(WORKER+'/api/humanproof/verify-credential?credential='+encodeURIComponent(token),{cache:'no-store'})
+    .then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||!d.verified)throw new Error(d.error||'invalid_credential');return d})
+    .then(d=>{
+      const c=d.credential||{};
+      state.classList.add('ok');
+      state.innerHTML='<strong>Credential verified</strong><span>The signature is valid and the credential was issued by the NexusNova server.</span>';
+      meta.hidden=false;
+      set('credentialId',c.credential_id);
+      set('orderId',c.order_id);
+      set('payment',(c.payment?.provider||'')+' • '+(c.payment?.state||''));
+      set('amount',(c.payment?.currency||'')+' '+(typeof c.payment?.amount==='number' ? (c.payment.amount/100).toFixed(2) : '—'));
+      set('issued',c.issued_at);
+      set('method',c.verification?.method||'—');
+      set('kyc',c.verification?.identity_or_kyc===false?'Not established':'—');
+    })
+    .catch(e=>{
+      state.classList.add('err');
+      state.innerHTML='<strong>Credential could not be verified</strong><span>'+String(e.message||'Invalid credential')+'</span>';
+    });
+})();
+</script>
+</body>
+</html>

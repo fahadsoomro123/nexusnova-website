@@ -1,139 +1,82 @@
-import {
-  createUserWithEmailAndPassword,
-  onIdTokenChanged,
-  sendEmailVerification,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile
-} from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
-import {
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc
-} from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-import { firebaseAuth, firestoreDb } from './firebase-backend.js';
+// NexusNova public-mirror auth shim.
+// The public build has no live Firebase keys, so QA uses a local session only.
 
-const PROFILE_DEFAULTS = Object.freeze({
-  balance: 0,
-  totalMined: 0,
-  tasksCompleted: 0,
-  completedTasks: {},
-  miningActive: false,
-  miningStartedAt: 0,
-  miningLastUpdate: 0,
-  sessionEarned: 0,
-  lastDailyReward: 0,
-  dailyRewardStreak: 0
-});
+const SESSION_KEY = 'nexusnova_public_qa_user_v1';
+const DEFAULT_EMAIL = 'qa@nexusnova.local';
 
-let currentUser = firebaseAuth.currentUser || null;
+let currentUser = readSession();
 const listeners = new Set();
 
-async function ensureProfile(user, name = '') {
-  const ref = doc(firestoreDb, 'users', user.uid);
-  const existing = await getDoc(ref);
-  if (existing.exists()) return existing.data();
-
-  const profileName = String(name || user.displayName || user.email?.split('@')[0] || 'Miner User')
-    .trim().slice(0, 80) || 'Miner User';
-  const profileEmail = String(user.email || '').trim().slice(0, 320);
-
-  await setDoc(ref, {
-    uid: user.uid,
-    name: profileName,
-    email: profileEmail,
-    ...PROFILE_DEFAULTS,
-    createdAt: serverTimestamp()
-  });
-
-  return (await getDoc(ref)).data();
+function safeJson(raw) {
+  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 
-onIdTokenChanged(firebaseAuth, user => {
-  currentUser = user || null;
-  listeners.forEach(listener => {
+function readSession() {
+  const saved = safeJson(localStorage.getItem(SESSION_KEY));
+  if (saved?.uid) return userFrom(saved);
+  return null;
+}
+
+function userFrom(raw = {}) {
+  const email = String(raw.email || DEFAULT_EMAIL).trim() || DEFAULT_EMAIL;
+  const name = String(raw.displayName || raw.name || email.split('@')[0] || 'NexusNova QA').trim();
+  return {
+    uid: String(raw.uid || `public-qa-${email.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`).slice(0, 96),
+    email,
+    displayName: name,
+    emailVerified: true,
+    isAnonymous: false,
+    providerId: 'public-qa-local',
+    async reload() { return undefined; },
+    toJSON() { return { uid:this.uid, email:this.email, displayName:this.displayName, emailVerified:true }; }
+  };
+}
+
+function save(user) {
+  currentUser = user;
+  if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user.toJSON()));
+  else localStorage.removeItem(SESSION_KEY);
+  queueMicrotask(() => listeners.forEach(listener => {
     try { listener(currentUser); } catch {}
+  }));
+  return user;
+}
+
+function credentialsUser(email, name) {
+  return userFrom({
+    email: String(email || DEFAULT_EMAIL).trim() || DEFAULT_EMAIL,
+    displayName: String(name || '').trim()
   });
-});
+}
 
 export const authService = {
-  get currentUser() {
-    return currentUser || firebaseAuth.currentUser || null;
-  },
+  get currentUser() { return currentUser; },
 
-  waitForUser(timeoutMs = 8000) {
-    const existing = firebaseAuth.currentUser;
-    if (existing) {
-      currentUser = existing;
-      return Promise.resolve(existing);
-    }
-
-    return new Promise(resolve => {
-      let done = false;
-      let timer = null;
-      const finish = value => {
-        if (done) return;
-        done = true;
-        if (timer) clearTimeout(timer);
-        unsubscribe?.();
-        resolve(value || null);
-      };
-      const unsubscribe = onIdTokenChanged(firebaseAuth, user => finish(user));
-      timer = setTimeout(() => finish(firebaseAuth.currentUser), Math.max(250, Number(timeoutMs) || 8000));
-    });
+  waitForUser() {
+    return Promise.resolve(currentUser);
   },
 
   onChange(listener) {
-    if (typeof listener !== 'function') return () => {};
     listeners.add(listener);
     queueMicrotask(() => {
-      try { listener(this.currentUser); } catch {}
+      try { listener?.(currentUser); } catch {}
     });
     return () => listeners.delete(listener);
   },
 
-  async signIn(email, password) {
-    const result = await signInWithEmailAndPassword(
-      firebaseAuth,
-      String(email || '').trim(),
-      String(password || '')
-    );
-    currentUser = result.user;
-    await ensureProfile(result.user);
-    return result.user;
+  async signIn(email) {
+    return save(credentialsUser(email));
   },
 
-  async register({ name, email, password } = {}) {
-    const result = await createUserWithEmailAndPassword(
-      firebaseAuth,
-      String(email || '').trim(),
-      String(password || '')
-    );
-    currentUser = result.user;
-
-    if (name) {
-      await updateProfile(result.user, { displayName: String(name).trim().slice(0, 80) });
-    }
-
-    try {
-      await sendEmailVerification(result.user);
-    } catch (error) {
-      console.warn('[NexusNova] verification email:', error);
-    }
-
-    await ensureProfile(result.user, name);
-    return result.user;
+  async register({ name, email } = {}) {
+    return save(credentialsUser(email, name));
   },
 
   async resendVerification() {
-    const user = await this.waitForUser();
-    if (!user) throw new Error('Please sign in first.');
-    await sendEmailVerification(user);
+    return undefined;
   },
 
   async logout() {
-    await signOut(firebaseAuth);
-    currentUser = null;
+    save(null);
   }
-}
+};

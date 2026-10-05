@@ -1,0 +1,232 @@
+/* NexusNova flagship homepage refinement.
+   Additive layer only. Existing tool links, footer, logo and functionality remain untouched. */
+.nn-flagship-intro{
+  max-width:760px;
+  margin:6px 0 0;
+  color:var(--nn-muted);
+  font-size:13px;
+  line-height:1.65;
+}
+.nn-featured-tools{
+  padding:24px 0 0;
+}
+.nn-featured-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin:0 0 10px;
+}
+.nn-featured-head h2{
+  margin:4px 0 0;
+  font-size:18px;
+  line-height:1.2;
+  letter-spacing:-.015em;
+  font-weight:850;
+}
+.nn-featured-copy{
+  max-width:680px;
+  margin:4px 0 0;
+  color:var(--nn-muted);
+  font-size:12px;
+}
+.nn-featured-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+.nn-featured-card{
+  display:flex;
+  min-height:150px;
+  flex-direction:column;
+  padding:14px;
+  border:1px solid var(--nn-line);
+  background:#fff;
+  transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.nn-featured-card:hover{
+  border-color:#c4b5fd;
+  transform:translateY(-1px);
+  box-shadow:0 8px 22px rgba(76,29,149,.07);
+}
+.nn-featured-card:focus-visible{
+  border-color:#a78bfa;
+  outline:2px solid rgba(109,40,217,.22);
+  outline-offset:3px;
+  box-shadow:0 8px 22px rgba(76,29,149,.07);
+}
+.nn-featured-card:active{
+  transform:translateY(0);
+  box-shadow:0 4px 12px rgba(76,29,149,.05);
+}
+.nn-featured-kicker{
+  color:var(--nn-purple);
+  font-family:var(--nn-mono);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.nn-featured-card h3{
+  margin:7px 0 5px;
+  font-size:14px;
+  line-height:1.25;
+  font-weight:850;
+  text-wrap:balance;
+}
+.nn-featured-card p{
+  max-width:34ch;
+  margin:0;
+  color:var(--nn-muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.nn-featured-open{
+  margin-top:auto;
+  padding-top:10px;
+  color:var(--nn-purple);
+  font-size:10px;
+  font-weight:850;
+}
+
+/* HumanProof product boundary + secondary discovery anchors. */
+.nn-humanproof-card{
+  border-color:#ddd6fe;
+  background:linear-gradient(180deg,#faf7ff 0,#fff 72px);
+  box-shadow:inset 0 2px 0 var(--nn-purple);
+}
+.nn-humanproof-copy{
+  min-width:0;
+}
+.nn-humanproof-actions a{
+  min-height:40px;
+}
+.nn-humanproof-actions a:focus-visible{
+  outline:2px solid rgba(109,40,217,.28);
+  outline-offset:2px;
+}
+.nn-nav a{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+}
+.nn-nav a:focus-visible{
+  outline:2px solid rgba(109,40,217,.28);
+  outline-offset:2px;
+}
+.nn-content-grid>*,
+.nn-content-item{
+  min-width:0;
+}
+.nn-content-item:focus-visible{
+  outline:2px solid rgba(109,40,217,.22);
+  outline-offset:-2px;
+}
+
+/* Footer asset safety boundary: keep social SVGs and the brand mark bounded
+   even when the companion footer stylesheet is unavailable in a temporary preview host. */
+.nn-global-footer .nn-footer-social .nn-social-icon{
+  width:24px!important;
+  height:24px!important;
+  min-width:24px!important;
+  max-width:24px!important;
+  min-height:24px!important;
+  max-height:24px!important;
+  flex:0 0 24px!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.nn-global-footer .nn-footer-social .nn-social-icon svg{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  min-height:18px!important;
+  max-height:18px!important;
+  flex:0 0 18px!important;
+  display:block!important;
+}
+.nn-global-footer .nn-footer-brand-logo{
+  width:auto!important;
+  height:34px!important;
+  max-width:180px!important;
+  max-height:34px!important;
+  display:block!important;
+  object-fit:contain!important;
+}
+
+/* Search prominence + compact tool hierarchy. */
+.nn-search-field{
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.nn-search-field:focus-within{
+  border-color:#a78bfa;
+  box-shadow:0 0 0 3px rgba(109,40,217,.10);
+}
+.nn-master-group>summary{
+  min-height:48px;
+  list-style:none;
+  cursor:pointer;
+}
+.nn-master-group>summary::-webkit-details-marker{display:none}
+.nn-master-group>summary::after{
+  content:'+';
+  margin-left:auto;
+  color:var(--nn-purple);
+  font-family:var(--nn-mono);
+  font-size:13px;
+  font-weight:900;
+}
+.nn-master-group[open]>summary::after{content:'−'}
+.nn-master-group>summary:focus-visible{
+  outline:2px solid rgba(109,40,217,.22);
+  outline-offset:-3px;
+}
+.nn-master-group[open]>.nn-master-tool-grid{
+  padding:10px;
+}
+
+/* Secondary-block rhythm: keep utility sections dense, readable and predictable. */
+
+body .nn-main .nn-pakistan-highlight{
+  padding-top:20px;
+}
+body .nn-main .nn-directory{
+  padding-top:22px;
+}
+body .nn-main .nn-content{
+  padding-top:24px;
+}
+body .nn-footer{
+  margin-top:28px;
+}
+body .nn-main .nn-pakistan-highlight-card h3{
+  min-height:2.5em;
+  text-wrap:balance;
+}
+body .nn-main .nn-pakistan-highlight-card p{
+  max-width:48ch;
+}
+body .nn-main .nn-content-item-title{
+  text-wrap:balance;
+}
+
+@media(max-width:900px){
+  .nn-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  body .nn-main .nn-pakistan-highlight-card h3{min-height:0}
+}
+@media(max-width:520px){
+  .nn-featured-grid{grid-template-columns:1fr}
+  .nn-featured-card{min-height:132px}
+}
+@media(max-width:700px){
+  .nn-featured-head{align-items:flex-start}
+  .nn-featured-copy{max-width:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .nn-featured-card{transition:none}
+  .nn-featured-card:hover,.nn-featured-card:active{transform:none}
+}

@@ -2,12 +2,14 @@ name: NexusNova Today Traffic Pulse
 
 on:
   schedule:
-    - cron: '17 */2 * * *'
+    # 08:17 Pakistan time (UTC+5). One full report each morning.
+    - cron: '17 3 * * *'
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/scripts/today_traffic_pulse.py'
+      - '.github/scripts/send_traffic_email.py'
       - '.github/workflows/today-traffic-pulse.yml'
 
 permissions:
@@ -24,23 +26,31 @@ jobs:
     env:
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
       GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      TRAFFIC_ALERT_TO: fahadsoomro123@gmail.com
+      TRAFFIC_ALERT_FROM: NexusNova Traffic <traffic@nexusnovatools.com>
+      TRAFFIC_ALERT_REPLY_TO: fahadsoomro123@gmail.com
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
       - name: Install GA4 dependency
         run: python -m pip install --disable-pip-version-check google-auth requests
 
-      - name: Compile traffic pulse
-        run: python -m py_compile .github/scripts/today_traffic_pulse.py
+      - name: Compile traffic pulse and mailer
+        run: python -m py_compile .github/scripts/today_traffic_pulse.py .github/scripts/send_traffic_email.py
 
       - name: Read today's GA4 traffic
         run: python .github/scripts/today_traffic_pulse.py
+
+      - name: Send traffic email through Resend
+        if: always()
+        run: python .github/scripts/send_traffic_email.py
 
       - name: Show traffic pulse in GitHub Summary
         if: always()
@@ -54,7 +64,7 @@ jobs:
 
       - name: Upload traffic pulse details
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: nexusnova-today-traffic-${{ github.run_id }}
           path: |

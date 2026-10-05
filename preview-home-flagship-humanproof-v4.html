@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NexusNova HumanProof Homepage Preview V4</title><meta name="robots" content="noindex,nofollow">
+<style>
+html,body{margin:0;width:100%;height:100%;background:#fbfdfb;overflow:hidden}
+#previewV4{display:block;width:100%;height:100%;border:0;opacity:0;transition:opacity .14s ease}
+#previewV4.ready{opacity:1}
+</style>
+<link rel="canonical" href="https://nexusnovatools.com/preview-home-flagship-humanproof-v4.html">\n<link rel="stylesheet" href="assets/css/footer-social.css">
+</head>
+<body>
+<iframe id="previewV4" src="preview-home-flagship-humanproof-v3.html?v=2cb67f3" title="NexusNova HumanProof homepage preview V4"></iframe>
+<script>
+const outer=document.getElementById('previewV4');
+function patchV4(){
+  const od=outer.contentDocument;
+  if(!od)return;
+  const inner=od.getElementById('preview');
+  if(!inner)return;
+  const apply=()=>{
+    const d=inner.contentDocument;
+    if(!d||!d.body||d.documentElement.dataset.nnV4)return;
+    d.documentElement.dataset.nnV4='1';
+    d.title='NexusNova HumanProof Homepage Preview V4';
+
+    const brand=d.querySelector('.brand');
+    if(brand){brand.href='index.html';brand.target='_top'}
+
+    const links=d.querySelector('.links');
+    if(links)links.innerHTML='<a class="active" href="index.html" target="_top">Home</a><a href="tools.html" target="_top">Tools</a><a href="#nn-how">HumanProof</a><a href="app.html" target="_top">App</a><a href="articles.html" target="_top">Articles</a><a class="sign" href="account.html" target="_top">Sign in</a>';
+
+    const actions=d.querySelector('.actions');
+    if(actions)actions.innerHTML='<a class="btn primary" href="#nn-how">How HumanProof works</a><a class="btn" href="tools.html" target="_top">Explore tools</a>';
+
+    const command=d.querySelector('.commandbar');
+    if(command)command.innerHTML='<span>Need a practical browser tool?</span><a href="tools.html" target="_top">Browse all tools →</a>';
+
+    const indexLinks=[
+      ['smart-tools.html','Smart Browser Tools','OCR, QR, privacy and AI utilities'],
+      ['calculator-tools.html','Calculators','Everyday, finance and health calculators'],
+      ['pdf-tools.html','PDF & Documents','Practical PDF and document utilities'],
+      ['image-tools.html','Image Tools','Useful image processing utilities'],
+      ['productivity-tools.html','Productivity','Focused tools for everyday work'],
+      ['pakistan-tools.html','Pakistan & Local','Useful Pakistan-focused utilities']
+    ];
+    d.querySelectorAll('.nn-index-list a').forEach((a,i)=>{
+      const row=indexLinks[i]; if(!row)return;
+      a.href=row[0]; a.target='_top';
+      const strong=a.querySelector('strong'), em=a.querySelector('em');
+      if(strong)strong.textContent=row[1];
+      if(em)em.textContent=row[2];
+    });
+
+    const idx=d.querySelector('.nn-index');
+    if(idx&&!d.getElementById('nn-how')){
+      const how=d.createElement('section');
+      how.className='nn-how'; how.id='nn-how';
+      how.innerHTML=`<div class="wrap"><div class="nn-section-intro"><div><span class="nn-mono">HUMANPROOF / HOW IT WORKS</span><h2>What HumanProof actually proves.</h2></div><p>HumanProof is designed to record a deliberate live-human approval for one exact digital action. It does not automatically verify identity.</p></div><div class="nn-how-grid"><div class="nn-how-item"><span>01</span><strong>Show the exact action</strong><p>The person can see what they are being asked to approve before the HumanProof step begins.</p></div><div class="nn-how-item"><span>02</span><strong>Complete a live-human step</strong><p>A deliberate response is bound to that specific action while keeping the flow privacy-first.</p></div><div class="nn-how-item"><span>03</span><strong>Issue only after trusted confirmation</strong><p>An official credential belongs only after verification, payment and trusted server confirmation.</p></div></div><p class="nn-how-note">No pre-payment VERIFIED state, official receipt ID, trusted timestamp or live verification QR.</p></div>`;
+      idx.insertAdjacentElement('afterend',how);
+    }
+
+    const eco=d.querySelectorAll('.nn-eco-grid a');
+    if(eco[0]){eco[0].href='tools.html';eco[0].target='_top'}
+    if(eco[1]){eco[1].href='app.html';eco[1].target='_top'}
+    if(eco[2]){eco[2].href='#nn-how';eco[2].removeAttribute('target')}
+
+    const footer=d.querySelector('.nn-footer');
+    if(footer)footer.innerHTML='<div class="wrap nn-footer-v4"><div><strong>NEXUSNOVA</strong><span>Free online tools • AI utilities • Android app • HumanProof</span></div><nav class="nn-footer-links" aria-label="Trust and policy links"><a href="about.html" target="_top">About</a><a href="privacy.html" target="_top">Privacy</a><a href="contact.html" target="_top">Contact Us &amp; Support</a><a href="tool-methodology.html" target="_top">Methodology</a><a href="terms.html" target="_top">Terms</a></nav></div>';
+
+    const style=d.createElement('style');
+    style.textContent=`
+      .commandbar a{min-width:126px;text-align:center;padding:11px 13px;border-radius:10px;text-decoration:none;color:#fff;font-size:10.5px;font-weight:760;background:linear-gradient(135deg,#2baa7b,#59d2a8 60%,#a697f4)}
+      .nn-how{padding:50px 0 54px;border-bottom:1px solid rgba(31,94,77,.09);background:rgba(255,255,255,.38)}
+      .nn-how .nn-section-intro{margin-bottom:22px}
+      .nn-how-grid{border-top:1px solid rgba(31,94,77,.16)}
+      .nn-how-item{display:grid;grid-template-columns:48px .72fr 1.28fr;gap:18px;align-items:start;padding:17px 0;border-bottom:1px solid rgba(31,94,77,.12)}
+      .nn-how-item>span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;color:#84958f;padding-top:3px}
+      .nn-how-item strong{font-size:15px;line-height:1.35;font-weight:700;color:#245f50}
+      .nn-how-item p{margin:0;color:#687e76;font-size:13px;line-height:1.55}
+      .nn-how-note{margin:15px 0 0;color:#758981;font-size:11.5px;line-height:1.5}
+      .nn-footer-v4{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:24px!important}
+      .nn-footer-v4>div{display:flex;align-items:center;gap:14px}
+      .nn-footer-v4>div span{font-size:10.5px;color:#73867f}
+      .nn-footer-links{display:flex;gap:14px;flex-wrap:wrap}
+      .nn-footer-links a{font-size:10.5px;color:#647a72;text-decoration:none}
+      .nn-footer-links a:hover{text-decoration:underline;text-underline-offset:3px}
+      @media(max-width:720px){
+        .nn-how{padding:38px 0 42px}
+        .nn-how-item{grid-template-columns:30px 1fr;gap:8px 12px;padding:15px 0}
+        .nn-how-item p{grid-column:2}
+        .nn-footer-v4{align-items:flex-start!important;flex-direction:column!important;gap:13px!important}
+        .nn-footer-v4>div{align-items:flex-start;flex-direction:column;gap:4px}
+        .nn-footer-links{gap:10px 14px}
+      }
+    `;
+    d.head.appendChild(style);
+    outer.classList.add('ready');
+  };
+  inner.addEventListener('load',()=>setTimeout(apply,0),{once:true});
+  if(inner.contentDocument&&inner.contentDocument.readyState!=='loading')setTimeout(apply,0);
+}
+outer.addEventListener('load',patchV4);
+</script>
+</body>
+</html>
+
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<a href="/refund-policy.html">Refund Policy</a>
+<a href="/about.html">About</a>
+<a href="/editorial-team.html">Editorial Team</a>
+<a href="/editorial-policy.html">Editorial Policy</a>
+<a href="/tool-methodology.html">Tool Methodology</a>
+<a href="/faq.html">FAQ</a>
+<a href="/privacy.html">Privacy</a>
+<a href="/contact.html">Contact Us & Support</a>
+<a href="/disclaimer.html">Disclaimer</a></div></nav><section class="nn-footer-social">
+  <div class="nn-social-title">Follow NexusNova</div>
+  <div class="nn-social-row" aria-label="Official NexusNova social profiles">
+    <a class="nn-social nn-social-x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="X @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"></path></svg></span><span><strong>X</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
+    <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+  </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>

@@ -1,0 +1,73 @@
+'use strict';
+
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+const root = path.join(__dirname, '..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const approvedPrefix = 'ota/files/assets/icons/nova-hub/';
+const realMiningAsset = 'assets/images/nvx-mining-real-420.webp';
+
+test('Android app preview uses approved real Nova Hub and mining assets only', () => {
+  const app = read('app.html');
+  const duo = read('assets/js/app-duo.js');
+
+  const htmlImageSources = [...app.matchAll(/<(?:div class="app-phone-icon"|article class="app-category")[\s\S]*?<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]);
+  assert.ok(htmlImageSources.length >= 12, 'Expected real Nova Hub preview images in app.html');
+  for (const src of htmlImageSources) {
+    assert.ok(src.startsWith(approvedPrefix), `Unapproved app preview image source: ${src}`);
+  }
+
+  assert.match(duo, /assets\/images\/nvx-mining-real-420\.webp/);
+  assert.doesNotMatch(duo, /data:image|placeholder\.(?:png|jpe?g|webp)|generated[-_ ]preview/i);
+  assert.doesNotMatch(app, /data:image|placeholder\.(?:png|jpe?g|webp)|generated[-_ ]preview/i);
+
+  const miningPath = path.join(root, realMiningAsset);
+  assert.ok(fs.existsSync(miningPath), 'Expected optimized real NVX mining screenshot asset');
+  assert.ok(fs.statSync(miningPath).size < 100 * 1024, 'Real mining screenshot should stay lightweight');
+});
+
+test('Android app preview keeps truthful release and real mining presentation', () => {
+  const app = read('app.html');
+  const duo = read('assets/js/app-duo.js');
+
+  assert.match(app, /57\+ smart tools/i);
+  assert.match(app, /no fake balance, rate or countdown/i);
+  assert.match(app, /Signed APK and Play Store destinations appear only when genuinely verified/i);
+  assert.match(duo, /manual 24-hour session/i);
+  assert.match(duo, /NexusNova NVX Mining session preview/i);
+  assert.doesNotMatch(duo, /Ready when you are/i);
+  assert.doesNotMatch(duo, /START MINING • MANUAL/i);
+});
+
+test('Android app preview category copy follows the real Nova Hub registry', () => {
+  const app = read('app.html');
+  const categories = [
+    'Core',
+    'Everyday Tools',
+    'Live & Local',
+    'Discover',
+    'Faith & Reading',
+    'Personal',
+    'Money & Commerce',
+    'Security & System',
+    'Mining'
+  ];
+
+  for (const category of categories) {
+    assert.match(app, new RegExp(`<span class="app-strip-chip">${category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</span>`));
+  }
+
+  assert.match(app, /NexusNova Unit Converter icon/);
+  assert.match(app, /NexusNova Focus Timer icon/);
+  assert.match(app, /NexusNova Tip Calculator icon/);
+  assert.match(app, /NexusNova World Clock icon/);
+  assert.match(app, /NexusNova QR Tools icon/);
+
+  assert.doesNotMatch(app, /<span class="app-strip-chip">AI & Smart<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">Productivity<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">Islamic Tools<\/span>/);
+  assert.doesNotMatch(app, /<span class="app-strip-chip">NVX Rewards<\/span>/);
+});

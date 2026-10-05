@@ -7,6 +7,10 @@ on:
       - '.github/scripts/social_growth_metrics.py'
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/distribute_social_growth.py'
+      - '.github/scripts/distribute_update.py'
+      - '.github/scripts/premium_social_campaign.py'
+      - '.github/scripts/premium_social_resilient.py'
+      - '.github/scripts/prepare_new_tool_social.py'
       - '.github/scripts/social_audience_metrics.py'
       - '.github/workflows/traffic-autopilot.yml'
       - '.github/workflows/social-audience-watch.yml'
@@ -22,10 +26,10 @@ jobs:
     timeout-minutes: 12
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -39,6 +43,65 @@ jobs:
           python -m py_compile .github/scripts/distribute_social_growth.py
           python -m py_compile .github/scripts/social_audience_metrics.py
           python -m py_compile .github/scripts/distribute_update.py
+          python -m py_compile .github/scripts/premium_social_campaign.py
+          python -m py_compile .github/scripts/premium_social_resilient.py
+          python -m py_compile .github/scripts/prepare_new_tool_social.py
+
+
+
+      - name: Fresh-content priority and creative-policy smoke test
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path('.github/scripts/premium_social_campaign.py')
+          spec = importlib.util.spec_from_file_location('premium_social_campaign', path)
+          mod = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(mod)
+
+          now = datetime.now(timezone.utc)
+          fresh_article = {
+              'url': 'https://nexusnovatools.com/articles/new-article.html',
+              'path': '/articles/new-article.html',
+              'title': 'New Article About a Useful Workflow',
+              'summary': 'A newly published article.',
+              'content_kind': 'article',
+              'git_updated_at': (now - timedelta(hours=20)).isoformat().replace('+00:00', 'Z'),
+          }
+          old_tool = {
+              'url': 'https://nexusnovatools.com/pdf-tools.html',
+              'path': '/pdf-tools.html',
+              'title': 'Free PDF Tools',
+              'summary': 'A well-known older tool page.',
+              'content_kind': 'tool',
+              'git_updated_at': (now - timedelta(days=60)).isoformat().replace('+00:00', 'Z'),
+          }
+
+          mod.candidate_urls = lambda: [fresh_article['url'], old_tool['url']]
+          mod.local_metadata = lambda url: fresh_article if url == fresh_article['url'] else old_tool
+          mod.load_json = lambda _path, _default: {'version': 1, 'posts': []}
+
+          selected = mod.choose_candidate(1)
+          if selected['url'] != fresh_article['url']:
+              raise SystemExit(f"Fresh article was not prioritized: {selected['url']}")
+          if selected.get('content_kind') != 'article':
+              raise SystemExit('Fresh candidate kind classification failed.')
+          print('Fresh-content priority smoke test passed.')
+          PY
+
+      - name: Verify no unrelated-image fallback remains
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          resilient=Path('.github/scripts/premium_social_resilient.py').read_text(encoding='utf-8')
+          if '_emergency_background' in resilient or 'cached-ai-library' in resilient:
+              raise SystemExit('Unrelated or generic social-image fallback is still present.')
+          if 'Relevant AI creative unavailable' not in resilient:
+              raise SystemExit('Relevant-image refusal guard is missing.')
+          print('No unrelated-image fallback: PASS')
+          PY
 
       - name: Credential-free metrics smoke test
         env:
@@ -54,6 +117,15 @@ jobs:
           TELEGRAM_CHANNEL_ID: ''
           NEXUSNOVA_RECORD_AUDIENCE: '0'
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          history=Path('assets/data/social-audience-history.json')
+          backup=Path('/tmp/nexusnova-social-audience-history.bin')
+          if history.exists():
+              backup.write_bytes(history.read_bytes())
+          elif backup.exists():
+              backup.unlink()
+          PY
           python .github/scripts/social_audience_metrics.py
           python - <<'PY'
           import json
@@ -62,9 +134,24 @@ jobs:
           for platform in ('facebook','instagram','telegram'):
               if (data.get(platform) or {}).get('configured') is not False:
                   raise SystemExit(f'{platform} should be safely unconfigured in credential-free smoke test')
-          if Path('assets/data/social-audience-history.json').exists():
-              raise SystemExit('Credential-free non-recording smoke test must not create audience history')
+          history=Path('assets/data/social-audience-history.json')
+          backup=Path('/tmp/nexusnova-social-audience-history.bin')
+          if backup.exists():
+              if not history.exists() or history.read_bytes() != backup.read_bytes():
+                  raise SystemExit('Credential-free non-recording smoke test modified existing audience history')
+          elif history.exists():
+              raise SystemExit('Credential-free non-recording smoke test created audience history')
           print('Audience watchdog credential-free smoke test passed.')
+          PY
+
+      - name: Prepare clean social history fixture
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          history=Path('assets/data/social-growth-history.json')
+          history.parent.mkdir(parents=True,exist_ok=True)
+          history.write_text(json.dumps({'version':2,'posts':[]},indent=2)+'\n',encoding='utf-8')
           PY
 
       - name: Generate adaptive social package
@@ -73,6 +160,7 @@ jobs:
       - name: Validate generated package and creatives
         run: |
           python - <<'PY'
+          import importlib.util
           import json
           from pathlib import Path
           from urllib.parse import urlsplit
@@ -103,14 +191,25 @@ jobs:
                   if image.size != size or image.mode != 'RGB':
                       raise SystemExit(f'Invalid creative {name}: {image.size} {image.mode}')
                   image.verify()
+
+          spec=importlib.util.spec_from_file_location('distribute_update',Path('.github/scripts/distribute_update.py'))
+          module=importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          chosen=module.social_image_url(item)
+          if chosen != item.get('instagram_image'):
+              raise SystemExit('Social distributor did not select the HD feed creative')
+          if not all(callable(getattr(module,name,None)) for name in ('post_telegram','post_x','post_facebook','post_instagram')):
+              raise SystemExit('One or more social media posting helpers are missing')
+
           history=json.loads(Path('assets/data/social-growth-history.json').read_text(encoding='utf-8'))
           if len(history.get('posts',[])) != 1:
-              raise SystemExit('Smoke test should create exactly one history row from an empty history')
+              raise SystemExit('Clean-history smoke test should create exactly one history row')
           print(json.dumps({
               'selected': item.get('title'),
               'format': item.get('format'),
               'campaign': item.get('campaign'),
               'score': item.get('selection_score'),
+              'hd_image': chosen,
           }, indent=2))
           PY
 

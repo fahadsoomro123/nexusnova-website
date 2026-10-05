@@ -10,16 +10,19 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('Telegram SDK and NexusNova bridge load before page-specific app code', () => {
   const index = read('index.html');
-  const indexSdk = index.indexOf('telegram-web-app.js?63');
+  const vendor = read('assets/js/vendor/telegram-web-app.js');
+  const indexSdk = index.indexOf('assets/js/vendor/telegram-web-app.js');
   const indexBridge = index.indexOf('assets/js/telegram-webapp.js');
   const indexMain = index.indexOf('assets/js/main.js');
+  assert.match(vendor, /TelegramMessenger\/TGMiniAppsJsSDK/);
+  assert.match(vendor, /Copyright \(c\) 2022 Telegram Messenger/);
   assert.ok(indexSdk >= 0, 'index.html is missing the official Telegram SDK');
   assert.ok(indexBridge > indexSdk, 'index.html must load the bridge after the official SDK');
   assert.ok(indexMain > indexBridge, 'index.html must load site code after the Telegram bridge');
 
   for (const file of ['register.html', 'account.html']) {
     const html = read(file);
-    const sdk = html.indexOf('telegram-web-app.js?63');
+    const sdk = html.indexOf('assets/js/vendor/telegram-web-app.js');
     const bridge = html.indexOf('assets/js/telegram-webapp.js');
     const shell = html.indexOf('assets/js/account-shell.js');
     assert.ok(sdk >= 0, `${file} is missing the official Telegram SDK`);
@@ -83,7 +86,7 @@ test('Telegram avatar is fallback-first and never guesses a username image URL',
   assert.match(dashboard, /probe\.src=photoUrl/);
   assert.match(dashboard, /probe\.naturalWidth>0&&probe\.naturalHeight>0/);
   assert.doesNotMatch(dashboard, /telegramPublicAvatarUrl|t\.me\/i\/userpic\/320\/\$\{/);
-  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-5/);
+  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-6/);
 });
 
 test('Telegram backend requests cannot hang the account page indefinitely', () => {
@@ -134,8 +137,10 @@ test('bot worker opens Web Apps privately and keeps group URL fallback', () => {
   assert.match(worker, /if \(!response\.ok \|\| !result\.ok\)/);
 });
 
-test('privacy and deletion pages disclose linked Telegram data', () => {
-  assert.match(read('privacy.html'), /Telegram Mini App/);
-  assert.match(read('privacy.html'), /not trusted as authentication/);
+test('privacy and deletion pages disclose linked Telegram data and server verification', () => {
+  const privacy = read('privacy.html');
+  assert.match(privacy, /Telegram Mini App/);
+  assert.match(privacy, /Server-side verification is required before Telegram identity data is trusted/i);
+  assert.match(privacy, /bot token remains server-side/i);
   assert.match(read('account-deletion.html'), /linked Telegram identity mapping/);
 });

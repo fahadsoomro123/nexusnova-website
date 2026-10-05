@@ -1,0 +1,74 @@
+name: NexusNova Tool Depth Remediation V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/tool_depth_remediation_v2.py'
+      - '.github/scripts/remaining_tool_guides.py'
+      - '.github/scripts/unique_reference_notes.py'
+      - '.github/workflows/tool-depth-remediation-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deepen-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Sync latest main
+        run: git pull --rebase origin main
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Compile remediation
+        run: |
+          python -m py_compile .github/scripts/tool_depth_remediation_v2.py
+          python -m py_compile .github/scripts/remaining_tool_guides.py
+          python -m py_compile .github/scripts/unique_reference_notes.py
+      - name: Apply compact full-detail tool guides
+        run: |
+          python .github/scripts/tool_depth_remediation_v2.py
+          python .github/scripts/remaining_tool_guides.py
+          python .github/scripts/unique_reference_notes.py
+      - name: Run strict manual value audit
+        run: python .github/scripts/manual_value_audit.py
+      - name: Enforce all tool-value gates
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('manual-value-audit.json').read_text(encoding='utf-8'))
+          bad_types={'thin_tool','missing_howto','missing_example','missing_limits','near_duplicate_main_content'}
+          bad=[x for x in report.get('findings',[]) if x.get('type') in bad_types]
+          tool_repeat=[]
+          for x in report.get('findings',[]):
+              if x.get('type')!='repeated_template_sentence':
+                  continue
+              paths=x.get('paths') or []
+              if any(p in {
+                  'paper-size-in-pixels.html','salary-tax-calculator-pakistan.html','zakat-calculator-pakistan.html',
+                  'pakistan-public-holidays-2026.html','prayer-times-qibla-pakistan.html'
+              } for p in paths):
+                  tool_repeat.append(x)
+          if bad or tool_repeat:
+              raise SystemExit('Tool-value findings remain: '+json.dumps((bad+tool_repeat)[:40],ensure_ascii=False))
+          print('All tool depth/how-to/example/limits gates: PASS')
+          PY
+      - name: Run existing structural audits
+        run: |
+          python .github/scripts/site_quality_audit.py
+          python .github/scripts/adsense_readiness_audit.py
+      - name: Report proposed content changes without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Tool-depth remediation is audit-only in CI; no repository write is permitted.'
+          git status --short
+          git diff --stat || true
