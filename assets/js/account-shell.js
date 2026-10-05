@@ -28,4 +28,30 @@
       if(window.innerWidth>720)close();
     });
   }
+
+  const loadModule=(src,key)=>{
+    const selector=`script[data-${key.replace(/[A-Z]/g,m=>`-${m.toLowerCase()}`)}]`;
+    if(document.querySelector(selector))return;
+    const script=document.createElement('script');
+    script.type='module';
+    script.src=new URL(src,document.currentScript?.src||location.href).href;
+    script.dataset[key]='1';
+    document.head.appendChild(script);
+  };
+
+  if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="email"]')){
+    for(const [src,key] of [
+      ['./account-eligibility-ui.js?v=20260830-1','nexusnovaEligibility'],
+      ['./referral-code-ui.js?v=20260830-1','nexusnovaReferralCode']
+    ]) loadModule(src,key);
+  }
+
+  if(document.querySelector('[data-account-form]')||document.querySelector('[data-dashboard]')){
+    loadModule('./google-auth-ui.js?v=20260831-6','nexusnovaGoogleAuth');
+    loadModule('./external-auth-ui.js?v=20260831-5','nexusnovaExternalAuth');
+  }
+
+  if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="instagram"]')){
+    loadModule('./instagram-auth-ui.js?v=20260901-4','nexusnovaInstagramAuth');
+  }
 })();

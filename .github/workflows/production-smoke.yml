@@ -1,0 +1,192 @@
+# Production verification guard for NexusNova core, HumanProof, Intelligence, Labs and trust/tool pages.
+# Post-deploy gate: wait for Pages propagation before validating published routes.
+name: NexusNova Production Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-smoke.yml'
+      - '**.html'
+      - 'assets/js/site-main.js'
+      - 'robots.txt'
+      - 'sitemap*.xml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Wait for deployed recovery and trust markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnovatools.com'
+          last_reason=''
+          for attempt in $(seq 1 72); do
+            home="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            intelligence="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/nova-intelligence.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            humanproof="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/humanproof.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            live="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/live.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            labs="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/labs.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            contrast="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/contrast-checker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            diffpage="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/text-diff-checker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            csvjson="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/csv-json-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            contact="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/contact.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            privacy="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/privacy.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            resume="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/resume-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            ocr="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-to-text-ocr.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            invoice="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            jpgpdf="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/jpg-to-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            aiprompt="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/ai-prompt-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            sens="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-sensitivity-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            typing="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/typing-speed-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            cctv="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/photo-cctv-enhancer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            reaction="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/reaction-time-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            settings="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-settings-notes.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            resizer="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-resizer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+
+            ok=1
+            check_contains() { grep -Fq -- "$2" <<<"$1"; }
+            check_absent() { ! grep -Fq -- "$2" <<<"$1"; }
+
+            check_contains "$home" '<link rel="canonical" href="https://nexusnovatools.com/">' || ok=0
+            check_contains "$home" 'NexusNova HumanProof' || ok=0
+            check_contains "$home" 'id="trust"' || ok=0
+            check_contains "$home" 'humanproof.html#live-verification' || ok=0
+            check_contains "$home" 'Nova Intelligence' || ok=0
+            check_contains "$home" 'href="/nova-intelligence.html"' || ok=0
+            check_contains "$home" 'Try Nova Intelligence →' || ok=0
+            check_contains "$home" 'Tell Nova what you need.' || ok=0
+            check_contains "$home" 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' || ok=0
+
+            check_contains "$intelligence" '<meta name="robots" content="noindex,nofollow">' || ok=0
+            check_contains "$intelligence" 'GENERAL-PURPOSE INTELLIGENCE' || ok=0
+            check_contains "$intelligence" 'NexusNova Intelligence — AI Workspace' || ok=0
+
+            check_contains "$humanproof" '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' || ok=0
+            check_contains "$humanproof" 'exact-action binding' || ok=0
+            check_contains "$live" '<link rel="canonical" href="https://nexusnovatools.com/live.html">' || ok=0
+            check_contains "$labs" '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' || ok=0
+            check_contains "$labs" 'Open Nova Intelligence' || ok=0
+            check_contains "$contrast" '<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">' || ok=0
+            check_contains "$diffpage" '<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">' || ok=0
+            check_contains "$csvjson" '<link rel="canonical" href="https://nexusnovatools.com/csv-json-converter.html">' || ok=0
+            check_absent "$labs" 'Enter Universe Atlas' || ok=0
+
+            check_contains "$contact" 'nexusnovatools@gmail.com' || ok=0
+            check_contains "$privacy" '<link rel="canonical" href="https://nexusnovatools.com/privacy.html">' || ok=0
+            check_contains "$resume" '<link rel="canonical" href="https://nexusnovatools.com/resume-builder.html">' || ok=0
+            check_contains "$ocr" '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' || ok=0
+            check_contains "$invoice" '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' || ok=0
+            check_contains "$jpgpdf" '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' || ok=0
+
+            check_contains "$aiprompt" 'Prompt review before you send it' || ok=0
+            check_contains "$aiprompt" 'Key Features &amp; Practical Applications' || ok=0
+            check_contains "$aiprompt" 'Frequently Asked Questions' || ok=0
+            check_absent "$aiprompt" 'Guide on How to Use the AI Prompt Builder' || ok=0
+
+            check_contains "$sens" 'data-flagship-depth' || ok=0
+            check_contains "$typing" 'data-flagship-depth' || ok=0
+            check_contains "$cctv" 'data-flagship-depth' || ok=0
+            check_contains "$reaction" 'data-flagship-depth' || ok=0
+            check_contains "$settings" 'data-flagship-depth' || ok=0
+            check_contains "$resizer" 'data-flagship-depth' || ok=0
+
+            if [ "$ok" -eq 1 ]; then
+              echo 'LIVE PRODUCTION PASS: core + recovery markers verified on public domain.'
+              exit 0
+            fi
+
+            last_reason="public recovery marker mismatch on attempt ${attempt}"
+            sleep 5
+          done
+
+          echo "PRODUCTION FAIL: $last_reason" >&2
+          echo 'Public AI Prompt Builder legacy duplicate present:'
+          if grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"; then echo 'YES'; else echo 'NO'; fi
+          echo 'Public Labs legacy Universe Atlas present:'
+          if grep -Fq 'Enter Universe Atlas' <<<"$labs"; then echo 'YES'; else echo 'NO'; fi
+          echo 'Public HumanProof canonical:'
+          grep -oi '<link rel="canonical"[^>]*>' <<<"$humanproof" | head -1 || true
+          echo 'Public Nova title:'
+          grep -oi '<title>[^<]*</title>' <<<"$intelligence" | head -1 || true
+          exit 1
+      - name: Verify important production routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://nexusnovatools.com'
+          routes=(
+            '/'
+            '/nova-intelligence.html'
+            '/humanproof.html'
+            '/live.html'
+            '/sports-live.html'
+            '/network-tools.html'
+            '/public-ip-checker.html'
+            '/ssl-certificate-checker.html'
+            '/currency-rates.html'
+            '/gold-rates.html'
+            '/fuel-rates.html'
+            '/weather-live.html'
+            '/earthquakes-live.html'
+            '/zakat-calculator-pakistan.html'
+            '/electricity-bill-calculator-pakistan.html'
+            '/salary-tax-calculator-pakistan.html'
+            '/prayer-times-qibla-pakistan.html'
+            '/labs.html'
+            '/pulse.html'
+            '/magic-drop.html'
+            '/xray.html'
+            '/widgets.html'
+            '/widget-pakistan-today.html'
+            '/reaction-time-test.html'
+            '/contact.html'
+            '/privacy.html'
+            '/resume-builder.html'
+            '/image-to-text-ocr.html'
+            '/invoice-maker.html'
+            '/jpg-to-pdf.html'
+            '/contrast-checker.html'
+            '/text-diff-checker.html'
+            '/csv-json-converter.html'
+            '/robots.txt'
+            '/sitemap.xml'
+            '/sitemap-index.xml'
+          )
+          for route in "${routes[@]}"; do
+            code="$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base$route?smoke=${GITHUB_SHA}")"
+            echo "$code $route"
+            test "$code" = '200'
+          done
+
+          echo "All critical fixed routes returned HTTP 200."
+
+          echo 'Verifying every URL advertised by the canonical sitemap...'
+          curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/sitemap.xml?smoke=${GITHUB_SHA}" -o /tmp/nexusnova-sitemap.xml
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root=ET.parse('/tmp/nexusnova-sitemap.xml').getroot()
+          ns={'sm':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          urls=[loc.text.strip() for loc in root.findall('.//sm:loc',ns) if loc.text and loc.text.strip()]
+          if not urls:
+              raise SystemExit('Canonical sitemap returned no URLs.')
+          Path('/tmp/nexusnova-sitemap-urls.txt').write_text('\n'.join(urls)+'\n',encoding='utf-8')
+          print(f'Canonical sitemap URLs: {len(urls)}')
+          PY
+          failures=0
+          while IFS= read -r url; do
+            code="$(curl -sS -L -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$url")"
+            if [ "$code" != '200' ]; then
+              echo "SITEMAP URL FAIL $code $url" >&2
+              failures=$((failures+1))
+            fi
+          done < /tmp/nexusnova-sitemap-urls.txt
+          test "$failures" -eq 0
+          echo 'CANONICAL SITEMAP PRODUCTION INTEGRITY PASS: every advertised URL returned HTTP 200.'

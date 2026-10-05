@@ -1,3 +1,4 @@
+# Verification rerun after AdSense content-depth hardening on 2026-09-04
 name: NexusNova Site Quality Audit
 
 on:
@@ -12,6 +13,18 @@ on:
       - '**/*.xml'
       - '**/*.txt'
       - '.github/scripts/site_quality_audit.py'
+      - '.github/scripts/browser_quality_guard.py'
+      - '.github/workflows/site-quality-audit.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - '**/*.xml'
+      - '**/*.txt'
+      - '.github/scripts/site_quality_audit.py'
+      - '.github/scripts/browser_quality_guard.py'
       - '.github/workflows/site-quality-audit.yml'
   workflow_dispatch:
 
@@ -19,28 +32,116 @@ permissions:
   contents: read
 
 concurrency:
-  group: nexusnova-site-quality
+  group: nexusnova-site-quality-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  audit:
+  full-site-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
-      - name: Scan every HTML page
+      - name: Scan full site map, SEO and internal links
         run: python .github/scripts/site_quality_audit.py
 
-      - name: Add report to job summary
+      - name: Require zero static findings
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=data.get('severe',[])
+          warnings=data.get('warnings',[])
+          if severe or warnings:
+              for item in severe:
+                  print(f'SEVERE: {item}')
+              for item in warnings:
+                  print(f'WARNING: {item}')
+              raise SystemExit(f'{len(severe)} severe and {len(warnings)} warning static finding(s) remain')
+          print('Static site map + SEO audit has zero severe findings and zero warnings.')
+          PY
+
+      - name: Install browser quality dependencies
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Disable GA4 network only in local audit copy
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          
+          path = Path('assets/js/main.js')
+          text = path.read_text(encoding='utf-8')
+          lines = text.splitlines()
+          matches = [i for i, line in enumerate(lines) if (('analyticsScript.src=' in line or 'script.src=' in line) and 'googletagmanager.com/gtag/js' in line)]
+          if len(matches) != 1:
+              raise SystemExit(f'Expected exactly one GA4 loader source line, found {len(matches)}')
+          lines[matches[0]] = "    script.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
+          path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
+          print('Local audit blocks only the external GA4 download; production GA4 source is untouched.')
+          PY
+      - name: Start local website server
+        run: |
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-http.log 2>&1 &
+          echo $! > /tmp/nexusnova-http.pid
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8000/ >/dev/null
+
+      - name: Verify desktop and mobile browser quality
+        run: python .github/scripts/browser_quality_guard.py
+
+      - name: Require zero browser findings
         if: always()
         run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('quality-artifacts/browser-quality-report.json')
+          if not path.exists():
+              raise SystemExit('Browser quality report missing.')
+          data=json.loads(path.read_text(encoding='utf-8'))
+          severe=data.get('severe',[])
+          warnings=data.get('warnings',[])
+          if severe or warnings:
+              for item in severe:
+                  print(f'SEVERE: {item}')
+              for item in warnings:
+                  print(f'WARNING: {item}')
+              raise SystemExit(f'{len(severe)} severe and {len(warnings)} warning browser finding(s) remain')
+          print('Browser audit has zero severe findings and zero warnings.')
+          PY
+
+      - name: Add reports to job summary
+        if: always()
+        run: |
+          echo '## NexusNova Full Site Map + SEO Audit' >> "$GITHUB_STEP_SUMMARY"
           echo '```text' >> "$GITHUB_STEP_SUMMARY"
-          cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"
+          if [ -f site-quality-report.txt ]; then cat site-quality-report.txt >> "$GITHUB_STEP_SUMMARY"; else echo 'Static audit did not produce a report.' >> "$GITHUB_STEP_SUMMARY"; fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f quality-artifacts/browser-quality-report.json ]; then
+            echo '### Browser quality' >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat quality-artifacts/browser-quality-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload full audit artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-full-site-audit-${{ github.run_id }}
+          path: |
+            site-quality-report.txt
+            site-quality-report.json
+            quality-artifacts/
+          if-no-files-found: ignore
+          retention-days: 30

@@ -1,0 +1,133 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NexusNova Flagship HumanProof Homepage Preview V2</title><meta name="robots" content="noindex,nofollow">
+<style>
+html,body{margin:0;width:100%;height:100%;background:#f6fff9;overflow:hidden}
+iframe{display:block;width:100%;height:100%;border:0;opacity:0;transition:opacity .12s ease}
+iframe.ready{opacity:1}
+</style>
+<link rel="canonical" href="https://nexusnovatools.com/preview-home-flagship-humanproof-v2.html">\n<link rel="stylesheet" href="assets/css/footer-social.css">
+</head>
+<body>
+<iframe id="preview" src="preview-home-flagship-humanproof-v1.html?v=4afb13f" title="NexusNova HumanProof homepage preview V2"></iframe>
+<script>
+const frame=document.getElementById('preview');
+frame.addEventListener('load',()=>{
+  const d=frame.contentDocument;
+  if(!d)return;
+  const style=d.createElement('style');
+  style.textContent=`
+    html,body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+    .wrap{width:min(1440px,calc(100% - 32px))!important}
+    .header{padding:14px 0 6px!important}
+    .nav{min-height:62px!important;padding:8px 12px 8px 14px!important;border-radius:21px!important}
+    .brandmark{width:38px!important;border-radius:12px!important;font-size:20px!important}
+    .brandcopy strong{font-size:13px!important;font-weight:800!important}
+    .links{gap:4px!important}
+    .links a{padding:9px 10px!important;border-radius:11px!important;font-size:11px!important;font-weight:700!important}
+
+    .hero{padding:34px 0 30px!important}
+    .hero-grid{grid-template-columns:minmax(0,.96fr) minmax(460px,1.04fr)!important;gap:34px!important;align-items:center!important}
+    .kicker{font-size:9px!important;letter-spacing:.13em!important;font-weight:800!important}
+    .kicker:before{width:22px!important}
+    .hero h1{max-width:560px!important;margin:15px 0 14px!important;font-size:clamp(44px,4.35vw,64px)!important;line-height:.96!important;letter-spacing:-.045em!important;font-weight:800!important}
+    .hero-copy{max-width:560px!important;font-size:15.5px!important;line-height:1.55!important}
+    .actions{gap:9px!important;margin-top:20px!important}
+    .btn{min-height:45px!important;padding:0 19px!important;border-radius:13px!important;font-size:12px!important;font-weight:800!important}
+    .trustline{gap:14px!important;margin-top:14px!important;font-size:9.5px!important;font-weight:700!important}
+    .commandbar{max-width:555px!important;margin-top:18px!important;padding:7px 7px 7px 16px!important;border-radius:16px!important}
+    .commandbar span{font-size:12.5px!important}
+    .commandbar b{min-width:110px!important;padding:11px!important;border-radius:11px!important;font-size:10.5px!important}
+
+    .visual-shell{min-height:500px!important;padding:27px!important;border-radius:34px!important}
+    .proof-card{min-height:444px!important;padding:19px 19px 16px!important;border-radius:25px!important}
+    .proof-top{font-size:9px!important;letter-spacing:.11em!important}
+    .proof-holder{height:344px!important;margin-top:12px!important;border-radius:22px!important}
+    .proof-status,.proof-meta{font-size:7px!important;letter-spacing:.1em!important}
+    .proof-status{left:14px!important;top:14px!important;padding:7px 9px!important}
+    .proof-meta{right:14px!important;bottom:13px!important}
+    .proof-labels{gap:6px!important;margin-top:9px!important}
+    .proof-labels span{padding:6px 8px!important;font-size:6.5px!important;letter-spacing:.09em!important}
+    .proof-caption{margin-top:7px!important;font-size:10.5px!important}
+    .proof-attribution{font-size:6.5px!important}
+
+    .receipt-section{padding:42px 0 60px!important}
+    .section-head{grid-template-columns:1fr 1.08fr!important;gap:34px!important;align-items:end!important;margin-bottom:22px!important}
+    .section-head h2{max-width:500px!important;margin:8px 0 0!important;font-size:clamp(32px,3.15vw,45px)!important;line-height:1.04!important;letter-spacing:-.035em!important;font-weight:800!important}
+    .section-head p{font-size:14px!important;line-height:1.58!important}
+    .sample-warning{padding:7px 10px!important;font-size:7.5px!important;letter-spacing:.12em!important}
+    .cert-note{margin-bottom:13px!important;font-size:8px!important;letter-spacing:.14em!important}
+    .cert-note span{padding:7px 10px!important}
+    .cert-stack{width:min(720px,78vw)!important;transform:rotateX(2deg) rotateY(-3deg) rotateZ(-.15deg)!important;filter:drop-shadow(0 22px 28px rgba(63,63,44,.17))!important}
+    .receipt-footnote{max-width:760px!important;margin:18px auto 0!important;font-size:12px!important;line-height:1.55!important}
+
+    @media(max-width:900px){
+      .wrap{width:min(760px,calc(100% - 24px))!important}
+      .links{display:none!important}
+      .hero{padding:25px 0 24px!important}
+      .hero-grid{grid-template-columns:1fr!important;gap:23px!important}
+      .hero h1{max-width:620px!important;font-size:clamp(40px,7.4vw,50px)!important;line-height:.98!important}
+      .hero-copy{max-width:650px!important}
+      .visual-shell{min-height:0!important;padding:18px!important;border-radius:28px!important}
+      .proof-card{min-height:414px!important}
+      .proof-holder{height:316px!important}
+      .receipt-section{padding:36px 0 52px!important}
+      .section-head{grid-template-columns:1fr!important;gap:11px!important;margin-bottom:20px!important}
+      .section-head h2{max-width:600px!important;font-size:34px!important;line-height:1.07!important}
+      .cert-stack{width:min(660px,92vw)!important;transform:none!important}
+    }
+
+    @media(max-width:560px){
+      .wrap{width:calc(100% - 20px)!important}
+      .header{padding:10px 0 4px!important}
+      .nav{min-height:56px!important;border-radius:18px!important}
+      .brandmark{width:34px!important;font-size:17px!important}
+      .brandcopy strong{font-size:12px!important}
+      .brandcopy small{font-size:6px!important}
+      .hero{padding:20px 0 20px!important}
+      .kicker{font-size:8px!important}
+      .hero h1{margin:12px 0 12px!important;font-size:clamp(34px,9.6vw,40px)!important;line-height:1!important;letter-spacing:-.035em!important}
+      .hero-copy{font-size:14.5px!important;line-height:1.52!important}
+      .actions{margin-top:16px!important}
+      .btn{min-height:43px!important;padding:0 14px!important;font-size:11.5px!important;border-radius:12px!important}
+      .trustline{font-size:8.5px!important;gap:10px!important}
+      .commandbar{margin-top:15px!important}
+      .visual-shell{padding:11px!important;border-radius:23px!important}
+      .proof-card{min-height:388px!important;padding:13px!important;border-radius:20px!important}
+      .proof-holder{height:296px!important;border-radius:18px!important}
+      .proof-top{font-size:8px!important}
+      .receipt-section{padding:32px 0 46px!important}
+      .section-head h2{font-size:29px!important;line-height:1.08!important}
+      .section-head p{font-size:13.5px!important}
+      .cert-note{font-size:7px!important}
+      .cert-stack{width:94vw!important}
+    }
+  `;
+  d.head.appendChild(style);
+  d.title='NexusNova Flagship HumanProof Homepage Preview V2';
+  frame.classList.add('ready');
+});
+</script>
+</body>
+</html>
+
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<a href="/refund-policy.html">Refund Policy</a>
+<a href="/about.html">About</a>
+<a href="/editorial-team.html">Editorial Team</a>
+<a href="/editorial-policy.html">Editorial Policy</a>
+<a href="/tool-methodology.html">Tool Methodology</a>
+<a href="/faq.html">FAQ</a>
+<a href="/privacy.html">Privacy</a>
+<a href="/contact.html">Contact Us & Support</a>
+<a href="/disclaimer.html">Disclaimer</a></div></nav><section class="nn-footer-social">
+  <div class="nn-social-title">Follow NexusNova</div>
+  <div class="nn-social-row" aria-label="Official NexusNova social profiles">
+    <a class="nn-social nn-social-x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="X @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"></path></svg></span><span><strong>X</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
+    <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+  </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>

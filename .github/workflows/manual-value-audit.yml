@@ -1,0 +1,63 @@
+name: NexusNova Strict Manual Value Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/manual_value_audit.py'
+      - '.github/workflows/manual-value-audit.yml'
+      - '**.html'
+      - 'sitemap*.xml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Run strict value audit
+        run: python .github/scripts/manual_value_audit.py
+      - name: Publish summary
+        shell: bash
+        run: |
+          cat manual-value-audit.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Build reviewer source snapshot
+        shell: bash
+        run: |
+          mkdir -p reviewer-source/articles reviewer-source/guides reviewer-source/tech reviewer-source/assets/js reviewer-source/assets/css
+          cp -f -- *.html reviewer-source/ 2>/dev/null || true
+          cp -f -- articles/*.html reviewer-source/articles/ 2>/dev/null || true
+          cp -f -- guides/*.html reviewer-source/guides/ 2>/dev/null || true
+          cp -f -- tech/*.html reviewer-source/tech/ 2>/dev/null || true
+          cp -f -- assets/js/*.js reviewer-source/assets/js/ 2>/dev/null || true
+          cp -f -- assets/css/*.css reviewer-source/assets/css/ 2>/dev/null || true
+          cp -f -- sitemap*.xml robots.txt ads.txt reviewer-source/ 2>/dev/null || true
+      - name: Upload evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: manual-value-audit-${{ github.run_id }}
+          path: |
+            manual-value-audit.json
+            manual-value-audit.md
+            reviewer-source/
+          retention-days: 30
+      - name: Enforce zero blockers and high findings
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          data=json.load(open('manual-value-audit.json',encoding='utf-8'))
+          summary=data.get('summary',{})
+          blockers=int(summary.get('blockers',0) or 0)
+          high=int(summary.get('high',0) or 0)
+          print(f"Manual value gate: {summary.get('status')} — {blockers} blocker(s), {high} high finding(s), {summary.get('warnings',0)} warning(s)")
+          if blockers or high:
+              raise SystemExit('Manual value audit requires remediation before AdSense resubmission.')
+          PY

@@ -1,0 +1,87 @@
+name: NexusNova LIVE Weather Refresh
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/live_weather_core.mjs'
+      - '.github/scripts/update_live_weather.mjs'
+      - '.github/workflows/update-live-weather.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/live_weather_core.mjs'
+      - '.github/scripts/update_live_weather.mjs'
+      - '.github/workflows/update-live-weather.yml'
+      - 'assets/js/live-weather.js'
+      - 'assets/data/live-weather.json'
+      - 'assets/css/live.css'
+      - 'weather-live.html'
+      - 'live.html'
+      - 'sitemap-live.xml'
+      - 'tests/live-weather.test.cjs'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-live-weather-refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Refresh Pakistan MET Norway forecasts
+        run: node .github/scripts/update_live_weather.mjs
+
+      - name: Validate repository syntax
+        run: npm run check
+
+      - name: Run repository tests
+        run: npm test
+
+      # Keep this publisher independent of unrelated site-wide SEO findings.
+      - name: Commit refreshed data when changed
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          if git diff --quiet -- assets/data/live-weather.json; then
+            echo "Weather dataset already matches the latest source responses."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/live-weather.json
+          git commit -m "data: refresh NexusNova LIVE weather [skip ci]"
+
+          git reset --hard HEAD
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              echo "Published refreshed weather data on attempt ${attempt}."
+              exit 0
+            fi
+            echo "main moved during publish; rebasing before retry ${attempt}/5."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+
+          echo "Unable to publish refreshed weather data after 5 safe retries."
+          exit 1

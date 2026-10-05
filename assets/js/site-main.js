@@ -1,0 +1,366 @@
+(()=>{
+  const measurementId='G-YLPFKWSS12';
+  const consentKey='nexusnova_analytics_consent_v1';
+  if(window.__nexusnovaConsentUiReady)return;
+  window.__nexusnovaConsentUiReady=true;
+
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  if(!window.__nexusnovaConsentDefaulted){
+    window.gtag('consent','default',{
+      analytics_storage:'denied',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied',
+      wait_for_update:500
+    });
+    window.__nexusnovaConsentDefaulted=true;
+  }
+
+  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}}; 
+  const loadAnalytics=granted=>{
+    if(typeof window.__nexusnovaLoadAnalytics==='function')window.__nexusnovaLoadAnalytics(granted);
+  };
+  const denyAnalytics=()=>window.gtag('consent','update',{
+    analytics_storage:'denied',
+    ad_storage:'denied',
+    ad_user_data:'denied',
+    ad_personalization:'denied'
+  });
+
+  const mountChoices=()=>{
+    if(document.querySelector('[data-nexusnova-consent]'))return;
+    const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
+    const base=inSubdir?'../':'';
+    const style=document.createElement('style');
+    style.dataset.nexusnovaConsentStyle='';
+    style.textContent='.nn-consent{position:fixed;left:16px;right:16px;bottom:72px;z-index:9999;max-width:560px;margin:auto;padding:12px 14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.4 system-ui,sans-serif}.nn-consent[hidden]{display:none}.nn-consent p{margin:0 0 9px}.nn-consent-actions{display:flex;gap:7px;flex-wrap:wrap}.nn-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-consent a{color:inherit;text-decoration:underline}.nn-consent-reopen{border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit}@media(max-width:640px){.nn-consent{left:10px;right:10px;bottom:62px}}';
+    document.head.appendChild(style);
+
+    const banner=document.createElement('div');
+    banner.className='nn-consent';
+    banner.dataset.nexusnovaConsent='';
+    banner.id='nexusnova-analytics-consent';
+    banner.hidden=true;
+    banner.setAttribute('role','region');
+    banner.setAttribute('aria-label','Optional analytics settings');
+    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br>Analytics stays on the privacy-preserving denied-storage state until you choose an option. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    document.body.appendChild(banner);
+
+    const hide=()=>{banner.hidden=true};
+    const syncAutoAnalytics=()=>{if(window.__nexusnovaAnalyticsAutoEnabled)hide()};
+    window.addEventListener('nexusnova-analytics-auto-enabled',syncAutoAnalytics,{once:true});
+    if(window.__nexusnovaAnalyticsAutoEnabled)hide();
+    banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
+      saveChoice('granted');loadAnalytics(true);hide();
+    });
+    banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{
+      saveChoice('denied');denyAnalytics();loadAnalytics(false);hide();
+    });
+    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
+
+    const reopen=document.createElement('button');
+    reopen.type='button';
+    reopen.className='nn-consent-reopen';
+    reopen.textContent='Privacy choices';
+    reopen.title='Privacy choices';
+    reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
+    const footer=document.querySelector('.site-footer');
+    const footerGroups=footer?.querySelectorAll('.nn-footer-links,.footer-links')||[];
+    const footerLinks=footerGroups.length?footerGroups[footerGroups.length-1]:null;
+    if(footerLinks)footerLinks.appendChild(reopen);else if(footer)footer.appendChild(reopen);else document.body.appendChild(reopen);
+    reopen.addEventListener('click',()=>{
+      banner.hidden=false;
+      banner.querySelector('[data-consent-allow]')?.focus();
+    });
+
+    const choice=readChoice();
+    if(choice==='granted'||choice==='denied'){
+      window.setTimeout(()=>loadAnalytics(choice==='granted'),0);
+      hide();
+    }else{
+      // Keep consent UI closed by default. Users can open it from the footer "Privacy choices" control.
+      banner.hidden=true;
+    }
+  };
+
+  const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountChoices,{once:true});
+  else mountChoices();
+})();
+
+(()=>{
+  const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
+  const base=inSubdir?'../':'';
+  const isHome=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  const hasShellBundle=!!document.querySelector('link[data-nexusnova-shell-bundle]');const hasUnifiedToolShell=!!document.querySelector('.nn-header,[data-nexusnova-tool-shell],link[data-nexusnova-tool-shell]');
+  document.documentElement.classList.add('nexusnova-scifi');
+  /* Homepage already ships these rules in home-bundle.css; other surfaces
+     keep their existing per-page CSS loading. */
+  if(!isHome&&!hasShellBundle&&!hasUnifiedToolShell){
+    const styles=[
+      ['scifi',`${base}assets/css/scifi.css`],
+      ['motion',`${base}assets/css/motion.css`],
+      ['tool-icons',`${base}assets/css/tool-icons.css`],
+      ['polish',`${base}assets/css/polish.css`],
+      ['auth-nav',`${base}assets/css/auth-nav.css`]
+    ];
+    styles.forEach(([key,href])=>{
+      if(document.querySelector(`link[data-nexusnova-${key}]`) || Array.from(document.querySelectorAll('link[rel="stylesheet"][href]')).some(link=>{try{return new URL(link.href,location.href).pathname.endsWith(`/assets/css/${key}.css`)}catch(_){return false}})) return;
+      const link=document.createElement('link');
+      link.rel='stylesheet';link.href=href;link.setAttribute(`data-nexusnova-${key}`,'');document.head.appendChild(link);
+    });
+  }
+})();
+
+(()=>{
+  const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);
+  const base=inSubdir?'../':'';
+  const year=document.querySelector('[data-year]');if(year)year.textContent=String(new Date().getFullYear());
+  document.querySelectorAll('.brand-mark').forEach(mark=>mark.setAttribute('aria-hidden','true'));
+  const coreEmblem=document.querySelector('.core-emblem');if(coreEmblem){coreEmblem.setAttribute('aria-label','NexusNova Tools');coreEmblem.querySelectorAll('small,strong').forEach(part=>part.setAttribute('aria-hidden','true'));}
+  const header=document.querySelector('[data-header]');
+  /* Keep the initial header state stable; a scroll-time class toggle was
+     creating a forced-reflow hotspot in Lighthouse. */
+  const nav=document.querySelector('[data-nav]');const button=document.querySelector('[data-menu-btn]');
+  const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+  if(nav){
+    const current=location.pathname.replace(/\/+$/,'')||'/'
+    nav.querySelectorAll('a[href]').forEach(link=>{
+      const href=link.getAttribute('href')||''
+      if(/^(https?:|mailto:|javascript:|#)/i.test(href))return
+      let target=''
+      try{target=new URL(href,location.href).pathname.replace(/\/+$/,'')||'/'}catch(_){return}
+      const isSection=(target===current)||
+        (target.endsWith('/articles.html')&&/\/articles\//.test(location.pathname))||
+        (target.endsWith('/guides.html')&&/\/guides\//.test(location.pathname))||
+        (target.endsWith('/tech.html')&&/\/tech\//.test(location.pathname))
+      link.classList.toggle('active',isSection)
+      if(isSection)link.setAttribute('aria-current','page');else if(link.getAttribute('aria-current')==='page')link.removeAttribute('aria-current')
+    })
+  }  if(button&&nav&&page!=='index.html'){const close=()=>{nav.classList.remove('open');button.setAttribute('aria-expanded','false')};button.addEventListener('click',()=>{const open=nav.classList.toggle('open');button.setAttribute('aria-expanded',String(open))});nav.addEventListener('click',e=>{if(e.target.closest('a'))close()});window.addEventListener('resize',()=>{if(innerWidth>720)close()})}
+
+  function deferHomeTask(task,delay=1200){if(page==='index.html')window.setTimeout(task,delay);else task()}
+  const socialProfiles=[
+    ['X','@NexusNovaTools','https://x.com/NexusNovaTools'],
+    ['Facebook','NexusNovaTools','https://www.facebook.com/NexusNovaTools/'],
+    ['Instagram','@nexusnovatools','https://www.instagram.com/nexusnovatools/'],
+    ['Telegram','@NexusNovaTools','https://t.me/NexusNovaTools']
+  ];
+  const footerGrid=document.querySelector('.site-footer .footer-console,.site-footer .footer-grid');
+  if(footerGrid&&!footerGrid.querySelector('[data-social-links],.nn-social-block,.nn-social-links')){
+    const brandColumn=footerGrid.firstElementChild;
+    if(brandColumn){
+      if(!document.querySelector('style[data-nexusnova-global-social]')){
+        const style=document.createElement('style');
+        style.dataset.nexusnovaGlobalSocial='';
+        style.textContent='.nn-social-block{margin-top:16px}.nn-social-title{margin:0 0 8px;font-size:14px;font-weight:850;color:#334155}.nn-social-row{display:flex;flex-wrap:wrap;gap:6px}.nn-global-social{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 8px;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:9px;font-weight:800;text-decoration:none}.nn-global-social:hover{border-color:#ddd6fe;background:#faf7ff;color:#6d28d9}.nn-global-social-icon{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;color:#fff;flex:0 0 auto}.nn-global-social-icon svg{width:13px;height:13px;display:block;fill:currentColor}.nn-global-social-handle{display:block;margin-top:1px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:8px;color:#64748b;font-weight:750}.nn-global-social-x .nn-global-social-icon{background:#111827}.nn-global-social-facebook .nn-global-social-icon{background:#1877f2}.nn-global-social-instagram .nn-global-social-icon{background:linear-gradient(145deg,#833ab4,#fd1d1d 58%,#fcb045)}.nn-global-social-telegram .nn-global-social-icon{background:#229ed9}.nn-global-social-instagram svg rect,.nn-global-social-instagram svg circle{fill:none;stroke:#fff;stroke-width:2}.nn-global-social-instagram svg .ig-dot{fill:#fff;stroke:none}';
+        document.head.appendChild(style);
+      }
+      const wrapper=document.createElement('div');
+      wrapper.className='nn-social-block';
+      wrapper.dataset.socialLinks='';
+      const title=document.createElement('div');
+      title.className='nn-social-title';
+      title.textContent='Follow NexusNova';
+      wrapper.appendChild(title);
+      const links=document.createElement('div');
+      links.className='nn-social-row';
+      links.setAttribute('aria-label','Official NexusNova social profiles');
+      const icons={
+        X:'<path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"/>',
+        Facebook:'<path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"/>',
+        Instagram:'<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.7"/><circle cx="17.2" cy="6.9" r="1" class="ig-dot"/>',
+        Telegram:'<path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"/>'
+      };
+      socialProfiles.forEach(([platform,handle,href])=>{
+        const link=document.createElement('a');
+        link.className='nn-global-social nn-global-social-'+platform.toLowerCase();
+        link.href=href;link.target='_blank';link.rel='me noopener noreferrer';
+        link.innerHTML='<span class="nn-global-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true">'+icons[platform]+'</svg></span><span><strong>'+platform+'</strong><span class="nn-global-social-handle">'+handle+'</span></span>';
+        links.appendChild(link);
+      });
+      wrapper.appendChild(links);
+      brandColumn.appendChild(wrapper);
+    }
+  }
+
+  const iconArt={
+    image:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m5.5 17 4.2-4.2 3.1 3.1 2.4-2.4 3.3 3.5"/>',
+    pdf:'<path d="M6 2.8h7l5 5V21H6z"/><path d="M13 2.8V8h5"/><path d="M8.8 12.2h6.4M8.8 15.2h6.4M8.8 18.2h4.2"/>',
+    qr:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zM19 15h2M19 19h2v2h-2zM15 19v2"/>',
+    scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10M8 9h2M14 9h2M8 15h8"/>',
+    calc:'<rect x="4" y="2.8" width="16" height="18.4" rx="3"/><path d="M7.5 6.3h9M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h4"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+    text:'<path d="M5 5h14M12 5v14M8.5 19h7"/><path d="M4 9h3M17 9h3"/>',
+    lock:'<rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14.5v3"/>',
+    privacy:'<path d="M12 3 5 6v5c0 4.8 3 8 7 10 4-2 7-5.2 7-10V6z"/><path d="m9 12 2 2 4-5"/>',
+    chat:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h6"/>',
+    globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9S14.5 18.4 12 21M12 3c-2.5 2.6-3.8 5.6-3.8 9S9.5 18.4 12 21"/>',
+    gpu:'<rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+    seo:'<path d="M4 19V8M10 19V12M16 19V5"/><path d="m3 6 6-3 5 3 7-4"/><circle cx="19" cy="16" r="3"/><path d="m21 18 2 2"/>',
+    paper:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v5h4M9 12h7M9 16h7"/>',
+    money:'<circle cx="12" cy="12" r="9"/><path d="M15.2 8.8c-.8-.7-1.8-1-3-1-1.6 0-2.8.8-2.8 2s1 1.8 2.8 2.2 2.8 1 2.8 2.2-1.2 2-2.9 2c-1.2 0-2.3-.4-3.2-1.2M12 6.2v11.6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 9h18M7 13h2M11 13h2M15 13h2M7 17h2M11 17h2"/>',
+    convert:'<path d="M5 7h12l-3-3M19 17H7l3 3"/><path d="m17 4 3 3-3 3M7 14l-4 3 3 3"/>',
+    database:'<ellipse cx="12" cy="5" rx="7.5" ry="3"/><path d="M4.5 5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5M4.5 11v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/>',
+    dice:'<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/>',
+    resume:'<path d="M6 3h12v18H6z"/><circle cx="10" cy="9" r="2"/><path d="M7.8 14c.7-1.4 1.5-2 2.2-2s1.5.6 2.2 2M14 8h2M14 11h2M9 17h7"/>',
+    ai:'<path d="m12 3 1.2 3.3L16.5 7.5l-3.3 1.2L12 12l-1.2-3.3-3.3-1.2 3.3-1.2zM18 13l.8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8zM6 14l.7 1.8 1.8.7-1.8.7L6 19l-.7-1.8-1.8-.7 1.8-.7z"/>',
+    code:'<path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4M14 5l-4 14"/>',
+    color:'<circle cx="8" cy="10" r="4"/><circle cx="16" cy="10" r="4"/><circle cx="12" cy="16" r="4"/>',
+    compress:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h6M9 12h4M9 16h2"/><path d="M19 8v6M16 11l3 3 3-3"/>'
+  };
+  const iconSvg=kind=>`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${iconArt[kind]||iconArt.code}</svg>`;
+  const kindFor=el=>{
+    const hay=[el.getAttribute?.('href')||'',el.id||'',el.querySelector?.('h1,h2,h3')?.textContent||'',el.textContent||''].join(' ').toLowerCase();
+    if(/whatsapp|wa\.me|chat link/.test(hay)) return 'chat';
+    if(/timezone|world time|meeting planner/.test(hay)) return 'globe';
+    if(/vram|gpu|model memory/.test(hay)) return 'gpu';
+    if(/metadata|exif|gps privacy/.test(hay)) return 'privacy';
+    if(/ocr|image to text|scan text/.test(hay)) return 'scan';
+    if(/meta tag|open graph|seo/.test(hay)) return 'seo';
+    if(/paper size|dpi/.test(hay)) return 'paper';
+    if(/qr\b/.test(hay)) return 'qr';
+    if(/pdf/.test(hay)) return 'pdf';
+    if(/compress|compression|resize|resizer|optimiz.*image/.test(hay)) return 'compress';
+    if(/image|png|jpe?g|webp|photo/.test(hay)) return 'image';
+    if(/resume|cv\b/.test(hay)) return 'resume';
+    if(/ai prompt|prompt builder|artificial intelligence/.test(hay)) return 'ai';
+    if(/password|security|secure/.test(hay)) return 'lock';
+    if(/developer|json|base64|uuid|sha-?256|url component|code/.test(hay)) return 'code';
+    if(/rgb|hex|color/.test(hay)) return 'color';
+    if(/timer|stopwatch|pomodoro|timestamp|time duration|clock/.test(hay)) return 'clock';
+    if(/age|date difference|date calculator|calendar/.test(hay)) return 'calendar';
+    if(/emi|loan|bill|tip|discount|saving|finance|price/.test(hay)) return 'money';
+    if(/calculator|percentage|bmi|scientific|arithmetic/.test(hay)) return 'calc';
+    if(/storage|byte|\bkb\b|\bmb\b|\bgb\b|\btb\b/.test(hay)) return 'database';
+    if(/converter|conversion|unit|roman numeral/.test(hay)) return 'convert';
+    if(/random|picker|dice/.test(hay)) return 'dice';
+    if(/word|character|text case|number to words|quick note|\btext\b/.test(hay)) return 'text';
+    return 'code';
+  };
+  const symbolFor=el=>{const kind=kindFor(el);const span=document.createElement('span');span.className='nn-tool-symbol';span.dataset.kind=kind;span.setAttribute('aria-hidden','true');span.innerHTML=iconSvg(kind);return span};
+  const decorateCard=el=>{if(el.dataset.nnSymbolic==='1')return;el.dataset.nnSymbolic='1';const kind=kindFor(el);const existing=el.matches('.trend-card')?el.querySelector(':scope > .trend-icon'):null;if(existing){existing.classList.add('nn-tool-symbol');existing.dataset.kind=kind;existing.setAttribute('aria-hidden','true');existing.innerHTML=iconSvg(kind);return}const symbol=symbolFor(el);const heading=el.querySelector(':scope > h1,:scope > h2,:scope > h3');el.insertBefore(symbol,heading||el.firstChild)};
+  const decorateDock=()=>document.querySelectorAll('.command-dock a,.node').forEach(el=>{if(el.querySelector(':scope > .nn-tool-symbol'))return;el.insertBefore(symbolFor(el),el.firstChild)});
+if(page==='index.html'){
+  let homeDecorated=false;
+  const decorateHome=()=>{if(homeDecorated)return;homeDecorated=true;decorateDock();document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard)};
+  ['pointerdown','keydown'].forEach(type=>window.addEventListener(type,decorateHome,{once:true,passive:true}));
+  window.addEventListener('scroll',decorateHome,{once:true,passive:true});
+  window.setTimeout(decorateDock,1200);
+  window.setTimeout(decorateHome,1200);
+}else{
+  document.querySelectorAll('.home-tool,.trend-card,.popular-card,.category-card').forEach(decorateCard);
+  decorateDock();
+}
+  const pageFile=(location.pathname.split('/').pop()||'').toLowerCase();
+  const hubFiles=new Set(['','index.html','live.html','currency-rates.html','gold-rates.html','tools.html','popular-tools.html','trending-tools.html','smart-tools.html','gaming.html','developer-tools.html','guides.html','articles.html','tech.html','about.html','contact.html','privacy.html','terms.html','disclaimer.html','faq.html','tool-methodology.html','editorial-policy.html','editorial-team.html','app.html','register.html','account.html','404.html']);
+  const contentHubFiles=new Set(['image-tools.html','pdf-tools.html','calculator-tools.html','pakistan-tools.html','network-tools.html','productivity-tools.html','live.html','new-tools.html','widgets.html','labs.html','daily-tools-directory.html']);
+  const contentPath=/\/(?:articles|guides|tech)\//.test(location.pathname);
+  if(pageFile&&!hubFiles.has(pageFile)&&!contentHubFiles.has(pageFile)&&!contentPath){const hero=document.querySelector('.page-hero .container');if(hero&&!hero.querySelector(':scope > .nn-tool-symbol')){const proxy=document.createElement('span');proxy.textContent=pageFile.replace(/[-.]/g,' ');proxy.setAttribute('href',pageFile);hero.insertBefore(symbolFor(proxy),hero.firstChild)}}
+
+  const searchIndex=[
+    ['gold-rates.html','Gold Rates','gold xau pakistan pkr tola 24k 22k sarafa'],
+    ['currency-rates.html','Currency Rates & Converter','currency usd pkr gbp eur aed sar pakistan exchange'],
+    ['photo-cctv-enhancer.html','Photo & CCTV Image Enhancer','photo old restore sharpen cctv clarity upscale'],
+    ['image-metadata-remover.html','EXIF & GPS Metadata Remover','image photo privacy metadata exif gps remove'],
+    ['image-to-text-ocr.html','Image to Text OCR','ocr screenshot scan image text extract copy'],
+    ['qr-code-scanner.html','QR Code Scanner','qr scan decode screenshot image link'],
+    ['meta-tag-generator.html','Meta Tag & Open Graph Generator','seo meta tags og open graph twitter social preview'],
+    ['paper-size-converter.html','Paper Size & DPI Converter','a4 letter legal paper dpi pixels print'],
+    ['whatsapp-link-generator.html','WhatsApp Link Generator','whatsapp wa me chat message business link'],
+    ['timezone-meeting-planner.html','Timezone Meeting Planner','timezone world time meeting pakistan dubai london new york'],
+    ['ai-vram-calculator.html','AI VRAM Calculator','ai gpu vram llm parameters memory quantization'],
+    ['image-compressor.html','Image Compressor','compress jpg png webp image smaller'],
+    ['image-resizer.html','Image Resizer','resize image width height pixels'],
+    ['heic-to-jpg.html','HEIC to JPG','iphone heic heif jpg convert'],
+    ['webp-to-jpg.html','WebP to JPG','webp jpg convert image'],
+    ['webp-to-png.html','WebP to PNG','webp png transparency convert'],
+    ['avif-to-jpg.html','AVIF to JPG','avif jpg convert image'],
+    ['png-to-jpg.html','PNG to JPG','png jpg convert image'],
+    ['jpg-to-png.html','JPG to PNG','jpg png convert image'],
+    ['jpg-to-pdf.html','JPG to PDF','image jpg pdf document'],
+    ['merge-pdf.html','Merge PDF','combine pdf files'],
+    ['split-pdf.html','Split PDF','extract pdf pages'],
+    ['text-to-pdf.html','Text to PDF','text document pdf'],
+    ['qr-code-generator.html','QR Code Generator','qr create link text'],
+    ['scientific-calculator.html','Scientific Calculator','math trig log calculator'],
+    ['emi-calculator.html','EMI Calculator','loan payment interest emi'],
+    ['bmi-calculator.html','BMI Calculator','body mass index height weight'],
+    ['pomodoro-timer.html','Pomodoro Timer','focus work break productivity'],
+    ['password-strength-checker.html','Password Strength Checker','password security strength'],
+    ['unix-timestamp-converter.html','Unix Timestamp Converter','unix epoch date time developer'],
+    ['resume-builder.html','Resume Builder','cv resume job career'],
+    ['ai-prompt-builder.html','AI Prompt Builder','ai prompt generator writing'],
+    ['gaming.html','Gaming Tools','gaming aim sensitivity edpi fps reaction minecraft steam settings'],
+    ['gaming-sensitivity-converter.html','CS2 ↔ Valorant Sensitivity Converter','gaming cs2 valorant aim sensitivity convert mouse'],
+    ['edpi-calculator.html','Gaming eDPI Calculator','gaming edpi dpi sensitivity aim mouse'],
+    ['fps-frame-time-calculator.html','FPS & Frame Time Calculator','gaming fps frame time milliseconds performance'],
+    ['reaction-time-test.html','Reaction Time Test','gaming reaction speed reflex test'],
+    ['minecraft-coordinate-converter.html','Minecraft Nether Coordinate Converter','minecraft nether overworld coordinates convert'],
+    ['steam-playtime-calculator.html','Steam Playtime Calculator','steam gaming playtime hours daily weekly monthly'],
+    ['gaming-settings-notes.html','Gaming Settings & Crosshair Notes','gaming settings crosshair dpi sensitivity notes local'],
+    ['gamer-name-generator.html','Gamer Name Generator','gaming gamer tag name generator ideas'],
+    ['developer-tools.html','Developer Tools','json base64 uuid sha url developer'],
+    ['articles.html','Practical Articles','articles guides learning'],
+    ['tech.html','Tech & Security','passkeys security ai browser quantum tech'],
+    ['guides.html','Guides','how to guide tutorial']
+  ];
+  const score=(q,item)=>{const words=q.toLowerCase().split(/\s+/).filter(Boolean),hay=(item[1]+' '+item[2]).toLowerCase();return words.reduce((n,w)=>n+(hay.includes(w)?1:0),0)};
+  const toolSearch=document.querySelector('[data-tool-search]');
+  if(toolSearch){const cards=[...document.querySelectorAll('[data-tool-card]')];const empty=document.querySelector('[data-no-results]');const apply=()=>{const q=toolSearch.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const match=!q||card.textContent.toLowerCase().includes(q);card.classList.toggle('hidden',!match);if(match)shown++});empty?.classList.toggle('show',shown===0)};toolSearch.addEventListener('input',apply);const q=new URLSearchParams(location.search).get('q');if(q){toolSearch.value=q;apply()}}
+  const homeSearch=document.querySelector('[data-home-search]');
+  if(homeSearch){
+    const form=homeSearch.closest('form');const cards=[...document.querySelectorAll('[data-home-tool]')];
+    const ensureSearchList=()=>{if(document.getElementById('nn-site-search-list'))return;const list=document.createElement('datalist');list.id='nn-site-search-list';searchIndex.forEach(item=>{const o=document.createElement('option');o.value=item[1];list.appendChild(o)});document.body.appendChild(list);homeSearch.setAttribute('list',list.id)};
+  homeSearch.addEventListener('focus',ensureSearchList,{once:true});
+    const filter=()=>{const q=homeSearch.value.trim().toLowerCase();cards.forEach(card=>card.classList.toggle('hidden',Boolean(q)&&!card.textContent.toLowerCase().includes(q)))};homeSearch.addEventListener('input',filter);
+    form?.addEventListener('submit',e=>{e.preventDefault();const q=homeSearch.value.trim();if(!q)return;const ranked=searchIndex.map(item=>[score(q,item),item]).sort((a,b)=>b[0]-a[0]);if(ranked[0]?.[0]>0)location.href=ranked[0][1][0];else location.href=`trending-tools.html?q=${encodeURIComponent(q)}`});
+  }
+  let motionInitialized=false;
+  const initMotion=()=>{
+    if(motionInitialized)return;
+    motionInitialized=true;
+    const motionOkay=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const targets=[...document.querySelectorAll('.section,.home-tool,.article-card,.category-card,.tool-card,.guide-card,.bento-card,.article-main,.side-panel')];
+    if(motionOkay&&'IntersectionObserver'in window){
+      targets.forEach(el=>el.classList.add('nn-reveal'));
+      const io=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('nn-visible');io.unobserve(entry.target)}})},{threshold:.06,rootMargin:'0px 0px -18px'});
+      targets.forEach(el=>io.observe(el));
+    }else{
+      targets.forEach(el=>el.classList.add('nn-visible'));
+    }
+  };
+  if(page==='index.html'){
+    deferHomeTask(initMotion,1200);
+    window.addEventListener('scroll',initMotion,{once:true,passive:true});
+  }else initMotion();
+  const loadAuthHeader=()=>{
+    let authSeen=false;
+    try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
+    if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
+      const m=document.createElement('script');
+      m.type='module';m.src=`${base}assets/js/auth-header-state.js`;
+      m.dataset.nexusnovaAuthHeader='';
+      document.body.appendChild(m);
+    }
+  };
+  deferHomeTask(loadAuthHeader,1200);
+  if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
+})();
+
+(()=>{
+  const addJsonLd=(id,data)=>{if(document.getElementById(id))return;const script=document.createElement('script');script.id=id;script.type='application/ld+json';script.textContent=JSON.stringify(data);document.head.appendChild(script)};
+  const path=location.pathname;const absolute=url=>new URL(url,location.origin).href;const isHome=path==='/'||/\/index\.html$/.test(path);
+  if(isHome){addJsonLd('nexusnova-organization-schema',{'@context':'https://schema.org','@type':'Organization',name:'NexusNova Tools',alternateName:'NexusNova',url:'https://nexusnovatools.com/',logo:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg',description:'Free browser tools and practical guides for PDF, images, privacy, calculators, QR codes, AI and productivity.',sameAs:['https://x.com/NexusNovaTools','https://www.facebook.com/NexusNovaTools/','https://www.instagram.com/nexusnovatools/','https://t.me/NexusNovaTools','https://github.com/fahadsoomro123']})}
+  const section=/\/(articles|tech)\/[^/]+\.html$/.exec(path)?.[1];
+  if(section){
+    const articleSchema=[...document.querySelectorAll('script[type="application/ld+json"]')].find(script=>{try{return JSON.parse(script.textContent||'{}')['@type']==='Article'}catch{return false}});
+    if(articleSchema){try{const data=JSON.parse(articleSchema.textContent||'{}');data.author={...(data.author||{}),'@type':'Organization',name:'NexusNova Editorial Team',url:'https://nexusnovatools.com/editorial-team.html'};data.publisher={...(data.publisher||{}),'@type':'Organization',name:'NexusNova Tools',url:'https://nexusnovatools.com/',logo:{'@type':'ImageObject',url:'https://nexusnovatools.com/assets/nexusnova-logo-512.svg'}};articleSchema.textContent=JSON.stringify(data)}catch{}}
+    const title=document.querySelector('.article-main h1,h1')?.textContent?.trim()||document.title;const hub=section==='tech'?'Tech & Security':'Articles';const hubFile=section==='tech'?'../tech.html':'../articles.html';
+    addJsonLd('nexusnova-breadcrumb-schema',{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Home',item:absolute('../index.html')},{'@type':'ListItem',position:2,name:hub,item:absolute(hubFile)},{'@type':'ListItem',position:3,name:title,item:location.href.split('#')[0]}]});
+    const meta=[...document.querySelectorAll('.article-meta span')].find(el=>el.textContent.trim()==='NexusNova Editorial Team');if(meta&&!meta.querySelector('a')){const link=document.createElement('a');link.href='../editorial-team.html';link.textContent='NexusNova Editorial Team';link.setAttribute('aria-label','About the NexusNova Editorial Team');meta.textContent='';meta.appendChild(link)}
+  }
+})();

@@ -1,0 +1,785 @@
+{
+  "schema_version": 1,
+  "status": "ok",
+  "generated_at": "2026-09-26T14:19:16.302Z",
+  "source": {
+    "name": "U.S. Geological Survey (USGS)",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
+    "attribution": "Earthquake data courtesy of the U.S. Geological Survey",
+    "feed_scope": "Magnitude 2.5+ earthquakes, past 24 hours",
+    "feed_refresh_note": "USGS says this GeoJSON summary feed is updated every minute; NexusNova publishes a cached snapshot on its own schedule."
+  },
+  "pakistan_region": {
+    "minLat": 23,
+    "maxLat": 38,
+    "minLon": 60,
+    "maxLon": 78,
+    "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
+  },
+  "feed_generated_at": "2026-09-26T14:18:39.000Z",
+  "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
+  "source_count": 40,
+  "pakistan_region_events": [],
+  "worldwide_events": [
+    {
+      "id": "us6000txt0",
+      "magnitude": 5.2,
+      "place": "58 km NE of Tadine, New Caledonia",
+      "time": "2026-09-26T12:14:58.406Z",
+      "updated": "2026-09-26T12:42:17.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2176,
+        "lon": 168.3226
+      },
+      "significance": 416,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txt0",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txsz",
+      "magnitude": 5,
+      "place": "76 km NE of Tadine, New Caledonia",
+      "time": "2026-09-26T12:14:20.648Z",
+      "updated": "2026-09-26T12:46:36.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.1281,
+        "lon": 168.4681
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txsz",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txsy",
+      "magnitude": 4.7,
+      "place": "73 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T12:11:01.897Z",
+      "updated": "2026-09-26T12:57:59.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2646,
+        "lon": 168.5179
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txsy",
+      "pakistan_region": false
+    },
+    {
+      "id": "hv75043917",
+      "magnitude": 3.11,
+      "place": "4 km SW of Laupāhoehoe, Hawaii",
+      "time": "2026-09-26T11:58:51.760Z",
+      "updated": "2026-09-26T12:27:33.654Z",
+      "depth_km": 14.2,
+      "coordinates": {
+        "lat": 19.9552,
+        "lon": -155.2615
+      },
+      "significance": 151,
+      "felt": 6,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75043917",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txsh",
+      "magnitude": 4.7,
+      "place": "North Indian Ocean",
+      "time": "2026-09-26T10:53:15.123Z",
+      "updated": "2026-09-26T11:08:17.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 1.831,
+        "lon": 89.4977
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txsh",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026tbvlmd",
+      "magnitude": 2.5,
+      "place": "52 km NNW of Petersville, Alaska",
+      "time": "2026-09-26T10:47:13.728Z",
+      "updated": "2026-09-26T10:49:59.556Z",
+      "depth_km": 116.3,
+      "coordinates": {
+        "lat": 62.914,
+        "lon": -151.244
+      },
+      "significance": 96,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026tbvlmd",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txse",
+      "magnitude": 4.9,
+      "place": "73 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T10:21:05.896Z",
+      "updated": "2026-09-26T10:37:28.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2105,
+        "lon": 168.4957
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txse",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txs3",
+      "magnitude": 4.8,
+      "place": "78 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T09:10:31.027Z",
+      "updated": "2026-09-26T09:31:20.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.182,
+        "lon": 168.5301
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txs3",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txs2",
+      "magnitude": 4.8,
+      "place": "97 km NE of Tadine, New Caledonia",
+      "time": "2026-09-26T09:08:05.869Z",
+      "updated": "2026-09-26T09:27:24.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.0058,
+        "lon": 168.6238
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txs2",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txs6",
+      "magnitude": 4.7,
+      "place": "71 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T09:07:19.622Z",
+      "updated": "2026-09-26T09:44:54.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2366,
+        "lon": 168.4865
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txs6",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrz",
+      "magnitude": 4.7,
+      "place": "97 km NE of Tadine, New Caledonia",
+      "time": "2026-09-26T08:54:03.961Z",
+      "updated": "2026-09-26T09:12:45.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.0172,
+        "lon": 168.6325
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrz",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrs",
+      "magnitude": 5,
+      "place": "78 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T08:24:58.743Z",
+      "updated": "2026-09-26T08:42:00.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2116,
+        "lon": 168.5478
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrs",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrr",
+      "magnitude": 3.5,
+      "place": "2 km NNW of Absam, Austria",
+      "time": "2026-09-26T07:56:55.661Z",
+      "updated": "2026-09-26T09:30:44.835Z",
+      "depth_km": 6.5,
+      "coordinates": {
+        "lat": 47.3148,
+        "lon": 11.4944
+      },
+      "significance": 189,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrr",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrq",
+      "magnitude": 5,
+      "place": "84 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T07:22:12.908Z",
+      "updated": "2026-09-26T07:39:42.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2249,
+        "lon": 168.614
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrq",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrn",
+      "magnitude": 5.1,
+      "place": "68 km NE of Tadine, New Caledonia",
+      "time": "2026-09-26T07:08:02.558Z",
+      "updated": "2026-09-26T07:48:12.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.1943,
+        "lon": 168.4225
+      },
+      "significance": 400,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrn",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrj",
+      "magnitude": 4.6,
+      "place": "25 km W of Roncesvalles, Colombia",
+      "time": "2026-09-26T06:38:19.029Z",
+      "updated": "2026-09-26T06:58:05.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 4.018,
+        "lon": -75.8315
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrj",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txrf",
+      "magnitude": 5.1,
+      "place": "64 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T05:50:48.716Z",
+      "updated": "2026-09-26T06:08:40.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.227,
+        "lon": 168.4033
+      },
+      "significance": 400,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txrf",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71534718",
+      "magnitude": 2.79,
+      "place": "8 km NNE of Tierras Nuevas Poniente, Puerto Rico",
+      "time": "2026-09-26T05:35:09.040Z",
+      "updated": "2026-09-26T06:27:08.180Z",
+      "depth_km": 88.9,
+      "coordinates": {
+        "lat": 18.5378,
+        "lon": -66.4598
+      },
+      "significance": 120,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71534718",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75442217",
+      "magnitude": 2.74,
+      "place": "10 km W of Boonville, CA",
+      "time": "2026-09-26T04:02:07.440Z",
+      "updated": "2026-09-26T11:23:12.404Z",
+      "depth_km": 3.5,
+      "coordinates": {
+        "lat": 39.0135,
+        "lon": -123.483
+      },
+      "significance": 121,
+      "felt": 17,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75442217",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75442207",
+      "magnitude": 3.74,
+      "place": "10 km W of Boonville, CA",
+      "time": "2026-09-26T03:42:49.670Z",
+      "updated": "2026-09-26T14:18:12.016Z",
+      "depth_km": 4.8,
+      "coordinates": {
+        "lat": 39.0145,
+        "lon": -123.4773
+      },
+      "significance": 270,
+      "felt": 128,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75442207",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txr0",
+      "magnitude": 4.5,
+      "place": "Iceland region",
+      "time": "2026-09-26T02:52:55.988Z",
+      "updated": "2026-09-26T03:06:32.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 68.8565,
+        "lon": -16.9554
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txr0",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txqv",
+      "magnitude": 4.4,
+      "place": "4 km NNE of Uto, Japan",
+      "time": "2026-09-26T01:31:19.592Z",
+      "updated": "2026-09-26T02:06:47.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 32.7187,
+        "lon": 130.6922
+      },
+      "significance": 298,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txqv",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txqu",
+      "magnitude": 5.3,
+      "place": "58 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-26T01:10:19.430Z",
+      "updated": "2026-09-26T01:22:16.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2883,
+        "lon": 168.3721
+      },
+      "significance": 432,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txqu",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txql",
+      "magnitude": 5,
+      "place": "15 km NNW of Xunchang, China",
+      "time": "2026-09-25T23:57:33.361Z",
+      "updated": "2026-09-26T00:13:45.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 28.5792,
+        "lon": 104.6428
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txql",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txqk",
+      "magnitude": 5.4,
+      "place": "69 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-25T23:52:35.158Z",
+      "updated": "2026-09-26T01:58:21.618Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2023,
+        "lon": 168.4346
+      },
+      "significance": 449,
+      "felt": 0,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txqk",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txqi",
+      "magnitude": 5.5,
+      "place": "61 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-25T23:39:41.392Z",
+      "updated": "2026-09-26T01:45:09.887Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.3748,
+        "lon": 168.4446
+      },
+      "significance": 465,
+      "felt": 0,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txqi",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txqf",
+      "magnitude": 4.9,
+      "place": "78 km NE of Tadine, New Caledonia",
+      "time": "2026-09-25T23:32:44.392Z",
+      "updated": "2026-09-25T23:50:33.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.1532,
+        "lon": 168.5092
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txqf",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026tawqyh",
+      "magnitude": 2.5,
+      "place": "22 km WSW of Cantwell, Alaska",
+      "time": "2026-09-25T22:23:50.485Z",
+      "updated": "2026-09-25T22:26:59.473Z",
+      "depth_km": 82.8,
+      "coordinates": {
+        "lat": 63.293,
+        "lon": -149.334
+      },
+      "significance": 96,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026tawqyh",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txq2",
+      "magnitude": 5.1,
+      "place": "78 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-25T22:07:34.791Z",
+      "updated": "2026-09-25T22:27:48.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2728,
+        "lon": 168.5744
+      },
+      "significance": 400,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txq2",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txpi",
+      "magnitude": 6.6,
+      "place": "80 km ENE of Tadine, New Caledonia",
+      "time": "2026-09-25T21:23:03.309Z",
+      "updated": "2026-09-26T13:41:23.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -21.2982,
+        "lon": 168.61
+      },
+      "significance": 678,
+      "felt": 11,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txpi",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txpf",
+      "magnitude": 5,
+      "place": "13 km N of Xunchang, China",
+      "time": "2026-09-25T21:01:27.262Z",
+      "updated": "2026-09-25T21:18:30.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 28.5744,
+        "lon": 104.7032
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txpf",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txpa",
+      "magnitude": 4.5,
+      "place": "south of the Fiji Islands",
+      "time": "2026-09-25T20:43:32.619Z",
+      "updated": "2026-09-25T21:38:10.040Z",
+      "depth_km": 482.8,
+      "coordinates": {
+        "lat": -24.0533,
+        "lon": -179.9919
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txpa",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txp8",
+      "magnitude": 4.6,
+      "place": "144 km SE of Lata, Solomon Islands",
+      "time": "2026-09-25T20:41:09.329Z",
+      "updated": "2026-09-25T20:59:25.040Z",
+      "depth_km": 223.6,
+      "coordinates": {
+        "lat": -11.7022,
+        "lon": 166.6797
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txp8",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026tasxwj",
+      "magnitude": 3.3,
+      "place": "129 km E of Chignik, Alaska",
+      "time": "2026-09-25T20:31:53.292Z",
+      "updated": "2026-09-25T20:33:08.937Z",
+      "depth_km": 6.3,
+      "coordinates": {
+        "lat": 56.375,
+        "lon": -156.314
+      },
+      "significance": 168,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026tasxwj",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txp3",
+      "magnitude": 2.7,
+      "place": "9 km NE of Pleasant Hill, Louisiana",
+      "time": "2026-09-25T20:26:11.335Z",
+      "updated": "2026-09-26T12:21:57.516Z",
+      "depth_km": 6.1,
+      "coordinates": {
+        "lat": 31.8713,
+        "lon": -93.4352
+      },
+      "significance": 113,
+      "felt": 2,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txp3",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txnq",
+      "magnitude": 4.8,
+      "place": "42 km N of Ruteng, Indonesia",
+      "time": "2026-09-25T19:39:29.552Z",
+      "updated": "2026-09-25T20:19:04.040Z",
+      "depth_km": 14.5,
+      "coordinates": {
+        "lat": -8.2281,
+        "lon": 120.4296
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txnq",
+      "pakistan_region": false
+    },
+    {
+      "id": "tx2026sxmsve",
+      "magnitude": 2.6,
+      "place": "11 km NE of Toyah, Texas",
+      "time": "2026-09-25T18:01:21.042Z",
+      "updated": "2026-09-25T18:20:41.040Z",
+      "depth_km": 6.2,
+      "coordinates": {
+        "lat": 31.379,
+        "lon": -103.705
+      },
+      "significance": 104,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026sxmsve",
+      "pakistan_region": false
+    },
+    {
+      "id": "hv75043722",
+      "magnitude": 3.22,
+      "place": "2 km SW of Honaunau-Napoopoo, Hawaii",
+      "time": "2026-09-25T17:54:48.830Z",
+      "updated": "2026-09-25T21:39:24.202Z",
+      "depth_km": 7.5,
+      "coordinates": {
+        "lat": 19.4443,
+        "lon": -155.8803
+      },
+      "significance": 167,
+      "felt": 24,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75043722",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026tamcpb",
+      "magnitude": 2.5,
+      "place": "55 km WSW of Karluk, Alaska",
+      "time": "2026-09-25T17:07:23.666Z",
+      "updated": "2026-09-25T17:11:58.510Z",
+      "depth_km": 69.3,
+      "coordinates": {
+        "lat": 57.424,
+        "lon": -155.342
+      },
+      "significance": 96,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026tamcpb",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000txme",
+      "magnitude": 5.2,
+      "place": "62 km SW of San Antonio, Chile",
+      "time": "2026-09-25T15:29:09.560Z",
+      "updated": "2026-09-25T18:14:05.815Z",
+      "depth_km": 29.1,
+      "coordinates": {
+        "lat": -33.9661,
+        "lon": -72.1079
+      },
+      "significance": 419,
+      "felt": 8,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000txme",
+      "pakistan_region": false
+    }
+  ]
+}

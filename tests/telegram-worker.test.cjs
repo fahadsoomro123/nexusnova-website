@@ -81,3 +81,12 @@ test('Worker account endpoint keeps backend secrets server-side', () => {
   assert.match(gitignore, /firebase-adminsdk/);
   assert.match(gitignore, /service-account/);
 });
+
+test('Worker locks Telegram identity and NexusNova account mapping one-to-one', () => {
+  assert.match(source, /telegramIdentities/);
+  assert.match(source, /telegramUserLinks/);
+  assert.match(source, /identityUid\s*&&\s*identityUid\s*!==\s*uid/);
+  assert.match(source, /accountTelegramId\s*&&\s*accountTelegramId\s*!==\s*telegramUser\.id/);
+  assert.match(source, /This Telegram account is already linked to another NexusNova account\./);
+  assert.match(source, /This NexusNova account is already linked to another Telegram account\./);
+});

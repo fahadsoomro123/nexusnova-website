@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "pending",
+  "generated_at": null,
+  "method": "Rolling approximately 24-hour PM2.5 mean from OpenAQ hourly observations, converted to an informational AQI estimate using current U.S. EPA PM2.5 breakpoints.",
+  "source": {
+    "name": "OpenAQ",
+    "url": "https://openaq.org/",
+    "api_url": "https://api.openaq.org/v3/",
+    "attribution": "OpenAQ and each original data provider/license shown per station"
+  },
+  "cities": [],
+  "notice": "AQI publisher is waiting for a server-side OpenAQ API key. NexusNova does not expose keys in browser code or invent missing air-quality values."
+}

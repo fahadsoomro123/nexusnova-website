@@ -21,13 +21,14 @@ on:
       - '.github/scripts/distribute_update.py'
       - '.github/scripts/prepare_instagram_media.py'
       - '.github/workflows/traffic-autopilot.yml'
+      - 'assets/data/autopilot-history.json'
       - 'assets/js/main.js'
       - 'assets/css/scifi.css'
       - 'assets/js/live-tech-pulse.js'
       - 'assets/css/live-tech-pulse.css'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nexusnova-traffic-autopilot
@@ -49,21 +50,19 @@ jobs:
       SEARCH_GROWTH_COOLDOWN_DAYS: ${{ vars.SEARCH_GROWTH_COOLDOWN_DAYS }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
-      X_API_KEY: ${{ secrets.X_API_KEY }}
-      X_API_KEY_SECRET: ${{ secrets.X_API_KEY_SECRET }}
-      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-      X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'
       FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
       FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
       SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -101,7 +100,7 @@ jobs:
       - name: Analyze GSC search opportunities and safely optimize one page
         continue-on-error: true
         env:
-          NEXUSNOVA_AUTO_OPTIMIZE: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '1' || '0' }}
+          NEXUSNOVA_AUTO_OPTIMIZE: '0'
         run: python .github/scripts/search_growth_autopilot.py
 
       - name: Prepare Instagram-safe article image
@@ -125,6 +124,61 @@ jobs:
       - name: Rebuild machine-readable article feed
         run: python .github/scripts/build_articles_feed.py
 
+      - name: Normalize generated article SEO titles
+        shell: bash
+        run: |
+          python - <<'PY'
+          import html
+          import re
+          import subprocess
+          from pathlib import Path
+
+          suffix = ' — NexusNova Tools'
+          status = subprocess.check_output(
+              ['git', 'status', '--porcelain', '--', 'articles'], text=True
+          )
+          paths = []
+          for line in status.splitlines():
+              raw = line[3:].strip()
+              if ' -> ' in raw:
+                  raw = raw.split(' -> ', 1)[1].strip()
+              path = Path(raw)
+              if path.suffix.lower() == '.html' and path.exists():
+                  paths.append(path)
+
+          changed = 0
+          for path in sorted(set(paths)):
+              text = path.read_text(encoding='utf-8', errors='replace')
+              match = re.search(r'<title>(.*?)</title>', text, re.I | re.S)
+              if not match:
+                  continue
+              title = html.unescape(re.sub(r'\s+', ' ', match.group(1))).strip()
+              if len(title) <= 70:
+                  continue
+              base = title
+              for known in (suffix, ' | NexusNova Tools', ' | NexusNova'):
+                  if base.endswith(known):
+                      base = base[:-len(known)].strip()
+                      break
+              budget = 70 - len(suffix)
+              words = base.split()
+              compact = ''
+              for word in words:
+                  candidate = f'{compact} {word}'.strip()
+                  if len(candidate) > budget:
+                      break
+                  compact = candidate
+              if not compact:
+                  compact = base[:budget].rstrip(' -—|:')
+              new_title = compact.rstrip(' -—|:') + suffix
+              encoded = html.escape(new_title, quote=False)
+              text = text[:match.start(1)] + encoded + text[match.end(1):]
+              path.write_text(text, encoding='utf-8')
+              changed += 1
+              print(f'Normalized {path}: {len(title)} -> {len(new_title)} chars')
+          print(f'Generated article title normalizations: {changed}')
+          PY
+
       - name: Full public-site SEO and link audit
         run: python .github/scripts/site_quality_audit.py
 
@@ -136,16 +190,19 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          import re
           from pathlib import Path
           from urllib.parse import urlsplit
 
-          report=Path('site-quality-report.txt').read_text(encoding='utf-8')
-          m=re.search(r'Severe findings:\s*(\d+)',report)
-          severe=int(m.group(1)) if m else 999
-          print(f'Severe findings: {severe}')
+          site_quality=json.loads(Path('site-quality-report.json').read_text(encoding='utf-8'))
+          severe=site_quality.get('severe',[])
+          warnings=site_quality.get('warnings',[])
+          print(f'Severe findings: {len(severe)}')
+          print(f'Warnings: {len(warnings)}')
           if severe:
               raise SystemExit('Autopilot blocked: public-site audit has severe findings.')
+          if warnings:
+              print('\n'.join(f'- {item}' for item in warnings))
+              raise SystemExit('Autopilot blocked: public-site audit has warnings.')
 
           if Path('search-growth-changed-files.txt').exists():
               files=[x.strip() for x in Path('search-growth-changed-files.txt').read_text().splitlines() if x.strip()]
@@ -169,40 +226,20 @@ jobs:
               print('Social Growth v2 safety boundary passed:', item.get('title'))
           PY
 
-      - name: Commit safe daily changes
-        id: commit
+      - name: Enforce review-only publishing boundary
+        shell: bash
         run: |
-          git config user.name 'nexusnova-autopilot[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/data/live-tech-pulse.json assets/data/autopilot-history.json articles.html articles.json feed.xml sitemap-autopilot.xml sitemap-index.xml llms.txt
-          if [ -f assets/data/search-growth-history.json ]; then git add assets/data/search-growth-history.json; fi
-          if [ -f assets/data/social-growth-history.json ]; then git add assets/data/social-growth-history.json; fi
-          if [ -d assets/generated ]; then git add assets/generated; fi
-          git add articles/
-          if [ -f search-growth-changed-files.txt ]; then
-            while IFS= read -r file; do
-              [ -n "$file" ] && git add -- "$file"
-            done < search-growth-changed-files.txt
+          set -euo pipefail
+          echo 'Automatic public publishing is disabled. This workflow is analysis-only.'
+          echo 'Any tracked site mutation produced by analysis is treated as a failure and must be reviewed manually.'
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo 'ERROR: analysis changed tracked repository files:' >&2
+            git status --short --untracked-files=no >&2
+            exit 1
           fi
-          if [ -z "$(git status --porcelain)" ]; then
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
-            echo 'No useful public change today.'
-            exit 0
-          fi
-          git commit -m "automation: daily traffic autopilot ${GITHUB_RUN_ID}"
-          git pull --rebase origin main
-          git push origin HEAD:main
-          echo 'changed=true' >> "$GITHUB_OUTPUT"
-
-      - name: Submit changed pages to IndexNow
-        if: steps.commit.outputs.changed == 'true'
-        continue-on-error: true
-        run: python .github/scripts/submit_indexnow.py
-
-      - name: Distribute adaptive useful update to configured social channels
-        if: steps.commit.outputs.changed == 'true'
-        continue-on-error: true
-        run: python .github/scripts/distribute_social_growth.py
+          echo 'Review-only boundary: PASS'
+          echo 'No tracked public files were changed.'
+          echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
 
       - name: Publish run summary
         if: always()
@@ -227,7 +264,7 @@ jobs:
 
       - name: Upload private run diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: nexusnova-traffic-autopilot-${{ github.run_id }}
           path: |

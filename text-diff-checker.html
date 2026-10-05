@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Text Diff Checker Online | Compare Texts | NexusNova Tools</title>
+<meta name="description" content="Compare two texts in your browser and see added, removed and unchanged lines with optional whitespace normalization and local processing.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta property="og:image:alt" content="NexusNova Tools"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="Text Diff Checker Online — NexusNova Tools"><meta property="og:description" content="Compare two text versions locally in your browser and inspect added, removed and unchanged lines."><meta property="og:url" content="https://nexusnovatools.com/text-diff-checker.html">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:image:alt" content="NexusNova Tools"><meta name="twitter:title" content="Text Diff Checker Online — NexusNova Tools"><meta name="twitter:description" content="Compare text locally in your browser with clear added, removed and unchanged lines.">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Text Diff Checker","url":"https://nexusnovatools.com/text-diff-checker.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Compare two text versions locally in the browser and inspect added, removed and unchanged lines."}</script>
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
+<link rel="stylesheet" href="assets/css/footer-social.css">
+</head>
+<body class="nn-inner-page">
+<header class="nn-header" data-nn-header><div class="nn-shell nn-header-row"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button><nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="index.html#master-directory">All Tools</a><a href="index.html#content-library">Content</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><a href="developer-tools.html">Developer Tools</a><span aria-hidden="true">›</span><span aria-current="page">Text Diff Checker</span></nav><span class="kicker">DEVELOPER // TEXT COMPARISON</span><h1>Compare two text versions <span class="gradient-text">without uploading them.</span></h1><p>Paste an original and a revised version to see which lines were added, removed or left unchanged. Everything is processed in this browser tab.</p><span class="guide-tag">✓ Local browser processing</span></div></section>
+<section class="section"><div class="container">
+<div class="tool-card">
+<div class="form-row">
+<div class="field"><label for="diff-left">Original text</label><textarea id="diff-left" rows="14" placeholder="Paste the original version here…"></textarea></div>
+<div class="field"><label for="diff-right">Revised text</label><textarea id="diff-right" rows="14" placeholder="Paste the revised version here…"></textarea></div>
+</div>
+<div class="tool-actions"><label class="mini-note"><input id="ignore-whitespace" type="checkbox"> Ignore leading/trailing whitespace when comparing lines</label><button class="btn btn-primary" id="diff-run" type="button">Compare texts</button><button class="btn" id="diff-copy" type="button">Copy diff</button><button class="btn" id="diff-clear" type="button">Clear</button></div>
+<div class="result" id="diff-status" aria-live="polite">Enter two text versions to compare.</div>
+<div id="diff-output" class="article" style="margin-top:16px"></div>
+</div>
+</div></section>
+<section class="section"><div class="container article">
+<h2>How this diff checker compares text</h2>
+<p>The comparison is line-based. It identifies unchanged lines and groups nearby additions and removals so you can review a revision without manually scanning two long versions. Optional whitespace normalization trims each line before comparison, but it does not ignore meaningful characters inside the line.</p>
+<h2>Useful review workflows</h2>
+<p>Use it before publishing an edited article, when checking configuration changes, when reviewing a copied document, or when comparing generated output with a previous version. For code, compare focused files or small sections first because very large inputs require more browser memory.</p>
+<h2>Limits to understand</h2>
+<p>This is a text comparison aid, not a syntax-aware source-control system. It does not understand programming-language structure, rename detection or semantic equivalence. Two different code snippets can behave the same, and two visually similar documents can differ in whitespace or hidden characters.</p>
+<h2>Text diff FAQ</h2>
+<details><summary>Does the text leave my browser?</summary><p>The comparison runs in the browser. The page does not need a server upload to calculate the diff, so the text can remain on your device while you work.</p></details>
+<details><summary>Why can a small edit produce several changed lines?</summary><p>Line-based comparison groups changes around the nearest matching lines. Inserting or deleting a line near repeated content can therefore move the alignment of a larger block. For semantic code review, use this tool alongside your normal version-control diff.</p></details>
+<details><summary>Can I compare very large files?</summary><p>Moderate text is the intended use. The checker limits extremely large comparisons to avoid freezing the tab; for very large repositories or binary files, use a dedicated source-control or desktop diff tool.</p></details>
+</div></section>
+<section class="section utility-methodology" data-phase4-content>
+  <div class="container article">
+    <h2>Text diffing: technical formula and operational principle</h2>
+    <p>This checker compares lines using a longest-common-subsequence style dynamic program. For two line sequences <code>A</code> and <code>B</code>, the common-subsequence recurrence can be written as <code>L(i,j) = 1 + L(i+1,j+1)</code> when the current lines match; otherwise <code>L(i,j) = max(L(i+1,j), L(i,j+1))</code>. The resulting alignment identifies shared context and the insertions or removals around it. Optional whitespace normalization trims each line before comparison, so meaningful characters within a line remain significant.</p>
+    <h3>Practical use cases</h3>
+    <p>Compare a revised article with its previous draft, inspect a configuration change, check generated text against an expected sample, or review a document copied between systems. For code, compare a focused file or section and then confirm the final change in normal source control, because a line diff does not understand program semantics, renames, binary formats or whether two different implementations behave equivalently.</p>
+    <h3>Privacy and local processing</h3>
+    <p>The comparison runs entirely in the current browser tab. The two text inputs are retained in browser memory while the algorithm calculates the alignment, and the entered text is not sent to an external server for the diff operation. Copying the result uses the browser clipboard API and does not require a server upload. The page can still fetch its ordinary static resources, but the actual text being compared remains local during the comparison.</p>
+    <h3>Performance and review limits</h3>
+    <h3>How to read a change set</h3>
+    <p>Read unchanged context around additions and removals before deciding whether a difference matters. A one-line deletion can be intentional, while a one-character change can be critical in code, configuration or a URL. Repeated lines can create more than one plausible alignment, so the grouping is a review aid rather than proof of semantic equivalence. For collaborative work, record the purpose of the change and verify the final version in the system where it will be published or executed.</p>
+    <p>When reviewing configuration or markup, look especially closely at paths, quotes, braces, commas and other delimiters because a tiny textual change can alter behavior. Use the checker to locate the change, then confirm the surrounding structure in the final file and run the relevant application or test suite. This is especially important for JSON, HTML attributes, URLs and configuration files where one punctuation mark can change parsing.</p>
+    <p>Dynamic-programming comparisons can consume substantial memory as both inputs grow because the number of pairwise states rises with the product of the sequence lengths. Break very large files into focused sections, and use a dedicated source-control or desktop diff tool for repository-scale comparisons. After reviewing a change, keep an original copy and verify the final content in the system where it will be published or executed.</p>
+  </div>
+</section>
+</main>
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<a href="/refund-policy.html">Refund Policy</a>
+<a href="/about.html">About</a>
+<a href="/editorial-team.html">Editorial Team</a>
+<a href="/editorial-policy.html">Editorial Policy</a>
+<a href="/tool-methodology.html">Tool Methodology</a>
+<a href="/faq.html">FAQ</a>
+<a href="/privacy.html">Privacy</a>
+<a href="/contact.html">Contact Us & Support</a>
+<a href="/disclaimer.html">Disclaimer</a></div></nav><section class="nn-footer-social">
+  <div class="nn-social-title">Follow NexusNova</div>
+  <div class="nn-social-row" aria-label="Official NexusNova social profiles">
+    <a class="nn-social nn-social-x" href="https://x.com/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="X @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-6.39L6.48 22H3.36l7.25-8.29L2.96 2h6.4l4.42 5.84L18.9 2Zm-1.1 18h1.73L8.42 3.9H6.56L17.8 20Z"></path></svg></span><span><strong>X</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
+    <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
+    <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
+  </section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
+<style>
+.diff-table{border:1px solid #dbe6f2;border-radius:14px;overflow:auto;background:#fff}.diff-line{display:grid;grid-template-columns:44px 1fr;min-width:620px;border-bottom:1px solid #edf2f7;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.diff-line:last-child{border-bottom:0}.diff-mark{padding:7px 9px;text-align:center;font-weight:900}.diff-text{padding:7px 10px;white-space:pre-wrap;overflow-wrap:anywhere}.diff-ctx .diff-mark{color:#718096}.diff-add{background:#effaf2}.diff-add .diff-mark{color:#16743a}.diff-del{background:#fff1f1}.diff-del .diff-mark{color:#a52929}.diff-empty{padding:14px;color:#718096}
+</style>
+<script>
+(()=>{const $=id=>document.getElementById(id);let latest='';
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function lines(v,trim){return v.replace(/\r\n?/g,'\n').split('\n').map(x=>trim?x.trim():x);}
+function diff(a,b){const n=a.length,m=b.length;if((n+1)*(m+1)>2200000)throw new Error('The texts are too large for this browser diff view. Try a smaller section.');
+const dp=Array.from({length:n+1},()=>new Uint32Array(m+1));
+for(let i=n-1;i>=0;i--){for(let j=m-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);}
+let i=0,j=0,out=[];
+while(i<n&&j<m){if(a[i]===b[j]){out.push(['ctx',a[i]]);i++;j++;}else if(dp[i+1][j]>=dp[i][j+1]){out.push(['del',a[i]]);i++;}else{out.push(['add',b[j]]);j++;}}
+while(i<n)out.push(['del',a[i++]]);while(j<m)out.push(['add',b[j++]]);
+return out;}
+function render(rows){return '<div class="diff-table" role="table" aria-label="Text comparison result">'+rows.map(([type,text])=>'<div class="diff-line diff-'+type+'" role="row"><div class="diff-mark" aria-hidden="true">'+(type==='add'?'+':type==='del'?'-':' ')+'</div><div class="diff-text" role="cell">'+esc(text||' ')+'</div></div>').join('')+'</div>';}
+$('diff-run').onclick=()=>{try{const a=lines($('diff-left').value,$('ignore-whitespace').checked),b=lines($('diff-right').value,$('ignore-whitespace').checked);if(!$('diff-left').value&&!$('diff-right').value){$('diff-status').textContent='Enter text in at least one side.';$('diff-output').innerHTML='';return;}const rows=diff(a,b);const added=rows.filter(x=>x[0]==='add').length,removed=rows.filter(x=>x[0]==='del').length,unchanged=rows.filter(x=>x[0]==='ctx').length;$('diff-status').textContent=(added===0&&removed===0?'No line differences • ':'')+(added===0&&removed===0?unchanged:added+' added • '+removed+' removed • '+unchanged)+' unchanged lines';const plain=rows.map(x=>(x[0]==='add'?'+ ':x[0]==='del'?'- ':'  ')+x[1]).join('\n');latest=plain;$('diff-output').innerHTML=render(rows);}catch(e){$('diff-status').textContent=e.message;$('diff-output').innerHTML='';}};
+$('diff-copy').onclick=async()=>{if(!latest){$('diff-status').textContent='Run a comparison first.';return;}try{await navigator.clipboard.writeText(latest);$('diff-status').textContent='Diff copied.';}catch{$('diff-status').textContent='Clipboard access is unavailable in this browser.';}};
+$('diff-clear').onclick=()=>{$('diff-left').value='';$('diff-right').value='';$('diff-output').innerHTML='';$('diff-status').textContent='Enter two text versions to compare.';latest='';};
+})();
+</script><script src="assets/js/main.js" defer></script>
+<script src="assets/js/nn-inner-shell.js" defer></script>
+</body></html>

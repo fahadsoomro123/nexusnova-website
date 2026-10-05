@@ -532,19 +532,49 @@ def update_discovery(history: dict) -> None:
     feed.write_text(feed_text, encoding="utf-8")
 
     urls = "\n".join(f'  <url><loc>{escape(row["url"])}</loc><lastmod>{escape(row["date"])}</lastmod></url>' for row in articles)
-    SITEMAP_PATH.write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}\n</urlset>\n', encoding="utf-8")
+    SITEMAP_PATH.write_text(
+        f'<?xml version="1.0" encoding="UTF-8"?>\n'
+        f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}\n</urlset>\n',
+        encoding="utf-8"
+    )
 
-    sitemap_index = ROOT / "sitemap-index.xml"
-    index_text = sitemap_index.read_text(encoding="utf-8")
-    line = f"  <sitemap><loc>{SITE}/sitemap-autopilot.xml</loc></sitemap>"
-    if line not in index_text:
-        index_text = index_text.replace("</sitemapindex>", f"{line}\n</sitemapindex>")
-        sitemap_index.write_text(index_text, encoding="utf-8")
+    # Keep one canonical public sitemap architecture. Generated article URLs
+    # are merged into sitemap.xml instead of creating another sitemap family.
+    main_sitemap = ROOT / "sitemap.xml"
+    try:
+        sitemap_text = main_sitemap.read_text(encoding="utf-8")
+        root = ET.fromstring(sitemap_text)
+        namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        existing = {str(node.text).strip() for node in root.findall("sm:url/sm:loc", namespace) if node.text}
+        for row in articles:
+            url = str(row.get("url", "")).strip()
+            if not url or url in existing:
+                continue
+            entry = ET.SubElement(root, "{http://www.sitemaps.org/schemas/sitemap/0.9}url")
+            loc = ET.SubElement(entry, "{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+            loc.text = url
+            lastmod = ET.SubElement(entry, "{http://www.sitemaps.org/schemas/sitemap/0.9}lastmod")
+            lastmod.text = str(row.get("date") or TODAY)
+            existing.add(url)
+        ET.register_namespace("", "http://www.sitemaps.org/schemas/sitemap/0.9")
+        main_sitemap.write_text(
+            ET.tostring(root, encoding="unicode") + "\n",
+            encoding="utf-8"
+        )
+    except Exception as exc:
+        raise RuntimeError(f"Could not update canonical sitemap.xml: {exc}") from exc
 
     llms = ROOT / "llms.txt"
     llms_text = llms.read_text(encoding="utf-8")
-    llms_content = "## Latest source-backed tech briefs\n" + "\n".join(f'- {row["title"]}: {row["url"]}' for row in articles[:12])
-    llms_text = managed_block(llms_text, "<!-- NEXUSNOVA_AUTOPILOT_LLMS_START -->", "<!-- NEXUSNOVA_AUTOPILOT_LLMS_END -->", llms_content)
+    llms_content = "## Latest source-backed tech briefs\n" + "\n".join(
+        f'- [{row["title"]}]({row["url"]})' for row in articles[:12]
+    )
+    llms_text = managed_block(
+        llms_text,
+        "<!-- NEXUSNOVA_AUTOPILOT_LLMS_START -->",
+        "<!-- NEXUSNOVA_AUTOPILOT_LLMS_END -->",
+        llms_content
+    )
     llms.write_text(llms_text, encoding="utf-8")
 
 
