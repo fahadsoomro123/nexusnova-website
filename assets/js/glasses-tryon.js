@@ -135,13 +135,13 @@ function disposeObject(o){
   o.traverse(n=>{if(n.geometry)n.geometry.dispose();if(n.material){const m=Array.isArray(n.material)?n.material:[n.material];m.forEach(x=>x.dispose())}});
   o.parent?.remove(o);
 }
-function roundRectPath(THREE,w,h,r,outer=true){
+function roundRectPath(THREE,w,h,r,ring=false){
   const s=new THREE.Shape();
   const x=w/2,y=h/2,rr=Math.min(r,Math.min(x,y)*.95);
   s.moveTo(-x+rr,y);s.lineTo(x-rr,y);s.quadraticCurveTo(x,y,x,y-rr);s.lineTo(x,-y+rr);s.quadraticCurveTo(x,-y,x-rr,-y);s.lineTo(-x+rr,-y);s.quadraticCurveTo(-x,-y,-x,-y+rr);s.lineTo(-x,y-rr);s.quadraticCurveTo(-x,y,-x+rr,y);s.closePath();
-  if(!outer){
+  if(ring){
     const h1=new THREE.Path();const ix=w*.82,iy=h*.78,ir=Math.max(.035,rr*.58);
-    h1.moveTo(-ix/2+ir,iy/2);h1.lineTo(ix/2-ir,iy/2);h1.quadraticCurveTo(ix/2,iy/2,ix/2,iy/2-ir);h1.lineTo(ix/2,-iy/2+ir);h1.quadraticCurveTo(ix/2,-iy/2,ix/2-ir,-iy/2);h1.lineTo(-ix/2+ir,-iy/2);h1.quadraticCurveTo(-ix/2,-iy/2,-ix/2,-iy/2+ir);h1.lineTo(-ix/2,iy/2-ir);h1.quadraticCurveTo(-ix/2,iy/2,-ix/2+ir,iy/2);h1.closePath();s.holes.push(h1);
+    h1.moveTo(-ix/2+ir,iy/2);h1.quadraticCurveTo(-ix/2,iy/2,-ix/2,iy/2-ir);h1.lineTo(-ix/2,-iy/2+ir);h1.quadraticCurveTo(-ix/2,-iy/2,-ix/2+ir,-iy/2);h1.lineTo(ix/2-ir,-iy/2);h1.quadraticCurveTo(ix/2,-iy/2,ix/2,-iy/2+ir);h1.lineTo(ix/2,iy/2-ir);h1.quadraticCurveTo(ix/2,iy/2,ix/2-ir,iy/2);h1.closePath();s.holes.push(h1);
   }
   return s;
 }
@@ -152,18 +152,18 @@ function circleRing(THREE,rx,ry){
 function catEyeRing(THREE){
   const s=new THREE.Shape();
   s.moveTo(-.60,.30);s.quadraticCurveTo(-.18,.43,.58,.30);s.quadraticCurveTo(.69,.25,.63,-.32);s.quadraticCurveTo(.30,-.43,-.10,-.34);s.quadraticCurveTo(-.48,-.40,-.63,-.12);s.quadraticCurveTo(-.69,.10,-.60,.30);s.closePath();
-  const h=new THREE.Path();h.moveTo(-.48,.23);h.quadraticCurveTo(-.15,.34,.47,.24);h.quadraticCurveTo(.55,.18,.50,-.22);h.quadraticCurveTo(.25,-.30,-.08,-.25);h.quadraticCurveTo(-.39,-.30,-.49,-.08);h.quadraticCurveTo(-.53,.08,-.48,.23);h.closePath();s.holes.push(h);return s;
+  const h=new THREE.Path();h.moveTo(-.48,.23);h.quadraticCurveTo(-.53,.08,-.49,-.08);h.quadraticCurveTo(-.39,-.30,-.08,-.25);h.quadraticCurveTo(.25,-.30,.50,-.22);h.quadraticCurveTo(.55,.18,.47,.24);h.quadraticCurveTo(-.15,.34,-.48,.23);h.closePath();s.holes.push(h);return s;
 }
 function aviatorRing(THREE){
   const s=new THREE.Shape();
   s.moveTo(-.50,.34);s.quadraticCurveTo(0,.48,.50,.34);s.quadraticCurveTo(.63,.05,.49,-.42);s.quadraticCurveTo(0,-.57,-.49,-.42);s.quadraticCurveTo(-.63,.05,-.50,.34);s.closePath();
-  const h=new THREE.Path();h.moveTo(-.39,.28);h.quadraticCurveTo(0,.38,.39,.28);h.quadraticCurveTo(.49,.05,.37,-.32);h.quadraticCurveTo(0,-.43,-.37,-.32);h.quadraticCurveTo(-.49,.05,-.39,.28);h.closePath();s.holes.push(h);return s;
+  const h=new THREE.Path();h.moveTo(-.39,.28);h.quadraticCurveTo(-.49,.05,-.37,-.32);h.quadraticCurveTo(0,-.43,.37,-.32);h.quadraticCurveTo(.49,.05,.39,.28);h.quadraticCurveTo(0,.38,-.39,.28);h.closePath();s.holes.push(h);return s;
 }
 function ringShape(THREE,style){
   if(style==='round')return circleRing(THREE,.53,.53);
   if(style==='cat-eye')return catEyeRing(THREE);
   if(style==='aviator')return aviatorRing(THREE);
-  return roundRectPath(THREE,1.18,.78,.16);
+  return roundRectPath(THREE,1.18,.78,.16,true);
 }
 function lensShape(THREE,style){
   if(style==='round'){const s=new THREE.Shape();s.absellipse(0,0,.405,.405,0,Math.PI*2,false,0);return s}
