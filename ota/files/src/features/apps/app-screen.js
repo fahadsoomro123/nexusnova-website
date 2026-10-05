@@ -1,9 +1,9 @@
 import { icon } from '../../components/icons.js';
 import { novaApps } from '../hub/app-registry.js';
-import { NexusNovaOTAUpdater } from '../../assets/js/nn-ota-updater.js';
 
 let cleanup = null;
 const AI_PHOTO_ID = 'ai-photo-studio';
+const VIDEO_STUDIO_CACHE_KEY = '?ota=nv18';
 const rendererSources = [
   ['./premium-studio-suite.js', 'premiumStudioRenderers'],
   ['./nova-sol57-fresh.js', 'novaSol57Renderers'],
@@ -74,7 +74,7 @@ async function resolveRenderer(id) {
   // bundle cannot fall back to the generic migration screen.
   if (id === 'ai-video-studio') {
     try {
-      const module = await import('./ai-video-studio-flagship.js');
+      const module = await import('./ai-video-studio-flagship.js' + VIDEO_STUDIO_CACHE_KEY);
       if (typeof module?.renderAiVideoStudio === 'function') return module.renderAiVideoStudio;
     } catch (error) {
       console.warn('[NexusNova Fresh] direct AI Video Studio flagship load failed:', error);
@@ -89,13 +89,14 @@ async function resolveRenderer(id) {
 }
 
 async function enhanceAppSafely(id, body) {
-  const tasks = [
-    import('./mining-integrations.js').then(module => module.enhanceMiningApp?.(id, body))
-  ];
-  const results = await Promise.allSettled(tasks);
-  results.forEach(result => {
-    if (result.status === 'rejected') console.warn('[NexusNova Fresh] optional app enhancement skipped:', result.reason);
-  });
+  // Mining integrations belong only to the mining-owned routes.
+  // Never load Firebase/mining dependencies while opening unrelated apps.
+  if (id !== 'tasks' && id !== 'nova-vault') return;
+  try {
+    await import('./mining-integrations.js').then(module => module.enhanceMiningApp?.(id, body));
+  } catch (error) {
+    console.warn('[NexusNova Fresh] optional app enhancement skipped:', error);
+  }
 }
 
 function ensureNovaPremiumSidebarStyle() {
@@ -244,8 +245,6 @@ export async function appScreen({ id, backToHub, backToMine } = {}) {
   const parentName = miningOwned ? 'Mine' : 'Nova Hub';
   const goBack = miningOwned ? backToMine : backToHub;
   const aiPhotoRoute = id === AI_PHOTO_ID;
-  const aiVideoRoute = id === 'ai-video-studio';
-  if (aiVideoRoute) root.classList.add('nx-video-route-screen');
 
   if (aiPhotoRoute) {
     root.classList.add('nx-ai-photo-route-screen');
@@ -256,6 +255,88 @@ export async function appScreen({ id, backToHub, backToMine } = {}) {
 
   root.querySelector('[data-app-back]').addEventListener('click', () => goBack?.());
   const mount = root.querySelector('[data-app-mount]');
+
+  // Keep AI Video Studio outside the synchronous route factory.
+  // Commit the lightweight route shell first, then resolve and mount the heavy
+  // editor on the next frame. Optional timeline enhancement is also non-blocking.
+  if (id === 'ai-video-studio') {
+    let cancelled = false;
+    let frameId = 0;
+    let body = null;
+    let bodyCleanup = null;
+
+    const cancelVideoRoute = () => {
+      cancelled = true;
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+      try { bodyCleanup?.(); } catch {}
+      bodyCleanup = null;
+      if (cleanup === cancelVideoRoute) cleanup = null;
+    };
+
+    cleanup = cancelVideoRoute;
+    root.__cleanup = cancelVideoRoute;
+    mount.innerHTML = '<article class="nx-tool-card nx-migration-card"><h2>AI Video Studio</h2><p>Loading editor…</p></article>';
+
+    frameId = requestAnimationFrame(() => {
+      frameId = 0;
+      void resolveRenderer(id).then(renderer => {
+        if (cancelled || !root.isConnected) return;
+
+        try {
+          if (typeof renderer !== 'function') {
+            mount.innerHTML = '<article class="nx-tool-card nx-migration-card"><h2>AI Video Studio</h2><p>The editor module could not be loaded.</p></article>';
+            return;
+          }
+
+          body = renderer();
+          if (!(body instanceof Node)) throw new Error('Renderer returned an invalid screen.');
+          mount.replaceChildren(body);
+
+          void import('./nn-video-studio-upgrade.js' + VIDEO_STUDIO_CACHE_KEY)
+            .then(videoEnhancer => {
+              if (cancelled || !body || !root.isConnected) return;
+              if (typeof videoEnhancer?.enhanceAiVideoStudio === 'function') {
+                body.__nnVideoTimelineCleanup = videoEnhancer.enhanceAiVideoStudio(body);
+              }
+            })
+            .catch(error => {
+              console.warn('[NexusNova Fresh] optional video enhancer skipped:', error);
+            });
+
+          let cleaned = false;
+          const cleanupBody = () => {
+            if (cleaned) return;
+            cleaned = true;
+            try { window.speechSynthesis?.cancel?.(); } catch {}
+            body.__nnVideoTimelineCleanup?.();
+            body.__cleanup?.();
+            if (cleanup === cleanupBody) cleanup = null;
+            bodyCleanup = null;
+          };
+
+          bodyCleanup = cleanupBody;
+          cleanup = cleanupBody;
+          root.__cleanup = cleanupBody;
+        } catch (error) {
+          if (cancelled || !root.isConnected) return;
+          console.error('[NexusNova Fresh] ai-video-studio renderer:', error);
+          mount.innerHTML = '<article class="nx-tool-card"><h2>AI Video Studio could not initialize</h2><p>This tool hit a local runtime error. You can safely leave this screen and continue using other NexusNova areas.</p><button class="nx-secondary" type="button" data-app-error-back>BACK TO NOVA HUB</button></article>';
+          mount.querySelector('[data-app-error-back]')?.addEventListener('click', () => goBack?.());
+        }
+      }).catch(error => {
+        if (cancelled || !root.isConnected) return;
+        console.warn('[NexusNova Fresh] deferred AI Video Studio load failed:', error);
+        mount.innerHTML = '<article class="nx-tool-card"><h2>AI Video Studio could not load</h2><p>The editor module failed to load. You can safely leave this screen and continue using other NexusNova areas.</p><button class="nx-secondary" type="button" data-app-error-back>BACK TO NOVA HUB</button></article>';
+        mount.querySelector('[data-app-error-back]')?.addEventListener('click', () => goBack?.());
+      });
+    });
+
+    return root;
+  }
+
   const renderer = await resolveRenderer(id);
   if (renderer) {
     try {
@@ -265,29 +346,19 @@ export async function appScreen({ id, backToHub, backToMine } = {}) {
       void enhanceAppSafely(id, body);
       if (aiPhotoRoute) document.body.classList.add('nx-ai-photo-route-active');
       const novaSidebarCleanup = id === 'ai' ? installNovaPremiumSidebar(root, body) : () => {};
-      const otaUpdater = miningOwned ? null : new NexusNovaOTAUpdater({ feature: aiVideoRoute ? 'AI Video Studio' : 'NOVA HUB' });
       let cleaned = false;
       const bodyCleanup = () => {
         if (cleaned) return;
         cleaned = true;
         if (aiPhotoRoute) document.body.classList.remove('nx-ai-photo-route-active');
         novaSidebarCleanup();
-        otaUpdater?.destroy();
         try { window.speechSynthesis?.cancel?.(); } catch {}
+        body.__nnVideoTimelineCleanup?.();
         body.__cleanup?.();
         if (cleanup === bodyCleanup) cleanup = null;
       };
       cleanup = bodyCleanup;
       root.__cleanup = bodyCleanup;
-      if (otaUpdater) {
-        void otaUpdater.checkForUpdates().then(update => {
-          if (!update) return;
-          const forceForStaleApp = otaUpdater.clientVersionCode > 0 && otaUpdater.clientVersionCode < 27000045 && Boolean(update.latestCommit);
-          if (update.available || forceForStaleApp) {
-            otaUpdater.showUpdatePopup({ ...update, available: true, shortSha: String(update.latestCommit || '').slice(0, 7) });
-          }
-        }).catch(error => console.warn('[NexusNova OTA] popup check failed:', error));
-      }
     } catch (error) {
       if (aiPhotoRoute) document.body.classList.remove('nx-ai-photo-route-active');
       console.error(`[NexusNova Fresh] ${id} renderer:`, error);
