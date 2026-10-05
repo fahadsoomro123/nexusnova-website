@@ -11,6 +11,7 @@ import { authScreen } from './features/auth/auth-screen.js';
 import { mineScreen, cleanupMineScreen } from './features/mine/mine-screen.js';
 import { hubScreen, requestHubReturnRestore } from './features/hub/hub-screen.js';
 import { mineApps } from './features/hub/app-registry.js';
+import NexusNovaOTAUpdater from '../assets/js/nn-ota-updater.js?ota=nv18';
 
 const stage = document.getElementById('nx-stage');
 const dock = document.querySelector('.nx-dock');
@@ -20,6 +21,8 @@ const mineAppIds = new Set(mineApps.map(app => app.id));
 const BOOT_SPLASH_MIN_MS = 1_350;
 const POST_LOGIN_SPLASH_MS = 900;
 const bootSplashStartedAt = performance.now();
+const globalOtaUpdater = new NexusNovaOTAUpdater({ feature: 'NexusNova' });
+const NATIVE_BUILD_INFO_WAIT_MS = 2_500;
 
 backend.attach(firebaseBackend);
 
@@ -27,7 +30,7 @@ let appScreenModulePromise = null;
 let appScreenModule = null;
 function loadAppScreenModule() {
   if (!appScreenModulePromise) {
-    appScreenModulePromise = import('./features/apps/app-screen.js?ota=nv16').then(module => {
+    appScreenModulePromise = import('./features/apps/app-screen.js?ota=nv18').then(module => {
       appScreenModule = module;
       return module;
     }).catch(error => {
@@ -43,7 +46,7 @@ let novaVaultModulePromise = null;
 let novaVaultModule = null;
 function loadNovaVaultModule() {
   if (!novaVaultModulePromise) {
-    novaVaultModulePromise = import('./features/apps/nova-vault-screen-v13.js?ota=nv14').then(module => {
+    novaVaultModulePromise = import('./features/apps/nova-vault-screen-v13.js?ota=nv15').then(module => {
       novaVaultModule = module;
       return module;
     }).catch(error => {
@@ -130,11 +133,6 @@ function showDock(show) {
   document.body.classList.toggle('nx-auth-mode', !show);
 }
 
-function setVideoStudioRouteMode(active) {
-  document.body.classList.toggle('nx-video-studio-route-active', Boolean(active));
-  stage.classList.toggle('nx-video-stage-active', Boolean(active));
-}
-
 function setSplashMode(enabled) {
   document.body.classList.toggle('nx-splash-mode', Boolean(enabled));
 }
@@ -189,6 +187,16 @@ function renderCinematicSplash(phase = 'boot') {
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
+async function waitForNativeBuildInfo(timeoutMs = NATIVE_BUILD_INFO_WAIT_MS) {
+  const deadline = performance.now() + Math.max(0, Number(timeoutMs) || 0);
+  while (performance.now() < deadline) {
+    const info = window.NexusNovaNativeInfo;
+    if (info?.buildCommit && Number(info?.versionCode) > 0) return info;
+    await wait(50);
+  }
+  return window.NexusNovaNativeInfo || null;
 }
 
 function parentRouteForApp(id) {
@@ -263,11 +271,9 @@ router = createRouter({
   },
   onRoute(route, payload = {}) {
     setSplashMode(false);
-    const videoStudioActive = route === 'app' && payload.id === 'ai-video-studio';
     if (route === 'app') currentAppParent = parentRouteForApp(payload.id);
-    setVideoStudioRouteMode(videoStudioActive);
     syncDock(route, payload);
-    showDock(route !== 'auth' && !videoStudioActive);
+    showDock(route !== 'auth');
     if (route !== 'app' && appScreenModulePromise) appScreenModulePromise.then(module => module.cleanupAppScreen()).catch(() => {});
     if (route !== 'app' && novaVaultModulePromise) novaVaultModulePromise.then(module => module.cleanupNovaVaultScreen()).catch(() => {});
   }
@@ -330,6 +336,10 @@ function waitForBootSplashMinimum() {
 
 async function boot() {
   renderCinematicSplash('boot');
+  await waitForNativeBuildInfo();
+  void globalOtaUpdater.checkAndNotify().catch(error => {
+    console.warn('[NexusNova OTA] startup check skipped:', error);
+  });
   const user = await authService.waitForUser();
   await waitForBootSplashMinimum();
   if (!user) {
