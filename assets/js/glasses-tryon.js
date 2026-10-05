@@ -13,7 +13,7 @@ round:{h:.37,w:.98,a:1.08,r:.033,b:.055,l:0,d:.02,t:.96,c:.88},
 'cat-eye':{h:.33,w:1.02,a:1,r:.032,b:.055,l:.11,d:0,t:1,c:.28},
 aviator:{h:.42,w:1.04,a:1.08,r:.029,b:.06,l:.01,d:.08,t:1.04,c:.72}
 };
-const st={source:'none',image:null,url:null,stream:null,video:null,mirror:false,style:'classic',color:'#111827',face:null,detected:false,vision:false,busy:false,lastDetect:0,raf:0,worker:null,workerUrl:null};
+const st={source:'none',image:null,url:null,stream:null,video:null,mirror:false,style:'classic',color:'#111827',face:null,detected:false,vision:false,busy:false,lastDetect:0,raf:0};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2});
 const rgba=(h,a)=>{const n=parseInt(h.replace('#',''),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 const msg=(t,tone='')=>{if(status){status.textContent=t;status.dataset.tone=tone}};
@@ -23,17 +23,61 @@ const res=(w,h)=>{if(resolution)resolution.textContent=w&&h?`${w.toLocaleString(
 const faceMsg=(t,v,d)=>{if(faceStatus){faceStatus.textContent=t;faceStatus.dataset.visible=v?'true':'false';faceStatus.dataset.face=d?'true':'false'}};
 const stop=stream=>stream?.getTracks().forEach(t=>{try{t.stop()}catch(_){}});
 class Vision{
-  constructor(){this.ready=null;this.seq=0;this.worker=null;this.url=null}
-  make(){
-    const src=`const B=${JSON.stringify(BUNDLE)},W=${JSON.stringify(WASM)},M=${JSON.stringify(MODEL)};let F=null;async function load(mode){const x=await import(B),r=await x.FilesetResolver.forVisionTasks(W);try{F=await x.FaceLandmarker.createFromOptions(r,{baseOptions:{modelAssetPath:M,delegate:'GPU'},runningMode:mode,numFaces:1,minFaceDetectionConfidence:.52,minFacePresenceConfidence:.52,minTrackingConfidence:.52})}catch(_){F=await x.FaceLandmarker.createFromOptions(r,{baseOptions:{modelAssetPath:M,delegate:'CPU'},runningMode:mode,numFaces:1,minFaceDetectionConfidence:.52,minFacePresenceConfidence:.52,minTrackingConfidence:.52})}}async function mode(m){if(!F){await load(m);return}await F.setOptions({runningMode:m})}function pack(p){if(!p)return null;const b=new Float32Array(p.length*3);for(let i=0;i<p.length;i++){b[i*3]=p[i].x;b[i*3+1]=p[i].y;b[i*3+2]=p[i].z||0}return b}self.onmessage=async e=>{const p=e.data||{};try{if(p.type==='init'){await mode('IMAGE');self.postMessage({type:'ready'});return}await mode(p.type==='video'?'VIDEO':'IMAGE');const r=p.type==='video'?F.detectForVideo(p.bitmap,p.ts):F.detect(p.bitmap);p.bitmap.close?.();const a=r.faceLandmarks?.[0]||null,b=pack(a);if(b)self.postMessage({type:'result',id:p.id,buf:b.buffer,found:true},[b.buffer]);else self.postMessage({type:'result',id:p.id,buf:null,found:false})}catch(x){p.bitmap?.close?.();self.postMessage({type:'error',message:x?.message||'Vision inference failed'})}};`;
-    this.url=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));this.worker=new Worker(this.url,{type:'module'});
-    this.worker.onmessage=e=>{const d=e.data||{};if(d.type==='ready'){this.ready?.();this.ready=null;return}if(d.type==='result'){st.busy=false;st.face=d.buf?Array.from(new Float32Array(d.buf)).reduce((a,v,i)=>(i%3===0?a.concat([{x:v,y:0,z:0}]):a),[]):null;if(d.buf){const f=new Float32Array(d.buf);st.face=[];for(let i=0;i<f.length;i+=3)st.face.push({x:f[i],y:f[i+1],z:f[i+2]})}st.detected=!!d.found;setFaceState();}if(d.type==='error'){st.busy=false;eng('Vision engine error','error');pill('VISION ERROR','error');msg(d.message||'Vision inference failed.','error')}};
+  constructor(){this.readyPromise=null;this.landmarker=null;this.mode=null;this.delegate='CPU'}
+  async init(){
+    if(this.landmarker)return;
+    if(this.readyPromise)return this.readyPromise;
+    this.readyPromise=(async()=>{
+      const x=await import(BUNDLE);
+      const r=await x.FilesetResolver.forVisionTasks(WASM);
+      let lastError=null;
+      for(const delegate of ['GPU','CPU']){
+        try{
+          this.landmarker=await x.FaceLandmarker.createFromOptions(r,{
+            baseOptions:{modelAssetPath:MODEL,delegate},
+            runningMode:'IMAGE',
+            numFaces:1,
+            minFaceDetectionConfidence:.52,
+            minFacePresenceConfidence:.52,
+            minTrackingConfidence:.52
+          });
+          this.delegate=delegate;
+          this.mode='IMAGE';
+          return;
+        }catch(e){lastError=e}
+      }
+      throw lastError||new Error('Face vision engine could not be initialized.');
+    })().catch(e=>{this.readyPromise=null;throw e});
+    return this.readyPromise;
   }
-  async init(){if(!this.worker)this.make();if(st.vision)return;await new Promise((resolve,reject)=>{this.ready=resolve;this.worker.onerror=()=>reject(new Error('Vision worker failed to initialize.'));this.worker.postMessage({type:'init'})});st.vision=true}
-  async run(bitmap,video=false){if(!this.worker||st.busy){bitmap.close?.();return}st.busy=true;this.worker.postMessage({type:video?'video':'image',bitmap,id:++this.seq,ts:performance.now()},[bitmap])}
-  dispose(){try{this.worker?.terminate()}catch(_){}if(this.url)URL.revokeObjectURL(this.url)}
+  async setMode(mode){
+    await this.init();
+    if(this.mode===mode)return;
+    await this.landmarker.setOptions({runningMode:mode});
+    this.mode=mode;
+  }
+  async detectImage(image){
+    await this.setMode('IMAGE');
+    return this.landmarker.detect(image);
+  }
+  async detectVideo(video,timestamp){
+    await this.setMode('VIDEO');
+    return this.landmarker.detectForVideo(video,timestamp);
+  }
+  dispose(){
+    try{this.landmarker?.close?.()}catch(_){}
+    this.landmarker=null;
+    this.readyPromise=null;
+    this.mode=null;
+  }
 }
 const vision=new Vision();
+function applyDetection(result){
+  const pts=result?.faceLandmarks?.[0]||null;
+  st.face=pts||null;
+  st.detected=!!pts;
+  setFaceState();
+}
 function setFaceState(){if(st.detected){faceMsg('FACE LOCKED · AUTO FIT',true,true);pill(st.source==='camera'?'LIVE TRACKING':'FACE DETECTED','ready');msg(st.source==='camera'?'Face locked. Frame follows the live landmark stream.':'Face detected. Glasses automatically fitted.','success')}else{faceMsg('FACE NOT DETECTED',true,false);pill('SEARCHING FOR FACE','busy');msg('Move the face into clearer view for automatic fitting.')}} 
 function point(p,w,h,i,mir){const q=p[i];return q?{x:(mir?1-q.x:q.x)*w,y:q.y*h,z:q.z}:null}
 function geometry(p,w,h,mir,name){if(!p||p.length<300)return null;const s=S[name]||S.classic,P=i=>point(p,w,h,i,mir);const ro=P(L.ro),ri=P(L.ri),li=P(L.li),lo=P(L.lo),rt=P(L.rt),rb=P(L.rb),lt=P(L.lt),lb=P(L.lb),lf=P(L.lf),rf=P(L.rf);if(!ro||!ri||!li||!lo)return null;const A=mid(ro,ri),B=mid(lo,li),o=[A,B].sort((a,b)=>a.x-b.x),le=o[0],re=o[1],ipd=dist(le,re),ang=Math.atan2(re.y-le.y,re.x-le.x),fw=lf&&rf?Math.max(dist(lf,rf),ipd*2.05):ipd*2.1,eh=Math.max(ipd*.2,((rt&&rb?dist(rt,rb):ipd*.22)+(lt&&lb?dist(lt,lb):ipd*.22))*.5),yaw=clamp((le.z-re.z)/.085,-.9,.9),comp=clamp(1-Math.abs(yaw)*.24,.73,1),rx=ipd*.49*s.w*comp,ry=ipd*s.h*s.a,cd=ipd*.995*(1-Math.abs(yaw)*.035),cy=(le.y+re.y)/2+eh*.055;return{style:s,styleName:name,center:{x:(le.x+re.x)/2,y:cy},left:{x:(le.x+re.x)/2-cd/2,y:cy,rx:rx*(1+yaw*.28),ry,top:s.l*ry,bottom:s.d*ry},right:{x:(le.x+re.x)/2+cd/2,y:cy,rx:rx*(1-yaw*.28),ry,top:s.l*ry,bottom:s.d*ry},angle,bridge:Math.max(ipd*.025,ipd*s.b),rim:clamp(ipd*s.r,1.8,13),temple:ipd*.58*s.t,yaw,fw}}
@@ -44,9 +88,71 @@ class Renderer{
 }
 const renderer=new Renderer(ctx);
 function render(){if(st.source==='none')return;let w=canvas.width,h=canvas.height;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);if(st.source==='image'&&st.image)ctx.drawImage(st.image,0,0,w,h);if(st.source==='camera'&&st.video){ctx.save();if(st.mirror){ctx.translate(w,0);ctx.scale(-1,1)}ctx.drawImage(st.video,0,0,w,h);ctx.restore()}if(st.face&&st.detected){const g=geometry(st.face,w,h,st.mirror,st.style);if(g)renderer.draw(g,st.color)}}
-async function loadImage(file){stop(st.stream);st.stream=null;st.video=null;st.source='none';if(st.url)URL.revokeObjectURL(st.url);const u=URL.createObjectURL(file);st.url=u;try{const img=new Image();img.decoding='async';img.src=u;await new Promise((r,j)=>{img.onload=r;img.onerror=()=>j(new Error('The browser could not decode this image.'))});st.image=img;st.source='image';st.mirror=false;canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;res(canvas.width,canvas.height);empty.hidden=true;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=false;faceMsg('ANALYZING FACE',true,false);pill('ANALYZING IMAGE','busy');msg('Image loaded. Detecting face…');await vision.init();const b=await createImageBitmap(img);await vision.run(b,false)}catch(e){msg(e.message||'Unable to load image.','error');pill('IMAGE ERROR','error')}}
-async function camera(){if(st.source==='camera'){stop(st.stream);st.stream=null;st.video=null;st.source='none';st.face=null;st.detected=false;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;empty.hidden=false;return}try{await vision.init();if(!window.isSecureContext)throw new Error('Live camera requires HTTPS or a supported secure local browser context.');const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}},audio:false});const v=document.createElement('video');v.autoplay=true;v.muted=true;v.playsInline=true;v.srcObject=s;await v.play();st.stream=s;st.video=v;st.source='camera';st.mirror=true;empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';pill('LIVE TRACKING','busy');faceMsg('SEARCHING FOR FACE',true,false);msg('Camera active. Automatic tracking is starting…');requestAnimationFrame(loop)}catch(e){msg(e.name==='NotAllowedError'?'Camera permission was denied.':e.message||'Unable to start camera.','error');pill('CAMERA ERROR','error')}}
-async function loop(){if(st.source!=='camera')return;if(st.video?.videoWidth){if(canvas.width!==st.video.videoWidth||canvas.height!==st.video.videoHeight){canvas.width=st.video.videoWidth;canvas.height=st.video.videoHeight;res(canvas.width,canvas.height)}if(!st.busy&&performance.now()-st.lastDetect>90){st.lastDetect=performance.now();try{const b=await createImageBitmap(st.video);await vision.run(b,true)}catch(_){} }render()}if(st.source==='camera'&&document.visibilityState!=='hidden')st.raf=requestAnimationFrame(loop)}
+async function loadImage(file){stop(st.stream);st.stream=null;st.video=null;st.source='none';if(st.url)URL.revokeObjectURL(st.url);const u=URL.createObjectURL(file);st.url=u;try{const img=new Image();img.decoding='async';img.src=u;await new Promise((r,j)=>{img.onload=r;img.onerror=()=>j(new Error('The browser could not decode this image.'))});st.image=img;st.source='image';st.mirror=false;canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;res(canvas.width,canvas.height);empty.hidden=true;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=false;faceMsg('ANALYZING FACE',true,false);pill('ANALYZING IMAGE','busy');msg('Image loaded. Detecting face…');await vision.init();const r=await vision.detectImage(img);applyDetection(r)}catch(e){msg(e.message||'Unable to load image.','error');pill('IMAGE ERROR','error')}}
+async function camera(){
+  if(st.source==='camera'){
+    stop(st.stream);st.stream=null;st.video=null;st.source='none';st.face=null;st.detected=false;
+    cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;empty.hidden=false;
+    if(st.raf)cancelAnimationFrame(st.raf);st.raf=0;pill('READY','ready');faceMsg('',false,false);
+    msg('Live camera stopped.');
+    return;
+  }
+  try{
+    if(!window.isSecureContext)throw new Error('Live camera requires a secure HTTPS page.');
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('This browser does not expose camera access.');
+    await vision.init();
+    const s=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'user'},width:{ideal:1280},height:{ideal:720}},
+      audio:false
+    });
+    const v=document.createElement('video');
+    v.autoplay=true;v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');
+    v.srcObject=s;
+    await new Promise((resolve,reject)=>{
+      const ok=()=>{v.removeEventListener('error',bad);resolve()};
+      const bad=()=>{v.removeEventListener('loadedmetadata',ok);reject(new Error('Camera video stream could not be initialized.'))};
+      v.addEventListener('loadedmetadata',ok,{once:true});
+      v.addEventListener('error',bad,{once:true});
+    });
+    await v.play();
+    st.stream=s;st.video=v;st.source='camera';st.mirror=true;st.face=null;st.detected=false;
+    empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
+    pill('LIVE TRACKING','busy');faceMsg('SEARCHING FOR FACE',true,false);
+    msg('Camera active. Looking for your face…');
+    await vision.setMode('VIDEO');
+    st.lastDetect=0;st.busy=false;
+    loop();
+  }catch(e){
+    stop(st.stream);st.stream=null;st.video=null;st.source='none';
+    cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;
+    const name=e?.name||'';
+    msg(name==='NotAllowedError'||name==='PermissionDeniedError'?'Camera permission was denied.':name==='NotFoundError'?'No camera was found.':e.message||'Unable to start camera.','error');
+    pill('CAMERA ERROR','error');faceMsg('',false,false);
+  }
+}
+async function loop(){
+  if(st.source!=='camera')return;
+  if(st.video?.readyState>=2){
+    if(canvas.width!==st.video.videoWidth||canvas.height!==st.video.videoHeight){
+      canvas.width=st.video.videoWidth||1280;canvas.height=st.video.videoHeight||720;res(canvas.width,canvas.height)
+    }
+    const now=performance.now();
+    if(!st.busy&&now-st.lastDetect>120){
+      st.busy=true;st.lastDetect=now;
+      try{
+        const r=await vision.detectVideo(st.video,now);
+        applyDetection(r);
+      }catch(e){
+        eng('Tracking error','error');pill('CAMERA ERROR','error');
+        msg(e?.message||'Live face tracking failed.','error');
+      }finally{
+        st.busy=false;
+      }
+    }
+    render();
+  }
+  if(st.source==='camera'&&document.visibilityState!=='hidden')st.raf=requestAnimationFrame(loop);
+}
 function syncStyles(){styles.forEach(b=>{const on=b.dataset.style===st.style;b.classList.toggle('is-active',on);b.setAttribute('aria-pressed',on?'true':'false')})}
 function syncColors(){colors.forEach(b=>{const on=b.dataset.color.toUpperCase()===st.color.toUpperCase();b.classList.toggle('is-active',on);b.setAttribute('aria-pressed',on?'true':'false')})}
 imageInput.onchange=()=>{const f=imageInput.files?.[0];if(f)loadImage(f)};
@@ -56,6 +162,6 @@ styles.forEach(b=>b.onclick=()=>{st.style=b.dataset.style;syncStyles();render()}
 colors.forEach(b=>b.onclick=()=>{st.color=b.dataset.color;syncColors();render()});
 document.addEventListener('visibilitychange',()=>{if(st.source==='camera'&&document.visibilityState==='visible')requestAnimationFrame(loop)});
 window.addEventListener('beforeunload',()=>{stop(st.stream);vision.dispose();if(st.url)URL.revokeObjectURL(st.url)});
-eng('Vision engine loading','');pill('INITIALIZING VISION','busy');msg('Loading client-side vision engine…');syncStyles();syncColors();
+eng('Vision engine loading','');pill('INITIALIZING VISION','busy');msg('Loading NexusNova vision engine…');syncStyles();syncColors();
 vision.init().then(()=>{st.vision=true;eng('Vision engine ready','ready');pill('READY','ready');msg('Vision engine ready. Upload an image or activate live camera.')}).catch(e=>{eng('Vision engine unavailable','error');pill('ENGINE ERROR','error');msg(e.message||'Unable to initialize vision engine.','error')});
 })();
