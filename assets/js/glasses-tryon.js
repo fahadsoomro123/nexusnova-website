@@ -441,52 +441,93 @@ async function camera(){
     stage.dataset.camera='false';stage.dataset.face='false';stage.dataset.image='false';empty.hidden=false;exportBtn.disabled=true;cameraToggle.textContent='LIVE CAMERA';resetScan();
     faceMsg('',false,false);pill('READY','ready');msg('Live camera stopped.');render3D();return;
   }
-  if(!window.isSecureContext){msg('Live camera requires a secure HTTPS page.','error');pill('CAMERA ERROR','error');return}
-  if(!navigator.mediaDevices?.getUserMedia){msg('This browser does not expose camera access.','error');pill('CAMERA ERROR','error');return}
+
+  if(!window.isSecureContext){msg('Live camera requires a secure HTTPS page.','error');pill('CAMERA ERROR','error');eng('Camera unavailable','error');return}
+  if(!navigator.mediaDevices?.getUserMedia){msg('This browser does not expose camera access.','error');pill('CAMERA ERROR','error');eng('Camera unavailable','error');return}
 
   st.image=null;st.face=null;st.detected=false;
+  if(st.raf)cancelAnimationFrame(st.raf);st.raf=0;
+  if(st.scanTimer)cancelAnimationFrame(st.scanTimer);st.scanTimer=0;
   eng('Opening camera','busy');pill('STARTING CAMERA','busy');msg('Requesting camera access…');
 
-  let stream;
+  let stream=null;
   try{
-    stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'user'},width:{ideal:1280,max:1920},height:{ideal:720,max:1080},frameRate:{ideal:30,max:30}},
-      audio:false
+    // Start with the least restrictive request. Mobile browsers are much happier
+    // when width, height and facing mode are negotiated after access is granted.
+    stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+
+    st.stream=stream;st.source='camera';st.mirror=true;
+    video.muted=true;video.autoplay=true;video.playsInline=true;video.setAttribute('playsinline','');
+    video.srcObject=stream;
+
+    // Wait for an actual video frame before declaring the camera live.
+    await new Promise((resolve,reject)=>{
+      let settled=false;
+      const finish=fn=>{if(settled)return;settled=true;cleanup();fn()};
+      const onReady=()=>finish(resolve);
+      const onError=()=>finish(()=>reject(new Error('The camera stream could not be displayed.')));
+      const cleanup=()=>{
+        video.removeEventListener('loadedmetadata',onReady);
+        video.removeEventListener('playing',onReady);
+        video.removeEventListener('error',onError);
+        clearTimeout(timer);
+      };
+      const timer=setTimeout(()=>finish(resolve),2500);
+      video.addEventListener('loadedmetadata',onReady,{once:true});
+      video.addEventListener('playing',onReady,{once:true});
+      video.addEventListener('error',onError,{once:true});
+      if(video.readyState>=1)onReady();
     });
+
+    try{
+      await video.play();
+    }catch(playError){
+      await new Promise(resolve=>{
+        const retry=()=>{video.play().catch(()=>{});resolve()};
+        if(video.readyState>=2)retry();
+        else video.addEventListener('loadeddata',retry,{once:true});
+        setTimeout(resolve,1800);
+      });
+    }
+
+    const vw=video.videoWidth||stream.getVideoTracks?.()[0]?.getSettings?.().width||1280;
+    const vh=video.videoHeight||stream.getVideoTracks?.()[0]?.getSettings?.().height||720;
+    st.nativeW=vw;st.nativeH=vh;
+    setViewSize(vw,vh);res(vw,vh);
+
+    stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';
+    empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
+    faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
+    st.lastDetect=0;st.busy=false;
+    cameraLoop();
+
+    // Vision is deliberately lazy. It must never block camera startup.
+    vision.init()
+      .then(()=>vision.setMode('VIDEO'))
+      .then(()=>{
+        if(st.source!=='camera')return;
+        eng(`Live vision ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');
+        return initThree().catch(()=>{});
+      })
+      .catch(()=>{
+        if(st.source!=='camera')return;
+        eng('Camera live · face scan unavailable','error');pill('CAMERA LIVE','ready');
+        msg('Camera is live. Face scanning is unavailable on this device right now.','error');
+      });
   }catch(e){
+    if(stream){try{stream.getTracks().forEach(t=>t.stop())}catch(_){}}
+    st.stream=null;st.source='none';st.face=null;st.detected=false;clearGlasses();
+    video.pause();video.srcObject=null;
+    stage.dataset.camera='false';stage.dataset.face='false';stage.dataset.image='false';
+    empty.hidden=false;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;resetScan();
     const n=e?.name||'';
     msg(n==='NotAllowedError'||n==='PermissionDeniedError'?'Camera permission was denied.':
       n==='NotFoundError'?'No camera was found.':
       n==='NotReadableError'?'The camera is already in use by another app or browser tab.':
       n==='OverconstrainedError'?'This camera does not support the requested mode.':
-      e?.message||'Unable to access the camera.','error');
-    pill('CAMERA ERROR','error');eng('Camera unavailable','error');return;
+      e?.message||'Unable to start camera.','error');
+    pill('CAMERA ERROR','error');eng('Camera unavailable','error');faceMsg('',false,false);
   }
-
-  st.stream=stream;st.source='camera';st.mirror=true;st.nativeW=1280;st.nativeH=720;
-  video.srcObject=stream;video.muted=true;video.autoplay=true;video.playsInline=true;video.setAttribute('playsinline','');
-  stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';
-  empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
-  faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
-
-  // Do not wait for metadata, face vision, or 3D model loading before showing camera.
-  video.play().catch(e=>{if(st.source==='camera')msg('Camera opened, but video playback was blocked by the browser. Tap the camera button again.','error')});
-  st.lastDetect=0;st.busy=false;
-  cameraLoop();
-
-  Promise.resolve()
-    .then(()=>vision.init())
-    .then(()=>vision.setMode('VIDEO'))
-    .then(()=>{
-      if(st.source!=='camera')return;
-      eng(`Live vision ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');
-      initThree().catch(()=>{});
-    })
-    .catch(()=>{
-      if(st.source!=='camera')return;
-      eng('Camera live · face scan unavailable','error');pill('CAMERA LIVE','ready');
-      msg('Camera is live. Face scanning is unavailable on this device right now.','error');
-    });
 }
 function cameraLoop(){
   if(st.source!=='camera')return;
@@ -543,11 +584,5 @@ window.addEventListener('resize',resizeRenderer);
 window.addEventListener('beforeunload',()=>{stop(st.stream);vision.dispose();if(st.url)URL.revokeObjectURL(st.url);try{st.renderer?.dispose()}catch(_){}});
 eng(WEBGL_AVAILABLE?'Ready for premium eyewear':'Camera-ready · 3D renderer unavailable','ready');
 pill('READY','ready');msg('Upload a portrait or activate live camera.');syncStyles();syncColors();
-Promise.allSettled([vision.init(),initThree()]).then(results=>{
-  const failed=results.find(r=>r.status==='rejected');
-  if(failed&&!WEBGL_AVAILABLE){
-    eng('Camera ready · 3D needs WebGL','ready');pill('CAMERA READY','ready');
-    msg('Camera controls are ready. This browser does not expose WebGL for 3D eyewear.');
-  }
-}).catch(()=>{});
+// Vision and 3D initialize on demand so live camera startup stays independent of model/network loading.
 })();
