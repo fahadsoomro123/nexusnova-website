@@ -47,7 +47,7 @@ const PALETTES={
   '#1D4ED8':{frame:0x1d4bb7,metal:0xb9c7e8,lens:0x749bd7},
   '#A16207':{frame:0x9a620a,metal:0xf0d18d,lens:0xc6a36b}
 };
-const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',modelId:'nx-ac-obsidian',model:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:window.matchMedia?.('(pointer:coarse)')?.matches?256:320,detH:window.matchMedia?.('(pointer:coarse)')?.matches?144:180,threeReady:false,scene:null,camera3:null,renderer:null,glasses:null,glassMeta:null,THREE:null,pmrem:null,environment:null,viewW:0,viewH:0,nativeW:0,nativeH:0};
+const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',modelId:'nx-ac-obsidian',model:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:window.matchMedia?.('(pointer:coarse)')?.matches?256:320,detH:window.matchMedia?.('(pointer:coarse)')?.matches?144:180,threeReady:false,scene:null,camera3:null,renderer:null,glasses:null,glassMeta:null,THREE:null,loader:null,model:null,modelLoading:false,modelWidth:.134,pmrem:null,environment:null,viewW:0,viewH:0,nativeW:0,nativeH:0};
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -280,41 +280,51 @@ async function loadEyewearModel(modelId){
   const spec=EYEWEAR.find(x=>x.id===modelId)||EYEWEAR[0];
   if(!st.loader||!st.THREE)return;
   if(st.modelId===spec.id&&st.glasses)return;
-  st.modelId=spec.id;st.style=spec.style;st.color=spec.frame;
+  if(st.modelLoading)return;
+  st.modelId=spec.id;st.style=spec.style;st.color=spec.frame;st.modelLoading=true;
   if(st.glasses)disposeObject(st.glasses);
   st.glasses=null;
-  await new Promise((resolve,reject)=>{
-    st.loader.load(spec.url,gltf=>{
-      const root=gltf.scene;
-      root.traverse(o=>{
-        if(o.isMesh){
-          o.frustumCulled=false;o.renderOrder=20;
-          const mats=Array.isArray(o.material)?o.material:[o.material];
-          mats.forEach(m=>{
-            m.side=st.THREE.DoubleSide;
-            if(m.transparent||/lens|glass/i.test(m.name||'')){
-              m.transparent=true;m.depthWrite=false;m.opacity=Math.min(1,Math.max(.22,m.opacity??.72));m.color?.setHex(spec.lens);m.roughness=.08;m.metalness=.02;
-            }else if(m.metalness>.65||/metal|chrome|steel|hinge|screw/i.test(m.name||'')){
-              m.metalness=.92;m.roughness=.14;
-            }else{
-              m.color?.set(spec.frame);m.roughness=.16;m.metalness=.06;
-            }
-            if('envMapIntensity' in m)m.envMapIntensity=1.35;
-            if('clearcoat' in m)m.clearcoat=.85;
-            if('clearcoatRoughness' in m)m.clearcoatRoughness=.06;
-          });
+  pill('LOADING FRAME','busy');msg(`Loading ${spec.family} ${spec.code}…`);
+  try{
+    const gltf=await new Promise((resolve,reject)=>st.loader.load(spec.url,resolve,undefined,reject));
+    const root=gltf.scene;
+    root.traverse(o=>{
+      if(!o.isMesh)return;
+      o.frustumCulled=false;o.renderOrder=20;
+      const mats=Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(m=>{
+        m.side=st.THREE.DoubleSide;
+        if(m.transparent||/lens|glass/i.test(m.name||'')){
+          m.transparent=true;m.depthWrite=false;m.opacity=Math.min(1,Math.max(.30,m.opacity??.82));
+          m.roughness=.07;m.metalness=.01;
+          if(m.color)m.color.setHex(spec.lens);
+          if('envMapIntensity' in m)m.envMapIntensity=1.55;
+        }else if(m.metalness>.65||/metal|chrome|steel|hinge|screw/i.test(m.name||'')){
+          m.metalness=.94;m.roughness=.12;
+        }else{
+          if(m.color)m.color.set(spec.frame);
+          m.roughness=.15;m.metalness=.05;
+          if('clearcoat' in m)m.clearcoat=.92;
+          if('clearcoatRoughness' in m)m.clearcoatRoughness=.05;
         }
       });
-      const box=new st.THREE.Box3().setFromObject(root),size=box.getSize(new st.THREE.Vector3());
-      const width=Math.max(size.x,size.z);
-      root.scale.setScalar(spec.size/Math.max(width,.001));
-      const box2=new st.THREE.Box3().setFromObject(root),center=box2.getCenter(new st.THREE.Vector3());
-      root.position.sub(center);
-      root.rotation.set(0,0,0);
-      root.userData.spec=spec;
-      st.glasses=root;st.scene.add(root);st.model=spec;setColor();updateModelCards();resolve();
-    },undefined,reject);
-  }).catch(e=>{msg(`Eyewear model could not be loaded: ${e?.message||'unknown error'}`,'error');pill('MODEL ERROR','error');throw e});
+    });
+    const box=new st.THREE.Box3().setFromObject(root),size=box.getSize(new st.THREE.Vector3());
+    const width=Math.max(size.x,.0001);
+    root.position.sub(box.getCenter(new st.THREE.Vector3()));
+    const canonical=.134;
+    root.scale.setScalar(canonical/width);
+    const scaled=new st.THREE.Box3().setFromObject(root),scaledSize=scaled.getSize(new st.THREE.Vector3());
+    st.modelWidth=Math.max(scaledSize.x,.0001);
+    st.glasses=root;st.scene.add(root);st.model=spec;root.visible=!!st.detected;
+    setColor();updateModelCards();
+    pill(st.detected?'FACE FIT READY':'FRAME READY','ready');
+    msg(st.detected?'Premium 3D eyewear fitted automatically.':`${spec.family} ${spec.code} ready.`,'success');
+  }catch(e){
+    msg('This eyewear model could not load. Retrying with the NexusNova fallback.','error');pill('MODEL UNAVAILABLE','error');
+    if(spec.id!=='nx-ac-obsidian')try{await loadEyewearModel('nx-ac-obsidian')}catch(_){}
+    else throw e;
+  }finally{st.modelLoading=false}
 }
 function setStyle(){
   const candidates=EYEWEAR.filter(x=>x.style===st.style);
@@ -340,15 +350,15 @@ function updateModelCards(){
 }
 async function initThree(){
   if(st.threeReady)return;
-  eng('Loading NexusNova eyewear','busy');pill('LOADING 3D','busy');
+  eng('Preparing NexusNova 3D renderer','busy');pill('STARTING 3D','busy');
   const THREE=await import('three');
   const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
   st.THREE=THREE;window.THREE=THREE;st.loader=new GLTFLoader();
   makeRenderer(THREE);
   st.threeReady=true;
-  await loadEyewearModel('nx-ac-obsidian');
+  setStyle();
   st.renderer.compileAsync?.(st.scene,st.camera3).catch(()=>{});
-  eng('NexusNova luxury eyewear ready','ready');pill('READY','ready');
+  eng('NexusNova luxury eyewear renderer ready','ready');pill('3D READY','ready');
 }
 function render3D(){
   if(!st.threeReady||!st.renderer)return;
@@ -364,8 +374,7 @@ function fitGlasses(pts,w,h,mir){
   const ipd=dist(le,re),angle=Math.atan2(re.y-le.y,re.x-le.x);
   const eyeHeight=Math.max(ipd*.18,((rt&&rb?dist(rt,rb):ipd*.22)+(lt&&lb?dist(lt,lb):ipd*.22))*.5);
   const yaw=clamp((le.z-re.z)/.085,-.72,.72),pitch=clamp(((re.z+le.z)*.5)*.72,-.28,.28);
-  const spec=EYEWEAR.find(x=>x.id===st.modelId)||EYEWEAR[0];
-  const fitScale=ipd/spec.size;
+  const fitScale=ipd/Math.max(st.modelWidth,.0001);
   const centerY=(le.y+re.y)*.5+eyeHeight*.02;
   st.glasses.position.set((le.x+re.x)*.5-w/2,h/2-centerY,0);
   st.glasses.scale.setScalar(fitScale);
@@ -410,9 +419,9 @@ async function loadImage(file){
     st.image=img;st.source='image';st.nativeW=img.naturalWidth;st.nativeH=img.naturalHeight;setViewSize(st.nativeW,st.nativeH);res(st.nativeW,st.nativeH);
     stage.dataset.camera='false';stage.dataset.image='true';stage.dataset.face='false';imagePreview.src=u;
     empty.hidden=true;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=false;faceMsg('ANALYZING FACE',true,false);scanUi(12,'SCANNING IMAGE');
-    await vision.init();await initThree();resizeRenderer();
+    await Promise.all([vision.init(),initThree()]);resizeRenderer();
     const detector=prepareDetectionCanvas(img.naturalWidth,img.naturalHeight,img);
-    const result=await vision.image(detector);applyDetection(result);render3D();
+    const result=await vision.image(detector);applyDetection(result);if(!st.glasses)await loadEyewearModel(st.modelId||'nx-ac-obsidian');if(st.face&&st.detected)fitGlasses(st.face,st.nativeW||canvas.width,st.nativeH||canvas.height,false);render3D();
   }catch(e){
     st.source='none';exportBtn.disabled=true;empty.hidden=false;stage.dataset.image='false';resetScan();eng('Vision engine error','error');pill('IMAGE SCAN ERROR','error');msg(e?.message||'Unable to scan this image.','error');
   }
@@ -436,7 +445,10 @@ async function camera(){
     stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
     setViewSize(st.nativeW,st.nativeH);res(st.nativeW,st.nativeH);
     faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
-    await vision.init();await initThree();await vision.setMode('VIDEO');resizeRenderer();
+    await vision.init();
+    await vision.setMode('VIDEO');
+    initThree().catch(e=>{eng('3D renderer unavailable','error');msg('Camera is live, but the 3D eyewear renderer is still loading.','error')});
+
     eng(`Live 3D eyewear ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');st.lastDetect=0;st.busy=false;
     cameraLoop();
   }catch(e){
@@ -461,7 +473,10 @@ function cameraLoop(){
         msg(e?.message||'Live 3D face tracking failed.','error');pill('TRACKING ERROR','error');eng('Tracking error','error');
       }finally{st.busy=false}
     }
-    if(st.face&&st.detected)fitGlasses(st.face,canvas.width,canvas.height,true);
+    if(st.face&&st.detected){
+      if(st.glasses)fitGlasses(st.face,canvas.width,canvas.height,true);
+      else if(st.threeReady&&!st.modelLoading)loadEyewearModel(st.modelId||'nx-ac-obsidian').catch(()=>{});
+    }
     render3D();
   }
   if(st.source==='camera'&&document.visibilityState!=='hidden')st.raf=requestAnimationFrame(cameraLoop);
@@ -495,5 +510,4 @@ document.addEventListener('visibilitychange',()=>{if(st.source==='camera'&&docum
 window.addEventListener('resize',resizeRenderer);
 window.addEventListener('beforeunload',()=>{stop(st.stream);vision.dispose();if(st.url)URL.revokeObjectURL(st.url);try{st.renderer?.dispose()}catch(_){}});
 eng('Ready for premium eyewear','ready');pill('READY','ready');msg('Upload a portrait or activate live camera.');syncStyles();syncColors();
-initThree().catch(e=>{eng('3D eyewear engine unavailable','error');pill('ENGINE ERROR','error');msg(e?.message||'Unable to initialize 3D eyewear engine.','error')});
 })();
