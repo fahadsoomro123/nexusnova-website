@@ -31,7 +31,7 @@
 <div class="vg-hero-meta"><span>AUTO FACE FIT</span><span>CLIENT-SIDE VISION</span><span>LIVE TRACKING</span><span>NATIVE PNG</span></div></section>
 <section class="vg-studio">
 <header class="vg-studio-head"><div class="vg-studio-title"><span class="vg-micro-label">NEXUSNOVA TRY-ON</span><h2>Automatic fitting workspace</h2><p>Upload a portrait or activate the camera. The frame follows the detected face automatically.</p></div>
-<div class="vg-source-actions"><label class="vg-action vg-action-primary"><input type="file" accept="image/*" data-image-input hidden><span>UPLOAD IMAGE</span></label><button type="button" class="vg-action" data-camera-toggle>LIVE CAMERA</button><button type="button" class="vg-action vg-action-primary" data-export disabled>SAVE PNG</button></div></header>
+<div class="vg-source-actions"><label class="vg-action vg-action-primary"><input type="file" accept="image/*" data-image-input hidden><span>UPLOAD IMAGE</span></label><button type="button" class="vg-action" data-camera-toggle onclick="window.__nnTryOnCameraClick&&window.__nnTryOnCameraClick(this)">LIVE CAMERA</button><button type="button" class="vg-action vg-action-primary" data-export disabled>SAVE PNG</button></div></header>
 <div class="vg-studio-body">
 <section class="vg-stage-panel"><div class="vg-stage-topline"><span class="vg-detection-pill" data-detection-status>INITIALIZING VISION</span><span class="vg-resolution" data-resolution>0 × 0</span></div>
 <div class="vg-stage" data-stage><video data-video autoplay muted playsinline aria-label="Live camera preview"></video><img data-image-preview alt="Selected portrait preview"><canvas data-canvas aria-label="3D automatic virtual glasses preview"></canvas><div class="vg-camera-frame" data-camera-frame hidden aria-hidden="true"><span class="vg-corner vg-c1"></span><span class="vg-corner vg-c2"></span><span class="vg-corner vg-c3"></span><span class="vg-corner vg-c4"></span><span class="vg-scan-orb"></span></div>
@@ -62,5 +62,34 @@
 <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer"><span class="nn-social-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
 <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer"><span class="nn-social-icon"><svg viewBox="0 0 24 24"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
 </div></section></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div></footer>
+<script src="assets/js/main.js" defer></script><script src="assets/js/nn-inner-shell.js" defer></script><script src="assets/js/glasses-tryon.js" defer></script><script>
+window.__nnTryOnCameraClick=async function(button){
+  if(window.__NexusNovaTryOnMainReady&&typeof window.__NexusNovaTryOnCamera==='function')return window.__NexusNovaTryOnCamera();
+  const video=document.querySelector('[data-video]'),stage=document.querySelector('[data-stage]'),empty=document.querySelector('[data-empty-state]'),status=document.querySelector('[data-status]'),pill=document.querySelector('[data-detection-status]'),res=document.querySelector('[data-resolution]');
+  if(!video||!stage)return;
+  if(button.__nnStream){
+    try{button.__nnStream.getTracks().forEach(t=>t.stop())}catch(_){}
+    button.__nnStream=null;video.pause();video.srcObject=null;stage.dataset.camera='false';empty.hidden=false;button.textContent='LIVE CAMERA';if(status)status.textContent='Live camera stopped.';if(pill)pill.textContent='READY';if(res)res.textContent='0 × 0';return;
+  }
+  if(!window.isSecureContext){if(status)status.textContent='Camera requires an HTTPS page.';return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){if(status)status.textContent='This browser does not expose camera access.';return}
+  if(status)status.textContent='Opening your camera…';
+  if(pill){pill.textContent='STARTING CAMERA';pill.dataset.state='busy'}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    button.__nnStream=stream;video.srcObject=stream;video.muted=true;video.playsInline=true;video.autoplay=true;
+    stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';empty.hidden=true;button.textContent='STOP CAMERA';
+    const sync=()=>{const w=video.videoWidth||0,h=video.videoHeight||0;if(res&&w&&h)res.textContent=w.toLocaleString()+' × '+h.toLocaleString()};
+    video.addEventListener('loadedmetadata',sync,{once:true});video.addEventListener('playing',sync,{once:true});sync();
+    video.play().catch(()=>{if(status)status.textContent='Camera opened, but video playback was blocked by the browser.'});
+    if(pill){pill.textContent='CAMERA LIVE';pill.dataset.state='ready'}
+    if(status)status.textContent='Camera live. Face scanning will start when the NexusNova engine is available.';
+  }catch(e){
+    const n=e&&e.name||'';
+    if(status)status.textContent=n==='NotAllowedError'?'Camera permission was denied.':n==='NotFoundError'?'No camera was found.':n==='NotReadableError'?'The camera is already in use.':(e&&e.message)||'Unable to access the camera.';
+    if(pill){pill.textContent='CAMERA ERROR';pill.dataset.state='error'}
+  }
+};
+</script>
 <script src="assets/js/main.js" defer></script><script src="assets/js/nn-inner-shell.js" defer></script><script src="assets/js/glasses-tryon.js" defer></script>
 </body></html>
