@@ -1,9 +1,15 @@
 (()=>{
 'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const canvas=$('[data-canvas]'),ctx=canvas?.getContext('webgl2',{alpha:true,antialias:true,preserveDrawingBuffer:true})||canvas?.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:true});
+const canvas=$('[data-canvas]');
 const video=$('[data-video]'),imagePreview=$('[data-image-preview]'),stage=$('[data-stage]');
-if(!canvas||!ctx||!video)return;
+if(!canvas||!video)return;
+let ctx=null;
+try{
+  ctx=canvas.getContext('webgl2',{alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'})
+    ||canvas.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+}catch(_){ctx=null}
+const WEBGL_AVAILABLE=!!ctx;
 
 const imageInput=$('[data-image-input]'),cameraToggle=$('[data-camera-toggle]'),exportBtn=$('[data-export]');
 const empty=$('[data-empty-state]'),status=$('[data-status]'),detectPill=$('[data-detection-status]'),resolution=$('[data-resolution]');
@@ -123,7 +129,10 @@ class Vision{
 const vision=new Vision();
 
 function makeRenderer(THREE){
-  const r=new THREE.WebGLRenderer({canvas,context:ctx,alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+  if(!WEBGL_AVAILABLE||!ctx)throw new Error('WebGL is unavailable on this device/browser.');
+  const opts={canvas,alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'};
+  opts.context=ctx;
+  const r=new THREE.WebGLRenderer(opts);
   const touch=window.matchMedia?.('(pointer:coarse)')?.matches;
   r.setPixelRatio(Math.min(window.devicePixelRatio||1,touch?1.25:1.5));
   r.transmissionResolutionScale=touch?.5:.75;
@@ -139,8 +148,6 @@ function makeRenderer(THREE){
   const key=new THREE.DirectionalLight(0xffffff,2.7);key.position.set(-180,240,260);st.scene.add(key);
   const fill=new THREE.DirectionalLight(0xdbeafe,1.35);fill.position.set(220,60,180);st.scene.add(fill);
   const warm=new THREE.DirectionalLight(0xffd2aa,1.05);warm.position.set(40,-220,230);st.scene.add(warm);
-  const env=new THREE.Color(0xffffff);st.scene.background=null;
-  st.camera3.lookAt(0,0,0);
 }
 function resizeRenderer(){
   if(!st.renderer||!st.viewW||!st.viewH)return;
@@ -350,15 +357,15 @@ function updateModelCards(){
 }
 async function initThree(){
   if(st.threeReady)return;
+  if(!WEBGL_AVAILABLE)throw new Error('WebGL is unavailable on this device/browser.');
   eng('Preparing NexusNova 3D renderer','busy');pill('STARTING 3D','busy');
   const THREE=await import('three');
   const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
   st.THREE=THREE;window.THREE=THREE;st.loader=new GLTFLoader();
-  makeRenderer(THREE);
-  st.threeReady=true;
-  setStyle();
+  makeRenderer(THREE);st.threeReady=true;
+  await loadEyewearModel(st.modelId||'nx-ac-obsidian');
   st.renderer.compileAsync?.(st.scene,st.camera3).catch(()=>{});
-  eng('NexusNova luxury eyewear renderer ready','ready');pill('3D READY','ready');
+  eng('NexusNova luxury eyewear ready','ready');pill('READY','ready');
 }
 function render3D(){
   if(!st.threeReady||!st.renderer)return;
@@ -534,5 +541,13 @@ colors.forEach(b=>b.onclick=()=>{st.color=b.dataset.color;syncColors();setColor(
 document.addEventListener('visibilitychange',()=>{if(st.source==='camera'&&document.visibilityState==='visible')requestAnimationFrame(cameraLoop)});
 window.addEventListener('resize',resizeRenderer);
 window.addEventListener('beforeunload',()=>{stop(st.stream);vision.dispose();if(st.url)URL.revokeObjectURL(st.url);try{st.renderer?.dispose()}catch(_){}});
-eng('Ready for premium eyewear','ready');pill('READY','ready');msg('Upload a portrait or activate live camera.');syncStyles();syncColors();
+eng(WEBGL_AVAILABLE?'Ready for premium eyewear':'Camera-ready · 3D renderer unavailable','ready');
+pill('READY','ready');msg('Upload a portrait or activate live camera.');syncStyles();syncColors();
+Promise.allSettled([vision.init(),initThree()]).then(results=>{
+  const failed=results.find(r=>r.status==='rejected');
+  if(failed&&!WEBGL_AVAILABLE){
+    eng('Camera ready · 3D needs WebGL','ready');pill('CAMERA READY','ready');
+    msg('Camera controls are ready. This browser does not expose WebGL for 3D eyewear.');
+  }
+}).catch(()=>{});
 })();
