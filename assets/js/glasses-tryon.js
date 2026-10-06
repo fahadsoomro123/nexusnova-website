@@ -565,6 +565,7 @@ $('[data-model-id]').forEach(b=>b.onclick=async()=>{
   try{await initThree();pill('LOADING FRAME','busy');msg(`Loading ${b.dataset.modelId}…`);await loadEyewearModel(id);if(st.face&&st.detected)fitGlasses(st.face,st.nativeW||canvas.width,st.nativeH||canvas.height,st.source==='camera');render3D();pill('FACE FIT READY','ready');msg('NexusNova eyewear fitted automatically.','success')}catch(_){}
 });
 
+window.__NexusNovaTryOnMainReady=true;window.__NexusNovaTryOnCamera=camera;
 cameraToggle.onclick=()=>camera();exportBtn.onclick=exportPng;
 styles.forEach(b=>b.onclick=()=>{st.style=b.dataset.style;syncStyles();setStyle();if(st.face&&st.detected)fitGlasses(st.face,canvas.width,canvas.height,st.source==='camera');render3D()});
 colors.forEach(b=>b.onclick=()=>{st.color=b.dataset.color;syncColors();setColor();render3D()});
