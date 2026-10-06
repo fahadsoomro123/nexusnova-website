@@ -434,54 +434,79 @@ async function camera(){
     stage.dataset.camera='false';stage.dataset.face='false';stage.dataset.image='false';empty.hidden=false;exportBtn.disabled=true;cameraToggle.textContent='LIVE CAMERA';resetScan();
     faceMsg('',false,false);pill('READY','ready');msg('Live camera stopped.');render3D();return;
   }
-  try{
-    if(!window.isSecureContext)throw new Error('Live camera requires a secure HTTPS page.');
-    if(!navigator.mediaDevices?.getUserMedia)throw new Error('This browser does not expose camera access.');
-    st.image=null;st.face=null;st.detected=false;
-    eng('Opening camera','busy');pill('STARTING CAMERA','busy');msg('Opening your camera…');
-    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'user'},width:{ideal:1280,max:1920},height:{ideal:720,max:1080},frameRate:{ideal:30,max:30}},audio:false});
-    video.srcObject=s;await video.play();if(!video.videoWidth||!video.videoHeight)await new Promise(resolve=>video.addEventListener('loadeddata',resolve,{once:true}));
-    st.stream=s;st.source='camera';st.mirror=true;st.nativeW=video.videoWidth||1280;st.nativeH=video.videoHeight||720;
-    stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
-    setViewSize(st.nativeW,st.nativeH);res(st.nativeW,st.nativeH);
-    faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
-    await vision.init();
-    await vision.setMode('VIDEO');
-    initThree().catch(e=>{eng('3D renderer unavailable','error');msg('Camera is live, but the 3D eyewear renderer is still loading.','error')});
+  if(!window.isSecureContext){msg('Live camera requires a secure HTTPS page.','error');pill('CAMERA ERROR','error');return}
+  if(!navigator.mediaDevices?.getUserMedia){msg('This browser does not expose camera access.','error');pill('CAMERA ERROR','error');return}
 
-    eng(`Live 3D eyewear ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');st.lastDetect=0;st.busy=false;
-    cameraLoop();
+  st.image=null;st.face=null;st.detected=false;
+  eng('Opening camera','busy');pill('STARTING CAMERA','busy');msg('Requesting camera access…');
+
+  let stream;
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'user'},width:{ideal:1280,max:1920},height:{ideal:720,max:1080},frameRate:{ideal:30,max:30}},
+      audio:false
+    });
   }catch(e){
-    stop(st.stream);st.stream=null;video.pause();video.srcObject=null;st.source='none';st.face=null;st.detected=false;clearGlasses();
-    stage.dataset.camera='false';stage.dataset.face='false';cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;resetScan();
-    const n=e?.name||'';msg(n==='NotAllowedError'||n==='PermissionDeniedError'?'Camera permission was denied.':n==='NotFoundError'?'No camera was found.':e?.message||'Unable to start camera.','error');
-    pill('CAMERA ERROR','error');eng('Camera unavailable','error');faceMsg('',false,false);
+    const n=e?.name||'';
+    msg(n==='NotAllowedError'||n==='PermissionDeniedError'?'Camera permission was denied.':
+      n==='NotFoundError'?'No camera was found.':
+      n==='NotReadableError'?'The camera is already in use by another app or browser tab.':
+      n==='OverconstrainedError'?'This camera does not support the requested mode.':
+      e?.message||'Unable to access the camera.','error');
+    pill('CAMERA ERROR','error');eng('Camera unavailable','error');return;
   }
+
+  st.stream=stream;st.source='camera';st.mirror=true;st.nativeW=1280;st.nativeH=720;
+  video.srcObject=stream;video.muted=true;video.autoplay=true;video.playsInline=true;video.setAttribute('playsinline','');
+  stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';
+  empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
+  faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
+
+  // Do not wait for metadata, face vision, or 3D model loading before showing camera.
+  video.play().catch(e=>{if(st.source==='camera')msg('Camera opened, but video playback was blocked by the browser. Tap the camera button again.','error')});
+  st.lastDetect=0;st.busy=false;
+  cameraLoop();
+
+  Promise.resolve()
+    .then(()=>vision.init())
+    .then(()=>vision.setMode('VIDEO'))
+    .then(()=>{
+      if(st.source!=='camera')return;
+      eng(`Live vision ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');
+      initThree().catch(()=>{});
+    })
+    .catch(()=>{
+      if(st.source!=='camera')return;
+      eng('Camera live · face scan unavailable','error');pill('CAMERA LIVE','ready');
+      msg('Camera is live. Face scanning is unavailable on this device right now.','error');
+    });
 }
 function cameraLoop(){
   if(st.source!=='camera')return;
   if(video.readyState>=2){
-    const now=performance.now();
-    const interval=window.matchMedia?.('(pointer:coarse)')?.matches?420:240;
+    const vw=video.videoWidth||1280,vh=video.videoHeight||720;
+    if(st.nativeW!==vw||st.nativeH!==vh){
+      st.nativeW=vw;st.nativeH=vh;setViewSize(vw,vh);res(vw,vh);
+    }
+    const now=performance.now(),interval=window.matchMedia?.('(pointer:coarse)')?.matches?420:240;
     if(!st.busy&&now-st.lastDetect>=interval&&vision.landmarker){
       st.busy=true;st.lastDetect=now;
       try{
-        const detector=prepareDetectionCanvas(video.videoWidth||1280,video.videoHeight||720,video);
+        const detector=prepareDetectionCanvas(vw,vh,video);
         const result=vision.landmarker.detectForVideo(detector,now);
         applyDetection(result);
       }catch(e){
-        msg(e?.message||'Live 3D face tracking failed.','error');pill('TRACKING ERROR','error');eng('Tracking error','error');
+        msg(e?.message||'Live face tracking failed.','error');pill('TRACKING ERROR','error');
       }finally{st.busy=false}
     }
     if(st.face&&st.detected){
-      if(st.glasses)fitGlasses(st.face,canvas.width,canvas.height,true);
+      if(st.glasses)fitGlasses(st.face,st.nativeW,st.nativeH,true);
       else if(st.threeReady&&!st.modelLoading)loadEyewearModel(st.modelId||'nx-ac-obsidian').catch(()=>{});
     }
     render3D();
   }
   if(st.source==='camera'&&document.visibilityState!=='hidden')st.raf=requestAnimationFrame(cameraLoop);
 }
-
 function exportPng(){
   if(st.source==='none'||!st.renderer)return;
   render3D();
