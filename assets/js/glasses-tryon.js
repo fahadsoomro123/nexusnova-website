@@ -33,7 +33,7 @@ const PALETTES={
   '#1D4ED8':{frame:0x1d4bb7,metal:0xb9c7e8,lens:0x749bd7},
   '#A16207':{frame:0x9a620a,metal:0xf0d18d,lens:0xc6a36b}
 };
-const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',face:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:320,detH:180,threeReady:false,scene:null,camera3:null,renderer:null,mediaTexture:null,glasses:null,glassMeta:null};
+const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',face:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:window.matchMedia?.('(pointer:coarse)')?.matches?256:320,detH:window.matchMedia?.('(pointer:coarse)')?.matches?144:180,threeReady:false,scene:null,camera3:null,renderer:null,mediaTexture:null,glasses:null,glassMeta:null};
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -260,7 +260,7 @@ function applyDetection(result){
     fitGlasses(st.face,canvas.width,canvas.height,st.source==='camera');
     faceMsg('FACE LOCKED · 3D FIT',true,true);pill(st.source==='camera'?'FACE LOCKED':'FACE DETECTED','ready');
     msg(st.source==='camera'?'Face locked. Premium 3D eyewear is tracking live.':'Face detected. Premium 3D glasses automatically fitted.','success');
-    if(st.source==='camera')scanUi(100,'FACE SCAN COMPLETE');
+    scanUi(100,'FACE SCAN COMPLETE');
   }else{
     clearGlasses();faceMsg('FACE NOT DETECTED',true,false);pill('SEARCHING FOR FACE','busy');
     msg(st.source==='camera'?'Center your face inside the green scan frame.':'No clear face found in this image. Please use a front-facing portrait.','');
@@ -328,7 +328,7 @@ function cameraLoop(){
   if(st.source!=='camera')return;
   if(video.readyState>=2){
     const now=performance.now();
-    if(!st.busy&&now-st.lastDetect>=320&&vision.landmarker){
+    const interval=window.matchMedia?.('(pointer:coarse)')?.matches?420:240;\n    if(!st.busy&&now-st.lastDetect>=interval&&vision.landmarker){
       st.busy=true;st.lastDetect=now;
       try{
         const detector=prepareDetectionCanvas(video.videoWidth||1280,video.videoHeight||720,video);
