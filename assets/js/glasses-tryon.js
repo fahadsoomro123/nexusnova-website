@@ -328,7 +328,8 @@ function cameraLoop(){
   if(st.source!=='camera')return;
   if(video.readyState>=2){
     const now=performance.now();
-    const interval=window.matchMedia?.('(pointer:coarse)')?.matches?420:240;\n    if(!st.busy&&now-st.lastDetect>=interval&&vision.landmarker){
+    const interval=window.matchMedia?.('(pointer:coarse)')?.matches?420:240;
+    if(!st.busy&&now-st.lastDetect>=interval&&vision.landmarker){
       st.busy=true;st.lastDetect=now;
       try{
         const detector=prepareDetectionCanvas(video.videoWidth||1280,video.videoHeight||720,video);
