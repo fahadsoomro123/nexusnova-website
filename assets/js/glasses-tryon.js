@@ -111,6 +111,7 @@ function makeRenderer(THREE){
   const r=new THREE.WebGLRenderer({canvas,context:ctx,alpha:true,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
   const touch=window.matchMedia?.('(pointer:coarse)')?.matches;
   r.setPixelRatio(Math.min(window.devicePixelRatio||1,touch?1.25:1.5));
+  r.transmissionResolutionScale=touch?.5:.75;
   r.outputColorSpace=THREE.SRGBColorSpace;
   r.toneMapping=THREE.ACESFilmicToneMapping;
   r.toneMappingExposure=1.02;
@@ -286,6 +287,7 @@ async function initThree(){
   st.scene.environment=pmrem.fromScene(room).texture;
   st.threeReady=true;
   setStyle();
+  st.renderer.compileAsync?.(st.scene,st.camera3).catch(()=>{});
   eng('NexusNova luxury eyewear ready','ready');pill('READY','ready');
 }
 function render3D(){
