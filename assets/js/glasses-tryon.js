@@ -110,7 +110,7 @@ const vision=new Vision();
 
 function makeRenderer(THREE){
   const r=new THREE.WebGLRenderer({canvas,context:ctx,alpha:true,antialias:true,preserveDrawingBuffer:true});
-  r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  const touch=window.matchMedia?.('(pointer:coarse)')?.matches; r.setPixelRatio(Math.min(window.devicePixelRatio||1,touch?1.25:1.5));
   r.outputColorSpace=THREE.SRGBColorSpace;
   r.toneMapping=THREE.ACESFilmicToneMapping;
   r.toneMappingExposure=1.04;
@@ -244,7 +244,7 @@ function fitGlasses(pts,w,h,mir){
   const ipd=dist(le,re),center=mid(le,re),angle=Math.atan2(re.y-le.y,re.x-le.x),yaw=clamp((le.z-re.z)/.085,-.7,.7);
   const cfg=STYLES[st.style];
   const scale=ipd/cfg.sep;
-  st.glasses.position.set(center.x-w/2,h/2-center.y,55);
+  st.glasses.position.set(center.x-w/2,h/2-center.y,0);
   st.glasses.scale.set(scale,scale,scale);
   st.glasses.rotation.set(-yaw*.18, yaw*.62, -angle);
   const pitch=clamp(((re.z+le.z)*.5)*.55,-.24,.24);st.glasses.rotation.x=pitch;
@@ -328,7 +328,7 @@ function cameraLoop(){
   if(st.source!=='camera')return;
   if(video.readyState>=2){
     const now=performance.now();
-    if(!st.busy&&now-st.lastDetect>=220&&vision.landmarker){
+    if(!st.busy&&now-st.lastDetect>=320&&vision.landmarker){
       st.busy=true;st.lastDetect=now;
       try{
         const detector=prepareDetectionCanvas(video.videoWidth||1280,video.videoHeight||720,video);
@@ -351,7 +351,7 @@ function exportPng(){
   const o=out.getContext('2d',{alpha:false});
   o.fillStyle='#fff';o.fillRect(0,0,w,h);
   o.save();
-  if(st.source==='camera'){o.translate(w,0);o.scale(-1,1);o.drawImage(video,0,0,w,h);o.restore();o.save();o.translate(w,0);o.scale(-1,1);o.drawImage(canvas,0,0,w,h);o.restore()}
+  if(st.source==='camera'){o.translate(w,0);o.scale(-1,1);o.drawImage(video,0,0,w,h);o.restore();o.drawImage(canvas,0,0,w,h)}
   else{o.drawImage(st.image,0,0,w,h);o.drawImage(canvas,0,0,w,h)}
   o.restore?.();
   out.toBlob(b=>{if(!b)return;const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='nexusnova-premium-glasses-try-on.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);msg(`PNG exported at ${w.toLocaleString()} × ${h.toLocaleString()}px.`,'success')},'image/png');
