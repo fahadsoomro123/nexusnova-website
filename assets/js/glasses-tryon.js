@@ -230,7 +230,8 @@ async function initThree(){
   const THREE=await import(THREE_URL);
   window.THREE=THREE;
   makeRenderer(THREE);
-  setStyle();st.threeReady=true;
+  st.threeReady=true;
+  setStyle();
   eng(`3D eyewear engine ready`,'ready');
 }
 function render3D(){
