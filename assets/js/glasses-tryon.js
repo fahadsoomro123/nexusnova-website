@@ -172,10 +172,10 @@ function lensShape(THREE,style){
   return (()=>{const s=new THREE.Shape();const x=.48,y=.30,r=.10;s.moveTo(-x+r,y);s.lineTo(x-r,y);s.quadraticCurveTo(x,y,x,y-r);s.lineTo(x,-y+r);s.quadraticCurveTo(x,-y,x-r,-y);s.lineTo(-x+r,-y);s.quadraticCurveTo(-x,-y,-x,-y+r);s.lineTo(-x,y-r);s.quadraticCurveTo(-x,y,-x+r,y);s.closePath();return s})();
 }
 function materialFrame(THREE,color){
-  return new THREE.MeshPhysicalMaterial({color,metalness:.04,roughness:.24,clearcoat:.82,clearcoatRoughness:.1,specularIntensity:1});
+  return new THREE.MeshPhysicalMaterial({color,metalness:.06,roughness:.22,clearcoat:.88,clearcoatRoughness:.08,specularIntensity:1,side:THREE.DoubleSide});
 }
 function materialMetal(THREE,color){
-  return new THREE.MeshPhysicalMaterial({color,metalness:.92,roughness:.18,clearcoat:.36,clearcoatRoughness:.08});
+  return new THREE.MeshPhysicalMaterial({color,metalness:.92,roughness:.16,clearcoat:.42,clearcoatRoughness:.07,side:THREE.DoubleSide});
 }
 function materialLens(THREE,color){
   return new THREE.MeshPhysicalMaterial({color,transparent:true,opacity:.28,roughness:.08,metalness:.02,transmission:.28,thickness:.04,clearcoat:.7,clearcoatRoughness:.08,side:THREE.DoubleSide,depthWrite:false});
@@ -208,6 +208,8 @@ function buildGlasses(THREE,style,color){
   }
   const cheekL=new THREE.Mesh(new THREE.SphereGeometry(.032,10,8),mm);cheekL.position.set(-cfg.sep/2,-.29,.14);root.add(cheekL);
   const cheekR=cheekL.clone();cheekR.position.x=cfg.sep/2;root.add(cheekR);
+  root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;o.receiveShadow=false}});
+  root.renderOrder=20;
   root.userData={materials:{fm,mm,lm},cfg};
   return root;
 }
@@ -233,7 +235,7 @@ async function initThree(){
 }
 function render3D(){
   if(!st.threeReady||!st.renderer)return;
-  st.renderer.clear();
+  st.renderer.clear(true,true,true);
   st.renderer.render(st.scene,st.camera3);
 }
 function fitGlasses(pts,w,h,mir){
