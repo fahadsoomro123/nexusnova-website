@@ -445,40 +445,47 @@ async function camera(){
   try{
     if(!window.isSecureContext)throw new Error('Live camera requires a secure HTTPS page.');
     if(!navigator.mediaDevices?.getUserMedia)throw new Error('This browser does not expose camera access.');
+
     st.image=null;st.face=null;st.detected=false;
+    if(st.raf)cancelAnimationFrame(st.raf);st.raf=0;
+    if(st.scanTimer)cancelAnimationFrame(st.scanTimer);st.scanTimer=0;
     eng('Opening camera','busy');pill('STARTING CAMERA','busy');msg('Opening your camera…');
 
-    // Keep the browser camera request deliberately simple. Advanced constraints
-    // are applied only after the stream is open, preventing mobile negotiation failures.
-    const s=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-    video.muted=true;video.autoplay=true;video.playsInline=true;video.setAttribute('playsinline','');
-    video.srcObject=s;
+    // Deliberately request only the camera. Mobile browsers negotiate their own
+    // supported resolution/facing mode instead of rejecting our preferred mode.
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
 
-    // Play immediately while this click still has user-activation context.
-    await video.play();
-    if(!video.videoWidth||!video.videoHeight){
-      await new Promise(resolve=>{
-        const done=()=>{video.removeEventListener('loadeddata',done);resolve()};
-        video.addEventListener('loadeddata',done,{once:true});
-        setTimeout(resolve,1500);
-      });
-    }
+    st.stream=stream;st.source='camera';st.mirror=true;
+    video.muted=true;video.autoplay=true;video.playsInline=true;video.setAttribute('playsinline','');video.setAttribute('autoplay','');video.srcObject=stream;
 
-    st.stream=s;st.source='camera';st.mirror=true;st.nativeW=video.videoWidth||1280;st.nativeH=video.videoHeight||720;
-    try{
-      const track=s.getVideoTracks?.()[0];
-      await track?.applyConstraints?.({width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}});
-      st.nativeW=video.videoWidth||st.nativeW;st.nativeH=video.videoHeight||st.nativeH;
-    }catch(_){}
-
-    setViewSize(st.nativeW,st.nativeH);res(st.nativeW,st.nativeH);
+    // Make the video visible before asking it to play. Keeping it display:none
+    // during startup is unreliable on some mobile WebView/Chrome combinations.
     stage.dataset.camera='true';stage.dataset.image='false';stage.dataset.face='false';
     empty.hidden=true;exportBtn.disabled=false;cameraToggle.textContent='STOP CAMERA';
-    faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');beginScan();
-    st.lastDetect=0;st.busy=false;
-    cameraLoop();
+    faceMsg('SEARCHING FOR FACE',true,false);pill('CAMERA LIVE','busy');scanUi(4,'STARTING FACE SCAN');
 
-    // Vision and 3D remain secondary. Camera stays live even if either engine fails.
+    const syncVideoSize=()=>{
+      const vw=video.videoWidth||stream.getVideoTracks?.()[0]?.getSettings?.().width||1280;
+      const vh=video.videoHeight||stream.getVideoTracks?.()[0]?.getSettings?.().height||720;
+      if(vw&&vh){
+        st.nativeW=vw;st.nativeH=vh;setViewSize(vw,vh);res(vw,vh);
+      }
+    };
+    video.addEventListener('loadedmetadata',syncVideoSize,{once:true});
+    video.addEventListener('loadeddata',syncVideoSize,{once:true});
+    syncVideoSize();
+
+    st.lastDetect=0;st.busy=false;beginScan();cameraLoop();
+
+    // Do not gate camera state on play(). It is enough to attach the live
+    // stream now; play failures are surfaced while the stream remains open.
+    video.play().catch(()=>{
+      if(st.source==='camera'){
+        msg('Camera permission is active, but video playback was blocked. Tap LIVE CAMERA once more.','error');
+      }
+    });
+
+    // Face vision and 3D are secondary and cannot prevent camera startup.
     vision.init().then(()=>vision.setMode('VIDEO')).then(()=>{
       if(st.source!=='camera')return;
       eng(`Live vision ready · ${vision.delegate}`,'ready');pill('SCANNING','busy');msg('Camera live. Center your face inside the green scan frame.');
@@ -488,6 +495,15 @@ async function camera(){
       eng('Camera live · face scan unavailable','error');pill('CAMERA LIVE','ready');
       msg('Camera is live. Face scanning is unavailable on this device right now.','error');
     });
+
+    const track=stream.getVideoTracks?.()[0];
+    track?.addEventListener?.('ended',()=>{
+      if(st.source==='camera'){
+        stop(st.stream);st.stream=null;st.source='none';video.pause();video.srcObject=null;
+        stage.dataset.camera='false';stage.dataset.face='false';empty.hidden=false;cameraToggle.textContent='LIVE CAMERA';exportBtn.disabled=true;resetScan();
+        faceMsg('',false,false);pill('CAMERA ENDED','error');eng('Camera ended','error');msg('The camera stream ended. Reopen LIVE CAMERA to restart it.','error');
+      }
+    },{once:true});
   }catch(e){
     stop(st.stream);st.stream=null;st.source='none';st.face=null;st.detected=false;clearGlasses();
     video.pause();video.srcObject=null;
