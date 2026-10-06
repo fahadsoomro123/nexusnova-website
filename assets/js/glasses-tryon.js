@@ -14,6 +14,21 @@ const styles=$$('[data-style]'),colors=$$('[data-color]');
 const MP_URL='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35';
 const MP_WASM='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm';
 const MP_MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const EYEWEAR=[
+{id:'nx-ac-obsidian',code:'A01',family:'Atelier Acetate',finish:'Obsidian',style:'classic',url:'https://cdn.3dassets.dev/assets/31688/v1/model.glb',size:.134,scale:1.0,frame:'#111827',lens:0x9bbbd1},
+{id:'nx-ac-ivory',code:'A02',family:'Atelier Acetate',finish:'Ivory',style:'classic',url:'https://cdn.3dassets.dev/assets/31688/v1/model.glb',size:.134,scale:1.0,frame:'#f1f5f2',lens:0xc5d7df},
+{id:'nx-ac-burgundy',code:'A03',family:'Atelier Acetate',finish:'Burgundy',style:'classic',url:'https://cdn.3dassets.dev/assets/31688/v1/model.glb',size:.134,scale:1.0,frame:'#6f2332',lens:0xc2959f},
+{id:'nx-ac-espresso',code:'A04',family:'Atelier Acetate',finish:'Espresso',style:'classic',url:'https://cdn.3dassets.dev/assets/31688/v1/model.glb',size:.134,scale:1.0,frame:'#3F342A',lens:0xa98a76},
+{id:'nx-wt-champagne',code:'W01',family:'Wire Atelier',finish:'Champagne',style:'round',url:'https://cdn.3dassets.dev/assets/31687/v1/model.glb',size:.131,scale:1.0,frame:'#a67c45',lens:0xb9d0dd},
+{id:'nx-wt-graphite',code:'W02',family:'Wire Atelier',finish:'Graphite',style:'round',url:'https://cdn.3dassets.dev/assets/31687/v1/model.glb',size:.131,scale:1.0,frame:'#2c3138',lens:0x9eb9cc},
+{id:'nx-wt-silver',code:'W03',family:'Wire Atelier',finish:'Silver',style:'round',url:'https://cdn.3dassets.dev/assets/31687/v1/model.glb',size:.131,scale:1.0,frame:'#b9c0c8',lens:0xc7d7df},
+{id:'nx-wt-rose',code:'W04',family:'Wire Atelier',finish:'Rose Metal',style:'round',url:'https://cdn.3dassets.dev/assets/31687/v1/model.glb',size:.131,scale:1.0,frame:'#a86973',lens:0xd1bec3},
+{id:'nx-tr-satin',code:'T01',family:'Precision Trial',finish:'Satin',style:'round',url:'https://cdn.3dassets.dev/assets/31677/v1/model.glb',size:.131,scale:1.0,frame:'#5f6670',lens:0xa8beca},
+{id:'nx-tr-black',code:'T02',family:'Precision Trial',finish:'Black',style:'round',url:'https://cdn.3dassets.dev/assets/31677/v1/model.glb',size:.131,scale:1.0,frame:'#20242b',lens:0x8faebf},
+{id:'nx-sp-noir',code:'S01',family:'Performance Aviator',finish:'Noir',style:'aviator',url:'https://cdn.3dassets.dev/assets/39447/v1/model.glb',size:.149,scale:1.0,frame:'#20242b',lens:0x55708c},
+{id:'nx-sp-deepblue',code:'S02',family:'Performance Aviator',finish:'Deep Blue',style:'aviator',url:'https://cdn.3dassets.dev/assets/39447/v1/model.glb',size:.149,scale:1.0,frame:'#203a68',lens:0x58799a}
+];
+
 
 const L={ro:33,ri:133,li:362,lo:263,rt:159,rb:145,lt:386,lb:374,lf:234,rf:454};
 const STYLES={
@@ -32,7 +47,7 @@ const PALETTES={
   '#1D4ED8':{frame:0x1d4bb7,metal:0xb9c7e8,lens:0x749bd7},
   '#A16207':{frame:0x9a620a,metal:0xf0d18d,lens:0xc6a36b}
 };
-const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',face:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:window.matchMedia?.('(pointer:coarse)')?.matches?256:320,detH:window.matchMedia?.('(pointer:coarse)')?.matches?144:180,threeReady:false,scene:null,camera3:null,renderer:null,glasses:null,glassMeta:null,THREE:null,pmrem:null,environment:null,viewW:0,viewH:0,nativeW:0,nativeH:0};
+const st={source:'none',image:null,url:null,stream:null,style:'classic',color:'#111827',modelId:'nx-ac-obsidian',model:null,detected:false,busy:false,lastDetect:0,raf:0,scanStart:0,scanTimer:0,detW:window.matchMedia?.('(pointer:coarse)')?.matches?256:320,detH:window.matchMedia?.('(pointer:coarse)')?.matches?144:180,threeReady:false,scene:null,camera3:null,renderer:null,glasses:null,glassMeta:null,THREE:null,pmrem:null,environment:null,viewW:0,viewH:0,nativeW:0,nativeH:0};
 
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -261,32 +276,77 @@ function buildGlasses(THREE,style,color){
   root.renderOrder=20;root.userData={materials:{fm,fa,mm,lm},cfg};
   return root;
 }
-function setStyle(){
-  if(!st.threeReady)return;
+async function loadEyewearModel(modelId){
+  const spec=EYEWEAR.find(x=>x.id===modelId)||EYEWEAR[0];
+  if(!st.loader||!st.THREE)return;
+  if(st.modelId===spec.id&&st.glasses)return;
+  st.modelId=spec.id;st.style=spec.style;st.color=spec.frame;
   if(st.glasses)disposeObject(st.glasses);
-  st.glasses=buildGlasses(window.THREE,st.style,st.color);
-  st.scene.add(st.glasses);
+  st.glasses=null;
+  await new Promise((resolve,reject)=>{
+    st.loader.load(spec.url,gltf=>{
+      const root=gltf.scene;
+      root.traverse(o=>{
+        if(o.isMesh){
+          o.frustumCulled=false;o.renderOrder=20;
+          const mats=Array.isArray(o.material)?o.material:[o.material];
+          mats.forEach(m=>{
+            m.side=st.THREE.DoubleSide;
+            if(m.transparent||/lens|glass/i.test(m.name||'')){
+              m.transparent=true;m.depthWrite=false;m.opacity=Math.min(1,Math.max(.22,m.opacity??.72));m.color?.setHex(spec.lens);m.roughness=.08;m.metalness=.02;
+            }else if(m.metalness>.65||/metal|chrome|steel|hinge|screw/i.test(m.name||'')){
+              m.metalness=.92;m.roughness=.14;
+            }else{
+              m.color?.set(spec.frame);m.roughness=.16;m.metalness=.06;
+            }
+            if('envMapIntensity' in m)m.envMapIntensity=1.35;
+            if('clearcoat' in m)m.clearcoat=.85;
+            if('clearcoatRoughness' in m)m.clearcoatRoughness=.06;
+          });
+        }
+      });
+      const box=new st.THREE.Box3().setFromObject(root),size=box.getSize(new st.THREE.Vector3());
+      const width=Math.max(size.x,size.z);
+      root.scale.setScalar(spec.size/Math.max(width,.001));
+      const box2=new st.THREE.Box3().setFromObject(root),center=box2.getCenter(new st.THREE.Vector3());
+      root.position.sub(center);
+      root.rotation.set(0,0,0);
+      root.userData.spec=spec;
+      st.glasses=root;st.scene.add(root);st.model=spec;setColor();updateModelCards();resolve();
+    },undefined,reject);
+  }).catch(e=>{msg(`Eyewear model could not be loaded: ${e?.message||'unknown error'}`,'error');pill('MODEL ERROR','error');throw e});
+}
+function setStyle(){
+  const candidates=EYEWEAR.filter(x=>x.style===st.style);
+  const current=candidates.find(x=>x.id===st.modelId)||candidates[0];
+  if(current)loadEyewearModel(current.id).catch(()=>{});
 }
 function setColor(){
   if(!st.glasses)return;
-  const p=PALETTES[st.color]||PALETTES['#111827'],m=st.glasses.userData.materials;
-  m.fm.color.setHex(p.frame);m.mm.color.setHex(p.metal);m.lm.color.setHex(p.lens);
+  const spec=EYEWEAR.find(x=>x.id===st.modelId);
+  const p=PALETTES[st.color]||PALETTES['#111827'];
+  st.glasses.traverse(o=>{
+    if(!o.isMesh)return;
+    const mats=Array.isArray(o.material)?o.material:[o.material];
+    mats.forEach(m=>{
+      if(m.transparent||/lens|glass/i.test(m.name||'')){m.color?.setHex(spec?.lens||p.lens)}
+      else if(m.metalness>.65||/metal|chrome|steel|hinge|screw/i.test(m.name||'')){m.metalness=.92}
+      else m.color?.set(spec?.frame||st.color)
+    });
+  });
 }
-
+function updateModelCards(){
+  $$('[data-model-id]').forEach(b=>{const on=b.dataset.modelId===st.modelId;b.classList.toggle('is-active',on);b.setAttribute('aria-selected',on?'true':'false')});
+}
 async function initThree(){
   if(st.threeReady)return;
-  eng('Loading luxury eyewear renderer','busy');pill('LOADING 3D','busy');
+  eng('Loading NexusNova eyewear','busy');pill('LOADING 3D','busy');
   const THREE=await import('three');
-  const [{RoomEnvironment}]=await Promise.all([import('three/addons/environments/RoomEnvironment.js')]);
-  st.THREE=THREE;window.THREE=THREE;
+  const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
+  st.THREE=THREE;window.THREE=THREE;st.loader=new GLTFLoader();
   makeRenderer(THREE);
-  const pmrem=new THREE.PMREMGenerator(st.renderer);
-  pmrem.compileEquirectangularShader?.();
-  const room=new RoomEnvironment();
-  st.environment=room;st.pmrem=pmrem;
-  st.scene.environment=pmrem.fromScene(room).texture;
   st.threeReady=true;
-  setStyle();
+  await loadEyewearModel('nx-ac-obsidian');
   st.renderer.compileAsync?.(st.scene,st.camera3).catch(()=>{});
   eng('NexusNova luxury eyewear ready','ready');pill('READY','ready');
 }
@@ -304,8 +364,8 @@ function fitGlasses(pts,w,h,mir){
   const ipd=dist(le,re),angle=Math.atan2(re.y-le.y,re.x-le.x);
   const eyeHeight=Math.max(ipd*.18,((rt&&rb?dist(rt,rb):ipd*.22)+(lt&&lb?dist(lt,lb):ipd*.22))*.5);
   const yaw=clamp((le.z-re.z)/.085,-.72,.72),pitch=clamp(((re.z+le.z)*.5)*.72,-.28,.28);
-  const cfg=STYLES[st.style]||STYLES.classic;
-  const fitScale=ipd/cfg.sep;
+  const spec=EYEWEAR.find(x=>x.id===st.modelId)||EYEWEAR[0];
+  const fitScale=ipd/spec.size;
   const centerY=(le.y+re.y)*.5+eyeHeight*.02;
   st.glasses.position.set((le.x+re.x)*.5-w/2,h/2-centerY,0);
   st.glasses.scale.setScalar(fitScale);
@@ -423,6 +483,11 @@ function syncStyles(){styles.forEach(b=>{const on=b.dataset.style===st.style;b.c
 function syncColors(){colors.forEach(b=>{const on=b.dataset.color.toUpperCase()===st.color.toUpperCase();b.classList.toggle('is-active',on);b.setAttribute('aria-pressed',on?'true':'false')})}
 
 imageInput.onchange=()=>{const f=imageInput.files?.[0];if(f)loadImage(f)};
+$('[data-model-id]').forEach(b=>b.onclick=async()=>{
+  const id=b.dataset.modelId;
+  try{await initThree();pill('LOADING FRAME','busy');msg(`Loading ${b.dataset.modelId}…`);await loadEyewearModel(id);if(st.face&&st.detected)fitGlasses(st.face,st.nativeW||canvas.width,st.nativeH||canvas.height,st.source==='camera');render3D();pill('FACE FIT READY','ready');msg('NexusNova eyewear fitted automatically.','success')}catch(_){}
+});
+
 cameraToggle.onclick=()=>camera();exportBtn.onclick=exportPng;
 styles.forEach(b=>b.onclick=()=>{st.style=b.dataset.style;syncStyles();setStyle();if(st.face&&st.detected)fitGlasses(st.face,canvas.width,canvas.height,st.source==='camera');render3D()});
 colors.forEach(b=>b.onclick=()=>{st.color=b.dataset.color;syncColors();setColor();render3D()});
