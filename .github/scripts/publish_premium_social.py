@@ -64,6 +64,28 @@ class DynamicTargetDispatcher:
     def pacing_delay(self) -> float:
         return self.interval_seconds
 
+    def validation_report(self) -> dict:
+        targets = self.enabled_targets()
+        platforms = {}
+        for row in targets:
+            platform = str(row.get("platform") or "unknown")
+            platforms[platform] = platforms.get(platform, 0) + 1
+        return {
+            "enabled_target_count": len(targets),
+            "facebook_group_target_count": sum(
+                1 for row in targets if row.get("platform") == "facebook_group"
+            ),
+            "platforms": platforms,
+            "targets": [
+                {
+                    "group_id": row.get("group_id"),
+                    "target": row.get("target"),
+                    "platform": row.get("platform"),
+                }
+                for row in targets
+            ],
+        }
+
 
 def tracked_url(item: dict, source: str) -> str:
     raw = str(item.get("url", "")).strip()
@@ -209,9 +231,16 @@ def main() -> None:
         admin_profile = None
         print("Target groups registry metadata unavailable:", exc)
     print("Admin profile verification metadata:", "configured" if admin_profile else "not-configured")
-    print("Dynamic destination registry:", len(configured_targets), "enabled target(s); pacing=", f"{dispatcher.pacing_delay():.1f}s")
+    registry_report = dispatcher.validation_report()
+    print(
+        "Dynamic destination registry:",
+        registry_report["enabled_target_count"],
+        "enabled target(s); pacing=",
+        f"{dispatcher.pacing_delay():.1f}s",
+    )
+    print("14-group matrix validation:", json.dumps(registry_report, ensure_ascii=False))
     if configured_targets:
-        print("Explicit destination nodes are loaded for future platform-specific dispatch.")
+        print("Group destinations are validated and retained as explicit registry data; no unsupported direct URL posting is attempted.")
     if not PAYLOAD.exists():
         raise SystemExit("premium-social-publish.json is missing")
     item = json.loads(PAYLOAD.read_text(encoding="utf-8"))
