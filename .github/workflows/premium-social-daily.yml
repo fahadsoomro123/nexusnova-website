@@ -27,6 +27,7 @@ on:
       - '.github/workflows/premium-social-daily.yml'
       - '.github/scripts/premium_social_campaign.py'
       - '.github/scripts/premium_social_resilient.py'
+      - '.github/scripts/target_groups.json'
 
 permissions:
   contents: read
@@ -53,6 +54,8 @@ jobs:
       POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
       TARGET_GROUPS_FILE: '.github/scripts/target_groups.json'
       DISPATCH_INTERVAL_SECONDS: '5'
+      # Non-secret marker used only to make an intentional workflow-file push observable.
+      MANUAL_RUN_SALT: 'force_run_1214am'
 
     steps:
       - name: Checkout
