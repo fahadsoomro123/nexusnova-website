@@ -202,6 +202,13 @@ def mark_successful_delivery(report: dict) -> None:
 def main() -> None:
     dispatcher = DynamicTargetDispatcher()
     configured_targets = dispatcher.enabled_targets()
+    try:
+        registry = json.loads(TARGET_GROUPS.read_text(encoding="utf-8"))
+        admin_profile = str(registry.get("admin_profile_verification") or "").strip() or None
+    except Exception as exc:
+        admin_profile = None
+        print("Target groups registry metadata unavailable:", exc)
+    print("Admin profile verification metadata:", "configured" if admin_profile else "not-configured")
     print("Dynamic destination registry:", len(configured_targets), "enabled target(s); pacing=", f"{dispatcher.pacing_delay():.1f}s")
     if configured_targets:
         print("Explicit destination nodes are loaded for future platform-specific dispatch.")
