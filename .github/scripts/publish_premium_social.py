@@ -19,6 +19,50 @@ PAYLOAD = ROOT / "premium-social-publish.json"
 REPORT = ROOT / "premium-social-report.json"
 PUBLISHED = ROOT / "assets/data/premium-social-published.json"
 NATIVE_GROWTH_SLOTS = {2, 4}
+TARGET_GROUPS = ROOT / os.getenv("TARGET_GROUPS_FILE", ".github/scripts/target_groups.json")
+
+
+class DynamicTargetDispatcher:
+    """Load explicitly enabled destination nodes without inventing targets."""
+    def __init__(self, config_path: Path = TARGET_GROUPS, interval_seconds: float | None = None):
+        self.config_path = config_path
+        raw_interval = interval_seconds
+        if raw_interval is None:
+            try:
+                raw_interval = float(os.getenv("DISPATCH_INTERVAL_SECONDS", "5"))
+            except ValueError:
+                raw_interval = 5.0
+        self.interval_seconds = max(0.0, min(raw_interval, 60.0))
+
+    def enabled_targets(self) -> list[dict]:
+        if not self.config_path.exists():
+            return []
+        try:
+            document = json.loads(self.config_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            print("Target groups registry unavailable:", exc)
+            return []
+        rows = document.get("groups") if isinstance(document, dict) else []
+        if not isinstance(rows, list):
+            return []
+        targets: list[dict] = []
+        for row in rows:
+            if not isinstance(row, dict) or not bool(row.get("enabled")):
+                continue
+            target = str(row.get("target") or "").strip()
+            platform = str(row.get("platform") or "").strip().lower()
+            if not target or not platform:
+                continue
+            targets.append({
+                "group_id": str(row.get("group_id") or "").strip(),
+                "node": row.get("node"),
+                "platform": platform,
+                "target": target,
+            })
+        return targets
+
+    def pacing_delay(self) -> float:
+        return self.interval_seconds
 
 
 def tracked_url(item: dict, source: str) -> str:
@@ -156,6 +200,11 @@ def mark_successful_delivery(report: dict) -> None:
 
 
 def main() -> None:
+    dispatcher = DynamicTargetDispatcher()
+    configured_targets = dispatcher.enabled_targets()
+    print("Dynamic destination registry:", len(configured_targets), "enabled target(s); pacing=", f"{dispatcher.pacing_delay():.1f}s")
+    if configured_targets:
+        print("Explicit destination nodes are loaded for future platform-specific dispatch.")
     if not PAYLOAD.exists():
         raise SystemExit("premium-social-publish.json is missing")
     item = json.loads(PAYLOAD.read_text(encoding="utf-8"))
