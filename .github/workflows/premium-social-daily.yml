@@ -25,6 +25,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/premium-social-daily.yml'
+      - '.github/scripts/premium_social_campaign.py'
+      - '.github/scripts/premium_social_resilient.py'
 
 permissions:
   contents: read
@@ -61,6 +63,7 @@ jobs:
         shell: bash
         env:
           MANUAL_SLOT: ${{ github.event.inputs.slot }}
+          IMMEDIATE_PUSH: ${{ github.event_name == 'push' }}
         run: |
           git fetch origin main
           git show origin/main:assets/data/premium-social-published.json > /tmp/remote-premium-social-published.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-published.json
@@ -117,6 +120,7 @@ jobs:
           }
 
           raw = (os.getenv('MANUAL_SLOT') or '').strip()
+          immediate_push = (os.getenv('IMMEDIATE_PUSH') or '').strip().lower() == 'true'
           slot = None
           reason = ''
           if raw:
@@ -129,6 +133,15 @@ jobs:
               else:
                   slot = requested
                   reason = f'manual slot {requested}'
+          elif immediate_push:
+              due = [s for s, t in due_times.items() if now.time().replace(tzinfo=None) >= t]
+              missing = [s for s in due if s not in posted_today]
+              if missing:
+                  slot = min(missing)
+                  reason = f'immediate push broadcast; recovering earliest due incomplete slot; due={due}; fully_delivered={sorted(posted_today)}'
+              else:
+                  slot = due[-1] if due else 1
+                  reason = f'immediate push broadcast; all due daily slots already complete, using slot {slot} for one additional fresh campaign'
           else:
               due = [s for s, t in due_times.items() if now.time().replace(tzinfo=None) >= t]
               missing = [s for s in due if s not in posted_today]
@@ -138,9 +151,12 @@ jobs:
               else:
                   reason = f'nothing due/missing; due={due}; fully_delivered={sorted(posted_today)}'
 
-          telegram_only = bool(slot and slot in telegram_only_slots)
+          # Push-triggered broadcasts are full X/FB/Telegram campaigns even when the
+          # normal daily ledger says a slot was previously complete.
+          telegram_only = bool(slot and slot in telegram_only_slots and not immediate_push)
           print(f"should_run={'true' if slot else 'false'}")
           print(f"slot={slot or 0}")
+          print(f"immediate_push={'true' if immediate_push else 'false'}")
           print(f"telegram_only={'true' if telegram_only else 'false'}")
           print(f"reason={reason}")
           print(f"pkt_now={now.isoformat()}")
@@ -210,6 +226,7 @@ jobs:
         shell: bash
         env:
           SLOT: ${{ steps.slot.outputs.slot }}
+          IMMEDIATE_PUSH: ${{ steps.slot.outputs.immediate_push }}
         run: |
           git fetch origin main
           git show origin/main:assets/data/premium-social-published.json > /tmp/remote-premium-social-published.json 2>/dev/null || echo '{"posts":[]}' > /tmp/remote-premium-social-published.json
@@ -219,33 +236,36 @@ jobs:
           PKT = datetime.timezone(datetime.timedelta(hours=5))
           today = datetime.datetime.now(datetime.timezone.utc).astimezone(PKT).date()
           slot = int(os.environ['SLOT'])
-          # A slot already delivered to the X/FB/Telegram core is a duplicate, even when
-          # Instagram is temporarily blocked by Meta. This prevents repeated cross-posting.
+          immediate_push = (os.getenv('IMMEDIATE_PUSH') or '').strip().lower() == 'true'
+          # A push-triggered campaign is intentionally an additional fresh broadcast.
+          # Scheduled/recovery executions retain the normal duplicate protection.
           expected = {'x', 'facebook', 'telegram'}
           path = Path('/tmp/remote-premium-social-published.json')
           duplicate = False
-          try:
-              rows = json.loads(path.read_text(encoding='utf-8')).get('posts', [])
-          except Exception:
-              rows = []
-          for row in rows if isinstance(rows, list) else []:
+          if not immediate_push:
               try:
-                  stamp = str(row.get('published_at') or '')
-                  dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
-                  if dt.date() != today or int(row.get('slot', 0)) != slot:
-                      continue
-                  outcomes = row.get('outcomes') if isinstance(row.get('outcomes'), list) else []
-                  ok_platforms = {
-                      str(item.get('platform') or '')
-                      for item in outcomes
-                      if bool(item.get('ok'))
-                  }
-                  if expected.issubset(ok_platforms):
-                      duplicate = True
-                      break
+                  rows = json.loads(path.read_text(encoding='utf-8')).get('posts', [])
               except Exception:
-                  pass
+                  rows = []
+              for row in rows if isinstance(rows, list) else []:
+                  try:
+                      stamp = str(row.get('published_at') or '')
+                      dt = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00')).astimezone(PKT)
+                      if dt.date() != today or int(row.get('slot', 0)) != slot:
+                          continue
+                      outcomes = row.get('outcomes') if isinstance(row.get('outcomes'), list) else []
+                      ok_platforms = {
+                          str(item.get('platform') or '')
+                          for item in outcomes
+                          if bool(item.get('ok'))
+                      }
+                      if expected.issubset(ok_platforms):
+                          duplicate = True
+                          break
+                  except Exception:
+                      pass
           print(f"duplicate={'true' if duplicate else 'false'}")
+          print(f"immediate_push={'true' if immediate_push else 'false'}")
           PY
 
       - name: Stop duplicate safely
@@ -327,6 +347,7 @@ jobs:
           echo "PKT resolver time: ${{ steps.slot.outputs.pkt_now }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Resolver: ${{ steps.slot.outputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Slot: ${{ steps.slot.outputs.slot }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Immediate push broadcast: ${{ steps.slot.outputs.immediate_push }}" >> "$GITHUB_STEP_SUMMARY"
           echo "Telegram-only recovery: ${{ steps.slot.outputs.telegram_only }}" >> "$GITHUB_STEP_SUMMARY"
           if [ -f premium-social-publish.json ]; then
             echo '### Campaign' >> "$GITHUB_STEP_SUMMARY"
