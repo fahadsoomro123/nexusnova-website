@@ -51,6 +51,8 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
       POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
+      TARGET_GROUPS_FILE: '.github/scripts/target_groups.json'
+      DISPATCH_INTERVAL_SECONDS: '5'
 
     steps:
       - name: Checkout
