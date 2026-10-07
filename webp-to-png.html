@@ -24,6 +24,19 @@
 
 
 <section class="section"><div class="container article"><h2>PNG is useful for compatibility and transparency, but can be larger</h2><p>Converting WebP to PNG can help when an editor or workflow does not accept WebP, and PNG can preserve transparent pixels. The trade-off is that PNG files are often larger than an efficiently encoded WebP photograph.</p><p>Open the result after conversion and confirm transparency, dimensions and visible colors. Conversion changes the container and encoding; it does not improve the original image's resolution or recover detail lost before upload.</p></div></section>
+
+<section class="section" data-content-depth-remediation="2026-10"><div class="container article">
+<h2>Why WebP to PNG can be useful</h2>
+<p>WebP is often a good delivery format for web images, but PNG remains common in design files, graphics pipelines, editors and workflows that require transparent pixels. Converting to PNG is therefore mainly a compatibility or editing decision. It does not create extra detail, increase the source resolution or undo information that was already discarded when the WebP was created.</p>
+<h2>Lossless PNG output, with an important caveat</h2>
+<p>PNG uses lossless compression, so the converter does not introduce another lossy compression step after the WebP image has been decoded. However, if the original WebP was already lossy, the artifacts or missing detail from that source remain in the decoded image. Converting a compressed image to PNG preserves the pixels you have, not the pixels you once had.</p>
+<h2>Transparency is retained</h2>
+<p>Unlike JPEG, PNG supports an alpha channel. This tool draws the WebP into a browser canvas and exports it as PNG without adding a white background, so transparent areas can remain transparent when the browser decoder exposes them correctly. Check the downloaded asset in your target editor, especially when transparency is essential to a logo or overlay.</p>
+<h2>Dimensions and file size</h2>
+<p>The output keeps the source image's pixel dimensions. It does not resize the asset during conversion. PNG can also be much larger than WebP for photographs, even when the visible image looks identical. That is a format trade-off, not an error. If the PNG is intended for the web, consider whether WebP itself would be the more efficient delivery format.</p>
+<h2>Local processing and browser limits</h2>
+<p>The conversion runs in the browser using image decoding and canvas features, so the original file does not need to be uploaded to a NexusNova conversion server. Very large images can still be demanding because decoding and canvas export consume local memory. After conversion, verify transparency, pixel dimensions and file size before moving the result into the final workflow.</p>
+</div></section>
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
