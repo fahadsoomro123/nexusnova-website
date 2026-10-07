@@ -24,6 +24,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from ai_provider import ai_json, status as ai_status  # noqa: E402
 
 SITE = "https://nexusnovatools.com"
+# Low source frames from Pollinations remain acceptable because render_branded() fits the final delivery image to 1080x1350.
+MIN_AI_IMAGE_SIDE = 400
 OUT = ROOT / "premium-social-publish.json"
 HISTORY = ROOT / "assets/data/premium-social-history.json"
 GENERATED = ROOT / "assets/generated"
@@ -445,9 +447,9 @@ def download_ai_background(prompt: str, seed: int) -> tuple[Image.Image, str]:
             if not raw or (content_type and "image/" not in content_type):
                 raise RuntimeError(f"unexpected image response: {content_type}")
             image = Image.open(io.BytesIO(raw)).convert("RGB")
-            if min(image.size) < 700:
-                raise RuntimeError(f"AI image too small: {image.size}")
-            print("AI social background generated via", provider, image.size)
+            if min(image.size) < MIN_AI_IMAGE_SIDE:
+                raise RuntimeError(f"AI image below accepted lower bound: {image.size} < {MIN_AI_IMAGE_SIDE}px")
+            print("AI social background accepted via", provider, image.size, f"(minimum side {MIN_AI_IMAGE_SIDE}px)")
             return image, provider
         except Exception as exc:
             last_error = exc
