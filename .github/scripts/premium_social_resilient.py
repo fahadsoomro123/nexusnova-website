@@ -13,6 +13,17 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import premium_social_campaign as engine  # noqa: E402
 
 CACHE_DIR = ROOT / "assets/generated/ai-social-library"
+TARGET_GROUPS = ROOT / ".github/scripts/target_groups.json"
+
+
+def _registry_status() -> tuple[int, int]:
+    try:
+        document = __import__("json").loads(TARGET_GROUPS.read_text(encoding="utf-8"))
+        rows = document.get("groups") if isinstance(document, dict) else []
+        enabled = sum(1 for row in rows if isinstance(row, dict) and bool(row.get("enabled")))
+        return len(rows) if isinstance(rows, list) else 0, enabled
+    except Exception:
+        return 0, 0
 _original_download = engine.download_ai_background
 _original_build_copy = engine.build_copy
 
@@ -175,6 +186,8 @@ def brand_aware_copy(item: dict, slot: int, trends: list[str]) -> dict:
 
 
 def main() -> None:
+    total_targets, enabled_targets = _registry_status()
+    print("Target groups registry:", total_targets, "slots;", enabled_targets, "enabled")
     engine.download_ai_background = resilient_download
     engine.build_copy = brand_aware_copy
     engine.main()
