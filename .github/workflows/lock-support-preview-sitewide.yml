@@ -1,0 +1,100 @@
+name: Lock Support Preview Sitewide
+
+on:
+  push:
+    branches:
+      - nexusnova-support-preview
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inject-support-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-support-preview
+
+      - name: Inject support runtime into every site page
+        shell: python
+        run: |
+          from pathlib import Path
+
+          root = Path(".")
+          marker = 'id="nexusnova-support-direct-loader"'
+          runtime = "assets/js/nexusnova-support-preview.js?v=20261008-sitewide-c2"
+
+          skipped_prefixes = {
+              ".git", ".github"
+          }
+          skipped_names = {
+              "support-benchmark-home-preview.html",
+              "support-collage-full-page-preview.html",
+              "support-collage-home-preview.html",
+              "support-concept-02-preview.html",
+              "support-concept-03-preview.html",
+              "support-concept-04-preview.html",
+              "support-concept-04-preview-v2.html",
+              "support-concept-04-preview-v3.html",
+              "support-direct-one-click-preview.html",
+              "support-flagship-research-preview.html",
+              "support-footer-click-state-preview.html",
+              "support-footer-popover-preview.html",
+              "support-footer-premium-preview.html",
+              "support-full-page-preview.html",
+              "support-full-page-preview-v2.html",
+              "support-full-page-preview-v3.html",
+              "support-preview-simple.html",
+              "support-tile-preview.html",
+          }
+
+          changed = []
+          for path in sorted(root.rglob("*.html")):
+              rel = path.relative_to(root).as_posix()
+
+              if rel.startswith("ota/"):
+                  continue
+              if rel.startswith(".git/") or rel.startswith(".github/"):
+                  continue
+              if path.name in skipped_names:
+                  continue
+
+              raw = path.read_bytes()
+              bom = raw.startswith(b"\xef\xbb\xbf")
+              text = raw.decode("utf-8-sig" if bom else "utf-8")
+
+              if marker in text:
+                  continue
+              if "</body>" not in text.lower():
+                  continue
+
+              depth = len(path.parts) - 1
+              prefix = "../" * depth
+              tag = f'\n<script {marker} src="{prefix}{runtime}" defer></script>\n'
+
+              lower = text.lower()
+              body_index = lower.rfind("</body>")
+              text = text[:body_index] + tag + text[body_index:]
+
+              path.write_bytes((b"\xef\xbb\xbf" if bom else b"") + text.encode("utf-8"))
+              changed.append(rel)
+
+          print(f"Support runtime injected into {len(changed)} site pages.")
+          for item in changed:
+              print(item)
+
+      - name: Commit sitewide support lock
+        shell: bash
+        run: |
+          git config user.name "NexusNova Support Bot"
+          git config user.email "noreply@nexusnovatools.com"
+          if git diff --quiet; then
+            echo "No HTML changes required."
+            exit 0
+          fi
+          git add -- '*.html'
+          git commit -m "Lock support control sitewide [skip ci]"
+          git push origin nexusnova-support-preview
