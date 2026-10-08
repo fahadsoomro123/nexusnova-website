@@ -5,10 +5,9 @@ window.__nexusnovaSupportPreviewLoaded=true;
 function mount(){
   if(document.querySelector("[data-nexusnova-support-preview]"))return;
 
-  const nav=document.querySelector(".nn-header .nn-nav, header .nn-nav, [data-nn-nav]");
-  if(!nav)return;
-  const row=nav.closest(".nn-header-row")||nav.parentElement;
-  if(!row)return;
+  const nav=document.querySelector(".nn-header .nn-nav, header .nn-nav, [data-nn-nav], .site-header nav, .site-header .nav, .navin .navlinks");
+  const row=(nav&&nav.closest(".nn-header-row"))||(nav&&nav.closest(".site-header"))||(nav&&nav.closest("header"));
+  if(!nav||!row)return;
 
   const style=document.createElement("style");
   style.dataset.nexusnovaSupportPreviewStyle="";
