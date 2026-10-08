@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keep NexusNova Free — Support Preview</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<style>
+:root{--text:#111827;--muted:#64748b;--line:#e2e8f0;--purple:#6d28d9;--purple-dark:#5b21b6;--sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}.shell{width:min(760px,calc(100% - 28px));margin:auto}header{border-bottom:1px solid var(--line)}.head{min-height:60px;display:flex;align-items:center}.brand{display:flex;align-items:center;gap:9px}.logo{height:38px;width:auto}.brand strong{font-size:12px;font-weight:850;letter-spacing:.04em}
+main{min-height:calc(100vh - 61px);display:grid;place-items:center;padding:22px 0}.card{border:1px solid var(--line);padding:25px;background:#fff}.eyebrow{font:900 8px var(--mono);letter-spacing:.12em;color:var(--purple);text-transform:uppercase}h1{margin:7px 0 8px;font-size:clamp(28px,5vw,42px);line-height:1.04;letter-spacing:-.04em}.intro{margin:0;color:var(--muted);font-size:13px;line-height:1.6;max-width:650px}.amounts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:18px}.amount{border:1px solid var(--line);padding:11px;min-height:80px;display:flex;flex-direction:column;justify-content:space-between}.featured{border-color:#c4b5fd;background:#fdfcff}.price{font-size:21px;font-weight:900}.support{min-height:31px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:10px;font-weight:850;cursor:pointer}.support:hover{background:var(--purple-dark);border-color:var(--purple-dark)}.footer{margin-top:13px;padding-top:11px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:10px}.footer a{text-decoration:underline;text-underline-offset:2px}.modal{position:fixed;inset:0;background:rgba(15,23,42,.28);display:none;place-items:center;padding:16px}.modal.open{display:grid}.dialog{width:min(350px,100%);border:1px solid var(--line);background:#fff;padding:18px;box-shadow:0 20px 50px rgba(15,23,42,.18)}.dialog h2{margin:6px 0 5px;font-size:17px}.dialog p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}.close{margin-top:12px;min-height:31px;padding:0 10px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:10px;font-weight:850;cursor:pointer}@media(max-width:600px){.card{padding:19px}.amounts{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="shell head"><a class="brand" href="https://nexusnovatools.com/"><img class="logo" src="https://nexusnovatools.com/assets/logo.png" alt="NexusNova Tools Logo"><strong>NEXUSNOVA TOOLS</strong></a></div></header>
+<main><div class="shell"><section class="card">
+<span class="eyebrow">KEEP NEXUSNOVA FREE</span>
+<h1>Enjoying the tools? Buy us a coffee.</h1>
+<p class="intro">NexusNova's tools are free to use. When a tool saves you time, you can support the project with a small one-time contribution. No subscription. No pressure.</p>
+<div class="amounts">
+<div class="amount"><span class="price">$3</span><button class="support" data-amount="$3">Support $3</button></div>
+<div class="amount featured"><span class="price">$5</span><button class="support" data-amount="$5">Support $5</button></div>
+<div class="amount"><span class="price">$10</span><button class="support" data-amount="$10">Support $10</button></div>
+<div class="amount"><span class="price">$25</span><button class="support" data-amount="$25">Support $25</button></div>
+</div>
+<div class="footer"><span><strong>SafePay</strong> · One-time support · Tools stay free</span><span><a href="https://nexusnovatools.com/contact.html">Contact</a> · <a href="https://nexusnovatools.com/privacy.html">Privacy</a> · <a href="https://nexusnovatools.com/terms.html">Terms</a></span></div>
+</section></div></main>
+<div class="modal" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true"><span class="eyebrow">PREVIEW ONLY</span><h2>SafePay placeholder</h2><p id="copy">No payment is taken in this preview. After approval, the selected amount will open its SafePay support Quick Link.</p><button class="close" id="close">Close</button></div></div>
+<script>(()=>{const m=document.getElementById('modal'),c=document.getElementById('copy'),x=document.getElementById('close');document.querySelectorAll('[data-amount]').forEach(b=>b.onclick=()=>{c.textContent=b.dataset.amount+' support is preview-only. After approval, this button will open the matching SafePay Quick Link.';m.classList.add('open');m.setAttribute('aria-hidden','false');x.focus()});const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true')};x.onclick=close;m.onclick=e=>{if(e.target===m)close()};document.onkeydown=e=>{if(e.key==='Escape')close()}})();</script>
+</body>
+</html>
