@@ -175,3 +175,18 @@
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
 })();
+
+/* SITE-WIDE SUPPORT PREVIEW: injected on every shared NexusNova header. */
+(()=>{
+  const loadNexusNovaSupportPreview=()=>{
+    if(document.querySelector('script[data-nexusnova-support-preview-loader]'))return;
+    const current=document.currentScript;
+    const script=document.createElement('script');
+    script.src=current?new URL('nexusnova-support-preview.js',current.src).href:'assets/js/nexusnova-support-preview.js';
+    script.async=false;
+    script.setAttribute('data-nexusnova-support-preview-loader','');
+    document.head.appendChild(script);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadNexusNovaSupportPreview,{once:true});
+  else loadNexusNovaSupportPreview();
+})();
