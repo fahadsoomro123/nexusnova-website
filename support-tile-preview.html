@@ -6,51 +6,40 @@
 <title>NexusNova Support Tile Preview</title>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <style>
-:root{--text:#111827;--muted:#64748b;--line:#e2e8f0;--purple:#6d28d9;--purple-dark:#5b21b6;--sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f8fafc;display:grid;place-items:center;padding:24px;font-family:var(--sans);color:var(--text)}
-.tile{width:min(390px,100%);border:1px solid var(--line);background:#fff;padding:18px;box-shadow:0 10px 30px rgba(15,23,42,.05)}
-.top{display:flex;align-items:center;gap:10px}.coffee{width:42px;height:42px;border:1px solid #ddd6fe;background:#faf7ff;display:grid;place-items:center;font-size:21px}.eyebrow{font:900 8px var(--mono);letter-spacing:.11em;color:var(--purple);text-transform:uppercase}
-h1{margin:4px 0 4px;font-size:19px;line-height:1.15;letter-spacing:-.02em}.copy{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
-.actions{display:flex;align-items:center;gap:5px;margin-top:12px}.btn{min-height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#334155;font-size:10px;font-weight:850;cursor:pointer}.btn:hover{border-color:#c4b5fd;color:var(--purple);background:#faf7ff}.btn.main{border-color:var(--purple);background:var(--purple);color:#fff}.btn.main:hover{background:var(--purple-dark);border-color:var(--purple-dark)}
-.bottom{margin-top:11px;padding-top:9px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:9px}.bottom strong{color:#475569}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.25);display:none;place-items:center;padding:16px}.modal.open{display:grid}.dialog{width:min(340px,100%);background:#fff;border:1px solid var(--line);padding:16px;box-shadow:0 18px 45px rgba(15,23,42,.16)}.dialog h2{margin:5px 0;font-size:17px}.dialog p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}.close{margin-top:11px;min-height:31px;padding:0 10px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:10px;font-weight:850;cursor:pointer}
+:root{
+--bg:#eef2ff;--text:#17213a;--muted:#5c6780;--line:rgba(38,51,93,.13);
+--purple:#6558ff;--purple-dark:#4f46c8;--cyan:#0c789e;--violet:#744bd8;
+--sans:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace
+}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 10%,rgba(45,190,225,.12),transparent 26rem),radial-gradient(circle at 86% 18%,rgba(101,88,255,.14),transparent 24rem),#f7f9ff;display:grid;place-items:center;padding:24px;font-family:var(--sans);color:var(--text)}
+.tile{position:relative;width:min(430px,100%);padding:1px;border-radius:22px;background:linear-gradient(120deg,rgba(12,120,158,.34),rgba(101,88,255,.62),rgba(132,83,214,.34));box-shadow:0 22px 55px rgba(45,55,110,.15)}
+.inner{border-radius:21px;background:rgba(255,255,255,.94);backdrop-filter:blur(15px);padding:19px 19px 15px}
+.top{display:flex;align-items:center;gap:13px}.coffee{width:48px;height:48px;flex:0 0 48px;border-radius:15px;display:grid;place-items:center;font-size:23px;background:linear-gradient(145deg,rgba(101,88,255,.12),rgba(12,120,158,.10));border:1px solid rgba(101,88,255,.20);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 8px 18px rgba(82,76,190,.08)}
+.eyebrow{font:900 8px var(--mono);letter-spacing:.12em;color:#5148c8;text-transform:uppercase}.title{margin:4px 0 3px;font-size:19px;line-height:1.12;letter-spacing:-.025em;font-weight:900}.copy{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+.actions{display:flex;gap:6px;margin-top:15px}.btn{flex:1;min-width:0;height:34px;border:1px solid rgba(38,51,93,.13);border-radius:11px;background:#fff;color:#33405d;font-size:10px;font-weight:850;cursor:pointer;box-shadow:0 5px 13px rgba(45,55,110,.04);transition:.16s ease}.btn:hover{transform:translateY(-1px);border-color:rgba(101,88,255,.34);box-shadow:0 8px 18px rgba(82,76,190,.09);color:#5148c8}.btn.main{border-color:transparent;background:linear-gradient(135deg,#6558ff,#0c789e 62%,#744bd8);color:#fff;box-shadow:0 9px 20px rgba(82,76,190,.18)}.btn.main:hover{color:#fff;border-color:transparent;filter:brightness(.97)}
+.bottom{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:9px}.safe{display:inline-flex;align-items:center;gap:5px;font-weight:800}.dot{width:6px;height:6px;border-radius:50%;background:#0c789e;box-shadow:0 0 0 4px rgba(12,120,158,.08)}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.24);display:none;place-items:center;padding:16px;z-index:5}.modal.open{display:grid}.dialog{width:min(350px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 22px 55px rgba(15,23,42,.17)}.dialog h2{margin:5px 0;font-size:17px}.dialog p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}.close{margin-top:12px;min-height:31px;padding:0 11px;border:1px solid transparent;border-radius:10px;background:#6558ff;color:#fff;font-size:10px;font-weight:850;cursor:pointer}
+@media(max-width:420px){.inner{padding:17px}.actions{gap:5px}.btn{height:32px;font-size:9px}}
 </style>
 </head>
 <body>
 <section class="tile" aria-label="Support NexusNova">
-  <div class="top">
-    <div class="coffee" aria-hidden="true">☕</div>
-    <div>
-      <span class="eyebrow">KEEP NEXUSNOVA FREE</span>
-      <h1>Enjoying NexusNova?</h1>
-      <p class="copy">Buy us a coffee and help keep the tools free.</p>
-    </div>
-  </div>
-
-  <div class="actions">
-    <button class="btn" data-amount="$3">$3</button>
-    <button class="btn main" data-amount="$5">$5</button>
-    <button class="btn" data-amount="$10">$10</button>
-    <button class="btn" data-amount="$25">$25</button>
-  </div>
-
-  <div class="bottom">
-    <span><strong>SafePay</strong> · One-time support</span>
-    <span>No pressure. Tools stay free.</span>
-  </div>
-</section>
-
-<div class="modal" id="modal" aria-hidden="true">
-  <div class="dialog" role="dialog" aria-modal="true">
-    <span class="eyebrow">PREVIEW ONLY</span>
-    <h2>SafePay button placeholder</h2>
-    <p id="copy">No payment is taken in this preview. After approval, the selected amount will open the matching SafePay support link.</p>
-    <button class="close" id="close">Close</button>
-  </div>
+<div class="inner">
+<div class="top">
+<div class="coffee" aria-hidden="true">☕</div>
+<div><span class="eyebrow">KEEP NEXUSNOVA FREE</span><div class="title">Enjoying NexusNova?</div><p class="copy">Buy us a coffee and help keep the tools free.</p></div>
 </div>
-
-<script>
-(()=>{const m=document.getElementById('modal'),c=document.getElementById('copy'),x=document.getElementById('close');document.querySelectorAll('[data-amount]').forEach(b=>b.onclick=()=>{c.textContent=b.dataset.amount+' support is preview-only. After approval, this button will open the matching SafePay support link.';m.classList.add('open');m.setAttribute('aria-hidden','false');x.focus()});const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true')};x.onclick=close;m.onclick=e=>{if(e.target===m)close()};document.onkeydown=e=>{if(e.key==='Escape')close()}})();
-</script>
+<div class="actions">
+<button class="btn" data-amount="$3">$3</button>
+<button class="btn main" data-amount="$5">$5</button>
+<button class="btn" data-amount="$10">$10</button>
+<button class="btn" data-amount="$25">$25</button>
+</div>
+<div class="bottom"><span class="safe"><span class="dot"></span>SafePay · One-time support</span><span>No pressure. Tools stay free.</span></div>
+</div>
+</section>
+<div class="modal" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true"><span class="eyebrow">PREVIEW ONLY</span><h2>SafePay connection placeholder</h2><p id="copy">No payment is taken in this preview. After approval, the selected amount will open the matching SafePay support link.</p><button class="close" id="close">Close</button></div></div>
+<script>(()=>{const m=document.getElementById('modal'),c=document.getElementById('copy'),x=document.getElementById('close');document.querySelectorAll('[data-amount]').forEach(b=>b.onclick=()=>{c.textContent=b.dataset.amount+' support is preview-only. After approval, this button will open the matching SafePay support link.';m.classList.add('open');m.setAttribute('aria-hidden','false');x.focus()});const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true')};x.onclick=close;m.onclick=e=>{if(e.target===m)close()};document.onkeydown=e=>{if(e.key==='Escape')close()}})();</script>
 </body>
 </html>
