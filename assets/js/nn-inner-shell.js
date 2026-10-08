@@ -92,3 +92,17 @@ document.addEventListener("DOMContentLoaded",function(){
     });
   }
 });
+/* SITE-WIDE SUPPORT PREVIEW: injected on every shared NexusNova header. */
+(()=>{
+  const loadNexusNovaSupportPreview=()=>{
+    if(document.querySelector('script[data-nexusnova-support-preview-loader]'))return;
+    const current=document.currentScript;
+    const script=document.createElement('script');
+    script.src=current?new URL('nexusnova-support-preview.js',current.src).href:'assets/js/nexusnova-support-preview.js';
+    script.async=false;
+    script.setAttribute('data-nexusnova-support-preview-loader','');
+    document.head.appendChild(script);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadNexusNovaSupportPreview,{once:true});
+  else loadNexusNovaSupportPreview();
+})();
