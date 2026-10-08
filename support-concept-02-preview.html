@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NexusNova Support — Concept 02</title>
+<meta name="description" content="NexusNova support contribution concept preview.">
+<style>
+  :root{
+    --ink:#0a1020;
+    --muted:#8e9aae;
+    --paper:#f7f8fb;
+    --panel:#0b1220;
+    --panel-2:#101a2b;
+    --accent:#8b5cf6;
+    --accent-2:#5b7cff;
+    --white:#f7f9ff;
+    --line:rgba(255,255,255,.13);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
+  a{text-decoration:none;color:inherit}
+  .sitebar{
+    height:76px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 6vw;
+    background:#fff;
+    border-bottom:1px solid #e9edf4;
+  }
+  .brand{font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .nav{display:flex;gap:26px;font-size:13px;color:#5c6778}
+  .nav a:last-child{color:var(--ink);font-weight:700}
+  .spacer{
+    min-height:690px;
+    padding:7vw 6vw 5vw;
+    background:
+      radial-gradient(circle at 78% 20%,rgba(139,92,246,.08),transparent 25%),
+      linear-gradient(#f7f8fb,#f7f8fb);
+  }
+  .context{
+    max-width:980px;
+    margin:0 auto;
+  }
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:#7c8798;font-weight:800}
+  .context h1{font-size:clamp(46px,6vw,76px);line-height:.97;letter-spacing:-.055em;max-width:850px;margin:18px 0}
+  .context p{max-width:650px;font-size:17px;line-height:1.7;color:#657084}
+  .support-band{
+    background:linear-gradient(120deg,var(--panel),#121d30 58%,#0c1322);
+    color:var(--white);
+    position:relative;
+    overflow:hidden;
+  }
+  .support-band:before{
+    content:"";
+    position:absolute;
+    width:620px;height:620px;border-radius:50%;
+    right:-230px;top:-310px;
+    background:radial-gradient(circle,rgba(91,124,255,.35),rgba(91,124,255,0) 68%);
+  }
+  .support-band:after{
+    content:"";
+    position:absolute;
+    width:480px;height:480px;border-radius:50%;
+    left:-260px;bottom:-290px;
+    background:radial-gradient(circle,rgba(139,92,246,.25),rgba(139,92,246,0) 68%);
+  }
+  .support-inner{
+    position:relative;z-index:1;
+    max-width:1240px;
+    margin:0 auto;
+    padding:68px 6vw 54px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(360px,520px);
+    gap:72px;
+    align-items:end;
+  }
+  .support-kicker{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#aab5c8}
+  .dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 0 0 5px rgba(139,92,246,.12)}
+  .support-title{
+    margin:16px 0 14px;
+    font-size:clamp(48px,6vw,84px);
+    line-height:.9;
+    letter-spacing:-.065em;
+    max-width:760px;
+  }
+  .support-copy{margin:0;max-width:610px;color:#aab5c8;line-height:1.65;font-size:16px}
+  .action-area{align-self:end}
+  .amount-label{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#aab5c8;font-weight:800;margin-bottom:13px}
+  .amounts{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .amount{
+    min-height:76px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.035);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    transition:transform .16s ease,border-color .16s ease,background .16s ease;
+    cursor:pointer;
+  }
+  .amount:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.36);background:rgba(255,255,255,.07)}
+  .amount span:first-child{font-size:25px;font-weight:850;letter-spacing:-.03em}
+  .amount span:last-child{font-size:9px;text-transform:uppercase;letter-spacing:.11em;color:#8f9bb0;margin-top:4px}
+  .amount.primary{
+    background:linear-gradient(135deg,#7c4dff,#466df8);
+    border-color:transparent;
+    box-shadow:0 16px 36px rgba(82,83,255,.27);
+  }
+  .amount.primary span:last-child{color:rgba(255,255,255,.78)}
+  .payment-note{
+    min-height:28px;
+    font-size:11px;
+    line-height:1.45;
+    color:#7f8ca0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+  }
+  .payment-note strong{color:#c5cedc;font-weight:650}
+  .footer{
+    background:#fff;
+    border-top:1px solid #e6eaf1;
+    padding:28px 6vw;
+    display:flex;justify-content:space-between;gap:20px;
+    color:#718096;font-size:12px;
+  }
+  .footer strong{color:var(--ink)}
+  .demo-stamp{
+    position:fixed;right:18px;top:18px;z-index:10;
+    padding:8px 10px;border-radius:999px;
+    background:rgba(10,16,32,.88);color:#dfe6f2;
+    font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+    backdrop-filter:blur(10px);
+  }
+  @media(max-width:860px){
+    .nav{display:none}
+    .spacer{min-height:560px}
+    .support-inner{grid-template-columns:1fr;gap:40px;padding-top:54px}
+    .action-area{max-width:none}
+    .footer{flex-direction:column}
+  }
+  @media(max-width:520px){
+    .sitebar{padding:0 20px}
+    .spacer{padding-left:20px;padding-right:20px}
+    .support-inner{padding-left:20px;padding-right:20px}
+    .support-title{font-size:50px}
+    .amounts{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+  <div class="demo-stamp">Concept 02 · Preview only</div>
+
+  <header class="sitebar">
+    <div class="brand">NEXUSNOVA TOOLS</div>
+    <nav class="nav" aria-label="Primary">
+      <a href="#">Home</a>
+      <a href="#">All Tools</a>
+      <a href="#">Content</a>
+      <a href="#">Categories</a>
+      <a href="#">Articles</a>
+      <a href="#">Guides</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="spacer">
+      <div class="context">
+        <div class="eyebrow">Website context preview</div>
+        <h1>Useful tools.<br>Less friction.</h1>
+        <p>NexusNova is built around practical browser tools, guides and utilities. This area exists only to show how the support treatment closes the experience rather than interrupting it.</p>
+      </div>
+    </section>
+
+    <section class="support-band" aria-label="Support NexusNova">
+      <div class="support-inner">
+        <div>
+          <div class="support-kicker"><span class="dot"></span> Keep the toolkit open</div>
+          <h2 class="support-title">Good tools should stay useful.</h2>
+          <p class="support-copy">NexusNova keeps a growing set of practical tools available without a subscription wall. A small one-time contribution helps cover the boring infrastructure that makes the useful part possible.</p>
+        </div>
+
+        <div class="action-area">
+          <div class="amount-label">Choose support amount</div>
+          <div class="amounts">
+            <a class="amount" href="#preview-3" data-amount="3"><span>$3</span><span>one-time</span></a>
+            <a class="amount primary" href="#preview-5" data-amount="5"><span>$5</span><span>one-time</span></a>
+            <a class="amount" href="#preview-10" data-amount="10"><span>$10</span><span>one-time</span></a>
+            <a class="amount" href="#preview-25" data-amount="25"><span>$25</span><span>one-time</span></a>
+          </div>
+          <div class="payment-note">
+            <span><strong>One click per amount.</strong> The approved production flow will redirect directly to hosted secure checkout.</span>
+            <span aria-hidden="true">↗</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div><strong>NEXUSNOVA TOOLS</strong> · Practical browser utilities</div>
+    <div>Trust · Privacy · Terms · Contact</div>
+  </footer>
+
+<script>
+  document.querySelectorAll('.amount').forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      // Visual preview only. No payment session is created here.
+      const amount = this.dataset.amount;
+      document.title = 'NexusNova Support — $' + amount + ' selected';
+      document.querySelector('.payment-note').firstElementChild.innerHTML =
+        '<strong>$' + amount + ' selected.</strong> Preview only: production will create the Safepay session server-side and redirect directly to secure checkout.';
+    });
+  });
+</script>
+</body>
+</html>
