@@ -357,8 +357,8 @@
 .nn-footer-support-copy strong{color:#24304d;font-weight:850}
 .nn-footer-support-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;min-height:32px!important;padding:0 11px!important;border:1px solid rgba(101,88,255,.24)!important;border-radius:10px!important;background:linear-gradient(135deg,rgba(101,88,255,.10),rgba(12,120,158,.07))!important;color:#4338a8!important;font-size:9px!important;font-weight:900!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 5px 13px rgba(45,55,110,.05)!important;cursor:pointer!important;text-decoration:none!important;transition:.16s ease!important}
 .nn-footer-support-btn:hover{transform:translateY(-1px)!important;border-color:rgba(101,88,255,.40)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.94),0 8px 18px rgba(82,76,190,.10)!important;color:#3730a3!important}
-.nn-footer-support-modal{position:fixed!important;inset:0!important;z-index:9999!important;display:grid!important;place-items:center!important;padding:16px!important;background:rgba(15,23,42,.25)!important}
-.nn-footer-support-modal.open{display:grid!important}
+.nn-footer-support-modal{position:fixed!important;inset:0!important;z-index:9999!important;display:grid!important;place-items:center!important;padding:16px!important;background:rgba(15,23,42,.25)!important;overscroll-behavior:none!important;touch-action:none!important}
+.nn-footer-support-modal.open{display:grid!important;overflow:hidden!important}
 .nn-footer-support-dialog{width:min(380px,100%)!important;padding:19px!important;border:1px solid rgba(38,51,93,.14)!important;border-radius:18px!important;background:#fff!important;box-shadow:0 24px 60px rgba(15,23,42,.18)!important}
 .nn-footer-support-eyebrow{font:900 8px var(--nn-mono);letter-spacing:.12em;color:#5148c8;text-transform:uppercase}
 .nn-footer-support-dialog h3{margin:5px 0 5px!important;font-size:19px!important;line-height:1.12!important;color:#17213a!important}
@@ -1654,7 +1654,7 @@
     <a class="nn-social nn-social-facebook" href="https://www.facebook.com/NexusNovaTools/" target="_blank" rel="me noopener noreferrer" aria-label="Facebook NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.4-3h-3.2V9.1c0-.9.3-1.6 1.6-1.6h1.8V4.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.3 1.6-4.3 4.5V11H7v3h3v8h3.5Z"></path></svg></span><span><strong>Facebook</strong><span class="nn-social-handle">NexusNovaTools</span></span></a>
     <a class="nn-social nn-social-instagram" href="https://www.instagram.com/nexusnovatools/" target="_blank" rel="me noopener noreferrer" aria-label="Instagram @nexusnovatools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2"></rect><circle cx="12" cy="12" r="3.7" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.2" cy="6.9" r="1" fill="currentColor"></circle></svg></span><span><strong>Instagram</strong><span class="nn-social-handle">@nexusnovatools</span></span></a>
     <a class="nn-social nn-social-telegram" href="https://t.me/NexusNovaTools" target="_blank" rel="me noopener noreferrer" aria-label="Telegram @NexusNovaTools"><span class="nn-social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.5 3.8 10.4c-1.2.5-1.2 1.2.8 1.5l4.6 1.4 1.8 5.5c.2.7.1.9.8.9.5 0 .8-.2 1.1-.5l2.2-2.1 4.6 3.4c.8.5 1.4.3 1.6-.8L23 5c.3-1.3-.5-1.9-1.3-1.5Z"></path></svg></span><span><strong>Telegram</strong><span class="nn-social-handle">@NexusNovaTools</span></span></a>
-  </section></div><div class="nn-website-launches-badge"><a href="https://websitelaunches.com/site/nexusnovatools.com" target="_blank" rel="noopener"><img src="https://websitelaunches.com/badge/nexusnovatools.com.svg" alt="Established online - Public launch record" width="255" height="55" loading="lazy" decoding="async"></a></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div><div class="nn-footer-support-modal" id="nnFooterSupportModal" aria-hidden="false">
+  </section></div><div class="nn-website-launches-badge"><a href="https://websitelaunches.com/site/nexusnovatools.com" target="_blank" rel="noopener"><img src="https://websitelaunches.com/badge/nexusnovatools.com.svg" alt="Established online - Public launch record" width="255" height="55" loading="lazy" decoding="async"></a></div><div class="nn-shell nn-global-footer-bottom"><span>© <span data-year></span> NexusNova Tools</span><span class="nn-footer-domain">NEXUSNOVATOOLS.COM</span></div><div class="nn-footer-support-modal open" id="nnFooterSupportModal" aria-hidden="false">
   <div class="nn-footer-support-dialog" role="dialog" aria-modal="true" aria-labelledby="nnFooterSupportTitle">
     <span class="nn-footer-support-eyebrow">KEEP NEXUSNOVA FREE</span>
     <h3 id="nnFooterSupportTitle">Buy us a coffee ☕</h3>
@@ -2072,9 +2072,12 @@ document.addEventListener('DOMContentLoaded',function(){
 </html>
 +a}
  choices.forEach(b=>b.addEventListener('click',()=>select(b.getAttribute('data-support-footer'))));
- open.addEventListener('click',()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');close.focus()});
- function hide(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true')}
- close.addEventListener('click',hide);modal.addEventListener('click',e=>{if(e.target===modal)hide()});document.addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
+ function lockPage(){document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';document.body.style.overscrollBehavior='none'}
+ function unlockPage(){document.documentElement.style.overflow='';document.body.style.overflow='';document.body.style.overscrollBehavior=''}
+ function preventScroll(e){e.preventDefault()}
+ open.addEventListener('click',()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');lockPage();close.focus()});
+ function hide(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');unlockPage()}
+ close.addEventListener('click',hide);modal.addEventListener('click',e=>{if(e.target===modal)hide()});modal.addEventListener('wheel',preventScroll,{passive:false});modal.addEventListener('touchmove',preventScroll,{passive:false});document.addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
  pay.addEventListener('click',()=>{alert('Preview only: 
 
   <script type="module" src="assets/js/humanproof-hero-360.js"></script>
