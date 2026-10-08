@@ -355,11 +355,11 @@
 .nn-c04-support{display:inline-flex;align-items:center;gap:7px;margin-left:12px;padding-left:12px;border-left:1px solid #e2e8f0;white-space:nowrap}
 .nn-c04-label{font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#64748b}
 .nn-c04-mark{width:17px;height:17px;display:grid;place-items:center;color:var(--nn-purple);flex:0 0 auto}.nn-c04-mark svg{width:17px;height:17px;display:block}
-.nn-c04-amount{width:29px;height:29px;display:inline-grid;place-items:center;border:1px solid #cbd5e1;border-radius:50%;background:#fff;color:#334155;font-family:var(--nn-mono);font-size:8px;font-weight:900;transition:transform .15s ease,border-color .15s ease,color .15s ease,background .15s ease}
+.nn-c04-amount{width:42px;height:30px;display:inline-grid;place-items:center;border:1px solid #cbd5e1;border-radius:0;background:#fff;color:#334155;font-family:var(--nn-mono);font-size:8px;font-weight:900;transition:transform .15s ease,border-color .15s ease,color .15s ease,background .15s ease}
 .nn-c04-amount:hover,.nn-c04-amount:focus-visible{transform:translateY(-1px);border-color:#8b5cf6;color:#6d28d9}.nn-c04-amount.primary{background:#6d28d9;border-color:#6d28d9;color:#fff}
 .nn-c04-amount[aria-current=true]{box-shadow:0 0 0 2px #ddd6fe}
-@media(max-width:1120px){.nn-c04-support{margin-left:6px;padding-left:8px;gap:5px}.nn-c04-label{display:none}.nn-c04-amount{width:26px;height:26px}}
-@media(max-width:760px){.nn-c04-support{width:100%;margin:2px 0 0;padding:5px 0 0;border-left:0;border-top:1px solid var(--nn-line);justify-content:flex-start}.nn-c04-label{display:inline}.nn-c04-amount{width:28px;height:28px}}
+@media(max-width:1120px){.nn-c04-support{margin-left:6px;padding-left:8px;gap:5px}.nn-c04-label{display:none}.nn-c04-amount{width:38px;height:28px}}
+@media(max-width:760px){.nn-c04-support{width:100%;margin:2px 0 0;padding:5px 0 0;border-left:0;border-top:1px solid var(--nn-line);justify-content:flex-start}.nn-c04-label{display:inline}.nn-c04-amount{width:40px;height:30px}}
 </style></head>
 <body>
   <header class="nn-header">
@@ -378,8 +378,7 @@
         <a href="articles.html">Articles</a>
         <a href="guides.html">Guides</a>
       </nav><div class="nn-c04-support" aria-label="Support NexusNova with a one-time contribution">
-<span class="nn-c04-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.2 9.2h9.6v6.7A3.1 3.1 0 0 1 13.7 19h-3.4a3.1 3.1 0 0 1-3.1-3.1V9.2Z" stroke="currentColor" stroke-width="1.55"/><path d="M8.3 6.1h7.4M9.2 3.9h5.6M16.8 11.2h1.1a2.2 2.2 0 1 1 0 4.4h-1.1" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/></svg></span>
-<span class="nn-c04-label">Support</span>
+<span class="nn-c04-mark" aria-hidden="true">☕</span><span class="nn-c04-label">Support</span>
 <a class="nn-c04-amount" href="#support-3" data-support-preview="3" aria-label="Support with $3">$3</a>
 <a class="nn-c04-amount primary" href="#support-5" data-support-preview="5" aria-label="Support with $5">$5</a>
 <a class="nn-c04-amount" href="#support-10" data-support-preview="10" aria-label="Support with $10">$10</a>
@@ -2040,5 +2039,5 @@
       clearPanel();
     });
   </script>
-<script id="nn-support-concept-04-script">(function(){document.querySelectorAll('[data-support-preview]').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('[data-support-preview]').forEach(function(item){item.removeAttribute('aria-current')});this.setAttribute('aria-current','true')})})})();</script></body>
+<script id="nn-support-concept-04-script">(function(){document.querySelectorAll('[data-support-preview]').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault()})})})();</script></body>
 </html>
