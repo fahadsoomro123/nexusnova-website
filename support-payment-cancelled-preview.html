@@ -16,5 +16,5 @@
 <main><section class="card"><div class="icon">×</div><div class="kicker">SUPPORT CHECKOUT</div><h1>Sandbox checkout cancelled.</h1><p>No successful payment is recorded by this page. This is a test flow only; production HumanProof and Safepay flows are separate and unchanged.</p><a class="btn" id="return" href="index.html">Return to NexusNova preview</a></section></main>
 <footer><div class="shell"><span>NO LIVE MONEY IS PROCESSED</span><span>NON-INDEXED PREVIEW PAGE</span></div></footer>
 <script>
-(function(){const base=window.NEXUSNOVA_SUPPORT_API_BASE||"";if(!base)return;try{const u=new URL(base);if(u.protocol==="https:"&&/^[a-z0-9-]+\.workers\.dev$/i.test(u.hostname))document.getElementById("return").href="index.html?supportApiBase="+encodeURIComponent(u.origin);}catch(_){}})();
+(function(){const base=window.NEXUSNOVA_SUPPORT_API_BASE||"";if(!base)return;try{const u=new URL(base);if(u.protocol==="https:"&&/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i.test(u.hostname))document.getElementById("return").href="index.html?supportApiBase="+encodeURIComponent(u.origin);}catch(_){}})();
 </script></body></html>
