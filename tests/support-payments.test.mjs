@@ -80,9 +80,10 @@ test("creates an allowlisted USD support checkout and signed return reference", 
 
   const redirect = new URL(checkout.searchParams.get("redirect_url"));
   assert.equal(redirect.origin + redirect.pathname, ORIGIN + "/support-payment-success.html");
-  const reference = redirect.searchParams.get("support_ref");
-  assert.ok(reference);
-  assert.equal(reference.split(".").length, 2);
+  assert.equal(redirect.search, "", "Safepay return URL should stay query-free");
+  const orderId = checkout.searchParams.get("order_id");
+  assert.match(orderId, /^NNS-[0-9]{13}-5-[A-F0-9]{8}-[A-F0-9]{24}$/);
+  assert.equal(JSON.parse(calls[0].init.body).metadata.order_id, orderId);
   assert.equal(calls[0].init.headers.get("x-sfpy-merchant-secret"), SECRET_KEY);
   assert.equal(JSON.parse(calls[0].init.body).amount, 500);
   assert.equal(JSON.parse(calls[0].init.body).currency, "USD");
@@ -141,7 +142,7 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
   assert.equal(created.response.status, 200);
   const checkout = new URL(created.data.checkout_url);
   const tracker = checkout.searchParams.get("tracker");
-  const supportRef = new URL(checkout.searchParams.get("redirect_url")).searchParams.get("support_ref");
+  const orderId = checkout.searchParams.get("order_id");
 
   globalThis.fetch = async (input) => {
     assert.match(String(input), new RegExp("/reporter/api/v1/payments/" + TRACKER));
@@ -149,11 +150,12 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
       token: TRACKER,
       client: PUBLIC_KEY,
       state: "TRACKER_ENDED",
+      metadata: { order_id: orderId, source: "nexusnova-support" },
       purchase_totals: { quote_amount: { amount: 500, currency: "USD" } }
     } } });
   };
   const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
-    encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(supportRef));
+    encodeURIComponent(tracker) + "&order_id=" + encodeURIComponent(orderId));
   const result = await supportWorker.fetch(request, env);
   const body = await result.json();
   assert.equal(result.status, 200);
@@ -169,31 +171,31 @@ test("does not confirm a payment when the returned amount differs from the signe
   const created = await createCheckout(5);
   const checkout = new URL(created.data.checkout_url);
   const tracker = checkout.searchParams.get("tracker");
-  const supportRef = new URL(checkout.searchParams.get("redirect_url")).searchParams.get("support_ref");
+  const orderId = checkout.searchParams.get("order_id");
 
   globalThis.fetch = async () => Response.json({ data: { tracker: {
     token: TRACKER,
     client: PUBLIC_KEY,
     state: "TRACKER_ENDED",
+    metadata: { order_id: orderId, source: "nexusnova-support" },
     purchase_totals: { quote_amount: { amount: 300, currency: "USD" } }
   } } });
   const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
-    encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(supportRef));
+    encodeURIComponent(tracker) + "&order_id=" + encodeURIComponent(orderId));
   const result = await supportWorker.fetch(request, env);
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, false);
 });
 
-test("rejects a tampered signed support reference before asking Safepay", async (t) => {
+test("rejects a tampered signed order ID before asking Safepay", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   mockSafepay();
   const created = await createCheckout(5);
   const checkout = new URL(created.data.checkout_url);
   const tracker = checkout.searchParams.get("tracker");
-  const genuine = new URL(checkout.searchParams.get("redirect_url")).searchParams.get("support_ref");
-  const [payload, signature] = genuine.split(".");
-  const tampered = (payload.slice(0, -1) + (payload.endsWith("A") ? "B" : "A")) + "." + signature;
+  const genuine = checkout.searchParams.get("order_id");
+  const tampered = genuine.slice(0, -1) + (genuine.endsWith("A") ? "B" : "A");
 
   let reporterCalls = 0;
   globalThis.fetch = async (input) => {
@@ -201,11 +203,11 @@ test("rejects a tampered signed support reference before asking Safepay", async 
     throw new Error("tampered reference must be rejected before Reporter lookup");
   };
   const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
-    encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(tampered));
+    encodeURIComponent(tracker) + "&order_id=" + encodeURIComponent(tampered));
   const response = await supportWorker.fetch(request, env);
   const body = await response.json();
   assert.equal(response.status, 403);
-  assert.equal(body.error, "invalid_support_reference");
+  assert.equal(body.error, "invalid_support_order");
   assert.equal(reporterCalls, 0);
 });
 
