@@ -125,13 +125,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          WORKER_URL="$WORKER_URL" node -e "require('node:fs').writeFileSync('assets/js/nexusnova-support-preview-config.js', '// Public sandbox API origin for the non-production preview only.\nwindow.NEXUSNOVA_SUPPORT_API_BASE = '+JSON.stringify(process.env.WORKER_URL)+';\n')"
+          # Publish only the non-secret preview URL to the static preview branch.
+          # Never push the fix branch's Support Worker code into nexusnova-support-production.
+          git fetch origin nexusnova-support-production
+          git switch --create support-preview-config origin/nexusnova-support-production
+          WORKER_URL="$WORKER_URL" node -e "require('node:fs').writeFileSync('assets/js/nexusnova-support-preview-config.js', '// Public sandbox API origin for the non-production preview only.\\nwindow.NEXUSNOVA_SUPPORT_API_BASE = '+JSON.stringify(process.env.WORKER_URL)+';\\n')"
           git config user.name "NexusNova Support Sandbox Bot"
           git config user.email "noreply@nexusnovatools.com"
-          if ! git diff --quiet -- assets/js/nexusnova-support-preview-config.js; then
-            git add assets/js/nexusnova-support-preview-config.js
+          git add assets/js/nexusnova-support-preview-config.js
+          if ! git diff --cached --quiet -- assets/js/nexusnova-support-preview-config.js; then
             git commit -m "chore: set sandbox support preview API origin [skip ci]"
-            git push origin nexusnova-support-production
+            git push origin HEAD:nexusnova-support-production
           fi
           PREVIEW_BASE="$(python3 -c 'import urllib.parse,os; print(urllib.parse.quote(os.environ["WORKER_URL"], safe=""))')"
           {
