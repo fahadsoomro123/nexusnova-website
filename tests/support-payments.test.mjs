@@ -319,6 +319,8 @@ test("sandbox deployment stays on the isolated fix branch and cannot add a produ
   assert.ok(workflow.includes("git fetch origin nexusnova-support-production"));
   assert.ok(workflow.includes("git switch --create support-preview-config origin/nexusnova-support-production"));
   assert.ok(workflow.includes("git push origin HEAD:nexusnova-support-production"));
+  assert.ok(workflow.includes("printf 'Sandbox checkout session generated and validated for USD $%s.' \"$amount\""));
+  assert.ok(workflow.includes("echo '- Checkout session creation: USD $3, $5, $10 and $25 all passed'"));
   assert.equal(workflow.includes("git push origin nexusnova-support-production"), false, "sandbox workflow must never push the fix branch into the Support base branch");
   assert.equal(config.name, "nexusnova-support-payments-preview");
   assert.equal(config.workers_dev, true);
