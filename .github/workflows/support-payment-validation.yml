@@ -61,7 +61,7 @@ jobs:
           node --check assets/js/nexusnova-support.js
           node --check assets/js/main.js
           node --check assets/js/nn-inner-shell.js
-          node -e "for (const p of ['cloudflare/support-payments/wrangler.jsonc','cloudflare/support-payments/wrangler.preview.jsonc']) JSON.parse(require('node:fs').readFileSync(p,'utf8')); console.log('Both Wrangler configs valid JSON')"
+          node -e "for (const p of ['cloudflare/support-payments/wrangler.jsonc','cloudflare/support-payments/wrangler.preview.jsonc','cloudflare/support-payments/wrangler.production-check.jsonc','cloudflare/support-payments/wrangler.production.jsonc','cloudflare/support-payments/wrangler.production-offline.jsonc']) JSON.parse(require('node:fs').readFileSync(p,'utf8')); console.log('All five support Wrangler configs valid JSON')"
 
       - name: Run mocked checkout and verification tests
         run: node --experimental-default-type=module --test tests/support-payments.test.mjs
