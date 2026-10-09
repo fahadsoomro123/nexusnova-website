@@ -102,13 +102,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          failed=0
           for amount in 3 5 10 25; do
             status="$(curl --silent --show-error --max-time 35 -o "/tmp/support-live-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
-            [[ "$status" == "200" ]] || { echo "::error::Live Safepay session creation failed for USD $amount (HTTP $status)."; cat "/tmp/support-live-session-$amount.json"; exit 1; }
+            if [[ "$status" != "200" ]]; then
+              echo "::warning::Live Safepay session creation failed for USD $amount (HTTP $status)."
+              cat "/tmp/support-live-session-$amount.json"
+              failed=1
+              continue
+            fi
             EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-live-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url||'https://invalid.example'); const a=Number(process.env.EXPECTED_AMOUNT); const order=d.ok&&u.searchParams.get('order_id'); const orderPattern=new RegExp('^NNS-[0-9]{13}-'+a+'-[A-F0-9]{8}-[A-F0-9]{24}$'); if(d.ok!==true||d.environment!=='production'||d.amount!==a||d.currency!=='USD'||u.origin!=='https://getsafepay.com'||u.pathname!=='/embedded/'||!u.searchParams.get('tbt')||!/^track_[A-Za-z0-9-]{10,120}$/.test(u.searchParams.get('tracker')||'')||!orderPattern.test(order||'')) { console.error('Live Safepay checkout response validation failed for amount',a); process.exit(1); }"
             echo "Live checkout session created and validated for USD $amount; no payment was submitted."
           done
 
+          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }
       - name: Allow rate-limit window to expire before route activation
         run: sleep 65
 
@@ -142,13 +149,20 @@ jobs:
           status="$(curl --silent --show-error --max-time 20 -o /tmp/support-routed-invalid.json -w '%{http_code}' "$BASE/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data '{"amount":4}')"
           [[ "$status" == "400" ]] || { cat /tmp/support-routed-invalid.json; echo "::error::Production route invalid-amount status was $status, expected 400."; exit 1; }
           node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-routed-invalid.json','utf8')); if(d.error!=='invalid_support_amount')process.exit(1); console.log('Production route rejects unapproved amounts.');"
+          failed=0
           for amount in 3 5 10 25; do
             status="$(curl --silent --show-error --max-time 35 -o "/tmp/support-routed-session-$amount.json" -w '%{http_code}' "$BASE/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
-            [[ "$status" == "200" ]] || { echo "::error::Production-routed live session failed for USD $amount (HTTP $status)."; cat "/tmp/support-routed-session-$amount.json"; exit 1; }
+            if [[ "$status" != "200" ]]; then
+              echo "::warning::Production-routed live session failed for USD $amount (HTTP $status)."
+              cat "/tmp/support-routed-session-$amount.json"
+              failed=1
+              continue
+            fi
             EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-routed-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url||'https://invalid.example'); const a=Number(process.env.EXPECTED_AMOUNT); const order=d.ok&&u.searchParams.get('order_id'); const orderPattern=new RegExp('^NNS-[0-9]{13}-'+a+'-[A-F0-9]{8}-[A-F0-9]{24}$'); if(d.ok!==true||d.environment!=='production'||d.amount!==a||d.currency!=='USD'||u.origin!=='https://getsafepay.com'||u.pathname!=='/embedded/'||!u.searchParams.get('tbt')||!/^track_[A-Za-z0-9-]{10,120}$/.test(u.searchParams.get('tracker')||'')||!orderPattern.test(order||'')) { console.error('Routed live Safepay response validation failed for amount',a); process.exit(1); }"
             echo "Production API route generated and validated USD $amount live checkout; no payment was submitted."
           done
-          {
+
+          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }          {
             echo "## NexusNova Support Payments Production"
             echo ""
             echo "- Worker configuration and production credentials: **passed**"
