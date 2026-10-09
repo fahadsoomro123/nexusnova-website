@@ -213,8 +213,13 @@ async function createCheckout(request, env) {
 
     // Safepay appends tracker/order data to these URLs. Keep them query-free,
     // matching the proven checkout pattern in the existing HumanProof integration.
-    const redirectUrl = "https://nexusnovatools.com/support-payment-success.html";
-    const cancelUrl = "https://nexusnovatools.com/support-payment-cancelled.html";
+    // Sandbox return targets may be the preview branch; production stays pinned to the canonical site.
+    const redirectUrl = environment === "sandbox" && env.SUPPORT_SUCCESS_URL
+      ? env.SUPPORT_SUCCESS_URL
+      : "https://nexusnovatools.com/support-payment-success.html";
+    const cancelUrl = environment === "sandbox" && env.SUPPORT_CANCEL_URL
+      ? env.SUPPORT_CANCEL_URL
+      : "https://nexusnovatools.com/support-payment-cancelled.html";
     const checkoutUrl = new URL(checkoutHost);
     checkoutUrl.searchParams.set("environment", environment);
     checkoutUrl.searchParams.set("tbt", tbt);
