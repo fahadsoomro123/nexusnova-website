@@ -1,46 +1,41 @@
 # NexusNova Support Payments: Production Activation Gate
 
-This implementation is isolated from the existing HumanProof payment flow. It uses the documented Safepay v3 tracker + passport + hosted-checkout flow, matching the integration sequence already used by the protected HumanProof Worker without changing that Worker.
+## Hosting architecture
 
-## Files added or changed in this feature
+NexusNova's current static website is deployed through GitHub Pages. GitHub Pages does **not** execute Cloudflare Pages Functions from a root `functions/` directory. The support API therefore lives in its own Cloudflare Worker and uses the route `nexusnovatools.com/api/support/*`; the existing static site continues to render from GitHub Pages.
 
-- `assets/js/nexusnova-support.js`: approved sitewide support control, server-side request, direct checkout redirect, and clear failure handling.
-- `functions/api/support/create-checkout.js`: support-only checkout session creation with a server-side amount allowlist.
-- `functions/api/support/payment-status.js`: signed-reference validation, Safepay Reporter lookup, merchant check, and exact expected amount/state check.
-- `support-payment-success.html`: noindex return screen; it only says confirmed after the server verifies the signed support reference and Safepay status.
-- `support-payment-cancelled.html`: noindex cancellation screen.
-- `docs/support-payments-production-setup.md`: configuration and release gate.
-- `tests/support-payments.test.mjs` and `.github/workflows/support-payment-validation.yml`: mocked contract tests and syntax checks.
+New isolated Worker files:
+- `cloudflare/support-payments/worker.js`: support-only checkout creation and status verification.
+- `cloudflare/support-payments/wrangler.jsonc`: a dedicated Worker name, the support-only route, and fail-closed defaults.
+- `assets/js/nexusnova-support.js`: approved support control with direct redirect to the returned Safepay checkout URL.
+- `support-payment-success.html`: noindex return page; it only shows confirmed success after server-side checks.
+- `support-payment-cancelled.html`: noindex cancellation page.
+- `tests/support-payments.test.mjs` and `.github/workflows/support-payment-validation.yml`: mocked contract tests and syntax validation.
 
-The existing `cloudflare/safepay-webhook-worker.js`, all HumanProof checkout/return files, FBR systems, sitemap, robots.txt, canonical metadata, and article/tool body content are protected and must not be modified by this feature.
+The old `functions/api/support/*.js` drafts were removed from this feature branch because they would never execute on the current GitHub Pages host.
 
-## Required Cloudflare Pages environment variables
+## Protected production scope
 
-Configure these in the Cloudflare Pages project that serves `nexusnovatools.com`, under **Settings → Variables and Secrets**. Pages Functions do not automatically inherit secrets from a separate Worker.
+The feature does not modify `cloudflare/safepay-webhook-worker.js`, existing HumanProof checkout/return files, FBR systems, mining/wallet systems, sitemap, robots.txt, canonical/indexing metadata, or article/tool content. Do not add support plans to the HumanProof Worker. The support Worker is a separate service.
 
-- `SAFEPAY_PUBLIC_KEY`: the merchant public/API key.
-- `SAFEPAY_SECRET_KEY`: set as a secret; never place it in HTML, JavaScript, or Git.
-- `SAFEPAY_ENV`: set to `production` only after the live merchant account and payment method are confirmed. Use `sandbox` in the Preview environment for sandbox tests.
+## Required Worker variables and secrets
 
-Set variables independently for Preview and Production. Do not send secret values in chat or commit them to the repository.
+Set these on the **new `nexusnova-support-payments` Worker**, not on the existing HumanProof Worker.
 
-The create-checkout function deliberately returns HTTP 503 on the `main` branch unless `SAFEPAY_ENV=production` and both keys exist. This prevents live visitors from being sent to sandbox checkout or a visual demo.
+- `SUPPORT_CHECKOUT_ENABLED`: must be exactly `true` to enable checkout.
+- `SAFEPAY_ENV`: `sandbox` for preview testing; `production` only after successful sandbox tests and merchant confirmation.
+- `SAFEPAY_PUBLIC_KEY`: Safepay merchant public/API key.
+- `SAFEPAY_SECRET_KEY`: set as a Cloudflare Worker secret. Never put it in HTML, JavaScript, or Git.
 
-## Amount and payment safeguards
+The checked-in defaults are `SUPPORT_CHECKOUT_ENABLED=false` and `SAFEPAY_ENV=sandbox`. This deliberately leaves the public site API disabled until an administrator explicitly configures the dedicated Worker. Even if accidentally routed to the live domain, the Worker fails closed unless the flag is true, both keys exist, and `SAFEPAY_ENV=production`.
 
-Only USD $3, $5, $10 and $25 are accepted by the server; amounts are converted to Safepay's minor unit server-side. Arbitrary amounts are rejected. The browser never supplies or receives the merchant secret. Checkout redirects are generated server-side using the established Safepay hosted checkout URL structure.
+## Deployment plan
 
-A short-lived HMAC-signed support reference binds the tracker, order ID, amount, currency, environment and purpose together. On return, the server verifies the signature, checks the tracker matches, queries Safepay Reporter, checks the merchant identity and exact quoted amount, and only then reports a paid state. The success page never trusts a browser redirect alone.
+1. Create/deploy this Worker separately using `npx wrangler deploy --config cloudflare/support-payments/wrangler.jsonc`, or configure a **separate** Cloudflare Git integration for this subdirectory. Do not change the existing Telegram Worker configuration or HumanProof Worker.
+2. Before attaching the production route, deploy with a sandbox merchant and test using its `workers.dev` URL. Use Worker Preview variables/secrets: `SUPPORT_CHECKOUT_ENABLED=true`, `SAFEPAY_ENV=sandbox`, sandbox `SAFEPAY_PUBLIC_KEY`, and sandbox secret `SAFEPAY_SECRET_KEY`.
+3. Verify the new route doesn't conflict with any existing Cloudflare route rules. The existing HumanProof API routes must remain unchanged.
+4. Run real Safepay **sandbox** flows for all four amounts: USD $3, $5, $10, and $25; check cancellation; and confirm server-side reporter verification.
+5. Configure production Safepay keys and `SAFEPAY_ENV=production` on the new Worker, set `SUPPORT_CHECKOUT_ENABLED=true`, and deploy/attach only `nexusnovatools.com/api/support/*` (plus www route if required).
+6. Open the deployed site on desktop and mobile, test amount taps, then check checkout and return flows. Only after those steps and explicit user approval may PR #205 be merged.
 
-## Required release checks
-
-Before merging the production UI:
-1. Confirm this repository's Cloudflare Pages deployment actually builds the root `functions/` directory as Pages Functions.
-2. Configure Preview and Production variables without exposing secret values.
-3. Run mocked contract tests, invalid amount rejection, missing-secret 503, bad signed-reference rejection, merchant mismatch, exact amount mismatch, and successful status verification.
-4. Run real Safepay sandbox test payments for all four supported amounts in a deployed Pages Preview environment.
-5. Confirm success/cancel pages return `noindex,nofollow,noarchive` and test their desktop/mobile appearance.
-6. Verify HumanProof checkout, success/cancel, and existing Worker health/payment-status behavior remain unchanged.
-7. Only then consider merging the feature branch into `main`.
-
-This document records required configuration and validation. It does not claim that credentials are already configured or that a real Safepay payment has been tested.
+The repository does not give this workflow access to Cloudflare Worker secrets, nor has this isolated Worker been deployed or tested against a real Safepay sandbox from this change. Mocked tests are not a substitute for deployed sandbox payment tests.
