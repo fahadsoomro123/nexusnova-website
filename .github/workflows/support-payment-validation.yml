@@ -77,7 +77,15 @@ jobs:
         run: |
           set -euo pipefail
           npm install --prefix /tmp/nexusnova-playwright --no-save --no-package-lock playwright
-          /tmp/nexusnova-playwright/node_modules/.bin/playwright install --with-deps chromium
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "CHROME_EXECUTABLE=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          elif command -v chromium >/dev/null 2>&1; then
+            echo "CHROME_EXECUTABLE=$(command -v chromium)" >> "$GITHUB_ENV"
+          elif command -v chromium-browser >/dev/null 2>&1; then
+            echo "CHROME_EXECUTABLE=$(command -v chromium-browser)" >> "$GITHUB_ENV"
+          else
+            /tmp/nexusnova-playwright/node_modules/.bin/playwright install chromium
+          fi
 
       - name: Test rendered Support preview and sandbox checkout
         env:
