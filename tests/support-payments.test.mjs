@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import supportWorker from "../cloudflare/support-payments/worker.js";
 
 const ORIGIN = "https://nexusnovatools.com";
@@ -86,11 +87,13 @@ test("creates an allowlisted USD support checkout with signed order ID and clean
   assert.equal(redirect.search, "", "Safepay return URL should stay query-free");
   const orderId = checkout.searchParams.get("order_id");
   assert.match(orderId, /^NNS-[0-9]{13}-5-[A-F0-9]{8}-[A-F0-9]{24}$/);
-  assert.equal(JSON.parse(calls[0].init.body).metadata.order_id, orderId);
+  const metadata = JSON.parse(calls[0].init.body).metadata;
+  assert.equal(metadata.order_id, orderId);
+  assert.equal(metadata.source, "nexusnova-support");
+  assert.equal(Object.hasOwn(metadata, "purpose"), false, "Safepay session setup must not include the provider-rejected purpose field");
   assert.equal(calls[0].init.headers.get("x-sfpy-merchant-secret"), SECRET_KEY);
   assert.equal(JSON.parse(calls[0].init.body).amount, 500);
   assert.equal(JSON.parse(calls[0].init.body).currency, "USD");
-  assert.equal(JSON.parse(calls[0].init.body).metadata.source, "nexusnova-support");
 });
 
 test("accepts each approved support amount and sends the matching minor-unit amount to Safepay", async (t) => {
@@ -170,7 +173,7 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
       token: TRACKER,
       client: PUBLIC_KEY,
       state: "TRACKER_ENDED",
-      metadata: { order_id: orderId, source: "nexusnova-support" },
+      metadata: { order_id: { value: orderId }, source: { value: "nexusnova-support" } },
       purchase_totals: { quote_amount: { amount: 500, currency: "USD" } }
     } } });
   };
@@ -206,6 +209,7 @@ test("does not confirm a payment when the returned amount differs from the signe
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, false);
+  assert.equal(body.verification, "payment_not_confirmed");
 });
 
 test("rejects a tampered signed order ID before asking Safepay", async (t) => {
@@ -292,4 +296,13 @@ test("rejects unsupported origins", async (t) => {
   assert.equal(response.status, 403);
   assert.equal(body.error, "origin_not_allowed");
   assert.equal(fetchCalls, 0);
+});
+
+
+test("production Support deployment is manual-only and cannot activate on push", () => {
+  const workflow = readFileSync(new URL("../.github/workflows/deploy-support-payments-production.yml", import.meta.url), "utf8");
+  const triggerBlock = workflow.split("\npermissions:")[0];
+  assert.match(triggerBlock, /on:[\s\S]*workflow_dispatch:/);
+  assert.doesNotMatch(triggerBlock, /^\\s+push:/m, "pushing or merging code must not deploy/activate the production Support Worker");
+  assert.doesNotMatch(triggerBlock, /^\\s+pull_request:/m, "opening or updating a PR must not deploy/activate the production Support Worker");
 });
