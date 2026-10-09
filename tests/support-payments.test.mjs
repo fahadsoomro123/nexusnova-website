@@ -214,6 +214,23 @@ test("rejects a tampered signed order ID before asking Safepay", async (t) => {
   assert.equal(reporterCalls, 0);
 });
 
+test("rejects production checkout creation without an official NexusNova Origin", async (t) => {
+  t.after(() => { globalThis.fetch = originalFetch; });
+  let fetchCalls = 0;
+  globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
+  const productionEnv = { ...env, SAFEPAY_ENV: "production" };
+  const request = makeRequest("https://nexusnovatools.com/api/support/create-checkout", {
+    method: "POST",
+    origin: null,
+    body: { amount: 5 }
+  });
+  const response = await supportWorker.fetch(request, productionEnv);
+  const body = await response.json();
+  assert.equal(response.status, 403);
+  assert.equal(body.error, "origin_not_allowed");
+  assert.equal(fetchCalls, 0);
+});
+
 test("allows the raw.githack preview origin only for sandbox CORS", async () => {
   const request = makeRequest(WORKER_ORIGIN + "/api/support/create-checkout", {
     method: "OPTIONS",
