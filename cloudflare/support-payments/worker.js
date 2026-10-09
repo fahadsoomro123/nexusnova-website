@@ -186,8 +186,23 @@ async function createCheckout(request, env) {
     });
     const session = await readJson(sessionResponse);
     if (!sessionResponse.ok) {
-      console.error("Support checkout session creation failed", sessionResponse.status);
-      return json({ ok: false, error: "session_creation_failed", upstream_status: sessionResponse.status }, 502, request);
+      const providerErrors = Array.isArray(session?.status?.errors) ? session.status.errors.slice(0, 3).map((item) => ({
+        code: typeof item?.code === "string" && /^[A-Za-z0-9_.-]{1,64}$/.test(item.code) ? item.code : undefined,
+        message: typeof item?.message === "string" ? item.message.slice(0, 180) : undefined
+      })) : [];
+      const providerMessage = [
+        session?.status?.message,
+        session?.message,
+        session?.error?.message
+      ].find((value) => typeof value === "string" && value.length > 0);
+      console.error("Support checkout session creation failed", sessionResponse.status, providerMessage || "no_provider_message");
+      return json({
+        ok: false,
+        error: "session_creation_failed",
+        upstream_status: sessionResponse.status,
+        upstream_message: typeof providerMessage === "string" ? providerMessage.slice(0, 180) : undefined,
+        upstream_errors: providerErrors.length ? providerErrors : undefined
+      }, 502, request);
     }
 
     const tracker = session?.data?.tracker?.token || session?.data?.tracker ||
