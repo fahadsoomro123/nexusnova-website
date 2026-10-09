@@ -92,3 +92,17 @@ document.addEventListener("DOMContentLoaded",function(){
     });
   }
 });
+/* Shared support control loader. Payment screens are intentionally excluded. */
+(()=>{
+  if(/\/(humanproof-checkout|humanproof-payment-success(?:-v2)?|humanproof-payment-cancelled|support-payment-success|support-payment-cancelled|register)\.html$/i.test(location.pathname))return;
+  const mountSupportRuntime=()=>{
+    if(document.querySelector('script[id="nexusnova-support-runtime-loader"]'))return;
+    const script=document.createElement('script');
+    script.src='/assets/js/nexusnova-support.js?v=20261009-support-prod1';
+    script.defer=true;
+    script.id='nexusnova-support-runtime-loader';
+    document.head.appendChild(script);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountSupportRuntime,{once:true});
+  else mountSupportRuntime();
+})();
