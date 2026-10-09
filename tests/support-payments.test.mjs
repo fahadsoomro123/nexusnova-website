@@ -330,6 +330,7 @@ test("sandbox deployment stays on the isolated fix branch and cannot add a produ
 });
 
 test("accepts account-scoped Cloudflare Workers preview URLs on checkout and return pages", () => {
+  const shell = readFileSync(new URL("../assets/js/main.js", import.meta.url), "utf8");
   const runtime = readFileSync(new URL("../assets/js/nexusnova-support.js", import.meta.url), "utf8");
   const successPage = readFileSync(new URL("../support-payment-success-preview.html", import.meta.url), "utf8");
   const cancelPage = readFileSync(new URL("../support-payment-cancelled-preview.html", import.meta.url), "utf8");
@@ -339,6 +340,8 @@ test("accepts account-scoped Cloudflare Workers preview URLs on checkout and ret
   assert.equal(pattern.test(hostname), true, "accept the deployed account-scoped workers.dev hostname");
   assert.equal(pattern.test("nexusnova-support-payments-preview.workers.dev.evil.example"), false);
   assert.ok(runtime.includes(rule), "checkout runtime must accept an optional Cloudflare account hostname label");
+  assert.ok(shell.includes("nexusnova-support.js?v=20261010-support-hostfix"), "shared shell must bypass the previously cached runtime bundle");
+  assert.equal(shell.includes("20261009-support-prod2"), false, "previous cache key must not remain in the shared shell");
   assert.ok(successPage.includes(rule), "success return page must accept the sandbox Worker hostname");
   assert.ok(cancelPage.includes(rule), "cancel return page must accept the sandbox Worker hostname");
 });
