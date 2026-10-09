@@ -21,7 +21,8 @@ function json(body, status, request, extraHeaders = {}) {
     ...extraHeaders
   });
   const origin = request.headers.get("origin");
-  if (origin && ALLOWED_ORIGINS.has(origin)) {
+  // raw.githack is surfaced only for sandbox previews; request handlers reject it in production.
+  if (origin && (ALLOWED_ORIGINS.has(origin) || origin === "https://raw.githack.com")) {
     headers.set("access-control-allow-origin", origin);
     headers.set("vary", "Origin");
   }
