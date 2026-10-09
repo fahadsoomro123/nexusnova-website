@@ -119,7 +119,7 @@ jobs:
             status="$(curl --silent --show-error --max-time 30 -o "/tmp/support-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://raw.githack.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
             [[ "$status" == "200" ]] || { echo "::error::Sandbox session creation failed for amount $amount (HTTP $status)."; cat "/tmp/support-session-$amount.json"; exit 1; }
             EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url); if(d.ok!==true||d.amount!==Number(process.env.EXPECTED_AMOUNT)||d.currency!=='USD'||u.protocol!=='https:'||!u.hostname.endsWith('.getsafepay.com')||!u.searchParams.get('tracker')||!u.searchParams.get('tbt')) {console.error('Invalid checkout session response');process.exit(1)}"
-            echo "Sandbox checkout session generated and validated for USD $$amount."
+            printf 'Sandbox checkout session generated and validated for USD $%s.\\n' "$amount"
           done
 
       - name: Publish preview API base for the static preview
@@ -146,7 +146,7 @@ jobs:
             echo "- Environment: **sandbox only**"
             echo "- Health/configuration: passed"
             echo "- Invalid amount rejection: passed"
-            echo "- Checkout session creation: USD $3, $5, $10 and $25 all passed"
+            echo '- Checkout session creation: USD $3, $5, $10 and $25 all passed'
             echo "- No custom-domain route was deployed by this workflow."
             echo ""
             echo "[Open the full homepage preview with sandbox checkout enabled](https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=$PREVIEW_BASE)"
