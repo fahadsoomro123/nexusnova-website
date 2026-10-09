@@ -45,7 +45,7 @@ jobs:
           set -euo pipefail
           node --input-type=module --check < cloudflare/support-payments/worker.js
           node --check assets/js/nexusnova-support.js
-          node -e "JSON.parse(require('node:fs').readFileSync('cloudflare/support-payments/wrangler.jsonc','utf8')); console.log('wrangler.jsonc valid JSON')"
+          node -e "for (const p of ['cloudflare/support-payments/wrangler.jsonc','cloudflare/support-payments/wrangler.preview.jsonc']) JSON.parse(require('node:fs').readFileSync(p,'utf8')); console.log('Both Wrangler configs valid JSON')"
 
       - name: Run mocked checkout and verification tests
         run: node --experimental-default-type=module --test tests/support-payments.test.mjs
