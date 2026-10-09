@@ -19,6 +19,17 @@ The old `functions/api/support/*.js` drafts were removed from this feature branc
 
 The feature does not modify `cloudflare/safepay-webhook-worker.js`, existing HumanProof checkout/return files, FBR systems, mining/wallet systems, sitemap, robots.txt, canonical/indexing metadata, or article/tool content. Do not add support plans to the HumanProof Worker. The support Worker is a separate service.
 
+## Sandbox deployment gate in GitHub Actions
+
+The repository includes `.github/workflows/deploy-support-payments-preview.yml`. Before the sandbox deploy job can run, add these **repository Actions secrets** in GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
+
+- `SAFEPAY_SANDBOX_PUBLIC_KEY`: public/API key from the Safepay **sandbox** merchant environment.
+- `SAFEPAY_SANDBOX_SECRET_KEY`: secret key from the Safepay **sandbox** merchant environment.
+
+Do not use production/live Safepay credentials as sandbox keys and do not send either value in chat. The workflow already receives the configured Cloudflare API token and account ID. Once these two sandbox secrets exist, run the workflow again from GitHub → **Actions → Deploy NexusNova Support Sandbox Worker → Run workflow**. It deploys only to a `workers.dev` hostname, creates and validates sandbox checkout sessions for the four allowed amounts, and writes the non-secret sandbox API origin to the preview config JS. It does not attach a custom-domain route.
+
+If the sandbox merchant has not been provisioned in Safepay, stop here and create/request the sandbox credentials first. Do not use live keys for this phase.
+
 ## Required Worker variables and secrets
 
 Set these on the **new `nexusnova-support-payments` Worker**, not on the existing HumanProof Worker.
