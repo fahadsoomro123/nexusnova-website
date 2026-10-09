@@ -316,6 +316,10 @@ test("sandbox deployment stays on the isolated fix branch and cannot add a produ
   assert.match(workflow, /SAFEPAY_SANDBOX_PUBLIC_KEY/);
   assert.match(workflow, /SAFEPAY_SANDBOX_SECRET_KEY/);
   assert.doesNotMatch(workflow, /SAFEPAY_PRODUCTION_(?:PUBLIC|SECRET)_KEY/);
+  assert.ok(workflow.includes("git fetch origin nexusnova-support-production"));
+  assert.ok(workflow.includes("git switch --create support-preview-config origin/nexusnova-support-production"));
+  assert.ok(workflow.includes("git push origin HEAD:nexusnova-support-production"));
+  assert.equal(workflow.includes("git push origin nexusnova-support-production"), false, "sandbox workflow must never push the fix branch into the Support base branch");
   assert.equal(config.name, "nexusnova-support-payments-preview");
   assert.equal(config.workers_dev, true);
   assert.equal(config.vars.SAFEPAY_ENV, "sandbox");
