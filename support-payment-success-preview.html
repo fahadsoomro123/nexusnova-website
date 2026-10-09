@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#f8fafc">
+<title>Sandbox Payment Return Preview — NexusNova Tools</title>
+<script src="assets/js/nexusnova-support-preview-config.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f8fafc;color:#111827;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column}.top{height:70px;background:#fff;border-bottom:1px solid #e2e8f0}.shell{width:min(1000px,calc(100% - 32px));margin:auto}.top .shell,footer .shell{height:100%;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{font-size:12px;font-weight:900;letter-spacing:.05em}.kicker{font:900 9px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase;color:#94a3b8}main{width:min(650px,calc(100% - 32px));margin:auto;padding:42px 0}.card{background:#fff;border:1px solid #e2e8f0;padding:clamp(22px,5vw,38px)}.icon{width:50px;height:50px;display:grid;place-items:center;border:1px solid #cbd5e1;color:#64748b;background:#f8fafc;font-size:25px;margin-bottom:20px}h1{font-size:clamp(27px,4vw,38px);line-height:1.05;letter-spacing:-.045em;margin:12px 0}p{font-size:13px;line-height:1.7;color:#64748b}.state{border:1px solid #e2e8f0;background:#f8fafc;padding:15px;margin:22px 0}.state strong{display:block;margin-bottom:5px}.ok{border-color:#bbf7d0;background:#f0fdf4}.pending{border-color:#fde68a;background:#fffbeb}.btn{display:inline-flex;align-items:center;justify-content:center;margin-top:8px;padding:12px 16px;background:#6d28d9;color:#fff;text-decoration:none;font-size:12px;font-weight:850}.small{font-size:10px;overflow-wrap:anywhere}footer{height:54px;background:#fff;border-top:1px solid #e2e8f0;color:#94a3b8;font:800 9px ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell"><a class="brand" href="index.html">NEXUSNOVA TOOLS</a><span class="kicker">SANDBOX RETURN PREVIEW</span></div></header>
+<main><section class="card">
+<div class="icon" id="icon">…</div><div class="kicker">SUPPORT PAYMENT VERIFICATION</div>
+<h1 id="title">Checking sandbox payment…</h1>
+<p id="intro">This preview checks the tracker with the separate sandbox Worker. A redirect by itself is not payment confirmation.</p>
+<section class="state" id="state" aria-live="polite"><strong id="stateTitle">Verifying with Safepay sandbox</strong><span id="stateCopy">Waiting for server confirmation.</span></section>
+<p class="small" id="reference"></p>
+<a class="btn" id="return" href="index.html">Return to NexusNova preview</a>
+</section></main>
+<footer><div class="shell"><span>NO LIVE MONEY IS PROCESSED</span><span>NON-INDEXED PREVIEW PAGE</span></div></footer>
+<script>
+(async function(){
+ const query=new URLSearchParams(location.search);
+ const tracker=query.get("tracker")||"";
+ const orderId=query.get("order_id")||"";
+ const apiBase=window.NEXUSNOVA_SUPPORT_API_BASE||"";
+ const title=document.getElementById("title");
+ const intro=document.getElementById("intro");
+ const state=document.getElementById("state");
+ const stateTitle=document.getElementById("stateTitle");
+ const stateCopy=document.getElementById("stateCopy");
+ const reference=document.getElementById("reference");
+ const returnLink=document.getElementById("return");
+ if(apiBase){
+  try{const u=new URL(apiBase);if(u.protocol==="https:"&&/^[a-z0-9-]+\.workers\.dev$/i.test(u.hostname)){returnLink.href="index.html?supportApiBase="+encodeURIComponent(u.origin);}}
+  catch(_){}
+ }
+ reference.textContent="Safepay tracker: "+(tracker||"not returned")+" · order: "+(orderId||"not returned");
+ if(!tracker||!orderId||!apiBase){
+  title.textContent="Sandbox payment could not be verified.";
+  stateTitle.textContent="Missing preview reference";
+  stateCopy.textContent="The return URL or sandbox Worker configuration is missing. No success has been claimed.";
+  return;
+ }
+ let result=null;
+ for(let i=0;i<5;i++){
+  try{
+   const endpoint=new URL("/api/support/payment-status",apiBase);
+   endpoint.searchParams.set("tracker",tracker);
+   endpoint.searchParams.set("order_id",orderId);
+   const response=await fetch(endpoint.href,{cache:"no-store",credentials:"omit"});
+   result=await response.json();
+   if(response.ok&&result.ok&&result.paid===true){
+    state.className="state ok";document.getElementById("icon").textContent="✓";
+    title.textContent="Sandbox payment confirmed.";
+    intro.textContent="Safepay sandbox and the isolated support Worker verified this test payment.";
+    stateTitle.textContent="Verified sandbox transaction";
+    stateCopy.textContent="Amount: $"+result.amount+" "+result.currency+". This is a sandbox test, not a live contribution.";
+    reference.textContent="Order: "+result.order_id+" · tracker: "+tracker;
+    return;
+   }
+   if(response.status===400||response.status===403)break;
+  }catch(_){}
+  if(i<4)await new Promise(resolve=>setTimeout(resolve,1800));
+ }
+ state.className="state pending";document.getElementById("icon").textContent="!";
+ title.textContent="Payment status not confirmed.";
+ stateTitle.textContent="No success recorded";
+ stateCopy.textContent="The Worker did not confirm this exact support order and amount. If this was a sandbox test, check the Worker logs and Safepay sandbox tracker.";
+})();
+</script>
+</body>
+</html>
