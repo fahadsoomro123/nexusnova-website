@@ -15,9 +15,10 @@ const env = {
 };
 const originalFetch = globalThis.fetch;
 
-function makeRequest(url, { method = "GET", body, origin = ORIGIN } = {}) {
+function makeRequest(url, { method = "GET", body, origin = ORIGIN, ip = "203.0.113.1" } = {}) {
   const headers = new Headers();
   if (origin) headers.set("origin", origin);
+  headers.set("cf-connecting-ip", ip);
   if (body !== undefined) headers.set("content-type", "application/json");
   return new Request(url, {
     method,
@@ -50,9 +51,10 @@ function mockSafepay({ state = "TRACKER_ENDED", amount = 500, currency = "USD", 
   return calls;
 }
 
-async function createCheckout(amount = 5, runtimeEnv = env) {
+async function createCheckout(amount = 5, runtimeEnv = env, ip = "203.0.113.1") {
   const request = makeRequest(ORIGIN + "/api/support/create-checkout", {
     method: "POST",
+    ip,
     body: { amount }
   });
   const response = await onRequestPost({ request, env: runtimeEnv });
@@ -91,8 +93,9 @@ test("rejects amounts outside the four approved values without contacting Safepa
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
-  for (const amount of [0, 1, 3.5, 4, 100, "5", null]) {
-    const { response, data } = await createCheckout(amount);
+  const invalidAmounts = [0, 1, 3.5, 4, 100, "5", null];
+  for (const [index, amount] of invalidAmounts.entries()) {
+    const { response, data } = await createCheckout(amount, env, "198.51.100." + (index + 1));
     assert.equal(response.status, 400, "amount: " + String(amount));
     assert.equal(data.error, "invalid_support_amount");
   }
