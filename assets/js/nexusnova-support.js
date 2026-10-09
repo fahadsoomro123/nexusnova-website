@@ -19,13 +19,20 @@ function mount(){
   const nav=document.querySelector(".nn-header .nn-nav, header .nn-nav, [data-nn-nav], .site-header nav, .site-header .nav, .navin .navlinks");
   const row=(nav&&nav.closest(".nn-header-row"))||(nav&&nav.closest(".site-header"))||(nav&&nav.closest("header"));
   if(!nav||!row)return;
-  row.classList.add("nn-support-row");
+  // The flagship homepage has a crowded flex header; put Support in its own full-width row.
+  let supportHost=row;
+  if(nav.closest(".nn-header")&&row.classList.contains("nn-header-row")){
+    supportHost=document.createElement("div");
+    supportHost.className="nn-support-host";
+    row.insertAdjacentElement("afterend",supportHost);
+  }
 
   if(!document.querySelector("style[data-nexusnova-support-style]")){
     const style=document.createElement("style");
     style.dataset.nexusnovaSupportStyle="";
     style.textContent=[
-      ".nn-support{display:inline-flex;align-items:center;gap:7px;margin-left:12px;padding-left:12px;border-left:1px solid #e2e8f0;white-space:nowrap;flex:0 0 auto;font-family:inherit}",
+      ".nn-support-host{width:min(1440px,calc(100% - 32px));margin:0 auto;padding:0 0 10px;display:flex;align-items:center;justify-content:flex-end;min-width:0}",
+      ".nn-support{display:inline-flex;align-items:center;gap:7px;margin-left:12px;padding-left:12px;border-left:1px solid #e2e8f0;white-space:nowrap;flex:0 0 auto;max-width:100%;font-family:inherit}",
       ".nn-support-cup{width:20px;height:20px;display:grid;place-items:center;font-size:17px;line-height:1;flex:0 0 auto}",
       ".nn-support-copy{display:flex;flex-direction:column;gap:2px;min-width:0;width:170px;max-width:170px;margin-right:3px;line-height:1.2;white-space:normal}",
       ".nn-support-copy strong{font-size:10px;font-weight:850;color:#1f2937;white-space:normal;line-height:1.15}",
@@ -40,8 +47,8 @@ function mount(){
       ".nn-support-feedback[data-visible=true]{display:block}",
       ".nn-support-amount:disabled{opacity:.62;cursor:wait;transform:none}",
       "@media(min-width:1121px) and (max-width:1280px){.nn-support-copy{width:145px;max-width:145px}.nn-support-copy strong{font-size:9px}.nn-support-copy small{font-size:7px;display:block}}",
-      "@media(min-width:761px) and (max-width:1440px){.nn-support-row{flex-wrap:wrap!important}.nn-support{flex:0 0 100%;width:100%;max-width:100%;box-sizing:border-box;margin:6px 0 0;padding:8px 0 3px;border-left:0;border-top:1px solid #e2e8f0;justify-content:flex-start;gap:8px;white-space:normal}.nn-support-copy{width:auto;max-width:none;flex:1;min-width:220px}.nn-support-copy strong{font-size:11px}.nn-support-copy small{display:block;font-size:9px;max-width:none}.nn-support-amount{width:34px;height:27px;flex:0 0 34px}}",
-      "@media(max-width:760px){.nn-support-row{flex-wrap:wrap!important}.nn-support{flex:0 0 100%;width:100%;max-width:100%;box-sizing:border-box;margin:7px 0 0;padding:8px 0 2px;border-left:0;border-top:1px solid #e2e8f0;justify-content:flex-start;gap:7px;flex-wrap:wrap;white-space:normal}.nn-support-copy{width:auto;max-width:none;flex:1 1 100%;order:1}.nn-support-copy strong{font-size:11px;line-height:1.2}.nn-support-copy small{display:block;font-size:9px;line-height:1.3;max-width:100%}.nn-support-cup{order:0}.nn-support-amount{width:29px;height:24px;flex:0 0 29px;order:2}.nn-support-feedback{order:3}}",
+      "@media(min-width:761px) and (max-width:1440px){.nn-support-host{justify-content:flex-start;padding-top:6px}.nn-support{box-sizing:border-box;margin:0;padding:0;border-left:0;gap:8px;white-space:normal;max-width:100%}.nn-support-copy{width:145px;max-width:145px;flex:0 1 145px;min-width:120px}.nn-support-copy strong{font-size:9px}.nn-support-copy small{display:block;font-size:7px;max-width:145px}.nn-support-amount{width:34px;height:27px;flex:0 0 34px}}",
+      "@media(max-width:760px){.nn-support-host{width:min(1440px,calc(100% - 22px));justify-content:flex-start;padding-bottom:8px}.nn-support{flex:0 1 auto;width:100%;max-width:100%;box-sizing:border-box;margin:0;padding:8px 0 2px;border-left:0;border-top:1px solid #e2e8f0;justify-content:flex-start;gap:7px;flex-wrap:wrap;white-space:normal}.nn-support-copy{width:auto;max-width:none;flex:1 1 100%;order:1}.nn-support-copy strong{font-size:11px;line-height:1.2}.nn-support-copy small{display:block;font-size:9px;line-height:1.3;max-width:100%}.nn-support-cup{order:0}.nn-support-amount{width:29px;height:24px;flex:0 0 29px;order:2}.nn-support-feedback{order:3}}",
       "@media(prefers-reduced-motion:reduce){.nn-support-amount{transition:none}}"
     ].join("");
     document.head.appendChild(style);
@@ -59,7 +66,7 @@ function mount(){
     '<button type="button" class="nn-support-amount" data-support-amount="10" aria-label="Support with $10"><span class="nn-support-dollar">$</span><span class="nn-support-number">10</span></button>'+
     '<button type="button" class="nn-support-amount" data-support-amount="25" aria-label="Support with $25"><span class="nn-support-dollar">$</span><span class="nn-support-number">25</span></button>'+
     '<span class="nn-support-feedback" role="status" aria-live="polite" data-support-feedback></span>';
-  row.appendChild(wrap);
+  supportHost.appendChild(wrap);
 
   const feedback=wrap.querySelector("[data-support-feedback]");
   const buttons=Array.from(wrap.querySelectorAll("[data-support-amount]"));
