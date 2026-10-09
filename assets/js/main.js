@@ -183,9 +183,9 @@
   const runtimeSrc=(()=>{
     try{
       return activeScript&&activeScript.src
-        ? new URL('nexusnova-support.js?v=20261009-support-prod2',activeScript.src).href
-        : '/assets/js/nexusnova-support.js?v=20261009-support-prod2';
-    }catch(_){return '/assets/js/nexusnova-support.js?v=20261009-support-prod2';}
+        ? new URL('nexusnova-support.js?v=20261010-support-hostfix',activeScript.src).href
+        : '/assets/js/nexusnova-support.js?v=20261010-support-hostfix';
+    }catch(_){return '/assets/js/nexusnova-support.js?v=20261010-support-hostfix';}
   })();
   const mountSupportRuntime=()=>{
     if(document.querySelector('script[id="nexusnova-support-runtime-loader"]'))return;
