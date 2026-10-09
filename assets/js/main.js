@@ -176,13 +176,21 @@
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
 })();
 
-/* Shared support control loader. Payment screens are intentionally excluded. */
+/* Shared support control loader. Supports production root paths and branch-scoped static previews. */
 (()=>{
   if(/\/(humanproof-checkout|humanproof-payment-success(?:-v2)?|humanproof-payment-cancelled|support-payment-success|support-payment-cancelled|register)\.html$/i.test(location.pathname))return;
+  const activeScript=document.currentScript;
+  const runtimeSrc=(()=>{
+    try{
+      return activeScript&&activeScript.src
+        ? new URL('nexusnova-support.js?v=20261009-support-prod2',activeScript.src).href
+        : '/assets/js/nexusnova-support.js?v=20261009-support-prod2';
+    }catch(_){return '/assets/js/nexusnova-support.js?v=20261009-support-prod2';}
+  })();
   const mountSupportRuntime=()=>{
     if(document.querySelector('script[id="nexusnova-support-runtime-loader"]'))return;
     const script=document.createElement('script');
-    script.src='/assets/js/nexusnova-support.js?v=20261009-support-prod1';
+    script.src=runtimeSrc;
     script.defer=true;
     script.id='nexusnova-support-runtime-loader';
     document.head.appendChild(script);
