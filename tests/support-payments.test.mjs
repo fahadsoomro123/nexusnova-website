@@ -10,6 +10,8 @@ const TRACKER = "track_12345678-abcd-4321-abcd-123456789abc";
 const env = {
   SUPPORT_CHECKOUT_ENABLED: "true",
   SAFEPAY_ENV: "sandbox",
+  SUPPORT_SUCCESS_URL: "https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/support-payment-success-preview.html",
+  SUPPORT_CANCEL_URL: "https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/support-payment-cancelled-preview.html",
   SAFEPAY_PUBLIC_KEY: PUBLIC_KEY,
   SAFEPAY_SECRET_KEY: SECRET_KEY
 };
@@ -61,7 +63,7 @@ async function createCheckout(amount = 5, runtimeEnv = env, ip = "203.0.113.1") 
   return { response, data: await response.json() };
 }
 
-test("creates an allowlisted USD support checkout and signed return reference", async (t) => {
+test("creates an allowlisted USD support checkout with signed order ID and clean return URLs", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   const calls = mockSafepay();
   const { response, data } = await createCheckout(5);
@@ -77,9 +79,10 @@ test("creates an allowlisted USD support checkout and signed return reference", 
   assert.equal(checkout.searchParams.get("tracker"), TRACKER);
   assert.equal(checkout.searchParams.get("tbt"), "mock-short-lived-token");
   assert.equal(checkout.searchParams.get("source"), "hosted");
+  assert.equal(checkout.searchParams.get("cancel_url"), env.SUPPORT_CANCEL_URL);
 
   const redirect = new URL(checkout.searchParams.get("redirect_url"));
-  assert.equal(redirect.origin + redirect.pathname, ORIGIN + "/support-payment-success.html");
+  assert.equal(redirect.href, env.SUPPORT_SUCCESS_URL);
   assert.equal(redirect.search, "", "Safepay return URL should stay query-free");
   const orderId = checkout.searchParams.get("order_id");
   assert.match(orderId, /^NNS-[0-9]{13}-5-[A-F0-9]{8}-[A-F0-9]{24}$/);
@@ -209,6 +212,16 @@ test("rejects a tampered signed order ID before asking Safepay", async (t) => {
   assert.equal(response.status, 403);
   assert.equal(body.error, "invalid_support_order");
   assert.equal(reporterCalls, 0);
+});
+
+test("allows the raw.githack preview origin only for sandbox CORS", async () => {
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/create-checkout", {
+    method: "OPTIONS",
+    origin: "https://raw.githack.com"
+  });
+  const response = await supportWorker.fetch(request, env);
+  assert.equal(response.status, 204);
+  assert.equal(response.headers.get("access-control-allow-origin"), "https://raw.githack.com");
 });
 
 test("rejects unsupported origins", async (t) => {
