@@ -306,3 +306,19 @@ test("production Support deployment is manual-only and cannot activate on push",
   assert.doesNotMatch(triggerBlock, /^\s+push:/m, "pushing or merging code must not deploy/activate the production Support Worker");
   assert.doesNotMatch(triggerBlock, /^\s+pull_request:/m, "opening or updating a PR must not deploy/activate the production Support Worker");
 });
+
+
+test("sandbox deployment stays on the isolated fix branch and cannot add a production route", () => {
+  const workflow = readFileSync(new URL("../.github/workflows/deploy-support-payments-preview.yml", import.meta.url), "utf8");
+  const config = JSON.parse(readFileSync(new URL("../cloudflare/support-payments/wrangler.preview.jsonc", import.meta.url), "utf8"));
+  assert.match(workflow, /ref:\s*\$\{\{\s*github\.ref_name\s*\}\}/);
+  assert.match(workflow, /if:\s*github\.ref_name\s*==\s*'nexusnova-support-reporter-fix-20261009'/);
+  assert.match(workflow, /SAFEPAY_SANDBOX_PUBLIC_KEY/);
+  assert.match(workflow, /SAFEPAY_SANDBOX_SECRET_KEY/);
+  assert.doesNotMatch(workflow, /SAFEPAY_PRODUCTION_(?:PUBLIC|SECRET)_KEY/);
+  assert.equal(config.name, "nexusnova-support-payments-preview");
+  assert.equal(config.workers_dev, true);
+  assert.equal(config.vars.SAFEPAY_ENV, "sandbox");
+  assert.equal(config.vars.SUPPORT_CHECKOUT_ENABLED, "true");
+  assert.equal(Object.hasOwn(config, "routes"), false, "sandbox Worker must not attach any custom-domain route");
+});
