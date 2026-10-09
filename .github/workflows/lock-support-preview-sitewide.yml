@@ -18,18 +18,16 @@ jobs:
         with:
           ref: nexusnova-support-preview
 
-      - name: Inject support runtime into every site page
+      - name: Inject and cache-bust support runtime across site pages
         shell: python
         run: |
-          from pathlib import Path\n          import re
+          from pathlib import Path
+          import re
 
           root = Path(".")
           marker = 'id="nexusnova-support-direct-loader"'
           runtime = "assets/js/nexusnova-support-preview.js?v=20261009-sitewide-c3"
 
-          skipped_prefixes = {
-              ".git", ".github"
-          }
           skipped_names = {
               "support-benchmark-home-preview.html",
               "support-collage-full-page-preview.html",
@@ -55,42 +53,42 @@ jobs:
           for path in sorted(root.rglob("*.html")):
               rel = path.relative_to(root).as_posix()
 
-              if rel.startswith("ota/"):
-                  continue
-              if rel.startswith(".git/") or rel.startswith(".github/"):
+              if rel.startswith(("ota/", ".git/", ".github/")):
                   continue
               if path.name in skipped_names:
                   continue
 
-              # Keep all existing support-loader URLs in sync with the current cache version.
               depth = len(path.parts) - 1
               prefix = "../" * depth
               desired_src = f"{prefix}{runtime}"
+
               raw = path.read_bytes()
               bom = raw.startswith(b"\xef\xbb\xbf")
               text = raw.decode("utf-8-sig" if bom else "utf-8")
-
               original_text = text
+
               if marker in text:
-                  pattern = r'(<script\\s+id="nexusnova-support-direct-loader"\\s+src=")[^"]+(" defer></script>)'
-                  text, replacements = re.subn(pattern, lambda m: m.group(1) + desired_src + m.group(2), text)
+                  pattern = r'(<script\s+id="nexusnova-support-direct-loader"\s+src=")[^"]+(" defer></script>)'
+                  text, replacements = re.subn(
+                      pattern,
+                      lambda match: match.group(1) + desired_src + match.group(2),
+                      text
+                  )
                   if replacements and text != original_text:
-                      path.write_bytes((b"\\xef\\xbb\\xbf" if bom else b"") + text.encode("utf-8"))
+                      path.write_bytes((b"\xef\xbb\xbf" if bom else b"") + text.encode("utf-8"))
                       changed.append(rel + " [cache-busted]")
                   continue
 
               if "</body>" not in text.lower():
                   continue
 
-              tag = f'\\n<script {marker} src="{desired_src}" defer></script>\\n'
-              lower = text.lower()
-              body_index = lower.rfind("</body>")
+              tag = f'\n<script {marker} src="{desired_src}" defer></script>\n'
+              body_index = text.lower().rfind("</body>")
               text = text[:body_index] + tag + text[body_index:]
-
-              path.write_bytes((b"\\xef\\xbb\\xbf" if bom else b"") + text.encode("utf-8"))
+              path.write_bytes((b"\xef\xbb\xbf" if bom else b"") + text.encode("utf-8"))
               changed.append(rel)
 
-          print(f"Support runtime injected into {len(changed)} site pages.")
+          print(f"Support runtime injected/cache-busted on {len(changed)} site pages.")
           for item in changed:
               print(item)
 
