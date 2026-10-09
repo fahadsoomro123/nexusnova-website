@@ -17,6 +17,7 @@ on:
       - "support-payment-success.html"
       - "support-payment-cancelled.html"
       - "tests/support-payments.test.mjs"
+      - "tests/support-sitewide-coverage.test.mjs"
       - ".github/workflows/support-payment-validation.yml"
   pull_request:
     branches:
@@ -27,6 +28,7 @@ on:
       - "support-payment-success.html"
       - "support-payment-cancelled.html"
       - "tests/support-payments.test.mjs"
+      - "tests/support-sitewide-coverage.test.mjs"
       - ".github/workflows/support-payment-validation.yml"
 
       - "tools.html"
@@ -63,3 +65,6 @@ jobs:
 
       - name: Run mocked checkout and verification tests
         run: node --experimental-default-type=module --test tests/support-payments.test.mjs
+
+      - name: Verify sitewide support coverage
+        run: node --experimental-default-type=module --test tests/support-sitewide-coverage.test.mjs
