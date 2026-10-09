@@ -335,7 +335,7 @@ test("accepts account-scoped Cloudflare Workers preview URLs on checkout and ret
   const successPage = readFileSync(new URL("../support-payment-success-preview.html", import.meta.url), "utf8");
   const cancelPage = readFileSync(new URL("../support-payment-cancelled-preview.html", import.meta.url), "utf8");
   const hostname = "nexusnova-support-payments-preview.fahadsoomro123.workers.dev";
-  const pattern = /^[a-z0-9-]+(?:\\.[a-z0-9-]+)?\\.workers\\.dev$/i;
+  const pattern = /^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i;
   const rule = "(?:\\.[a-z0-9-]+)?\\.workers\\.dev";
   assert.equal(pattern.test(hostname), true, "accept the deployed account-scoped workers.dev hostname");
   assert.equal(pattern.test("nexusnova-support-payments-preview.workers.dev.evil.example"), false);
