@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { onRequestPost } from "../functions/api/support/create-checkout.js";
-import { onRequestGet } from "../functions/api/support/payment-status.js";
+import supportWorker from "../cloudflare/support-payments/worker.js";
 
 const ORIGIN = "https://nexusnovatools.com";
+const WORKER_ORIGIN = "https://nexusnova-support-payments.test.workers.dev";
 const PUBLIC_KEY = "sec_test_support_key";
 const SECRET_KEY = "test-only-support-secret-not-a-real-key";
 const TRACKER = "track_12345678-abcd-4321-abcd-123456789abc";
 const env = {
-  CF_PAGES_BRANCH: "nexusnova-support-production",
+  SUPPORT_CHECKOUT_ENABLED: "true",
   SAFEPAY_ENV: "sandbox",
   SAFEPAY_PUBLIC_KEY: PUBLIC_KEY,
   SAFEPAY_SECRET_KEY: SECRET_KEY
@@ -52,12 +52,12 @@ function mockSafepay({ state = "TRACKER_ENDED", amount = 500, currency = "USD", 
 }
 
 async function createCheckout(amount = 5, runtimeEnv = env, ip = "203.0.113.1") {
-  const request = makeRequest(ORIGIN + "/api/support/create-checkout", {
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/create-checkout", {
     method: "POST",
     ip,
     body: { amount }
   });
-  const response = await onRequestPost({ request, env: runtimeEnv });
+  const response = await supportWorker.fetch(request, runtimeEnv);
   return { response, data: await response.json() };
 }
 
@@ -106,13 +106,14 @@ test("fails closed when production checkout is not explicitly enabled", async (t
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
-  const { response, data } = await createCheckout(5, {
-    ...env,
-    CF_PAGES_BRANCH: "main",
-    SAFEPAY_ENV: "sandbox"
+  const request = makeRequest(ORIGIN + "/api/support/create-checkout", {
+    method: "POST",
+    body: { amount: 5 }
   });
+  const response = await supportWorker.fetch(request, { ...env, SAFEPAY_ENV: "sandbox" });
+  const data = await response.json();
   assert.equal(response.status, 503);
-  assert.equal(data.error, "production_checkout_not_enabled");
+  assert.equal(data.error, "support_checkout_not_configured");
   assert.equal(fetchCalls, 0);
 });
 
@@ -134,9 +135,9 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
       purchase_totals: { quote_amount: { amount: 500, currency: "USD" } }
     } } });
   };
-  const request = makeRequest(ORIGIN + "/api/support/payment-status?tracker=" +
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
     encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(supportRef));
-  const result = await onRequestGet({ request, env });
+  const result = await supportWorker.fetch(request, env);
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, true);
@@ -159,9 +160,9 @@ test("does not confirm a payment when the returned amount differs from the signe
     state: "TRACKER_ENDED",
     purchase_totals: { quote_amount: { amount: 300, currency: "USD" } }
   } } });
-  const request = makeRequest(ORIGIN + "/api/support/payment-status?tracker=" +
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
     encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(supportRef));
-  const result = await onRequestGet({ request, env });
+  const result = await supportWorker.fetch(request, env);
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, false);
@@ -182,9 +183,9 @@ test("rejects a tampered signed support reference before asking Safepay", async 
     if (String(input).includes("/reporter/api/")) reporterCalls++;
     throw new Error("tampered reference must be rejected before Reporter lookup");
   };
-  const request = makeRequest(ORIGIN + "/api/support/payment-status?tracker=" +
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/payment-status?tracker=" +
     encodeURIComponent(tracker) + "&support_ref=" + encodeURIComponent(tampered));
-  const response = await onRequestGet({ request, env });
+  const response = await supportWorker.fetch(request, env);
   const body = await response.json();
   assert.equal(response.status, 403);
   assert.equal(body.error, "invalid_support_reference");
@@ -195,12 +196,12 @@ test("rejects unsupported origins", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
-  const request = makeRequest(ORIGIN + "/api/support/create-checkout", {
+  const request = makeRequest(WORKER_ORIGIN + "/api/support/create-checkout", {
     method: "POST",
     origin: "https://attacker.example",
     body: { amount: 5 }
   });
-  const response = await onRequestPost({ request, env });
+  const response = await supportWorker.fetch(request, env);
   const body = await response.json();
   assert.equal(response.status, 403);
   assert.equal(body.error, "origin_not_allowed");
