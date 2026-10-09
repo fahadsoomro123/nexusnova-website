@@ -303,6 +303,6 @@ test("production Support deployment is manual-only and cannot activate on push",
   const workflow = readFileSync(new URL("../.github/workflows/deploy-support-payments-production.yml", import.meta.url), "utf8");
   const triggerBlock = workflow.split("\npermissions:")[0];
   assert.match(triggerBlock, /on:[\s\S]*workflow_dispatch:/);
-  assert.doesNotMatch(triggerBlock, /^\\s+push:/m, "pushing or merging code must not deploy/activate the production Support Worker");
-  assert.doesNotMatch(triggerBlock, /^\\s+pull_request:/m, "opening or updating a PR must not deploy/activate the production Support Worker");
+  assert.doesNotMatch(triggerBlock, /^\s+push:/m, "pushing or merging code must not deploy/activate the production Support Worker");
+  assert.doesNotMatch(triggerBlock, /^\s+pull_request:/m, "opening or updating a PR must not deploy/activate the production Support Worker");
 });
