@@ -1,6 +1,7 @@
 name: Support Payment Contract Validation
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - nexusnova-support-production
