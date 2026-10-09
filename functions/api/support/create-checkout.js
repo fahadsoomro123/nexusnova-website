@@ -66,6 +66,10 @@ export async function onRequestPost({ request, env }) {
   const origin = request.headers.get("origin");
   if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ ok: false, error: "origin_not_allowed" }, 403, request);
 
+  // Fail closed in production; never send live visitors to a sandbox checkout.
+  if (env.CF_PAGES_BRANCH === "main" && env.SAFEPAY_ENV !== "production") {
+    return json({ ok: false, error: "production_checkout_not_enabled" }, 503, request);
+  }
   const publicKey = env.SAFEPAY_PUBLIC_KEY;
   const secretKey = env.SAFEPAY_SECRET_KEY;
   if (!publicKey || !secretKey) {
