@@ -8,7 +8,7 @@ function getSandboxPreviewApiBase(){
   if(!raw)return "";
   try{
     const url=new URL(raw);
-    return url.protocol==="https:"&&/^[a-z0-9-]+\.workers\.dev$/i.test(url.hostname)?url.origin:"";
+    return url.protocol==="https:"&&/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i.test(url.hostname)?url.origin:"";
   }catch(_){return "";}
 }
 const SUPPORT_API_BASE=getSandboxPreviewApiBase();
