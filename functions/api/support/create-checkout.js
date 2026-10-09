@@ -3,9 +3,9 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.nexusnovatools.com"
 ]);
 const ALLOWED_AMOUNTS = new Set([3, 5, 10, 25]);
-const ipRequests = new Map();
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 5;
+const ipRequests = new Map();
 
 function json(body, status, request) {
   const headers = {
@@ -47,6 +47,45 @@ async function readJson(response) {
   try { return text ? JSON.parse(text) : {}; } catch { return {}; }
 }
 
+function base64Url(bytes) {
+  let binary = "";
+  for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+async function createSupportReference(payload, secret) {
+  const payloadPart = base64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadPart));
+  return payloadPart + "." + base64Url(signature);
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const recent = (ipRequests.get(ip) || []).filter((stamp) => now - stamp < RATE_WINDOW_MS);
+  if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
+    ipRequests.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  ipRequests.set(ip, recent);
+
+  // Bound isolate memory if this endpoint is hit by many one-off IP addresses.
+  if (ipRequests.size > 5000) {
+    for (const [key, stamps] of ipRequests) {
+      if (!stamps.some((stamp) => now - stamp < RATE_WINDOW_MS)) ipRequests.delete(key);
+      if (ipRequests.size <= 4000) break;
+    }
+  }
+  return false;
+}
+
 export async function onRequestOptions({ request }) {
   const origin = request.headers.get("origin");
   if (!origin || !ALLOWED_ORIGINS.has(origin)) return new Response(null, { status: 403 });
@@ -64,12 +103,15 @@ export async function onRequestOptions({ request }) {
 
 export async function onRequestPost({ request, env }) {
   const origin = request.headers.get("origin");
-  if (origin && !ALLOWED_ORIGINS.has(origin)) return json({ ok: false, error: "origin_not_allowed" }, 403, request);
+  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+    return json({ ok: false, error: "origin_not_allowed" }, 403, request);
+  }
 
-  // Fail closed in production; never send live visitors to a sandbox checkout.
+  // Fail closed in production; never send live visitors to sandbox checkout.
   if (env.CF_PAGES_BRANCH === "main" && env.SAFEPAY_ENV !== "production") {
     return json({ ok: false, error: "production_checkout_not_enabled" }, 503, request);
   }
+
   const publicKey = env.SAFEPAY_PUBLIC_KEY;
   const secretKey = env.SAFEPAY_SECRET_KEY;
   if (!publicKey || !secretKey) {
@@ -77,20 +119,14 @@ export async function onRequestPost({ request, env }) {
   }
 
   const ip = request.headers.get("cf-connecting-ip") || "anonymous";
-  const now = Date.now();
-  const recent = (ipRequests.get(ip) || []).filter((stamp) => now - stamp < RATE_WINDOW_MS);
-  if (recent.length >= MAX_REQUESTS_PER_WINDOW) {
-    return json({ ok: false, error: "rate_limited" }, 429, request);
-  }
-  recent.push(now);
-  ipRequests.set(ip, recent);
+  if (isRateLimited(ip)) return json({ ok: false, error: "rate_limited" }, 429, request);
 
   let body;
   try { body = await request.json(); }
   catch { return json({ ok: false, error: "invalid_json" }, 400, request); }
 
-  const amountDollars = Number(body?.amount);
-  if (!ALLOWED_AMOUNTS.has(amountDollars)) {
+  const amount = body?.amount;
+  if (!Number.isInteger(amount) || !ALLOWED_AMOUNTS.has(amount)) {
     return json({ ok: false, error: "invalid_support_amount" }, 400, request);
   }
 
@@ -103,6 +139,8 @@ export async function onRequestPost({ request, env }) {
   };
 
   try {
+    // This is the same documented Safepay v3 tracker + passport flow used by
+    // the existing HumanProof integration, without modifying that Worker.
     const sessionResponse = await safepayRequest(`${apiHost}/order/payments/v3/`, secretKey, {
       method: "POST",
       body: JSON.stringify({
@@ -111,7 +149,7 @@ export async function onRequestPost({ request, env }) {
         mode: "payment",
         entry_mode: "raw",
         currency: "USD",
-        amount: amountDollars * 100,
+        amount: amount * 100,
         metadata,
         include_fees: false
       })
@@ -121,6 +159,7 @@ export async function onRequestPost({ request, env }) {
       console.error("Support checkout session creation failed", sessionResponse.status);
       return json({ ok: false, error: "session_creation_failed" }, 502, request);
     }
+
     const tracker =
       session?.data?.tracker?.token ||
       session?.data?.tracker ||
@@ -149,22 +188,37 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: false, error: "passport_token_missing" }, 502, request);
     }
 
-    // Hosted checkout URLs must not receive secrets in client-side code. Safepay's token is short-lived.
+    // Signed return reference ties the returning tracker to this support-created session,
+    // amount and purpose without a database or edits to the existing Worker.
+    const supportRef = await createSupportReference({
+      version: 1,
+      purpose: "nexusnova-support",
+      tracker,
+      order_id: orderId,
+      amount,
+      currency: "USD",
+      environment,
+      expires_at: Date.now() + 6 * 60 * 60 * 1000
+    }, secretKey);
+
+    const redirectUrl = new URL("https://nexusnovatools.com/support-payment-success.html");
+    redirectUrl.searchParams.set("support_ref", supportRef);
+    const cancelUrl = "https://nexusnovatools.com/support-payment-cancelled.html";
+
+    // Match the proven checkout URL structure used by the existing Worker.
     const checkoutUrl = new URL(checkoutHost);
     checkoutUrl.searchParams.set("environment", environment);
     checkoutUrl.searchParams.set("tbt", tbt);
     checkoutUrl.searchParams.set("tracker", tracker);
     checkoutUrl.searchParams.set("source", "hosted");
     checkoutUrl.searchParams.set("order_id", orderId);
-    checkoutUrl.searchParams.set("redirect_url", "https://nexusnovatools.com/support-payment-success.html");
-    checkoutUrl.searchParams.set("cancel_url", "https://nexusnovatools.com/support-payment-cancelled.html");
+    checkoutUrl.searchParams.set("redirect_url", redirectUrl.toString());
+    checkoutUrl.searchParams.set("cancel_url", cancelUrl);
 
     return json({
       ok: true,
       checkout_url: checkoutUrl.toString(),
-      tracker,
-      order_id: orderId,
-      amount: amountDollars,
+      amount,
       currency: "USD",
       environment
     }, 200, request);
