@@ -6,7 +6,7 @@ on:
     branches:
       - nexusnova-support-production
     paths:
-      - "functions/api/support/**"
+      - "cloudflare/support-payments/**"
       - "assets/js/nexusnova-support.js"
       - "support-payment-success.html"
       - "support-payment-cancelled.html"
@@ -16,7 +16,7 @@ on:
     branches:
       - main
     paths:
-      - "functions/api/support/**"
+      - "cloudflare/support-payments/**"
       - "assets/js/nexusnova-support.js"
       - "support-payment-success.html"
       - "support-payment-cancelled.html"
@@ -39,15 +39,13 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Check Cloudflare Pages Function syntax
+      - name: Check isolated Cloudflare Worker syntax and config
         shell: bash
         run: |
           set -euo pipefail
-          node --input-type=module --check < functions/api/support/create-checkout.js
-          node --input-type=module --check < functions/api/support/payment-status.js
-
-      - name: Check browser runtime syntax
-        run: node --check assets/js/nexusnova-support.js
+          node --input-type=module --check < cloudflare/support-payments/worker.js
+          node --check assets/js/nexusnova-support.js
+          node -e "JSON.parse(require('node:fs').readFileSync('cloudflare/support-payments/wrangler.jsonc','utf8')); console.log('wrangler.jsonc valid JSON')"
 
       - name: Run mocked checkout and verification tests
         run: node --experimental-default-type=module --test tests/support-payments.test.mjs
