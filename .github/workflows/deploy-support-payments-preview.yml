@@ -73,7 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.preview.jsonc 2>&1 | tee /tmp/support-worker-deploy.log
-          WORKER_URL="$(grep -Eo 'https://[A-Za-z0-9.-]+\\.workers\\.dev' /tmp/support-worker-deploy.log | head -n 1 || true)"
+          WORKER_URL="$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/support-worker-deploy.log | head -n 1 || true)"
           if [[ -z "$WORKER_URL" ]]; then
             echo "::error::Wrangler did not print the preview workers.dev URL."
             exit 1
@@ -116,7 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           for amount in 3 5 10 25; do
-            status="$(curl --silent --show-error --max-time 30 -o "/tmp/support-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://raw.githack.com' -H 'Content-Type: application/json' --data "{\\"amount\\":$amount}")"
+            status="$(curl --silent --show-error --max-time 30 -o "/tmp/support-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://raw.githack.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
             [[ "$status" == "200" ]] || { echo "::error::Sandbox session creation failed for amount $amount (HTTP $status)."; cat "/tmp/support-session-$amount.json"; exit 1; }
             EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url); if(d.ok!==true||d.amount!==Number(process.env.EXPECTED_AMOUNT)||d.currency!=='USD'||u.protocol!=='https:'||!u.hostname.endsWith('.getsafepay.com')||!u.searchParams.get('tracker')||!u.searchParams.get('tbt')) {console.error('Invalid checkout session response');process.exit(1)}"
             echo "Sandbox checkout session generated and validated for USD $$amount."
