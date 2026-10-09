@@ -127,7 +127,7 @@ test("reports only the HTTP status when Safepay rejects session creation", async
   assert.equal(calls, 1);
 });
 
-
+test("rejects amounts outside the four approved values without contacting Safepay", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
