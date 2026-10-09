@@ -1,2 +1,2 @@
-// Sandbox-preview API URL only. The deployment workflow fills this with the new workers.dev origin.
-window.NEXUSNOVA_SUPPORT_API_BASE = "";
+// Public sandbox API origin for the non-production preview only.
+window.NEXUSNOVA_SUPPORT_API_BASE = "https://nexusnova-support-payments-preview.fahadsoomro123.workers.dev";
