@@ -162,7 +162,8 @@ jobs:
             echo "Production API route generated and validated USD $amount live checkout; no payment was submitted."
           done
 
-          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }          {
+          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }
+          {
             echo "## NexusNova Support Payments Production"
             echo ""
             echo "- Worker configuration and production credentials: **passed**"
