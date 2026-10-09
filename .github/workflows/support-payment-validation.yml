@@ -19,6 +19,7 @@ on:
       - "tests/support-payments.test.mjs"
       - "tests/support-sitewide-coverage.test.mjs"
       - ".github/workflows/support-payment-validation.yml"
+      - ".github/workflows/deploy-support-payments-preview.yml"
   pull_request:
     branches:
       - main
@@ -31,6 +32,7 @@ on:
       - "tests/support-payments.test.mjs"
       - "tests/support-sitewide-coverage.test.mjs"
       - ".github/workflows/support-payment-validation.yml"
+      - ".github/workflows/deploy-support-payments-preview.yml"
 
       - "tools.html"
       - "guides.html"
