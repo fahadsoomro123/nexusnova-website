@@ -46,7 +46,7 @@ permissions:
 jobs:
   validate-support-payments:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,3 +71,24 @@ jobs:
 
       - name: Verify sitewide support coverage
         run: node --experimental-default-type=module --test tests/support-sitewide-coverage.test.mjs
+
+      - name: Install isolated Playwright browser runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/nexusnova-playwright --no-save --no-package-lock playwright
+          /tmp/nexusnova-playwright/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Test rendered Support preview and sandbox checkout
+        env:
+          PLAYWRIGHT_PACKAGE_DIR: /tmp/nexusnova-playwright/node_modules/playwright
+          SUPPORT_PREVIEW_URL: https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=https%3A%2F%2Fnexusnova-support-payments-preview.fahadsoomro123.workers.dev
+        run: node tests/support-preview-browser.mjs
+
+      - name: Upload browser screenshots and QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: support-preview-browser-qa
+          path: artifacts/support-preview-browser-qa/
+          if-no-files-found: warn
