@@ -140,7 +140,8 @@ function configReady(env) {
 
 async function createCheckout(request, env) {
   const origin = request.headers.get("origin");
-  if (origin && !isAllowedOrigin(origin, env)) {
+  if ((env.SAFEPAY_ENV === "production" && !ALLOWED_ORIGINS.has(origin)) ||
+      (origin && !isAllowedOrigin(origin, env))) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, request);
   }
 
