@@ -21,11 +21,11 @@ jobs:
       - name: Inject support runtime into every site page
         shell: python
         run: |
-          from pathlib import Path
+          from pathlib import Path\n          import re
 
           root = Path(".")
           marker = 'id="nexusnova-support-direct-loader"'
-          runtime = "assets/js/nexusnova-support-preview.js?v=20261008-sitewide-c2"
+          runtime = "assets/js/nexusnova-support-preview.js?v=20261009-sitewide-c3"
 
           skipped_prefixes = {
               ".git", ".github"
@@ -62,24 +62,32 @@ jobs:
               if path.name in skipped_names:
                   continue
 
+              # Keep all existing support-loader URLs in sync with the current cache version.
+              depth = len(path.parts) - 1
+              prefix = "../" * depth
+              desired_src = f"{prefix}{runtime}"
               raw = path.read_bytes()
               bom = raw.startswith(b"\xef\xbb\xbf")
               text = raw.decode("utf-8-sig" if bom else "utf-8")
 
+              original_text = text
               if marker in text:
+                  pattern = r'(<script\\s+id="nexusnova-support-direct-loader"\\s+src=")[^"]+(" defer></script>)'
+                  text, replacements = re.subn(pattern, lambda m: m.group(1) + desired_src + m.group(2), text)
+                  if replacements and text != original_text:
+                      path.write_bytes((b"\\xef\\xbb\\xbf" if bom else b"") + text.encode("utf-8"))
+                      changed.append(rel + " [cache-busted]")
                   continue
+
               if "</body>" not in text.lower():
                   continue
 
-              depth = len(path.parts) - 1
-              prefix = "../" * depth
-              tag = f'\n<script {marker} src="{prefix}{runtime}" defer></script>\n'
-
+              tag = f'\\n<script {marker} src="{desired_src}" defer></script>\\n'
               lower = text.lower()
               body_index = lower.rfind("</body>")
               text = text[:body_index] + tag + text[body_index:]
 
-              path.write_bytes((b"\xef\xbb\xbf" if bom else b"") + text.encode("utf-8"))
+              path.write_bytes((b"\\xef\\xbb\\xbf" if bom else b"") + text.encode("utf-8"))
               changed.append(rel)
 
           print(f"Support runtime injected into {len(changed)} site pages.")
