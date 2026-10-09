@@ -50,8 +50,10 @@ function mount(){
 
   wrap.querySelectorAll("[data-support-amount]").forEach(btn=>{
     btn.addEventListener("click",()=>{
-      wrap.querySelectorAll("[data-support-amount]").forEach(x=>x.classList.remove("primary"));
-      btn.classList.add("primary");
+      const amount=btn.getAttribute("data-support-amount");
+      const nested=/\/(articles|guides|tech)\//.test(location.pathname);
+      const destination=(nested?"../":"")+"support-checkout-preview.html?amount="+encodeURIComponent(amount)+"&preview=1";
+      location.assign(destination);
     });
   });
 }
