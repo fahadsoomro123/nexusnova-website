@@ -2,6 +2,13 @@ name: Deploy NexusNova Support Sandbox Worker
 
 on:
   workflow_dispatch:
+  # Isolated sandbox-only testing; never triggers on the production/support branch.
+  push:
+    branches:
+      - nexusnova-support-reporter-fix-20261009
+    paths:
+      - "cloudflare/support-payments/**"
+      - ".github/workflows/deploy-support-payments-preview.yml"
 
 permissions:
   contents: write
@@ -12,6 +19,7 @@ concurrency:
 
 jobs:
   deploy-sandbox:
+    if: github.ref_name == 'nexusnova-support-reporter-fix-20261009'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
@@ -23,7 +31,7 @@ jobs:
       - name: Checkout isolated support branch
         uses: actions/checkout@v4
         with:
-          ref: nexusnova-support-production
+          ref: ${{ github.ref_name }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -40,6 +48,20 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Confirm isolated sandbox-only target
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const config = JSON.parse(fs.readFileSync('cloudflare/support-payments/wrangler.preview.jsonc', 'utf8'));
+          if (config.name !== 'nexusnova-support-payments-preview') throw new Error('Unexpected Worker name; refusing deploy');
+          if (config.vars?.SAFEPAY_ENV !== 'sandbox') throw new Error('Sandbox environment not configured; refusing deploy');
+          if (config.vars?.SUPPORT_CHECKOUT_ENABLED !== 'true') throw new Error('Sandbox checkout must be explicitly enabled for this test');
+          if (Object.hasOwn(config, 'routes')) throw new Error('Custom-domain routes are forbidden for sandbox deployment');
+          console.log('Sandbox-only config confirmed; no custom-domain routes.');
+          NODE
 
       - name: Deploy separate workers.dev sandbox Worker
         shell: bash
