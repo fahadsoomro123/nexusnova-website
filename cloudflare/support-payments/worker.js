@@ -344,7 +344,7 @@ async function paymentStatus(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === "/health" && request.method === "GET") {
+    if ((url.pathname === "/health" || url.pathname === "/api/support/health") && request.method === "GET") {
       return json({
         ok: true,
         service: "nexusnova-support-payments",
