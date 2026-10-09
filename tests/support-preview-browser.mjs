@@ -1,4 +1,4 @@
-import test from "node:assert/strict";
+import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createRequire } from "node:module";
