@@ -6,7 +6,8 @@ NexusNova's current static website is deployed through GitHub Pages. GitHub Page
 
 New isolated Worker files:
 - `cloudflare/support-payments/worker.js`: support-only checkout creation and status verification.
-- `cloudflare/support-payments/wrangler.jsonc`: a dedicated Worker name, the support-only route, and fail-closed defaults.
+- `cloudflare/support-payments/wrangler.jsonc`: the production Worker name, the support-only route, and fail-closed defaults.
+- `cloudflare/support-payments/wrangler.preview.jsonc`: a separate sandbox-only Worker on `workers.dev`, with no custom-domain route.
 - `assets/js/nexusnova-support.js`: approved support control with direct redirect to the returned Safepay checkout URL.
 - `support-payment-success.html`: noindex return page; it only shows confirmed success after server-side checks.
 - `support-payment-cancelled.html`: noindex cancellation page.
