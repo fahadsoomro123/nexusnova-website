@@ -214,6 +214,26 @@ test("rejects a tampered signed order ID before asking Safepay", async (t) => {
   assert.equal(reporterCalls, 0);
 });
 
+test("exposes a routed production health endpoint without leaking credentials", async () => {
+  const request = makeRequest("https://nexusnovatools.com/api/support/health", {
+    method: "GET",
+    origin: ORIGIN
+  });
+  const response = await supportWorker.fetch(request, {
+    ...env,
+    SAFEPAY_ENV: "production",
+    SAFEPAY_PUBLIC_KEY: PUBLIC_KEY,
+    SAFEPAY_SECRET_KEY: SECRET_KEY
+  });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.equal(body.enabled, true);
+  assert.equal(body.environment, "production");
+  assert.equal(body.credentials, "configured");
+  assert.equal(JSON.stringify(body).includes(SECRET_KEY), false);
+});
+
 test("rejects production checkout creation without an official NexusNova Origin", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
