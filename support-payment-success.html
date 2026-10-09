@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="robots" content="noindex,nofollow,noarchive">\n<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#f8fafc">
 <title>Support Payment Status — NexusNova Tools</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -28,26 +28,38 @@ body{background:#f8fafc}.nn-support-result{width:min(680px,calc(100% - 30px));ma
 (async function(){
  const q=new URLSearchParams(location.search);
  const tracker=q.get("tracker")||"";
- const order=q.get("order_id")||"";
+ const supportRef=q.get("support_ref")||"";
  const title=document.getElementById("title"), intro=document.getElementById("intro");
  const state=document.getElementById("state"), stateTitle=document.getElementById("stateTitle"), stateCopy=document.getElementById("stateCopy"), reference=document.getElementById("reference");
- reference.textContent="Order: "+(order||"not returned")+" · Tracker: "+(tracker||"not returned");
- if(!tracker||!order){title.textContent="Payment status could not be verified.";stateTitle.textContent="No confirmed payment state";stateCopy.textContent="Safepay did not return the reference needed for server-side verification. No success is being claimed.";return;}
+ reference.textContent="Safepay reference: "+(tracker||"not returned");
+ if(!tracker||!supportRef){
+  title.textContent="Payment status could not be verified.";
+  stateTitle.textContent="No confirmed payment state";
+  stateCopy.textContent="Safepay did not return the reference needed for server-side verification. No success is being claimed.";
+  return;
+ }
  for(let attempt=0;attempt<5;attempt++){
   try{
-   const url="/api/support/payment-status?tracker="+encodeURIComponent(tracker)+"&order_id="+encodeURIComponent(order);
+   const url="/api/support/payment-status?tracker="+encodeURIComponent(tracker)+"&support_ref="+encodeURIComponent(supportRef);
    const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
    const data=await response.json();
    if(response.ok&&data.ok&&data.paid===true){
-    state.className="nn-support-state ok";title.textContent="Thank you for supporting NexusNova.";intro.textContent="Safepay has confirmed your one-time contribution for NexusNova’s free tools.";
-    stateTitle.textContent="Payment confirmed";stateCopy.textContent="Your support helps cover hosting, maintenance and new tools.";return;
+    state.className="nn-support-state ok";
+    title.textContent="Thank you for supporting NexusNova.";
+    intro.textContent="Safepay has confirmed your one-time contribution for NexusNova’s free tools.";
+    stateTitle.textContent="Payment confirmed";
+    stateCopy.textContent="Your support helps cover hosting, maintenance and new tools.";
+    reference.textContent="Order: "+data.order_id+" · Safepay reference: "+tracker+" · Amount: $"+data.amount+" "+data.currency;
+    return;
    }
-   if(data.error==="support_order_not_matched"){break;}
+   if(response.status===400||response.status===403)break;
   }catch(_){}
   if(attempt<4)await new Promise(resolve=>setTimeout(resolve,1800));
  }
- state.className="nn-support-state pending";title.textContent="We couldn’t confirm the payment yet.";
- stateTitle.textContent="Payment status not confirmed";stateCopy.textContent="No success status has been recorded by this page. If your bank or Safepay shows a charge, contact NexusNova Support with the reference above.";
+ state.className="nn-support-state pending";
+ title.textContent="We couldn’t confirm the payment yet.";
+ stateTitle.textContent="Payment status not confirmed";
+ stateCopy.textContent="No success status has been recorded by this page. If your bank or Safepay shows a charge, contact NexusNova Support with the reference above.";
 })();
 </script>
 </body>
