@@ -187,7 +187,7 @@ async function createCheckout(request, env) {
     const session = await readJson(sessionResponse);
     if (!sessionResponse.ok) {
       console.error("Support checkout session creation failed", sessionResponse.status);
-      return json({ ok: false, error: "session_creation_failed" }, 502, request);
+      return json({ ok: false, error: "session_creation_failed", upstream_status: sessionResponse.status }, 502, request);
     }
 
     const tracker = session?.data?.tracker?.token || session?.data?.tracker ||
