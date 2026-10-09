@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexusnova-support-payments",
+  "main": "./worker.js",
+  "compatibility_date": "2026-10-09",
+  "workers_dev": true,
+  "vars": {
+    "SUPPORT_CHECKOUT_ENABLED": "false",
+    "SAFEPAY_ENV": "production"
+  }
+}
