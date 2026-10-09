@@ -3,6 +3,12 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.nexusnovatools.com"
 ]);
 const ALLOWED_AMOUNTS = new Set([3, 5, 10, 25]);
+
+function isAllowedOrigin(origin, env) {
+  if (!origin) return true;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  return env.SAFEPAY_ENV === "sandbox" && origin === "https://raw.githack.com";
+}
 const RATE_WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 5;
 const ipRequests = new Map();
@@ -64,41 +70,46 @@ function fromBase64Url(input) {
   return bytes;
 }
 
-async function createSupportReference(payload, secret) {
-  const payloadPart = base64Url(new TextEncoder().encode(JSON.stringify(payload)));
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), {
-    name: "HMAC", hash: "SHA-256"
-  }, false, ["sign"]);
-  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadPart));
-  return payloadPart + "." + base64Url(signature);
+async function hmacHex(message, secret) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
 
-async function verifySupportReference(reference, secret) {
-  if (typeof reference !== "string" || reference.length > 2048) return null;
-  const parts = reference.split(".");
-  if (parts.length !== 2) return null;
-  try {
-    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), {
-      name: "HMAC", hash: "SHA-256"
-    }, false, ["verify"]);
-    const valid = await crypto.subtle.verify("HMAC", key, fromBase64Url(parts[1]), new TextEncoder().encode(parts[0]));
-    if (!valid) return null;
-    const payload = JSON.parse(new TextDecoder().decode(fromBase64Url(parts[0])));
-    if (payload?.version !== 1 ||
-        payload?.purpose !== "nexusnova-support" ||
-        typeof payload?.tracker !== "string" ||
-        !/^track_[A-Za-z0-9-]{10,120}$/.test(payload.tracker) ||
-        typeof payload?.order_id !== "string" ||
-        !/^NN-SUP-[0-9]{13}-[A-F0-9]{8}$/.test(payload.order_id) ||
-        !Number.isInteger(payload.amount) ||
-        !ALLOWED_AMOUNTS.has(payload.amount) ||
-        payload.currency !== "USD" ||
-        !Number.isFinite(payload.expires_at) ||
-        payload.expires_at < Date.now()) return null;
-    return payload;
-  } catch {
+async function createSignedOrderId(amount, secret) {
+  const issuedAt = Date.now();
+  const random = crypto.randomUUID().split("-")[0].toUpperCase();
+  const core = "NNS-" + issuedAt + "-" + amount + "-" + random;
+  const signature = (await hmacHex(core, secret)).slice(0, 24);
+  return core + "-" + signature;
+}
+
+async function verifySignedOrderId(orderId, secret) {
+  if (typeof orderId !== "string" || orderId.length > 80) return null;
+  const match = /^NNS-([0-9]{13})-(3|5|10|25)-([A-F0-9]{8})-([A-F0-9]{24})$/.exec(orderId);
+  if (!match) return null;
+
+  const issuedAt = Number(match[1]);
+  const amount = Number(match[2]);
+  if (!Number.isFinite(issuedAt) || issuedAt > Date.now() + 120_000 || Date.now() - issuedAt > 48 * 60 * 60 * 1000) {
     return null;
   }
+
+  const core = orderId.slice(0, orderId.lastIndexOf("-"));
+  const expected = (await hmacHex(core, secret)).slice(0, 24);
+  let difference = expected.length ^ match[4].length;
+  for (let i = 0; i < Math.min(expected.length, match[4].length); i++) {
+    difference |= expected.charCodeAt(i) ^ match[4].charCodeAt(i);
+  }
+  if (difference !== 0) return null;
+
+  return { order_id: orderId, amount, issued_at: issuedAt, purpose: "nexusnova-support" };
 }
 
 function isRateLimited(ip) {
@@ -128,7 +139,7 @@ function configReady(env) {
 
 async function createCheckout(request, env) {
   const origin = request.headers.get("origin");
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  if (origin && !isAllowedOrigin(origin, env)) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, request);
   }
 
@@ -153,7 +164,7 @@ async function createCheckout(request, env) {
   }
 
   const { environment, apiHost, checkoutHost } = apiConfig(env);
-  const orderId = "NN-SUP-" + Date.now() + "-" + crypto.randomUUID().split("-")[0].toUpperCase();
+  const orderId = await createSignedOrderId(amount, env.SAFEPAY_SECRET_KEY);
   const metadata = { order_id: orderId, source: "nexusnova-support", purpose: "support-free-tools" };
 
   try {
@@ -199,19 +210,9 @@ async function createCheckout(request, env) {
       return json({ ok: false, error: "passport_token_missing" }, 502, request);
     }
 
-    const supportRef = await createSupportReference({
-      version: 1,
-      purpose: "nexusnova-support",
-      tracker,
-      order_id: orderId,
-      amount,
-      currency: "USD",
-      environment,
-      expires_at: Date.now() + 6 * 60 * 60 * 1000
-    }, env.SAFEPAY_SECRET_KEY);
-
-    const redirectUrl = new URL("https://nexusnovatools.com/support-payment-success.html");
-    redirectUrl.searchParams.set("support_ref", supportRef);
+    // Safepay appends tracker/order data to these URLs. Keep them query-free,
+    // matching the proven checkout pattern in the existing HumanProof integration.
+    const redirectUrl = "https://nexusnovatools.com/support-payment-success.html";
     const cancelUrl = "https://nexusnovatools.com/support-payment-cancelled.html";
     const checkoutUrl = new URL(checkoutHost);
     checkoutUrl.searchParams.set("environment", environment);
@@ -231,57 +232,100 @@ async function createCheckout(request, env) {
 
 async function paymentStatus(request, env) {
   const origin = request.headers.get("origin");
-  if (origin && !ALLOWED_ORIGINS.has(origin)) {
+  if (origin && !isAllowedOrigin(origin, env)) {
     return json({ ok: false, paid: false, error: "origin_not_allowed" }, 403, request);
   }
   if (!configReady(env)) return json({ ok: false, paid: false, error: "support_checkout_not_configured" }, 503, request);
 
   const url = new URL(request.url);
   const tracker = url.searchParams.get("tracker") || "";
-  const supportRef = url.searchParams.get("support_ref") || "";
+  const orderId = url.searchParams.get("order_id") || "";
   if (!/^track_[A-Za-z0-9-]{10,120}$/.test(tracker)) {
     return json({ ok: false, paid: false, error: "invalid_tracker" }, 400, request);
   }
 
-  const support = await verifySupportReference(supportRef, env.SAFEPAY_SECRET_KEY);
-  if (!support || support.tracker !== tracker) {
-    return json({ ok: false, paid: false, error: "invalid_support_reference" }, 403, request);
+  const signedOrder = await verifySignedOrderId(orderId, env.SAFEPAY_SECRET_KEY);
+  if (!signedOrder) {
+    return json({ ok: false, paid: false, error: "invalid_support_order" }, 403, request);
   }
 
   const { environment, apiHost } = apiConfig(env);
-  if (support.environment !== environment) {
-    return json({ ok: false, paid: false, error: "environment_mismatch" }, 403, request);
-  }
-
   try {
-    const response = await safepayRequest(apiHost + "/reporter/api/v1/payments/" + encodeURIComponent(tracker), env.SAFEPAY_SECRET_KEY);
+    const response = await safepayRequest(
+      apiHost + "/reporter/api/v1/payments/" + encodeURIComponent(tracker),
+      env.SAFEPAY_SECRET_KEY
+    );
     const data = await readJson(response);
     if (!response.ok) {
       console.error("Support payment status lookup failed", response.status);
       return json({ ok: false, paid: false, error: "status_lookup_failed" }, 502, request);
     }
 
-    const candidate = data?.data?.tracker || data?.data?.payment || data?.data || data?.tracker || data?.payment || data || {};
+    const candidate =
+      data?.data?.tracker ||
+      data?.data?.payment ||
+      data?.data ||
+      data?.tracker ||
+      data?.payment ||
+      data ||
+      {};
     const state = candidate?.state || candidate?.status || data?.data?.state || data?.state || null;
-    const clientValue = candidate?.client || candidate?.merchant_api_key || data?.data?.client ||
-      data?.data?.merchant_api_key || data?.client || data?.merchant_api_key || null;
-    const clientKey = typeof clientValue === "string" ? clientValue : clientValue?.api_key || clientValue?.apiKey || null;
-    if (!clientKey || clientKey !== env.SAFEPAY_PUBLIC_KEY) {
+    const clientValue =
+      candidate?.client ||
+      candidate?.merchant_api_key ||
+      data?.data?.client ||
+      data?.data?.merchant_api_key ||
+      data?.client ||
+      data?.merchant_api_key ||
+      null;
+    const clientKey = typeof clientValue === "string"
+      ? clientValue
+      : clientValue?.api_key || clientValue?.apiKey || null;
+
+    if (clientKey && clientKey !== env.SAFEPAY_PUBLIC_KEY) {
       console.error("Support payment status merchant mismatch");
       return json({ ok: false, paid: false, error: "merchant_mismatch" }, 403, request);
+    }
+
+    // Safepay metadata must bind the returned tracker to this exact signed support order.
+    const metadata = candidate?.metadata || data?.data?.metadata || data?.metadata || {};
+    const returnedOrderId = metadata?.order_id || candidate?.order_id || data?.data?.order_id || null;
+    const returnedSource = metadata?.source || null;
+    if (returnedOrderId !== orderId || returnedSource !== "nexusnova-support") {
+      return json({
+        ok: true,
+        paid: false,
+        state,
+        tracker,
+        order_id: orderId,
+        amount: signedOrder.amount,
+        currency: "USD",
+        environment,
+        verification: "support_order_not_matched"
+      }, 200, request);
     }
 
     const quote = candidate?.purchase_totals?.quote_amount || null;
     const quoteAmount = typeof quote?.amount === "number" ? quote.amount : null;
     const quoteCurrency = typeof quote?.currency === "string" ? quote.currency.toUpperCase() : null;
-    const amountMatches = quoteAmount === support.amount * 100 && quoteCurrency === support.currency;
+    const amountMatches = quoteAmount === signedOrder.amount * 100 && quoteCurrency === "USD";
+    const trackerMatches = !candidate?.token || candidate.token === tracker;
     const statePaid = state === "TRACKER_ENDED" || state === "PAID" || state === "COMPLETED";
-    const paid = Boolean(statePaid && amountMatches);
-    if (statePaid && !amountMatches) console.error("Support payment status amount mismatch", tracker);
+    const paid = Boolean(statePaid && amountMatches && trackerMatches);
+
+    if (statePaid && (!amountMatches || !trackerMatches)) {
+      console.error("Support payment status mismatch", tracker);
+    }
 
     return json({
-      ok: true, paid, state, tracker, order_id: support.order_id,
-      amount: support.amount, currency: support.currency, environment,
+      ok: true,
+      paid,
+      state,
+      tracker,
+      order_id: orderId,
+      amount: signedOrder.amount,
+      currency: "USD",
+      environment,
       verification: paid ? "verified_support_payment" : "payment_not_confirmed"
     }, 200, request);
   } catch (error) {
@@ -306,7 +350,7 @@ export default {
     if (url.pathname === "/api/support/create-checkout") {
       if (request.method === "OPTIONS") {
         const origin = request.headers.get("origin");
-        if (!origin || !ALLOWED_ORIGINS.has(origin)) return new Response(null, { status: 403 });
+        if (!origin || !isAllowedOrigin(origin, env)) return new Response(null, { status: 403 });
         return new Response(null, { status: 204, headers: {
           "access-control-allow-origin": origin,
           "access-control-allow-methods": "POST, OPTIONS",
