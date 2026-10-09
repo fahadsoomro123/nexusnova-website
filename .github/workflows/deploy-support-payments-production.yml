@@ -173,3 +173,11 @@ jobs:
             echo "- No payment was submitted or charged by these checks."
             echo "- The website UI remains on the unmerged feature branch until final review."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail closed if production verification fails
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "A live Safepay verification step failed; disabling Support checkout on the isolated Worker."
+          npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.production-offline.jsonc
