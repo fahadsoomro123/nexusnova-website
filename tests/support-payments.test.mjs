@@ -110,7 +110,22 @@ test("accepts each approved support amount and sends the matching minor-unit amo
   assert.equal(calls.length, amounts.length * 2);
 });
 
-test("rejects amounts outside the four approved values without contacting Safepay", async (t) => {
+test("reports only the HTTP status when Safepay rejects session creation", async (t) => {
+  t.after(() => { globalThis.fetch = originalFetch; });
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    return Response.json({ status: { message: "unauthorized" } }, { status: 401 });
+  };
+  const { response, data } = await createCheckout(3);
+  assert.equal(response.status, 502);
+  assert.equal(data.error, "session_creation_failed");
+  assert.equal(data.upstream_status, 401);
+  assert.equal(Object.prototype.hasOwnProperty.call(data, "secret"), false);
+  assert.equal(calls, 1);
+});
+
+
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
   globalThis.fetch = async () => { fetchCalls++; throw new Error("must not call Safepay"); };
