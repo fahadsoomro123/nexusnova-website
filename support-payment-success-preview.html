@@ -37,7 +37,7 @@
  const reference=document.getElementById("reference");
  const returnLink=document.getElementById("return");
  if(apiBase){
-  try{const u=new URL(apiBase);if(u.protocol==="https:"&&/^[a-z0-9-]+\.workers\.dev$/i.test(u.hostname)){returnLink.href="index.html?supportApiBase="+encodeURIComponent(u.origin);}}
+  try{const u=new URL(apiBase);if(u.protocol==="https:"&&/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i.test(u.hostname)){returnLink.href="index.html?supportApiBase="+encodeURIComponent(u.origin);}}
   catch(_){}
  }
  reference.textContent="Safepay tracker: "+(tracker||"not returned")+" · order: "+(orderId||"not returned");
