@@ -89,6 +89,23 @@ test("creates an allowlisted USD support checkout and signed return reference", 
   assert.equal(JSON.parse(calls[0].init.body).metadata.source, "nexusnova-support");
 });
 
+test("accepts each approved support amount and sends the matching minor-unit amount to Safepay", async (t) => {
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const calls = mockSafepay();
+  const amounts = [3, 5, 10, 25];
+  for (const [index, amount] of amounts.entries()) {
+    const { response, data } = await createCheckout(amount, env, "192.0.2." + (index + 1));
+    assert.equal(response.status, 200);
+    assert.equal(data.amount, amount);
+    assert.equal(data.currency, "USD");
+    const createCall = calls[index * 2];
+    const payload = JSON.parse(createCall.init.body);
+    assert.equal(payload.amount, amount * 100);
+    assert.equal(payload.currency, "USD");
+  }
+  assert.equal(calls.length, amounts.length * 2);
+});
+
 test("rejects amounts outside the four approved values without contacting Safepay", async (t) => {
   t.after(() => { globalThis.fetch = originalFetch; });
   let fetchCalls = 0;
