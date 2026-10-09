@@ -28,11 +28,11 @@ body{background:#f8fafc}.nn-support-result{width:min(680px,calc(100% - 30px));ma
 (async function(){
  const q=new URLSearchParams(location.search);
  const tracker=q.get("tracker")||"";
- const supportRef=q.get("support_ref")||"";
+ const orderId=q.get("order_id")||"";
  const title=document.getElementById("title"), intro=document.getElementById("intro");
  const state=document.getElementById("state"), stateTitle=document.getElementById("stateTitle"), stateCopy=document.getElementById("stateCopy"), reference=document.getElementById("reference");
  reference.textContent="Safepay reference: "+(tracker||"not returned");
- if(!tracker||!supportRef){
+ if(!tracker||!orderId){
   title.textContent="Payment status could not be verified.";
   stateTitle.textContent="No confirmed payment state";
   stateCopy.textContent="Safepay did not return the reference needed for server-side verification. No success is being claimed.";
@@ -40,7 +40,7 @@ body{background:#f8fafc}.nn-support-result{width:min(680px,calc(100% - 30px));ma
  }
  for(let attempt=0;attempt<5;attempt++){
   try{
-   const url="/api/support/payment-status?tracker="+encodeURIComponent(tracker)+"&support_ref="+encodeURIComponent(supportRef);
+   const url="/api/support/payment-status?tracker="+encodeURIComponent(tracker)+"&order_id="+encodeURIComponent(orderId);
    const response=await fetch(url,{cache:"no-store",credentials:"same-origin"});
    const data=await response.json();
    if(response.ok&&data.ok&&data.paid===true){
