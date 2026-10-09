@@ -1,5 +1,17 @@
 (()=>{"use strict";
 if(window.__nexusnovaSupportReady)return;
+if(/\/(humanproof-checkout|humanproof-payment-success(?:-v2)?|humanproof-payment-cancelled|support-payment-success|support-payment-cancelled|register)\.html$/i.test(location.pathname))return;
+function getSandboxPreviewApiBase(){
+  // API overrides are accepted only on raw.githack preview URLs, never on the live domain.
+  if(location.hostname!=="raw.githack.com")return "";
+  const raw=new URLSearchParams(location.search).get("supportApiBase");
+  if(!raw)return "";
+  try{
+    const url=new URL(raw);
+    return url.protocol==="https:"&&/^[a-z0-9-]+\.workers\.dev$/i.test(url.hostname)?url.origin:"";
+  }catch(_){return "";}
+}
+const SUPPORT_API_BASE=getSandboxPreviewApiBase();
 window.__nexusnovaSupportReady=true;
 
 function mount(){
@@ -60,11 +72,14 @@ function mount(){
       feedback.style.color="#64748b";
       feedback.dataset.visible="true";
       try{
-        const response=await fetch("/api/support/create-checkout",{
+        const endpoint=SUPPORT_API_BASE
+          ? new URL("/api/support/create-checkout",SUPPORT_API_BASE).href
+          : "/api/support/create-checkout";
+        const response=await fetch(endpoint,{
           method:"POST",
           headers:{"content-type":"application/json"},
           cache:"no-store",
-          credentials:"same-origin",
+          credentials:SUPPORT_API_BASE?"omit":"same-origin",
           body:JSON.stringify({amount})
         });
         let data={};
