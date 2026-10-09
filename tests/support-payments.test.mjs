@@ -115,12 +115,14 @@ test("reports only the HTTP status when Safepay rejects session creation", async
   let calls = 0;
   globalThis.fetch = async () => {
     calls++;
-    return Response.json({ status: { message: "unauthorized" } }, { status: 401 });
+    return Response.json({ status: { message: "unauthorized", errors: [{ code: "auth_error", message: "Key not accepted" }] } }, { status: 401 });
   };
   const { response, data } = await createCheckout(3);
   assert.equal(response.status, 502);
   assert.equal(data.error, "session_creation_failed");
   assert.equal(data.upstream_status, 401);
+  assert.equal(data.upstream_message, "unauthorized");
+  assert.deepEqual(data.upstream_errors, [{ code: "auth_error", message: "Key not accepted" }]);
   assert.equal(Object.prototype.hasOwnProperty.call(data, "secret"), false);
   assert.equal(calls, 1);
 });
