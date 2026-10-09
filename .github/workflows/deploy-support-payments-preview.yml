@@ -2,15 +2,6 @@ name: Deploy NexusNova Support Sandbox Worker
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - nexusnova-support-production
-    paths:
-      - "cloudflare/support-payments/**"
-      - "assets/js/nexusnova-support.js"
-      - "support-payment-success-preview.html"
-      - "support-payment-cancelled-preview.html"
-      - ".github/workflows/deploy-support-payments-preview.yml"
 
 permissions:
   contents: write
