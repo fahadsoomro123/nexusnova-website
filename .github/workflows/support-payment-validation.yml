@@ -1,0 +1,52 @@
+name: Support Payment Contract Validation
+
+on:
+  push:
+    branches:
+      - nexusnova-support-production
+    paths:
+      - "functions/api/support/**"
+      - "assets/js/nexusnova-support.js"
+      - "support-payment-success.html"
+      - "support-payment-cancelled.html"
+      - "tests/support-payments.test.mjs"
+      - ".github/workflows/support-payment-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "functions/api/support/**"
+      - "assets/js/nexusnova-support.js"
+      - "support-payment-success.html"
+      - "support-payment-cancelled.html"
+      - "tests/support-payments.test.mjs"
+      - ".github/workflows/support-payment-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-support-payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check Cloudflare Pages Function syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module --check < functions/api/support/create-checkout.js
+          node --input-type=module --check < functions/api/support/payment-status.js
+
+      - name: Check browser runtime syntax
+        run: node --check assets/js/nexusnova-support.js
+
+      - name: Run mocked checkout and verification tests
+        run: node --experimental-default-type=module --test tests/support-payments.test.mjs
