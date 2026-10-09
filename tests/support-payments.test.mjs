@@ -160,7 +160,7 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, true);
-  assert.equal(body.order_id.startsWith("NN-SUP-"), true);
+  assert.equal(body.order_id.startsWith("NNS-"), true);
   assert.equal(body.amount, 5);
   assert.equal(body.currency, "USD");
 });
