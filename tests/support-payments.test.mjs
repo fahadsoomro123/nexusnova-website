@@ -328,3 +328,17 @@ test("sandbox deployment stays on the isolated fix branch and cannot add a produ
   assert.equal(config.vars.SUPPORT_CHECKOUT_ENABLED, "true");
   assert.equal(Object.hasOwn(config, "routes"), false, "sandbox Worker must not attach any custom-domain route");
 });
+
+test("accepts account-scoped Cloudflare Workers preview URLs on checkout and return pages", () => {
+  const runtime = readFileSync(new URL("../assets/js/nexusnova-support.js", import.meta.url), "utf8");
+  const successPage = readFileSync(new URL("../support-payment-success-preview.html", import.meta.url), "utf8");
+  const cancelPage = readFileSync(new URL("../support-payment-cancelled-preview.html", import.meta.url), "utf8");
+  const hostname = "nexusnova-support-payments-preview.fahadsoomro123.workers.dev";
+  const pattern = /^[a-z0-9-]+(?:\\.[a-z0-9-]+)?\\.workers\\.dev$/i;
+  const rule = "(?:\\.[a-z0-9-]+)?\\.workers\\.dev";
+  assert.equal(pattern.test(hostname), true, "accept the deployed account-scoped workers.dev hostname");
+  assert.equal(pattern.test("nexusnova-support-payments-preview.workers.dev.evil.example"), false);
+  assert.ok(runtime.includes(rule), "checkout runtime must accept an optional Cloudflare account hostname label");
+  assert.ok(successPage.includes(rule), "success return page must accept the sandbox Worker hostname");
+  assert.ok(cancelPage.includes(rule), "cancel return page must accept the sandbox Worker hostname");
+});
