@@ -15,7 +15,9 @@ const outputDir = path.join(root, "artifacts", "support-preview-browser-qa");
 await mkdir(outputDir, { recursive: true });
 
 const report = { preview: new URL(PREVIEW_URL).origin, captures: [], checks: [] };
-const browser = await chromium.launch({ headless: true });
+const launchOptions = { headless: true };
+if (process.env.CHROME_EXECUTABLE) launchOptions.executablePath = process.env.CHROME_EXECUTABLE;
+const browser = await chromium.launch(launchOptions);
 
 function check(name, condition, details = {}) {
   report.checks.push({ name, passed: Boolean(condition), ...details });
