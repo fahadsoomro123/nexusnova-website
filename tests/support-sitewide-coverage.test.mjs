@@ -6,6 +6,10 @@ import path from "node:path";
 const root = process.cwd();
 const excluded = new Set([
   "humanproof-checkout.html",
+  "humanproof-pricing.html",
+  "humanproof-verify.html",
+  "instagram-callback.html",
+  "instagram-connect.html",
   "humanproof-payment-success.html",
   "humanproof-payment-success-v2.html",
   "humanproof-payment-cancelled.html",
