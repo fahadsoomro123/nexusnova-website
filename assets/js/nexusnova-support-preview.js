@@ -9,6 +9,7 @@ function mount(){
   const row=(nav&&nav.closest(".nn-header-row"))||(nav&&nav.closest(".site-header"))||(nav&&nav.closest("header"));
   if(!nav||!row)return;
 
+  if(!document.querySelector("style[data-nexusnova-support-preview-style]")){
   const style=document.createElement("style");
   style.dataset.nexusnovaSupportPreviewStyle="";
   style.textContent=[
@@ -25,6 +26,7 @@ function mount(){
     "@media(max-width:760px){.nn-support-preview{width:100%;margin:2px 0 0;padding:5px 0 0;border-left:0;border-top:1px solid #e2e8f0;justify-content:flex-start;gap:6px}.nn-support-preview-label{display:inline}.nn-support-preview-amount{width:29px;height:24px}}"
   ].join("");
   document.head.appendChild(style);
+  }
 
   const wrap=document.createElement("div");
   wrap.className="nn-support-preview";
@@ -48,6 +50,15 @@ function mount(){
   });
 }
 
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});
-else mount();
+function start(){
+  mount();
+  if(document.body&&!window.__nexusnovaSupportHeaderObserver){
+    window.__nexusnovaSupportHeaderObserver=new MutationObserver(()=>{
+      if(!document.querySelector("[data-nexusnova-support-preview]"))mount();
+    });
+    window.__nexusnovaSupportHeaderObserver.observe(document.body,{childList:true,subtree:true});
+  }
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
+else start();
 })();
