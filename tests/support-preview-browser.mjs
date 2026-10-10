@@ -206,14 +206,19 @@ try {
   });
 
   const desktop = await inspectViewport({ width: 1366, height: 900 }, "homepage-desktop");
-  await desktop.route("https://sandbox.api.getsafepay.com/**", async route => {
-    const target = route.request().url();
-    report.interceptedCheckoutUrl = target;
-    await route.fulfill({
-      status: 200,
-      contentType: "text/html; charset=utf-8",
-      body: "<!doctype html><html><head><meta charset='utf-8'><title>Safepay sandbox destination captured</title></head><body><h1>Safepay sandbox checkout destination captured</h1><p>Automated QA does not submit a payment instrument.</p></body></html>"
-    });
+  let providerMainResponse = null;
+  desktop.on("response", response => {
+    try {
+      if (response.request().isNavigationRequest() &&
+          response.request().frame() === desktop.mainFrame() &&
+          new URL(response.url()).hostname === "sandbox.api.getsafepay.com") {
+        providerMainResponse = {
+          status: response.status(),
+          url: response.url(),
+          contentType: response.headers()["content-type"] || ""
+        };
+      }
+    } catch {}
   });
   let checkoutPayload = null;
   let checkoutStatus = null;
@@ -247,9 +252,25 @@ try {
   check("desktop: checkout redirects to Safepay sandbox", checkout.protocol === "https:" && checkout.hostname === "sandbox.api.getsafepay.com" && Boolean(checkout.searchParams.get("tracker")) && Boolean(checkout.searchParams.get("tbt")), {
     protocol: checkout.protocol, hostname: checkout.hostname, hasTracker: Boolean(checkout.searchParams.get("tracker")), hasTbt: Boolean(checkout.searchParams.get("tbt"))
   });
-  await desktop.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 20_000, waitUntil: "domcontentloaded" });
-  await desktop.screenshot({ path: path.join(outputDir, "safepay-sandbox-destination.png"), fullPage: false });
-  report.captures.push("safepay-sandbox-destination.png");
+  await desktop.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 30_000, waitUntil: "domcontentloaded" });
+  await desktop.waitForLoadState("domcontentloaded", { timeout: 15_000 }).catch(() => {});
+  await desktop.screenshot({ path: path.join(outputDir, "safepay-sandbox-checkout.png"), fullPage: false });
+  report.captures.push("safepay-sandbox-checkout.png");
+  const providerDom = await desktop.evaluate(() => ({
+    url: location.href,
+    title: document.title,
+    bodyText: (document.body?.innerText || "").trim().slice(0, 1600),
+    htmlLength: document.documentElement?.innerHTML?.length || 0,
+    forms: document.querySelectorAll("form").length,
+    inputs: Array.from(document.querySelectorAll("input")).map(input => ({ type: input.type, name: input.name, placeholder: input.placeholder })).slice(0, 15),
+    iframes: Array.from(document.querySelectorAll("iframe")).map(frame => ({ title: frame.title, src: frame.src })).slice(0, 8)
+  }));
+  report.safepayCheckout = { response: providerMainResponse, dom: providerDom, paymentSubmitted: false };
+  check("actual Safepay sandbox checkout document rendered without submitting a payment", Boolean(
+    providerMainResponse && providerMainResponse.status >= 200 && providerMainResponse.status < 400 &&
+    providerDom.url.startsWith("https://sandbox.api.getsafepay.com/") &&
+    (providerDom.bodyText.length > 20 || providerDom.forms > 0 || providerDom.inputs.length > 0 || providerDom.iframes.length > 0)
+  ), report.safepayCheckout);
   await desktop.close();
 
   // Validate the return-page UI using an explicit unpaid fixture, then separately call the real status API below.
