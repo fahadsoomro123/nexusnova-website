@@ -239,6 +239,11 @@ async function visibleControls(page) {
           placeholder: element.getAttribute("placeholder") || "",
           ariaLabel: element.getAttribute("aria-label") || "",
           autocomplete: element.getAttribute("autocomplete") || "",
+          value: typeof element.value === "string" ? element.value.slice(0, 100) : "",
+          required: Boolean(element.required),
+          valid: typeof element.checkValidity === "function" ? element.checkValidity() : true,
+          validationMessage: typeof element.validationMessage === "string" ? element.validationMessage.slice(0, 140) : "",
+          ariaInvalid: element.getAttribute("aria-invalid") || "",
           labels: labels.slice(0, 120),
           parentText: parentText.trim().replace(/\s+/g, " ").slice(0, 180),
           text: (element.innerText || element.getAttribute("value") || element.getAttribute("aria-label") || "").trim().replace(/\s+/g, " ").slice(0, 100),
@@ -302,14 +307,31 @@ async function clickCheckoutAction(page, pattern) {
 
 async function snapshotCheckout(page, stage) {
   const controls = await visibleControls(page);
+  const fullBodyText = (await page.locator("body").innerText().catch(() => "")).trim().replace(/\s+/g, " ");
   const state = {
     stage,
     url: page.url(),
     hostname: new URL(page.url()).hostname,
     title: await page.title().catch(() => ""),
-    bodyText: (await page.locator("body").innerText().catch(() => "")).trim().replace(/\s+/g, " ").slice(0, 900),
-    frameText: (await Promise.all(page.frames().map(frame => frame.locator("body").innerText().catch(() => "")))).join(" ").replace(/\s+/g, " ").slice(0, 1600),
-    controls: controls.map(control => control.details)
+    bodyText: fullBodyText.slice(0, 500),
+    bodyTextEnd: fullBodyText.slice(-1800),
+    frameText: (await Promise.all(page.frames().map(frame => frame.locator("body").innerText().catch(() => "")))).join(" ").replace(/\s+/g, " ").slice(-1800),
+    frames: page.frames().map(frame => ({ url: frame.url(), name: frame.name() })),
+    alerts: await page.locator('[role="alert"], [aria-live="assertive"], [aria-invalid="true"]').evaluateAll(elements =>
+      elements.map(element => ({
+        tag: element.tagName.toLowerCase(),
+        text: (element.innerText || element.textContent || "").trim().replace(/\s+/g, " ").slice(0, 240),
+        ariaInvalid: element.getAttribute("aria-invalid") || ""
+      })).filter(item => item.text || item.ariaInvalid)
+    ).catch(() => []),
+    controls: controls.map(control => ({
+      ...control.details,
+      options: control.details.tag === "select" ? {
+        count: control.details.options.length,
+        hasPakistan: control.details.options.some(option => option.value === "PK"),
+        selectedLabel: control.details.options.find(option => option.value === control.details.value)?.label || ""
+      } : []
+    }))
   };
   report.sandboxPaymentSteps = report.sandboxPaymentSteps || [];
   report.sandboxPaymentSteps.push(state);
@@ -454,6 +476,12 @@ async function completeSandboxCardPayment(page, amount) {
   await payButton.locator.click({ timeout: 15_000 });
   report.sandboxPaymentSubmitted = true;
   report.sandboxPaymentAmount = amount;
+  await page.waitForTimeout(2500);
+  await page.screenshot({ path: path.join(outputDir, "safepay-post-submit.png"), fullPage: false });
+  report.captures.push("safepay-post-submit.png");
+  report.providerPostSubmitEvents = providerNetworkEvents.slice(-100);
+  report.providerPostSubmitConsoleErrors = providerConsoleErrors.slice(-40);
+  report.providerPostSubmitFailedRequests = providerFailedRequests.slice(-40);
 
   for (let step = 1; step <= 12; step++) {
     await page.waitForTimeout(1500);
@@ -475,7 +503,13 @@ async function completeSandboxCardPayment(page, amount) {
     if (state.url.includes("/embedded/payment/") && step < 12) continue;
     throw new Error("Unrecognized Safepay post-submit state: " + JSON.stringify(state).slice(0, 3500));
   }
-  throw new Error("Safepay sandbox did not return from the dummy test-card transaction within twelve steps.");
+  await page.screenshot({ path: path.join(outputDir, "safepay-post-submit-unresolved.png"), fullPage: false });
+  report.captures.push("safepay-post-submit-unresolved.png");
+  report.providerPostSubmitEvents = providerNetworkEvents.slice(-100);
+  report.providerPostSubmitConsoleErrors = providerConsoleErrors.slice(-40);
+  report.providerPostSubmitFailedRequests = providerFailedRequests.slice(-40);
+  throw new Error("Safepay sandbox did not return from the dummy test-card transaction within twelve steps: " +
+    JSON.stringify({ events: providerNetworkEvents.slice(-30), consoleErrors: providerConsoleErrors.slice(-10), failedRequests: providerFailedRequests.slice(-10) }).slice(0, 4000));
 }
 
 let exitCode = 0;
@@ -547,9 +581,26 @@ try {
   const providerConsoleErrors = [];
   const providerFailedRequests = [];
   const providerPageErrors = [];
+  const providerNetworkEvents = [];
   desktop.on("console", message => { if (message.type() === "error") providerConsoleErrors.push(message.text().slice(0, 400)); });
-  desktop.on("requestfailed", request => providerFailedRequests.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
+  desktop.on("requestfailed", request => providerFailedRequests.push({ url: request.url().split("?")[0], error: request.failure()?.errorText || "unknown" }));
   desktop.on("pageerror", error => providerPageErrors.push(String(error.message).slice(0, 300)));
+  desktop.on("request", request => {
+    try {
+      const url = new URL(request.url());
+      if (url.hostname === "sandbox.api.getsafepay.com" && /payment|auth|checkout|transaction|intent|card|track|reporter/i.test(url.pathname)) {
+        providerNetworkEvents.push({ event: "request", method: request.method(), path: url.pathname, resourceType: request.resourceType() });
+      }
+    } catch {}
+  });
+  desktop.on("response", response => {
+    try {
+      const url = new URL(response.url());
+      if (url.hostname === "sandbox.api.getsafepay.com" && /payment|auth|checkout|transaction|intent|card|track|reporter/i.test(url.pathname)) {
+        providerNetworkEvents.push({ event: "response", status: response.status(), path: url.pathname });
+      }
+    } catch {}
+  });
   await desktop.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 30_000, waitUntil: "domcontentloaded" });
   await desktop.waitForLoadState("domcontentloaded", { timeout: 15_000 }).catch(() => {});
   await desktop.waitForTimeout(7000);
