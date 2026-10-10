@@ -270,7 +270,7 @@ async function fillField(page, pattern, value, { required = true } = {}) {
   } else {
     await candidate.locator.fill(value);
   }
-  return true;
+  return candidate.locator;
 }
 
 async function clickCheckoutAction(page, pattern) {
@@ -342,7 +342,33 @@ async function handleThreeDSIfShown(page, state, controls) {
 
 async function completeSandboxCardPayment(page, amount) {
   const email = "nexusnova-sandbox-" + Date.now() + "@example.com";
-  await fillField(page, /type email|email address|email/i, email);
+  let emailInput = await fillField(page, /type email|email address|email/i, email);
+  await emailInput.press("Tab").catch(() => {});
+  await page.waitForTimeout(900);
+  let payEnabled = false;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const now = await visibleControls(page);
+    const payButton = now.find(control => control.details.tag === "button" &&
+      new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i").test(control.details.text) &&
+      !control.details.disabled);
+    if (payButton) { payEnabled = true; break; }
+    await page.waitForTimeout(350);
+  }
+  if (!payEnabled) {
+    // Some checkout builds update validation only after keyboard input and blur.
+    await emailInput.fill("");
+    await emailInput.pressSequentially(email, { delay: 18 });
+    await emailInput.press("Tab").catch(() => {});
+    await page.waitForTimeout(1200);
+    const afterKeyboard = await visibleControls(page);
+    payEnabled = afterKeyboard.some(control => control.details.tag === "button" &&
+      new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i").test(control.details.text) &&
+      !control.details.disabled);
+    if (!payEnabled) {
+      const state = await snapshotCheckout(page, "email-validation-blocked");
+      throw new Error("Safepay Pay button stays disabled after email fill, blur, and keyboard input: " + JSON.stringify(state.state).slice(0, 3000));
+    }
+  }
   await page.screenshot({ path: path.join(outputDir, "safepay-email-entered.png"), fullPage: false });
   report.captures.push("safepay-email-entered.png");
   await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|continue|next|proceed", "i"));
