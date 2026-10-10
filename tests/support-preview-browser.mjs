@@ -86,7 +86,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === "/assets/js/nexusnova-support-preview-config.js") {
       respond(res, 200, "text/javascript; charset=utf-8",
-        "window.NEXUSNOVA_SUPPORT_API_BASE = " + JSON.stringify(WORKER_URL) + ";\n");
+        "window.NEXUSNOVA_SUPPORT_API_BASE = " + JSON.stringify(localBase) + ";\n");
       return;
     }
     const requested = url.pathname === "/" ? "/index.html" : decodeURIComponent(url.pathname);
