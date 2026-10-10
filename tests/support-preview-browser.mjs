@@ -253,15 +253,29 @@ async function visibleControls(page) {
 }
 
 async function fillField(page, pattern, value, { required = true } = {}) {
-  const controls = await visibleControls(page);
-  const candidate = controls.find(control =>
-    ["input", "textarea", "select"].includes(control.details.tag) &&
-    pattern.test(control.descriptor) &&
-    !control.details.disabled
-  );
+  let controls = [];
+  let candidate = null;
+  for (let attempt = 0; attempt < 16; attempt++) {
+    controls = await visibleControls(page);
+    candidate = controls.find(control =>
+      ["input", "textarea", "select"].includes(control.details.tag) &&
+      pattern.test(control.descriptor) &&
+      !control.details.disabled
+    );
+    if (candidate) break;
+    await page.waitForTimeout(250);
+  }
   if (!candidate) {
     if (!required) return false;
-    throw new Error("Required checkout input not found: " + pattern + " :: " + JSON.stringify(controls.map(control => control.details)).slice(0, 4000));
+    const summary = controls.map(control => ({
+      tag: control.details.tag,
+      type: control.details.type,
+      name: control.details.name,
+      label: control.details.labels,
+      placeholder: control.details.placeholder,
+      parent: control.details.parentText.slice(0, 100)
+    }));
+    throw new Error("Required checkout input not found after waiting: " + pattern + " :: " + JSON.stringify(summary).slice(0, 3000));
   }
   if (candidate.details.tag === "select") {
     const option = candidate.details.options.find(item => /pakistan/i.test(item.label) || /^pk$/i.test(item.value));
