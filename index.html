@@ -25,7 +25,7 @@
   <script src="assets/js/search-core.js" defer></script>
   <script>(()=>{const signal=`${location.hash} ${location.search}`;const inTelegram=/tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal)||!!window.TelegramWebviewProxy||!!window.TelegramWebview;if(!inTelegram)return;const sdk=document.createElement('script');sdk.src='assets/js/vendor/telegram-web-app.js';sdk.async=true;sdk.onload=()=>{const bridge=document.createElement('script');bridge.src='assets/js/telegram-webapp.js?v=20260826-5';bridge.async=false;document.head.appendChild(bridge)};document.head.appendChild(sdk)})();</script>
   <!-- GA4 advanced consent bootstrap cache version: 20261004 -->
-<script src="assets/js/main.js?v=20261005-ga4a" defer></script>
+<script src="assets/js/main.js?v=20261010-supportlayout3" defer></script>
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css">
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css">
 
@@ -315,18 +315,14 @@
         width:100%;
         min-width:0;
         justify-content:flex-start;
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        overflow-y:hidden;
-        scrollbar-width:none;
-        -webkit-overflow-scrolling:touch;
+        flex-wrap:wrap;
+        overflow:visible;
         padding-bottom:1px;
       }
-      .nn-nav::-webkit-scrollbar{display:none}
       .nn-nav a{
         flex:0 0 auto;
-        padding:6px 7px;
-        font-size:11px;
+        padding:5px 5px;
+        font-size:10px;
       }
       .nn-humanproof-row{grid-template-columns:1fr}
       .nn-pakistan-highlight-head{align-items:flex-start;flex-direction:column}

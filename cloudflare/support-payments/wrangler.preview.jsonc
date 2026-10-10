@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexusnova-support-payments-preview",
+  "main": "./worker.js",
+  "compatibility_date": "2026-10-09",
+  "workers_dev": true,
+  "vars": {
+    "SUPPORT_CHECKOUT_ENABLED": "true",
+    "SAFEPAY_ENV": "sandbox",
+    "SUPPORT_SUCCESS_URL": "https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/support-payment-success-preview.html",
+    "SUPPORT_CANCEL_URL": "https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/support-payment-cancelled-preview.html"
+  }
+}

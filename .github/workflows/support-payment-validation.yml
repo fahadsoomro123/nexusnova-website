@@ -1,0 +1,70 @@
+name: Support Payment Contract Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - nexusnova-support-production
+    paths:
+      - "cloudflare/support-payments/**"
+      - "assets/js/nexusnova-support.js"
+      - "tools.html"
+      - "guides.html"
+      - "categories.html"
+      - "articles.html"
+      - "assets/js/nn-inner-shell.js"
+      - "assets/js/main.js"
+      - "support-payment-success.html"
+      - "support-payment-cancelled.html"
+      - "tests/support-payments.test.mjs"
+      - "tests/support-sitewide-coverage.test.mjs"
+      - ".github/workflows/support-payment-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "cloudflare/support-payments/**"
+      - "assets/js/nexusnova-support.js"
+      - "support-payment-success.html"
+      - "support-payment-cancelled.html"
+      - "tests/support-payments.test.mjs"
+      - "tests/support-sitewide-coverage.test.mjs"
+      - ".github/workflows/support-payment-validation.yml"
+
+      - "tools.html"
+      - "guides.html"
+      - "categories.html"
+      - "articles.html"
+      - "assets/js/nn-inner-shell.js"
+      - "assets/js/main.js"
+permissions:
+  contents: read
+
+jobs:
+  validate-support-payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check isolated Cloudflare Worker syntax and config
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module --check < cloudflare/support-payments/worker.js
+          node --check assets/js/nexusnova-support.js
+          node --check assets/js/main.js
+          node --check assets/js/nn-inner-shell.js
+          node -e "for (const p of ['cloudflare/support-payments/wrangler.jsonc','cloudflare/support-payments/wrangler.preview.jsonc','cloudflare/support-payments/wrangler.production-check.jsonc','cloudflare/support-payments/wrangler.production.jsonc','cloudflare/support-payments/wrangler.production-offline.jsonc']) JSON.parse(require('node:fs').readFileSync(p,'utf8')); console.log('All five support Wrangler configs valid JSON')"
+
+      - name: Run mocked checkout and verification tests
+        run: node --experimental-default-type=module --test tests/support-payments.test.mjs
+
+      - name: Verify sitewide support coverage
+        run: node --experimental-default-type=module --test tests/support-sitewide-coverage.test.mjs
