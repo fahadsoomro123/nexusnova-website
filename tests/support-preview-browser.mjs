@@ -150,6 +150,18 @@ async function inspectViewport(viewport, name) {
     };
     const host = document.querySelector(".nn-support-host");
     const support = host?.querySelector("[data-nexusnova-support]");
+    const navElement = document.querySelector(".nn-header .nn-nav");
+    const navLinks = Array.from(navElement?.querySelectorAll("a") || []).map(link => {
+      const r = link.getBoundingClientRect();
+      return {
+        text: link.textContent.trim(),
+        x: Math.round(r.x),
+        right: Math.round(r.right),
+        width: Math.round(r.width),
+        clientWidth: link.clientWidth,
+        scrollWidth: link.scrollWidth
+      };
+    });
     const buttons = Array.from(support?.querySelectorAll("[data-support-amount]") || []);
     const overflowers = Array.from(document.querySelectorAll("body *"))
       .map(element => ({ tag: element.tagName.toLowerCase(), cls: typeof element.className === "string" ? element.className.slice(0, 90) : "", right: Math.round(element.getBoundingClientRect().right), width: Math.round(element.getBoundingClientRect().width) }))
@@ -159,7 +171,12 @@ async function inspectViewport(viewport, name) {
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       document: { clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, bodyScrollWidth: document.body.scrollWidth },
-      host: rect(host), support: rect(support), nav: rect(document.querySelector(".nn-header .nn-nav")),
+      host: rect(host), support: rect(support), nav: rect(navElement),
+      navMetrics: {
+        clientWidth: navElement?.clientWidth ?? 0,
+        scrollWidth: navElement?.scrollWidth ?? 0,
+        links: navLinks
+      },
       buttons: buttons.map(button => ({ label: button.getAttribute("aria-label"), ...rect(button), visible: !!(button.offsetWidth || button.offsetHeight) })),
       overflowers
     };
@@ -170,6 +187,10 @@ async function inspectViewport(viewport, name) {
   check(name + ": dedicated support host spans header width", metrics.host && metrics.host.width >= viewport.width - 100, { host: metrics.host, viewport: metrics.viewport });
   check(name + ": support controls have usable width", metrics.support && metrics.support.width >= (viewport.width < 761 ? viewport.width - 55 : 280), { support: metrics.support });
   check(name + ": four visible amount buttons", metrics.buttons.length === 4 && metrics.buttons.every(button => button.visible && button.width >= 28 && button.height >= 22), { buttons: metrics.buttons });
+  check(name + ": all navigation links remain visible and uncut", metrics.navMetrics.links.length === 6 &&
+    metrics.navMetrics.scrollWidth <= metrics.navMetrics.clientWidth + 1 &&
+    metrics.navMetrics.links.every(link => link.right <= metrics.viewport.width + 1 && link.scrollWidth <= link.clientWidth + 2),
+    { navMetrics: metrics.navMetrics, viewport: metrics.viewport });
   check(name + ": support fits inside host", metrics.support && metrics.support.x >= metrics.host.x - 1 && metrics.support.right <= metrics.host.right + 1, { host: metrics.host, support: metrics.support });
   check(name + ": no horizontal overflow", metrics.document.scrollWidth <= metrics.viewport.width + 1 && metrics.document.bodyScrollWidth <= metrics.viewport.width + 1, { document: metrics.document, viewport: metrics.viewport, overflowers: metrics.overflowers });
   check(name + ": no page runtime exceptions", metrics.pageErrors.length === 0, { pageErrors: metrics.pageErrors });
