@@ -342,132 +342,117 @@ async function handleThreeDSIfShown(page, state, controls) {
 
 async function completeSandboxCardPayment(page, amount) {
   const email = "nexusnova-sandbox-" + Date.now() + "@example.com";
-  let phoneFilled = false;
-  const emailInput = await fillField(page, /type email|email address|email/i, email);
+  const emailInput = await fillField(page, /email/i, email);
   await emailInput.press("Tab").catch(() => {});
   await page.waitForTimeout(500);
-  // Safepay lazily loads the phone-country options; wait for Pakistan to appear before selecting it.
-  let countrySelect = null;
-  let pakistan = null;
-  let controlsBeforePhone = [];
-  for (let attempt = 0; attempt < 14; attempt++) {
-    controlsBeforePhone = await visibleControls(page);
-    countrySelect = controlsBeforePhone.find(control =>
-      control.details.tag === "select" &&
-      control.details.options.some(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value))
-    );
-    if (countrySelect) {
-      pakistan = countrySelect.details.options.find(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value));
-      break;
-    }
-    await page.waitForTimeout(500);
-  }
-  if (!countrySelect || !pakistan) {
-    const selects = controlsBeforePhone.filter(control => control.details.tag === "select").map(control => ({
-      label: control.details.labels,
-      optionCount: control.details.options.length,
-      lastOptions: control.details.options.slice(-5)
-    }));
-    throw new Error("Safepay phone country selector did not load Pakistan option: " + JSON.stringify(selects).slice(0, 3000));
-  }
-  await countrySelect.locator.selectOption(pakistan.value);
-  const phoneInput = await fillField(page, /mobile phone number|phone number|contact number|\\btel\\b/i, "3021111111");
-  await phoneInput.press("Tab").catch(() => {});
-  phoneFilled = true;
-  await page.waitForTimeout(900);
-  let payEnabled = false;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const now = await visibleControls(page);
-    const payButton = now.find(control => control.details.tag === "button" &&
-      new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i").test(control.details.text) &&
-      !control.details.disabled);
-    if (payButton) { payEnabled = true; break; }
-    await page.waitForTimeout(350);
-  }
-  if (!payEnabled) {
-    // Some checkout builds update validation only after keyboard input and blur.
-    await emailInput.fill("");
-    await emailInput.pressSequentially(email, { delay: 18 });
-    await emailInput.press("Tab").catch(() => {});
-    await page.waitForTimeout(1200);
-    const afterKeyboard = await visibleControls(page);
-    payEnabled = afterKeyboard.some(control => control.details.tag === "button" &&
-      new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i").test(control.details.text) &&
-      !control.details.disabled);
-    if (!payEnabled) {
-      const state = await snapshotCheckout(page, "email-validation-blocked");
-      throw new Error("Safepay Pay button stays disabled after email fill, blur, and keyboard input: " + JSON.stringify(state.state).slice(0, 3000));
-    }
-  }
-  await page.screenshot({ path: path.join(outputDir, "safepay-email-entered.png"), fullPage: false });
-  report.captures.push("safepay-email-entered.png");
-  await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|continue|next|proceed", "i"));
 
-  let cardFilled = false;
-  let paymentSubmitted = false;
-  let sawCard = false;
-  for (let step = 1; step <= 9; step++) {
+  let controls = await visibleControls(page);
+  const phoneCountry = controls.find(control => control.details.tag === "select" &&
+    control.details.options.some(option => option.value === "PK" && /\+92/.test(option.label)));
+  if (!phoneCountry) {
+    throw new Error("Safepay phone-country select is missing Pakistan (+92): " +
+      JSON.stringify(controls.map(control => control.details).filter(item => item.tag === "select")).slice(0, 3500));
+  }
+  await phoneCountry.locator.selectOption("PK");
+  const phoneInput = await fillField(page, /mobile phone number|phone number|contact number/i, "3021111111");
+  await phoneInput.press("Tab").catch(() => {});
+
+  // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
+  const cardInput = await fillField(page, /card number/i, "5200000000001096");
+  await cardInput.press("Tab").catch(() => {});
+  const expiryInput = await fillField(page, /^expiry\b|expiration date|expiry date|cc-exp/i, "03/28");
+  await expiryInput.press("Tab").catch(() => {});
+  const cvcInput = await fillField(page, /^cvc\b|cvv|security code/i, "111");
+  await cvcInput.press("Tab").catch(() => {});
+  const firstNameInput = await fillField(page, /first name|cardholder first/i, "Abdul");
+  await firstNameInput.press("Tab").catch(() => {});
+  const lastNameInput = await fillField(page, /last name|cardholder last/i, "Qudoos");
+  await lastNameInput.press("Tab").catch(() => {});
+
+  controls = await visibleControls(page);
+  const billingCountry = controls.find(control => control.details.tag === "select" &&
+    (control.details.name === "billingAddress.country" || /country or region/i.test(control.details.labels)));
+  if (!billingCountry || !billingCountry.details.options.some(option => option.value === "PK")) {
+    throw new Error("Safepay billing-country select is missing Pakistan: " +
+      JSON.stringify(controls.filter(control => control.details.tag === "select").map(control => ({
+        name: control.details.name, label: control.details.labels,
+        options: control.details.options.slice(0, 4)
+      }))));
+  }
+  await billingCountry.locator.selectOption("PK");
+
+  const addressInput = await fillField(page, /street address|address line/i, "10 Commercial Lane");
+  await addressInput.press("Tab").catch(() => {});
+  const cityInput = await fillField(page, /^city\b|billing city/i, "Karachi");
+  await cityInput.press("Tab").catch(() => {});
+  const postalInput = await fillField(page, /postal|zip/i, "75500");
+  await postalInput.press("Tab").catch(() => {});
+
+  let stateSelect = null;
+  let sindhOption = null;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    controls = await visibleControls(page);
+    stateSelect = controls.find(control => control.details.tag === "select" &&
+      (control.details.name === "billingAddress.administrativeArea" || /\bstate\b|province/i.test(control.details.labels)));
+    sindhOption = stateSelect?.details.options.find(option => /^sindh$/i.test(option.label.trim()));
+    if (stateSelect && sindhOption) break;
+    await page.waitForTimeout(300);
+  }
+  if (stateSelect && sindhOption) await stateSelect.locator.selectOption(sindhOption.value);
+
+  const fieldsAfterFill = await visibleControls(page);
+  const requiredFieldSnapshot = fieldsAfterFill
+    .filter(control => ["input", "select"].includes(control.details.tag))
+    .map(control => ({
+      type: control.details.type, name: control.details.name, label: control.details.labels,
+      filled: Boolean(control.details.text || control.details.options.some(option => option.value === "PK"))
+    }));
+  const payButton = fieldsAfterFill.find(control =>
+    control.details.tag === "button" &&
+    new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i").test(control.details.text) &&
+    !control.details.disabled
+  );
+  if (!payButton) {
+    await page.screenshot({ path: path.join(outputDir, "safepay-form-validation-blocked.png"), fullPage: false });
+    report.captures.push("safepay-form-validation-blocked.png");
+    const state = await snapshotCheckout(page, "form-validation-blocked");
+    throw new Error("Safepay Pay button remains disabled after all visible test-card and billing fields were filled: " +
+      JSON.stringify({ state: state.state, fields: requiredFieldSnapshot }).slice(0, 4500));
+  }
+
+  await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
+  report.captures.push("safepay-test-card-ready.png");
+  check("sandbox test card, cardholder and required billing fields filled", true, {
+    card: "Safepay published dummy test card",
+    expiry: "03/28",
+    billingCountry: "PK",
+    billingState: sindhOption ? "Sindh" : "not-required-by-form"
+  });
+  await payButton.locator.click({ timeout: 15_000 });
+  report.sandboxPaymentSubmitted = true;
+  report.sandboxPaymentAmount = amount;
+
+  for (let step = 1; step <= 12; step++) {
     await page.waitForTimeout(1500);
-    const { state, controls } = await snapshotCheckout(page, step);
+    const { state, controls: currentControls } = await snapshotCheckout(page, "payment-" + step);
     if (state.hostname === "raw.githack.com" && state.url.includes("support-payment-success-preview.html")) {
-      check("sandbox card transaction redirects to Support success return", true, { step });
-      report.sandboxPaymentSubmitted = paymentSubmitted;
+      check("sandbox card transaction returns to the Support success page", true, { step });
       return state;
     }
     if (state.hostname !== "sandbox.api.getsafepay.com" && state.hostname !== "raw.githack.com") {
       throw new Error("Sandbox checkout left the allowed provider/return hosts: " + state.hostname);
     }
-    if (await handleThreeDSIfShown(page, state, controls)) {
+    if (await handleThreeDSIfShown(page, state, currentControls)) {
       await page.waitForTimeout(1500);
       continue;
     }
-
-    const hasCardNumber = controls.some(control => /card number|cc-number|cardnumber|card_number|credit card number/i.test(control.descriptor) && control.details.tag === "input");
-    const hasExpiry = controls.some(control => /expiry date|expiration date|expir|cc-exp|card expiry/i.test(control.descriptor) && ["input", "select"].includes(control.details.tag));
-    const hasCvc = controls.some(control => /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor) && control.details.tag === "input");
-
-    if (hasCardNumber && !cardFilled) {
-      await fillField(page, /card number|cc-number|cardnumber|card_number|credit card number/i, "4111111111111111");
-      await fillField(page, /expiry date|expiration date|expir|cc-exp|card expiry/i, "12/30");
-      await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
-      await fillField(page, /phone number|mobile number|contact number|\\btel\\b/i, "3021111111", { required: false });
-      await fillField(page, /cardholder|name on card|card name|cc-name/i, "NexusNova Sandbox QA", { required: false });
-      await fillField(page, /billing.*address|address line|street address|address/i, "10 Commercial Lane", { required: false });
-      await fillField(page, /city/i, "Karachi", { required: false });
-      await fillField(page, /state|province/i, "Sindh", { required: false });
-      await fillField(page, /postal|zip/i, "75500", { required: false });
-      await fillField(page, /country/i, "Pakistan", { required: false });
-      const fieldsAfterFill = await visibleControls(page);
-      const cardNumberNow = fieldsAfterFill.some(control => /card number|cc-number|cardnumber|card_number|credit card number/i.test(control.descriptor) && control.details.tag === "input");
-      const expiryNow = fieldsAfterFill.some(control => /expiry date|expiration date|expir|cc-exp|card expiry/i.test(control.descriptor) && ["input", "select"].includes(control.details.tag));
-      const cvcNow = fieldsAfterFill.some(control => /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor) && control.details.tag === "input");
-      check("sandbox test card fields were located", cardNumberNow && expiryNow && cvcNow, { cardNumberNow, expiryNow, cvcNow });
-      await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
-      report.captures.push("safepay-test-card-ready.png");
-      cardFilled = true;
-      sawCard = true;
-      await clickCheckoutAction(page, new RegExp("make payment|pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|pay now|submit payment|confirm payment", "i"));
-      paymentSubmitted = true;
-      report.sandboxPaymentSubmitted = true;
-      continue;
+    if (/payment failed|transaction failed|payment declined|unable to process/i.test(state.bodyText + " " + (state.frameText || ""))) {
+      throw new Error("Safepay sandbox test-card transaction failed: " + JSON.stringify(state).slice(0, 3500));
     }
-
-    const phone = controls.find(control => control.details.tag === "input" && !phoneFilled && (control.details.type === "tel" || /phone number|mobile number|contact number/i.test(control.descriptor)));
-    if (phone) {
-      await phone.locator.fill("3021111111");
-      phoneFilled = true;
-      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i"));
-      continue;
-    }
-    if (controls.some(control => control.details.tag === "input" && /email address|email/i.test(control.descriptor)) && !paymentSubmitted && !sawCard) {
-      throw new Error("Safepay still requests email after it was submitted: " + JSON.stringify(state).slice(0, 3000));
-    }
-    if (paymentSubmitted && /payment failed|transaction failed|payment declined|unable to process/i.test(state.bodyText)) {
-      throw new Error("Safepay sandbox test-card transaction failed: " + JSON.stringify(state).slice(0, 3000));
-    }
-    throw new Error("Unrecognized Safepay sandbox checkout step: " + JSON.stringify(state).slice(0, 4000));
+    if (state.url.includes("/embedded/payment/") && step < 12) continue;
+    throw new Error("Unrecognized Safepay post-submit state: " + JSON.stringify(state).slice(0, 3500));
   }
-  throw new Error("Safepay sandbox did not complete the test-card flow within nine steps.");
+  throw new Error("Safepay sandbox did not return from the dummy test-card transaction within twelve steps.");
 }
 
 let exitCode = 0;
