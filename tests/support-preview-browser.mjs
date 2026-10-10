@@ -252,10 +252,15 @@ try {
   check("desktop: checkout redirects to Safepay sandbox", checkout.protocol === "https:" && checkout.hostname === "sandbox.api.getsafepay.com" && Boolean(checkout.searchParams.get("tracker")) && Boolean(checkout.searchParams.get("tbt")), {
     protocol: checkout.protocol, hostname: checkout.hostname, hasTracker: Boolean(checkout.searchParams.get("tracker")), hasTbt: Boolean(checkout.searchParams.get("tbt"))
   });
+  const providerConsoleErrors = [];
+  const providerFailedRequests = [];
+  const providerPageErrors = [];
+  desktop.on("console", message => { if (message.type() === "error") providerConsoleErrors.push(message.text().slice(0, 400)); });
+  desktop.on("requestfailed", request => providerFailedRequests.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
+  desktop.on("pageerror", error => providerPageErrors.push(String(error.message).slice(0, 300)));
   await desktop.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 30_000, waitUntil: "domcontentloaded" });
   await desktop.waitForLoadState("domcontentloaded", { timeout: 15_000 }).catch(() => {});
-  await desktop.screenshot({ path: path.join(outputDir, "safepay-sandbox-checkout.png"), fullPage: false });
-  report.captures.push("safepay-sandbox-checkout.png");
+  await desktop.waitForTimeout(7000);
   const providerDom = await desktop.evaluate(() => ({
     url: location.href,
     title: document.title,
@@ -265,11 +270,14 @@ try {
     inputs: Array.from(document.querySelectorAll("input")).map(input => ({ type: input.type, name: input.name, placeholder: input.placeholder })).slice(0, 15),
     iframes: Array.from(document.querySelectorAll("iframe")).map(frame => ({ title: frame.title, src: frame.src })).slice(0, 8)
   }));
-  report.safepayCheckout = { response: providerMainResponse, dom: providerDom, paymentSubmitted: false };
-  check("actual Safepay sandbox checkout document rendered without submitting a payment", Boolean(
+  report.safepayCheckout = { response: providerMainResponse, dom: providerDom, consoleErrors: providerConsoleErrors, failedRequests: providerFailedRequests, pageErrors: providerPageErrors, paymentSubmitted: false };
+  await desktop.screenshot({ path: path.join(outputDir, "safepay-sandbox-checkout.png"), fullPage: false });
+  report.captures.push("safepay-sandbox-checkout.png");
+  check("actual Safepay sandbox checkout content rendered without submitting a payment", Boolean(
     providerMainResponse && providerMainResponse.status >= 200 && providerMainResponse.status < 400 &&
     providerDom.url.startsWith("https://sandbox.api.getsafepay.com/") &&
-    (providerDom.bodyText.length > 20 || providerDom.forms > 0 || providerDom.inputs.length > 0 || providerDom.iframes.length > 0)
+    (providerDom.bodyText.length > 20 || providerDom.forms > 0 || providerDom.inputs.length > 0 ||
+      providerDom.iframes.some(frame => frame.src && frame.src !== "about:blank"))
   ), report.safepayCheckout);
   await desktop.close();
 
