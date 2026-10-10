@@ -437,13 +437,13 @@ async function completeSandboxCardPayment(page, amount) {
   await phoneInput.press("Tab").catch(() => {});
 
   // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
-  const cardInput = await fillField(page, /card number/i, "4111111111111111");
+  const cardInput = await fillField(page, /card number/i, "5200000000001096");
   await cardInput.press("Tab").catch(() => {});
-  const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "12/30");
+  const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   const enteredExpiry = await expiryInput.inputValue();
   if (enteredExpiry !== "12/30") throw new Error("Sandbox test expiry was not retained as a future date: " + enteredExpiry);
   await expiryInput.press("Tab").catch(() => {});
-  const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
+  const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "111");
   const enteredCvc = await cvcInput.inputValue();
   if (enteredCvc !== "123") throw new Error("Sandbox test CVC was not retained as expected");
   await cvcInput.press("Tab").catch(() => {});
@@ -464,7 +464,7 @@ async function completeSandboxCardPayment(page, amount) {
   }
   await billingCountry.locator.selectOption("PK");
 
-  const addressInput = await fillField(page, /street address|address line/i, "10 Commercial Lane");
+  const addressInput = await fillField(page, /street address|address line/i, "Building 3, Apartment 5, 10th commercial lane, Zamzama");
   await addressInput.press("Tab").catch(() => {});
   const cityInput = await fillField(page, /city/i, "Karachi");
   await cityInput.press("Tab").catch(() => {});
@@ -515,7 +515,7 @@ async function completeSandboxCardPayment(page, amount) {
   await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
   report.captures.push("safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
-    card: "Safepay documented frictionless sandbox Visa test card",
+    card: "Safepay official documented dummy card set 1",
     expiry: "12/30",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
