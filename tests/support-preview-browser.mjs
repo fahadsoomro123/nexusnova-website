@@ -392,7 +392,7 @@ async function completeSandboxCardPayment(page, amount) {
 
   const addressInput = await fillField(page, /street address|address line/i, "10 Commercial Lane");
   await addressInput.press("Tab").catch(() => {});
-  const cityInput = await fillField(page, /^city\b|billing city/i, "Karachi");
+  const cityInput = await fillField(page, /city/i, "Karachi");
   await cityInput.press("Tab").catch(() => {});
   const postalInput = await fillField(page, /postal|zip/i, "75500");
   await postalInput.press("Tab").catch(() => {});
