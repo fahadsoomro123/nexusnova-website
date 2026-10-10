@@ -369,7 +369,7 @@ async function completeSandboxCardPayment(page, amount) {
   // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
   const cardInput = await fillField(page, /card number/i, "5200000000001096");
   await cardInput.press("Tab").catch(() => {});
-  const expiryInput = await fillField(page, /^expiry\b|expiration date|expiry date|cc-exp/i, "03/28");
+  const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   await expiryInput.press("Tab").catch(() => {});
   const cvcInput = await fillField(page, /^cvc\b|cvv|security code/i, "111");
   await cvcInput.press("Tab").catch(() => {});
