@@ -28,13 +28,54 @@ async function openPreview(viewport, name) {
   const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
   page.setDefaultTimeout(20_000);
   const errors = [];
+  const consoleErrors = [];
+  const failedRequests = [];
+  const scriptResponses = [];
   page.on("pageerror", error => errors.push(String(error.message).slice(0, 240)));
+  page.on("console", message => { if (message.type() === "error") consoleErrors.push(message.text().slice(0, 400)); });
+  page.on("requestfailed", request => failedRequests.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
+  page.on("response", response => {
+    if (/\\.(?:js|css)(?:[?#]|$)/i.test(response.url())) scriptResponses.push({ url: response.url(), status: response.status() });
+  });
   const response = await page.goto(PREVIEW_URL, { waitUntil: "domcontentloaded", timeout: 60_000 });
   check(name + ": preview document loads", Boolean(response && response.ok()), {
     status: response?.status() ?? null
   });
-  await page.waitForSelector(".nn-support-host [data-nexusnova-support]", { timeout: 30_000 });
-  await page.waitForFunction(() => window.__nexusnovaSupportReady === true, { timeout: 15_000 });
+  await page.screenshot({ path: path.join(outputDir, name + "-initial.png"), fullPage: false });
+  report.captures.push(name + "-initial.png");
+  const initialState = await page.evaluate(() => ({
+    scripts: Array.from(document.scripts).map(script => ({ src: script.src, id: script.id, defer: script.defer })),
+    href: location.href,
+    pathname: location.pathname,
+    readyState: document.readyState,
+    bodyText: document.body.innerText.slice(0, 900),
+    runtimeReady: window.__nexusnovaSupportReady === true,
+    hasHeader: !!document.querySelector(".nn-header"),
+    hasNav: !!document.querySelector(".nn-header .nn-nav"),
+    hasSupportHost: !!document.querySelector(".nn-support-host"),
+    hasMainScript: Array.from(document.scripts).some(script => /assets\\/js\\/main\\.js/i.test(script.src))
+  }));
+  await writeFile(path.join(outputDir, name + "-initial.json"), JSON.stringify({
+    initialState, consoleErrors, failedRequests, scriptResponses, pageErrors: errors
+  }, null, 2));
+  try {
+    await page.waitForSelector(".nn-support-host [data-nexusnova-support]", { timeout: 15_000 });
+    await page.waitForFunction(() => window.__nexusnovaSupportReady === true, { timeout: 5_000 });
+  } catch (error) {
+    await page.screenshot({ path: path.join(outputDir, name + "-support-missing.png"), fullPage: false });
+    report.captures.push(name + "-support-missing.png");
+    const diagnostics = await page.evaluate(() => ({
+      scripts: Array.from(document.scripts).map(script => ({ src: script.src, id: script.id })),
+      runtimeReady: window.__nexusnovaSupportReady === true,
+      hostHtml: document.querySelector(".nn-support-host")?.outerHTML?.slice(0, 500) || null,
+      navHtml: document.querySelector(".nn-header .nn-nav")?.outerHTML?.slice(0, 500) || null
+    }));
+    const diagnosticPath = path.join(outputDir, name + "-failure-diagnostics.json");
+    await writeFile(diagnosticPath, JSON.stringify({ diagnostics, consoleErrors, failedRequests, scriptResponses, pageErrors: errors, originalError: String(error) }, null, 2));
+    report.captures.push(name + "-failure-diagnostics.json");
+    report.failureDiagnostics = { diagnostics, consoleErrors, failedRequests, scriptResponses, pageErrors: errors, originalError: String(error) };
+    throw new Error("Support runtime did not mount; diagnostics saved: " + JSON.stringify(report.failureDiagnostics).slice(0, 5000));
+  }
   await page.screenshot({ path: path.join(outputDir, name + ".png"), fullPage: false });
   const metrics = await page.evaluate(() => {
     const rect = element => {
