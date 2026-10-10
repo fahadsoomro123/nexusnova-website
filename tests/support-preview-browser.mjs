@@ -35,7 +35,7 @@ async function openPreview(viewport, name) {
   page.on("console", message => { if (message.type() === "error") consoleErrors.push(message.text().slice(0, 400)); });
   page.on("requestfailed", request => failedRequests.push({ url: request.url(), error: request.failure()?.errorText || "unknown" }));
   page.on("response", response => {
-    if (/\\.(?:js|css)(?:[?#]|$)/i.test(response.url())) scriptResponses.push({ url: response.url(), status: response.status() });
+    if (/(?:\.js|\.css)(?:[?#]|$)/i.test(response.url())) scriptResponses.push({ url: response.url(), status: response.status() });
   });
   const response = await page.goto(PREVIEW_URL, { waitUntil: "domcontentloaded", timeout: 60_000 });
   check(name + ": preview document loads", Boolean(response && response.ok()), {
@@ -53,7 +53,7 @@ async function openPreview(viewport, name) {
     hasHeader: !!document.querySelector(".nn-header"),
     hasNav: !!document.querySelector(".nn-header .nn-nav"),
     hasSupportHost: !!document.querySelector(".nn-support-host"),
-    hasMainScript: Array.from(document.scripts).some(script => /assets\\/js\\/main\\.js/i.test(script.src))
+    hasMainScript: Array.from(document.scripts).some(script => /assets\/js\/main\.js/i.test(script.src))
   }));
   await writeFile(path.join(outputDir, name + "-initial.json"), JSON.stringify({
     initialState, consoleErrors, failedRequests, scriptResponses, pageErrors: errors
