@@ -16,6 +16,10 @@ const outputDir = path.join(root, "artifacts", "support-preview-browser-qa");
 await fs.mkdir(outputDir, { recursive: true });
 
 const report = { worker: new URL(WORKER_URL).host, mode: "local source render + real sandbox API proxy", captures: [], checks: [] };
+const providerConsoleErrors = [];
+const providerFailedRequests = [];
+const providerPageErrors = [];
+const providerNetworkEvents = [];
 const allowedAmounts = new Set([3, 5, 10, 25]);
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -578,10 +582,6 @@ try {
   check("desktop: checkout redirects to Safepay sandbox", checkout.protocol === "https:" && checkout.hostname === "sandbox.api.getsafepay.com" && Boolean(checkout.searchParams.get("tracker")) && Boolean(checkout.searchParams.get("tbt")), {
     protocol: checkout.protocol, hostname: checkout.hostname, hasTracker: Boolean(checkout.searchParams.get("tracker")), hasTbt: Boolean(checkout.searchParams.get("tbt"))
   });
-  const providerConsoleErrors = [];
-  const providerFailedRequests = [];
-  const providerPageErrors = [];
-  const providerNetworkEvents = [];
   desktop.on("console", message => { if (message.type() === "error") providerConsoleErrors.push(message.text().slice(0, 400)); });
   desktop.on("requestfailed", request => providerFailedRequests.push({ url: request.url().split("?")[0], error: request.failure()?.errorText || "unknown" }));
   desktop.on("pageerror", error => providerPageErrors.push(String(error.message).slice(0, 300)));
