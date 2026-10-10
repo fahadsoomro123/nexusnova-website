@@ -371,7 +371,7 @@ async function completeSandboxCardPayment(page, amount) {
   await cardInput.press("Tab").catch(() => {});
   const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   await expiryInput.press("Tab").catch(() => {});
-  const cvcInput = await fillField(page, /^cvc\b|cvv|security code/i, "111");
+  const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "111");
   await cvcInput.press("Tab").catch(() => {});
   const firstNameInput = await fillField(page, /first name|cardholder first/i, "Abdul");
   await firstNameInput.press("Tab").catch(() => {});
