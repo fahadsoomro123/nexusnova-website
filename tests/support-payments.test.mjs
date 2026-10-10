@@ -343,9 +343,9 @@ test("accepts account-scoped Cloudflare Workers preview URLs on checkout and ret
   assert.ok(runtime.includes('supportHost.className="nn-support-host"'), "flagship header Support controls must use a dedicated layout row");
   assert.ok(runtime.includes('row.insertAdjacentElement("afterend",supportHost)'), "dedicated Support row must sit outside the nav flex row");
   assert.ok(runtime.includes("supportHost.appendChild(wrap)"), "Support controls must be mounted inside the dedicated host");
-  assert.ok(homepage.includes("main.js?v=20261010-supportfix1"), "homepage must load the refreshed shell script instead of a stale cached version");
+  assert.ok(homepage.includes("main.js?v=20261010-supportlayout3"), "homepage must load the refreshed shell script instead of a stale cached version");
   assert.ok(runtime.includes(rule), "checkout runtime must accept an optional Cloudflare account hostname label");
-  assert.ok(shell.includes("nexusnova-support.js?v=20261010-support-hostfix"), "shared shell must bypass the previously cached runtime bundle");
+  assert.ok(shell.includes("nexusnova-support.js?v=20261010-supportlayout3"), "shared shell must bypass the previously cached runtime bundle");
   assert.equal(shell.includes("20261009-support-prod2"), false, "previous cache key must not remain in the shared shell");
   assert.ok(successPage.includes(rule), "success return page must accept the sandbox Worker hostname");
   assert.ok(cancelPage.includes(rule), "cancel return page must accept the sandbox Worker hostname");
