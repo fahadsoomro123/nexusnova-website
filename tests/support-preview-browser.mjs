@@ -346,14 +346,30 @@ async function completeSandboxCardPayment(page, amount) {
   const emailInput = await fillField(page, /type email|email address|email/i, email);
   await emailInput.press("Tab").catch(() => {});
   await page.waitForTimeout(500);
-  // Safepay Checkout requires both the phone-country selector and mobile number before Pay enables.
-  const controlsBeforePhone = await visibleControls(page);
-  const countrySelect = controlsBeforePhone.find(control =>
-    control.details.tag === "select" &&
-    control.details.options.some(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value))
-  );
-  if (!countrySelect) throw new Error("Safepay phone country selector with Pakistan option was not found");
-  const pakistan = countrySelect.details.options.find(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value));
+  // Safepay lazily loads the phone-country options; wait for Pakistan to appear before selecting it.
+  let countrySelect = null;
+  let pakistan = null;
+  let controlsBeforePhone = [];
+  for (let attempt = 0; attempt < 14; attempt++) {
+    controlsBeforePhone = await visibleControls(page);
+    countrySelect = controlsBeforePhone.find(control =>
+      control.details.tag === "select" &&
+      control.details.options.some(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value))
+    );
+    if (countrySelect) {
+      pakistan = countrySelect.details.options.find(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value));
+      break;
+    }
+    await page.waitForTimeout(500);
+  }
+  if (!countrySelect || !pakistan) {
+    const selects = controlsBeforePhone.filter(control => control.details.tag === "select").map(control => ({
+      label: control.details.labels,
+      optionCount: control.details.options.length,
+      lastOptions: control.details.options.slice(-5)
+    }));
+    throw new Error("Safepay phone country selector did not load Pakistan option: " + JSON.stringify(selects).slice(0, 3000));
+  }
   await countrySelect.locator.selectOption(pakistan.value);
   const phoneInput = await fillField(page, /mobile phone number|phone number|contact number|\\btel\\b/i, "3021111111");
   await phoneInput.press("Tab").catch(() => {});
