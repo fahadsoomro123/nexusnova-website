@@ -346,12 +346,21 @@ async function completeSandboxCardPayment(page, amount) {
   await emailInput.press("Tab").catch(() => {});
   await page.waitForTimeout(500);
 
-  let controls = await visibleControls(page);
-  const phoneCountry = controls.find(control => control.details.tag === "select" &&
-    control.details.options.some(option => option.value === "PK" && /\+92/.test(option.label)));
+  let controls = [];
+  let phoneCountry = null;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    controls = await visibleControls(page);
+    phoneCountry = controls.find(control => control.details.tag === "select" &&
+      control.details.options.some(option => option.value === "PK" && /\+92/.test(option.label)));
+    if (phoneCountry) break;
+    await page.waitForTimeout(500);
+  }
   if (!phoneCountry) {
-    throw new Error("Safepay phone-country select is missing Pakistan (+92): " +
-      JSON.stringify(controls.map(control => control.details).filter(item => item.tag === "select")).slice(0, 3500));
+    throw new Error("Safepay phone-country select never loaded Pakistan (+92): " +
+      JSON.stringify(controls.map(control => ({
+        tag: control.details.tag, type: control.details.type, label: control.details.labels,
+        parentText: control.details.parentText.slice(0, 140), optionCount: control.details.options.length
+      }))).slice(0, 3500));
   }
   await phoneCountry.locator.selectOption("PK");
   const phoneInput = await fillField(page, /mobile phone number|phone number|contact number/i, "3021111111");
