@@ -161,9 +161,11 @@ async function inspectViewport(viewport, name) {
       document: { clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, bodyScrollWidth: document.body.scrollWidth },
       host: rect(host), support: rect(support), nav: rect(document.querySelector(".nn-header .nn-nav")),
       buttons: buttons.map(button => ({ label: button.getAttribute("aria-label"), ...rect(button), visible: !!(button.offsetWidth || button.offsetHeight) })),
-      pageErrors, failedRequests, overflowers
+      overflowers
     };
   });
+  metrics.pageErrors = pageErrors;
+  metrics.failedRequests = failedRequests;
   await fs.writeFile(path.join(outputDir, name + ".json"), JSON.stringify(metrics, null, 2));
   check(name + ": dedicated support host spans header width", metrics.host && metrics.host.width >= viewport.width - 100, { host: metrics.host, viewport: metrics.viewport });
   check(name + ": support controls have usable width", metrics.support && metrics.support.width >= (viewport.width < 761 ? viewport.width - 55 : 280), { support: metrics.support });
