@@ -286,14 +286,22 @@ async function fillField(page, pattern, value, { required = true } = {}) {
     }));
     throw new Error("Required checkout input not found after waiting: " + pattern + " :: " + JSON.stringify(summary).slice(0, 3000));
   }
+  // Prefer an accessible-label locator over an nth() locator. Safepay re-renders
+  // its controlled form after each field change, so a live nth() can point at a
+  // different input after React replaces the form nodes.
+  let stableLocator = candidate.locator;
+  if (candidate.details.labels && pattern.test(candidate.details.labels)) {
+    const labelLocator = candidate.frame.getByLabel(pattern).first();
+    if (await labelLocator.count().catch(() => 0)) stableLocator = labelLocator;
+  }
   if (candidate.details.tag === "select") {
     const option = candidate.details.options.find(item => /pakistan/i.test(item.label) || /^pk$/i.test(item.value));
-    if (option) await candidate.locator.selectOption(option.value);
+    if (option) await stableLocator.selectOption(option.value);
     else if (required) throw new Error("Pakistan billing country option missing");
   } else {
-    await candidate.locator.fill(value);
+    await stableLocator.fill(value);
   }
-  return candidate.locator;
+  return stableLocator;
 }
 
 async function clickCheckoutAction(page, pattern) {
