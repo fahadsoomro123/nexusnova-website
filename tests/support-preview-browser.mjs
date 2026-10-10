@@ -86,7 +86,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === "/assets/js/nexusnova-support-preview-config.js") {
       respond(res, 200, "text/javascript; charset=utf-8",
-        "window.NEXUSNOVA_SUPPORT_API_BASE = " + JSON.stringify(localBase) + ";\n");
+        "window.NEXUSNOVA_SUPPORT_API_BASE = " + JSON.stringify(WORKER_URL) + ";\n");
       return;
     }
     const requested = url.pathname === "/" ? "/index.html" : decodeURIComponent(url.pathname);
@@ -345,7 +345,7 @@ async function completeSandboxCardPayment(page, amount) {
   await fillField(page, /type email|email address|email/i, email);
   await page.screenshot({ path: path.join(outputDir, "safepay-email-entered.png"), fullPage: false });
   report.captures.push("safepay-email-entered.png");
-  await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?|continue|next|proceed", "i"));
+  await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|continue|next|proceed", "i"));
 
   let phoneFilled = false;
   let cardFilled = false;
@@ -375,6 +375,7 @@ async function completeSandboxCardPayment(page, amount) {
       await fillField(page, /card number|cc-number|cardnumber|card_number|credit card number/i, "4111111111111111");
       await fillField(page, /expiry date|expiration date|expir|cc-exp|card expiry/i, "12/30");
       await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
+      await fillField(page, /phone number|mobile number|contact number|\\btel\\b/i, "3021111111", { required: false });
       await fillField(page, /cardholder|name on card|card name|cc-name/i, "NexusNova Sandbox QA", { required: false });
       await fillField(page, /billing.*address|address line|street address|address/i, "10 Commercial Lane", { required: false });
       await fillField(page, /city/i, "Karachi", { required: false });
@@ -390,7 +391,7 @@ async function completeSandboxCardPayment(page, amount) {
       report.captures.push("safepay-test-card-ready.png");
       cardFilled = true;
       sawCard = true;
-      await clickCheckoutAction(page, new RegExp("make payment|pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?|pay now|submit payment|confirm payment", "i"));
+      await clickCheckoutAction(page, new RegExp("make payment|pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|pay now|submit payment|confirm payment", "i"));
       paymentSubmitted = true;
       report.sandboxPaymentSubmitted = true;
       continue;
@@ -400,7 +401,7 @@ async function completeSandboxCardPayment(page, amount) {
     if (phone) {
       await phone.locator.fill("3021111111");
       phoneFilled = true;
-      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?", "i"));
+      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\s*\\$?\\s*" + amount + "(?:\\.00)?", "i"));
       continue;
     }
     if (controls.some(control => control.details.tag === "input" && /email address|email/i.test(control.descriptor)) && !paymentSubmitted && !sawCard) {
