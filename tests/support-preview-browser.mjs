@@ -441,11 +441,11 @@ async function completeSandboxCardPayment(page, amount) {
   await cardInput.press("Tab").catch(() => {});
   const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   const enteredExpiry = await expiryInput.inputValue();
-  if (enteredExpiry !== "12/30") throw new Error("Sandbox test expiry was not retained as a future date: " + enteredExpiry);
+  if (enteredExpiry !== "03/28") throw new Error("Safepay official dummy expiry was not retained: " + enteredExpiry);
   await expiryInput.press("Tab").catch(() => {});
   const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "111");
   const enteredCvc = await cvcInput.inputValue();
-  if (enteredCvc !== "123") throw new Error("Sandbox test CVC was not retained as expected");
+  if (enteredCvc !== "111") throw new Error("Safepay official dummy CVC was not retained as expected");
   await cvcInput.press("Tab").catch(() => {});
   const firstNameInput = await fillField(page, /first name|cardholder first/i, "Abdul");
   await firstNameInput.press("Tab").catch(() => {});
