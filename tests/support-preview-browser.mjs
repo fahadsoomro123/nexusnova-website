@@ -294,6 +294,7 @@ async function snapshotCheckout(page, stage) {
     hostname: new URL(page.url()).hostname,
     title: await page.title().catch(() => ""),
     bodyText: (await page.locator("body").innerText().catch(() => "")).trim().replace(/\s+/g, " ").slice(0, 900),
+    frameText: (await Promise.all(page.frames().map(frame => frame.locator("body").innerText().catch(() => "")))).join(" ").replace(/\s+/g, " ").slice(0, 1600),
     controls: controls.map(control => control.details)
   };
   report.sandboxPaymentSteps = report.sandboxPaymentSteps || [];
@@ -303,7 +304,7 @@ async function snapshotCheckout(page, stage) {
 }
 
 async function handleThreeDSIfShown(page, state, controls) {
-  if (!/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(state.bodyText + " " + state.url)) return false;
+  if (!/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(state.bodyText + " " + (state.frameText || "") + " " + state.url)) return false;
   report.threeDSDetected = true;
   const otp = controls.find(control => ["input"].includes(control.details.tag) && /otp|one.time|authentication code|verification code/i.test(control.descriptor));
   if (otp) {
@@ -344,7 +345,7 @@ async function completeSandboxCardPayment(page, amount) {
   await fillField(page, /type email|email address|email/i, email);
   await page.screenshot({ path: path.join(outputDir, "safepay-email-entered.png"), fullPage: false });
   report.captures.push("safepay-email-entered.png");
-  await clickCheckoutAction(page, new RegExp("pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?|continue|next|proceed", "i"));
+  await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?|continue|next|proceed", "i"));
 
   let phoneFilled = false;
   let cardFilled = false;
@@ -389,20 +390,20 @@ async function completeSandboxCardPayment(page, amount) {
       report.captures.push("safepay-test-card-ready.png");
       cardFilled = true;
       sawCard = true;
-      await clickCheckoutAction(page, new RegExp("make payment|pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?|pay now|submit payment|confirm payment", "i"));
+      await clickCheckoutAction(page, new RegExp("make payment|pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?|pay now|submit payment|confirm payment", "i"));
       paymentSubmitted = true;
       report.sandboxPaymentSubmitted = true;
       continue;
     }
 
-    const phone = controls.find(control => control.details.tag === "input" && !phoneFilled && (/type tel/i.test(control.descriptor) || /phone number|mobile number|contact number/i.test(control.descriptor)));
+    const phone = controls.find(control => control.details.tag === "input" && !phoneFilled && (control.details.type === "tel" || /phone number|mobile number|contact number/i.test(control.descriptor)));
     if (phone) {
       await phone.locator.fill("3021111111");
       phoneFilled = true;
-      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?", "i"));
+      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\s*\\$?\\\\s*" + amount + "(?:\\\\.00)?", "i"));
       continue;
     }
-    if (controls.some(control => control.details.tag === "input" && /type email|email address/i.test(control.descriptor)) && !paymentSubmitted && !sawCard) {
+    if (controls.some(control => control.details.tag === "input" && /email address|email/i.test(control.descriptor)) && !paymentSubmitted && !sawCard) {
       throw new Error("Safepay still requests email after it was submitted: " + JSON.stringify(state).slice(0, 3000));
     }
     if (paymentSubmitted && /payment failed|transaction failed|payment declined|unable to process/i.test(state.bodyText)) {
@@ -422,6 +423,17 @@ try {
   });
 
   const desktop = await inspectViewport({ width: 1366, height: 900 }, "homepage-desktop");
+  await installReturnPageRoutes(desktop);
+  await desktop.on("response", async response => {
+    try {
+      const url = new URL(response.url());
+      if (url.pathname === "/api/support/payment-status") {
+        const data = await response.json();
+        report.paymentStatusResponses = report.paymentStatusResponses || [];
+        report.paymentStatusResponses.push(data);
+      }
+    } catch {}
+  });
   let providerMainResponse = null;
   desktop.on("response", response => {
     try {
@@ -495,7 +507,105 @@ try {
     (providerDom.bodyText.length > 20 || providerDom.forms > 0 || providerDom.inputs.length > 0 ||
       providerDom.iframes.some(frame => frame.src && frame.src !== "about:blank"))
   ), report.safepayCheckout);
+
+  // Use published dummy test data only. No production host, key, or real card is used.
+  await completeSandboxCardPayment(desktop, 5);
+  await desktop.waitForURL(url => url.hostname === "raw.githack.com" && url.pathname.endsWith("/support-payment-success-preview.html"), {
+    timeout: 90_000,
+    waitUntil: "domcontentloaded"
+  });
+  await desktop.getByText("Sandbox payment confirmed.", { exact: true }).waitFor({ timeout: 35_000 });
+  const successTitle = await desktop.locator("#title").innerText();
+  check("real sandbox test-card flow returns to confirmed Support page", successTitle === "Sandbox payment confirmed.", { title: successTitle });
+  await desktop.screenshot({ path: path.join(outputDir, "payment-status-confirmed.png"), fullPage: false });
+  report.captures.push("payment-status-confirmed.png");
+  await desktop.waitForTimeout(300);
+  const statusSuccess = (report.paymentStatusResponses || []).find(response => response.paid === true &&
+    response.amount === 5 && response.currency === "USD" && response.environment === "sandbox" &&
+    response.order_id === checkout.searchParams.get("order_id"));
+  check("server verifies exact sandbox order, amount and currency as PAID", Boolean(statusSuccess), {
+    confirmed: Boolean(statusSuccess),
+    responseCount: (report.paymentStatusResponses || []).length
+  });
+  report.sandboxPayment = {
+    amount: 5,
+    currency: "USD",
+    environment: "sandbox",
+    dummyCardUsed: true,
+    paymentSubmitted: true,
+    confirmedByWorker: Boolean(statusSuccess)
+  };
   await desktop.close();
+
+  // Additional allowed amounts must create sandbox sessions; only $5 is submitted as a dummy-card test.
+  for (const amount of [3, 10, 25]) {
+    const response = await fetch(WORKER_URL + "/api/support/create-checkout", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "https://raw.githack.com" },
+      body: JSON.stringify({ amount })
+    });
+    let session = {};
+    try { session = await response.json(); } catch {}
+    const sessionUrl = new URL(session.checkout_url || "https://invalid.example/");
+    check("sandbox API creates a valid USD $" + amount + " session", response.status === 200 &&
+      session.ok === true && session.amount === amount && session.currency === "USD" &&
+      session.environment === "sandbox" && sessionUrl.hostname === "sandbox.api.getsafepay.com" &&
+      Boolean(sessionUrl.searchParams.get("tracker")) && Boolean(sessionUrl.searchParams.get("tbt")), {
+        status: response.status, ok: session.ok, amount: session.amount, currency: session.currency,
+        environment: session.environment, checkoutHost: sessionUrl.hostname
+      });
+  }
+
+  // Cancel a separate sandbox session through Safepay's actual Cancel payment link.
+  const cancelPage = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+  await installReturnPageRoutes(cancelPage);
+  let cancelPayload = null;
+  let cancelSessionStatus = null;
+  await cancelPage.route("**/api/support/create-checkout", async route => {
+    const upstream = await route.fetch();
+    cancelSessionStatus = upstream.status();
+    const body = await upstream.body();
+    try { cancelPayload = JSON.parse(body.toString("utf8")); } catch {}
+    await route.fulfill({
+      status: cancelSessionStatus,
+      headers: { "content-type": upstream.headers()["content-type"] || "application/json; charset=utf-8", "cache-control": "no-store" },
+      body
+    });
+  });
+  await cancelPage.goto(localBase + "/", { waitUntil: "domcontentloaded", timeout: 60_000 });
+  const cancelSessionPromise = cancelPage.waitForResponse(response =>
+    response.request().method() === "POST" && new URL(response.url()).pathname === "/api/support/create-checkout",
+    { timeout: 30_000 }
+  );
+  await cancelPage.getByRole("button", { name: "Support with $3" }).click({ timeout: 15_000 });
+  await cancelSessionPromise;
+  const cancelCheckout = new URL(cancelPayload?.checkout_url || "https://invalid.example/");
+  check("cancel flow starts a separate USD $3 sandbox session", cancelSessionStatus === 200 &&
+    cancelPayload?.ok === true && cancelPayload.amount === 3 && cancelPayload.currency === "USD" &&
+    cancelPayload.environment === "sandbox" && cancelCheckout.hostname === "sandbox.api.getsafepay.com", {
+      status: cancelSessionStatus, amount: cancelPayload?.amount, currency: cancelPayload?.currency,
+      environment: cancelPayload?.environment, checkoutHost: cancelCheckout.hostname
+    });
+  await cancelPage.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 30_000, waitUntil: "domcontentloaded" });
+  await cancelPage.getByText("Cancel payment", { exact: true }).click({ timeout: 20_000 });
+  await cancelPage.waitForURL(url => url.hostname === "raw.githack.com" && url.pathname.endsWith("/support-payment-cancelled-preview.html"), {
+    timeout: 60_000, waitUntil: "domcontentloaded"
+  });
+  await cancelPage.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 20_000 });
+  await cancelPage.screenshot({ path: path.join(outputDir, "payment-cancelled.png"), fullPage: false });
+  report.captures.push("payment-cancelled.png");
+  const cancelStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
+  cancelStatusUrl.searchParams.set("tracker", cancelCheckout.searchParams.get("tracker"));
+  cancelStatusUrl.searchParams.set("order_id", cancelCheckout.searchParams.get("order_id"));
+  const cancelStatusResponse = await fetch(cancelStatusUrl, { headers: { origin: "https://raw.githack.com" } });
+  let cancelStatus = {};
+  try { cancelStatus = await cancelStatusResponse.json(); } catch {}
+  check("cancelled sandbox order is never marked PAID", cancelStatusResponse.status === 200 &&
+    cancelStatus.ok === true && cancelStatus.paid === false && cancelStatus.order_id === cancelCheckout.searchParams.get("order_id"), {
+      status: cancelStatusResponse.status, ok: cancelStatus.ok, paid: cancelStatus.paid,
+      state: cancelStatus.state, verification: cancelStatus.verification
+    });
+  await cancelPage.close();
 
   // Validate the return-page UI using an explicit unpaid fixture, then separately call the real status API below.
   const successPage = await browser.newPage({ viewport: { width: 1366, height: 900 } });
@@ -517,27 +627,25 @@ try {
   report.captures.push("payment-status-pending.png");
   await successPage.close();
 
-  const cancelPage = await browser.newPage({ viewport: { width: 1366, height: 900 } });
-  const cancelResponse = await cancelPage.goto(new URL("/support-payment-cancelled-preview.html", localBase).href, { waitUntil: "domcontentloaded", timeout: 60_000 });
-  check("cancel return: page loads", Boolean(cancelResponse && cancelResponse.ok()), { status: cancelResponse?.status() ?? null });
-  await cancelPage.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 15_000 });
-  await cancelPage.screenshot({ path: path.join(outputDir, "payment-cancelled.png"), fullPage: false });
-  report.captures.push("payment-cancelled.png");
-  await cancelPage.close();
-
   const mobile = await inspectViewport({ width: 390, height: 844 }, "homepage-mobile");
   await mobile.close();
 
-  // Live status smoke for the new unpaid tracker. A failed lookup must fail closed and must never return paid=true.
+  // Re-check the completed $5 sandbox payment directly after the return-page confirmation.
   const liveStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
   liveStatusUrl.searchParams.set("tracker", checkout.searchParams.get("tracker"));
   liveStatusUrl.searchParams.set("order_id", checkout.searchParams.get("order_id"));
   const liveStatusResponse = await fetch(liveStatusUrl, { headers: { origin: "https://raw.githack.com" } });
   let liveStatus = {};
   try { liveStatus = await liveStatusResponse.json(); } catch {}
-  check("live status smoke does not falsely mark the unpaid session as paid", liveStatus.paid !== true, {
-    status: liveStatusResponse.status, ok: liveStatus.ok ?? false, paid: liveStatus.paid ?? false, error: liveStatus.error ?? null, verification: liveStatus.verification ?? null
-  });
+  check("live status independently confirms the sandbox USD $5 payment", liveStatusResponse.status === 200 &&
+    liveStatus.ok === true && liveStatus.paid === true && liveStatus.amount === 5 &&
+    liveStatus.currency === "USD" && liveStatus.environment === "sandbox" &&
+    liveStatus.order_id === checkout.searchParams.get("order_id") &&
+    liveStatus.verification === "verified_support_payment", {
+      status: liveStatusResponse.status, ok: liveStatus.ok ?? false, paid: liveStatus.paid ?? false,
+      amount: liveStatus.amount ?? null, currency: liveStatus.currency ?? null,
+      environment: liveStatus.environment ?? null, verification: liveStatus.verification ?? null
+    });
 
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
