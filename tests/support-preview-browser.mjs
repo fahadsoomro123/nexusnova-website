@@ -407,11 +407,11 @@ async function completeSandboxCardPayment(page, amount) {
   await phoneInput.press("Tab").catch(() => {});
 
   // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
-  const cardInput = await fillField(page, /card number/i, "5200000000001096");
+  const cardInput = await fillField(page, /card number/i, "4111111111111111");
   await cardInput.press("Tab").catch(() => {});
-  const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
+  const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "12/30");
   await expiryInput.press("Tab").catch(() => {});
-  const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "111");
+  const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
   await cvcInput.press("Tab").catch(() => {});
   const firstNameInput = await fillField(page, /first name|cardholder first/i, "Abdul");
   await firstNameInput.press("Tab").catch(() => {});
@@ -472,7 +472,7 @@ async function completeSandboxCardPayment(page, amount) {
   await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
   report.captures.push("safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
-    card: "Safepay published dummy test card",
+    card: "Safepay documented frictionless sandbox Visa test card",
     expiry: "03/28",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
