@@ -92,7 +92,7 @@ jobs:
       - name: Test rendered Support preview and sandbox checkout
         env:
           PLAYWRIGHT_PACKAGE_DIR: /tmp/nexusnova-playwright/node_modules/playwright
-          SUPPORT_PREVIEW_URL: https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=https%3A%2F%2Fnexusnova-support-payments-preview.fahadsoomro123.workers.dev&supportQaVersion=20261010-qa2
+          SUPPORT_WORKER_URL: https://nexusnova-support-payments-preview.fahadsoomro123.workers.dev
         run: node tests/support-preview-browser.mjs
 
       - name: Upload browser screenshots and QA report
