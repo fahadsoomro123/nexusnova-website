@@ -197,6 +197,222 @@ async function inspectViewport(viewport, name) {
   return page;
 }
 
+async function installReturnPageRoutes(page) {
+  for (const filename of ["support-payment-success-preview.html", "support-payment-cancelled-preview.html"]) {
+    await page.route("**/" + filename + "**", async route => {
+      const requestUrl = new URL(route.request().url());
+      if (requestUrl.hostname !== "raw.githack.com" || !requestUrl.pathname.endsWith("/" + filename)) {
+        await route.continue();
+        return;
+      }
+      let html = await fs.readFile(path.join(root, filename), "utf8");
+      html = html.replace(/<head>/i, '<head><base href="' + localBase + '/">');
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html; charset=utf-8",
+        headers: { "cache-control": "no-store" },
+        body: html
+      });
+      report.returnRoutesIntercepted = report.returnRoutesIntercepted || [];
+      report.returnRoutesIntercepted.push(filename);
+    });
+  }
+}
+
+async function visibleControls(page) {
+  const output = [];
+  for (const frame of page.frames()) {
+    let elements;
+    try { elements = frame.locator("input:visible, textarea:visible, select:visible, button:visible, [role=button]:visible"); }
+    catch { continue; }
+    const count = await elements.count().catch(() => 0);
+    for (let i = 0; i < count; i++) {
+      const locator = elements.nth(i);
+      const details = await locator.evaluate(element => {
+        const labels = Array.from(element.labels || []).map(label => label.innerText || label.textContent || "").join(" ");
+        const parentText = element.closest("label")?.innerText || element.parentElement?.innerText || "";
+        return {
+          tag: element.tagName.toLowerCase(),
+          type: element.getAttribute("type") || "",
+          name: element.getAttribute("name") || "",
+          id: element.id || "",
+          placeholder: element.getAttribute("placeholder") || "",
+          ariaLabel: element.getAttribute("aria-label") || "",
+          autocomplete: element.getAttribute("autocomplete") || "",
+          labels: labels.slice(0, 120),
+          parentText: parentText.trim().replace(/\s+/g, " ").slice(0, 180),
+          text: (element.innerText || element.getAttribute("value") || element.getAttribute("aria-label") || "").trim().replace(/\s+/g, " ").slice(0, 100),
+          disabled: Boolean(element.disabled),
+          options: element.tagName.toLowerCase() === "select" ? Array.from(element.options).map(option => ({ label: option.textContent.trim(), value: option.value })) : []
+        };
+      }).catch(() => null);
+      if (details) output.push({ frame, locator, details, descriptor: Object.values(details).filter(value => typeof value === "string").join(" ").toLowerCase() });
+    }
+  }
+  return output;
+}
+
+async function fillField(page, pattern, value, { required = true } = {}) {
+  const controls = await visibleControls(page);
+  const candidate = controls.find(control =>
+    ["input", "textarea", "select"].includes(control.details.tag) &&
+    pattern.test(control.descriptor) &&
+    !control.details.disabled
+  );
+  if (!candidate) {
+    if (!required) return false;
+    throw new Error("Required checkout input not found: " + pattern + " :: " + JSON.stringify(controls.map(control => control.details)).slice(0, 4000));
+  }
+  if (candidate.details.tag === "select") {
+    const option = candidate.details.options.find(item => /pakistan/i.test(item.label) || /^pk$/i.test(item.value));
+    if (option) await candidate.locator.selectOption(option.value);
+    else if (required) throw new Error("Pakistan billing country option missing");
+  } else {
+    await candidate.locator.fill(value);
+  }
+  return true;
+}
+
+async function clickCheckoutAction(page, pattern) {
+  const controls = await visibleControls(page);
+  const candidate = controls.find(control =>
+    ["button"].includes(control.details.tag) &&
+    !control.details.disabled &&
+    pattern.test(control.details.text || control.details.ariaLabel) &&
+    !/cancel|google pay|terms|privacy|save card/i.test(control.details.text + " " + control.details.ariaLabel)
+  );
+  if (!candidate) throw new Error("Checkout action not found: " + pattern + " :: " + JSON.stringify(controls.map(control => control.details)).slice(0, 4000));
+  await candidate.locator.click({ timeout: 15_000 });
+  return candidate.details.text || candidate.details.ariaLabel;
+}
+
+async function snapshotCheckout(page, stage) {
+  const controls = await visibleControls(page);
+  const state = {
+    stage,
+    url: page.url(),
+    hostname: new URL(page.url()).hostname,
+    title: await page.title().catch(() => ""),
+    bodyText: (await page.locator("body").innerText().catch(() => "")).trim().replace(/\s+/g, " ").slice(0, 900),
+    controls: controls.map(control => control.details)
+  };
+  report.sandboxPaymentSteps = report.sandboxPaymentSteps || [];
+  report.sandboxPaymentSteps.push(state);
+  await fs.writeFile(path.join(outputDir, "checkout-step-" + stage + ".json"), JSON.stringify(state, null, 2));
+  return { state, controls };
+}
+
+async function handleThreeDSIfShown(page, state, controls) {
+  if (!/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(state.bodyText + " " + state.url)) return false;
+  report.threeDSDetected = true;
+  const otp = controls.find(control => ["input"].includes(control.details.tag) && /otp|one.time|authentication code|verification code/i.test(control.descriptor));
+  if (otp) {
+    await otp.locator.fill("123456");
+    await clickCheckoutAction(page, /verify|authenticate|confirm|continue|submit/i);
+    return true;
+  }
+  const successChoice = controls.find(control =>
+    ["button"].includes(control.details.tag) &&
+    /successful authentication|authenticate successfully|approve payment|confirm authentication/i.test(control.details.text + " " + control.details.ariaLabel) &&
+    !/failure|cancel|decline/i.test(control.details.text + " " + control.details.ariaLabel)
+  );
+  if (successChoice) {
+    await successChoice.locator.click({ timeout: 15_000 });
+    return true;
+  }
+  // Some Safepay emulators use labeled radios to choose a 3DS outcome.
+  for (const frame of page.frames()) {
+    for (const selector of ['label:visible', '[role=radio]:visible', 'input[type=radio]:visible']) {
+      const list = frame.locator(selector);
+      const count = await list.count().catch(() => 0);
+      for (let i = 0; i < count; i++) {
+        const item = list.nth(i);
+        const label = (await item.innerText().catch(() => "")) + " " + (await item.getAttribute("aria-label").catch(() => "") || "");
+        if (/successful authentication|authentication successful|approve/i.test(label) && !/failure|decline|cancel/i.test(label)) {
+          await item.click({ timeout: 15_000 });
+          await clickCheckoutAction(page, /continue|confirm|authenticate|submit|complete/i);
+          return true;
+        }
+      }
+    }
+  }
+  throw new Error("Safepay 3DS emulator shown but no explicit successful test-authentication action was found: " + JSON.stringify(state).slice(0, 3000));
+}
+
+async function completeSandboxCardPayment(page, amount) {
+  const email = "nexusnova-sandbox-" + Date.now() + "@example.com";
+  await fillField(page, /type email|email address|email/i, email);
+  await page.screenshot({ path: path.join(outputDir, "safepay-email-entered.png"), fullPage: false });
+  report.captures.push("safepay-email-entered.png");
+  await clickCheckoutAction(page, new RegExp("pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?|continue|next|proceed", "i"));
+
+  let phoneFilled = false;
+  let cardFilled = false;
+  let paymentSubmitted = false;
+  let sawCard = false;
+  for (let step = 1; step <= 9; step++) {
+    await page.waitForTimeout(1500);
+    const { state, controls } = await snapshotCheckout(page, step);
+    if (state.hostname === "raw.githack.com" && state.url.includes("support-payment-success-preview.html")) {
+      check("sandbox card transaction redirects to Support success return", true, { step });
+      report.sandboxPaymentSubmitted = paymentSubmitted;
+      return state;
+    }
+    if (state.hostname !== "sandbox.api.getsafepay.com" && state.hostname !== "raw.githack.com") {
+      throw new Error("Sandbox checkout left the allowed provider/return hosts: " + state.hostname);
+    }
+    if (await handleThreeDSIfShown(page, state, controls)) {
+      await page.waitForTimeout(1500);
+      continue;
+    }
+
+    const hasCardNumber = controls.some(control => /card number|cc-number|cardnumber|card_number|credit card number/i.test(control.descriptor) && control.details.tag === "input");
+    const hasExpiry = controls.some(control => /expiry date|expiration date|expir|cc-exp|card expiry/i.test(control.descriptor) && ["input", "select"].includes(control.details.tag));
+    const hasCvc = controls.some(control => /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor) && control.details.tag === "input");
+
+    if (hasCardNumber && !cardFilled) {
+      await fillField(page, /card number|cc-number|cardnumber|card_number|credit card number/i, "4111111111111111");
+      await fillField(page, /expiry date|expiration date|expir|cc-exp|card expiry/i, "12/30");
+      await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
+      await fillField(page, /cardholder|name on card|card name|cc-name/i, "NexusNova Sandbox QA", { required: false });
+      await fillField(page, /billing.*address|address line|street address|address/i, "10 Commercial Lane", { required: false });
+      await fillField(page, /city/i, "Karachi", { required: false });
+      await fillField(page, /state|province/i, "Sindh", { required: false });
+      await fillField(page, /postal|zip/i, "75500", { required: false });
+      await fillField(page, /country/i, "Pakistan", { required: false });
+      const fieldsAfterFill = await visibleControls(page);
+      const cardNumberNow = fieldsAfterFill.some(control => /card number|cc-number|cardnumber|card_number|credit card number/i.test(control.descriptor) && control.details.tag === "input");
+      const expiryNow = fieldsAfterFill.some(control => /expiry date|expiration date|expir|cc-exp|card expiry/i.test(control.descriptor) && ["input", "select"].includes(control.details.tag));
+      const cvcNow = fieldsAfterFill.some(control => /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor) && control.details.tag === "input");
+      check("sandbox test card fields were located", cardNumberNow && expiryNow && cvcNow, { cardNumberNow, expiryNow, cvcNow });
+      await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
+      report.captures.push("safepay-test-card-ready.png");
+      cardFilled = true;
+      sawCard = true;
+      await clickCheckoutAction(page, new RegExp("make payment|pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?|pay now|submit payment|confirm payment", "i"));
+      paymentSubmitted = true;
+      report.sandboxPaymentSubmitted = true;
+      continue;
+    }
+
+    const phone = controls.find(control => control.details.tag === "input" && !phoneFilled && (/type tel/i.test(control.descriptor) || /phone number|mobile number|contact number/i.test(control.descriptor)));
+    if (phone) {
+      await phone.locator.fill("3021111111");
+      phoneFilled = true;
+      await clickCheckoutAction(page, new RegExp("continue|next|proceed|pay\\\\s*\\\\$?\\\\s*" + amount + "(?:\\\\.00)?", "i"));
+      continue;
+    }
+    if (controls.some(control => control.details.tag === "input" && /type email|email address/i.test(control.descriptor)) && !paymentSubmitted && !sawCard) {
+      throw new Error("Safepay still requests email after it was submitted: " + JSON.stringify(state).slice(0, 3000));
+    }
+    if (paymentSubmitted && /payment failed|transaction failed|payment declined|unable to process/i.test(state.bodyText)) {
+      throw new Error("Safepay sandbox test-card transaction failed: " + JSON.stringify(state).slice(0, 3000));
+    }
+    throw new Error("Unrecognized Safepay sandbox checkout step: " + JSON.stringify(state).slice(0, 4000));
+  }
+  throw new Error("Safepay sandbox did not complete the test-card flow within nine steps.");
+}
+
 let exitCode = 0;
 try {
   const healthResponse = await fetch(WORKER_URL + "/health");
