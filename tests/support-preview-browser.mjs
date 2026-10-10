@@ -194,14 +194,31 @@ try {
       body: "<!doctype html><html><head><meta charset='utf-8'><title>Safepay sandbox destination captured</title></head><body><h1>Safepay sandbox checkout destination captured</h1><p>Automated QA does not submit a payment instrument.</p></body></html>"
     });
   });
+  let checkoutPayload = null;
+  let checkoutStatus = null;
+  await desktop.route("**/api/support/create-checkout", async route => {
+    const upstream = await route.fetch();
+    checkoutStatus = upstream.status();
+    const body = await upstream.body();
+    try { checkoutPayload = JSON.parse(body.toString("utf8")); } catch {}
+    await route.fulfill({
+      status: checkoutStatus,
+      headers: {
+        "content-type": upstream.headers()["content-type"] || "application/json; charset=utf-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      body
+    });
+  });
   const responsePromise = desktop.waitForResponse(response =>
     response.request().method() === "POST" && new URL(response.url()).pathname === "/api/support/create-checkout",
     { timeout: 30_000 }
   );
   await desktop.getByRole("button", { name: "Support with $5" }).click({ timeout: 15_000 });
-  const apiResponse = await responsePromise;
-  const payload = await apiResponse.json();
-  check("desktop: $5 click completes live sandbox session request", apiResponse.status() === 200, { status: apiResponse.status() });
+  await responsePromise;
+  const payload = checkoutPayload || {};
+  check("desktop: $5 click completes live sandbox session request", checkoutStatus === 200, { status: checkoutStatus });
   check("desktop: checkout session matches USD $5 sandbox request", payload.ok === true && payload.amount === 5 && payload.currency === "USD" && payload.environment === "sandbox", {
     ok: payload.ok, amount: payload.amount, currency: payload.currency, environment: payload.environment
   });
