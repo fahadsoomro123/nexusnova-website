@@ -342,8 +342,22 @@ async function handleThreeDSIfShown(page, state, controls) {
 
 async function completeSandboxCardPayment(page, amount) {
   const email = "nexusnova-sandbox-" + Date.now() + "@example.com";
-  let emailInput = await fillField(page, /type email|email address|email/i, email);
+  let phoneFilled = false;
+  const emailInput = await fillField(page, /type email|email address|email/i, email);
   await emailInput.press("Tab").catch(() => {});
+  await page.waitForTimeout(500);
+  // Safepay Checkout requires both the phone-country selector and mobile number before Pay enables.
+  const controlsBeforePhone = await visibleControls(page);
+  const countrySelect = controlsBeforePhone.find(control =>
+    control.details.tag === "select" &&
+    control.details.options.some(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value))
+  );
+  if (!countrySelect) throw new Error("Safepay phone country selector with Pakistan option was not found");
+  const pakistan = countrySelect.details.options.find(option => /pakistan/i.test(option.label) || /^pk$/i.test(option.value));
+  await countrySelect.locator.selectOption(pakistan.value);
+  const phoneInput = await fillField(page, /mobile phone number|phone number|contact number|\\btel\\b/i, "3021111111");
+  await phoneInput.press("Tab").catch(() => {});
+  phoneFilled = true;
   await page.waitForTimeout(900);
   let payEnabled = false;
   for (let attempt = 0; attempt < 8; attempt++) {
@@ -373,7 +387,6 @@ async function completeSandboxCardPayment(page, amount) {
   report.captures.push("safepay-email-entered.png");
   await clickCheckoutAction(page, new RegExp("pay\\s*\\$?\\s*" + amount + "(?:\\.00)?|continue|next|proceed", "i"));
 
-  let phoneFilled = false;
   let cardFilled = false;
   let paymentSubmitted = false;
   let sawCard = false;
