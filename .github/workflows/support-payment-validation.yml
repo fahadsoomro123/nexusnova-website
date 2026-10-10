@@ -17,6 +17,7 @@ on:
       - "support-payment-success.html"
       - "support-payment-cancelled.html"
       - "tests/support-payments.test.mjs"
+      - "tests/support-preview-browser.mjs"
       - "tests/support-sitewide-coverage.test.mjs"
       - ".github/workflows/support-payment-validation.yml"
       - ".github/workflows/deploy-support-payments-preview.yml"
@@ -63,6 +64,7 @@ jobs:
           node --input-type=module --check < cloudflare/support-payments/worker.js
           node --check assets/js/nexusnova-support.js
           node --check assets/js/main.js
+          node --check tests/support-preview-browser.mjs
           node --check assets/js/nn-inner-shell.js
           node -e "for (const p of ['cloudflare/support-payments/wrangler.jsonc','cloudflare/support-payments/wrangler.preview.jsonc','cloudflare/support-payments/wrangler.production-check.jsonc','cloudflare/support-payments/wrangler.production.jsonc','cloudflare/support-payments/wrangler.production-offline.jsonc']) JSON.parse(require('node:fs').readFileSync(p,'utf8')); console.log('All five support Wrangler configs valid JSON')"
 
@@ -90,7 +92,7 @@ jobs:
       - name: Test rendered Support preview and sandbox checkout
         env:
           PLAYWRIGHT_PACKAGE_DIR: /tmp/nexusnova-playwright/node_modules/playwright
-          SUPPORT_PREVIEW_URL: https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=https%3A%2F%2Fnexusnova-support-payments-preview.fahadsoomro123.workers.dev
+          SUPPORT_PREVIEW_URL: https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=https%3A%2F%2Fnexusnova-support-payments-preview.fahadsoomro123.workers.dev&supportQaVersion=20261010-qa2
         run: node tests/support-preview-browser.mjs
 
       - name: Upload browser screenshots and QA report
