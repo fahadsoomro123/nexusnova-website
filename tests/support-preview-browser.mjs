@@ -496,11 +496,11 @@ async function completeSandboxCardPayment(page, amount) {
   const verifiedExpiry = fieldsAfterFill.find(control => control.details.tag === "input" && /expiry|expiration|cc-exp/i.test(control.descriptor));
   const verifiedCvc = fieldsAfterFill.find(control => control.details.tag === "input" && /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor));
   const normalizedCard = verifiedCard?.details.value.replaceAll(" ", "").replaceAll("\\u00a0", "") || "";
-  if (normalizedCard !== "4111111111111111" ||
-      !verifiedExpiry || verifiedExpiry.details.value !== "12/30" ||
-      !verifiedCvc || verifiedCvc.details.value !== "123") {
+  if (normalizedCard !== "5200000000001096" ||
+      !verifiedExpiry || verifiedExpiry.details.value !== "03/28" ||
+      !verifiedCvc || verifiedCvc.details.value !== "111") {
     throw new Error("Safepay altered the supplied sandbox test card fields; refusing to submit: " +
-      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "4111111111111111", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "123" }));
+      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "5200000000001096", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "111" }));
   }
   const requiredFieldSnapshot = fieldsAfterFill
     .filter(control => ["input", "select"].includes(control.details.tag))
@@ -525,7 +525,7 @@ async function completeSandboxCardPayment(page, amount) {
   report.captures.push("safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
     card: "Safepay official documented dummy card set 1",
-    expiry: "12/30",
+    expiry: "03/28",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
   });
