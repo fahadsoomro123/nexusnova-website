@@ -344,16 +344,45 @@ async function snapshotCheckout(page, stage) {
 }
 
 async function handleThreeDSIfShown(page, state, controls) {
-  if (!/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(state.bodyText + " " + (state.frameText || "") + " " + state.url)) return false;
+  const screenText = state.title + " " + state.bodyText + " " + (state.frameText || "") + " " + state.url;
+  const acsEmulator = /acs emulator|gateway\\.mastercard\\.com\\/acs|authentication result/i.test(screenText);
+  if (!acsEmulator && !/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(screenText)) return false;
   report.threeDSDetected = true;
-  const otp = controls.find(control => ["input"].includes(control.details.tag) && /otp|one.time|authentication code|verification code/i.test(control.descriptor));
+
+  // Safepay's documented ACS emulator uses a select with "(Y) Authentication Successful"
+  // and a Submit button. Select only an explicit successful outcome on a sandbox ACS screen.
+  if (acsEmulator) {
+    const outcome = controls.find(control =>
+      control.details.tag === "select" &&
+      (/authentication result/i.test(control.descriptor) ||
+       control.details.options.some(option => /\\(Y\\).*authentication successful|authentication successful/i.test(option.label)))
+    );
+    if (outcome) {
+      const successOption = outcome.details.options.find(option =>
+        /\\(Y\\).*authentication successful|authentication successful/i.test(option.label) &&
+        !/failure|decline|cancel/i.test(option.label)
+      );
+      if (successOption) {
+        await outcome.locator.selectOption(successOption.value || { label: successOption.label }, { timeout: 15_000 });
+        await clickCheckoutAction(page, /^submit$|submit|continue|confirm|authenticate|complete/i);
+        report.threeDSOutcomeSelected = "successful_authentication";
+        return true;
+      }
+    }
+  }
+
+  const otp = controls.find(control =>
+    control.details.tag === "input" &&
+    /otp|one.time|authentication code|verification code/i.test(control.descriptor)
+  );
   if (otp) {
     await otp.locator.fill("123456");
     await clickCheckoutAction(page, /verify|authenticate|confirm|continue|submit/i);
     return true;
   }
+
   const successChoice = controls.find(control =>
-    ["button"].includes(control.details.tag) &&
+    control.details.tag === "button" &&
     /successful authentication|authenticate successfully|approve payment|confirm authentication/i.test(control.details.text + " " + control.details.ariaLabel) &&
     !/failure|cancel|decline/i.test(control.details.text + " " + control.details.ariaLabel)
   );
@@ -361,7 +390,7 @@ async function handleThreeDSIfShown(page, state, controls) {
     await successChoice.locator.click({ timeout: 15_000 });
     return true;
   }
-  // Some Safepay emulators use labeled radios to choose a 3DS outcome.
+
   for (const frame of page.frames()) {
     for (const selector of ['label:visible', '[role=radio]:visible', 'input[type=radio]:visible']) {
       const list = frame.locator(selector);
@@ -377,7 +406,7 @@ async function handleThreeDSIfShown(page, state, controls) {
       }
     }
   }
-  throw new Error("Safepay 3DS emulator shown but no explicit successful test-authentication action was found: " + JSON.stringify(state).slice(0, 3000));
+  throw new Error("Safepay authentication/ACS screen had no explicit success control: " + JSON.stringify(state).slice(0, 3000));
 }
 
 async function completeSandboxCardPayment(page, amount) {
@@ -410,8 +439,12 @@ async function completeSandboxCardPayment(page, amount) {
   const cardInput = await fillField(page, /card number/i, "4111111111111111");
   await cardInput.press("Tab").catch(() => {});
   const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "12/30");
+  const enteredExpiry = await expiryInput.inputValue();
+  if (enteredExpiry !== "12/30") throw new Error("Sandbox test expiry was not retained as a future date: " + enteredExpiry);
   await expiryInput.press("Tab").catch(() => {});
   const cvcInput = await fillField(page, /cvc|cvv|security code|cc-csc|card verification/i, "123");
+  const enteredCvc = await cvcInput.inputValue();
+  if (enteredCvc !== "123") throw new Error("Sandbox test CVC was not retained as expected");
   await cvcInput.press("Tab").catch(() => {});
   const firstNameInput = await fillField(page, /first name|cardholder first/i, "Abdul");
   await firstNameInput.press("Tab").catch(() => {});
@@ -450,6 +483,15 @@ async function completeSandboxCardPayment(page, amount) {
   if (stateSelect && sindhOption) await stateSelect.locator.selectOption(sindhOption.value);
 
   const fieldsAfterFill = await visibleControls(page);
+  const verifiedCard = fieldsAfterFill.find(control => control.details.tag === "input" && /card number/i.test(control.descriptor));
+  const verifiedExpiry = fieldsAfterFill.find(control => control.details.tag === "input" && /expiry|expiration|cc-exp/i.test(control.descriptor));
+  const verifiedCvc = fieldsAfterFill.find(control => control.details.tag === "input" && /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor));
+  if (!verifiedCard || verifiedCard.details.value.replace(/\\s+/g, "") !== "4111111111111111" ||
+      !verifiedExpiry || verifiedExpiry.details.value !== "12/30" ||
+      !verifiedCvc || verifiedCvc.details.value !== "123") {
+    throw new Error("Safepay altered the supplied sandbox test card fields; refusing to submit: " +
+      JSON.stringify({ cardLast4: verifiedCard?.details.value?.replace(/\\s+/g, "").slice(-4), expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "123" }));
+  }
   const requiredFieldSnapshot = fieldsAfterFill
     .filter(control => ["input", "select"].includes(control.details.tag))
     .map(control => ({
@@ -473,7 +515,7 @@ async function completeSandboxCardPayment(page, amount) {
   report.captures.push("safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
     card: "Safepay documented frictionless sandbox Visa test card",
-    expiry: "03/28",
+    expiry: "12/30",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
   });
