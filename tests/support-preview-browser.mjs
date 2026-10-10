@@ -345,7 +345,8 @@ async function snapshotCheckout(page, stage) {
 
 async function handleThreeDSIfShown(page, state, controls) {
   const screenText = state.title + " " + state.bodyText + " " + (state.frameText || "") + " " + state.url;
-  const acsEmulator = /acs emulator|gateway\\.mastercard\\.com\\/acs|authentication result/i.test(screenText);
+  const screenTextLower = screenText.toLowerCase();
+  const acsEmulator = screenTextLower.includes("acs emulator") || screenTextLower.includes("gateway.mastercard.com/acs") || screenTextLower.includes("authentication result");
   if (!acsEmulator && !/3.?d secure|payer authentication|authentication emulator|one.time passcode|otp/i.test(screenText)) return false;
   report.threeDSDetected = true;
 
@@ -355,11 +356,11 @@ async function handleThreeDSIfShown(page, state, controls) {
     const outcome = controls.find(control =>
       control.details.tag === "select" &&
       (/authentication result/i.test(control.descriptor) ||
-       control.details.options.some(option => /\\(Y\\).*authentication successful|authentication successful/i.test(option.label)))
+       control.details.options.some(option => option.label.toLowerCase().includes("authentication successful")))
     );
     if (outcome) {
       const successOption = outcome.details.options.find(option =>
-        /\\(Y\\).*authentication successful|authentication successful/i.test(option.label) &&
+        option.label.toLowerCase().includes("authentication successful") &&
         !/failure|decline|cancel/i.test(option.label)
       );
       if (successOption) {
