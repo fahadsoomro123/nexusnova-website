@@ -10,8 +10,7 @@ function getSandboxPreviewApiBase(){
   if(!raw)return sandboxApiBase;
   try{
     const url=new URL(raw);
-    if(url.protocol!=="https:"||url.origin!==sandboxApiBase)return sandboxApiBase;
-    return url.origin;
+    return url.protocol==="https:"&&/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i.test(url.hostname)?url.origin:sandboxApiBase;
   }catch(_){return sandboxApiBase;}
 }
 const SUPPORT_API_BASE=getSandboxPreviewApiBase();
