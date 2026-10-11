@@ -14,7 +14,7 @@
   const valid=(type,value)=>{if(type==='CNIC')return /^\d{13}$/.test(value);if(type==='NTN')return /^\d{7}$/.test(value);return /^[A-Za-z0-9][A-Za-z0-9 ./_-]{0,19}$/.test(value)};
   const formatCNIC=value=>{const n=clean('CNIC',value);return n.length===13?n.replace(/^(\d{5})(\d{7})(\d{1})$/,'$1-$2-$3'):n};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  if(typeof module!=='undefined'&&module.exports){module.exports={clean,valid,formatCNIC,TYPES,ENDPOINT};return;}
+  if(typeof module!=='undefined'&&module.exports){module.exports={clean,valid,formatCNIC,TYPES,ENDPOINT:LIVE_ENDPOINT,ENDPOINTS};return;}
   const form=document.querySelector('[data-atl-form]'); if(!form)return;
   const typeSelect=form.elements.identifierType; const input=form.elements.identifier; const label=form.querySelector('[data-atl-label]');
   const help=form.querySelector('#atl-help'); const result=form.querySelector('[data-atl-result]'); const dateBox=form.querySelector('[data-atl-date]'); const button=form.querySelector('button[type="submit"]');
