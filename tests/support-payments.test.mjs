@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import supportWorker from "../cloudflare/support-payments/worker.js";
 
 const ORIGIN = "https://nexusnovatools.com";
@@ -86,11 +87,13 @@ test("creates an allowlisted USD support checkout with signed order ID and clean
   assert.equal(redirect.search, "", "Safepay return URL should stay query-free");
   const orderId = checkout.searchParams.get("order_id");
   assert.match(orderId, /^NNS-[0-9]{13}-5-[A-F0-9]{8}-[A-F0-9]{24}$/);
-  assert.equal(JSON.parse(calls[0].init.body).metadata.order_id, orderId);
+  const metadata = JSON.parse(calls[0].init.body).metadata;
+  assert.equal(metadata.order_id, orderId);
+  assert.equal(metadata.source, "nexusnova-support");
+  assert.equal(Object.hasOwn(metadata, "purpose"), false, "Safepay session setup must not include the provider-rejected purpose field");
   assert.equal(calls[0].init.headers.get("x-sfpy-merchant-secret"), SECRET_KEY);
   assert.equal(JSON.parse(calls[0].init.body).amount, 500);
   assert.equal(JSON.parse(calls[0].init.body).currency, "USD");
-  assert.equal(JSON.parse(calls[0].init.body).metadata.source, "nexusnova-support");
 });
 
 test("accepts each approved support amount and sends the matching minor-unit amount to Safepay", async (t) => {
@@ -170,7 +173,7 @@ test("only confirms a matching signed support tracker, merchant, amount and paid
       token: TRACKER,
       client: PUBLIC_KEY,
       state: "TRACKER_ENDED",
-      metadata: { order_id: orderId, source: "nexusnova-support" },
+      metadata: { order_id: { value: orderId }, source: { value: "nexusnova-support" } },
       purchase_totals: { quote_amount: { amount: 500, currency: "USD" } }
     } } });
   };
@@ -206,6 +209,7 @@ test("does not confirm a payment when the returned amount differs from the signe
   const body = await result.json();
   assert.equal(result.status, 200);
   assert.equal(body.paid, false);
+  assert.equal(body.verification, "payment_not_confirmed");
 });
 
 test("rejects a tampered signed order ID before asking Safepay", async (t) => {
@@ -292,4 +296,57 @@ test("rejects unsupported origins", async (t) => {
   assert.equal(response.status, 403);
   assert.equal(body.error, "origin_not_allowed");
   assert.equal(fetchCalls, 0);
+});
+
+
+test("production Support deployment is manual-only and cannot activate on push", () => {
+  const workflow = readFileSync(new URL("../.github/workflows/deploy-support-payments-production.yml", import.meta.url), "utf8");
+  const triggerBlock = workflow.split("\npermissions:")[0];
+  assert.match(triggerBlock, /on:[\s\S]*workflow_dispatch:/);
+  assert.doesNotMatch(triggerBlock, /^\s+push:/m, "pushing or merging code must not deploy/activate the production Support Worker");
+  assert.doesNotMatch(triggerBlock, /^\s+pull_request:/m, "opening or updating a PR must not deploy/activate the production Support Worker");
+});
+
+
+test("sandbox deployment stays on the isolated fix branch and cannot add a production route", () => {
+  const workflow = readFileSync(new URL("../.github/workflows/deploy-support-payments-preview.yml", import.meta.url), "utf8");
+  const config = JSON.parse(readFileSync(new URL("../cloudflare/support-payments/wrangler.preview.jsonc", import.meta.url), "utf8"));
+  assert.match(workflow, /ref:\s*\$\{\{\s*github\.ref_name\s*\}\}/);
+  assert.match(workflow, /if:\s*github\.ref_name\s*==\s*'nexusnova-support-reporter-fix-20261009'/);
+  assert.match(workflow, /SAFEPAY_SANDBOX_PUBLIC_KEY/);
+  assert.match(workflow, /SAFEPAY_SANDBOX_SECRET_KEY/);
+  assert.doesNotMatch(workflow, /SAFEPAY_PRODUCTION_(?:PUBLIC|SECRET)_KEY/);
+  assert.ok(workflow.includes("git fetch origin nexusnova-support-production"));
+  assert.ok(workflow.includes("git switch --create support-preview-config origin/nexusnova-support-production"));
+  assert.ok(workflow.includes("git push origin HEAD:nexusnova-support-production"));
+  assert.ok(workflow.includes("printf 'Sandbox checkout session generated and validated for USD $%s.' \"$amount\""));
+  assert.ok(workflow.includes("echo '- Checkout session creation: USD $3, $5, $10 and $25 all passed'"));
+  assert.equal(workflow.includes("git push origin nexusnova-support-production"), false, "sandbox workflow must never push the fix branch into the Support base branch");
+  assert.equal(config.name, "nexusnova-support-payments-preview");
+  assert.equal(config.workers_dev, true);
+  assert.equal(config.vars.SAFEPAY_ENV, "sandbox");
+  assert.equal(config.vars.SUPPORT_CHECKOUT_ENABLED, "true");
+  assert.equal(Object.hasOwn(config, "routes"), false, "sandbox Worker must not attach any custom-domain route");
+});
+
+test("accepts account-scoped Cloudflare Workers preview URLs on checkout and return pages", () => {
+  const homepage = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  const shell = readFileSync(new URL("../assets/js/main.js", import.meta.url), "utf8");
+  const runtime = readFileSync(new URL("../assets/js/nexusnova-support.js", import.meta.url), "utf8");
+  const successPage = readFileSync(new URL("../support-payment-success-preview.html", import.meta.url), "utf8");
+  const cancelPage = readFileSync(new URL("../support-payment-cancelled-preview.html", import.meta.url), "utf8");
+  const hostname = "nexusnova-support-payments-preview.fahadsoomro123.workers.dev";
+  const pattern = /^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i;
+  const rule = "(?:\\.[a-z0-9-]+)?\\.workers\\.dev";
+  assert.equal(pattern.test(hostname), true, "accept the deployed account-scoped workers.dev hostname");
+  assert.equal(pattern.test("nexusnova-support-payments-preview.workers.dev.evil.example"), false);
+  assert.ok(runtime.includes('supportHost.className="nn-support-host"'), "flagship header Support controls must use a dedicated layout row");
+  assert.ok(runtime.includes('row.insertAdjacentElement("afterend",supportHost)'), "dedicated Support row must sit outside the nav flex row");
+  assert.ok(runtime.includes("supportHost.appendChild(wrap)"), "Support controls must be mounted inside the dedicated host");
+  assert.ok(homepage.includes("main.js?v=20261010-supportlayout3"), "homepage must load the refreshed shell script instead of a stale cached version");
+  assert.ok(runtime.includes(rule), "checkout runtime must accept an optional Cloudflare account hostname label");
+  assert.ok(shell.includes("nexusnova-support.js?v=20261010-supportlayout3"), "shared shell must bypass the previously cached runtime bundle");
+  assert.equal(shell.includes("20261009-support-prod2"), false, "previous cache key must not remain in the shared shell");
+  assert.ok(successPage.includes(rule), "success return page must accept the sandbox Worker hostname");
+  assert.ok(cancelPage.includes(rule), "cancel return page must accept the sandbox Worker hostname");
 });

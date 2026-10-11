@@ -55,6 +55,12 @@ async function readJson(response) {
   try { return text ? JSON.parse(text) : {}; } catch { return {}; }
 }
 
+function metadataString(value) {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && typeof value.value === "string") return value.value;
+  return null;
+}
+
 function base64Url(bytes) {
   let binary = "";
   for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte);
@@ -167,7 +173,7 @@ async function createCheckout(request, env) {
 
   const { environment, apiHost, checkoutHost } = apiConfig(env);
   const orderId = await createSignedOrderId(amount, env.SAFEPAY_SECRET_KEY);
-  const metadata = { order_id: orderId, source: "nexusnova-support", purpose: "support-free-tools" };
+  const metadata = { order_id: orderId, source: "nexusnova-support" };
 
   try {
     // Separate support endpoint, same documented Safepay v3 checkout pattern as the existing integration.
@@ -311,8 +317,12 @@ async function paymentStatus(request, env) {
 
     // Safepay metadata must bind the returned tracker to this exact signed support order.
     const metadata = candidate?.metadata || data?.data?.metadata || data?.metadata || {};
-    const returnedOrderId = metadata?.order_id || candidate?.order_id || data?.data?.order_id || null;
-    const returnedSource = metadata?.source || null;
+    // Safepay Reporter nests custom metadata values in objects with a `value` field.
+    // Accept the documented shape and the legacy string shape, but compare only exact strings.
+    const returnedOrderId = metadataString(metadata?.order_id) ||
+      (typeof candidate?.order_id === "string" ? candidate.order_id : null) ||
+      (typeof data?.data?.order_id === "string" ? data.data.order_id : null);
+    const returnedSource = metadataString(metadata?.source);
     if (returnedOrderId !== orderId || returnedSource !== "nexusnova-support") {
       return json({
         ok: true,

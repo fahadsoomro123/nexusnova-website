@@ -1,15 +1,8 @@
 name: Deploy NexusNova Support Payments Production
 
 on:
+  # Production route activation is deliberately manual. Merging code must never deploy live checkout by itself.
   workflow_dispatch:
-  push:
-    branches:
-      - nexusnova-support-production
-    paths:
-      - "cloudflare/support-payments/worker.js"
-      - "cloudflare/support-payments/wrangler.production-check.jsonc"
-      - "cloudflare/support-payments/wrangler.production.jsonc"
-      - ".github/workflows/deploy-support-payments-production.yml"
 
 permissions:
   contents: read
