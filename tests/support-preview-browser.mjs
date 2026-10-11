@@ -805,10 +805,25 @@ try {
   await cancelPage.getByText("Cancel payment", { exact: true }).click({ timeout: 20_000 });
   // Safepay asks for explicit confirmation before returning to cancel_url.
   await cancelPage.getByRole("button", { name: "Yes", exact: true }).click({ timeout: 10_000 });
-  await cancelPage.waitForURL(url => url.hostname === "raw.githack.com" && url.pathname.endsWith("/support-payment-cancelled-preview.html"), {
-    timeout: 60_000, waitUntil: "domcontentloaded"
-  });
-  await cancelPage.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 20_000 });
+  // Hosted Checkout may load the cancel_url in a frame instead of changing the top-level URL.
+  let cancelledReturnFrame = null;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    cancelledReturnFrame = cancelPage.frames().find(frame => {
+      try {
+        const frameUrl = new URL(frame.url());
+        return frameUrl.hostname === "raw.githack.com" && frameUrl.pathname.endsWith("/support-payment-cancelled-preview.html");
+      } catch { return false; }
+    }) || null;
+    if (cancelledReturnFrame) break;
+    await cancelPage.waitForTimeout(1_000);
+  }
+  if (!cancelledReturnFrame) {
+    throw new Error("Safepay cancellation did not load cancel_url in any frame: " +
+      JSON.stringify({ pages: cancelPage.context().pages().map(page => page.url()), frames: cancelPage.frames().map(frame => frame.url()) }).slice(0, 2500));
+  }
+  await cancelledReturnFrame.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 20_000 });
+  report.cancelReturnUrl = cancelledReturnFrame.url();
+  report.cancelReturnLoadedInFrame = cancelledReturnFrame !== cancelPage.mainFrame();
   await captureScreenshot(cancelPage, "payment-cancelled.png");
   const cancelStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
   cancelStatusUrl.searchParams.set("tracker", cancelCheckout.searchParams.get("tracker"));
