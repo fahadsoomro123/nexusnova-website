@@ -46,25 +46,35 @@ jobs:
           expected_css='assets/css/flagship-home-refinement.css'
           expected_js='assets/js/main.js?v=20261005-ga4a'
           success=0
+          tmp_body="$(mktemp)"
+          trap 'rm -f "$tmp_body"' EXIT
 
-          for attempt in {1..30}; do
-            echo "Production asset check ${attempt}/30"
-            body="$(curl --fail --silent --show-error --location \
+          for attempt in {1..20}; do
+            echo "Production asset check ${attempt}/20"
+            status="$(curl --silent --show-error --location \
               --max-time 25 \
-              -A "NexusNovaLivePerformanceAudit/1.0" \
+              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36" \
               -H "Cache-Control: no-cache" \
+              -o "$tmp_body" -w '%{http_code}' \
               "https://nexusnovatools.com/?nn_live_perf=${GITHUB_SHA}")"
 
-            if printf '%s' "$body" | grep -Fq "$expected_css" && \
-               printf '%s' "$body" | grep -Fq "$expected_js"; then
+            css_seen=no
+            js_seen=no
+            if grep -Fq "$expected_css" "$tmp_body"; then css_seen=yes; fi
+            if grep -Fq "$expected_js" "$tmp_body"; then js_seen=yes; fi
+            echo "HTTP=${status} CSS=${css_seen} JS=${js_seen} BODY_BYTES=$(wc -c < "$tmp_body")"
+
+            if [ "$status" = "200" ] && [ "$css_seen" = "yes" ] && [ "$js_seen" = "yes" ]; then
               success=1
               break
             fi
-            sleep 15
+            sleep 10
           done
 
           if [ "$success" -ne 1 ]; then
             echo 'Production homepage did not expose the current performance asset versions.'
+            echo 'Last response preview:'
+            head -c 600 "$tmp_body" || true
             exit 1
           fi
 
