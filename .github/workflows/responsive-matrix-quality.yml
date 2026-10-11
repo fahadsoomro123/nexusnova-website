@@ -86,7 +86,7 @@ jobs:
                               sw: document.documentElement.scrollWidth,
                               cw: document.documentElement.clientWidth,
                               h1: document.querySelectorAll('h1').length,
-                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.ni-nav'),
+                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header') || !!document.querySelector('.ni-nav'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
                           })''')
