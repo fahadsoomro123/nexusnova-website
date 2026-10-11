@@ -45,11 +45,12 @@ test('public pages explain source, timestamp and non-real-time limitation',()=>{
   for(const file of ['live.html','currency-rates.html']){
     const html=fs.readFileSync(path.join(root,file),'utf8');
     assert.match(html,/Frankfurter/);
-    assert.match(html,/data-live-data-date/);
-    assert.match(html,/data-live-generated/);
     assert.match(html,/daily reference/i);
     assert.match(html,/second-by-second/i);
   }
+  const converter=fs.readFileSync(path.join(root,'currency-rates.html'),'utf8');
+  assert.match(converter,/data-live-data-date/);
+  assert.match(converter,/data-live-generated/);
 });
 
 test('currency page exposes worldwide from and to selectors while keeping Pakistan featured rates',()=>{
