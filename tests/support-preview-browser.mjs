@@ -114,7 +114,8 @@ const address = server.address();
 const localBase = "http://127.0.0.1:" + address.port;
 report.localBase = localBase;
 
-const launchOptions = { headless: true };
+// Safepay's documented 3DS Step-Up test must run with a real browser surface; CI supplies Xvfb.
+const launchOptions = { headless: process.env.SUPPORT_HEADLESS !== "false" };
 if (process.env.CHROME_EXECUTABLE) launchOptions.executablePath = process.env.CHROME_EXECUTABLE;
 const browser = await chromium.launch(launchOptions);
 
