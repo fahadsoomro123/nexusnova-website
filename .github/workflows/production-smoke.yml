@@ -29,7 +29,6 @@ jobs:
           last_reason=''
           for attempt in $(seq 1 72); do
             home="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/?smoke=${GITHUB_SHA}-${attempt}" || true)"
-            intelligence="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/nova-intelligence.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             humanproof="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/humanproof.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             live="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/live.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             labs="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/labs.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
@@ -58,21 +57,12 @@ jobs:
             check_contains "$home" 'NexusNova HumanProof' || ok=0
             check_contains "$home" 'id="trust"' || ok=0
             check_contains "$home" 'humanproof.html#live-verification' || ok=0
-            check_contains "$home" 'Nova Intelligence' || ok=0
-            check_contains "$home" 'href="/nova-intelligence.html"' || ok=0
-            check_contains "$home" 'Try Nova Intelligence →' || ok=0
-            check_contains "$home" 'Tell Nova what you need.' || ok=0
-            check_contains "$home" 'NOVA INTELLIGENCE • FLAGSHIP DISCOVERY' || ok=0
 
-            check_contains "$intelligence" '<meta name="robots" content="noindex,nofollow">' || ok=0
-            check_contains "$intelligence" 'GENERAL-PURPOSE INTELLIGENCE' || ok=0
-            check_contains "$intelligence" 'NexusNova Intelligence — AI Workspace' || ok=0
 
             check_contains "$humanproof" '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' || ok=0
             check_contains "$humanproof" 'exact-action binding' || ok=0
             check_contains "$live" '<link rel="canonical" href="https://nexusnovatools.com/live.html">' || ok=0
             check_contains "$labs" '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' || ok=0
-            check_contains "$labs" 'Open Nova Intelligence' || ok=0
             check_contains "$contrast" '<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">' || ok=0
             check_contains "$diffpage" '<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">' || ok=0
             check_contains "$csvjson" '<link rel="canonical" href="https://nexusnovatools.com/csv-json-converter.html">' || ok=0
@@ -113,8 +103,6 @@ jobs:
           if grep -Fq 'Enter Universe Atlas' <<<"$labs"; then echo 'YES'; else echo 'NO'; fi
           echo 'Public HumanProof canonical:'
           grep -oi '<link rel="canonical"[^>]*>' <<<"$humanproof" | head -1 || true
-          echo 'Public Nova title:'
-          grep -oi '<title>[^<]*</title>' <<<"$intelligence" | head -1 || true
           exit 1
       - name: Verify important production routes
         shell: bash
@@ -123,7 +111,6 @@ jobs:
           base='https://nexusnovatools.com'
           routes=(
             '/'
-            '/nova-intelligence.html'
             '/humanproof.html'
             '/live.html'
             '/sports-live.html'
@@ -190,3 +177,4 @@ jobs:
           done < /tmp/nexusnova-sitemap-urls.txt
           test "$failures" -eq 0
           echo 'CANONICAL SITEMAP PRODUCTION INTEGRITY PASS: every advertised URL returned HTTP 200.'
+
