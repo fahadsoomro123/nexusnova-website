@@ -821,9 +821,14 @@ try {
     throw new Error("Safepay cancellation did not load cancel_url in any frame: " +
       JSON.stringify({ pages: cancelPage.context().pages().map(page => page.url()), frames: cancelPage.frames().map(frame => frame.url()) }).slice(0, 2500));
   }
-  await cancelledReturnFrame.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 20_000 });
+  const cancelReturnHeading = (await cancelledReturnFrame.locator("h1").textContent({ timeout: 20_000 }).catch(() => ""))?.trim() || "";
+  check("Safepay cancellation callback loads explicit cancelled return content", cancelReturnHeading === "Sandbox checkout cancelled.", {
+    heading: cancelReturnHeading,
+    frameUrl: cancelledReturnFrame.url()
+  });
   report.cancelReturnUrl = cancelledReturnFrame.url();
   report.cancelReturnLoadedInFrame = cancelledReturnFrame !== cancelPage.mainFrame();
+  report.cancelReturnHeading = cancelReturnHeading;
   await captureScreenshot(cancelPage, "payment-cancelled.png");
   const cancelStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
   cancelStatusUrl.searchParams.set("tracker", cancelCheckout.searchParams.get("tracker"));
