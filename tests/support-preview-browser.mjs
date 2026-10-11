@@ -16,7 +16,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outputDir = path.join(root, "artifacts", "support-preview-browser-qa");
 await fs.mkdir(outputDir, { recursive: true });
 
-const report = { worker: new URL(WORKER_URL).host, mode: "local source render + real sandbox API proxy", captures: [], checks: [] };
+const report = { worker: new URL(WORKER_URL).host, mode: "local source render + real sandbox API proxy", captures: [], screenshotFailures: [], checks: [] };
 const providerConsoleErrors = [];
 const providerFailedRequests = [];
 const providerPageErrors = [];
@@ -40,6 +40,25 @@ const mimeTypes = {
 function check(name, condition, details = {}) {
   report.checks.push({ name, passed: Boolean(condition), ...details });
   assert.ok(condition, name + (Object.keys(details).length ? " :: " + JSON.stringify(details) : ""));
+}
+
+async function captureScreenshot(page, filename) {
+  const screenshotPath = path.join(outputDir, filename);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await page.screenshot({ path: screenshotPath, fullPage: false, timeout: 15_000, animations: "disabled" });
+      report.captures.push(filename);
+      return true;
+    } catch (error) {
+      report.screenshotFailures.push({
+        filename,
+        attempt,
+        error: String(error?.message || error).slice(0, 350)
+      });
+      await page.waitForTimeout(400).catch(() => {});
+    }
+  }
+  return false;
 }
 function respond(res, status, type, body) {
   res.writeHead(status, { "content-type": type, "cache-control": "no-store", "x-content-type-options": "nosniff" });
@@ -116,7 +135,7 @@ const localBase = "http://127.0.0.1:" + address.port;
 report.localBase = localBase;
 
 // Safepay's documented 3DS Step-Up test must run with a real browser surface; CI supplies Xvfb.
-const launchOptions = { headless: process.env.SUPPORT_HEADLESS !== "false" };
+const launchOptions = { headless: process.env.SUPPORT_HEADLESS !== "false", args: ["--disable-gpu", "--disable-dev-shm-usage"] };
 if (process.env.CHROME_EXECUTABLE) launchOptions.executablePath = process.env.CHROME_EXECUTABLE;
 const browser = await chromium.launch(launchOptions);
 
@@ -133,8 +152,7 @@ async function inspectViewport(viewport, name) {
     await page.waitForSelector(".nn-support-host [data-nexusnova-support]", { timeout: 15_000 });
     await page.waitForFunction(() => window.__nexusnovaSupportReady === true, { timeout: 5_000 });
   } catch (error) {
-    await page.screenshot({ path: path.join(outputDir, name + "-support-missing.png"), fullPage: false });
-    report.captures.push(name + "-support-missing.png");
+    await captureScreenshot(page, name + "-support-missing.png");
     const state = await page.evaluate(() => ({
       url: location.href,
       title: document.title,
@@ -146,8 +164,7 @@ async function inspectViewport(viewport, name) {
     }));
     throw new Error(name + ": Support did not mount: " + JSON.stringify({ state, pageErrors, failedRequests, cause: String(error) }).slice(0, 4500));
   }
-  await page.screenshot({ path: path.join(outputDir, name + ".png"), fullPage: false });
-  report.captures.push(name + ".png");
+  await captureScreenshot(page, name + ".png");
   const metrics = await page.evaluate(() => {
     const rect = element => {
       if (!element) return null;
@@ -520,15 +537,13 @@ async function completeSandboxCardPayment(page, amount) {
     !control.details.disabled
   );
   if (!payButton) {
-    await page.screenshot({ path: path.join(outputDir, "safepay-form-validation-blocked.png"), fullPage: false });
-    report.captures.push("safepay-form-validation-blocked.png");
+    await captureScreenshot(page, "safepay-form-validation-blocked.png");
     const state = await snapshotCheckout(page, "form-validation-blocked");
     throw new Error("Safepay Pay button remains disabled after all visible test-card and billing fields were filled: " +
       JSON.stringify({ state: state.state, fields: requiredFieldSnapshot }).slice(0, 4500));
   }
 
-  await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
-  report.captures.push("safepay-test-card-ready.png");
+  await captureScreenshot(page, "safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
     card: "Safepay official successful Step-Up test vector 4456530000001096",
     expiry: "03/28",
@@ -539,8 +554,7 @@ async function completeSandboxCardPayment(page, amount) {
   report.sandboxPaymentSubmitted = true;
   report.sandboxPaymentAmount = amount;
   await page.waitForTimeout(2500);
-  await page.screenshot({ path: path.join(outputDir, "safepay-post-submit.png"), fullPage: false });
-  report.captures.push("safepay-post-submit.png");
+  await captureScreenshot(page, "safepay-post-submit.png");
   report.providerPostSubmitEvents = providerNetworkEvents.slice(-100);
   report.providerPostSubmitConsoleErrors = providerConsoleErrors.slice(-40);
   report.providerPostSubmitFailedRequests = providerFailedRequests.slice(-40);
@@ -565,8 +579,7 @@ async function completeSandboxCardPayment(page, amount) {
     if (state.url.includes("/embedded/payment/") && step < 12) continue;
     throw new Error("Unrecognized Safepay post-submit state: " + JSON.stringify(state).slice(0, 3500));
   }
-  await page.screenshot({ path: path.join(outputDir, "safepay-post-submit-unresolved.png"), fullPage: false });
-  report.captures.push("safepay-post-submit-unresolved.png");
+  await captureScreenshot(page, "safepay-post-submit-unresolved.png");
   report.providerPostSubmitEvents = providerNetworkEvents.slice(-100);
   report.providerPostSubmitConsoleErrors = providerConsoleErrors.slice(-40);
   report.providerPostSubmitFailedRequests = providerFailedRequests.slice(-40);
@@ -672,8 +685,7 @@ try {
     iframes: Array.from(document.querySelectorAll("iframe")).map(frame => ({ title: frame.title, src: frame.src })).slice(0, 8)
   }));
   report.safepayCheckout = { response: providerMainResponse, dom: providerDom, consoleErrors: providerConsoleErrors, failedRequests: providerFailedRequests, pageErrors: providerPageErrors, paymentSubmitted: false };
-  await desktop.screenshot({ path: path.join(outputDir, "safepay-sandbox-checkout.png"), fullPage: false });
-  report.captures.push("safepay-sandbox-checkout.png");
+  await captureScreenshot(desktop, "safepay-sandbox-checkout.png");
   check("actual Safepay sandbox checkout content rendered without submitting a payment", Boolean(
     providerMainResponse && providerMainResponse.status >= 200 && providerMainResponse.status < 400 &&
     providerDom.url.startsWith("https://sandbox.api.getsafepay.com/") &&
@@ -690,8 +702,7 @@ try {
   await desktop.getByText("Sandbox payment confirmed.", { exact: true }).waitFor({ timeout: 35_000 });
   const successTitle = await desktop.locator("#title").innerText();
   check("real sandbox test-card flow returns to confirmed Support page", successTitle === "Sandbox payment confirmed.", { title: successTitle });
-  await desktop.screenshot({ path: path.join(outputDir, "payment-status-confirmed.png"), fullPage: false });
-  report.captures.push("payment-status-confirmed.png");
+  await captureScreenshot(desktop, "payment-status-confirmed.png");
   await desktop.waitForTimeout(300);
   const statusSuccess = (report.paymentStatusResponses || []).find(response => response.paid === true &&
     response.amount === 5 && response.currency === "USD" && response.environment === "sandbox" &&
@@ -767,8 +778,7 @@ try {
     timeout: 60_000, waitUntil: "domcontentloaded"
   });
   await cancelPage.getByRole("heading", { name: "Sandbox checkout cancelled." }).waitFor({ timeout: 20_000 });
-  await cancelPage.screenshot({ path: path.join(outputDir, "payment-cancelled.png"), fullPage: false });
-  report.captures.push("payment-cancelled.png");
+  await captureScreenshot(cancelPage, "payment-cancelled.png");
   const cancelStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
   cancelStatusUrl.searchParams.set("tracker", cancelCheckout.searchParams.get("tracker"));
   cancelStatusUrl.searchParams.set("order_id", cancelCheckout.searchParams.get("order_id"));
@@ -798,8 +808,7 @@ try {
   check("success return: page loads", Boolean(successResponse && successResponse.ok()), { status: successResponse?.status() ?? null });
   await successPage.getByText("No success recorded", { exact: true }).waitFor({ timeout: 15_000 });
   check("success return: pending fixture never claims payment success", (await successPage.locator("#title").innerText()) === "Payment status not confirmed.", { title: await successPage.locator("#title").innerText() });
-  await successPage.screenshot({ path: path.join(outputDir, "payment-status-pending.png"), fullPage: false });
-  report.captures.push("payment-status-pending.png");
+  await captureScreenshot(successPage, "payment-status-pending.png");
   await successPage.close();
 
   const mobile = await inspectViewport({ width: 390, height: 844 }, "homepage-mobile");
