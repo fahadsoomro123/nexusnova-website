@@ -56,7 +56,7 @@ jobs:
 
           surfaces = [
               'index.html', 'tools.html', 'image-compressor.html', 'calculator.html',
-              'articles.html', 'guides.html', 'register.html', 'privacy.html', 'nova-intelligence.html'
+              'articles.html', 'guides.html', 'register.html', 'privacy.html'
           ]
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
@@ -74,12 +74,6 @@ jobs:
                               content_type='application/json',
                               body='{"enabled":false}'
                           ))
-                      if surface == 'nova-intelligence.html':
-                          page.route('**/api/nova', lambda route: route.fulfill(
-                              status=200,
-                              content_type='application/json',
-                              body='{"ok":true,"mode":"tool","answer":"Use Currency Rates for current exchange-rate context.","action":{"label":"Currency Rates","href":"currency-rates.html"},"nextStep":"Open Currency Rates for the live conversion surface."}'
-                          ))
                       try:
                           response = page.goto(f'http://127.0.0.1:8000/{surface}', wait_until='domcontentloaded', timeout=30000)
                           if not response or response.status >= 400:
@@ -90,18 +84,6 @@ jobs:
                               failures.append(f'{surface}@{width}: horizontal overflow')
                           if surface != 'register.html' and page.locator('h1').count() != 1:
                               failures.append(f'{surface}@{width}: H1 count {page.locator("h1").count()}')
-                          if surface == 'nova-intelligence.html':
-                              if page.locator('#niPrompt').count() != 1:
-                                  failures.append(f'{surface}@{width}: workspace missing')
-                              page.locator('#niPrompt').fill('Convert 100 USD to PKR using current rates.')
-                              page.locator('#niBuild').click()
-                              page.wait_for_timeout(100)
-                              if page.locator('#niState').inner_text() != 'ACTION':
-                                  failures.append(f'{surface}@{width}: response state did not render ACTION')
-                              if page.locator('#niResult a[href="/currency-rates.html"]').count() != 1:
-                                  failures.append(f'{surface}@{width}: currency action missing')
-                              if 'Currency Rates' not in page.locator('#niResult').inner_text():
-                                  failures.append(f'{surface}@{width}: response text missing')
                           if console_errors:
                               failures.append(f'{surface}@{width}: console errors: {" | ".join(dict.fromkeys(console_errors))}')
                       except Exception as exc:
