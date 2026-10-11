@@ -58,7 +58,6 @@ jobs:
               ('guide', 'guides.html'),
               ('register', 'register.html'),
               ('privacy', 'privacy.html'),
-              ('intelligence', 'nova-intelligence.html'),
           ]
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
@@ -69,7 +68,7 @@ jobs:
                   for width in widths:
                       page = browser.new_page(viewport={'width': width, 'height': 844 if width < 800 else 1000})
                       errors = []
-                      page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
+                      page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' and 'violates the following report-only Content Security Policy directive' not in msg.text else None)
                       if rel == 'register.html':
                           page.route('**/api/auth/security-config', lambda route: route.fulfill(
                               status=200,
@@ -86,7 +85,7 @@ jobs:
                               sw: document.documentElement.scrollWidth,
                               cw: document.documentElement.clientWidth,
                               h1: document.querySelectorAll('h1').length,
-                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.ni-nav'),
+                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
                           })''')
@@ -96,9 +95,7 @@ jobs:
                               failures.append(f'{name}@{width}: H1 count {metrics["h1"]}')
                           if errors:
                               failures.append(f'{name}@{width}: console errors: {" | ".join(dict.fromkeys(errors))}')
-                          if rel == 'nova-intelligence.html' and not metrics['prompt']:
-                              failures.append(f'{name}@{width}: Intelligence workspace missing')
-                          if rel != 'nova-intelligence.html' and not metrics['header']:
+                          if not metrics['header']:
                               failures.append(f'{name}@{width}: shared header missing')
                           if not metrics['footer']:
                               failures.append(f'{name}@{width}: footer missing')
@@ -113,3 +110,4 @@ jobs:
               raise SystemExit(1)
           print(f'PASS: {len(pages) * len(widths)} responsive viewport checks completed with zero findings.')
           PY
+

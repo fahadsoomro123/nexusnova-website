@@ -41,15 +41,19 @@ test('currency updater refuses incomplete Pakistan-featured source data but does
   assert.equal(module.buildPayload(requiredOnly,{rates:[]}).rates.length,5);
 });
 
-test('public pages explain source, timestamp and non-real-time limitation',()=>{
-  for(const file of ['live.html','currency-rates.html']){
-    const html=fs.readFileSync(path.join(root,file),'utf8');
-    assert.match(html,/Frankfurter/);
-    assert.match(html,/data-live-data-date/);
-    assert.match(html,/data-live-generated/);
-    assert.match(html,/daily reference/i);
-    assert.match(html,/second-by-second/i);
-  }
+test('public LIVE hub explains source freshness and currency page exposes exact source and timestamps',()=>{
+  const hub=fs.readFileSync(path.join(root,'live.html'),'utf8');
+  assert.match(hub,/Currency reference rates are daily data/i);
+  assert.match(hub,/second by second|every second/i);
+  assert.match(hub,/MET Norway model forecasts/i);
+  assert.match(hub,/not presented as a local Sarafa quote/i);
+
+  const currency=fs.readFileSync(path.join(root,'currency-rates.html'),'utf8');
+  assert.match(currency,/Frankfurter/);
+  assert.match(currency,/data-live-data-date/);
+  assert.match(currency,/data-live-generated/);
+  assert.match(currency,/daily reference/i);
+  assert.match(currency,/second-by-second/i);
 });
 
 test('currency page exposes worldwide from and to selectors while keeping Pakistan featured rates',()=>{
