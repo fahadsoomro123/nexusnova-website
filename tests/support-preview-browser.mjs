@@ -714,7 +714,8 @@ try {
       reason: "Safepay-hosted 3DS enrollment has failed at PAYER_AUTH_ENROLLMENT in this runner; no card was submitted in this CI run.",
       cardSubmitted: false,
       countsAsPaymentPass: false,
-      manualHeadedAcceptancePreviouslyVerified: true
+      manualHeadedAcceptancePreviouslyVerified: false,
+      priorManualTrackerCurrentStatus: "paid=false; do not count as proof"
     };
     check("hosted checkout remains in Sandbox without fabricating a provider payment", checkout.hostname === "sandbox.api.getsafepay.com" &&
       checkout.searchParams.get("environment") === "sandbox", {
