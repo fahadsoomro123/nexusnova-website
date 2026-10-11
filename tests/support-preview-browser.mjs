@@ -759,6 +759,8 @@ try {
     });
   await cancelPage.waitForURL(url => url.hostname === "sandbox.api.getsafepay.com", { timeout: 30_000, waitUntil: "domcontentloaded" });
   await cancelPage.getByText("Cancel payment", { exact: true }).click({ timeout: 20_000 });
+  // Safepay asks for explicit confirmation before returning to cancel_url.
+  await cancelPage.getByRole("button", { name: "Yes", exact: true }).click({ timeout: 10_000 });
   await cancelPage.waitForURL(url => url.hostname === "raw.githack.com" && url.pathname.endsWith("/support-payment-cancelled-preview.html"), {
     timeout: 60_000, waitUntil: "domcontentloaded"
   });
