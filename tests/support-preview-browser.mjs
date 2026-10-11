@@ -261,13 +261,13 @@ async function visibleControls(page) {
   return output;
 }
 
-async function fillField(page, pattern, value, { required = true } = {}) {
+async function fillField(page, pattern, value, { required = true, tag = null } = {}) {
   let controls = [];
   let candidate = null;
   for (let attempt = 0; attempt < 16; attempt++) {
     controls = await visibleControls(page);
     candidate = controls.find(control =>
-      ["input", "textarea", "select"].includes(control.details.tag) &&
+      (tag ? control.details.tag === tag : ["input", "textarea", "select"].includes(control.details.tag)) &&
       pattern.test(control.descriptor) &&
       !control.details.disabled
     );
@@ -292,7 +292,10 @@ async function fillField(page, pattern, value, { required = true } = {}) {
   let stableLocator = candidate.locator;
   if (candidate.details.labels && pattern.test(candidate.details.labels)) {
     const labelLocator = candidate.frame.getByLabel(pattern).first();
-    if (await labelLocator.count().catch(() => 0)) stableLocator = labelLocator;
+    if (await labelLocator.count().catch(() => 0)) {
+      const labelTag = await labelLocator.evaluate(element => element.tagName.toLowerCase()).catch(() => "");
+      if (labelTag === candidate.details.tag) stableLocator = labelLocator;
+    }
   }
   if (candidate.details.tag === "select") {
     const option = candidate.details.options.find(item => /pakistan/i.test(item.label) || /^pk$/i.test(item.value));
@@ -474,7 +477,7 @@ async function completeSandboxCardPayment(page, amount) {
 
   const addressInput = await fillField(page, /street address|address line/i, "Building 3, Apartment 5, 10th commercial lane, Zamzama");
   await addressInput.press("Tab").catch(() => {});
-  const cityInput = await fillField(page, /city/i, "Karachi");
+  const cityInput = await fillField(page, /city/i, "Karachi", { tag: "input" });
   await cityInput.press("Tab").catch(() => {});
   const postalInput = await fillField(page, /postal|zip/i, "75500", { required: false });
   if (postalInput) await postalInput.press("Tab").catch(() => {});
