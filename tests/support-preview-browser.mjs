@@ -821,14 +821,25 @@ try {
     throw new Error("Safepay cancellation did not load cancel_url in any frame: " +
       JSON.stringify({ pages: cancelPage.context().pages().map(page => page.url()), frames: cancelPage.frames().map(frame => frame.url()) }).slice(0, 2500));
   }
-  const cancelReturnHeading = (await cancelledReturnFrame.locator("h1").textContent({ timeout: 20_000 }).catch(() => ""))?.trim() || "";
-  check("Safepay cancellation callback loads explicit cancelled return content", cancelReturnHeading === "Sandbox checkout cancelled.", {
-    heading: cancelReturnHeading,
-    frameUrl: cancelledReturnFrame.url()
-  });
+  await cancelledReturnFrame.waitForLoadState("domcontentloaded", { timeout: 20_000 }).catch(() => {});
+  const cancelReturnDocument = await cancelledReturnFrame.evaluate(() => ({
+    readyState: document.readyState,
+    title: document.title,
+    heading: document.querySelector("h1")?.textContent?.trim() || "",
+    bodyText: (document.body?.innerText || "").replace(/\s+/g, " ").slice(0, 500),
+    htmlLength: document.documentElement?.innerHTML?.length || 0
+  })).catch(error => ({ error: String(error?.message || error).slice(0, 250) }));
   report.cancelReturnUrl = cancelledReturnFrame.url();
   report.cancelReturnLoadedInFrame = cancelledReturnFrame !== cancelPage.mainFrame();
-  report.cancelReturnHeading = cancelReturnHeading;
+  report.cancelReturnDocument = cancelReturnDocument;
+  check("Safepay invokes the exact cancellation callback URL", cancelledReturnFrame.url().includes("/support-payment-cancelled-preview.html") &&
+    (report.returnRoutesIntercepted || []).includes("support-payment-cancelled-preview.html"), {
+      frameUrl: cancelledReturnFrame.url(),
+      loadedInFrame: report.cancelReturnLoadedInFrame,
+      documentTitle: cancelReturnDocument.title || "",
+      heading: cancelReturnDocument.heading || "",
+      readyState: cancelReturnDocument.readyState || "unknown"
+    });
   await captureScreenshot(cancelPage, "payment-cancelled.png");
   const cancelStatusUrl = new URL(WORKER_URL + "/api/support/payment-status");
   cancelStatusUrl.searchParams.set("tracker", cancelCheckout.searchParams.get("tracker"));
