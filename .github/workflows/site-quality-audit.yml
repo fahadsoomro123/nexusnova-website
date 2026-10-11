@@ -96,7 +96,7 @@ jobs:
           matches = [i for i, line in enumerate(lines) if (('analyticsScript.src=' in line or 'script.src=' in line) and 'googletagmanager.com/gtag/js' in line)]
           if len(matches) != 1:
               raise SystemExit(f'Expected exactly one GA4 loader source line, found {len(matches)}')
-          lines[matches[0]] = "    script.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
+          lines[matches[0]] = "    analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
           path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
           print('Local browser QA disables external AdSense and GA4 downloads in its copy only; production sources are untouched.')
           PY
