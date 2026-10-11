@@ -99,9 +99,9 @@ document.addEventListener("DOMContentLoaded",function(){
   const runtimeSrc=(()=>{
     try{
       return activeScript&&activeScript.src
-        ? new URL('nexusnova-support.js?v=20261009-support-prod2',activeScript.src).href
-        : '/assets/js/nexusnova-support.js?v=20261009-support-prod2';
-    }catch(_){return '/assets/js/nexusnova-support.js?v=20261009-support-prod2';}
+        ? new URL('nexusnova-support.js?v=20261011-support-sandbox-api',activeScript.src).href
+        : '/assets/js/nexusnova-support.js?v=20261011-support-sandbox-api';
+    }catch(_){return '/assets/js/nexusnova-support.js?v=20261011-support-sandbox-api';}
   })();
   const mountSupportRuntime=()=>{
     if(document.querySelector('script[id="nexusnova-support-runtime-loader"]'))return;
