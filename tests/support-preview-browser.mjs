@@ -448,9 +448,8 @@ async function completeSandboxCardPayment(page, amount) {
   await phoneInput.press("Tab").catch(() => {});
 
   // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
-  // Diagnostic alternate: public Visa 3DS test number; Safepay Sandbox only. Stripe documents this number for 3DS-required test scenarios, while Safepay permits public dummy card values in its Sandbox guide.
-  // Reference: https://docs.stripe.com/testing#regulatory-cards
-  const cardInput = await fillField(page, /card number/i, "4000000000003220");
+  // Use Safepay's documented Sandbox dummy-card set only; never use a real card.
+  const cardInput = await fillField(page, /card number/i, "5200000000001096");
   await cardInput.press("Tab").catch(() => {});
   const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   const enteredExpiry = await expiryInput.inputValue();
@@ -501,11 +500,11 @@ async function completeSandboxCardPayment(page, amount) {
   const verifiedExpiry = fieldsAfterFill.find(control => control.details.tag === "input" && /expiry|expiration|cc-exp/i.test(control.descriptor));
   const verifiedCvc = fieldsAfterFill.find(control => control.details.tag === "input" && /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor));
   const normalizedCard = verifiedCard?.details.value.replaceAll(" ", "").replaceAll("\\u00a0", "") || "";
-  if (normalizedCard !== "4000000000003220" ||
+  if (normalizedCard !== "5200000000001096" ||
       !verifiedExpiry || verifiedExpiry.details.value !== "03/28" ||
       !verifiedCvc || verifiedCvc.details.value !== "111") {
     throw new Error("Safepay altered the supplied sandbox test card fields; refusing to submit: " +
-      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "4000000000003220", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "111" }));
+      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "5200000000001096", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "111" }));
   }
   const requiredFieldSnapshot = fieldsAfterFill
     .filter(control => ["input", "select"].includes(control.details.tag))
@@ -529,7 +528,7 @@ async function completeSandboxCardPayment(page, amount) {
   await page.screenshot({ path: path.join(outputDir, "safepay-test-card-ready.png"), fullPage: false });
   report.captures.push("safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
-    card: "public Visa 3DS test card used for Sandbox diagnostic",
+    card: "Safepay official documented dummy card set 1",
     expiry: "03/28",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
