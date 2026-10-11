@@ -2,14 +2,16 @@
 if(window.__nexusnovaSupportReady)return;
 if(/\/(humanproof-checkout|humanproof-payment-success(?:-v2)?|humanproof-payment-cancelled|support-payment-success|support-payment-cancelled|register)\.html$/i.test(location.pathname))return;
 function getSandboxPreviewApiBase(){
-  // API overrides are accepted only on raw.githack preview URLs, never on the live domain.
+  // The raw.githack branch preview must use the isolated Sandbox Worker by default.
+  // This override is intentionally unavailable on nexusnovatools.com and www.nexusnovatools.com.
+  const sandboxApiBase="https://nexusnova-support-payments-preview.fahadsoomro123.workers.dev";
   if(location.hostname!=="raw.githack.com")return "";
   const raw=new URLSearchParams(location.search).get("supportApiBase");
-  if(!raw)return "";
+  if(!raw)return sandboxApiBase;
   try{
     const url=new URL(raw);
-    return url.protocol==="https:"&&/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.workers\.dev$/i.test(url.hostname)?url.origin:"";
-  }catch(_){return "";}
+    return url.protocol==="https:"&&url.origin===sandboxApiBase?sandboxApiBase:sandboxApiBase;
+  }catch(_){return sandboxApiBase;}
 }
 const SUPPORT_API_BASE=getSandboxPreviewApiBase();
 window.__nexusnovaSupportReady=true;
