@@ -1,3 +1,4 @@
+// Safepay ACS Step-Up must run with a visible browser surface; CI supplies Xvfb for headed validation.
 import assert from "node:assert/strict";
 import http from "node:http";
 import fs from "node:fs/promises";
