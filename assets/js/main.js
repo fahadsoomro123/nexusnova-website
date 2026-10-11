@@ -20,13 +20,31 @@
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
-  window.gtag('consent','default',{
-    analytics_storage:'granted',
-    ad_storage:'denied',
-    ad_user_data:'denied',
-    ad_personalization:'denied'
-  });
-  window.__nexusnovaConsentDefaulted=true;
+  if(!window.__nexusnovaConsentDefaulted){
+    window.gtag('consent','default',{
+      analytics_storage:'granted',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+    window.__nexusnovaConsentDefaulted=true;
+  }
+
+  // Load AdSense on public, indexable pages only and after consent defaults.
+  // The homepage carries the official static tag; this shared loader covers inner pages.
+  const adsenseScriptSelector='script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]';
+  const isLocalAuditHost=/^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
+  const robotsDirective=document.querySelector('meta[name="robots"]')?.getAttribute('content')||'';
+  const isNoindexPage=/\bnoindex\b/i.test(robotsDirective);
+  const restrictedPage=/^\/(?:404\.html|account\.html|account-deletion\.html|register\.html|app\.html)$/i.test(location.pathname);
+  if(!isLocalAuditHost&&!isNoindexPage&&!restrictedPage&&!document.querySelector(adsenseScriptSelector)){
+    const adsenseScript=document.createElement('script');
+    adsenseScript.async=true;
+    adsenseScript.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5070673529890078';
+    adsenseScript.crossOrigin='anonymous';
+    adsenseScript.dataset.nexusnovaAdsense='';
+    document.head.appendChild(adsenseScript);
+  }
 
   if(!document.querySelector('script[data-nexusnova-ga4]')){
     window.gtag('js',new Date());
