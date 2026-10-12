@@ -452,7 +452,7 @@ async function handleThreeDSIfShown(page, state, controls) {
 }
 
 async function completeSandboxCardPayment(page, amount) {
-  const email = "fahadsoomro123+nn-sandbox-" + Date.now() + "@gmail.com";
+  const email = "fahadsoomro123@gmail.com";
   const emailInput = await fillField(page, /email/i, email);
   await emailInput.press("Tab").catch(() => {});
   await page.waitForTimeout(500);
