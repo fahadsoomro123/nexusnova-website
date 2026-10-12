@@ -263,6 +263,66 @@ async function createCheckout(request, env, intentOverride = "CYBERSOURCE") {
   }
 }
 
+
+async function sandboxTrackerDiagnostic(request, env) {
+  // Read-only diagnostic for an existing Sandbox tracker. This never creates or authorizes a payment.
+  if (env.SAFEPAY_ENV !== "sandbox" ||
+      request.headers.get("origin") !== "https://raw.githack.com" ||
+      !configReady(env)) {
+    return json({ ok: false, error: "sandbox_diagnostic_only" }, 403, request);
+  }
+  const tracker = new URL(request.url).searchParams.get("tracker") || "";
+  if (!/^track_[A-Za-z0-9-]{10,120}$/.test(tracker)) {
+    return json({ ok: false, error: "invalid_tracker" }, 400, request);
+  }
+  try {
+    const { apiHost } = apiConfig(env);
+    const response = await safepayRequest(
+      apiHost + "/reporter/api/v1/payments/" + encodeURIComponent(tracker),
+      env.SAFEPAY_SECRET_KEY
+    );
+    const payload = await readJson(response);
+    if (!response.ok) {
+      return json({ ok: false, error: "provider_tracker_lookup_failed", upstream_status: response.status }, 502, request);
+    }
+    const root = payload?.data?.tracker || payload?.data || payload?.tracker || payload || {};
+    const actions = (value) => Array.isArray(value) ? value.slice(-8).map(item => ({
+      kind: typeof item?.kind === "string" ? item.kind : null,
+      intent: typeof item?.intent === "string" ? item.intent : null,
+      reason: typeof item?.reason === "string" ? item.reason.slice(0, 200) : null,
+      success: typeof item?.success === "boolean" ? item.success : null,
+      state: typeof item?.state === "string" ? item.state : null
+    })) : [];
+    const attempts = Array.isArray(root?.attempts) ? root.attempts.slice(-3).map(attempt => ({
+      intent: typeof attempt?.intent === "string" ? attempt.intent : null,
+      is_success: typeof attempt?.is_success === "boolean" ? attempt.is_success : null,
+      actions_performed: actions(attempt?.actions_performed),
+      enrollment: attempt?.enrollment ? {
+        veres_enrolled: attempt.enrollment.veres_enrolled ?? null,
+        eci: attempt.enrollment.eci ?? null
+      } : null,
+      error: typeof attempt?.error === "string" ? attempt.error.slice(0, 250) :
+        typeof attempt?.error?.message === "string" ? attempt.error.message.slice(0, 250) : null
+    })) : [];
+    return json({
+      ok: true,
+      environment: root?.environment || env.SAFEPAY_ENV,
+      tracker: root?.token || tracker,
+      state: root?.state || null,
+      intent: root?.intent || null,
+      mode: root?.mode || null,
+      entry_mode: root?.entry_mode || null,
+      next_actions: root?.next_actions || null,
+      events: actions(root?.events),
+      attempts,
+      top_level_keys: Object.keys(root || {}).slice(0, 50)
+    }, 200, request);
+  } catch (error) {
+    console.error("Sandbox tracker diagnostic failed", error?.name || "unknown_error");
+    return json({ ok: false, error: "tracker_diagnostic_unavailable" }, 502, request);
+  }
+}
+
 async function paymentStatus(request, env) {
   const origin = request.headers.get("origin");
   if (origin && !isAllowedOrigin(origin, env)) {
@@ -404,6 +464,10 @@ export default {
       }
       if (request.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, request, { allow: "POST, OPTIONS" });
       return createCheckout(request, env, mpgsDiagnostic ? "MPGS" : "CYBERSOURCE");
+    }
+
+    if (url.pathname === "/api/support/diagnostic/tracker" && request.method === "GET") {
+      return sandboxTrackerDiagnostic(request, env);
     }
 
     if (url.pathname === "/api/support/payment-status") {
