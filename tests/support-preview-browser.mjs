@@ -556,7 +556,7 @@ async function completeSandboxCardPayment(page, amount) {
 
   await captureScreenshot(page, "safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
-    card: "Safepay official successful Step-Up test vector 5200000000001096",
+    card: "Safepay documented Sandbox Dummy Card Information Set 1 (5200000000001096)",
     expiry: "03/28",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
