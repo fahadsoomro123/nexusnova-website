@@ -144,7 +144,7 @@ function configReady(env) {
     (env.SAFEPAY_ENV === "sandbox" || env.SAFEPAY_ENV === "production");
 }
 
-async function createCheckout(request, env, intentOverride = "CYBERSOURCE") {
+async function createCheckout(request, env) {
   const origin = request.headers.get("origin");
   if ((env.SAFEPAY_ENV === "production" && !ALLOWED_ORIGINS.has(origin)) ||
       (origin && !isAllowedOrigin(origin, env))) {
@@ -181,7 +181,7 @@ async function createCheckout(request, env, intentOverride = "CYBERSOURCE") {
       method: "POST",
       body: JSON.stringify({
         merchant_api_key: env.SAFEPAY_PUBLIC_KEY,
-        intent: intentOverride,
+        intent: "CYBERSOURCE",
         mode: "payment",
         entry_mode: "raw",
         currency: "USD",
@@ -211,35 +211,11 @@ async function createCheckout(request, env, intentOverride = "CYBERSOURCE") {
       }, 502, request);
     }
 
-    if (intentOverride === "MPGS" && session?.capabilities?.MPGS !== true && session?.data?.capabilities?.MPGS !== true) {
-      console.warn("Sandbox MPGS diagnostic unavailable; Safepay did not report MPGS capability");
-      return json({ ok: false, error: "mpgs_capability_unavailable", environment: "sandbox" }, 409, request);
-    }
-
-    const trackerRecord = session?.data?.tracker || session?.tracker || null;
-    const tracker = typeof trackerRecord === "string"
-      ? trackerRecord
-      : trackerRecord?.token || null;
-    const actualIntent = trackerRecord && typeof trackerRecord === "object" &&
-      typeof trackerRecord.intent === "string" ? trackerRecord.intent : null;
+    const tracker = session?.data?.tracker?.token || session?.data?.tracker ||
+      session?.tracker?.token || session?.tracker || null;
     if (typeof tracker !== "string" || !tracker.startsWith("track_")) {
       console.error("Support checkout returned no valid tracker");
       return json({ ok: false, error: "tracker_missing" }, 502, request);
-    }
-
-    // Never label a checkout MPGS unless Safepay's returned tracker actually selected MPGS.
-    // Some account/environment responses can advertise the capability while the created tracker
-    // still selects CYBERSOURCE. Refuse to issue a checkout URL when the requested intent was not honored.
-    if ((intentOverride === "MPGS" && actualIntent !== "MPGS") ||
-        (actualIntent && actualIntent !== intentOverride)) {
-      return json({
-        ok: false,
-        error: "safepay_intent_mismatch",
-        requested_intent: intentOverride,
-        actual_intent: actualIntent,
-        capabilities: session?.data?.capabilities || session?.capabilities || null,
-        environment
-      }, 409, request);
     }
 
     const passportResponse = await safepayRequest(apiHost + "/client/passport/v1/token", env.SAFEPAY_SECRET_KEY, {
@@ -275,7 +251,7 @@ async function createCheckout(request, env, intentOverride = "CYBERSOURCE") {
     checkoutUrl.searchParams.set("redirect_url", redirectUrl.toString());
     checkoutUrl.searchParams.set("cancel_url", cancelUrl);
 
-    return json({ ok: true, checkout_url: checkoutUrl.toString(), amount, currency: "USD", environment, ...(intentOverride === "MPGS" ? { intent: "MPGS" } : {}) }, 200, request);
+    return json({ ok: true, checkout_url: checkoutUrl.toString(), amount, currency: "USD", environment }, 200, request);
   } catch (error) {
     console.error("Support checkout request failed", error?.name || "unknown_error");
     return json({ ok: false, error: "checkout_unavailable" }, 502, request);
@@ -474,13 +450,7 @@ export default {
       }, 200, request);
     }
 
-    const mpgsDiagnostic = url.pathname === "/api/support/create-checkout-mpgs";
-    if (url.pathname === "/api/support/create-checkout" || mpgsDiagnostic) {
-      // A temporary diagnostic entry point for the isolated preview only.
-      // MPGS is available only on Sandbox and only to the static review preview origin.
-      if (mpgsDiagnostic && (env.SAFEPAY_ENV !== "sandbox" || request.headers.get("origin") !== "https://raw.githack.com")) {
-        return json({ ok: false, error: "sandbox_diagnostic_only" }, 403, request);
-      }
+    if (url.pathname === "/api/support/create-checkout") {
       if (request.method === "OPTIONS") {
         const origin = request.headers.get("origin");
         if (!origin || !isAllowedOrigin(origin, env)) return new Response(null, { status: 403 });
@@ -493,7 +463,7 @@ export default {
         }});
       }
       if (request.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, request, { allow: "POST, OPTIONS" });
-      return createCheckout(request, env, mpgsDiagnostic ? "MPGS" : "CYBERSOURCE");
+      return createCheckout(request, env);
     }
 
     if (url.pathname === "/api/support/diagnostic/tracker" && request.method === "GET") {
