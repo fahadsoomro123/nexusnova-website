@@ -44,7 +44,7 @@ test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-lo
 test('representative public hubs load the shared analytics bootstrap', () => {
   for (const path of ['categories.html', 'guides.html', 'tools.html', 'whatsapp-link-generator.html']) {
     const text = fs.readFileSync(path, 'utf8');
-    assert.ok(text.includes('assets/js/main.js?v=20261012-anonymous-baseline'), path);
+    assert.ok(text.includes('assets/js/analytics.js?v=20261012-anonymous-baseline'), path);
   }
 });
 
@@ -67,10 +67,21 @@ test('legacy site shell applies explicit consent changes through the canonical G
   ]) assert.ok(text.includes(token), token);
 });
 
-test('Cloudflare anonymous baseline provisioning runs after GA4 loader changes', () => {
+test('standalone analytics loader preserves anonymous defaults without loading site UI', () => {
+  const text = fs.readFileSync('assets/js/analytics.js', 'utf8');
+  assert.ok(text.includes("const measurementId='G-YLPFKWSS12';"));
+  assert.ok(text.includes("analytics_storage:readChoice()==='granted'?'granted':'denied'"));
+  assert.ok(text.includes("window.gtag('consent','update'"));
+  assert.ok(text.includes('send_page_view:true'));
+  assert.ok(!text.includes('site-main.js'));
+});
+
+test('Cloudflare anonymous baseline provisioning covers both analytics entry points', () => {
   const text = fs.readFileSync('.github/workflows/provision-cloudflare-web-analytics.yml', 'utf8');
   assert.ok(text.includes('workflow_dispatch:'));
   assert.ok(text.includes("'assets/js/main.js'"));
+  assert.ok(text.includes("'assets/js/analytics.js'"));
+  assert.ok(text.includes("for filename in ('assets/js/main.js','assets/js/analytics.js')"));
 });
 
 test('tool analytics detail events require the explicit analytics opt-in', () => {
