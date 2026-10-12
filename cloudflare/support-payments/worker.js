@@ -2,10 +2,16 @@ const ALLOWED_ORIGINS = new Set([
   "https://nexusnovatools.com",
   "https://www.nexusnovatools.com"
 ]);
+const LIVE_PREVIEW_ORIGINS = new Set([
+  "http://127.0.0.1:4178",
+  "http://localhost:4178",
+  "https://raw.githack.com"
+]);
 const ALLOWED_AMOUNTS = new Set([3, 5, 10, 25]);
 
 function isAllowedOrigin(origin, env) {
   if (!origin) return true;
+  if (env.SUPPORT_LIVE_PREVIEW_ONLY === "true") return LIVE_PREVIEW_ORIGINS.has(origin);
   if (ALLOWED_ORIGINS.has(origin)) return true;
   return env.SAFEPAY_ENV === "sandbox" && origin === "https://raw.githack.com";
 }
@@ -21,8 +27,8 @@ function json(body, status, request, extraHeaders = {}) {
     ...extraHeaders
   });
   const origin = request.headers.get("origin");
-  // raw.githack is surfaced only for sandbox previews; request handlers reject it in production.
-  if (origin && (ALLOWED_ORIGINS.has(origin) || origin === "https://raw.githack.com")) {
+  // Preview origins receive CORS only; live-preview request handlers separately enforce their exact allowlist.
+  if (origin && (ALLOWED_ORIGINS.has(origin) || LIVE_PREVIEW_ORIGINS.has(origin))) {
     headers.set("access-control-allow-origin", origin);
     headers.set("vary", "Origin");
   }
@@ -146,7 +152,13 @@ function configReady(env) {
 
 async function createCheckout(request, env) {
   const origin = request.headers.get("origin");
-  if ((env.SAFEPAY_ENV === "production" && !ALLOWED_ORIGINS.has(origin)) ||
+  if (env.SUPPORT_LIVE_PREVIEW_ONLY === "true") {
+    // This Workers.dev service is intentionally usable only from the local design preview or raw.githack return pages.
+    // It has no custom-domain routes and must never serve the production site.
+    if (!origin || !LIVE_PREVIEW_ORIGINS.has(origin)) {
+      return json({ ok: false, error: "live_preview_origin_not_allowed" }, 403, request);
+    }
+  } else if ((env.SAFEPAY_ENV === "production" && !ALLOWED_ORIGINS.has(origin)) ||
       (origin && !isAllowedOrigin(origin, env))) {
     return json({ ok: false, error: "origin_not_allowed" }, 403, request);
   }
@@ -236,10 +248,11 @@ async function createCheckout(request, env) {
     // Safepay appends tracker/order data to these URLs. Keep them query-free,
     // matching the proven checkout pattern in the existing HumanProof integration.
     // Sandbox return targets may be the preview branch; production stays pinned to the canonical site.
-    const redirectUrl = environment === "sandbox" && env.SUPPORT_SUCCESS_URL
+    const usePreviewReturnPages = environment === "sandbox" || env.SUPPORT_LIVE_PREVIEW_ONLY === "true";
+    const redirectUrl = usePreviewReturnPages && env.SUPPORT_SUCCESS_URL
       ? env.SUPPORT_SUCCESS_URL
       : "https://nexusnovatools.com/support-payment-success.html";
-    const cancelUrl = environment === "sandbox" && env.SUPPORT_CANCEL_URL
+    const cancelUrl = usePreviewReturnPages && env.SUPPORT_CANCEL_URL
       ? env.SUPPORT_CANCEL_URL
       : "https://nexusnovatools.com/support-payment-cancelled.html";
     const checkoutUrl = new URL(checkoutHost);
