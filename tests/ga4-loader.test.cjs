@@ -35,7 +35,17 @@ test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-lo
     "script[data-nexusnova-ga4]"
   ];
   for (const token of required) assert.ok(wrapper.includes(token), token);
+  assert.ok(!wrapper.includes("analytics_storage:'granted'"), 'no silent default grant');
+  assert.ok(wrapper.includes("analytics_storage:granted?'granted':'denied'"), 'user choice must update consent');
+  assert.ok(!wrapper.includes("window.gtag('event','analytics_detail_opt_in'"), 'opt-in event must not fire on every page load');
   assert.ok(!wrapper.includes('const mountChoices=()=>{'));
+});
+
+test('representative public hubs load the shared analytics bootstrap', () => {
+  for (const path of ['categories.html', 'guides.html', 'tools.html', 'whatsapp-link-generator.html']) {
+    const text = fs.readFileSync(path, 'utf8');
+    assert.ok(text.includes('assets/js/main.js?v=20261012-anonymous-baseline'), path);
+  }
 });
 
 test('homepage starts cookieless unless the visitor saved a detailed-analytics opt-in', () => {
