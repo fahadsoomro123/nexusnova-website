@@ -453,7 +453,7 @@ async function handleThreeDSIfShown(page, state, controls) {
 }
 
 async function completeSandboxCardPayment(page, amount) {
-  const email = "fahadsoomro123@gmail.com";
+  const email = "nexusnova-sandbox-" + Date.now() + "@example.com";
   const emailInput = await fillField(page, /email/i, email);
   await emailInput.press("Tab").catch(() => {});
   await page.waitForTimeout(500);
@@ -480,7 +480,7 @@ async function completeSandboxCardPayment(page, amount) {
 
   // Safepay Checkout 2.0 validates the cardholder and billing fields in this same form.
   // Use Safepay's official Sandbox Successful Step-Up Authentication test vector only; never use a real card.
-  const cardInput = await fillField(page, /card number/i, "4000000000002503");
+  const cardInput = await fillField(page, /card number/i, "4456530000001096");
   await cardInput.press("Tab").catch(() => {});
   const expiryInput = await fillField(page, /expiry|expiration|cc-exp/i, "03/28");
   const enteredExpiry = await expiryInput.inputValue();
@@ -531,11 +531,11 @@ async function completeSandboxCardPayment(page, amount) {
   const verifiedExpiry = fieldsAfterFill.find(control => control.details.tag === "input" && /expiry|expiration|cc-exp/i.test(control.descriptor));
   const verifiedCvc = fieldsAfterFill.find(control => control.details.tag === "input" && /cvc|cvv|security code|cc-csc|card verification/i.test(control.descriptor));
   const normalizedCard = verifiedCard?.details.value.replaceAll(" ", "").replaceAll("\\u00a0", "") || "";
-  if (normalizedCard !== "4000000000002503" ||
+  if (normalizedCard !== "4456530000001096" ||
       !verifiedExpiry || verifiedExpiry.details.value !== "03/28" ||
       !verifiedCvc || verifiedCvc.details.value !== "111") {
     throw new Error("Safepay altered the supplied sandbox test card fields; refusing to submit: " +
-      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "4000000000002503", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "111" }));
+      JSON.stringify({ cardLast4: normalizedCard.slice(-4), cardDigits: normalizedCard.length, cardMatches: normalizedCard === "4456530000001096", expiry: verifiedExpiry?.details.value, cvcRetained: verifiedCvc?.details.value === "111" }));
   }
   const requiredFieldSnapshot = fieldsAfterFill
     .filter(control => ["input", "select"].includes(control.details.tag))
@@ -557,7 +557,7 @@ async function completeSandboxCardPayment(page, amount) {
 
   await captureScreenshot(page, "safepay-test-card-ready.png");
   check("sandbox test card, cardholder and required billing fields filled", true, {
-    card: "Safepay official Successful Step-Up Authentication test card (4000000000002503)",
+    card: "Safepay documented successful Step-Up Authentication test card (4456530000001096)",
     expiry: "03/28",
     billingCountry: "PK",
     billingState: sindhOption ? "Sindh" : "not-required-by-form"
@@ -712,7 +712,7 @@ try {
     // Never convert this provider error into a green payment assertion: local headed acceptance is tracked separately.
     report.liveSandbox3DS = {
       status: "NOT_RUN_IN_GITHUB_HOSTED_RUNNER",
-      reason: "Safepay-hosted 3DS enrollment has failed at PAYER_AUTH_ENROLLMENT in this runner; no card was submitted in this CI run.",
+      reason: "Provider card submission is disabled during diagnosis; this CI run validates checkout session and page rendering only.",
       cardSubmitted: false,
       countsAsPaymentPass: false,
       manualHeadedAcceptancePreviouslyVerified: false,
