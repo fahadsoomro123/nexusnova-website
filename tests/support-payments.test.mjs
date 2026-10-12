@@ -356,3 +356,19 @@ test("accepts account-scoped Cloudflare Workers preview URLs on checkout and ret
   assert.ok(successPage.includes(rule), "success return page must accept the sandbox Worker hostname");
   assert.ok(cancelPage.includes(rule), "cancel return page must accept the sandbox Worker hostname");
 });
+
+
+test("browser Sandbox QA retains the previous Safepay Step-Up fixture and never submits a card in CI", () => {
+  const browserQa = readFileSync(new URL("./support-preview-browser.mjs", import.meta.url), "utf8");
+  const workflow = readFileSync(new URL("../.github/workflows/support-payment-validation.yml", import.meta.url), "utf8");
+
+  assert.match(browserQa, /const email = "nexusnova-sandbox-" \\+ Date\\.now\\(\\) \\+ "@example\\.com";/);
+  assert.ok(browserQa.includes('fillField(page, /card number/i, "4456530000001096")'),
+    "use the previously working Safepay Step-Up test vector");
+  assert.ok(browserQa.includes('normalizedCard !== "4456530000001096"'),
+    "verify the provider form retained the intended test card");
+  assert.equal(browserQa.includes("4000000000002503"), false,
+    "do not use the Stripe-style test vector in Safepay's hosted checkout");
+  assert.match(workflow, /SUPPORT_SKIP_PROVIDER_CARD_SUBMISSION:\\s*"true"/,
+    "routine CI must not submit a card or create another payment attempt");
+});
