@@ -40,4 +40,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Verify analytics source contract
-        run: node --test tests/ga4-loader.test.cjs
+        run: |
+          node --check assets/js/main.js
+          node --check assets/js/analytics.js
+          node --check assets/js/site-main.js
+          node --test tests/ga4-loader.test.cjs
