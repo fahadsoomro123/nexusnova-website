@@ -20,12 +20,16 @@
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
+  const readSavedAnalyticsChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const analyticsStorageDefault=readSavedAnalyticsChoice()==='granted'?'granted':'denied';
+
   if(!window.__nexusnovaConsentDefaulted){
     window.gtag('consent','default',{
-      analytics_storage:'granted',
+      analytics_storage:analyticsStorageDefault,
       ad_storage:'denied',
       ad_user_data:'denied',
-      ad_personalization:'denied'
+      ad_personalization:'denied',
+      wait_for_update:500
     });
     window.__nexusnovaConsentDefaulted=true;
   }
@@ -62,12 +66,13 @@
   }
 
   window.__nexusnovaLoadAnalytics=granted=>{
-    if(granted){
-      try{localStorage.setItem(consentKey,'granted')}catch(_){}
-      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
-    }else{
-      try{localStorage.setItem(consentKey,'denied')}catch(_){}
-    }
+    window.gtag('consent','update',{
+      analytics_storage:granted?'granted':'denied',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+    try{localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
   };
 
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
