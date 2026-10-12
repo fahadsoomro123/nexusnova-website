@@ -90,7 +90,7 @@ jobs:
           from pathlib import Path
           snippet=Path('/tmp/rum-snippet.txt').read_text().strip()
           marker="  const measurementId='G-YLPFKWSS12';"
-          injection="  const cfRumBeacon=" + repr(snippet) + ";\n  if(!document.querySelector('script[data-nexusnova-cf-rum]')){\n    const cfScript=document.createElement('script');\n    cfScript.type='module';\n    cfScript.src='https://static.cloudflareinsights.com/beacon.min.js';\n    const m=cfRumBeacon.match(/data-cf-beacon='([^']+)'/);\n    if(m){cfScript.dataset.cfBeacon=m[1];cfScript.dataset.nexusnovaCfRum='';document.head.appendChild(cfScript)}\n  }\n"
+          injection="  const cfRumBeacon=" + repr(snippet) + ";\n  if(!document.querySelector('script[data-nexusnova-cf-rum]')){\n    const cfScript=document.createElement('script');\n    cfScript.async=true;\n    cfScript.src='https://static.cloudflareinsights.com/beacon.min.js';\n    const m=cfRumBeacon.match(/data-cf-beacon='([^']+)'/);\n    if(m){cfScript.dataset.cfBeacon=m[1];cfScript.dataset.nexusnovaCfRum='';document.head.appendChild(cfScript)}\n  }\n"
           for filename in ('assets/js/main.js','assets/js/analytics.js'):
               js=Path(filename)
               text=js.read_text(encoding='utf-8')
