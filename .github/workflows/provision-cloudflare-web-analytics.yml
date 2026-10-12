@@ -1,10 +1,13 @@
 name: Provision Cloudflare Web Analytics
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/provision-cloudflare-web-analytics.yml'
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
 
 permissions:
   contents: read
@@ -86,22 +89,23 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           snippet=Path('/tmp/rum-snippet.txt').read_text().strip()
-          js=Path('assets/js/main.js')
-          text=js.read_text(encoding='utf-8')
-          if 'data-cf-beacon' not in text:
-              marker="  const measurementId='G-YLPFKWSS12';"
-              injection="  const cfRumBeacon=" + repr(snippet) + ";\n  if(!document.querySelector('script[data-nexusnova-cf-rum]')){\n    const cfScript=document.createElement('script');\n    cfScript.type='module';\n    cfScript.src='https://static.cloudflareinsights.com/beacon.min.js';\n    const m=cfRumBeacon.match(/data-cf-beacon='([^']+)'/);\n    if(m){cfScript.dataset.cfBeacon=m[1];cfScript.dataset.nexusnovaCfRum='';document.head.appendChild(cfScript)}\n  }\n"
-              if marker not in text:
-                  raise SystemExit('main.js injection marker not found')
-              text=text.replace(marker,marker+'\n'+injection,1)
-              js.write_text(text,encoding='utf-8')
+          marker="  const measurementId='G-YLPFKWSS12';"
+          injection="  const cfRumBeacon=" + repr(snippet) + ";\n  if(!document.querySelector('script[data-nexusnova-cf-rum]')){\n    const cfScript=document.createElement('script');\n    cfScript.async=true;\n    cfScript.src='https://static.cloudflareinsights.com/beacon.min.js';\n    const m=cfRumBeacon.match(/data-cf-beacon='([^']+)'/);\n    if(m){cfScript.dataset.cfBeacon=m[1];cfScript.dataset.nexusnovaCfRum='';document.head.appendChild(cfScript)}\n  }\n"
+          for filename in ('assets/js/main.js','assets/js/analytics.js'):
+              js=Path(filename)
+              text=js.read_text(encoding='utf-8')
+              if 'data-cf-beacon' not in text:
+                  if marker not in text:
+                      raise SystemExit(filename + ' injection marker not found')
+                  text=text.replace(marker,marker+'\n'+injection,1)
+                  js.write_text(text,encoding='utf-8')
           Path('cloudflare-rum-status.json').write_text(Path('/tmp/rum-status.json').read_text(),encoding='utf-8')
           PY
 
-          if ! git diff --quiet -- assets/js/main.js cloudflare-rum-status.json; then
+          if ! git diff --quiet -- assets/js/main.js assets/js/analytics.js cloudflare-rum-status.json; then
             git config user.name 'nexusnova-automation'
             git config user.email 'actions@users.noreply.github.com'
-            git add assets/js/main.js cloudflare-rum-status.json
+            git add assets/js/main.js assets/js/analytics.js cloudflare-rum-status.json
             git commit -m 'feat(analytics): enable Cloudflare Web Analytics baseline'
             git push
           else

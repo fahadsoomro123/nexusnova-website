@@ -20,14 +20,17 @@
   const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
   const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}}; 
   const loadAnalytics=granted=>{
-    if(typeof window.__nexusnovaLoadAnalytics==='function')window.__nexusnovaLoadAnalytics(granted);
+    if(typeof window.__nexusnovaLoadAnalytics==='function'){
+      window.__nexusnovaLoadAnalytics(granted);
+      return;
+    }
+    window.gtag('consent','update',{
+      analytics_storage:granted?'granted':'denied',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
   };
-  const denyAnalytics=()=>window.gtag('consent','update',{
-    analytics_storage:'denied',
-    ad_storage:'denied',
-    ad_user_data:'denied',
-    ad_personalization:'denied'
-  });
 
   const mountChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
@@ -53,10 +56,10 @@
     window.addEventListener('nexusnova-analytics-auto-enabled',syncAutoAnalytics,{once:true});
     if(window.__nexusnovaAnalyticsAutoEnabled)hide();
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
-      saveChoice('granted');loadAnalytics(true);hide();
+      saveChoice('granted');loadAnalytics(true);window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});hide();
     });
     banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{
-      saveChoice('denied');denyAnalytics();loadAnalytics(false);hide();
+      saveChoice('denied');loadAnalytics(false);hide();
     });
     banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
 
