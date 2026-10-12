@@ -17,6 +17,76 @@ const outputDir = path.join(root, "artifacts", "support-preview-browser-qa");
 await fs.mkdir(outputDir, { recursive: true });
 
 const report = { worker: new URL(WORKER_URL).host, mode: "local source render + real sandbox API proxy", captures: [], screenshotFailures: [], checks: [] };
+
+// Read-only inspect of previously failed Sandbox trackers. These GETs cannot create or authorize a payment.
+const priorFailedSandboxTrackers = [
+  { label: "official-step-up-visa", tracker: "track_13672a89-0511-4703-ae73-208ccb2473c3" },
+  { label: "alternate-intent-probe", tracker: "track_f1d97cda-5072-493a-9a02-ffd24c0285e0" },
+  { label: "earlier-step-up-visa", tracker: "track_585aa5e7-0c03-472f-b797-d840d96800fd" },
+  { label: "initial-three-dollar-probe", tracker: "track_1a95358e-0f05-4716-adf2-bf6a029df07f" }
+];
+report.existingSandboxTrackerDiagnostics = [];
+for (const item of priorFailedSandboxTrackers) {
+  try {
+    const diagnosticUrl = new URL(WORKER_URL + "/api/support/diagnostic/tracker");
+    diagnosticUrl.searchParams.set("tracker", item.tracker);
+    const diagnosticResponse = await fetch(diagnosticUrl, {
+      headers: { origin: "https://raw.githack.com" },
+      cache: "no-store"
+    });
+    const data = await diagnosticResponse.json().catch(() => ({}));
+    if (!diagnosticResponse.ok || data.ok !== true) {
+      report.existingSandboxTrackerDiagnostics.push({
+        label: item.label,
+        http: diagnosticResponse.status,
+        ok: false,
+        error: data.error || "diagnostic_unavailable"
+      });
+      continue;
+    }
+    const safeActions = value => Array.isArray(value) ? value.map(action => ({
+      type: action.type || null,
+      kind: action.kind || null,
+      intent: action.intent || null,
+      reason: action.reason || null,
+      success: typeof action.success === "boolean" ? action.success : null,
+      state: action.state || null,
+      eci: action.eci || null
+    })) : [];
+    report.existingSandboxTrackerDiagnostics.push({
+      label: item.label,
+      http: diagnosticResponse.status,
+      ok: true,
+      environment: data.environment || null,
+      state: data.state || null,
+      intent: data.intent || null,
+      mode: data.mode || null,
+      entry_mode: data.entry_mode || null,
+      next_actions: data.next_actions || null,
+      quote_currency: data.quote_currency || null,
+      quote_amount_minor: data.quote_amount_minor ?? null,
+      events: safeActions(data.events),
+      attempts: (Array.isArray(data.attempts) ? data.attempts : []).map(attempt => ({
+        intent: attempt.intent || null,
+        is_success: typeof attempt.is_success === "boolean" ? attempt.is_success : null,
+        actions_performed: safeActions(attempt.actions_performed),
+        enrollment: attempt.enrollment ? {
+          veres_enrolled: attempt.enrollment.veres_enrolled ?? null,
+          eci: attempt.enrollment.eci ?? null,
+          specification_version: attempt.enrollment.specification_version ?? null
+        } : null,
+        error_class: /payer.?auth|enroll/i.test(attempt.error || "") ? "payer-authentication" :
+          attempt.error ? "provider-error" : null
+      }))
+    });
+  } catch (error) {
+    report.existingSandboxTrackerDiagnostics.push({
+      label: item.label,
+      ok: false,
+      error: "diagnostic_request_failed"
+    });
+  }
+}
 const providerConsoleErrors = [];
 const providerFailedRequests = [];
 const providerPageErrors = [];
