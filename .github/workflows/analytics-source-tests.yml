@@ -1,0 +1,43 @@
+name: Analytics Source Contract
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'index.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'tools.html'
+      - 'whatsapp-link-generator.html'
+      - 'privacy.html'
+      - 'tests/ga4-loader.test.cjs'
+      - '.github/workflows/analytics-source-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'index.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'tools.html'
+      - 'whatsapp-link-generator.html'
+      - 'privacy.html'
+      - 'tests/ga4-loader.test.cjs'
+      - '.github/workflows/analytics-source-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  analytics-source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Verify analytics source contract
+        run: node --test tests/ga4-loader.test.cjs
