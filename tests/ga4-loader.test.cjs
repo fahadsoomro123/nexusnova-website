@@ -67,12 +67,17 @@ test('legacy site shell applies explicit consent changes through the canonical G
   ]) assert.ok(text.includes(token), token);
 });
 
-test('standalone analytics loader preserves anonymous defaults without loading site UI', () => {
+test('standalone analytics loader provides anonymous defaults and an explicit privacy-choice control', () => {
   const text = fs.readFileSync('assets/js/analytics.js', 'utf8');
   assert.ok(text.includes("const measurementId='G-YLPFKWSS12';"));
   assert.ok(text.includes("analytics_storage:readChoice()==='granted'?'granted':'denied'"));
   assert.ok(text.includes("window.gtag('consent','update'"));
   assert.ok(text.includes('send_page_view:true'));
+  assert.ok(text.includes('data-nexusnova-consent'));
+  assert.ok(text.includes('Privacy choices'));
+  assert.ok(text.includes('data-consent-allow'));
+  assert.ok(text.includes('data-consent-deny'));
+  assert.ok(text.includes("window.gtag('event','analytics_detail_opt_in'"));
   assert.ok(!text.includes('site-main.js'));
 });
 
