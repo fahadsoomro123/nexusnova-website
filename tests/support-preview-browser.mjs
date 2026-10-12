@@ -32,7 +32,8 @@ for (const item of priorFailedSandboxTrackers) {
     diagnosticUrl.searchParams.set("tracker", item.tracker);
     const diagnosticResponse = await fetch(diagnosticUrl, {
       headers: { origin: "https://raw.githack.com" },
-      cache: "no-store"
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000)
     });
     const data = await diagnosticResponse.json().catch(() => ({}));
     if (!diagnosticResponse.ok || data.ok !== true) {
