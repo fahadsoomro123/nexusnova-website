@@ -92,8 +92,14 @@ test("creates an allowlisted USD support checkout with signed order ID and clean
   assert.equal(metadata.source, "nexusnova-support");
   assert.equal(Object.hasOwn(metadata, "purpose"), false, "Safepay session setup must not include the provider-rejected purpose field");
   assert.equal(calls[0].init.headers.get("x-sfpy-merchant-secret"), SECRET_KEY);
-  assert.equal(JSON.parse(calls[0].init.body).amount, 500);
-  assert.equal(JSON.parse(calls[0].init.body).currency, "USD");
+  const sessionPayload = JSON.parse(calls[0].init.body);
+  assert.equal(sessionPayload.merchant_api_key, PUBLIC_KEY);
+  assert.equal(sessionPayload.intent, "CYBERSOURCE");
+  assert.equal(sessionPayload.mode, "payment");
+  assert.equal(sessionPayload.entry_mode, "raw");
+  assert.equal(sessionPayload.amount, 500);
+  assert.equal(sessionPayload.currency, "USD");
+  assert.equal(sessionPayload.include_fees, false);
 });
 
 test("accepts each approved support amount and sends the matching minor-unit amount to Safepay", async (t) => {
