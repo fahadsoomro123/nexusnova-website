@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - nexusnova-support-production
+      - nexusnova-support-reporter-fix-20261009
     paths:
       - "cloudflare/support-payments/**"
       - "assets/js/nexusnova-support.js"
