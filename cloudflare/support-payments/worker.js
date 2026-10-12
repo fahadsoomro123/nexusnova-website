@@ -259,76 +259,6 @@ async function createCheckout(request, env) {
 }
 
 
-async function sandboxTrackerDiagnostic(request, env) {
-  // Read-only diagnostic for an existing Sandbox tracker. It never creates or authorizes a payment.
-  if (env.SAFEPAY_ENV !== "sandbox" ||
-      request.headers.get("origin") !== "https://raw.githack.com" ||
-      !configReady(env)) {
-    return json({ ok: false, error: "sandbox_diagnostic_only" }, 403, request);
-  }
-  const tracker = new URL(request.url).searchParams.get("tracker") || "";
-  if (!/^track_[A-Za-z0-9-]{10,120}$/.test(tracker)) {
-    return json({ ok: false, error: "invalid_tracker" }, 400, request);
-  }
-  try {
-    const { apiHost } = apiConfig(env);
-    const response = await safepayRequest(
-      apiHost + "/reporter/api/v1/payments/" + encodeURIComponent(tracker),
-      env.SAFEPAY_SECRET_KEY
-    );
-    const payload = await readJson(response);
-    if (!response.ok) {
-      return json({ ok: false, error: "provider_tracker_lookup_failed", upstream_status: response.status }, 502, request);
-    }
-    const root = payload?.data?.tracker || payload?.data || payload?.tracker || payload || {};
-    const actions = (value) => Array.isArray(value) ? value.slice(-12).map(item => ({
-      type: typeof item?.type === "string" ? item.type.slice(0, 80) : null,
-      kind: typeof item?.kind === "string" ? item.kind.slice(0, 80) : null,
-      intent: typeof item?.intent === "string" ? item.intent.slice(0, 40) : null,
-      reason: typeof item?.reason === "string" ? item.reason.slice(0, 240) : null,
-      success: typeof item?.success === "boolean" ? item.success : null,
-      state: typeof item?.state === "string" ? item.state.slice(0, 80) : null,
-      eci: typeof item?.eci === "string" ? item.eci.slice(0, 8) : null
-    })) : [];
-    const attempts = Array.isArray(root?.attempts) ? root.attempts.slice(-5).map(attempt => ({
-      intent: typeof attempt?.intent === "string" ? attempt.intent.slice(0, 40) : null,
-      is_success: typeof attempt?.is_success === "boolean" ? attempt.is_success : null,
-      actions_performed: actions(attempt?.actions_performed),
-      payment_method: attempt?.payment_method ? {
-        kind: typeof attempt.payment_method.kind === "string" ? attempt.payment_method.kind : null,
-        scheme: typeof attempt.payment_method.scheme === "string" ? attempt.payment_method.scheme : null,
-        last_four: typeof attempt.payment_method.last_four === "string" ? attempt.payment_method.last_four : null,
-        bin: typeof attempt.payment_method.bin === "string" ? attempt.payment_method.bin.slice(0, 6) : null
-      } : null,
-      enrollment: attempt?.enrollment ? {
-        veres_enrolled: attempt.enrollment.veres_enrolled ?? null,
-        eci: attempt.enrollment.eci ?? null,
-        specification_version: attempt.enrollment.specification_version ?? null
-      } : null,
-      error: typeof attempt?.error === "string" ? attempt.error.slice(0, 500) :
-        typeof attempt?.error?.message === "string" ? attempt.error.message.slice(0, 500) : null
-    })) : [];
-    const totals = root?.purchase_totals?.quote_amount || null;
-    return json({
-      ok: true,
-      environment: root?.environment || env.SAFEPAY_ENV,
-      tracker: root?.token || tracker,
-      state: root?.state || null,
-      intent: root?.intent || null,
-      mode: root?.mode || null,
-      entry_mode: root?.entry_mode || null,
-      next_actions: root?.next_actions || null,
-      quote_currency: typeof totals?.currency === "string" ? totals.currency : null,
-      quote_amount_minor: typeof totals?.amount === "number" ? totals.amount : null,
-      events: actions(root?.events),
-      attempts
-    }, 200, request);
-  } catch (error) {
-    console.error("Sandbox tracker diagnostic failed", error?.name || "unknown_error");
-    return json({ ok: false, error: "tracker_diagnostic_unavailable" }, 502, request);
-  }
-}
-
 async function paymentStatus(request, env) {
   const origin = request.headers.get("origin");
   if (origin && !isAllowedOrigin(origin, env)) {
@@ -464,10 +394,6 @@ export default {
       }
       if (request.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405, request, { allow: "POST, OPTIONS" });
       return createCheckout(request, env);
-    }
-
-    if (url.pathname === "/api/support/diagnostic/tracker" && request.method === "GET") {
-      return sandboxTrackerDiagnostic(request, env);
     }
 
     if (url.pathname === "/api/support/payment-status") {
