@@ -97,6 +97,7 @@ jobs:
           SUPPORT_WORKER_URL: https://nexusnova-support-payments-preview.fahadsoomro123.workers.dev
           SUPPORT_HEADLESS: "false"
           SUPPORT_SKIP_PROVIDER_CARD_SUBMISSION: "false"
+          SUPPORT_QA_INTENT: "MPGS"
         run: xvfb-run -a -s "-screen 0 1366x900x24" node tests/support-preview-browser.mjs
 
       - name: Upload browser screenshots and QA report
