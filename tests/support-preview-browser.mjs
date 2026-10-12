@@ -84,7 +84,12 @@ async function proxyToSandbox(req, res, url) {
     if (!Number.isInteger(payload?.amount) || !allowedAmounts.has(payload.amount)) {
       return respond(res, 400, "application/json; charset=utf-8", JSON.stringify({ ok: false, error: "invalid_support_amount" }));
     }
-    const upstream = await fetch(WORKER_URL + url.pathname, {
+    // In the one-off acceptance run, compare the documented alternative Safepay MPGS route.
+    // This mapping exists only in the local test proxy; production site and default worker route are unchanged.
+    const upstreamPath = process.env.SUPPORT_QA_INTENT === "MPGS"
+      ? "/api/support/create-checkout-mpgs"
+      : url.pathname;
+    const upstream = await fetch(WORKER_URL + upstreamPath, {
       method: "POST",
       headers: { "content-type": "application/json", "origin": "https://raw.githack.com" },
       body: JSON.stringify({ amount: payload.amount })
@@ -660,6 +665,9 @@ try {
   check("desktop: checkout session matches USD $5 sandbox request", payload.ok === true && payload.amount === 5 && payload.currency === "USD" && payload.environment === "sandbox", {
     ok: payload.ok, amount: payload.amount, currency: payload.currency, environment: payload.environment
   });
+  if (process.env.SUPPORT_QA_INTENT === "MPGS") {
+    check("desktop: diagnostic checkout route uses MPGS", payload.intent === "MPGS", { intent: payload.intent });
+  }
   const checkout = new URL(payload.checkout_url);
   check("desktop: checkout redirects to Safepay sandbox", checkout.protocol === "https:" && checkout.hostname === "sandbox.api.getsafepay.com" && Boolean(checkout.searchParams.get("tracker")) && Boolean(checkout.searchParams.get("tbt")), {
     protocol: checkout.protocol, hostname: checkout.hostname, hasTracker: Boolean(checkout.searchParams.get("tracker")), hasTbt: Boolean(checkout.searchParams.get("tbt"))
@@ -680,6 +688,14 @@ try {
       const url = new URL(response.url());
       if (url.hostname === "sandbox.api.getsafepay.com" && /payment|auth|checkout|transaction|intent|card|track|reporter/i.test(url.pathname)) {
         providerNetworkEvents.push({ event: "response", status: response.status(), path: url.pathname });
+        if (response.request().method() === "POST" && /\/order\/payments\/v3\/track_/.test(url.pathname)) {
+          response.text().then(body => providerNetworkEvents.push({
+            event: "payment_action_response_body",
+            status: response.status(),
+            path: url.pathname,
+            body: body.slice(0, 1600)
+          })).catch(() => {});
+        }
       }
     } catch {}
   });
