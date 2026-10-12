@@ -2,9 +2,12 @@ const ALLOWED_ORIGINS = new Set([
   "https://nexusnovatools.com",
   "https://www.nexusnovatools.com"
 ]);
-const LIVE_PREVIEW_ORIGINS = new Set([
+const LIVE_PREVIEW_CHECKOUT_ORIGINS = new Set([
   "http://127.0.0.1:4178",
-  "http://localhost:4178",
+  "http://localhost:4178"
+]);
+const LIVE_PREVIEW_ORIGINS = new Set([
+  ...LIVE_PREVIEW_CHECKOUT_ORIGINS,
   "https://raw.githack.com"
 ]);
 const ALLOWED_AMOUNTS = new Set([3, 5, 10, 25]);
@@ -155,7 +158,7 @@ async function createCheckout(request, env) {
   if (env.SUPPORT_LIVE_PREVIEW_ONLY === "true") {
     // This Workers.dev service is intentionally usable only from the local design preview or raw.githack return pages.
     // It has no custom-domain routes and must never serve the production site.
-    if (!origin || !LIVE_PREVIEW_ORIGINS.has(origin)) {
+    if (!origin || !LIVE_PREVIEW_CHECKOUT_ORIGINS.has(origin)) {
       return json({ ok: false, error: "live_preview_origin_not_allowed" }, 403, request);
     }
   } else if ((env.SAFEPAY_ENV === "production" && !ALLOWED_ORIGINS.has(origin)) ||
