@@ -18,7 +18,7 @@ permissions:
 
 env:
   GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
-  GA4_QA_VERSION: '20260915-auto-ga4-v1'
+  GA4_QA_VERSION: '20261012-anonymous-consent-v1'
 
 jobs:
   verify:
@@ -73,18 +73,31 @@ jobs:
               page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
               page.goto(URL.lstrip('/') + path + '?ga4_qa=' + os.environ['QA_VERSION'] + '&ga4_view=' + label, wait_until='domcontentloaded', timeout=30000)
               page.wait_for_timeout(9000)
-              info=page.evaluate('''() => ({
-                gtag: typeof window.gtag === 'function',
-                gaScript: [...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).map(s=>s.src),
-                gaConfigCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='config').length,
-                gaJsCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='js').length,
-                consentBanner: !!document.querySelector('#nexusnova-analytics-consent'),
-                allowButton: !!document.querySelector('[data-consent-allow]'),
-                consentText: document.body.innerText.includes('Allow detailed analytics'),
-                path: location.pathname,
-                title: document.title,
-                overflow: {sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
-              })''')
+              info=page.evaluate('''() => {
+                const args=(window.dataLayer||[]).map(x=>{
+                  try {
+                    if(Array.isArray(x)) return x;
+                    if(x && typeof x.length==='number') return Array.from(x);
+                  } catch(_) {}
+                  return [];
+                });
+                const defaults=args.filter(x=>x[0]==='consent'&&x[1]==='default').map(x=>x[2]||{});
+                return {
+                  gtag: typeof window.gtag === 'function',
+                  gaScript: [...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).map(s=>s.src),
+                  gaConfigCount: args.filter(x=>x[0]==='config').length,
+                  gaJsCount: args.filter(x=>x[0]==='js').length,
+                  consentBanner: !!document.querySelector('#nexusnova-analytics-consent'),
+                  allowButton: !!document.querySelector('[data-consent-allow]'),
+                  consentCopy: !!document.querySelector('#nexusnova-analytics-consent')?.textContent.includes('Allow detailed analytics'),
+                  privacyTrigger: !!document.querySelector('.nn-consent-reopen'),
+                  savedConsent: (()=>{try{return localStorage.getItem('nexusnova_analytics_consent_v1')||''}catch(_){return ''}})(),
+                  analyticsStorageDefault: defaults.length ? defaults[defaults.length-1].analytics_storage : '',
+                  path: location.pathname,
+                  title: document.title,
+                  overflow: {sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
+                };
+              }''')
               collect=[]
               for url in requests_seen:
                   if 'google-analytics.com/g/collect' not in url: continue
@@ -93,7 +106,7 @@ jobs:
                       collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'dt':q.get('dt',[''])[0]})
               pageviews=[x for x in collect if x['en']=='page_view']
               row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20]}
-              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and not info['consentBanner'] and not info['allowButton'] and not info['consentText'] and len(pageviews)>=1 and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
+              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and info['consentBanner'] and info['allowButton'] and info['consentCopy'] and info['privacyTrigger'] and info['savedConsent']=='' and info['analyticsStorageDefault']=='denied' and len(pageviews)>=1 and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
               return row
 
           with sync_playwright() as p:
@@ -127,10 +140,38 @@ jobs:
                   time.sleep(10)
               if not rt.get('rows'):rt['rows']=[]
 
-          report={'measurementId':MEASUREMENT_ID,'viewports':[x[0] for x in viewports],'browser':results,'realtime':rt}
+          consentOptIn={'success':False}
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True)
+              context=browser.new_context(viewport={'width':1280,'height':800},timezone_id='Asia/Karachi')
+              page=context.new_page()
+              page.goto(URL,wait_until='domcontentloaded',timeout=30000)
+              page.wait_for_timeout(9000)
+              trigger=page.locator('.nn-consent-reopen')
+              if trigger.count():
+                  trigger.click()
+                  page.locator('[data-consent-allow]').click()
+                  page.wait_for_timeout(500)
+                  consentOptIn=page.evaluate('''() => {
+                    const args=(window.dataLayer||[]).map(x=>{
+                      try { if(Array.isArray(x)) return x; if(x && typeof x.length==='number') return Array.from(x); } catch(_) {}
+                      return [];
+                    });
+                    return {
+                      choice: (()=>{try{return localStorage.getItem('nexusnova_analytics_consent_v1')||''}catch(_){return ''}})(),
+                      consentUpdated: args.some(x=>x[0]==='consent'&&x[1]==='update'&&x[2]?.analytics_storage==='granted'),
+                      optInEvent: args.some(x=>x[0]==='event'&&x[1]==='analytics_detail_opt_in')
+                    };
+                  }''')
+                  consentOptIn['success']=consentOptIn.get('choice')=='granted' and consentOptIn.get('consentUpdated') and consentOptIn.get('optInEvent')
+              context.close()
+              browser.close()
+
+          report={'measurementId':MEASUREMENT_ID,'viewports':[x[0] for x in viewports],'browser':results,'consentOptIn':consentOptIn,'realtime':rt}
           REPORT.write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
           print(REPORT.read_text())
-          assert all(x['success'] for x in results), 'Browser GA4 acceptance failed'
+          assert all(x['success'] for x in results), 'Browser GA4 privacy-preserving baseline acceptance failed'
+          assert consentOptIn['success'], 'Detailed analytics consent did not update to granted when the visitor opted in'
           assert rt['success'], 'GA4 Realtime did not observe a page_view in the existing property'
           PY
           python /tmp/ga4_production_probe.py
