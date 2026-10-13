@@ -97,6 +97,27 @@ def gsc_rows(token: str, start: date, end: date) -> list[dict[str, Any]]:
     return data.get("rows") or []
 
 
+def gsc_page_rows(token: str, start: date, end: date) -> list[dict[str, Any]]:
+    """Fetch page totals directly so anonymized/missing query rows don't hide CTR issues."""
+    endpoint = (
+        "https://searchconsole.googleapis.com/webmasters/v3/sites/"
+        + urllib.parse.quote(SITE_URL, safe="")
+        + "/searchAnalytics/query"
+    )
+    data = post_json(
+        endpoint,
+        {
+            "startDate": start.isoformat(),
+            "endDate": end.isoformat(),
+            "dimensions": ["page"],
+            "rowLimit": 1000,
+            "dataState": "final",
+        },
+        token,
+    )
+    return data.get("rows") or []
+
+
 def local_file_for(page_url: str) -> Path | None:
     try:
         parsed = urllib.parse.urlsplit(page_url)
@@ -195,6 +216,42 @@ def build_ctr_opportunities(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         })
     return sorted(items, key=lambda x: (x["score"], x["impressions"]), reverse=True)
 
+
+
+def build_ctr_page_opportunities(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Report low-CTR, high-visibility URLs from Search Console's page dimension."""
+    items: list[dict[str, Any]] = []
+    for row in rows:
+        keys = row.get("keys") or []
+        if not keys:
+            continue
+        page = str(keys[0]).strip()
+        impressions = float(row.get("impressions", 0))
+        clicks = float(row.get("clicks", 0))
+        ctr = float(row.get("ctr", 0)) * 100
+        position = float(row.get("position", 100))
+        if (
+            impressions < CTR_MIN_PAGE_IMPRESSIONS
+            or not (1.0 <= position <= CTR_MAX_POSITION)
+            or ctr > CTR_MAX_PERCENT
+            or not local_file_for(page)
+        ):
+            continue
+        confidence = "low" if impressions < 50 else "moderate"
+        score = math.log1p(impressions) * (CTR_MAX_PERCENT - ctr + 0.5) / max(1.0, position ** 0.35)
+        items.append({
+            "page": page,
+            "clicks": round(clicks, 1),
+            "impressions": round(impressions, 1),
+            "ctr": round(ctr, 2),
+            "position": round(position, 1),
+            "opportunity_type": "low_ctr_high_visibility",
+            "confidence": confidence,
+            "evidence_source": "search_console_page_dimension",
+            "score": round(score, 4),
+            "queries": [],
+        })
+    return sorted(items, key=lambda x: (x["score"], x["impressions"]), reverse=True)
 
 
 def aggregate_pages(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -429,16 +486,23 @@ def main() -> None:
     else:
         try:
             rows = gsc_rows(token, start, end)
+            page_rows = gsc_page_rows(token, start, end)
             opportunities = build_opportunities(rows)
             pages = aggregate_pages(opportunities)
             ctr_opportunities = build_ctr_opportunities(rows)
-            ctr_pages = [page for page in aggregate_pages(ctr_opportunities) if page["impressions"] >= CTR_MIN_PAGE_IMPRESSIONS]
+            query_ctr_pages = aggregate_pages(ctr_opportunities)
+            ctr_pages = build_ctr_page_opportunities(page_rows)
+            query_evidence = {page["page"]: page for page in query_ctr_pages}
             for page in ctr_pages:
-                page["opportunity_type"] = "low_ctr_high_visibility"
-                page["confidence"] = "low" if page["impressions"] < 50 else "moderate"
+                evidence = query_evidence.get(page["page"])
+                if evidence:
+                    page["queries"] = evidence.get("queries", [])[:8]
+                    page["query_aggregate_impressions"] = evidence.get("impressions", 0)
             report["ctr_snippet_min_query_impressions"] = CTR_MIN_IMPRESSIONS
             report["ctr_snippet_min_page_impressions"] = CTR_MIN_PAGE_IMPRESSIONS
             report["ctr_snippet_query_rows"] = len(ctr_opportunities)
+            report["ctr_snippet_query_aggregated_pages"] = len([p for p in query_ctr_pages if p["impressions"] >= CTR_MIN_PAGE_IMPRESSIONS])
+            report["ctr_snippet_page_data_rows"] = len(page_rows)
             report["ctr_snippet_pages"] = len(ctr_pages)
             report["ctr_snippet_query_opportunities"] = ctr_opportunities[:50]
             report["ctr_snippet_page_opportunities"] = ctr_pages[:20]
@@ -468,7 +532,7 @@ def main() -> None:
         f"Ranking-opportunity rows (20+ impressions, avg position 18-90): {report.get('eligible_query_rows', 0)}",
         f"Ranking-opportunity pages: {report.get('eligible_pages', 0)}",
         f"High-visibility low-CTR query rows (3+ impressions, avg position 1-20, CTR <= 1.5%): {report.get('ctr_snippet_query_rows', 0)}",
-        f"High-visibility low-CTR pages (20+ combined query impressions): {report.get('ctr_snippet_pages', 0)}",
+        f"High-visibility low-CTR pages (page-dimension evidence, 20+ impressions): {report.get('ctr_snippet_pages', 0)}",
     ]
     if report.get("error"):
         lines.append(f"Error: {report['error']}")

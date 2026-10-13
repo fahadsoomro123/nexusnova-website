@@ -78,6 +78,34 @@ class SearchGrowthOpportunityTests(unittest.TestCase):
         self.assertEqual(opportunities[0]["query"], "ranking candidate")
         self.assertNotIn("opportunity_type", opportunities[0])
 
+    def test_page_dimension_finds_low_ctr_page_even_when_query_rows_are_missing(self) -> None:
+        rows = [{
+            "keys": [self.page],
+            "impressions": 166,
+            "clicks": 0,
+            "ctr": 0,
+            "position": 7.2,
+        }]
+        with mock.patch.object(growth, "local_file_for", return_value=self.valid_file):
+            opportunities = growth.build_ctr_page_opportunities(rows)
+
+        self.assertEqual(len(opportunities), 1)
+        self.assertEqual(opportunities[0]["page"], self.page)
+        self.assertEqual(opportunities[0]["impressions"], 166.0)
+        self.assertEqual(opportunities[0]["clicks"], 0.0)
+        self.assertEqual(opportunities[0]["position"], 7.2)
+        self.assertEqual(opportunities[0]["evidence_source"], "search_console_page_dimension")
+        self.assertEqual(opportunities[0]["queries"], [])
+
+    def test_page_dimension_excludes_pages_below_threshold_or_outside_top_twenty(self) -> None:
+        rows = [
+            {"keys": [self.page], "impressions": 19, "clicks": 0, "ctr": 0, "position": 7},
+            {"keys": [self.page], "impressions": 100, "clicks": 0, "ctr": 0, "position": 21},
+            {"keys": ["https://nexusnovatools.com/privacy.html"], "impressions": 100, "clicks": 0, "ctr": 0, "position": 7},
+        ]
+        with mock.patch.object(growth, "local_file_for", side_effect=lambda url: self.valid_file if url == self.page else None):
+            self.assertEqual(growth.build_ctr_page_opportunities(rows), [])
+
 
 if __name__ == "__main__":
     unittest.main()
