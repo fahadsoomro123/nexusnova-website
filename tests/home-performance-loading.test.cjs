@@ -50,3 +50,16 @@ test('homepage header and footer use responsive WebP logo sources with PNG fallb
   }
   assert.ok(html.includes('content="https://nexusnovatools.com/assets/logo.png"'), 'social preview image remains unchanged');
 });
+
+test('global footer copyright text meets WCAG AA normal-text contrast', () => {
+  const css = fs.readFileSync('assets/css/footer-social.css', 'utf8');
+  const match = css.match(/\.nn-global-footer \.nn-global-footer-bottom\s*\{([^}]*)\}/);
+  assert.ok(match, 'global footer bottom styles must remain explicit');
+  const colorMatch = match[1].match(/color:\s*(#[0-9a-f]{6})\s*!important/i);
+  assert.ok(colorMatch, 'global footer copyright color must be explicit');
+  const rgb = colorMatch[1].slice(1).match(/../g).map(value => parseInt(value, 16) / 255);
+  const channel = value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  const luminance = 0.2126 * channel(rgb[0]) + 0.7152 * channel(rgb[1]) + 0.0722 * channel(rgb[2]);
+  const contrast = 1.05 / (luminance + 0.05);
+  assert.ok(contrast >= 4.5, 'global footer copyright contrast must be at least 4.5:1 (got ' + contrast.toFixed(2) + ':1)');
+});
