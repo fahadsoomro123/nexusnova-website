@@ -6,6 +6,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import uuid
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from html.parser import HTMLParser
@@ -318,9 +319,22 @@ def local_audit():
 
 
 def fetch_live(url: str):
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "NexusNova-AdSense-Reviewer-Audit/2.0",
-        "Cache-Control": "no-cache",
+    # Query-string cache busting is deliberate: some CDN edges can serve an older
+    # HTML snapshot despite Cache-Control: no-cache. Keep the logical URL as the
+    # report key so canonical/sitemap checks continue to use the real public URL.
+    parts = urllib.parse.urlsplit(url)
+    query = urllib.parse.parse_qsl(parts.query, keep_blank_values=True)
+    query.append(("nn_audit", uuid.uuid4().hex))
+    request_url = urllib.parse.urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        parts.path,
+        urllib.parse.urlencode(query),
+        parts.fragment,
+    ))
+    req = urllib.request.Request(request_url, headers={
+        "User-Agent": "NexusNova-AdSense-Reviewer-Audit/3.0",
+        "Cache-Control": "no-cache, no-store, max-age=0",
         "Pragma": "no-cache",
         "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
     })
@@ -330,7 +344,7 @@ def fetch_live(url: str):
             return url, resp.status, resp.geturl(), body, ""
     except Exception as exc:
         status = getattr(exc, "code", 0) or 0
-        return url, status, url, "", f"{type(exc).__name__}: {exc}"
+        return url, status, request_url, "", f"{type(exc).__name__}: {exc}"
 
 
 def live_audit(urls: list[str]):

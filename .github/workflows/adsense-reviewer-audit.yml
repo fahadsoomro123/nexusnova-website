@@ -10,6 +10,7 @@ on:
       - 'sitemap*.xml'
       - 'robots.txt'
       - 'ads.txt'
+      - 'tests/test_adsense_live_audit.py'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Test live audit cache-busting
+        run: python tests/test_adsense_live_audit.py
       - name: Run repository + live reviewer audit
         run: python adsense_reviewer_audit.py --live
       - name: Enforce zero reviewer warnings
