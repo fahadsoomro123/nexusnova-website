@@ -118,8 +118,8 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
     'window.__nexusnovaGa4BootstrapReady=true;',
     "const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);",
     "if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){",
-    "'Keep basic measurement'",
-    "'Allow detailed analytics'"
+    'Keep basic measurement',
+    'Allow detailed analytics'
   ]) assert.ok(loader.includes(token), token);
   assert.ok(!loader.includes("analytics_storage:'granted'"), 'fresh visitors must default denied');
 });
