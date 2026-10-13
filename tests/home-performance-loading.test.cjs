@@ -63,3 +63,22 @@ test('global footer copyright text meets WCAG AA normal-text contrast', () => {
   const contrast = 1.05 / (luminance + 0.05);
   assert.ok(contrast >= 4.5, 'global footer copyright contrast must be at least 4.5:1 (got ' + contrast.toFixed(2) + ':1)');
 });
+
+test('app and tools hero/footer use responsive WebP logos and preserve each page social image', () => {
+  const source = '<source type="image/webp" srcset="assets/logo-2x.webp 2x, assets/logo-3x.webp 3x">';
+  for (const path of ['app.html', 'tools.html']) {
+    const html = fs.readFileSync(path, 'utf8');
+    assert.equal(html.split(source).length - 1, 2, path + ' must use responsive logo sources in header and footer');
+    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"></picture>'), path + ' header keeps the original PNG fallback and alt text');
+    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"></picture>'), path + ' footer keeps the original PNG fallback and alt text');
+    const socialImageMeta = html.match(/<meta\b(?=[^>]*(?:property|name)=["'](?:og:image|twitter:image)["'])[^>]*>/gi) || [];
+    assert.ok(socialImageMeta.length > 0, path + ' must keep its existing social image metadata');
+    const expectedSocialImage = path === 'app.html'
+      ? 'https://nexusnovatools.com/assets/nexusnova-logo-512.svg'
+      : 'https://nexusnovatools.com/assets/logo.png';
+    for (const meta of socialImageMeta) {
+      assert.ok(meta.includes(expectedSocialImage), path + ' social image URL stays unchanged');
+      assert.ok(!meta.includes('.webp'), path + ' social metadata does not use responsive WebP');
+    }
+  }
+});
