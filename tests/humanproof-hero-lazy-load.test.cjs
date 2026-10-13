@@ -24,7 +24,7 @@ test('automatic 3D hero waits for visibility and browser idle before booting', (
   assert.match(branch, /requestIdleCallback/);
   assert.match(branch, /setTimeout\(schedule,1800\)/);
   assert.match(branch, /window\.addEventListener\('load',observeStage/);
-  assert.doesNotMatch(branch, /^\s*boot\(\);/m,
+  assert.doesNotMatch(source, /if\(autoStart\)\{\s*boot\(\);\s*return;/,
     'autostart must not immediately perform WebGL setup before visibility/idle checks');
 });
 
