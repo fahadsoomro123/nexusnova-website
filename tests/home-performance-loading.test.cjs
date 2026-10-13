@@ -15,3 +15,13 @@ test('below-the-fold HumanProof and footer CSS load asynchronously with no-scrip
     assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>'), file + ' must keep the no-script fallback');
   }
 });
+
+
+test('live performance gate hashes the exact deployed homepage before measuring', () => {
+  const workflow = fs.readFileSync('.github/workflows/live-performance-100.yml', 'utf8');
+  assert.ok(workflow.includes('expected_html_sha="$(sha256sum index.html | awk'), 'expected hash must come from current checkout');
+  assert.ok(workflow.includes('actual_html_sha="$(sha256sum "$tmp_body" | awk'), 'live HTML must be hashed');
+  assert.ok(workflow.includes('[ "$expected_html_sha" = "$actual_html_sha" ]'), 'Lighthouse must wait for an exact HTML match');
+  assert.ok(workflow.includes('Cache-Control: no-cache, no-store, max-age=0'), 'probe must bypass cached homepage');
+  assert.ok(workflow.includes('Refusing to record a live Lighthouse result against stale content') || workflow.includes('refusing to record a live Lighthouse result against stale content'), 'stale deployments must fail closed');
+});
