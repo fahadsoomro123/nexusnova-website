@@ -59,3 +59,26 @@ test('the older Chrome 152 Android article is excluded from indexing and points 
   assert.equal(data.some(record => record.url === primaryUrl), true);
   assert.ok(search.query('Chrome 152 Android release timeline').some(result => result.url === primaryUrl));
 });
+
+
+test('search index stores compact article metadata rather than full page bodies', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/js/search-core.js'), 'utf8');
+  const oversizedTags = data.flatMap(record => record.tags
+    .filter(tag => tag.length > 900)
+    .map(tag => ({ url: record.url, length: tag.length })));
+
+  assert.ok(source.length < 90000, 'search index unexpectedly grew beyond the compact-data budget');
+  assert.deepEqual(oversizedTags, [], 'Do not embed full article bodies in search tags');
+
+  const queries = [
+    ['EXIF GPS metadata photos', 'articles/remove-exif-gps-metadata-photos.html'],
+    ['AI search planning 2026', 'articles/ai-search-planning-decisions-2026.html'],
+    ['Google Search Console platform properties 2026', 'articles/google-search-console-platform-properties-2026.html'],
+    ['Chrome 152 327 security fixes', 'articles/google-releases-chrome-152-with-327-security-fixes.html'],
+    ['AI tokens context windows', 'articles/ai-token-count-context-window-guide.html']
+  ];
+  for (const [query, expectedUrl] of queries) {
+    assert.ok(search.query(query).some(result => result.url === expectedUrl),
+      'expected a compact-index search hit for: ' + query);
+  }
+});
