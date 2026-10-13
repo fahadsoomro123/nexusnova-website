@@ -31,7 +31,7 @@ test('live performance gate hashes the exact deployed homepage before measuring'
 
 test('homepage HumanProof attribution meets WCAG AA normal-text contrast', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  const match = html.match(/\.nn-proof-attribution\\{[^}]*color:\\s*(#[0-9a-f]{6})/i);
+  const match = html.match(/\.nn-proof-attribution\{[^}]*color:\s*(#[0-9a-f]{6})/i);
   assert.ok(match, 'HumanProof attribution colour must be explicit');
   const rgb = match[1].slice(1).match(/../g).map(value => parseInt(value, 16) / 255);
   const channel = value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
