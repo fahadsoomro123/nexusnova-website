@@ -62,6 +62,12 @@ class BrowserQualityRuleRegressionTests(unittest.TestCase):
         self.assertIn("document.readyState", GUARD.PAGE_READY_EXPRESSION)
         self.assertNotIn("nexusnova-scifi')", GUARD.PAGE_READY_EXPRESSION)
 
+    def test_inline_and_page_specific_styles_count_as_theme_coverage(self):
+        self.assertIn("document.querySelector('style", GUARD.METRICS_EXPRESSION)
+        self.assertIn("flagship-home-refinement.css", GUARD.METRICS_EXPRESSION)
+        homepage = (ROOT / "index.html").read_text(encoding="utf-8", errors="replace")
+        self.assertIn("<style", homepage)
+
     def test_pulse_mount_is_required_only_when_page_loads_script(self):
         homepage = (ROOT / "index.html").read_text(encoding="utf-8", errors="replace")
         self.assertNotIn("live-tech-pulse.js", homepage)
