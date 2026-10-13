@@ -15,15 +15,12 @@ test('3D hero script remains valid JavaScript', () => {
 });
 
 test('automatic 3D hero waits for visibility and browser idle before booting', () => {
-  const autoStart = source.match(/if\(autoStart\)\{([\s\S]*?)\n\s*return;\n\s*\}/);
-  assert.ok(autoStart, 'autostart branch should exist');
-
-  const branch = autoStart[1];
-  assert.match(branch, /new IntersectionObserver/);
-  assert.match(branch, /observer\.observe\(holder\)/);
-  assert.match(branch, /requestIdleCallback/);
-  assert.match(branch, /setTimeout\(schedule,1800\)/);
-  assert.match(branch, /window\.addEventListener\('load',observeStage/);
+  assert.match(source, /const autoStart=holder\.hasAttribute\('data-hp-360-autostart'\)/);
+  assert.match(source, /new IntersectionObserver\(entries=>/);
+  assert.match(source, /observer\.observe\(holder\)/);
+  assert.match(source, /requestIdleCallback/);
+  assert.match(source, /setTimeout\(schedule,1800\)/);
+  assert.match(source, /window\.addEventListener\('load',observeStage/);
   assert.doesNotMatch(source, /if\(autoStart\)\{\s*boot\(\);\s*return;/,
     'autostart must not immediately perform WebGL setup before visibility/idle checks');
 });
