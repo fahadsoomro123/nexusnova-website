@@ -39,3 +39,14 @@ test('homepage HumanProof attribution meets WCAG AA normal-text contrast', () =>
   const contrast = 1.05 / (luminance + 0.05);
   assert.ok(contrast >= 4.5, 'HumanProof attribution contrast must be at least 4.5:1 (got ' + contrast.toFixed(2) + ':1)');
 });
+
+test('homepage header and footer use responsive WebP logo sources with PNG fallbacks', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const source = '<source type="image/webp" srcset="assets/logo-2x.webp 2x, assets/logo-3x.webp 3x">';
+  assert.equal(html.split(source).length - 1, 2, 'header and footer must use responsive WebP sources');
+  for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
+    const pattern = new RegExp('<picture><source type="image/webp" srcset="assets/logo-2x\\.webp 2x, assets/logo-3x\\.webp 3x"><img src="assets/logo\\.png" alt="NexusNova Tools Logo" width="1040" height="345" class="' + className + '"></picture>');
+    assert.ok(pattern.test(html), className + ' keeps the original accessible PNG fallback and intrinsic dimensions');
+  }
+  assert.ok(html.includes('content="https://nexusnovatools.com/assets/logo.png"'), 'social preview image remains unchanged');
+});
