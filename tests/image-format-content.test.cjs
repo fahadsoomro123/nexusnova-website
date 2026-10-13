@@ -27,3 +27,28 @@ test('WebP to PNG page documents transparency, still-image output and source lim
   assert.match(html, /developers\.google\.com\/speed\/webp/);
   assert.doesNotMatch(html, /data-ad-content-depth-remediation-v2|data-ad-content-depth-remediation-v3/i);
 });
+
+test('PNG to JPG page explains alpha flattening, lossy output and dimensions', () => {
+  const html = read('png-to-jpg.html');
+  assert.match(html, /Transparent PNG pixels therefore become white/i);
+  assert.match(html, /fixed quality setting/i);
+  assert.match(html, /does not resize pixel dimensions/i);
+  assert.match(html, /EXIF camera, date or location details/i);
+  assert.doesNotMatch(html, /data-ad-content-depth-remediation-v3/i);
+});
+
+test('WebP to JPG page documents white-background alpha flattening and still-image output', () => {
+  const html = read('webp-to-jpg.html');
+  assert.match(html, /has no alpha channel/i);
+  assert.match(html, /transparent WebP areas become white/i);
+  assert.match(html, /animated WebP/i);
+  assert.match(html, /does not guarantee a smaller file/i);
+  assert.doesNotMatch(html, /data-ad-content-depth-remediation-v3/i);
+});
+
+test('Magic Drop clarifies what file suggestions do not certify', () => {
+  const html = read('magic-drop.html');
+  assert.match(html, /not an antivirus scanner/i);
+  assert.match(html, /pixel dimensions/i);
+  assert.match(html, /verif/i);
+});
