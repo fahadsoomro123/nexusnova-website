@@ -52,3 +52,16 @@ test('Magic Drop clarifies what file suggestions do not certify', () => {
   assert.match(html, /pixel dimensions/i);
   assert.match(html, /verif/i);
 });
+
+test('Image Resizer explains its actual PNG output and aspect-ratio example', () => {
+  const html = read('image-resizer.html');
+  const logic = read('assets/js/trending-tools.js');
+  assert.match(html, /2400 × 1600 pixels/i);
+  assert.match(html, /1200.*800 pixels/i);
+  assert.match(html, /downloads a new PNG file named/i);
+  assert.match(html, /nexusnova-resized\.png/i);
+  assert.match(html, /EXIF camera, date or GPS details/i);
+  assert.match(logic, /canvasBlob\(c,'image\/png'\)/);
+  assert.match(logic, /downloadBlob\(blob,'nexusnova-resized\.png'\)/);
+  assert.doesNotMatch(html, /data-ad-content-depth-remediation-v[23]/i);
+});
