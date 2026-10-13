@@ -1,0 +1,126 @@
+name: Deploy NexusNova Support Sandbox Worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nexusnova-support-sandbox-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SAFEPAY_SANDBOX_PUBLIC_KEY: ${{ secrets.SAFEPAY_SANDBOX_PUBLIC_KEY }}
+      SAFEPAY_SANDBOX_SECRET_KEY: ${{ secrets.SAFEPAY_SANDBOX_SECRET_KEY }}
+    steps:
+      - name: Checkout isolated support branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-support-production
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Require sandbox-only credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SAFEPAY_SANDBOX_PUBLIC_KEY SAFEPAY_SANDBOX_SECRET_KEY; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing repository Action secret: ${name}. Add the sandbox credential only; never use live Safepay credentials in this workflow."
+              exit 1
+            fi
+          done
+
+      - name: Deploy separate workers.dev sandbox Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.preview.jsonc 2>&1 | tee /tmp/support-worker-deploy.log
+          WORKER_URL="$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/support-worker-deploy.log | head -n 1 || true)"
+          if [[ -z "$WORKER_URL" ]]; then
+            echo "::error::Wrangler did not print the preview workers.dev URL."
+            exit 1
+          fi
+          echo "WORKER_URL=$WORKER_URL" >> "$GITHUB_ENV"
+          echo "Support sandbox Worker deployed at $WORKER_URL"
+
+      - name: Configure sandbox Safepay secrets on the isolated Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$SAFEPAY_SANDBOX_PUBLIC_KEY" | npx --yes wrangler@4 secret put SAFEPAY_PUBLIC_KEY --config cloudflare/support-payments/wrangler.preview.jsonc
+          printf '%s' "$SAFEPAY_SANDBOX_SECRET_KEY" | npx --yes wrangler@4 secret put SAFEPAY_SECRET_KEY --config cloudflare/support-payments/wrangler.preview.jsonc
+
+      - name: Verify sandbox Worker health and configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 15 "$WORKER_URL/health" -o /tmp/support-health.json; then
+              ready=1
+              break
+            fi
+            sleep 5
+          done
+          [[ "$ready" == "1" ]] || { echo "::error::Sandbox Worker health check failed."; exit 1; }
+          node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-health.json','utf8')); if(d.ok!==true||d.enabled!==true||d.environment!=='sandbox'||d.credentials!=='configured') { console.error(d); process.exit(1); } console.log('Sandbox Worker healthy; checkout enabled only in sandbox; credentials configured.');"
+
+      - name: Smoke-test invalid amount rejection
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --max-time 20 -o /tmp/support-invalid.json -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://raw.githack.com' -H 'Content-Type: application/json' --data '{"amount":4}')"
+          [[ "$status" == "400" ]] || { cat /tmp/support-invalid.json; echo "::error::Unexpected invalid-amount status: $status"; exit 1; }
+          node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-invalid.json','utf8')); if(d.error!=='invalid_support_amount')process.exit(1); console.log('Invalid amount correctly rejected.');"
+
+      - name: Verify live sandbox session creation for all four approved amounts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for amount in 3 5 10 25; do
+            status="$(curl --silent --show-error --max-time 30 -o "/tmp/support-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://raw.githack.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
+            [[ "$status" == "200" ]] || { echo "::error::Sandbox session creation failed for amount $amount (HTTP $status)."; cat "/tmp/support-session-$amount.json"; exit 1; }
+            EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url); if(d.ok!==true||d.amount!==Number(process.env.EXPECTED_AMOUNT)||d.currency!=='USD'||u.protocol!=='https:'||!u.hostname.endsWith('.getsafepay.com')||!u.searchParams.get('tracker')||!u.searchParams.get('tbt')) {console.error('Invalid checkout session response');process.exit(1)}"
+            echo "Sandbox checkout session generated and validated for USD $$amount."
+          done
+
+      - name: Publish preview API base for the static preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORKER_URL="$WORKER_URL" node -e "require('node:fs').writeFileSync('assets/js/nexusnova-support-preview-config.js', '// Public sandbox API origin for the non-production preview only.\nwindow.NEXUSNOVA_SUPPORT_API_BASE = '+JSON.stringify(process.env.WORKER_URL)+';\n')"
+          git config user.name "NexusNova Support Sandbox Bot"
+          git config user.email "noreply@nexusnovatools.com"
+          if ! git diff --quiet -- assets/js/nexusnova-support-preview-config.js; then
+            git add assets/js/nexusnova-support-preview-config.js
+            git commit -m "chore: set sandbox support preview API origin [skip ci]"
+            git push origin nexusnova-support-production
+          fi
+          PREVIEW_BASE="$(python3 -c 'import urllib.parse,os; print(urllib.parse.quote(os.environ["WORKER_URL"], safe=""))')"
+          {
+            echo "## NexusNova Support Sandbox"
+            echo ""
+            echo "- Worker: $WORKER_URL"
+            echo "- Environment: **sandbox only**"
+            echo "- Health/configuration: passed"
+            echo "- Invalid amount rejection: passed"
+            echo "- Checkout session creation: USD $3, $5, $10 and $25 all passed"
+            echo "- No custom-domain route was deployed by this workflow."
+            echo ""
+            echo "[Open the full homepage preview with sandbox checkout enabled](https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/index.html?supportApiBase=$PREVIEW_BASE)"
+            echo ""
+            echo "[Open the sandbox support checkout return page](https://raw.githack.com/fahadsoomro123/nexusnova-website/nexusnova-support-production/support-payment-success-preview.html)"
+            echo ""
+            echo "These are sandbox test sessions only. Do not use live Safepay credentials in this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"

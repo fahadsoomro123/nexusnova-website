@@ -1,0 +1,183 @@
+name: Deploy NexusNova Support Payments Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - nexusnova-support-production
+    paths:
+      - "cloudflare/support-payments/worker.js"
+      - "cloudflare/support-payments/wrangler.production-check.jsonc"
+      - "cloudflare/support-payments/wrangler.production.jsonc"
+      - ".github/workflows/deploy-support-payments-production.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-support-payments-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      SAFEPAY_PRODUCTION_PUBLIC_KEY: ${{ secrets.SAFEPAY_PRODUCTION_PUBLIC_KEY }}
+      SAFEPAY_PRODUCTION_SECRET_KEY: ${{ secrets.SAFEPAY_PRODUCTION_SECRET_KEY }}
+    steps:
+      - name: Checkout support branch
+        uses: actions/checkout@v4
+        with:
+          ref: nexusnova-support-production
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Require production credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID SAFEPAY_PRODUCTION_PUBLIC_KEY SAFEPAY_PRODUCTION_SECRET_KEY; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing repository Action secret: ${name}. Add the corresponding production credential in GitHub Settings; never paste keys into code or logs."
+              exit 1
+            fi
+          done
+
+      - name: Deploy isolated live-check Worker without a public-site route
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.production-check.jsonc 2>&1 | tee /tmp/support-live-check-deploy.log
+          WORKER_URL="$(grep -Eo 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/support-live-check-deploy.log | head -n 1 || true)"
+          if [[ -z "$WORKER_URL" ]]; then
+            echo "::error::Wrangler did not print the isolated live-check workers.dev URL."
+            exit 1
+          fi
+          echo "WORKER_URL=$WORKER_URL" >> "$GITHUB_ENV"
+          echo "Isolated live-check Worker deployed. No custom-domain route is attached yet."
+
+      - name: Configure production Safepay credentials on the Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$SAFEPAY_PRODUCTION_PUBLIC_KEY" | npx --yes wrangler@4 secret put SAFEPAY_PUBLIC_KEY --config cloudflare/support-payments/wrangler.production-check.jsonc
+          printf '%s' "$SAFEPAY_PRODUCTION_SECRET_KEY" | npx --yes wrangler@4 secret put SAFEPAY_SECRET_KEY --config cloudflare/support-payments/wrangler.production-check.jsonc
+
+      - name: Verify isolated production configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if curl --fail --silent --show-error --max-time 15 "$WORKER_URL/health" -o /tmp/support-live-health.json; then
+              if node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-live-health.json','utf8')); process.exit(d.ok===true&&d.enabled===true&&d.environment==='production'&&d.credentials==='configured'?0:1);" >/dev/null 2>&1; then
+                ready=1
+                break
+              fi
+            fi
+            sleep 5
+          done
+          if [[ "$ready" != "1" ]]; then
+            node -e "try { const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-live-health.json','utf8')); console.error('Live Worker configuration check failed:', {ok:d.ok,enabled:d.enabled,environment:d.environment,credentials:d.credentials}); } catch (_) { console.error('Live Worker health endpoint returned no valid status.'); }"
+            echo "::error::Live Worker did not confirm its production credentials after waiting for secret propagation."
+            exit 1
+          fi
+          echo "Live Safepay environment and server-side credentials are configured."
+
+      - name: Smoke-test rejection of unapproved amount
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --max-time 20 -o /tmp/support-live-invalid.json -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data '{"amount":4}')"
+          [[ "$status" == "400" ]] || { cat /tmp/support-live-invalid.json; echo "::error::Unexpected invalid-amount status: $status"; exit 1; }
+          node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-live-invalid.json','utf8')); if(d.error!=='invalid_support_amount')process.exit(1); console.log('Unapproved support amount rejected.');"
+
+      - name: Validate live Safepay checkout sessions for each approved amount
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          for amount in 3 5 10 25; do
+            status="$(curl --silent --show-error --max-time 35 -o "/tmp/support-live-session-$amount.json" -w '%{http_code}' "$WORKER_URL/api/support/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
+            if [[ "$status" != "200" ]]; then
+              echo "::warning::Live Safepay session creation failed for USD $amount (HTTP $status)."
+              cat "/tmp/support-live-session-$amount.json"
+              failed=1
+              continue
+            fi
+            EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-live-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url||'https://invalid.example'); const a=Number(process.env.EXPECTED_AMOUNT); const order=d.ok&&u.searchParams.get('order_id'); const orderPattern=new RegExp('^NNS-[0-9]{13}-'+a+'-[A-F0-9]{8}-[A-F0-9]{24}$'); if(d.ok!==true||d.environment!=='production'||d.amount!==a||d.currency!=='USD'||u.origin!=='https://getsafepay.com'||u.pathname!=='/embedded/'||!u.searchParams.get('tbt')||!/^track_[A-Za-z0-9-]{10,120}$/.test(u.searchParams.get('tracker')||'')||!orderPattern.test(order||'')) { console.error('Live Safepay checkout response validation failed for amount',a); process.exit(1); }"
+            echo "Live checkout session created and validated for USD $amount; no payment was submitted."
+          done
+
+          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }
+      - name: Allow rate-limit window to expire before route activation
+        run: sleep 65
+
+      - name: Attach the verified Worker to NexusNova API routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.production.jsonc
+
+      - name: Verify production-domain route and enabled live configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://nexusnovatools.com/api/support"
+          ready=0
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 15 "$BASE/health" -o /tmp/support-routed-health.json; then
+              ready=1
+              break
+            fi
+            sleep 5
+          done
+          [[ "$ready" == "1" ]] || { echo "::error::Production-domain support Worker health route failed."; exit 1; }
+          node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-routed-health.json','utf8')); if(d.ok!==true||d.enabled!==true||d.environment!=='production'||d.credentials!=='configured') { console.error('Production route/configuration check failed:', {ok:d.ok,enabled:d.enabled,environment:d.environment,credentials:d.credentials}); process.exit(1); } console.log('Production API route is active and reports the live environment.');"
+
+      - name: Smoke-test the production route without charging a payment
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://nexusnovatools.com/api/support"
+          status="$(curl --silent --show-error --max-time 20 -o /tmp/support-routed-invalid.json -w '%{http_code}' "$BASE/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data '{"amount":4}')"
+          [[ "$status" == "400" ]] || { cat /tmp/support-routed-invalid.json; echo "::error::Production route invalid-amount status was $status, expected 400."; exit 1; }
+          node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-routed-invalid.json','utf8')); if(d.error!=='invalid_support_amount')process.exit(1); console.log('Production route rejects unapproved amounts.');"
+          failed=0
+          for amount in 3 5 10 25; do
+            status="$(curl --silent --show-error --max-time 35 -o "/tmp/support-routed-session-$amount.json" -w '%{http_code}' "$BASE/create-checkout" -H 'Origin: https://nexusnovatools.com' -H 'Content-Type: application/json' --data "{\"amount\":$amount}")"
+            if [[ "$status" != "200" ]]; then
+              echo "::warning::Production-routed live session failed for USD $amount (HTTP $status)."
+              cat "/tmp/support-routed-session-$amount.json"
+              failed=1
+              continue
+            fi
+            EXPECTED_AMOUNT="$amount" node -e "const d=JSON.parse(require('node:fs').readFileSync('/tmp/support-routed-session-'+process.env.EXPECTED_AMOUNT+'.json','utf8')); const u=new URL(d.checkout_url||'https://invalid.example'); const a=Number(process.env.EXPECTED_AMOUNT); const order=d.ok&&u.searchParams.get('order_id'); const orderPattern=new RegExp('^NNS-[0-9]{13}-'+a+'-[A-F0-9]{8}-[A-F0-9]{24}$'); if(d.ok!==true||d.environment!=='production'||d.amount!==a||d.currency!=='USD'||u.origin!=='https://getsafepay.com'||u.pathname!=='/embedded/'||!u.searchParams.get('tbt')||!/^track_[A-Za-z0-9-]{10,120}$/.test(u.searchParams.get('tracker')||'')||!orderPattern.test(order||'')) { console.error('Routed live Safepay response validation failed for amount',a); process.exit(1); }"
+            echo "Production API route generated and validated USD $amount live checkout; no payment was submitted."
+          done
+
+          [[ "$failed" == "0" ]] || { echo "::error::One or more Safepay checkout session attempts failed."; exit 1; }
+          {
+            echo "## NexusNova Support Payments Production"
+            echo ""
+            echo "- Worker configuration and production credentials: **passed**"
+            echo "- Unapproved amounts: **rejected**"
+            echo "- Live Safepay sessions: **USD 3, 5, 10, 25 passed**"
+            echo "- NexusNova support API route: **active**"
+            echo "- No payment was submitted or charged by these checks."
+            echo "- The website UI remains on the unmerged feature branch until final review."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail closed if production verification fails
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "A live Safepay verification step failed; disabling Support checkout on the isolated Worker."
+          npx --yes wrangler@4 deploy --config cloudflare/support-payments/wrangler.production-offline.jsonc
