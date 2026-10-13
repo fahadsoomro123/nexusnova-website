@@ -704,7 +704,7 @@ NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
   tool:95,
   category:9,
   article:34,
-  guide:8
+  guide:9
 });
 
 NexusNovaSearchCore.DATASET_SIZE=147;
