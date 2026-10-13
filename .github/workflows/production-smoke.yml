@@ -48,6 +48,9 @@ jobs:
             reaction="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/reaction-time-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             settings="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-settings-notes.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             resizer="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-resizer.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            articles="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/articles.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            chrome_timeline="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/articles/google-releases-chrome-152-for-android.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            chrome_archive="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/articles/chrome-152-for-android-adds-desktop-security-fixes.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
 
             ok=1
             check_contains() { grep -Fq -- "$2" <<<"$1"; }
@@ -87,8 +90,18 @@ jobs:
             check_contains "$settings" 'data-flagship-depth' || ok=0
             check_contains "$resizer" 'data-flagship-depth' || ok=0
 
+            # SEO regression guard: source-of-truth article list, unified Chrome timeline,
+            # and quarantined legacy URL must match the deployed public HTML.
+            check_contains "$articles" '34 articles' || ok=0
+            check_contains "$articles" 'Chrome 152 for Android: Release Timeline and Security Fixes' || ok=0
+            check_absent "$articles" 'chrome-152-for-android-adds-desktop-security-fixes.html' || ok=0
+            check_contains "$chrome_timeline" '152.0.7977.82' || ok=0
+            check_contains "$chrome_timeline" 'Chrome 152 for Android: Release Timeline and Security Fixes' || ok=0
+            check_contains "$chrome_archive" 'content="noindex,follow,max-image-preview:large"' || ok=0
+            check_contains "$chrome_archive" '<link rel="canonical" href="https://nexusnovatools.com/articles/google-releases-chrome-152-for-android.html">' || ok=0
+
             if [ "$ok" -eq 1 ]; then
-              echo 'LIVE PRODUCTION PASS: core + recovery markers verified on public domain.'
+              echo 'LIVE PRODUCTION PASS: core, recovery and article-consolidation markers verified on public domain.'
               exit 0
             fi
 
@@ -96,7 +109,7 @@ jobs:
             sleep 5
           done
 
-          echo "PRODUCTION FAIL: $last_reason" >&2
+          echo "PRODUCTION FAIL: $last_reason. Includes article-hub count, archive index policy and Chrome timeline markers." >&2
           echo 'Public AI Prompt Builder legacy duplicate present:'
           if grep -Fq 'Guide on How to Use the AI Prompt Builder' <<<"$aiprompt"; then echo 'YES'; else echo 'NO'; fi
           echo 'Public Labs legacy Universe Atlas present:'
