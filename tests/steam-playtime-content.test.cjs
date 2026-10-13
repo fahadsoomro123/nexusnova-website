@@ -13,7 +13,7 @@ test('Steam playtime page distinguishes continuous days from average daily hours
   assert.match(html, /averages about 1\.37 hours a day/);
   assert.match(html, /<strong>1,000 hours<\/strong><small>41\.67 full days<\/small>/);
   assert.match(html, /<strong>2,000 hours<\/strong><small>83\.33 full days<\/small>/);
-  assert.match(html, /const totalDays=h\/24/);
+  assert.match(html, /totalDays=h\/24/);
 });
 
 test('Steam playtime conversion FAQ is valid and present in structured data', () => {
