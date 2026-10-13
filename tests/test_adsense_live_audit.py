@@ -81,5 +81,35 @@ class LiveAuditCacheBustTests(unittest.TestCase):
         self.assertIn("nn_audit=", second[2])
 
 
+    def test_approved_noindex_plan_has_72_live_audit_targets(self):
+        targets = AUDIT.approved_noindex_urls()
+        self.assertEqual(len(targets), 72)
+        self.assertIn(AUDIT.BASE + "aqi-live.html", targets)
+        self.assertIn(AUDIT.BASE + "crypto-live.html", targets)
+
+    @patch.object(AUDIT, "approved_noindex_urls", return_value=["https://nexusnovatools.com/quarantine-fixture.html"])
+    @patch.object(AUDIT, "fetch_live")
+    def test_live_audit_blocks_a_quarantined_page_if_robots_says_index(self, fetch_live, _approved_urls):
+        quarantined = "https://nexusnovatools.com/quarantine-fixture.html"
+
+        def fake_live(url):
+            if url.endswith(("robots.txt", "ads.txt")):
+                return url, 200, url, "", ""
+            if url == quarantined:
+                body = '<html><head><meta name="robots" content="index,follow"></head><main><h1>Fixture</h1></main></html>'
+            else:
+                body = '<html><head><meta name="robots" content="noindex,follow"></head><main><h1>Fixture</h1></main></html>'
+            return url, 200, url, body, ""
+
+        fetch_live.side_effect = fake_live
+        result = AUDIT.live_audit([])
+
+        self.assertEqual(result["approved_noindex_targets"], 1)
+        self.assertIn(
+            {"type": "live_noindex_policy_violation", "url": quarantined},
+            result["blockers"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -171,6 +171,30 @@ def canonical_expected(url: str) -> str:
     return urllib.parse.urlunparse(("https", DOMAIN, path, "", "", ""))
 
 
+def approved_noindex_urls() -> list[str]:
+    """Return the approved AdSense quarantine set from the checked-in remediation report."""
+    policy_path = ROOT / "ADSENSE-REMEDIATION-REPORT-2026-09-11.md"
+    if not policy_path.is_file():
+        raise RuntimeError("Approved AdSense remediation report is missing")
+    source = policy_path.read_text(encoding="utf-8", errors="replace")
+    heading = "## NOINDEX — exact pages"
+    start = source.find(heading)
+    if start < 0:
+        raise RuntimeError("Approved AdSense NOINDEX section is missing")
+    section = source[start + len(heading):]
+    next_heading = re.search(r"(?m)^## ", section)
+    if next_heading:
+        section = section[:next_heading.start()]
+    paths = []
+    for line in section.splitlines():
+        match = re.fullmatch(r"\s*-\s*`([^`]+\.html)`\s*", line)
+        if match:
+            paths.append(match.group(1))
+    if len(paths) != 72 or len(set(paths)) != 72:
+        raise RuntimeError(f"Expected 72 unique approved NOINDEX paths; found {len(paths)}")
+    return [BASE + path for path in paths]
+
+
 def internal_target(source: Path, href: str) -> Path | None:
     href = href.strip()
     if not href or href.startswith(("#", "mailto:", "tel:", "javascript:", "data:")):
@@ -351,7 +375,9 @@ def live_audit(urls: list[str]):
     blockers = []
     warnings = []
     results = {}
-    targets = list(dict.fromkeys(urls + [BASE + x for x in sorted(TRUST_FILES)] + [BASE + "app.html", BASE + "robots.txt", BASE + "ads.txt"]))
+    quarantine_urls = approved_noindex_urls()
+    quarantine_set = set(quarantine_urls)
+    targets = list(dict.fromkeys(urls + quarantine_urls + [BASE + x for x in sorted(TRUST_FILES)] + [BASE + "app.html", BASE + "robots.txt", BASE + "ads.txt"]))
     with ThreadPoolExecutor(max_workers=8) as pool:
         futs = {pool.submit(fetch_live, u): u for u in targets}
         for fut in as_completed(futs):
@@ -365,10 +391,12 @@ def live_audit(urls: list[str]):
                 results[url] = row
                 continue
             p = parse_page(body)
-            row.update({"words": p.word_count, "noindex": p.noindex, "canonical": p.canonical, "h1": p.h1_count})
+            row.update({"words": p.word_count, "noindex": p.noindex, "canonical": p.canonical, "h1": p.h1_count, "approved_noindex_target": url in quarantine_set})
             results[url] = row
             path = urllib.parse.urlparse(url).path
             in_sitemap = url in urls
+            if url in quarantine_set and not p.noindex:
+                blockers.append({"type": "live_noindex_policy_violation", "url": url})
             if in_sitemap:
                 if p.noindex:
                     blockers.append({"type": "live_noindex_in_sitemap", "url": url})
@@ -397,7 +425,7 @@ def live_audit(urls: list[str]):
         blockers.append({"type": "robots_unavailable"})
     if ads.get("status") != 200:
         blockers.append({"type": "ads_txt_unavailable"})
-    return {"results": results, "blockers": blockers, "warnings": warnings}
+    return {"results": results, "blockers": blockers, "warnings": warnings, "approved_noindex_targets": len(quarantine_urls)}
 
 
 def main():
