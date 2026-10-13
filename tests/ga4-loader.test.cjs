@@ -66,11 +66,10 @@ test('automatic GA4 configuration cannot initialize twice on the same page', () 
 
 test('GA4 external loader only runs on the owned production hostname', () => {
   const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
-  const match = wrapper.match(/const isProductionAnalyticsHost=(\\/[^;]+?)\\.test\\(location\\.hostname\\);/);
-  assert.ok(match, 'GA4 loader must have an explicit production-host allowlist');
-  const literal = match[1];
-  const lastSlash = literal.lastIndexOf('/');
-  const hostPattern = new RegExp(literal.slice(1, lastSlash), literal.slice(lastSlash + 1));
+  const productionHostGuard = String.raw\`const isProductionAnalyticsHost=/^(?:www\.)?nexusnovatools\.com$/i.test(location.hostname);\`;
+  assert.ok(wrapper.includes(productionHostGuard), 'GA4 loader must have an explicit production-host allowlist');
+
+  const hostPattern = /^(?:www\.)?nexusnovatools\.com$/i;
   for (const host of ['nexusnovatools.com', 'www.nexusnovatools.com', 'NEXUSNOVATOOLS.COM']) {
     assert.equal(hostPattern.test(host), true, host);
   }
