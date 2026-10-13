@@ -50,3 +50,14 @@ test('homepage header and footer use responsive WebP logo sources with PNG fallb
   }
   assert.ok(html.includes('content="https://nexusnovatools.com/assets/logo.png"'), 'social preview image remains unchanged');
 });
+
+test('app and tools hero/footer use responsive WebP logos with original PNG fallbacks', () => {
+  const source = '<source type="image/webp" srcset="assets/logo-2x.webp 2x, assets/logo-3x.webp 3x">';
+  for (const path of ['app.html', 'tools.html']) {
+    const html = fs.readFileSync(path, 'utf8');
+    assert.equal(html.split(source).length - 1, 2, path + ' must use responsive logo sources in header and footer');
+    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"></picture>'), path + ' header keeps the original PNG fallback and alt text');
+    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"></picture>'), path + ' footer keeps the original PNG fallback and alt text');
+    assert.ok(html.includes('https://nexusnovatools.com/assets/logo.png'), path + ' social-preview metadata remains on the original PNG');
+  }
+});
