@@ -2,6 +2,15 @@ name: Privacy Analytics Production Verification
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/privacy-analytics-production.yml'
+      - 'assets/js/main.js'
+      - 'assets/js/site-main.js'
+      - 'assets/js/tool-analytics.js'
+      - 'privacy.html'
+      - 'index.html'
+      - 'tests/ga4-loader.test.cjs'
   push:
     branches: [main]
     paths:
@@ -58,7 +67,7 @@ jobs:
           from google.auth.transport.requests import Request
           from playwright.sync_api import sync_playwright
 
-          URL='https://nexusnovatools.com/'
+          BASE_URL='https://nexusnovatools.com'
           MEASUREMENT_ID=os.environ['GA4_MEASUREMENT_ID']
           PROPERTY_ID=os.environ.get('GA4_PROPERTY_ID','').strip()
           REPORT=Path('ga4-production-verification.json')
@@ -71,20 +80,37 @@ jobs:
               page.on('request', lambda req: requests_seen.append(req.url))
               page.on('pageerror', lambda err: errors.append(str(err)))
               page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
-              page.goto(URL.lstrip('/') + path + '?ga4_qa=' + os.environ['QA_VERSION'] + '&ga4_view=' + label, wait_until='domcontentloaded', timeout=30000)
+              page.goto(BASE_URL + path + '?ga4_qa=' + os.environ['QA_VERSION'] + '&ga4_view=' + label, wait_until='domcontentloaded', timeout=30000)
               page.wait_for_timeout(9000)
-              info=page.evaluate('''() => ({
-                gtag: typeof window.gtag === 'function',
-                gaScript: [...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).map(s=>s.src),
-                gaConfigCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='config').length,
-                gaJsCount: (window.dataLayer||[]).filter(x=>Array.isArray(x) && x[0]==='js').length,
-                consentBanner: !!document.querySelector('#nexusnova-analytics-consent'),
-                allowButton: !!document.querySelector('[data-consent-allow]'),
-                consentText: document.body.innerText.includes('Allow detailed analytics'),
-                path: location.pathname,
-                title: document.title,
-                overflow: {sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
-              })''')
+              info=page.evaluate('''() => {
+                const args=(window.dataLayer||[]).map(x=>{
+                  try {
+                    if(Array.isArray(x)) return x;
+                    if(x && typeof x.length==='number') return Array.from(x);
+                  } catch(_) {}
+                  return [];
+                });
+                const banner=document.querySelector('#nexusnova-analytics-consent');
+                const bannerStyle=banner ? getComputedStyle(banner) : null;
+                const bannerRect=banner ? banner.getBoundingClientRect() : {width:0,height:0};
+                const consentBannerVisible=!!banner && !banner.hidden && !!bannerStyle && bannerStyle.display!=='none' && bannerStyle.visibility!=='hidden' && bannerRect.width>0 && bannerRect.height>0;
+                const allow=document.querySelector('[data-consent-allow]');
+                const allowStyle=allow ? getComputedStyle(allow) : null;
+                const allowRect=allow ? allow.getBoundingClientRect() : {width:0,height:0};
+                const allowButtonVisible=!!allow && !allow.closest('[hidden]') && !!allowStyle && allowStyle.display!=='none' && allowStyle.visibility!=='hidden' && allowRect.width>0 && allowRect.height>0;
+                return {
+                  gtag: typeof window.gtag === 'function',
+                  gaScript: [...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).map(s=>s.src),
+                  gaConfigCount: args.filter(x=>x[0]==='config').length,
+                  gaJsCount: args.filter(x=>x[0]==='js').length,
+                  consentBannerVisible,
+                  allowButtonVisible,
+                  consentTextVisible: consentBannerVisible && banner.innerText.includes('Allow detailed analytics'),
+                  path: location.pathname,
+                  title: document.title,
+                  overflow: {sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
+                };
+              }''')
               collect=[]
               for url in requests_seen:
                   if 'google-analytics.com/g/collect' not in url: continue
@@ -93,7 +119,7 @@ jobs:
                       collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'dt':q.get('dt',[''])[0]})
               pageviews=[x for x in collect if x['en']=='page_view']
               row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20]}
-              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and not info['consentBanner'] and not info['allowButton'] and not info['consentText'] and len(pageviews)>=1 and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
+              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and not info['consentBannerVisible'] and not info['allowButtonVisible'] and not info['consentTextVisible'] and len(pageviews)>=1 and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
               return row
 
           with sync_playwright() as p:
