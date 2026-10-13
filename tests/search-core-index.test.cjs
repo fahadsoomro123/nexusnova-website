@@ -83,9 +83,14 @@ test('search index stores compact article metadata rather than full page bodies'
   }
 });
 
+
 test('every guide card is linked to its search-index entry', () => {
   const hub = fs.readFileSync(path.join(root, 'guides.html'), 'utf8');
-  const cards = [...hub.matchAll(/<article class="nn-guide-card"[^>]*data-guide-card[^>]*>[\\s\\S]*?<\\/article>/g)].map(match => match[0]);
+  const starts = [...hub.matchAll(/<article class="nn-guide-card"[^>]*data-guide-card[^>]*>/g)];
+  const cards = starts.map(match => {
+    const end = hub.indexOf('</article>', match.index);
+    return end < 0 ? '' : hub.slice(match.index, end + '</article>'.length);
+  });
   const indexed = new Set(data.filter(record => record.type === 'guide').map(record => record.url));
   assert.equal(cards.length, 9, 'guide hub card count should match the index');
   for (const card of cards) {
