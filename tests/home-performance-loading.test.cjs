@@ -58,6 +58,10 @@ test('app and tools hero/footer use responsive WebP logos with original PNG fall
     assert.equal(html.split(source).length - 1, 2, path + ' must use responsive logo sources in header and footer');
     assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"></picture>'), path + ' header keeps the original PNG fallback and alt text');
     assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"></picture>'), path + ' footer keeps the original PNG fallback and alt text');
-    assert.ok(html.includes('https://nexusnovatools.com/assets/logo.png'), path + ' social-preview metadata remains on the original PNG');
+    const socialImageMeta = html.match(/<meta\\b(?=[^>]*(?:property|name)=["'](?:og:image|twitter:image)["'])[^>]*>/gi) || [];
+    for (const meta of socialImageMeta) {
+      assert.ok(meta.includes('assets/logo.png'), path + ' preserves any existing social-preview image as the original PNG');
+      assert.ok(!meta.includes('.webp'), path + ' does not switch social-preview metadata to responsive WebP');
+    }
   }
 });
