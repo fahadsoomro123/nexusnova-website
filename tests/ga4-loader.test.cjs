@@ -84,9 +84,10 @@ test('GA4 external loader only runs on the owned production hostname', () => {
   assert.ok(wrapper.includes("const measurementId='G-YLPFKWSS12';"), 'measurement ID must remain unchanged');
 });
 
-test('homepage requests the current production-host-guard bootstrap', () => {
+test('homepage requests the current consent-aware production bootstrap', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('assets/js/main.js?v=20261013-ga4-hostguard-v3'));
+  assert.ok(html.includes('assets/js/main.js?v=20261013-anonymous-consent-v1'));
+  assert.ok(!html.includes('assets/js/main.js?v=20261013-ga4-hostguard-v3'));
   assert.ok(!html.includes('assets/js/main.js?v=20261005-ga4a'));
 });
 
