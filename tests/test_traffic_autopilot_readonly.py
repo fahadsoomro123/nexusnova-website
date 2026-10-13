@@ -9,6 +9,8 @@ from unittest import mock
 SCRIPTS = Path(__file__).resolve().parents[1] / ".github" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 import traffic_autopilot_runner as runner  # noqa: E402
+import traffic_diagnosis as diagnosis  # noqa: E402
+from ga4_site_scope import production_scoped_ga4_payload  # noqa: E402
 
 
 class TrafficAutopilotReadOnlyTests(unittest.TestCase):
@@ -72,6 +74,62 @@ class TrafficAutopilotReadOnlyTests(unittest.TestCase):
         article_text = self.article.read_text(encoding="utf-8").lower()
         self.assertIn('name="robots" content="noindex,follow,max-image-preview:large"', article_text)
         self.assertNotIn(self.url, self.sitemap.read_text(encoding="utf-8"))
+
+
+    def test_ga4_report_scope_keeps_requested_dimensions_and_filters_canonical_host(self) -> None:
+        original = {
+            "dateRanges": [{"startDate": "2026-10-06", "endDate": "2026-10-12"}],
+            "dimensions": [{"name": "landingPagePlusQueryString"}],
+            "metrics": [{"name": "sessions"}],
+        }
+        scoped = production_scoped_ga4_payload(original)
+        self.assertEqual(
+            scoped["dimensions"],
+            [{"name": "landingPagePlusQueryString"}, {"name": "hostName"}],
+        )
+        self.assertEqual(
+            scoped["dimensionFilter"],
+            {
+                "filter": {
+                    "fieldName": "hostName",
+                    "stringFilter": {
+                        "matchType": "EXACT",
+                        "value": "nexusnovatools.com",
+                        "caseSensitive": False,
+                    },
+                }
+            },
+        )
+        self.assertNotIn("dimensionFilter", original)
+
+    def test_traffic_diagnosis_applies_hostname_scope_to_each_ga4_report(self) -> None:
+        from datetime import date
+
+        with mock.patch.object(diagnosis, "GA4_PROPERTY_ID", "123"), mock.patch.object(
+            diagnosis, "post_json", return_value={"rows": []}
+        ) as post:
+            diagnosis.ga4_report(
+                "test-token",
+                date(2026, 10, 6),
+                date(2026, 10, 12),
+                dimensions=["sessionSourceMedium"],
+                metrics=["sessions"],
+            )
+
+        payload = post.call_args.args[1]
+        self.assertEqual(
+            payload["dimensions"],
+            [{"name": "sessionSourceMedium"}, {"name": "hostName"}],
+        )
+        self.assertEqual(payload["dimensionFilter"]["filter"]["fieldName"], "hostName")
+        self.assertEqual(
+            payload["dimensionFilter"]["filter"]["stringFilter"]["value"],
+            "nexusnovatools.com",
+        )
+
+    def test_traffic_autopilot_ga4_query_uses_shared_production_scope(self) -> None:
+        source = (SCRIPTS / "traffic_autopilot.py").read_text(encoding="utf-8")
+        self.assertIn("payload = production_scoped_ga4_payload({", source)
 
     def test_path_traversal_is_rejected_without_writing(self) -> None:
         outside = self.root / "outside.html"
