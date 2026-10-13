@@ -20,11 +20,14 @@ function headOf(html) {
   return (html.match(/<head\b[\s\S]*?<\/head>/i) || [])[0] || '';
 }
 
+function attribute(tag, name) {
+  const match = tag.match(new RegExp(name + '="([^"]*)"', 'i'));
+  return match ? match[1] : '';
+}
+
 function metaContent(head, wantedAttr, wantedKey) {
   for (const tag of head.match(/<meta\b[^>]*>/gi) || []) {
-    const keyMatch = tag.match(new RegExp('\\b' + wantedAttr + '\\s*=\\s*["\\x27]([^"\\x27]*)["\\x27]', 'i'));
-    const contentMatch = tag.match(/\\bcontent\\s*=\\s*["\\x27]([^"\\x27]*)["\\x27]/i);
-    if (keyMatch && contentMatch && keyMatch[1] === wantedKey) return contentMatch[1];
+    if (attribute(tag, wantedAttr) === wantedKey) return attribute(tag, 'content');
   }
   return '';
 }
@@ -42,7 +45,7 @@ test('priority pages have complete page-specific social metadata and concise des
     }
     if (file === 'whatsapp-link-generator.html') {
       assert.equal(metaContent(head, 'name', 'twitter:title'), expectedTitle, 'WhatsApp page must not advertise another tool');
-      assert.match(metaContent(head, 'name', 'twitter:description'), /WhatsApp wa\\.me/i);
+      assert.match(metaContent(head, 'name', 'twitter:description'), /WhatsApp wa\.me/i);
       assert.doesNotMatch(metaContent(head, 'name', 'twitter:description'), /compress|resize|JPG|PNG|WebP/i);
     }
   }
@@ -52,9 +55,9 @@ test('priority page Open Graph URLs remain aligned to canonical URLs', () => {
   for (const [file] of cases) {
     const html = fs.readFileSync(path.join(root, file), 'utf8');
     const head = headOf(html);
-    const canonicalTag = (head.match(/<link\b[^>]*\brel=["\\x27]canonical["\\x27][^>]*>/i) || [])[0] || '';
-    const canonicalMatch = canonicalTag.match(/\bhref\s*=\s*["\\x27]([^"\\x27]+)["\\x27]/i);
-    assert.ok(canonicalMatch, file + ': missing canonical');
-    assert.equal(metaContent(head, 'property', 'og:url'), canonicalMatch[1], file + ': og:url does not match canonical');
+    const canonicalTag = (head.match(/<link\b[^>]*\brel="canonical"[^>]*>/i) || [])[0] || '';
+    const canonical = attribute(canonicalTag, 'href');
+    assert.ok(canonical, file + ': missing canonical');
+    assert.equal(metaContent(head, 'property', 'og:url'), canonical, file + ': og:url does not match canonical');
   }
 });
