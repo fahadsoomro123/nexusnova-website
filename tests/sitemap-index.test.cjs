@@ -26,6 +26,7 @@ test('main sitemap contains only unique HTTPS canonical URLs and the previously 
     'https://nexusnovatools.com/articles/typing-speed-wpm-accuracy-guide.html',
     'https://nexusnovatools.com/articles/simple-invoice-checklist-guide.html',
     'https://nexusnovatools.com/humanproof.html',
-    'https://nexusnovatools.com/guides/weighted-decision-matrix.html'
+    'https://nexusnovatools.com/guides/weighted-decision-matrix.html',
+    'https://nexusnovatools.com/guides/fbr-atl-status.html'
   ]) assert.ok(urls.includes(url), url);
 });
