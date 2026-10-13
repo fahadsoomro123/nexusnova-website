@@ -28,3 +28,14 @@ test('live performance gate hashes the exact deployed homepage before measuring'
   assert.ok(workflow.includes('Cache-Control: no-cache, no-store, max-age=0'), 'probe must bypass cached homepage');
   assert.ok(workflow.includes('Refusing to record a live Lighthouse result against stale content') || workflow.includes('refusing to record a live Lighthouse result against stale content'), 'stale deployments must fail closed');
 });
+
+test('homepage HumanProof attribution meets WCAG AA normal-text contrast', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const match = html.match(/\.nn-proof-attribution\\{[^}]*color:\\s*(#[0-9a-f]{6})/i);
+  assert.ok(match, 'HumanProof attribution colour must be explicit');
+  const rgb = match[1].slice(1).match(/../g).map(value => parseInt(value, 16) / 255);
+  const channel = value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  const luminance = 0.2126 * channel(rgb[0]) + 0.7152 * channel(rgb[1]) + 0.0722 * channel(rgb[2]);
+  const contrast = 1.05 / (luminance + 0.05);
+  assert.ok(contrast >= 4.5, 'HumanProof attribution contrast must be at least 4.5:1 (got ' + contrast.toFixed(2) + ':1)');
+});
