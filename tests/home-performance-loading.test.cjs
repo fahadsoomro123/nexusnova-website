@@ -4,8 +4,8 @@ const fs = require('node:fs');
 
 test('homepage preconnects to its early third-party script origins', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.match(html, /rel="preconnect" href="https:\/\/pagead\.googlesyndication\.com" crossorigin/);
-  assert.match(html, /rel="preconnect" href="https:\/\/www\.googletagmanager\.com" crossorigin/);
+  assert.ok(html.includes('rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin'));
+  assert.ok(html.includes('rel="preconnect" href="https://www.googletagmanager.com" crossorigin'));
 });
 
 test('below-the-fold HumanProof and footer CSS load asynchronously with no-script fallback', () => {
