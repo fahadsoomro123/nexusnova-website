@@ -131,3 +131,20 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   assert.ok(!handler.includes("window.gtag('event','analytics_detail_opt_in'"));
   assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
+
+test('production GA4 verifier waits for deployed assets and inspects POST events without weakening realtime gate', () => {
+  const workflow = fs.readFileSync('.github/workflows/privacy-analytics-production.yml', 'utf8');
+  const deployShaToken = 'DEPLOY_SHA: ' + '$' + '{{ github.sha }}';
+  for (const token of [
+    'Wait for the matching Pages deployment before live browser checks',
+    deployShaToken,
+    "('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
+    "parse_qs(request_record['post_data'])",
+    "'httpStatusCounts':{}",
+    "rt['apiErrors'].append",
+    "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
+  ]) assert.ok(workflow.includes(token), token);
+});
