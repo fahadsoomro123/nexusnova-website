@@ -7,6 +7,8 @@ import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
+from ga4_site_scope import production_scoped_ga4_payload
+
 ROOT = Path(__file__).resolve().parents[2]
 JSON_OUT = ROOT / 'traffic-diagnosis.json'
 TEXT_OUT = ROOT / 'traffic-diagnosis.txt'
@@ -110,6 +112,7 @@ def ga4_report(token: str, start: date, end: date, dimensions: list[str] | None 
     }
     if dimensions:
         payload['dimensions'] = [{'name': name} for name in dimensions]
+    payload = production_scoped_ga4_payload(payload)
     return post_json(endpoint, payload, token)
 
 

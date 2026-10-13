@@ -47,6 +47,7 @@ jobs:
         run: |
           python -m py_compile .github/scripts/ai_provider.py
           python -m py_compile .github/scripts/traffic_autopilot.py
+          python -m py_compile .github/scripts/ga4_site_scope.py
           python -m py_compile .github/scripts/traffic_autopilot_editorial_guard.py
           python -m py_compile .github/scripts/traffic_autopilot_runner.py
           python -m py_compile tests/test_traffic_autopilot_readonly.py
