@@ -99,11 +99,13 @@ def collect_trends() -> tuple[list[dict], list[str]]:
     return selected, errors
 
 
-def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
-    """Keep autopilot pages out of search/discovery until remediation and manual review are complete."""
+def apply_editorial_review_state(history: dict, *, apply_changes: bool = False) -> tuple[dict, dict]:
+    """Plan article robots changes; writes require an explicit opt-in for isolated validation only."""
     reviewed_rows: list[dict] = []
     quarantined: list[str] = []
     restored: list[str] = []
+    quarantine_proposed: list[str] = []
+    restore_proposed: list[str] = []
     errors: list[str] = []
     article_root = (core.ROOT / "articles").resolve()
 
@@ -132,8 +134,11 @@ def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
             errors.append(f"{rel}: robots meta tag not found")
             continue
         if new_text != text:
-            page.write_text(new_text, encoding="utf-8")
-            (restored if reviewed else quarantined).append(rel)
+            if apply_changes:
+                page.write_text(new_text, encoding="utf-8")
+                (restored if reviewed else quarantined).append(rel)
+            else:
+                (restore_proposed if reviewed else quarantine_proposed).append(rel)
         if reviewed:
             reviewed_rows.append(row)
 
@@ -141,16 +146,19 @@ def apply_editorial_review_state(history: dict) -> tuple[dict, dict]:
     reviewed_history["articles"] = reviewed_rows
     return reviewed_history, {
         "mode": "adsense_remediation_quarantine" if ADSENSE_REMEDIATION_MODE else "manual_review_only",
+        "write_mode": "explicit_apply" if apply_changes else "dry_run",
         "reviewed_articles": len(reviewed_rows),
         "unreviewed_articles": max(0, len(history.get("articles", [])) - len(reviewed_rows)),
         "quarantined_pages_changed": quarantined,
         "reviewed_pages_restored": restored,
+        "quarantined_pages_proposed": quarantine_proposed,
+        "reviewed_pages_restore_proposed": restore_proposed,
         "errors": errors,
     }
 
 
-def sync_primary_sitemap(history: dict) -> list[str]:
-    """Remove autopilot source-summary URLs from the primary sitemap during remediation."""
+def sync_primary_sitemap(history: dict, *, apply_changes: bool = False) -> list[str]:
+    """Plan URL removals from sitemap.xml; writes require explicit opt-in for isolated validation."""
     if not ADSENSE_REMEDIATION_MODE:
         return []
     sitemap = core.ROOT / "sitemap.xml"
@@ -171,7 +179,7 @@ def sync_primary_sitemap(history: dict) -> list[str]:
 
     updated = SITEMAP_URL_RE.sub(repl, raw)
     updated = re.sub(r"\n{3,}", "\n\n", updated)
-    if updated != raw:
+    if updated != raw and apply_changes:
         sitemap.write_text(updated, encoding="utf-8")
     return removed
 
@@ -182,7 +190,7 @@ def main() -> None:
 
     history = core.load_json(core.HISTORY_PATH, {"version": 1, "articles": [], "seo_refresh": {}})
     reviewed_history, editorial = apply_editorial_review_state(history)
-    primary_sitemap_removed = sync_primary_sitemap(history)
+    primary_sitemap_plan = sync_primary_sitemap(history)
 
     trends, feed_errors = collect_trends()
     pulse = core.write_pulse(trends)
@@ -190,17 +198,15 @@ def main() -> None:
     candidate = core.choose_article_candidate(trends, history)
 
     published = None
-    changed_urls = [f"{core.SITE}/", f"{core.SITE}/articles.html"]
-    changed_urls.extend(f"{core.SITE}/{path}" for path in editorial["quarantined_pages_changed"])
-    changed_urls.extend(primary_sitemap_removed)
+    proposed_urls = [f"{core.SITE}/", f"{core.SITE}/articles.html"]
+    proposed_urls.extend(f"{core.SITE}/{path}" for path in editorial["quarantined_pages_proposed"])
+    proposed_urls.extend(primary_sitemap_plan)
 
-    if core.PUBLISH_PATH.exists():
-        core.PUBLISH_PATH.unlink()
-
-    core.HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    core.HISTORY_PATH.write_text(json.dumps(history, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    core.update_discovery(reviewed_history)
-    core.CHANGED_URLS_PATH.write_text("\n".join(dict.fromkeys(changed_urls)) + "\n", encoding="utf-8")
+    # The scheduled workflow is analysis-only: never delete a prior payload,
+    # rewrite history, alter article robots, or rebuild public discovery files.
+    # The validation workflow separately exercises explicit writes in its
+    # isolated CI checkout to prove that a proposed quarantine is safe.
+    core.CHANGED_URLS_PATH.write_text("\n".join(dict.fromkeys(proposed_urls)) + "\n", encoding="utf-8")
 
     report = {
         "run_at": core.NOW.isoformat().replace("+00:00", "Z"),
@@ -209,7 +215,10 @@ def main() -> None:
         "article_published": published,
         "article_candidate": core.public_item(candidate) if candidate else None,
         "editorial_review": editorial,
-        "primary_sitemap_removed": primary_sitemap_removed,
+        "primary_sitemap_urls_proposed_for_removal": primary_sitemap_plan,
+        "public_content_write_mode": "dry_run",
+        "discovery_updates_deferred": True,
+        "reviewed_history_rows_excluded_from_proposed_discovery": max(0, len(history.get("articles", [])) - len(reviewed_history.get("articles", []))),
         "ai": ai_provider.status(),
         "analytics": analytics_report,
         "search_opportunities": opportunities[:20],
@@ -233,8 +242,9 @@ def main() -> None:
         "article_candidate": candidate["url"] if candidate else None,
         "editorial_mode": editorial["mode"],
         "quarantined_changed": len(editorial["quarantined_pages_changed"]),
+        "quarantined_proposed": len(editorial["quarantined_pages_proposed"]),
         "reviewed_articles": editorial["reviewed_articles"],
-        "primary_sitemap_removed": len(primary_sitemap_removed),
+        "primary_sitemap_urls_proposed_for_removal": len(primary_sitemap_plan),
         "ai_provider": ai_status.get("provider"),
         "gsc_connected": analytics_report.get("connected", False),
         "feed_errors": len(feed_errors),
