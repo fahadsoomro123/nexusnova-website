@@ -141,7 +141,6 @@ def _call_gemini(prompt: str, key: str, model: str, timeout: int = 95) -> dict |
             "generationConfig": {
                 "responseMimeType": "application/json",
                 "maxOutputTokens": 5000,
-                "thinkingConfig": {"thinkingLevel": "low"},
             },
         },
         {"x-goog-api-key": key},
@@ -160,7 +159,7 @@ def _call_openai(prompt: str, key: str, model: str) -> dict | None:
             "max_output_tokens": 5000,
             "store": False,
         },
-        {"Authorization": f"Bearer {key}"},
+        {"Authorization": "Bearer " + key},
         timeout=100,
     )
     return _json_from_text(_openai_text(payload))
@@ -202,9 +201,9 @@ def ai_json(prompt: str) -> dict | None:
     gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
     configured_gemini = os.getenv("GEMINI_MODEL", "").strip()
     gemini_models = _unique([
-        configured_gemini or "gemini-3.7-flash",
-        "gemini-3.6-flash",
-        "gemini-3.5-flash",
+        configured_gemini or "gemini-2.5-flash",
+        "gemini-2.5-flash-lite",
+        "gemini-2.0-flash",
     ])
 
     if gemini_key:
