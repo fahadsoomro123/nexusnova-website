@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - perf/logo-webp-experiment-20261013
+    paths:
+      - '.github/workflows/logo-webp-experiment.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   convert:
@@ -33,6 +35,10 @@ jobs:
           with Image.open(src) as original:
               original.load()
               rgba = original.convert("RGBA")
+              header_logo = rgba.resize((520, 173), Image.Resampling.LANCZOS)
+              production_candidate = Path("assets/logo.webp")
+              header_logo.save(production_candidate, "WEBP", quality=95, method=6, exact=True, alpha_quality=100, subsampling=0)
+              print(json.dumps({"production_candidate_bytes": production_candidate.stat().st_size, "production_candidate_dimensions": [520, 173]}))
               print(json.dumps({
                   "source_bytes": src.stat().st_size,
                   "dimensions": original.size,
@@ -76,10 +82,25 @@ jobs:
               sheet.save(out/"logo-comparison.jpg",quality=92)
               print(json.dumps({"variants":rows},indent=2))
           PY
+      - name: Commit experiment asset on this isolated branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'nexusnova-automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/logo.webp
+          if git diff --cached --quiet; then
+            echo 'The optimized asset is already current.'
+          else
+            git commit -m 'experiment(perf): add resized WebP wordmark candidate'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
       - name: Upload review artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: logo-webp-experiment
-          path: /tmp/logo-variants/
+          path: |
+            /tmp/logo-variants/
+            assets/logo.webp
           if-no-files-found: error
           retention-days: 7
