@@ -9,6 +9,7 @@ on:
       - '.github/scripts/traffic_autopilot.py'
       - '.github/scripts/traffic_autopilot_editorial_guard.py'
       - 'tests/test_traffic_autopilot_editorial_guard.py'
+      - 'tests/test_traffic_autopilot_readonly.py'
       - '.github/scripts/traffic_autopilot_runner.py'
       - '.github/scripts/build_articles_feed.py'
       - '.github/scripts/traffic_diagnosis.py'
@@ -48,6 +49,7 @@ jobs:
           python -m py_compile .github/scripts/traffic_autopilot.py
           python -m py_compile .github/scripts/traffic_autopilot_editorial_guard.py
           python -m py_compile .github/scripts/traffic_autopilot_runner.py
+          python -m py_compile tests/test_traffic_autopilot_readonly.py
           python -m py_compile .github/scripts/build_articles_feed.py
           python -m py_compile .github/scripts/traffic_diagnosis.py
           python -m py_compile .github/scripts/search_growth_autopilot.py
@@ -60,6 +62,9 @@ jobs:
 
       - name: Test article draft quality and duplicate rejection
         run: python tests/test_traffic_autopilot_editorial_guard.py
+
+      - name: Test traffic autopilot read-only default
+        run: python tests/test_traffic_autopilot_readonly.py
 
       - name: Search-growth credential-free smoke test
         env:
@@ -112,8 +117,8 @@ jobs:
           total = len(history.get('articles', []))
           assert total > 0, 'Expected existing autopilot article history for quarantine smoke test.'
 
-          reviewed_history, report = runner.apply_editorial_review_state(history)
-          primary_sitemap_removed = runner.sync_primary_sitemap(history)
+          reviewed_history, report = runner.apply_editorial_review_state(history, apply_changes=True)
+          primary_sitemap_removed = runner.sync_primary_sitemap(history, apply_changes=True)
           assert report.get('errors') == [], report.get('errors')
           assert report.get('reviewed_articles') == 0
           assert report.get('unreviewed_articles') == total
