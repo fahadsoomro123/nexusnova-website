@@ -25,7 +25,8 @@ SITE_URL = os.getenv("GSC_SITE_URL", "sc-domain:nexusnovatools.com").strip() or 
 SITE_HOST = "nexusnovatools.com"
 AUTO_OPTIMIZE = os.getenv("NEXUSNOVA_AUTO_OPTIMIZE", "0").strip() == "1"
 MIN_IMPRESSIONS = max(10, int(os.getenv("SEARCH_GROWTH_MIN_IMPRESSIONS", "20") or "20"))
-CTR_MIN_IMPRESSIONS = max(10, int(os.getenv("SEARCH_GROWTH_CTR_MIN_IMPRESSIONS", "10") or "10"))
+CTR_MIN_IMPRESSIONS = max(3, int(os.getenv("SEARCH_GROWTH_CTR_MIN_IMPRESSIONS", "3") or "3"))
+CTR_MIN_PAGE_IMPRESSIONS = max(20, int(os.getenv("SEARCH_GROWTH_CTR_MIN_PAGE_IMPRESSIONS", "20") or "20"))
 CTR_MAX_POSITION = 20.0
 CTR_MAX_PERCENT = 1.5
 COOLDOWN_DAYS = max(14, int(os.getenv("SEARCH_GROWTH_COOLDOWN_DAYS", "45") or "45"))
@@ -431,11 +432,12 @@ def main() -> None:
             opportunities = build_opportunities(rows)
             pages = aggregate_pages(opportunities)
             ctr_opportunities = build_ctr_opportunities(rows)
-            ctr_pages = aggregate_pages(ctr_opportunities)
+            ctr_pages = [page for page in aggregate_pages(ctr_opportunities) if page["impressions"] >= CTR_MIN_PAGE_IMPRESSIONS]
             for page in ctr_pages:
                 page["opportunity_type"] = "low_ctr_high_visibility"
-                page["confidence"] = "very-low" if page["impressions"] < 20 else "low" if page["impressions"] < 50 else "moderate"
-            report["ctr_snippet_min_impressions"] = CTR_MIN_IMPRESSIONS
+                page["confidence"] = "low" if page["impressions"] < 50 else "moderate"
+            report["ctr_snippet_min_query_impressions"] = CTR_MIN_IMPRESSIONS
+            report["ctr_snippet_min_page_impressions"] = CTR_MIN_PAGE_IMPRESSIONS
             report["ctr_snippet_query_rows"] = len(ctr_opportunities)
             report["ctr_snippet_pages"] = len(ctr_pages)
             report["ctr_snippet_query_opportunities"] = ctr_opportunities[:50]
@@ -465,8 +467,8 @@ def main() -> None:
         f"GSC range: {start.isoformat()} to {end.isoformat()}",
         f"Ranking-opportunity rows (20+ impressions, avg position 18-90): {report.get('eligible_query_rows', 0)}",
         f"Ranking-opportunity pages: {report.get('eligible_pages', 0)}",
-        f"High-visibility low-CTR query rows (10+ impressions, avg position 1-20, CTR <= 1.5%): {report.get('ctr_snippet_query_rows', 0)}",
-        f"High-visibility low-CTR pages: {report.get('ctr_snippet_pages', 0)}",
+        f"High-visibility low-CTR query rows (3+ impressions, avg position 1-20, CTR <= 1.5%): {report.get('ctr_snippet_query_rows', 0)}",
+        f"High-visibility low-CTR pages (20+ combined query impressions): {report.get('ctr_snippet_pages', 0)}",
     ]
     if report.get("error"):
         lines.append(f"Error: {report['error']}")
