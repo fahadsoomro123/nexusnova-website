@@ -39,32 +39,32 @@ jobs:
           grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
           ! grep -Fq "mountChoices" assets/js/main.js
 
-      - name: Wait for the current performance assets to reach production
+      - name: Wait for the exact current homepage HTML to reach production
         shell: bash
         run: |
           set -euo pipefail
-          expected_css='assets/css/flagship-home-refinement.css'
-          expected_js='assets/js/main.js?v=20261005-ga4a'
+          expected_html_sha="$(sha256sum index.html | awk '{print $1}')"
+          echo "Expected source index.html SHA256: ${expected_html_sha}"
           success=0
           tmp_body="$(mktemp)"
           trap 'rm -f "$tmp_body"' EXIT
 
           for attempt in {1..20}; do
-            echo "Production asset check ${attempt}/20"
+            echo "Production homepage HTML hash check ${attempt}/20"
             status="$(curl --silent --show-error --location \
               --max-time 25 \
               -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36" \
-              -H "Cache-Control: no-cache" \
+              -H "Cache-Control: no-cache, no-store, max-age=0" \
+              -H "Pragma: no-cache" \
+              -H "Accept-Encoding: identity" \
               -o "$tmp_body" -w '%{http_code}' \
-              "https://nexusnovatools.com/?nn_live_perf=${GITHUB_SHA}")"
+              "https://nexusnovatools.com/?nn_live_perf=${GITHUB_SHA}&probe=${attempt}")"
 
-            css_seen=no
-            js_seen=no
-            if grep -Fq "$expected_css" "$tmp_body"; then css_seen=yes; fi
-            if grep -Fq "$expected_js" "$tmp_body"; then js_seen=yes; fi
-            echo "HTTP=${status} CSS=${css_seen} JS=${js_seen} BODY_BYTES=$(wc -c < "$tmp_body")"
+            actual_html_sha="$(sha256sum "$tmp_body" | awk '{print $1}')"
+            body_bytes="$(wc -c < "$tmp_body")"
+            echo "HTTP=${status} expected_sha=${expected_html_sha} live_sha=${actual_html_sha} BODY_BYTES=${body_bytes}"
 
-            if [ "$status" = "200" ] && [ "$css_seen" = "yes" ] && [ "$js_seen" = "yes" ]; then
+            if [ "$status" = "200" ] && [ "$expected_html_sha" = "$actual_html_sha" ]; then
               success=1
               break
             fi
@@ -72,7 +72,7 @@ jobs:
           done
 
           if [ "$success" -ne 1 ]; then
-            echo 'Production homepage did not expose the current performance asset versions.'
+            echo 'Production homepage HTML does not match the exact checked-out index.html; refusing to record a live Lighthouse result against stale content.'
             echo 'Last response preview:'
             head -c 600 "$tmp_body" || true
             exit 1
