@@ -1,0 +1,129 @@
+name: NexusNova Article Consolidation Live Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/article-consolidation-live-smoke.yml'
+      - 'articles.html'
+      - 'articles/google-releases-chrome-152-for-android.html'
+      - 'articles/chrome-152-for-android-adds-desktop-security-fixes.html'
+      - 'assets/js/search-core.js'
+      - 'sitemap.xml'
+      - 'articles.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-article-consolidation-live-check
+  cancel-in-progress: true
+
+jobs:
+  live-article-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify deployed article index and Chrome 152 consolidation
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python - <<'PY'
+          import concurrent.futures
+          import hashlib
+          import json
+          import re
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          BASE = "https://nexusnovatools.com"
+          ARCHIVE = "/articles/chrome-152-for-android-adds-desktop-security-fixes.html"
+          PRIMARY = "/articles/google-releases-chrome-152-for-android.html"
+          PATHS = [
+              "/articles.html",
+              PRIMARY,
+              ARCHIVE,
+              "/sitemap.xml",
+              "/assets/js/search-core.js",
+              "/articles.json",
+          ]
+
+          def fetch(path, attempt):
+              query = urllib.parse.urlencode({
+                  "nn_live_verify": f"{__import__('os').environ['GITHUB_RUN_ID']}-{attempt}-{__import__('os').environ['GITHUB_SHA'][:12]}"
+              })
+              url = f"{BASE}{path}?{query}"
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "Cache-Control": "no-cache, no-store, max-age=0",
+                      "Pragma": "no-cache",
+                      "User-Agent": "NexusNova-Live-Article-Smoke/1.0",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=10) as response:
+                      body = response.read().decode("utf-8", errors="replace")
+                      return {"path": path, "status": response.status, "body": body, "url": response.geturl()}
+              except urllib.error.HTTPError as exc:
+                  return {"path": path, "status": exc.code, "body": exc.read().decode("utf-8", errors="replace"), "url": url}
+              except Exception as exc:
+                  return {"path": path, "status": 0, "body": "", "url": url, "error": f"{type(exc).__name__}: {exc}"}
+
+          latest = {}
+          for attempt in range(1, 19):
+              with concurrent.futures.ThreadPoolExecutor(max_workers=len(PATHS)) as pool:
+                  results = list(pool.map(lambda path: fetch(path, attempt), PATHS))
+              latest = {item["path"]: item for item in results}
+              for item in results:
+                  body = item["body"]
+                  print(
+                      f"attempt={attempt} status={item['status']} bytes={len(body.encode('utf-8'))} "
+                      f"sha256={hashlib.sha256(body.encode('utf-8')).hexdigest()[:16]} path={item['path']}"
+                  )
+
+              hub = latest.get("/articles.html", {}).get("body", "")
+              primary = latest.get(PRIMARY, {}).get("body", "")
+              archive = latest.get(ARCHIVE, {}).get("body", "")
+              sitemap = latest.get("/sitemap.xml", {}).get("body", "")
+              search_core = latest.get("/assets/js/search-core.js", {}).get("body", "")
+              feed_text = latest.get("/articles.json", {}).get("body", "")
+              required = {
+                  "all six routes return HTTP 200": all(x["status"] == 200 for x in results),
+                  "hub reports 34 articles": "34 articles" in hub,
+                  "hub contains consolidated timeline": "Chrome 152 for Android: Release Timeline and Security Fixes" in hub,
+                  "hub omits old duplicate URL": ARCHIVE.lstrip("/") not in hub,
+                  "primary timeline has corrected title": "<title>Chrome 152 for Android: Release Timeline | NexusNova Tools</title>" in primary,
+                  "primary timeline includes .64, .75 and .82 milestones": all(f"152.0.7977.{v}" in primary for v in ("64", "75", "82")),
+                  "primary timeline includes 26 August, 1 September and 3 September": all(x in primary for x in ("26 August 2026", "1 September 2026", "3 September 2026")),
+                  "archive is noindex": bool(re.search(r'<meta\s+name="robots"\s+content="noindex,follow', archive, re.I)),
+                  "archive canonical points to maintained page": f'<link rel="canonical" href="{BASE}{PRIMARY}">' in archive,
+                  "archive links users to maintained page": f'href="google-releases-chrome-152-for-android.html"' in archive,
+                  "sitemap omits archive and includes primary": ARCHIVE.lstrip("/") not in sitemap and f"{BASE}{PRIMARY}" in sitemap,
+                  "search index omits archive and includes primary": ARCHIVE.lstrip("/") not in search_core and f'url:"{PRIMARY.lstrip("/")}"' in search_core,
+              }
+              try:
+                  feed = json.loads(feed_text)
+                  feed_urls = [str(item.get("url", "")) for item in feed.get("items", [])]
+                  required["article feed omits archive and includes maintained page"] = (
+                      f"{BASE}{ARCHIVE}" not in feed_urls and f"{BASE}{PRIMARY}" in feed_urls
+                  )
+              except Exception:
+                  required["article feed is valid JSON"] = False
+
+              if all(x["status"] == 200 for x in results) and all(required.values()):
+                  print("LIVE ARTICLE CONSOLIDATION PASS")
+                  print(json.dumps(required, indent=2))
+                  raise SystemExit(0)
+
+              if attempt < 18:
+                  time.sleep(5)
+
+          print("LIVE ARTICLE CONSOLIDATION FAIL: deployed content did not converge to the repository state.")
+          print(json.dumps(required, indent=2))
+          raise SystemExit(1)
+          PY
