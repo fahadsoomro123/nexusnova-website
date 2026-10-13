@@ -14,6 +14,7 @@ test('below-the-fold HumanProof and footer CSS load asynchronously with no-scrip
     assert.ok(html.includes('href="assets/css/' + file + '" media="print" onload="this.media=\'all\'"'), file + ' should be non-render-blocking');
     assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>'), file + ' must keep the no-script fallback');
     const head = html.slice(0, html.indexOf('</head>'));
-    assert.ok(!head.includes('<link rel="stylesheet" href="assets/css/' + file + '">'), file + ' must not have a duplicate render-blocking head link');
+    const activeHead = head.replace('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>', '');
+    assert.ok(!activeHead.includes('<link rel="stylesheet" href="assets/css/' + file + '">'), file + ' must not have a render-blocking head link outside noscript');
   }
 });
