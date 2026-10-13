@@ -23,7 +23,7 @@ test('WebP to PNG page documents transparency, still-image output and source lim
   assert.match(html, /alpha channel/i);
   assert.match(html, /checkerboard transparency view/i);
   assert.match(html, /animated WebP/i);
-  assert.match(html, /does not reverse quality loss/i);
+  assert.match(html, /(?:does not|cannot) reverse quality loss/i);
   assert.match(html, /developers\.google\.com\/speed\/webp/);
   assert.doesNotMatch(html, /data-ad-content-depth-remediation-v2|data-ad-content-depth-remediation-v3/i);
 });
