@@ -62,3 +62,21 @@ test('automatic GA4 configuration cannot initialize twice on the same page', () 
   assert.ok(text.includes("script[data-nexusnova-site-shell]"));
   assert.ok(!text.includes('analyticsLoaded=false'));
 });
+
+
+test('GA4 external loader only runs on the owned production hostname', () => {
+  const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
+  const match = wrapper.match(/const isProductionAnalyticsHost=(\\/[^;]+?)\\.test\\(location\\.hostname\\);/);
+  assert.ok(match, 'GA4 loader must have an explicit production-host allowlist');
+  const literal = match[1];
+  const lastSlash = literal.lastIndexOf('/');
+  const hostPattern = new RegExp(literal.slice(1, lastSlash), literal.slice(lastSlash + 1));
+  for (const host of ['nexusnovatools.com', 'www.nexusnovatools.com', 'NEXUSNOVATOOLS.COM']) {
+    assert.equal(hostPattern.test(host), true, host);
+  }
+  for (const host of ['raw.githack.com', 'github.io', 'localhost', '127.0.0.1', 'nexusnovatools.com.evil.example', 'preview.nexusnovatools.com']) {
+    assert.equal(hostPattern.test(host), false, host);
+  }
+  assert.ok(wrapper.includes("if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){"));
+  assert.ok(wrapper.includes("const measurementId='G-YLPFKWSS12';"), 'measurement ID must remain unchanged');
+});
