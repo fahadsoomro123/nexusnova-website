@@ -106,6 +106,22 @@ def local_target(page: Path, raw: str) -> Path | None:
     return target
 
 
+def has_theme_coverage(text: str) -> bool:
+    """Recognize shared production styling as well as legacy theme assets.
+
+    Some indexable hubs use the shared site.css foundation with page-scoped
+    inline styling. Requiring the older scifi.css/main.js markers was a false
+    positive for those deliberately different page templates.
+    """
+    markers = (
+        'assets/css/site.css',
+        'assets/css/scifi.css',
+        'assets/js/main.js',
+        'assets/css/humanproof.css',
+    )
+    return any(marker in text for marker in markers)
+
+
 def expected_canonical(page: Path) -> str:
     rel = page.as_posix()
     if rel == 'index.html':
@@ -194,13 +210,7 @@ def main() -> None:
             if in_sitemap:
                 mapped += 1
 
-        has_theme = (
-            'assets/css/scifi.css' in text
-            or '../assets/css/scifi.css' in text
-            or 'assets/js/main.js' in text
-            or '../assets/js/main.js' in text
-            or 'assets/css/humanproof.css' in text
-        )
+        has_theme = has_theme_coverage(text)
         if has_theme:
             theme_covered += 1
             if is_indexable:
