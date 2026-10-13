@@ -39,3 +39,16 @@ test('published pages do not contain the automated content-depth filler block', 
     .sort();
   assert.deepEqual(offenders, [], 'Remove the repeated automated content-depth section instead of republishing it');
 });
+
+test('published pages do not expose the self-referential content-depth preface', () => {
+  const pages = publicHtmlFiles();
+  const intro = 'is intended to support a real task, so this section focuses on verification and correct use rather than filler.';
+  const offenders = pages
+    .filter(file => {
+      const html = fs.readFileSync(file, 'utf8');
+      return html.includes(intro) || /data-ad-content-depth-remediation-v3/i.test(html);
+    })
+    .map(file => path.relative(root, file))
+    .sort();
+  assert.deepEqual(offenders, [], 'Replace repeated self-referential filler with topic-specific guidance');
+});
