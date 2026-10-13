@@ -41,12 +41,29 @@ class SearchGrowthOpportunityTests(unittest.TestCase):
 
     def test_ctr_report_excludes_insufficient_or_irrelevant_rows(self) -> None:
         rows = [
-            self.row(query="too few impressions", impressions=9, ctr=0, position=7),
+            self.row(query="too few impressions", impressions=2, ctr=0, position=7),
             self.row(query="position too low", impressions=90, ctr=0, position=35),
             self.row(query="healthy ctr", impressions=90, ctr=0.04, position=7),
         ]
         with mock.patch.object(growth, "local_file_for", return_value=self.valid_file):
             self.assertEqual(growth.build_ctr_opportunities(rows), [])
+
+    def test_low_volume_queries_aggregate_to_a_page_only_after_20_impressions(self) -> None:
+        rows = [
+            self.row(query="playtime query one", impressions=7, ctr=0, position=6.5),
+            self.row(query="playtime query two", impressions=8, ctr=0, position=7.0),
+            self.row(query="playtime query three", impressions=6, ctr=0, position=9.0),
+            self.row(query="playtime query four", impressions=2, ctr=0, position=4.0),
+        ]
+        with mock.patch.object(growth, "local_file_for", return_value=self.valid_file):
+            opportunities = growth.build_ctr_opportunities(rows)
+            pages = growth.aggregate_pages(opportunities)
+
+        eligible_pages = [page for page in pages if page["impressions"] >= 20]
+        self.assertEqual(len(eligible_pages), 1)
+        self.assertEqual(eligible_pages[0]["impressions"], 21.0)
+        self.assertEqual(eligible_pages[0]["clicks"], 0.0)
+        self.assertEqual(len(eligible_pages[0]["queries"]), 3)
 
     def test_ranking_optimizer_candidates_remain_separate_and_stricter(self) -> None:
         rows = [
