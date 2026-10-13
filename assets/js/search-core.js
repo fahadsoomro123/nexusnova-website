@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 95 tools + 9 categories + 34 articles + 8 guides = 146 records.
+ * 95 tools + 9 categories + 34 articles + 9 guides = 147 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -152,14 +152,15 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Compress images without guesswork.", url:"guides/image-compression.html", type:"guide", category:"Guides", tags:["compress images without guesswork.","guides image compression","guides","compress","images","without","guesswork","guide","methodology"] },
   { title:"Turn JPG images into a PDF properly.", url:"guides/jpg-to-pdf.html", type:"guide", category:"Guides", tags:["turn jpg images into a pdf properly.","guides jpg to pdf","guides","turn","jpg","images","pdf","properly","guide","methodology"] },
   { title:"Build a resume that is easy to scan.", url:"guides/resume-writing.html", type:"guide", category:"Guides", tags:["build a resume that is easy to scan.","guides resume writing","guides","build","resume","easy","scan","guide","methodology"] },
-  { title:"Write AI prompts that are easier to verify.", url:"guides/ai-prompting.html", type:"guide", category:"Guides", tags:["write ai prompts that are easier to verify.","guides ai prompting","guides","write","prompts","easier","verify","guide","methodology"] }
+  { title:"Write AI prompts that are easier to verify.", url:"guides/ai-prompting.html", type:"guide", category:"Guides", tags:["write ai prompts that are easier to verify.","guides ai prompting","guides","write","prompts","easier","verify","guide","methodology"] },
+  { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] }
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
   tool:95,
   category:9,
   article:34,
-  guide:8
+  guide:9
 });
 
 const NEXUSNOVA_ALIAS_MAP = Object.freeze({
@@ -703,10 +704,10 @@ NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
   tool:95,
   category:9,
   article:34,
-  guide:8
+  guide:9
 });
 
-NexusNovaSearchCore.DATASET_SIZE=146;
+NexusNovaSearchCore.DATASET_SIZE=147;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;

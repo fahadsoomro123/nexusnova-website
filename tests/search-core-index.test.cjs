@@ -18,9 +18,9 @@ test('search index count constants match the actual dataset', () => {
     tool: 95,
     category: 9,
     article: 34,
-    guide: 8
+    guide: 9
   });
-  assert.equal(search.size, 146);
+  assert.equal(search.size, 147);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
 });
@@ -81,4 +81,25 @@ test('search index stores compact article metadata rather than full page bodies'
     assert.ok(search.query(query).some(result => result.url === expectedUrl),
       'expected a compact-index search hit for: ' + query);
   }
+});
+
+
+test('every guide card is linked to its search-index entry', () => {
+  const hub = fs.readFileSync(path.join(root, 'guides.html'), 'utf8');
+  const starts = [...hub.matchAll(/<article class="nn-guide-card"[^>]*data-guide-card[^>]*>/g)];
+  const cards = starts.map(match => {
+    const end = hub.indexOf('</article>', match.index);
+    return end < 0 ? '' : hub.slice(match.index, end + '</article>'.length);
+  });
+  const indexed = new Set(data.filter(record => record.type === 'guide').map(record => record.url));
+  assert.equal(cards.length, 9, 'guide hub card count should match the index');
+  for (const card of cards) {
+    const url = (card.match(/data-search-url="([^"]+)"/) || [])[1];
+    const link = (card.match(/<a class="nn-guide-link" href="([^"]+)"/) || [])[1];
+    assert.ok(url, 'guide card must carry data-search-url');
+    assert.equal(url, link, 'filter URL must equal the Read Guide href');
+    assert.ok(indexed.has(url), 'guide card must exist in search index: ' + url);
+  }
+  assert.ok(search.query('FBR ATL status CNIC NTN 9966')
+    .some(result => result.url === 'guides/fbr-atl-status.html'));
 });
