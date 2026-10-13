@@ -33,8 +33,12 @@ jobs:
               profile = original.info.get('icc_profile')
               exif = original.info.get('exif')
               rgba = original.convert('RGBA')
-              rgba.save(target, 'WEBP', lossless=True, method=6, exact=True,
-                        icc_profile=profile, exif=exif)
+              options = {'lossless': True, 'method': 6, 'exact': True}
+              if profile:
+                  options['icc_profile'] = profile
+              if exif:
+                  options['exif'] = exif
+              rgba.save(target, 'WEBP', **options)
           with Image.open(target) as optimized:
               optimized.load()
               candidate = optimized.convert('RGBA')
