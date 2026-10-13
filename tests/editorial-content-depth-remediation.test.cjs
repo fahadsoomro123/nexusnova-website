@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const root = path.resolve(__dirname, '..');
-const generatedBlockMarker = /data-ad-content-depth-remediation-v2/i;
+const generatedBlockMarker = /data-ad-content-depth-remediation-v[23]|intended to support a real task, so this section focuses on verification and correct use rather than filler/i;
 
 function collectHtml(dir) {
   const found = [];
@@ -30,12 +30,12 @@ function publicHtmlFiles() {
   return [...topLevel, ...nested];
 }
 
-test('published pages do not contain the automated content-depth filler block', () => {
+test('published pages do not contain automated depth markers or generated meta-filler intros', () => {
   const pages = publicHtmlFiles();
   assert.ok(pages.length >= 80, 'site HTML inventory was unexpectedly small');
   const offenders = pages
     .filter(file => generatedBlockMarker.test(fs.readFileSync(file, 'utf8')))
     .map(file => path.relative(root, file))
     .sort();
-  assert.deepEqual(offenders, [], 'Remove the repeated automated content-depth section instead of republishing it');
+  assert.deepEqual(offenders, [], 'Remove generated meta-filler and preserve only topic-specific guidance');
 });
