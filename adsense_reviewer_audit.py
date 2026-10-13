@@ -176,7 +176,7 @@ def approved_noindex_urls() -> list[str]:
     policy_path = ROOT / "ADSENSE-REMEDIATION-REPORT-2026-09-11.md"
     if not policy_path.is_file():
         raise RuntimeError("Approved AdSense remediation report is missing")
-    source = read(policy_path)
+    source = policy_path.read_text(encoding="utf-8", errors="replace")
     heading = "## NOINDEX — exact pages"
     start = source.find(heading)
     if start < 0:
