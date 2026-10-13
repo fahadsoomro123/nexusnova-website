@@ -45,6 +45,72 @@ jobs:
       - name: Run source GA4 contract tests
         run: node --test tests/ga4-loader.test.cjs
 
+      - name: Wait for the matching Pages deployment before live browser checks
+        env:
+          DEPLOY_SHA: \${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import time
+          import requests
+
+          base = 'https://nexusnovatools.com'
+          deploy_sha = os.environ['DEPLOY_SHA']
+          pages = [
+              ('/', 'assets/js/main.js?v=20261013-anonymous-consent-v1'),
+              ('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
+              ('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
+              ('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
+              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
+          ]
+          headers = {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
+          session = requests.Session()
+          failures = []
+          for attempt in range(1, 61):
+              failures = []
+              for path, marker in pages:
+                  try:
+                      response = session.get(
+                          base + path,
+                          params={'nn_deploy_probe': deploy_sha},
+                          headers=headers,
+                          timeout=12,
+                      )
+                      if response.status_code != 200:
+                          failures.append(f'{path}: HTTP {response.status_code}')
+                      elif marker not in response.text:
+                          failures.append(f'{path}: expected bundle marker not deployed yet')
+                  except requests.RequestException as exc:
+                      failures.append(f'{path}: {type(exc).__name__}')
+              try:
+                  main_js = session.get(
+                      base + '/assets/js/main.js',
+                      params={'v': '20261013-anonymous-consent-v1', 'nn_deploy_probe': deploy_sha},
+                      headers=headers,
+                      timeout=12,
+                  )
+                  if main_js.status_code != 200 or 'readSavedAnalyticsChoice' not in main_js.text:
+                      failures.append('main.js: consent-aware bootstrap is not deployed yet')
+                  standalone_js = session.get(
+                      base + '/assets/js/analytics.js',
+                      params={'nn_deploy_probe': deploy_sha},
+                      headers=headers,
+                      timeout=12,
+                  )
+                  if standalone_js.status_code != 200 or "analytics_detail_opt_in" not in standalone_js.text:
+                      failures.append('analytics.js: consent-aware standalone loader is not deployed yet')
+              except requests.RequestException as exc:
+                  failures.append(f'JavaScript assets: {type(exc).__name__}')
+              if not failures:
+                  print(f'Pages deployment readiness confirmed for commit {deploy_sha} after attempt {attempt}; all 5 page markers and both analytics assets are live.')
+                  break
+              if attempt % 6 == 0:
+                  print(f'Attempt {attempt}/60: waiting for Pages propagation: ' + '; '.join(failures))
+              time.sleep(5)
+          else:
+              raise SystemExit('Matching Pages deployment did not become ready within 5 minutes: ' + '; '.join(failures))
+          PY
+
       - name: Verify fresh production visitors receive automatic GA4
         env:
           GA4_MEASUREMENT_ID: ${{ env.GA4_MEASUREMENT_ID }}
@@ -140,14 +206,14 @@ jobs:
               context=browser.new_context(viewport={'width':1280,'height':800},timezone_id='Asia/Karachi')
               page=context.new_page()
               optin_requests=[];optin_errors=[]
-              page.on('request',lambda req:optin_requests.append(req.url))
+              page.on('request',lambda req:optin_requests.append({'url':req.url,'method':req.method,'post_data':req.post_data or ''}))
               page.on('pageerror',lambda err:optin_errors.append(str(err)))
               page.on('console',lambda msg:optin_errors.append('console:'+msg.text) if msg.type=='error' else None)
               page.goto(BASE_URL+'/tools.html?ga4_qa='+os.environ['QA_VERSION']+'&ga4_view=explicit-opt-in',wait_until='domcontentloaded',timeout=30000)
               page.wait_for_timeout(9000)
               page.locator('.nn-standalone-consent-open').click(timeout=8000)
               page.locator('#nexusnova-analytics-consent-dialog [data-consent-allow]').click(timeout=8000)
-              page.wait_for_timeout(2500)
+              page.wait_for_timeout(8000)
               optin_info=page.evaluate('''() => {
                 const args=(window.dataLayer||[]).map(x=>{
                   try { if(Array.isArray(x))return x; if(x&&typeof x.length==='number')return Array.from(x); } catch(_) {}
@@ -166,11 +232,20 @@ jobs:
                 };
               }''')
               optin_collect=[]
-              for url in optin_requests:
+              for request_record in optin_requests:
+                  url=request_record['url']
                   if 'google-analytics.com/g/collect' not in url: continue
                   q=parse_qs(urlparse(url).query)
+                  if request_record.get('post_data'):
+                      q.update(parse_qs(request_record['post_data']))
                   if q.get('tid',[''])[0]==MEASUREMENT_ID:
-                      optin_collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'gcs':q.get('gcs',[''])[0]})
+                      optin_collect.append({
+                          'en':q.get('en',[''])[0],
+                          'dl':q.get('dl',[''])[0],
+                          'gcs':q.get('gcs',[''])[0],
+                          'method':request_record.get('method','GET'),
+                          'source':'body' if 'en' in parse_qs(request_record.get('post_data','')) else 'query'
+                      })
               consented_events=[x for x in optin_collect if x['en']=='analytics_detail_opt_in' and x['gcs']=='G101']
               optin_result={'page':optin_info,'ga4Collect':optin_collect,'consentedOptInEvents':consented_events,'errors':optin_errors[:20]}
               optin_result['success']=optin_info['path']=='/tools.html' and optin_info['savedConsent']=='granted' and optin_info['gtag'] and optin_info['gaScriptCount']==1 and optin_info['gaConfigCount']==1 and optin_info['consentUpdateGranted'] and len(consented_events)>=1 and not optin_errors
