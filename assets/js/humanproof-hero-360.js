@@ -255,7 +255,69 @@
   {
     const autoStart=holder.hasAttribute('data-hp-360-autostart');
     if(autoStart){
-      boot();
+      // Keep automatic playback, but don't download/parse Three.js until the
+      // 3D stage is visible. The existing placeholder remains in place meanwhile.
+      let started=false;
+      let disposed=false;
+      let observer=null;
+      let delayedTimer=0;
+      let idleHandle=0;
+      let idleHandleType='';
+
+      const start=()=>{
+        if(started||disposed)return;
+        started=true;
+        boot();
+      };
+
+      const scheduleWhenIdle=()=>{
+        if(disposed||started)return;
+        const schedule=()=>{
+          if(disposed||started)return;
+          if(typeof window.requestIdleCallback==='function'){
+            idleHandleType='idle';
+            idleHandle=window.requestIdleCallback(start,{timeout:1800});
+          }else{
+            idleHandleType='timeout';
+            idleHandle=window.setTimeout(start,250);
+          }
+        };
+        // Let the page's first render and critical interactions settle first.
+        delayedTimer=window.setTimeout(schedule,1800);
+      };
+
+      const observeStage=()=>{
+        if(disposed||started)return;
+        if(typeof window.IntersectionObserver!=='function'){
+          scheduleWhenIdle();
+          return;
+        }
+        observer=new IntersectionObserver(entries=>{
+          if(!entries.some(entry=>entry.isIntersecting))return;
+          observer.disconnect();
+          observer=null;
+          scheduleWhenIdle();
+        });
+        observer.observe(holder);
+      };
+
+      const cleanup=()=>{
+        disposed=true;
+        if(observer)observer.disconnect();
+        observer=null;
+        if(delayedTimer)window.clearTimeout(delayedTimer);
+        if(idleHandle){
+          if(idleHandleType==='idle'&&typeof window.cancelIdleCallback==='function'){
+            window.cancelIdleCallback(idleHandle);
+          }else if(idleHandleType==='timeout'){
+            window.clearTimeout(idleHandle);
+          }
+        }
+      };
+
+      if(document.readyState==='complete')observeStage();
+      else window.addEventListener('load',observeStage,{once:true});
+      window.addEventListener('pagehide',cleanup,{once:true});
       return;
     }
 
