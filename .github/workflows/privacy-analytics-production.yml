@@ -115,7 +115,7 @@ jobs:
                   title:document.title,
                   overflow:{sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth}
                 };
-              })'''
+              }''')
               collect=[]
               for url in requests_seen:
                   if 'google-analytics.com/g/collect' not in url: continue
