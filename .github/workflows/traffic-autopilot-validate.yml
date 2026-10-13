@@ -107,6 +107,7 @@ jobs:
           assert total > 0, 'Expected existing autopilot article history for quarantine smoke test.'
 
           reviewed_history, report = runner.apply_editorial_review_state(history)
+          primary_sitemap_removed = runner.sync_primary_sitemap(history)
           assert report.get('errors') == [], report.get('errors')
           assert report.get('reviewed_articles') == 0
           assert report.get('unreviewed_articles') == total
@@ -124,6 +125,13 @@ jobs:
           sitemap = Path('sitemap-autopilot.xml').read_text(encoding='utf-8', errors='replace')
           leaked_sitemap = sorted(url for url in quarantined_urls if url in sitemap)
           assert not leaked_sitemap, f'Quarantined articles leaked into sitemap-autopilot.xml: {leaked_sitemap}'
+
+          primary_sitemap = Path('sitemap.xml').read_text(encoding='utf-8', errors='replace')
+          leaked_primary_sitemap = sorted(url for url in quarantined_urls if url in primary_sitemap)
+          assert not leaked_primary_sitemap, (
+              f'Quarantined articles leaked into sitemap.xml: {leaked_primary_sitemap}'
+          )
+          assert set(primary_sitemap_removed).issubset(quarantined_urls)
 
           for row in history.get('articles', []):
               page = Path(str(row.get('path', '')))
