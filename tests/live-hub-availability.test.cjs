@@ -5,6 +5,9 @@ const fs=require('node:fs');
 const js=fs.readFileSync('assets/js/live-pakistan-today.js','utf8');
 const aqi=JSON.parse(fs.readFileSync('assets/data/live-aqi.json','utf8'));
 const crypto=JSON.parse(fs.readFileSync('assets/data/live-crypto.json','utf8'));
+const aqiPage=fs.readFileSync('aqi-live.html','utf8');
+const cryptoPage=fs.readFileSync('crypto-live.html','utf8');
+const sitemap=fs.readFileSync('sitemap.xml','utf8');
 
 test('optional LIVE modules derive availability from their published JSON status',()=>{
   assert.match(js,/assets\/data\/live-aqi\.json/);
@@ -24,4 +27,11 @@ test('current seeded optional datasets remain fail-closed until credentials publ
   assert.equal(crypto.status,'pending');
   assert.deepEqual(aqi.cities,[]);
   assert.deepEqual(crypto.coins,[]);
+});
+
+
+test('pending AQI and crypto pages are not indexable or submitted in the sitemap',()=>{
+  assert.match(aqiPage,/<meta name="robots" content="noindex,follow">/);
+  assert.match(cryptoPage,/<meta name="robots" content="noindex,follow">/);
+  assert.doesNotMatch(sitemap,/https:\/\/nexusnovatools\.com\/(?:aqi-live|crypto-live)\.html/);
 });
