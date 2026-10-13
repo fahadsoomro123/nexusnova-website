@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from traffic_autopilot_editorial_guard import approved_source, load_article_documents, reject_reason
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = "https://nexusnovatools.com"
@@ -396,6 +397,9 @@ def choose_article_candidate(items: list[dict], history: dict) -> dict | None:
 
 
 def build_article(candidate: dict, history: dict, gsc_context: list[dict]) -> dict | None:
+    if not approved_source(candidate.get("name"), candidate.get("url")):
+        print(f"Editorial draft rejected: source URL is not approved for {candidate.get('name', 'unknown source')}.")
+        return None
     source_text = fetch_source_text(candidate["url"])
     if len(source_text) < 800:
         return None
@@ -407,9 +411,11 @@ Hard rules:
 - Use only factual claims supported by SOURCE MATERIAL below. Do not invent dates, versions, impacts, quotes, benchmarks or affected products.
 - Paraphrase; do not copy sentences from the source. No quote longer than 10 words.
 - Explain why the update matters and give cautious practical next steps only when the source supports them.
-- No clickbait, no exaggerated urgency, no ranking claims, no keyword stuffing.
+- Include at least three distinct topic-specific sections and two concrete, topic-specific steps.
+- Do not use generic/title-repeating headings such as "Next steps — [article title]" or "Make this update useful — [article title]".
+- Do not pad with repeated advice, generic calls to action, or editorial-process boilerplate.
 - If the source is too thin to create a useful standalone page, set publish=false.
-- 450-800 words total.
+- The substantive draft must contain 450-800 words before the page template is added.
 - Return JSON only.
 
 Return this shape:
@@ -438,6 +444,19 @@ SOURCE MATERIAL:
 """
     data = ai_json(prompt)
     if not data or data.get("publish") is not True:
+        return None
+    existing_articles = load_article_documents(ROOT / "articles")
+    existing_articles.extend(
+        (clean_text(str(row.get("title", ""))), clean_text(str(row.get("summary", ""))))
+        for row in history.get("articles", []) if row.get("title")
+    )
+    rejection = reject_reason(data, candidate, source_text, existing_articles)
+    if rejection:
+        print(f"Editorial draft rejected: {rejection}.")
+        return None
+    provided_source = clean_text(str(data.get("source_label") or candidate["name"]))
+    if normalize_title(provided_source) != normalize_title(candidate["name"]):
+        print("Editorial draft rejected: source label does not match the monitored official source.")
         return None
     title = clean_text(str(data.get("title", "")))[:100]
     description = clean_text(str(data.get("description", "")))[:160]
@@ -484,7 +503,7 @@ SOURCE MATERIAL:
 <title>{escape(title)} — NexusNova Tools</title><meta name="description" content="{escape(description)}"><meta name="robots" content="index,follow,max-image-preview:large"><meta name="theme-color" content="#f5f7fb"><link rel="canonical" href="{escape(canonical)}"><link rel="alternate" type="application/rss+xml" title="NexusNova Tools Updates" href="{SITE}/feed.xml"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="article"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{escape(description)}"><meta property="og:url" content="{escape(canonical)}"><meta property="og:image" content="{escape(image_url)}"><meta property="og:image:width" content="1280"><meta property="og:image:height" content="720"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="../assets/css/site.css"><link rel="stylesheet" href="../assets/css/scifi.css" data-nexusnova-scifi><link rel="stylesheet" href="../assets/css/motion.css" data-nexusnova-motion><script type="application/ld+json">{escape(json.dumps(schema, ensure_ascii=False))}</script></head>
 <body><header class="site-header" data-header><div class="container nav-wrap"><a class="brand" href="../index.html" aria-label="NexusNova Tools home"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-label="Open navigation">☰</button><nav class="nav" data-nav aria-label="Primary navigation"></nav></div></header>
-<main><section class="page-hero"><div class="container article"><span class="kicker">{escape(candidate['category'].upper())} • SOURCE-BACKED UPDATE</span><h1>{escape(title)}</h1><p>{escape(deck)}</p><p class="mini-note">Published {escape(published_iso)} • NexusNova Editorial Team</p></div></section><section class="section"><div class="container article"><img src="../{escape(image_rel)}" alt="{escape(title)}" width="1280" height="720" style="width:100%;height:auto;border-radius:28px;margin-bottom:28px" loading="eager">{''.join(section_html)}{steps_html}<div class="notice"><strong>Primary source:</strong> <a href="{escape(candidate['url'])}" rel="noopener noreferrer">{escape(source_label)}</a>. This brief is generated from an official-source monitoring workflow and is checked by NexusNova's automated quality gate before publication.</div><div class="cta" style="margin-top:32px"><div><span class="kicker">RELATED NEXUSNOVA TOOLS</span><h2>Turn the update into something useful.</h2></div><div class="hero-actions">{related_html}</div></div></div></section></main>
+<main><section class="page-hero"><div class="container article"><span class="kicker">{escape(candidate['category'].upper())} • SOURCE-BACKED UPDATE</span><h1>{escape(title)}</h1><p>{escape(deck)}</p><p class="mini-note">Published {escape(published_iso)} • NexusNova Editorial Team</p></div></section><section class="section"><div class="container article"><img src="../{escape(image_rel)}" alt="{escape(title)}" width="1280" height="720" style="width:100%;height:auto;border-radius:28px;margin-bottom:28px" loading="eager">{''.join(section_html)}{steps_html}<div class="notice"><strong>Primary source:</strong> <a href="{escape(candidate['url'])}" rel="noopener noreferrer">{escape(source_label)}</a>.</div><div class="cta" style="margin-top:32px"><div><span class="kicker">RELATED NEXUSNOVA TOOLS</span><h2>Explore related {escape(candidate['category'])} tools.</h2></div><div class="hero-actions">{related_html}</div></div></div></section></main>
 <footer class="site-footer"><div class="container footer-console"><div><a class="brand" href="../index.html"><span class="brand-mark">N</span><span class="brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><p class="footer-copy">Free browser tools and practical technology explainers.</p></div><div><div class="footer-title">Explore</div><div class="footer-links"><a href="../articles.html">Articles</a><a href="../tech.html">Tech & Security</a><a href="../tools.html">Tools</a></div></div><div><div class="footer-title">Trust</div><div class="footer-links"><a href="../editorial-team.html">Editorial Team</a><a href="../editorial-policy.html">Editorial Policy</a><a href="../privacy.html">Privacy</a></div></div></div><div class="container footer-bottom"><span>© <span data-year></span> NexusNova Tools.</span><span>NEXUSNOVATOOLS.COM</span></div></footer><script src="../assets/js/main.js" defer></script></body></html>'''
     # JSON-LD must not be HTML-escaped inside script.
     page_html = page_html.replace(escape(json.dumps(schema, ensure_ascii=False)), json.dumps(schema, ensure_ascii=False).replace("</", "<\\/"))
