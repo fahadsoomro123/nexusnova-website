@@ -103,7 +103,7 @@ def reject_reason(data, candidate, source_text, existing):
     sections = data.get("sections")
     if not isinstance(sections, list):
         return "sections are missing"
-    clean_sections, headings = [], set()
+    clean_sections, headings, seen_paragraphs = [], set(), set()
     for section in sections[:6]:
         if not isinstance(section, dict):
             continue
@@ -114,6 +114,11 @@ def reject_reason(data, candidate, source_text, existing):
         paras = [str(p).strip() for p in paras[:4] if str(p).strip()]
         if not paras:
             continue
+        for paragraph in paras:
+            paragraph_key = re.sub(r"[^a-z0-9]+", " ", paragraph.lower()).strip()
+            if paragraph_key in seen_paragraphs:
+                return "repeated paragraph filler is not accepted"
+            seen_paragraphs.add(paragraph_key)
         if generic_heading(heading, title):
             return "generic title-repeating heading: " + heading[:80]
         key = norm = re.sub(r"[^a-z0-9]+", " ", heading.lower()).strip()
@@ -141,6 +146,9 @@ def reject_reason(data, candidate, source_text, existing):
     words = len(re.findall(r"[a-z0-9]+", body.lower()))
     if not 450 <= words <= 800:
         return f"substantive draft must be 450–800 words; found {words}"
+    unique_shingles = len(shingles(body))
+    if unique_shingles < 100 or unique_shingles / max(1, words - 4) < 0.30:
+        return "draft repeats too much phrasing to demonstrate substantive depth"
     topic = terms(str(candidate.get("title", "")) + " " + str(candidate.get("summary", "")))
     if len(topic & terms(body)) < min(3, len(topic)):
         return "draft lacks topic-specific detail from the official source title and summary"

@@ -76,8 +76,19 @@ class ArticleDraftGuardTests(unittest.TestCase):
         self.assertIn("three substantive sections", reason)
 
     def test_near_duplicate_content_is_rejected(self):
-        body = "Chrome Android security update official release notes verify the installed version " * 40
+        body = " ".join(
+            f"Chrome Android security update official release build number {i} device compatibility check source detail verification action"
+            for i in range(80)
+        )
         self.assertEqual(guard.find_duplicate("Different heading", body, [("Existing article", body)]), "Existing article")
+
+    def test_repeated_paragraph_padding_is_rejected(self):
+        data = draft()
+        repeated = "Chrome Android security update official release notes verify browser version " * 15
+        for section in data["sections"]:
+            section["paragraphs"] = [repeated]
+        reason = guard.reject_reason(data, candidate(), "official source details " * 100, [])
+        self.assertIn("repeated paragraph filler", reason)
 
     def test_near_duplicate_title_intent_is_rejected(self):
         self.assertEqual(guard.find_duplicate("GitHub Copilot Model Access Rules", "A different summary.", [("GitHub Copilot Model Access Rules", "old text")]), "GitHub Copilot Model Access Rules")
