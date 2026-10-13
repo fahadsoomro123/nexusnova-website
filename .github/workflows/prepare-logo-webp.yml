@@ -27,32 +27,44 @@ jobs:
           from pathlib import Path
           from PIL import Image, ImageChops
           source = Path('assets/logo.png')
-          target = Path('assets/logo.webp')
           with Image.open(source) as original:
               original.load()
+              rgba = original.convert('RGBA')
               profile = original.info.get('icc_profile')
               exif = original.info.get('exif')
-              rgba = original.convert('RGBA')
               options = {'lossless': True, 'method': 6, 'exact': True}
               if profile:
                   options['icc_profile'] = profile
               if exif:
                   options['exif'] = exif
-              rgba.save(target, 'WEBP', **options)
-          with Image.open(target) as optimized:
+              full = Path('assets/logo.webp')
+              rgba.save(full, 'WEBP', **options)
+              print(f'logo.png: {source.stat().st_size} bytes; full WebP: {full.stat().st_size} bytes; pixel-exact candidate')
+              for label, width in [('2x', 422), ('3x', 633)]:
+                  height = round(rgba.height * width / rgba.width)
+                  target = Path(f'assets/logo-{label}.webp')
+                  resized = rgba.resize((width, height), Image.Resampling.LANCZOS)
+                  resized.save(target, 'WEBP', **options)
+                  with Image.open(target) as optimized:
+                      optimized.load()
+                      candidate = optimized.convert('RGBA')
+                  if resized.size != candidate.size or ImageChops.difference(resized, candidate).getbbox():
+                      raise SystemExit(f'{label} WebP pixel-exact round-trip failed')
+                  if target.stat().st_size >= source.stat().st_size:
+                      raise SystemExit(f'{label} WebP did not reduce the original file size')
+                  print(f'{target.name}: {target.stat().st_size} bytes; saved vs PNG: {source.stat().st_size-target.stat().st_size} bytes ({(source.stat().st_size-target.stat().st_size)/source.stat().st_size:.1%}); pixel-exact at {width}x{height}')
+          with Image.open(full) as optimized:
               optimized.load()
               candidate = optimized.convert('RGBA')
           if rgba.size != candidate.size or ImageChops.difference(rgba, candidate).getbbox():
-              raise SystemExit('Pixel-exact verification failed')
-          before, after = source.stat().st_size, target.stat().st_size
-          print(f'logo.png: {before} bytes; logo.webp: {after} bytes; saved: {before-after} bytes ({(before-after)/before:.1%}); pixel_exact=true; dimensions={rgba.size}')
-          if after >= before:
-              raise SystemExit('WebP did not reduce the original file size; do not publish it')
+              raise SystemExit('Full-size WebP pixel-exact verification failed')
+          if full.stat().st_size >= source.stat().st_size:
+              raise SystemExit('Full WebP did not reduce the original file size')
           PY
       - name: Commit generated asset to this temporary branch
         run: |
           git config user.name 'nexusnova-automation'
           git config user.email 'actions@users.noreply.github.com'
-          git add assets/logo.webp
-          git commit -m 'perf(images): add pixel-exact lossless WebP logo'
+          git add assets/logo.webp assets/logo-2x.webp assets/logo-3x.webp
+          git commit -m 'perf(images): add responsive lossless WebP logos'
           git push origin "HEAD:$(git branch --show-current)"
