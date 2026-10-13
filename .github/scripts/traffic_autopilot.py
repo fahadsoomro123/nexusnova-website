@@ -14,6 +14,7 @@ from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from traffic_autopilot_editorial_guard import approved_source, load_article_documents, reject_reason
+from ga4_site_scope import production_scoped_ga4_payload
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = "https://nexusnovatools.com"
@@ -643,7 +644,8 @@ def google_signals() -> tuple[list[dict], dict]:
     if prop:
         try:
             endpoint = f"https://analyticsdata.googleapis.com/v1beta/properties/{prop}:runReport"
-            body = json.dumps({"dateRanges": [{"startDate": "28daysAgo", "endDate": "yesterday"}], "dimensions": [{"name": "landingPagePlusQueryString"}], "metrics": [{"name": "sessions"}, {"name": "engagedSessions"}, {"name": "screenPageViews"}], "limit": 100}).encode()
+            payload = production_scoped_ga4_payload({"dateRanges": [{"startDate": "28daysAgo", "endDate": "yesterday"}], "dimensions": [{"name": "landingPagePlusQueryString"}], "metrics": [{"name": "sessions"}, {"name": "engagedSessions"}, {"name": "screenPageViews"}], "limit": 100})
+            body = json.dumps(payload).encode()
             raw_resp = request(endpoint, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
             data = json.loads(raw_resp)
             report["ga4"] = {"rowCount": data.get("rowCount", 0), "rows": data.get("rows", [])[:25]}
