@@ -46,7 +46,7 @@
     document.head.appendChild(adsenseScript);
   }
 
-  const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);
+  const isProductionAnalyticsHost=/^(?:www\.)?nexusnovatools\.com$/i.test(location.hostname);
   if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){
     window.gtag('js',new Date());
     const analyticsScript=document.createElement('script');
