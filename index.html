@@ -8,11 +8,18 @@
   <script>
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function(){window.dataLayer.push(arguments);};
+    var nexusnovaAnalyticsStorage = 'denied';
+    try {
+      if (window.localStorage.getItem('nexusnova_analytics_consent_v1') === 'granted') {
+        nexusnovaAnalyticsStorage = 'granted';
+      }
+    } catch (_) {}
     window.gtag('consent', 'default', {
-      analytics_storage: 'granted',
+      analytics_storage: nexusnovaAnalyticsStorage,
       ad_storage: 'denied',
       ad_user_data: 'denied',
-      ad_personalization: 'denied'
+      ad_personalization: 'denied',
+      wait_for_update: 500
     });
     window.__nexusnovaConsentDefaulted = true;
   </script>
@@ -40,7 +47,7 @@
   <script src="assets/js/search-core.js" defer></script>
   <script>(()=>{const signal=`${location.hash} ${location.search}`;const inTelegram=/tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal)||!!window.TelegramWebviewProxy||!!window.TelegramWebview;if(!inTelegram)return;const sdk=document.createElement('script');sdk.src='assets/js/vendor/telegram-web-app.js';sdk.async=true;sdk.onload=()=>{const bridge=document.createElement('script');bridge.src='assets/js/telegram-webapp.js?v=20260826-5';bridge.async=false;document.head.appendChild(bridge)};document.head.appendChild(sdk)})();</script>
   <!-- GA4 advanced consent bootstrap cache version: 20261004 -->
-<script src="assets/js/main.js?v=20261013-ga4-hostguard-v3" defer></script>
+<script src="assets/js/main.js?v=20261013-anonymous-consent-v1" defer></script>
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="assets/css/humanproof-hero-360.css"></noscript>
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css">

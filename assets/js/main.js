@@ -11,21 +11,23 @@
 
   /*
    * NexusNova measurement policy:
-   * - Basic page/visit measurement is always enabled.
-   * - Advertising, Google Signals and ad personalization stay disabled.
-   * - The existing Privacy Choices control can record an explicit opt-in
-   *   for additional analytics events without ever turning basic counting off.
+   * - Fresh visitors start with analytics_storage denied.
+   * - Consent Mode may send limited cookieless measurement while denied.
+   * - Detailed analytics storage requires a saved explicit opt-in.
+   * - Advertising storage, Google Signals and ad personalization stay denied.
    */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
+  const readSavedAnalyticsChoice=()=>{try{return window.localStorage.getItem(consentKey)||''}catch(_){return ''}};
   if(!window.__nexusnovaConsentDefaulted){
     window.gtag('consent','default',{
-      analytics_storage:'granted',
+      analytics_storage:readSavedAnalyticsChoice()==='granted'?'granted':'denied',
       ad_storage:'denied',
       ad_user_data:'denied',
-      ad_personalization:'denied'
+      ad_personalization:'denied',
+      wait_for_update:500
     });
     window.__nexusnovaConsentDefaulted=true;
   }
@@ -63,12 +65,13 @@
   }
 
   window.__nexusnovaLoadAnalytics=granted=>{
-    if(granted){
-      try{localStorage.setItem(consentKey,'granted')}catch(_){}
-      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
-    }else{
-      try{localStorage.setItem(consentKey,'denied')}catch(_){}
-    }
+    window.gtag('consent','update',{
+      analytics_storage:granted?'granted':'denied',
+      ad_storage:'denied',
+      ad_user_data:'denied',
+      ad_personalization:'denied'
+    });
+    try{window.localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
   };
 
   const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
@@ -189,7 +192,7 @@
   else scheduleShare();
 
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);const base=inSubdir?'../':'';
-  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20260930-nav20';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
+  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20261013-consent-v1';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
   const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260930-social4';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
