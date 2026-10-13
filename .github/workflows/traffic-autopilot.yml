@@ -230,15 +230,37 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo 'Automatic public publishing is disabled. This workflow is analysis-only.'
-          echo 'Any tracked site mutation produced by analysis is treated as a failure and must be reviewed manually.'
-          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-            echo 'ERROR: analysis changed tracked repository files:' >&2
-            git status --short --untracked-files=no >&2
+          echo 'Automatic public publishing is disabled. The workflow is analysis-first with one allowlisted machine-generated data surface.'
+          echo 'Article HTML, sitemap/discovery, design, scripts, and application code mutations are still treated as failures.'
+          allowed='assets/data/live-tech-pulse.json'
+          changes="$(git status --porcelain --untracked-files=no)"
+          disallowed=''
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            path="${line:3}"
+            case "$path" in
+              "$allowed") echo "Allowlisted generated data surface changed: $path" ;;
+              *) disallowed="${disallowed}${line}\n" ;;
+            esac
+          done <<< "$changes"
+          if [ -n "$disallowed" ]; then
+            echo 'ERROR: analysis changed non-allowlisted tracked repository files:' >&2
+            printf '%b' "$disallowed" >&2
             exit 1
           fi
+          if [ -f "$allowed" ]; then
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('assets/data/live-tech-pulse.json').read_text(encoding='utf-8'))
+          assert payload.get('version') == 1
+          assert isinstance(payload.get('items'), list)
+          assert isinstance(payload.get('top_stories'), list)
+          print('Live Tech Pulse schema: PASS')
+          PY
+          fi
           echo 'Review-only boundary: PASS'
-          echo 'No tracked public files were changed.'
+          echo 'No article, sitemap, design, application or automation source files were changed.'
           echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
 
       - name: Publish run summary
