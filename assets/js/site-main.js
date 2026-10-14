@@ -57,7 +57,7 @@
     if(window.__nexusnovaAnalyticsAutoEnabled)hide();
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
       saveChoice('granted');loadAnalytics(true);
-      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
+      window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});
       hide();
     });
     banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{
