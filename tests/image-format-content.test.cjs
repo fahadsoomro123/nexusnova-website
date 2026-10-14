@@ -53,15 +53,23 @@ test('Magic Drop clarifies what file suggestions do not certify', () => {
   assert.match(html, /verif/i);
 });
 
-test('Image Resizer explains its actual PNG output and aspect-ratio example', () => {
+test('Image Resizer offers honest format, quality, transparency and canvas-limit guidance', () => {
   const html = read('image-resizer.html');
   const logic = read('assets/js/trending-tools.js');
   assert.match(html, /2400 × 1600 pixels/i);
   assert.match(html, /1200.*800 pixels/i);
-  assert.match(html, /downloads a new PNG file named/i);
-  assert.match(html, /nexusnova-resized\.png/i);
+  assert.match(html, /choose PNG, JPEG or WebP/i);
+  assert.match(html, /50–100% quality control/i);
+  assert.match(html, /transparent areas are placed on a white background/i);
+  assert.match(html, /32 million total pixels/i);
   assert.match(html, /EXIF camera, date or GPS details/i);
-  assert.match(logic, /canvasBlob\(c,'image\/png'\)/);
-  assert.match(logic, /downloadBlob\(blob,'nexusnova-resized\.png'\)/);
+  assert.match(logic, /value="image\/png"/);
+  assert.match(logic, /value="image\/jpeg"/);
+  assert.match(logic, /value="image\/webp"/);
+  assert.match(logic, /canvasBlob\(canvas,type,Number\(quality\.value\)\/100\)/);
+  assert.match(logic, /context\.fillStyle='#fff'/);
+  assert.match(logic, /w\*h>32000000/);
+  assert.match(logic, /downloadBlob\(blob,\`nexusnova-resized\.\$\{extension\}\`\)/);
+  assert.match(logic, /URL\.revokeObjectURL\(objectUrl\)/);
   assert.doesNotMatch(html, /data-ad-content-depth-remediation-v[23]/i);
 });
