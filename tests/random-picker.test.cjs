@@ -62,3 +62,23 @@ test('shuffleItems follows Fisher-Yates while retaining every eligible entry', (
   assert.deepEqual(picker.shuffleItems(['Ali', 'Sara', 'Hamza'], false, fakeCrypto([0, 0])), ['Sara', 'Hamza', 'Ali']);
   assert.deepEqual(picker.shuffleItems(['Ali', 'Ali', 'Sara'], true, fakeCrypto([0])), ['Sara', 'Ali']);
 });
+
+const fs = require('node:fs');
+const path = require('node:path');
+
+test('random picker page exposes multi-draw controls and explains its rules', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'random-picker.html'), 'utf8');
+  for (const marker of [
+    'id="winner-count"',
+    'id="dedupe-items"',
+    'id="shuffle"',
+    'id="clean-list"',
+    'id="copy-winners"',
+    'assets/js/random-picker.js',
+    'draw several winners without repeating an entry',
+    'certified public draw'
+  ]) {
+    assert.ok(html.toLowerCase().includes(marker.toLowerCase()), marker);
+  }
+  assert.doesNotMatch(html, /<script>pick\.onclick=/);
+});
