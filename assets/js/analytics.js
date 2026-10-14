@@ -92,14 +92,14 @@
     banner.hidden=true;
     banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Privacy and analytics choices');
-    banner.innerHTML='<p><strong>Privacy & Analytics Settings</strong><br>Basic page-view measurement uses analytics storage by default where permitted. In the EEA, UK and Switzerland it starts off until you choose. Detailed tool-interaction events only start when you choose Allow detailed analytics; advertising and personalization storage stay off. <a href="privacy.html">Privacy details</a>.</p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-dismiss>Dismiss</button></div>';
+    banner.innerHTML='<div class="nn-standalone-consent-copy"><strong>We use cookies</strong><p>Basic page-view measurement runs where permitted. Choose <strong>Accept all</strong> to enable optional detailed analytics such as selected tool run, copy and download events. <strong>Basic only</strong> keeps page-view measurement; <strong>Reject optional</strong> turns analytics off. Advertising storage and ad personalization stay off. <a href="privacy.html">Privacy policy</a>.</p></div><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Accept all</button><button type="button" data-consent-basic>Basic only</button><button type="button" data-consent-off>Reject optional</button></div>';
     document.body.appendChild(banner);
 
     const dialog=document.createElement('dialog');
     dialog.id='nexusnova-analytics-consent-dialog';
     dialog.className='nn-standalone-consent-dialog';
     dialog.setAttribute('aria-labelledby','nexusnova-analytics-consent-title');
-    dialog.innerHTML='<h2 id="nexusnova-analytics-consent-title" style="margin:0 0 8px;font-size:18px">Privacy & Analytics Settings</h2><p style="margin:0 0 10px;color:#475569">Basic page views use analytics storage where permitted. Detailed tool interactions require an explicit opt-in. Advertising and personalization storage stay off.</p><p style="margin:0 0 14px"><a href="privacy.html">Read privacy details</a></p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-close>Close</button></div>';
+    dialog.innerHTML='<h2 id="nexusnova-analytics-consent-title" style="margin:0 0 8px;font-size:18px">Cookie preferences</h2><p style="margin:0 0 10px;color:#475569">Basic page views run where permitted. Accept all enables optional detailed analytics, including selected tool run, copy and download events. Basic only keeps page-view measurement. Reject optional disables analytics. Advertising storage and ad personalization stay off.</p><p style="margin:0 0 14px"><a href="privacy.html">Read privacy policy</a></p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Accept all</button><button type="button" data-consent-basic>Basic only</button><button type="button" data-consent-off>Reject optional</button><button type="button" data-consent-close>Close</button></div>';
     document.body.appendChild(dialog);
 
     const close=()=>{if(dialog.open)dialog.close();else dialog.removeAttribute('open')};
@@ -114,14 +114,9 @@
     };
     const chooseBasic=()=>{applyChoice('basic');banner.hidden=true;close()};
     const chooseOff=()=>{applyChoice('denied');banner.hidden=true;close()};
-    const dismiss=()=>{
-      banner.hidden=true;
-      try{sessionStorage.setItem('nexusnova_analytics_banner_dismissed_v2','1')}catch(_){}
-    };
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',chooseDetailed);
     banner.querySelector('[data-consent-basic]')?.addEventListener('click',chooseBasic);
     banner.querySelector('[data-consent-off]')?.addEventListener('click',chooseOff);
-    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',dismiss);
     dialog.querySelector('[data-consent-allow]')?.addEventListener('click',chooseDetailed);
     dialog.querySelector('[data-consent-basic]')?.addEventListener('click',chooseBasic);
     dialog.querySelector('[data-consent-off]')?.addEventListener('click',chooseOff);
@@ -136,7 +131,7 @@
     if(choice==='granted'||choice==='basic'||choice==='denied'){
       applyChoice(choice);banner.hidden=true;
     }else{
-      try{banner.hidden=sessionStorage.getItem('nexusnova_analytics_banner_dismissed_v2')==='1'}catch(_){banner.hidden=false}
+      banner.hidden=false;
     }
   };
 
