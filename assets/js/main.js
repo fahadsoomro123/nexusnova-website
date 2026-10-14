@@ -17,8 +17,9 @@
    * - EEA, UK and Switzerland use denied-by-default analytics storage until a choice.
    * - Detailed tool-interaction events require an explicit opt-in.
    * - Advertising storage, Google Signals and ad personalization stay denied.
-   * Compatibility: the legacy v1 key remains readable; only an explicit detail opt-in is migrated.
-   * The old "Keep basic measurement" state is not treated as detailed consent.
+   * Compatibility: legacy v1 "Allow detailed analytics" is migrated as granted.
+   * Legacy v1 "Keep basic measurement" uses the basic pageview mode, never detailed events.
+   * A legacy basic choice is region-denied in the EEA, UK and Switzerland pending a fresh choice.
    * "Allow analytics" remains an audit-compatible legacy label; the current choice is "Allow detailed analytics".
    * "Privacy choices" remains the persistent control for reopening the settings.
    */
@@ -30,9 +31,10 @@
   const readSavedAnalyticsChoice=()=>{
     try{
       const current=window.localStorage.getItem(consentKey)||'';
-      if(current==='basic'||current==='granted'||current==='denied')return current;
+      if(current==='basic'||current==='granted'||current==='denied'||current==='legacy-basic')return current;
       const legacy=window.localStorage.getItem(legacyConsentKey)||'';
       if(legacy==='granted'){window.localStorage.setItem(consentKey,'granted');return 'granted';}
+      if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}
     }catch(_){}
     return '';
   };
