@@ -10,6 +10,7 @@
     if(current)return current;
     const legacy=localStorage.getItem(LEGACY_CONSENT_KEY)||'';
     if(legacy==='granted'){localStorage.setItem(CONSENT_KEY,'granted');return 'granted'}
+    if(legacy==='denied'){localStorage.setItem(CONSENT_KEY,'legacy-basic');return 'legacy-basic'}
     return '';
   }catch(_){return ''}};
 
