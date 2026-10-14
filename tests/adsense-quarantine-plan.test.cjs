@@ -24,7 +24,7 @@ function approvedNoindexPaths() {
 
 test('all pages in the approved AdSense NOINDEX plan stay noindex and out of sitemap.xml', () => {
   const planned = approvedNoindexPaths();
-  assert.equal(planned.length, 72, 'The approved NOINDEX plan changed; review the policy explicitly before updating this test');
+  assert.equal(planned.length, 74, 'The approved NOINDEX plan changed; review the policy explicitly before updating this test');
 
   const sitemapText = fs.readFileSync(sitemapPath, 'utf8');
   const sitemapUrls = [...sitemapText.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map(match => match[1].trim());

@@ -9,7 +9,7 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 |---|---:|---|
 | IMPROVE | 69 | Repeated compact guide removed; the page's tool-specific operating notes, worked detail, limitations and privacy/method content remain. |
 | MERGE | 5 | Duplicate discovery intent consolidated into `tools.html`; page stays usable for visitors but is no longer indexable. |
-| NOINDEX | 72 | Preview/auth, transient live data, Labs, broad tech/news or weak rewrite surface removed from search discovery. |
+| NOINDEX | 74 | Preview/auth, transient live data, Labs, broad tech/news or weak rewrite surface removed from search discovery. |
 | KEEP hubs | 11 | Focused discovery hubs retained. |
 | KEEP trust | 8 | Author, editorial, methodology, legal and contact signals retained. |
 
@@ -147,12 +147,14 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 - `live-alerts.html`
 - `live.html`
 - `magic-drop.html`
+- `merge-pdf.html`
 - `preview-home-flagship-humanproof-v1.html`
 - `preview-home-flagship-humanproof-v2.html`
 - `preview-home-flagship-humanproof-v3.html`
 - `preview-home-flagship-humanproof-v4.html`
 - `preview-humanproof-scifi-mesh.html`
 - `pulse.html`
+- `split-pdf.html`
 - `sports-live.html`
 - `tech.html`
 - `tech/ai-agent-browser-security.html`
@@ -236,3 +238,8 @@ Baseline `main`: `3a7913c0d40f08cfd75891cb88e906b95c3d041b`
 ## Re-review verdict
 
 **READY AFTER OWNER APPROVAL.** Known scaled boilerplate, duplicate discovery intent, weak trend/news footprint, HumanProof claim clarity, sitemap conflicts, broken links and mobile-performance blockers have been remediated. This is an internal readiness verdict, not an AdSense approval guarantee. Allow Google time to recrawl the changed URLs and submit only when the owner decides to proceed.
+
+
+## Subsequent policy update — 14 October 2026
+
+The original September plan contained 72 NOINDEX URLs. This update expands the active set to 74 by adding `merge-pdf.html` and `split-pdf.html` after consolidating their merge/extract workflow into the indexable `document-workbench.html`. The legacy URLs remain available, display a link to the primary workflow, and are excluded from the public tool directory, internal search index and canonical sitemap. The focused `pdf-tools.html` hub remains indexable.

@@ -190,8 +190,8 @@ def approved_noindex_urls() -> list[str]:
         match = re.fullmatch(r"\s*-\s*`([^`]+\.html)`\s*", line)
         if match:
             paths.append(match.group(1))
-    if len(paths) != 72 or len(set(paths)) != 72:
-        raise RuntimeError(f"Expected 72 unique approved NOINDEX paths; found {len(paths)}")
+    if len(paths) != 74 or len(set(paths)) != 74:
+        raise RuntimeError(f"Expected 74 unique approved NOINDEX paths; found {len(paths)}")
     return [BASE + path for path in paths]
 
 

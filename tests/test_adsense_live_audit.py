@@ -81,11 +81,13 @@ class LiveAuditCacheBustTests(unittest.TestCase):
         self.assertIn("nn_audit=", second[2])
 
 
-    def test_approved_noindex_plan_has_72_live_audit_targets(self):
+    def test_approved_noindex_plan_has_74_live_audit_targets(self):
         targets = AUDIT.approved_noindex_urls()
-        self.assertEqual(len(targets), 72)
+        self.assertEqual(len(targets), 74)
         self.assertIn(AUDIT.BASE + "aqi-live.html", targets)
         self.assertIn(AUDIT.BASE + "crypto-live.html", targets)
+        self.assertIn(AUDIT.BASE + "merge-pdf.html", targets)
+        self.assertIn(AUDIT.BASE + "split-pdf.html", targets)
 
     @patch.object(AUDIT, "approved_noindex_urls", return_value=["https://nexusnovatools.com/quarantine-fixture.html"])
     @patch.object(AUDIT, "fetch_live")

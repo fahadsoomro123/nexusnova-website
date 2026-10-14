@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 95 tools + 9 categories + 34 articles + 9 guides = 147 records.
+ * 92 tools + 9 categories + 34 articles + 9 guides = 144 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -20,8 +20,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"WebP to PNG", url:"webp-to-png.html", type:"tool", category:"Images", tags:["webp to png","images","webp","png","tool","utility"] },
   { title:"YouTube Thumbnail Downloader", url:"youtube-thumbnail-downloader.html", type:"tool", category:"Images", tags:["youtube thumbnail downloader","images","youtube","thumbnail","downloader","tool","utility"] },
   { title:"JPG to PDF", url:"jpg-to-pdf.html", type:"tool", category:"PDF & Documents", tags:["jpg to pdf","pdf & documents","jpg","pdf","tool","utility"] },
-  { title:"Merge PDF", url:"merge-pdf.html", type:"tool", category:"PDF & Documents", tags:["merge pdf","pdf & documents","merge","pdf","tool","utility"] },
-  { title:"Split PDF", url:"split-pdf.html", type:"tool", category:"PDF & Documents", tags:["split pdf","pdf & documents","split","pdf","tool","utility"] },
+  { title:"PDF Document Workbench", url:"document-workbench.html", type:"tool", category:"PDF & Documents", tags:["pdf document workbench","pdf & documents","merge pdf","merge PDFs","split pdf","extract pages","page ranges","combine PDFs","document workflow","local processing","tool","utility"] },
   { title:"Text to PDF", url:"text-to-pdf.html", type:"tool", category:"PDF & Documents", tags:["text to pdf","pdf & documents","text","pdf","tool","utility"] },
   { title:"AI Token Calculator", url:"ai-token-calculator.html", type:"tool", category:"Calculators", tags:["ai token calculator","calculators","token","calculator","tool","utility"] },
   { title:"2027 Social Security COLA Calculator", url:"social-security-cola-calculator-2027.html", type:"tool", category:"Calculators", tags:["2027 social security cola calculator","social security cola calculator","cola 2027","social security cost of living adjustment","cola estimate","benefit increase","retirement benefits","monthly benefit","ssa","cpi-w","calculator","tool","utility"] },
@@ -155,7 +154,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:93,
+  tool:92,
   category:9,
   article:34,
   guide:9
@@ -699,13 +698,13 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:93,
+  tool:92,
   category:9,
   article:34,
   guide:9
 });
 
-NexusNovaSearchCore.DATASET_SIZE=145;
+NexusNovaSearchCore.DATASET_SIZE=144;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
