@@ -224,6 +224,7 @@ jobs:
                 try { savedConsent=localStorage.getItem('nexusnova_analytics_consent_v1')||''; } catch(_) {}
                 return {
                   path:location.pathname,
+                  title:document.title,
                   savedConsent,
                   gtag:typeof window.gtag==='function',
                   gaScriptCount:[...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).length,
@@ -252,12 +253,15 @@ jobs:
               context.close()
               browser.close()
 
-          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'analytics_detail_opt_in','expectedPagePath':'/tools.html','httpStatusCounts':{},'apiErrors':[]}
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'analytics_detail_opt_in','expectedPageTitle':optin_info['title'],'httpStatusCounts':{},'apiErrors':[]}
           if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              payload={'dimensions':[{'name':'eventName'},{'name':'pagePath'}],'metrics':[{'name':'activeUsers'}],'limit':25}
+              # GA4 Realtime API does not support the Core Reporting "pagePath" dimension.
+              # Use the supported unifiedScreenName dimension and match the exact page title captured
+              # by the consented browser probe to associate this event with /tools.html.
+              payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'activeUsers'}],'limit':25}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
@@ -276,7 +280,7 @@ jobs:
                       rt['rowCount']=len(rt['rows'])
                       for r in rt['rows']:
                           dims=[x.get('value','') for x in r.get('dimensionValues',[])]
-                          if len(dims)>=2 and dims[0]=='analytics_detail_opt_in' and dims[1]=='/tools.html':
+                          if len(dims)>=2 and dims[0]=='analytics_detail_opt_in' and dims[1]==rt['expectedPageTitle']:
                               rt['success']=True;break
                   else:
                       try:
