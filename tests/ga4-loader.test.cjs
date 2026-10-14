@@ -110,7 +110,7 @@ test('previously uninstrumented public hubs load the standalone analytics and ch
   }
 });
 
-test('standalone GA4 loader defaults denied, persists explicit consent and only runs on NexusNova production', () => {
+test('standalone GA4 loader uses regional defaults, persists the selected mode and only runs on NexusNova production', () => {
   const loader = fs.readFileSync('assets/js/analytics.js', 'utf8');
   for (const token of [
     "const measurementId='G-YLPFKWSS12';",
@@ -128,6 +128,10 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
   ]) assert.ok(loader.includes(token), token);
   assert.ok(loader.includes("analytics_storage:'denied',region:restrictedAnalyticsRegions"), 'restricted regions must default denied');
   assert.ok(loader.includes("analytics_storage:'granted'"), 'basic pageview measurement must be enabled where permitted');
+  assert.ok(loader.includes("banner.dataset.nexusnovaConsent=''"), 'first-visit settings must be visible to the production verifier');
+  assert.ok(loader.includes("const chooseBasic=()=>{applyChoice('basic')"), 'basic choice must not require detailed-interaction opt-in');
+  assert.ok(loader.includes("const chooseDetailed=()=>{"), 'detailed opt-in handler must be explicit');
+  assert.ok(loader.includes("const chooseOff=()=>{applyChoice('denied')"), 'visitors must be able to turn analytics off');
 });
 
 test('detailed opt-in event is fired by an explicit choice, not on every page load', () => {
@@ -145,7 +149,7 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
     "('/', 'assets/js/main.js?v=20261014-basic-pageview-consent-v2')",
-    "GA4_QA_VERSION: '20261014-main-thread-idle-v1'",
+    "GA4_QA_VERSION: '20261014-basic-pageview-consent-v2'",
     "('/tools.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
     "('/categories.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
     "('/guides.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
