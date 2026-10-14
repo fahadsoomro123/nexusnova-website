@@ -13,7 +13,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Image Resizer", url:"image-resizer.html", type:"tool", category:"Images", tags:["image resizer","images","image","resizer","tool","utility"] },
   { title:"Photo CCTV Enhancer", url:"photo-cctv-enhancer.html", type:"tool", category:"Images", tags:["photo cctv enhancer","images","photo","cctv","enhancer","tool","utility"] },
   { title:"AVIF to JPG", url:"avif-to-jpg.html", type:"tool", category:"Images", tags:["avif to jpg","images","avif","jpg","tool","utility"] },
-  { title:"HEIC to JPG", url:"heic-to-jpg.html", type:"tool", category:"Images", tags:["heic to jpg","images","heic","jpg","tool","utility"] },
+  { title:"HEIC to JPG", url:"heic-to-jpg.html", type:"tool", category:"Images", tags:["heic to jpg","heic to jpg converter","batch heic to jpg","convert multiple heic photos","heic zip download","iphone photos to jpg","heif to jpg","images","heic","heif","jpg","tool","utility"] },
   { title:"JPG to PNG", url:"jpg-to-png.html", type:"tool", category:"Images", tags:["jpg to png","images","jpg","png","tool","utility"] },
   { title:"PNG to JPG", url:"png-to-jpg.html", type:"tool", category:"Images", tags:["png to jpg","images","png","jpg","tool","utility"] },
   { title:"WebP to JPG", url:"webp-to-jpg.html", type:"tool", category:"Images", tags:["webp to jpg","images","webp","jpg","tool","utility"] },

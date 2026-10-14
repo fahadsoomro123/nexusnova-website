@@ -73,3 +73,19 @@ test('Image Resizer offers honest format, quality, transparency and canvas-limit
   assert.match(logic, /URL\.revokeObjectURL\(objectUrl\)/);
   assert.doesNotMatch(html, /data-ad-content-depth-remediation-v[23]/i);
 });
+
+test('HEIC to JPG supports bounded batch conversion with one local ZIP download', () => {
+  const html = read('heic-to-jpg.html');
+  const logic = read('assets/js/modern-image-converters.js');
+  assert.match(html, /batch-convert up to 10 HEIC or HEIF iPhone photos/i);
+  assert.match(html, /Can I convert multiple HEIC photos at once\?/i);
+  assert.match(html, /100 MB combined per batch/i);
+  assert.match(logic, /data-file multiple/);
+  assert.match(logic, /maxFiles=10,maxTotalBytes=100\*1024\*1024/);
+  assert.match(logic, /loadScript\(decoderUrl,'heic2any'\)/);
+  assert.match(logic, /loadScript\(zipUrl,'JSZip'\)/);
+  assert.match(logic, /new window\.JSZip\(\)/);
+  assert.match(logic, /generateAsync\(\{type:'blob',compression:'STORE'\}/);
+  assert.match(logic, /downloadBlob\(archive,'nexusnova-heic-to-jpg\.zip'\)/);
+  assert.match(logic, /not uploaded to NexusNova/);
+});
