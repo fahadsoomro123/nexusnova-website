@@ -2,31 +2,48 @@
   'use strict';
 
   const measurementId='G-YLPFKWSS12';
-  const consentKey='nexusnova_analytics_consent_v1';
+  const consentKey='nexusnova_analytics_consent_v2';
+  const legacyConsentKey='nexusnova_analytics_consent_v1';
+  const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-  const readChoice=()=>{try{return window.localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  const applyChoice=granted=>{
+  const isGpcEnabled=()=>window.navigator?.globalPrivacyControl===true;
+  const readChoice=()=>{
+    try{
+      const current=window.localStorage.getItem(consentKey)||'';
+      if(['basic','granted','denied'].includes(current))return current;
+      const legacy=window.localStorage.getItem(legacyConsentKey)||'';
+      if(legacy==='granted'){window.localStorage.setItem(consentKey,'granted');return 'granted';}
+    }catch(_){}
+    return '';
+  };
+  const applyChoice=choice=>{
+    const requested=choice===true?'granted':choice===false?'denied':choice;
+    const selected=['basic','granted','denied'].includes(requested)?requested:'denied';
+    const effective=isGpcEnabled()?'denied':selected;
     window.gtag('consent','update',{
-      analytics_storage:granted?'granted':'denied',
+      analytics_storage:effective==='denied'?'denied':'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
-    try{window.localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
+    try{window.localStorage.setItem(consentKey,effective)}catch(_){}
+    return effective;
   };
 
+  const initialChoice=readChoice();
   if(!window.__nexusnovaConsentDefaulted){
-    window.gtag('consent','default',{
-      analytics_storage:readChoice()==='granted'?'granted':'denied',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied',
-      wait_for_update:500
-    });
+    if(isGpcEnabled()||initialChoice==='denied'){
+      window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else if(initialChoice==='basic'||initialChoice==='granted'){
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else{
+      window.gtag('consent','default',{analytics_storage:'denied',region:restrictedAnalyticsRegions,ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }
     window.__nexusnovaConsentDefaulted=true;
   }
   window.__nexusnovaConsentReady=true;
@@ -47,7 +64,7 @@
     document.head.appendChild(analyticsScript);
   }
 
-  window.__nexusnovaLoadAnalytics=granted=>applyChoice(!!granted);
+  window.__nexusnovaLoadAnalytics=choice=>applyChoice(choice);
 
   const mountStandaloneChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
