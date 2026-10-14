@@ -18,7 +18,10 @@ from buffer_publish import post_buffer_x_now  # noqa: E402
 PAYLOAD = ROOT / "premium-social-publish.json"
 REPORT = ROOT / "premium-social-report.json"
 PUBLISHED = ROOT / "assets/data/premium-social-published.json"
-NATIVE_GROWTH_SLOTS = {2, 4}
+# Website traffic is the current objective: do not suppress destination URLs by slot.
+# Instagram feed-caption URLs are visible but not clickable; only X, Facebook and Telegram
+# are treated as configured clickable-link destinations in the report.
+NATIVE_GROWTH_SLOTS: set[int] = set()
 TARGET_GROUPS = ROOT / os.getenv("TARGET_GROUPS_FILE", ".github/scripts/target_groups.json")
 
 
@@ -321,13 +324,24 @@ def main() -> None:
             record("instagram", False, "No connected Instagram professional account")
 
     successful = sum(1 for row in outcomes if row["ok"] and row["platform"] != "meta_assets")
+    tracked_urls = {
+        platform: tracked_url(item, platform)
+        for platform in ("x", "facebook", "instagram", "telegram")
+    } if not native_growth else {}
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "campaign": item.get("campaign"),
         "slot": slot,
         "objective": objective,
         "url": item.get("url"),
-        "external_link_published": not native_growth,
+        "tracked_link_configured": bool(tracked_urls.get("x")),
+        "tracked_urls": tracked_urls,
+        "clickable_link_platforms_configured": [
+            platform for platform in ("x", "facebook", "telegram")
+            if tracked_urls.get(platform)
+        ],
+        "instagram_caption_url_included": bool(tracked_urls.get("instagram")),
+        "instagram_caption_url_clickable": False,
         "image_url": image_url,
         "image_provider": item.get("image_provider"),
         "image_label": label,
