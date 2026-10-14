@@ -24,6 +24,9 @@ test('main sitemap contains only unique HTTPS canonical URLs and the previously 
   assert.ok(!urls.includes('https://nexusnovatools.com/aqi-live.html'));
   assert.ok(!urls.includes('https://nexusnovatools.com/crypto-live.html'));
   assert.ok(urls.includes('https://nexusnovatools.com/social-security-cola-calculator-2027.html'));
+  assert.ok(urls.includes('https://nexusnovatools.com/document-workbench.html'));
+  assert.ok(!urls.includes('https://nexusnovatools.com/merge-pdf.html'));
+  assert.ok(!urls.includes('https://nexusnovatools.com/split-pdf.html'));
   for (const url of [
     'https://nexusnovatools.com/articles/youtube-thumbnail-size-guide-2026.html',
     'https://nexusnovatools.com/articles/typing-speed-wpm-accuracy-guide.html',

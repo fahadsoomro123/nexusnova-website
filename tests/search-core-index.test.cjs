@@ -15,14 +15,45 @@ const search = new SearchCore({ maxResults: 100 });
 
 test('search index count constants match the actual dataset', () => {
   assert.deepEqual({ ...search.getCounts() }, {
-    tool: 93,
+    tool: 92,
     category: 9,
     article: 34,
     guide: 9
   });
-  assert.equal(search.size, 145);
+  assert.equal(search.size, 144);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
+});
+
+test('PDF Document Workbench replaces the separate merge and split discovery pages', () => {
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const directory = fs.readFileSync(path.join(root, 'tools.html'), 'utf8');
+  const pdfHub = fs.readFileSync(path.join(root, 'pdf-tools.html'), 'utf8');
+  const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  const mergePage = fs.readFileSync(path.join(root, 'merge-pdf.html'), 'utf8');
+  const splitPage = fs.readFileSync(path.join(root, 'split-pdf.html'), 'utf8');
+  const homeCards = [...home.matchAll(/<a class="nn-master-tool" href="([^"]+)"/g)].map(m => m[1]);
+  const directoryCards = [...directory.matchAll(/<a class="nn-tool-card" href="([^"]+)"/g)].map(m => m[1]);
+  const legacy = ['merge-pdf.html', 'split-pdf.html'];
+
+  assert.equal(homeCards.length, 92, 'homepage master directory count should match the published 92-tool label');
+  assert.equal(directoryCards.length, 92, 'tool directory card count should match the published count');
+  assert.equal(data.filter(record => record.type === 'tool').length, 92);
+  assert.ok(homeCards.includes('document-workbench.html'));
+  assert.ok(directoryCards.includes('document-workbench.html'));
+  assert.ok(pdfHub.includes('href="document-workbench.html"'));
+  assert.ok(search.query('PDF Document Workbench').some(result => result.url === 'document-workbench.html'));
+  assert.ok(sitemap.includes('https://nexusnovatools.com/document-workbench.html'));
+
+  for (const [path, html] of [['merge-pdf.html', mergePage], ['split-pdf.html', splitPage]]) {
+    assert.match(html, /<meta name="robots" content="noindex,follow,max-image-preview:large">/);
+    assert.ok(html.includes('href="document-workbench.html"'), path + ' must point visitors to the consolidated workflow');
+    assert.ok(!homeCards.includes(path), path + ' must not remain in homepage tool discovery');
+    assert.ok(!directoryCards.includes(path), path + ' must not remain in directory discovery');
+    assert.ok(!data.some(record => record.url === path), path + ' must not remain in internal search');
+    assert.ok(!sitemap.includes('https://nexusnovatools.com/' + path), path + ' must not remain in sitemap.xml');
+    assert.ok(!pdfHub.includes(path), path + ' must not remain in the focused PDF hub');
+  }
 });
 
 test('every article card in the Articles hub exists in the site search index', () => {

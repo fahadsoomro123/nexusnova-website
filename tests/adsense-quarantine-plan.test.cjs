@@ -7,7 +7,9 @@ const assert = require('node:assert/strict');
 
 const root = path.resolve(__dirname, '..');
 const policyPath = path.join(root, 'ADSENSE-REMEDIATION-REPORT-2026-09-11.md');
-const sitemapPath = path.join(root, 'sitemap.xml');
+const sitemapPaths = fs.readdirSync(root)
+  .filter(name => /^sitemap.*\.xml$/i.test(name))
+  .map(name => path.join(root, name));
 
 function approvedNoindexPaths() {
   const report = fs.readFileSync(policyPath, 'utf8');
@@ -24,11 +26,14 @@ function approvedNoindexPaths() {
 
 test('all pages in the approved AdSense NOINDEX plan stay noindex and out of sitemap.xml', () => {
   const planned = approvedNoindexPaths();
-  assert.equal(planned.length, 72, 'The approved NOINDEX plan changed; review the policy explicitly before updating this test');
+  assert.equal(planned.length, 74, 'The approved NOINDEX plan changed; review the policy explicitly before updating this test');
 
-  const sitemapText = fs.readFileSync(sitemapPath, 'utf8');
-  const sitemapUrls = [...sitemapText.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map(match => match[1].trim());
-  assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, 'The main sitemap must not contain duplicate URLs');
+  const sitemapFiles = sitemapPaths.map(file => {
+    const text = fs.readFileSync(file, 'utf8');
+    const urls = [...text.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/gi)].map(match => match[1].trim());
+    assert.equal(new Set(urls).size, urls.length, path.basename(file) + ' must not contain duplicate URLs');
+    return { file, urls };
+  });
 
   for (const relative of planned) {
     const file = path.join(root, relative);
@@ -41,6 +46,6 @@ test('all pages in the approved AdSense NOINDEX plan stay noindex and out of sit
     assert.match(content, /^noindex(?:\s*,|\s*$)/i, relative + ' must remain noindex');
 
     const canonicalUrl = 'https://nexusnovatools.com/' + relative;
-    assert.ok(!sitemapUrls.includes(canonicalUrl), relative + ' must not be submitted in sitemap.xml');
+    assert.ok(sitemapFiles.every(sitemap => !sitemap.urls.includes(canonicalUrl)), relative + ' must not be submitted in any sitemap XML file');
   }
 });
