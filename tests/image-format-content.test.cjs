@@ -79,7 +79,7 @@ test('HEIC to JPG supports bounded batch conversion with one local ZIP download'
   const logic = read('assets/js/modern-image-converters.js');
   assert.match(html, /batch-convert up to 10 HEIC or HEIF iPhone photos/i);
   assert.match(html, /Can I convert multiple HEIC photos at once\?/i);
-  assert.match(html, /100 MB combined batch limit/i);
+  assert.match(html, /100 MB combined per batch/i);
   assert.match(logic, /data-file multiple/);
   assert.match(logic, /maxFiles=10,maxTotalBytes=100\*1024\*1024/);
   assert.match(logic, /loadScript\(decoderUrl,'heic2any'\)/);
