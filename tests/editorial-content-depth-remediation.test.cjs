@@ -119,3 +119,33 @@ test('CS2 Valorant guide cites its conversion method and caveats', () => {
   assert.equal(article['@type'], 'Article');
   assert.equal(article.dateModified, '2026-10-14');
 });
+
+
+test('password security guide links current NIST and CISA guidance', () => {
+  const file = path.join(root, 'guides', 'password-security.html');
+  const html = fs.readFileSync(file, 'utf8');
+  const sources = [
+    'https://pages.nist.gov/800-63-4/sp800-63b.html',
+    'https://www.cisa.gov/secure-our-world/use-strong-passwords',
+    'https://www.cisa.gov/secure-our-world/turn-multifactor-authentication',
+  ];
+
+  assert.ok(html.includes('<h2 id="password-security-sources-title">Official guidance and further reading</h2>'));
+  assert.ok(html.includes('Updated 14 October 2026'));
+  for (const url of sources) {
+    assert.ok(html.includes(url), 'missing password security reference: ' + url);
+    const start = html.indexOf('<a href="' + url + '"');
+    assert.notEqual(start, -1, 'source URL should be linked from the guide');
+    const end = html.indexOf('>', start);
+    const anchor = html.slice(start, end + 1);
+    assert.ok(anchor.includes('target="_blank"'));
+    assert.ok(anchor.includes('rel="noopener noreferrer"'));
+  }
+
+  const jsonLd = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
+  assert.ok(jsonLd, 'structured data should be present');
+  const graph = JSON.parse(jsonLd[1]);
+  const article = graph['@graph'].find(item => item['@type'] === 'Article');
+  assert.ok(article, 'Article JSON-LD should remain valid');
+  assert.equal(article.dateModified, '2026-10-14');
+});
