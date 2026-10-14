@@ -44,6 +44,32 @@ test('IPv4 CIDR calculator returns deterministic subnet math',()=>{
   assert.equal(out.usableHosts,254);
   assert.equal(out.scope,'Private IPv4');
   assert.throws(()=>calculate('999.1.1.1/24'));
+
+  const subnet26=calculate('192.168.1.70/26');
+  assert.equal(subnet26.network,'192.168.1.64');
+  assert.equal(subnet26.broadcast,'192.168.1.127');
+  assert.equal(subnet26.netmask,'255.255.255.192');
+  assert.equal(subnet26.firstUsable,'192.168.1.65');
+  assert.equal(subnet26.lastUsable,'192.168.1.126');
+  assert.equal(subnet26.totalAddresses,64);
+  assert.equal(subnet26.usableHosts,62);
+
+  const pointToPoint=calculate('192.168.1.4/31');
+  assert.equal(pointToPoint.network,'192.168.1.4');
+  assert.equal(pointToPoint.broadcast,'192.168.1.5');
+  assert.equal(pointToPoint.totalAddresses,2);
+  assert.equal(pointToPoint.usableHosts,2);
+
+  const hostRoute=calculate('192.168.1.5/32');
+  assert.equal(hostRoute.network,'192.168.1.5');
+  assert.equal(hostRoute.broadcast,'192.168.1.5');
+  assert.equal(hostRoute.totalAddresses,1);
+  assert.equal(hostRoute.usableHosts,1);
+
+  const html=read('ip-cidr-calculator.html');
+  assert.match(html,/Worked examples: \/24, \/26, \/31 and \/32/);
+  assert.match(html,/RFC 3021/);
+  assert.match(html,/does not calculate IPv6 networks/);
 });
 
 test('reachability checker explicitly refuses to fake HTTP or TLS details',()=>{
