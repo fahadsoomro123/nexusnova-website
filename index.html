@@ -91,6 +91,10 @@
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="assets/css/humanproof-hero-360.css"></noscript>
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css">
+  <!-- Critical-path HumanProof hero: load its existing styling and markup before first paint,
+       rather than waiting for the delayed shared footer/runtime loader. -->
+  <link rel="stylesheet" href="assets/css/humanproof-home.css?v=20260909-2" data-humanproof-loader>
+  <script src="assets/js/humanproof-home.js?v=20260909-2" data-humanproof-loader defer></script>
 
   <style>
     :root{
