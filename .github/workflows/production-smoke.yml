@@ -9,7 +9,10 @@ on:
       - '.github/workflows/production-smoke.yml'
       - '.github/workflows/privacy-analytics-production.yml'
       - '**.html'
-      - 'assets/js/site-main.js'
+      - 'assets/**/*.css'
+      - 'assets/**/*.js'
+      - 'assets/**/*.png'
+      - 'assets/**/*.webp'
       - 'robots.txt'
       - 'sitemap*.xml'
   workflow_dispatch:
@@ -51,7 +54,7 @@ jobs:
           if not paths:
               paths = ['index.html']
           expected = {
-              path: hashlib.sha256(open(path, 'rb').read()).hexdigest()
+              path: hashlib.sha256(__import__('pathlib').Path(path).read_bytes()).hexdigest()
               for path in paths
           }
 
