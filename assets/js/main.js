@@ -74,8 +74,35 @@
     try{window.localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
   };
 
-  const hydrateDynamicLinks=()=>{document.querySelectorAll('a[data-nova-dynamic-href]').forEach(link=>{const target=link.dataset.novaDynamicHref;if(!target)return;try{const url=new URL(target,location.href);if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);}catch(_){}})};
-  const startDynamicLinkHydration=()=>{hydrateDynamicLinks();if(document.body){const observer=new MutationObserver(hydrateDynamicLinks);observer.observe(document.body,{childList:true,subtree:true});}};
+  const dynamicLinkSelector='a[data-nova-dynamic-href]';
+  const hydrateDynamicLink=link=>{
+    const target=link.dataset.novaDynamicHref;
+    if(!target)return;
+    try{
+      const url=new URL(target,location.href);
+      if(['http:','https:'].includes(url.protocol))link.setAttribute('href',url.href);
+    }catch(_){}
+  };
+  const hydrateDynamicLinks=root=>{
+    if(!root)return;
+    if(root.nodeType===1&&root.matches(dynamicLinkSelector))hydrateDynamicLink(root);
+    if(typeof root.querySelectorAll==='function')root.querySelectorAll(dynamicLinkSelector).forEach(hydrateDynamicLink);
+  };
+  const startDynamicLinkHydration=()=>{
+    const body=document.body;
+    hydrateDynamicLinks(body||document);
+    if(!body)return;
+    // Ad and widget scripts often add unrelated nodes. Inspect only those added
+    // subtrees instead of rescanning every link in the whole document each time.
+    const observer=new MutationObserver(records=>{
+      records.forEach(record=>{
+        record.addedNodes.forEach(node=>{
+          if(node.nodeType===1)hydrateDynamicLinks(node);
+        });
+      });
+    });
+    observer.observe(body,{childList:true,subtree:true});
+  };
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
 
   // Keep every visible footer Contact link consistent across the entire site.
