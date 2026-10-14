@@ -33,10 +33,10 @@ test('Steam playtime conversion FAQ is valid and present in structured data', ()
 
 test('Steam playtime calculator rejects an empty total while accepting explicit zero', () => {
   const html = fs.readFileSync('steam-playtime-calculator.html', 'utf8');
-  const inlineScript = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)]
-    .find((match) => !/\\bsrc\\s*=/.test(match[1]) &&
-      !/application\\/ld\\+json/i.test(match[1]) &&
-      /run\\.onclick/.test(match[2]));
+  const inlineScript = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .find((match) => !/\bsrc\s*=/.test(match[1]) &&
+      !/application\/ld\+json/i.test(match[1]) &&
+      /run\.onclick/.test(match[2]));
   assert.ok(inlineScript, 'calculator inline script should exist');
 
   function execute(hoursValue) {
@@ -65,9 +65,9 @@ test('Steam playtime calculator rejects an empty total while accepting explicit 
   const empty = execute('');
   assert.match(empty.out.textContent, /Enter a total playtime value/i);
   assert.equal(empty['copy-result'].disabled, true);
-  assert.doesNotMatch(empty.out.innerHTML, /0\\.00 total hours/);
+  assert.doesNotMatch(empty.out.innerHTML, /0\.00 total hours/);
 
   const explicitZero = execute('0');
-  assert.match(explicitZero.out.innerHTML, /0\\.00 total hours/);
+  assert.match(explicitZero.out.innerHTML, /0\.00 total hours/);
   assert.equal(explicitZero['copy-result'].disabled, false);
 });
