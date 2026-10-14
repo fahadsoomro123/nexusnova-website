@@ -90,10 +90,10 @@
   };
   const startDynamicLinkHydration=()=>{
     const body=document.body;
-    hydrateDynamicLinks(body||document);
-    if(!body)return;
-    // Ad and widget scripts often add unrelated nodes. Inspect only those added
-    // subtrees instead of rescanning every link in the whole document each time.
+    // Most pages never use dynamic hrefs. Avoid a whole-body selector scan and
+    // a permanent ad/widget MutationObserver on pages where this feature is absent.
+    if(!body||!body.querySelector(dynamicLinkSelector))return;
+    hydrateDynamicLinks(body);
     const observer=new MutationObserver(records=>{
       records.forEach(record=>{
         record.addedNodes.forEach(node=>{
@@ -103,7 +103,23 @@
     });
     observer.observe(body,{childList:true,subtree:true});
   };
-  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',startDynamicLinkHydration,{once:true});else startDynamicLinkHydration();
+  const hydrateClickedDynamicLink=event=>{
+    const target=event.target;
+    if(!(target instanceof Element))return;
+    const link=target.closest(dynamicLinkSelector);
+    if(link)hydrateDynamicLink(link);
+  };
+  document.addEventListener('click',hydrateClickedDynamicLink,true);
+  document.addEventListener('auxclick',hydrateClickedDynamicLink,true);
+  const scheduleDynamicLinkHydration=()=>{
+    const run=()=>{
+      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(startDynamicLinkHydration,{timeout:1800});
+      else window.setTimeout(startDynamicLinkHydration,180);
+    };
+    if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',run,{once:true});
+    else run();
+  };
+  scheduleDynamicLinkHydration();
 
   // Keep every visible footer Contact link consistent across the entire site.
   // Enforce the selected NexusNova logo at runtime on every shared header variant.
@@ -120,10 +136,18 @@
       mark.style.boxShadow='none';
     });
   };
-  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceSelectedHeaderLogo,{once:true});else enforceSelectedHeaderLogo();
+  const scheduleNonCriticalDomTask=callback=>{
+    const schedule=()=>{
+      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(callback,{timeout:1600});
+      else window.setTimeout(callback,150);
+    };
+    if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',schedule,{once:true});
+    else schedule();
+  };
+  scheduleNonCriticalDomTask(enforceSelectedHeaderLogo);
 
   const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
-  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterContact,{once:true});else normalizeFooterContact();
+  scheduleNonCriticalDomTask(normalizeFooterContact);
 
   // Keep legacy footer link lists from duplicating the structured footer on compact pages.
   const normalizeFooterStructure=()=>{
@@ -133,9 +157,8 @@
       if(structured&&orphan)orphan.remove();
     });
   };
-  if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',normalizeFooterStructure,{once:true});else normalizeFooterStructure();
+  scheduleNonCriticalDomTask(normalizeFooterStructure);
 
-  // Global share action: one compact button, no in-page share panel.
   // Global share action: one compact button, no in-page share panel.
   const mountShareWidget=()=>{
     if(document.querySelector('[data-nexusnova-share-widget]'))return;
@@ -214,7 +237,11 @@
 
   const loadShareOnIntent=()=>mountShareWidget();
   ['pointerdown','keydown','touchstart','scroll'].forEach(type=>window.addEventListener(type,loadShareOnIntent,{once:true,passive:true}));
-  const scheduleShare=()=>window.setTimeout(mountShareWidget,900);
+  // Let the first page render settle before mounting the decorative share control.
+  const scheduleShare=()=>window.setTimeout(()=>{
+    if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(mountShareWidget,{timeout:1800});
+    else window.setTimeout(mountShareWidget,900);
+  },2800);
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShare,{once:true});
   else scheduleShare();
 
