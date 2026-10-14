@@ -148,6 +148,8 @@
   const pdfInput = $('pdf-images');
   if (pdfInput) {
     let jpegFiles = [];
+    const maxPdfInputBytes = 100 * 1024 * 1024;
+    const pdfPageSizes = { a4: [595.28, 841.89], letter: [612, 792], legal: [612, 1008] };
     const readAsArrayBuffer = (file) => new Promise((resolve, reject) => {
       const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsArrayBuffer(file);
     });
@@ -174,12 +176,17 @@
     };
     pdfInput.addEventListener('change', () => {
       jpegFiles = [...(pdfInput.files || [])].filter(f => /image\/jpeg/i.test(f.type) || /\.jpe?g$/i.test(f.name));
-      show('pdf-status', jpegFiles.length ? `${jpegFiles.length} JPEG image${jpegFiles.length === 1 ? '' : 's'} selected.` : 'Choose one or more JPG/JPEG images.');
+      const totalBytes = jpegFiles.reduce((sum, file) => sum + file.size, 0);
+      if (!jpegFiles.length) return show('pdf-status', 'Choose one or more JPG/JPEG images.');
+      if (totalBytes > maxPdfInputBytes) return show('pdf-status', 'Selected images exceed the 100 MB combined limit. Choose a smaller batch.');
+      show('pdf-status', `${jpegFiles.length} JPEG image${jpegFiles.length === 1 ? '' : 's'} selected (${(totalBytes / (1024 * 1024)).toFixed(1)} MB).`);
     });
     $('pdf-run')?.addEventListener('click', async () => {
       if (!jpegFiles.length) return show('pdf-status', 'Choose JPG/JPEG images first.');
       if (jpegFiles.length > 30) return show('pdf-status', 'Please use up to 30 images per PDF.');
       if (jpegFiles.some(f => f.size > 15 * 1024 * 1024)) return show('pdf-status', 'Each image must be 15 MB or smaller.');
+      const totalInputBytes = jpegFiles.reduce((sum, file) => sum + file.size, 0);
+      if (totalInputBytes > maxPdfInputBytes) return show('pdf-status', 'Selected images exceed the 100 MB combined limit. Choose a smaller batch.');
       try {
         show('pdf-status', 'Building PDF locally…');
         const images = [];
@@ -188,6 +195,11 @@
           if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) throw new Error(`${file.name} is not a valid JPEG.`);
           images.push({ bytes, ...jpegSize(bytes) });
         }
+        const pageSizeKey = $('pdf-page-size')?.value || 'a4';
+        const orientation = $('pdf-orientation')?.value || 'auto';
+        const marginValue = Number($('pdf-margin')?.value ?? 24);
+        const margin = Number.isFinite(marginValue) ? Math.max(0, Math.min(36, marginValue)) : 24;
+        const pageSize = pdfPageSizes[pageSizeKey] || pdfPageSizes.a4;
         const objects = [];
         const pageIds = [];
         const imageIds = [];
@@ -197,13 +209,17 @@
         objects[2] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${images.length} >>`;
         images.forEach((img, idx) => {
           const pageId = pageIds[idx], imgId = imageIds[idx];
-          const maxW = 595.28, maxH = 841.89, margin = 24;
-          const scale = Math.min((maxW - 2*margin)/img.width, (maxH - 2*margin)/img.height);
+          let pageW = pageSize[0], pageH = pageSize[1];
+          if (orientation === 'landscape' || (orientation === 'auto' && img.width > img.height)) {
+            [pageW, pageH] = [pageH, pageW];
+          }
+          const usableW = Math.max(1, pageW - 2 * margin), usableH = Math.max(1, pageH - 2 * margin);
+          const scale = Math.min(usableW / img.width, usableH / img.height);
           const w = img.width * scale, h = img.height * scale;
-          const x = (maxW - w)/2, y = (maxH - h)/2;
+          const x = (pageW - w) / 2, y = (pageH - h) / 2;
           const content = `q\n${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm\n/Im${idx+1} Do\nQ\n`;
           const contentId = nextId++;
-          objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${maxW} ${maxH}] /Resources << /XObject << /Im${idx+1} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`;
+          objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im${idx+1} ${imgId} 0 R >> >> /Contents ${contentId} 0 R >>`;
           objects[imgId] = { binary: img.bytes, dict: `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>` };
           const contentBytes = ascii(content);
           objects[contentId] = { binary: contentBytes, dict: `<< /Length ${contentBytes.length} >>` };
@@ -230,7 +246,9 @@
         parts.push(ascii(xref));
         const pdf = concat(parts);
         downloadBlob(new Blob([pdf], { type: 'application/pdf' }), 'nexusnova-images.pdf');
-        show('pdf-status', `PDF created locally with ${images.length} page${images.length === 1 ? '' : 's'}.`);
+        const sizeLabel = { a4: 'A4', letter: 'US Letter', legal: 'US Legal' }[pageSizeKey] || 'A4';
+        const orientationLabel = orientation === 'auto' ? 'auto orientation' : `${orientation} orientation`;
+        show('pdf-status', `PDF created locally with ${images.length} page${images.length === 1 ? '' : 's'} (${sizeLabel}, ${orientationLabel}, ${margin} pt margins).`);
       } catch (err) {
         show('pdf-status', err?.message || 'Could not build the PDF.');
       }
