@@ -91,3 +91,19 @@ test('app and tools hero/footer use responsive WebP logos and preserve each page
     }
   }
 });
+
+test('homepage Lighthouse workflow compares AdSense locally without changing production or weakening budgets', () => {
+  const workflow = fs.readFileSync('.github/workflows/site-performance-audit.yml', 'utf8');
+  for (const token of [
+    'Diagnose homepage AdSense contribution (temporary local copy only)',
+    'LOCAL LIGHTHOUSE DIAGNOSTIC ONLY: AdSense network disabled for this run.',
+    'performance-artifacts/diagnostics/home-no-ads-${run}.json',
+    "'tbt_ms_max': 600",
+    "'lcp_ms_max': 4000",
+    "if failures:",
+    'delta_baseline_minus_no_ads',
+    'no_ads_median'
+  ]) assert.ok(workflow.includes(token), token);
+  assert.ok(workflow.indexOf('Run representative Lighthouse audits') < workflow.indexOf('Diagnose homepage AdSense contribution'))
+  assert.ok(workflow.indexOf('Diagnose homepage AdSense contribution') < workflow.indexOf('Enforce lab performance budgets'))
+});
