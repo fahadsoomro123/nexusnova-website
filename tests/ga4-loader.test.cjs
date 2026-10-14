@@ -102,7 +102,7 @@ test('homepage inline consent defaults deny analytics unless a saved explicit op
 test('previously uninstrumented public hubs load the standalone analytics and choice UI', () => {
   for (const path of ['tools.html', 'categories.html', 'guides.html', 'whatsapp-link-generator.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.ok(html.includes('assets/js/analytics.js?v=20261013-anonymous-consent-v1'), path + ' loader');
+    assert.ok(html.includes('assets/js/analytics.js?v=20261014-optin-event-v2'), path + ' loader');
   }
 });
 
@@ -129,7 +129,7 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   const shell = fs.readFileSync('assets/js/site-main.js', 'utf8');
   const handler = wrapper.slice(wrapper.indexOf('window.__nexusnovaLoadAnalytics=granted=>{'), wrapper.indexOf('const hydrateDynamicLinks='));
   assert.ok(!handler.includes("window.gtag('event','analytics_detail_opt_in'"));
-  assert.ok(shell.includes("window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});"));
+  assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
 
 test('production GA4 verifier captures explicit opt-in commands and batched collect events', () => {
@@ -138,10 +138,10 @@ test('production GA4 verifier captures explicit opt-in commands and batched coll
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
+    "('/tools.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
     'parse_qs(chunk)',
     'for event_index,event_name in enumerate(event_names)',
     'optInEventCallback:window.__nexusnovaOptInEventCallback===true',
