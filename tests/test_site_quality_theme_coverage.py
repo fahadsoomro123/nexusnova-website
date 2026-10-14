@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,13 @@ SPEC = importlib.util.spec_from_file_location(
 AUDIT = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(AUDIT)
+
+VALUE_SPEC = importlib.util.spec_from_file_location(
+    "manual_value_audit", ROOT / ".github" / "scripts" / "manual_value_audit.py"
+)
+VALUE_AUDIT = importlib.util.module_from_spec(VALUE_SPEC)
+assert VALUE_SPEC.loader is not None
+VALUE_SPEC.loader.exec_module(VALUE_AUDIT)
 
 
 class ThemeCoverageRegressionTests(unittest.TestCase):
@@ -36,6 +44,56 @@ class ThemeCoverageRegressionTests(unittest.TestCase):
     def test_unrelated_page_is_not_automatically_theme_covered(self):
         html = '<link rel="stylesheet" href="assets/css/unrelated.css">'
         self.assertFalse(AUDIT.has_theme_coverage(html))
+
+
+class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
+    """Prevent scenario percentages from being re-labelled as an official SSA rate."""
+
+    def test_calculator_labels_2027_percentages_as_hypothetical_scenarios(self):
+        html = (ROOT / "social-security-cola-calculator-2027.html").read_text(encoding="utf-8")
+        self.assertNotIn("Official 2027 COLA: 3.6%", html)
+        self.assertNotIn("3.6% — official 2027 COLA", html)
+        self.assertIn("3.6% — illustrative 2027 what-if scenario (not official)", html)
+        self.assertIn("2.8% — actual 2026 COLA (historical reference, not the 2027 rate)", html)
+
+    def test_article_does_not_claim_ssa_determined_3_6_percent(self):
+        html = (ROOT / "articles" / "social-security-cola-2027-estimate.html").read_text(encoding="utf-8")
+        self.assertNotIn("The official 2027 adjustment is <strong>3.6%</strong>", html)
+        self.assertNotIn("Official 2027 COLA determined by SSA on October 14, 2026", html)
+        self.assertIn("Illustrative what-if scenario; not an official rate", html)
+
+    def test_article_listing_and_machine_feed_use_corrected_title(self):
+        listing = (ROOT / "articles.html").read_text(encoding="utf-8")
+        self.assertIn("2027 Social Security COLA: Official Status and Scenarios", listing)
+        self.assertNotIn("2027 Social Security COLA Estimate: Latest Forecast", listing)
+
+        feed = json.loads((ROOT / "articles.json").read_text(encoding="utf-8"))
+        article = next(
+            item for item in feed["items"]
+            if item.get("url") == "https://nexusnovatools.com/articles/social-security-cola-2027-estimate.html"
+        )
+        self.assertEqual(article["title"], "2027 Social Security COLA: Official Status and Illustrative Scenarios")
+        self.assertIn("had not yet listed an official 2027 percentage", article["description"])
+
+
+class MetaDescriptionParserRegressionTests(unittest.TestCase):
+    """Guard quoted HTML attributes against premature apostrophe truncation."""
+
+    def test_apostrophe_inside_double_quoted_description_is_preserved(self):
+        html = """<meta name="description" content="SSA's public summary includes the annual rate and a detailed explanation.">"""
+        self.assertEqual(
+            VALUE_AUDIT.meta_description(html),
+            "SSA's public summary includes the annual rate and a detailed explanation.",
+        )
+
+    def test_description_attribute_order_is_not_significant(self):
+        html = '<meta content="A distinct description with adequate search context." name="description">'
+        self.assertEqual(
+            VALUE_AUDIT.meta_description(html),
+            "A distinct description with adequate search context.",
+        )
+
+
 
 
 if __name__ == "__main__":

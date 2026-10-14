@@ -107,11 +107,17 @@ def title_of(text: str) -> str:
 
 
 def meta_description(text: str) -> str:
-    m = re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', text, re.I | re.S)
-    if not m:
-        m = re.search(r'<meta\s+content=["\'](.*?)["\']\s+name=["\']description["\']', text, re.I | re.S)
-    return html_lib.unescape(m.group(1).strip()) if m else ''
-
+    """Read the content attribute without truncating on apostrophes inside quotes."""
+    attr_pattern = re.compile(r"""([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))""", re.I)
+    for tag in re.findall(r'<meta\b[^>]*>', text, re.I | re.S):
+        attrs = {}
+        for match in attr_pattern.finditer(tag):
+            key = match.group(1).lower()
+            value = next((group for group in match.groups()[1:] if group is not None), '')
+            attrs[key] = html_lib.unescape(value)
+        if attrs.get('name', '').strip().lower() == 'description':
+            return attrs.get('content', '').strip()
+    return ''
 
 def is_noindex(text: str) -> bool:
     return bool(re.search(r'<meta\s+name=["\']robots["\'][^>]*content=["\'][^"\']*noindex', text, re.I))
