@@ -315,7 +315,8 @@ jobs:
               context.close()
               browser.close()
 
-          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'analytics_detail_opt_in','expectedPageTitle':optin_info['title'],'httpStatusCounts':{},'apiErrors':[],'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
+          expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'page_view','expectedPageTitle':optin_info['title'],'expectedPageTitles':expected_page_titles,'observedPageViewTitles':[],'optionalDetailedOptInObserved':False,'httpStatusCounts':{},'apiErrors':[],'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
           if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
@@ -342,10 +343,10 @@ jobs:
                   rt['adminDataStreamsError']=f'{type(exc).__name__}: {str(exc)[:400]}'
               rt['dataStreamMeasurementMatch']=any(x['matchesExpectedMeasurementId'] for x in rt['adminDataStreams'])
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              # The opt-in browser probe already confirms this event came from /tools.html and records
-              # the page title in local evidence. Realtime activeUsers is incompatible with this
-              # event/title dimension pair, so verify delivery using eventName + eventCount.
-              payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}
+              # The browser probes capture the collection requests directly. For the main gate,
+              # require Realtime to show a page_view for a title visited by this production probe.
+              # Detailed opt-in Realtime visibility remains diagnostic, not a substitute for pageviews.
+              payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'eventCount'}],'limit':50}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
@@ -365,9 +366,19 @@ jobs:
                       for r in rt['rows']:
                           dims=[x.get('value','') for x in r.get('dimensionValues',[])]
                           metrics=[x.get('value','') for x in r.get('metricValues',[])]
-                          if len(dims)>=1 and dims[0]=='analytics_detail_opt_in':
-                              rt['matchedEventCount']=metrics[0] if metrics else ''
-                              rt['success']=True;break
+                          positive_count=False
+                          if metrics:
+                              try: positive_count=float(metrics[0])>0
+                              except (TypeError,ValueError): positive_count=False
+                          if len(dims)>=2 and dims[0]=='page_view':
+                              rt['observedPageViewTitles'].append(dims[1])
+                              if dims[1] in rt['expectedPageTitles'] and positive_count:
+                                  rt['matchedEventCount']=metrics[0]
+                                  rt['matchedPageTitle']=dims[1]
+                                  rt['success']=True
+                          elif len(dims)>=2 and dims[0]=='analytics_detail_opt_in' and dims[1]==rt['expectedPageTitle'] and positive_count:
+                              rt['optionalDetailedOptInObserved']=True
+                      rt['observedPageViewTitles']=sorted(set(rt['observedPageViewTitles']))
                   else:
                       try:
                           error_data=response.json().get('error',{})
@@ -412,7 +423,7 @@ jobs:
           print(REPORT.read_text())
           assert all(x['success'] for x in results), 'Browser GA4 acceptance failed'
           assert optin_result['success'], 'Explicit GA4 opt-in did not produce a consented collect event'
-          assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'
+          assert rt['success'], 'GA4 Realtime did not observe a page_view for a tested NexusNova page'
           PY
           python /tmp/ga4_production_probe.py
 

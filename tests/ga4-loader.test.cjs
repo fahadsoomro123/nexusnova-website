@@ -146,7 +146,7 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
 
-test('production GA4 verifier waits for deployed assets and inspects POST events without weakening realtime gate', () => {
+test('production GA4 verifier checks Realtime pageviews for tested page titles', () => {
   const workflow = fs.readFileSync('.github/workflows/privacy-analytics-production.yml', 'utf8');
   const deployShaToken = 'DEPLOY_SHA: ' + '$' + '{{ github.sha }}';
   for (const token of [
@@ -181,8 +181,11 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "'startDate':'7daysAgo','endDate':'today'",
     "rt['historicalReport']['matchedEventCount']=metrics[0] if metrics else ''",
     "rt['apiErrors'].append",
-    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}",
-    "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
+    "expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})",
+    "payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'eventCount'}],'limit':50}",
+    "if len(dims)>=2 and dims[0]=='page_view':",
+    "rt['optionalDetailedOptInObserved']=True",
+    "assert rt['success'], 'GA4 Realtime did not observe a page_view for a tested NexusNova page'"
   ]) assert.ok(workflow.includes(token), token);
 });
 
