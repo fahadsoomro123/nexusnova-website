@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout current main
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -39,44 +41,66 @@ jobs:
           grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
           ! grep -Fq "mountChoices" assets/js/main.js
 
-      - name: Wait for the exact current homepage HTML to reach production
+      - name: Wait for exact homepage and changed assets to reach production
         shell: bash
         run: |
           set -euo pipefail
-          expected_html_sha="$(sha256sum index.html | awk '{print $1}')"
-          echo "Expected source index.html SHA256: ${expected_html_sha}"
-          success=0
-          tmp_body="$(mktemp)"
-          trap 'rm -f "$tmp_body"' EXIT
+          python3 - <<'PY'
+          import hashlib
+          import subprocess
+          import time
+          from concurrent.futures import ThreadPoolExecutor
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import Request, urlopen
 
-          for attempt in {1..20}; do
-            echo "Production homepage HTML hash check ${attempt}/20"
-            status="$(curl --silent --show-error --location \
-              --max-time 25 \
-              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36" \
-              -H "Cache-Control: no-cache, no-store, max-age=0" \
-              -H "Pragma: no-cache" \
-              -H "Accept-Encoding: identity" \
-              -o "$tmp_body" -w '%{http_code}' \
-              "https://nexusnovatools.com/?nn_live_perf=${GITHUB_SHA}&probe=${attempt}")"
+          base = 'https://nexusnovatools.com'
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          changed = subprocess.check_output([
+              'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--',
+              '*.html', 'assets/**/*.css', 'assets/**/*.js'
+          ], text=True).splitlines()
+          # Always verify the page under test and shared runtime, even if only
+          # the gate workflow changed in this commit.
+          paths = sorted(set(['index.html', 'assets/js/main.js'] + [
+              path for path in changed
+              if path and not path.startswith('.') and Path(path).is_file()
+          ]))
+          expected = {path: hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
+          print('Expected static SHA256 prefixes:', {path: digest[:12] for path, digest in expected.items()})
 
-            actual_html_sha="$(sha256sum "$tmp_body" | awk '{print $1}')"
-            body_bytes="$(wc -c < "$tmp_body")"
-            echo "HTTP=${status} expected_sha=${expected_html_sha} live_sha=${actual_html_sha} BODY_BYTES=${body_bytes}"
+          def check(path, attempt):
+              route = '/' if path == 'index.html' else '/' + quote(path, safe='/')
+              url = base + route + '?nn_live_perf=' + commit + '&probe=' + str(attempt)
+              request = Request(url, headers={
+                  'Cache-Control': 'no-cache, no-store, max-age=0',
+                  'Pragma': 'no-cache',
+                  'Accept-Encoding': 'identity',
+                  'User-Agent': 'NexusNovaLiveLighthouse/2.0'
+              })
+              try:
+                  with urlopen(request, timeout=6) as response:
+                      body = response.read()
+                      status = response.status
+                  return path, expected[path], hashlib.sha256(body).hexdigest(), status
+              except (HTTPError, URLError, TimeoutError, OSError) as error:
+                  return path, expected[path], type(error).__name__, None
 
-            if [ "$status" = "200" ] && [ "$expected_html_sha" = "$actual_html_sha" ]; then
-              success=1
-              break
-            fi
-            sleep 10
-          done
-
-          if [ "$success" -ne 1 ]; then
-            echo 'Production homepage HTML does not match the exact checked-out index.html; refusing to record a live Lighthouse result against stale content.'
-            echo 'Last response preview:'
-            head -c 600 "$tmp_body" || true
-            exit 1
-          fi
+          workers = min(16, max(1, len(paths)))
+          with ThreadPoolExecutor(max_workers=workers) as pool:
+              for attempt in range(1, 41):
+                  results = list(pool.map(lambda path: check(path, attempt), paths))
+                  stale = [row for row in results if row[1] != row[2] or row[3] != 200]
+                  if not stale:
+                      print('DEPLOYMENT READY: all ' + str(len(paths)) + ' checked static file(s) match commit ' + commit + ' on attempt ' + str(attempt) + '.')
+                      break
+                  for path, wanted, observed, status in stale[:10]:
+                      print('Waiting for deploy attempt ' + str(attempt) + '/40: ' + path + ' expected_sha256=' + wanted[:12] + ' actual=' + str(observed)[:24] + ' status=' + str(status))
+                  if attempt == 40:
+                      raise SystemExit('PRODUCTION FAIL: ' + str(len(stale)) + ' static file(s) failed exact-source comparison; refusing to measure a stale deployment.')
+                  time.sleep(3)
+          PY
 
       - name: Install Lighthouse 13.4.1
         run: npm install --no-save --ignore-scripts lighthouse@13.4.1
