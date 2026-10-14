@@ -476,7 +476,7 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, font, max_width: int, max_lines: 
     return lines[:max_lines]
 
 
-def render_branded(background: Image.Image, item: dict, copy: dict, target: Path) -> None:
+def render_branded(background: Image.Image, item: dict, copy: dict, target: Path, image_provider: str = '') -> None:
     base = ImageOps.fit(background, (1080, 1350), method=Image.Resampling.LANCZOS)
     base = ImageEnhance.Contrast(base).enhance(1.08)
     overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
@@ -495,7 +495,8 @@ def render_branded(background: Image.Image, item: dict, copy: dict, target: Path
     cta_font = get_font(29, True)
 
     draw.text((100, 92), "NEXUSNOVA TOOLS", font=brand_font, fill=(242, 250, 255, 255))
-    draw.text((785, 101), "AI VISUAL", font=small_font, fill=(196, 181, 253, 255))
+    visual_label = "NATIVE VISUAL" if image_provider == "emergency-branded" else "AI VISUAL"
+    draw.text((785, 101), visual_label, font=small_font, fill=(196, 181, 253, 255))
 
     draw.text((78, 845), copy["kicker"], font=small_font, fill=(167, 139, 250, 255))
     y = 900
@@ -526,7 +527,7 @@ def main() -> None:
     seed = int(hashlib.sha256(f"{now:%Y-%m-%d}:{slot}:{item['url']}".encode()).hexdigest()[:8], 16)
     background, image_provider = download_ai_background(copy["image_prompt"], seed)
     image_path = GENERATED / f"premium-social-slot-{slot}.jpg"
-    render_branded(background, item, copy, image_path)
+    render_branded(background, item, copy, image_path, image_provider)
     version = f"{now:%Y%m%d}-{slot}-{seed % 100000}"
     image_url = f"{SITE}/assets/generated/{image_path.name}?v={version}"
     campaign = f"premium_social_{now:%Y%m%d}_s{slot}_{re.sub(r'[^a-z0-9]+','-',item['title'].lower()).strip('-')[:28]}"
