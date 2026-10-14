@@ -85,7 +85,7 @@ jobs:
               try:
                   main_js = session.get(
                       base + '/assets/js/main.js',
-                      params={'v': '20261014-main-thread-idle-v1', 'nn_deploy_probe': deploy_sha},
+                      params={'v': '20261014-basic-pageview-consent-v2', 'nn_deploy_probe': deploy_sha},
                       headers=headers,
                       timeout=4,
                   )
