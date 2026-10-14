@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/social_growth_metrics.py'
+      - 'tests/test_social_growth_metrics.py'
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/distribute_social_growth.py'
       - '.github/scripts/distribute_update.py'
@@ -114,6 +115,9 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ''
           GA4_PROPERTY_ID: ''
         run: python .github/scripts/social_growth_metrics.py
+
+      - name: Social campaign attribution regression tests
+        run: python tests/test_social_growth_metrics.py
 
       - name: Credential-free audience watchdog smoke test
         env:
