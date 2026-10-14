@@ -12,11 +12,16 @@
     var nexusnovaRestrictedAnalyticsRegions = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
     try {
       nexusnovaAnalyticsChoice = window.localStorage.getItem('nexusnova_analytics_consent_v2') || '';
-      if (!['basic','granted','denied'].includes(nexusnovaAnalyticsChoice)) {
+      if (!['basic','granted','denied','legacy-basic'].includes(nexusnovaAnalyticsChoice)) {
         var nexusnovaLegacyChoice = window.localStorage.getItem('nexusnova_analytics_consent_v1') || '';
         if (nexusnovaLegacyChoice === 'granted') {
           nexusnovaAnalyticsChoice = 'granted';
           window.localStorage.setItem('nexusnova_analytics_consent_v2', 'granted');
+        } else if (nexusnovaLegacyChoice === 'denied') {
+          // The old button said "Keep basic measurement", not "Turn analytics off".
+          // Preserve that scope, but require a fresh choice in region-restricted markets.
+          nexusnovaAnalyticsChoice = 'legacy-basic';
+          window.localStorage.setItem('nexusnova_analytics_consent_v2', 'legacy-basic');
         } else {
           nexusnovaAnalyticsChoice = '';
         }
