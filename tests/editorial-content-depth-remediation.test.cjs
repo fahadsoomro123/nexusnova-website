@@ -88,3 +88,34 @@ test('image format guide links to current browser-format reference', () => {
   assert.equal(article['@type'], 'Article');
   assert.equal(article.dateModified, '2026-10-14');
 });
+
+
+test('CS2 Valorant guide cites its conversion method and caveats', () => {
+  const file = path.join(root, 'articles', 'cs2-valorant-sensitivity-edpi-guide.html');
+  const html = fs.readFileSync(file, 'utf8');
+  const sources = [
+    'https://developer.valvesoftware.com/wiki/List_of_Counter-Strike_2_console_commands_and_variables',
+    'https://mousetester.io/sensitivity/cs2/',
+    'https://mousetester.io/sensitivity/valorant/',
+  ];
+
+  assert.ok(html.includes('<h2>Method and references</h2>'));
+  assert.ok(html.includes('0.022 ÷ 0.07'));
+  assert.ok(html.includes('does not make the field of view, scoped multipliers'));
+  assert.ok(html.includes('not a statement that Riot officially endorses this conversion'));
+  for (const url of sources) {
+    assert.ok(html.includes(url), 'missing sensitivity-method reference: ' + url);
+    const start = html.indexOf('<a href="' + url + '"');
+    assert.notEqual(start, -1, 'source URL should be linked from the article');
+    const end = html.indexOf('>', start);
+    const anchor = html.slice(start, end + 1);
+    assert.ok(anchor.includes('target="_blank"'));
+    assert.ok(anchor.includes('rel="noopener noreferrer"'));
+  }
+
+  const jsonLd = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
+  assert.ok(jsonLd, 'Article structured data should be present');
+  const article = JSON.parse(jsonLd[1]);
+  assert.equal(article['@type'], 'Article');
+  assert.equal(article.dateModified, '2026-10-14');
+});
