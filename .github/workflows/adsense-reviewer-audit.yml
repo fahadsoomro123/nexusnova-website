@@ -33,10 +33,73 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 2
       - name: Test live audit cache-busting
         run: python tests/test_adsense_live_audit.py
       - name: Test approved AdSense quarantine policy
         run: node --test tests/adsense-quarantine-plan.test.cjs
+      - name: Wait for changed static files to match this commit
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import subprocess
+          import time
+          from concurrent.futures import ThreadPoolExecutor
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import Request, urlopen
+
+          base = 'https://nexusnovatools.com'
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          changed = subprocess.check_output([
+              'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--',
+              '*.html', 'assets/**/*.css', 'assets/**/*.js',
+              'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'ads.txt', 'sitemap*.xml'
+          ], text=True).splitlines()
+          paths = [path for path in changed if path and not path.startswith('.github/')]
+          if not paths:
+              paths = ['index.html']
+          expected = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths
+          }
+
+          def check(path, attempt):
+              route = '/' if path == 'index.html' else '/' + quote(path, safe='/')
+              request = Request(
+                  f'{base}{route}?nn_reviewer_deploy={commit}-{attempt}',
+                  headers={
+                      'Cache-Control': 'no-cache, no-store, max-age=0',
+                      'Pragma': 'no-cache',
+                      'User-Agent': 'NexusNova-AdSense-Reviewer-Audit/4.0'
+                  }
+              )
+              try:
+                  with urlopen(request, timeout=4) as response:
+                      body = response.read()
+                      status = response.status
+                  return path, expected[path], hashlib.sha256(body).hexdigest(), status
+              except (HTTPError, URLError, TimeoutError, OSError) as exc:
+                  return path, expected[path], type(exc).__name__, None
+
+          with ThreadPoolExecutor(max_workers=min(32, max(1, len(paths)))) as pool:
+              for attempt in range(1, 41):
+                  results = list(pool.map(lambda path: check(path, attempt), paths))
+                  stale = [result for result in results if result[1] != result[2] or result[3] != 200]
+                  if not stale:
+                      print(f'PAGES DEPLOYMENT READY: {len(paths)} changed static file(s) match commit {commit} on attempt {attempt}.')
+                      break
+                  for path, wanted, observed, status in stale[:8]:
+                      print(f'Waiting for Pages attempt {attempt}/40: {path} expected_sha256={wanted[:12]} actual={observed[:24]} status={status}')
+                  if attempt == 40:
+                      raise SystemExit(f'PRODUCTION FAIL: {len(stale)} changed static file(s) did not match this commit within the bounded wait.')
+                  time.sleep(3)
+          PY
       - name: Run repository + live reviewer audit
         if: github.event_name != 'pull_request'
         run: python adsense_reviewer_audit.py --live
