@@ -84,7 +84,7 @@
     reopen.textContent='Privacy choices';
     reopen.title='Privacy choices';
     reopen.setAttribute('aria-controls','nexusnova-analytics-consent');
-    const footer=document.querySelector('.site-footer');
+    const footer=document.querySelector('.nn-global-footer .nn-footer-trust-grid')||document.querySelector('.site-footer');
     const footerGroups=footer?.querySelectorAll('.nn-footer-links,.footer-links')||[];
     const footerLinks=footerGroups.length?footerGroups[footerGroups.length-1]:null;
     if(footerLinks)footerLinks.appendChild(reopen);else if(footer)footer.appendChild(reopen);else document.body.appendChild(reopen);
