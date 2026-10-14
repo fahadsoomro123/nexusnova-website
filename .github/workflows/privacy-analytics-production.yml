@@ -23,7 +23,7 @@ permissions:
 
 env:
   GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
-  GA4_QA_VERSION: '20261013-anonymous-consent-v1'
+  GA4_QA_VERSION: '20261014-optin-event-v2'
 
 jobs:
   verify:
@@ -58,10 +58,10 @@ jobs:
           deploy_sha = os.environ['DEPLOY_SHA']
           pages = [
               ('/', 'assets/js/main.js?v=20261013-anonymous-consent-v1'),
-              ('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
-              ('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
-              ('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
-              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1'),
+              ('/tools.html', 'assets/js/analytics.js?v=20261014-optin-event-v2'),
+              ('/categories.html', 'assets/js/analytics.js?v=20261014-optin-event-v2'),
+              ('/guides.html', 'assets/js/analytics.js?v=20261014-optin-event-v2'),
+              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-optin-event-v2'),
           ]
           headers = {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
           session = requests.Session()
