@@ -1,35 +1,49 @@
 (()=>{
   const measurementId='G-YLPFKWSS12';
-  const consentKey='nexusnova_analytics_consent_v1';
+  const consentKey='nexusnova_analytics_consent_v2';
+  const legacyConsentKey='nexusnova_analytics_consent_v1';
+  const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
   if(window.__nexusnovaConsentUiReady)return;
   window.__nexusnovaConsentUiReady=true;
 
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  const isGpcEnabled=()=>window.navigator?.globalPrivacyControl===true;
+  const readChoice=()=>{
+    try{
+      const current=localStorage.getItem(consentKey)||'';
+      if(['basic','granted','denied'].includes(current))return current;
+      const legacy=localStorage.getItem(legacyConsentKey)||'';
+      if(legacy==='granted'){localStorage.setItem(consentKey,'granted');return 'granted';}
+    }catch(_){}
+    return '';
+  };
+  const initialChoice=readChoice();
   if(!window.__nexusnovaConsentDefaulted){
-    window.gtag('consent','default',{
-      analytics_storage:'denied',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied',
-      wait_for_update:500
-    });
+    if(isGpcEnabled()||initialChoice==='denied'){
+      window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else if(initialChoice==='basic'||initialChoice==='granted'){
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else{
+      window.gtag('consent','default',{analytics_storage:'denied',region:restrictedAnalyticsRegions,ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }
     window.__nexusnovaConsentDefaulted=true;
   }
-
-  const readChoice=()=>{try{return localStorage.getItem(consentKey)||''}catch(_){return ''}};
   const saveChoice=value=>{try{localStorage.setItem(consentKey,value)}catch(_){}}; 
-  const loadAnalytics=granted=>{
-    if(typeof window.__nexusnovaLoadAnalytics==='function'){
-      window.__nexusnovaLoadAnalytics(granted);
-      return;
-    }
+  const loadAnalytics=choice=>{
+    const requested=choice===true?'granted':choice===false?'denied':choice;
+    const selected=['basic','granted','denied'].includes(requested)?requested:'denied';
+    if(typeof window.__nexusnovaLoadAnalytics==='function')return window.__nexusnovaLoadAnalytics(selected);
+    const effective=isGpcEnabled()?'denied':selected;
     window.gtag('consent','update',{
-      analytics_storage:granted?'granted':'denied',
+      analytics_storage:effective==='denied'?'denied':'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
+    saveChoice(effective);
+    return effective;
   };
 
   const mountChoices=()=>{
@@ -48,7 +62,7 @@
     banner.hidden=true;
     banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Optional analytics settings');
-    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br>Analytics stays on the privacy-preserving denied-storage state until you choose an option. Choose <strong>Allow detailed analytics</strong> to enable fuller GA4 analytics; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br>Basic page-view measurement uses analytics storage by default where permitted. In the EEA, UK and Switzerland it starts off until you choose. Detailed tool-interaction analytics only starts when you choose <strong>Allow detailed analytics</strong>; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
     document.body.appendChild(banner);
 
     const hide=()=>{banner.hidden=true};
@@ -56,14 +70,16 @@
     window.addEventListener('nexusnova-analytics-auto-enabled',syncAutoAnalytics,{once:true});
     if(window.__nexusnovaAnalyticsAutoEnabled)hide();
     banner.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
-      saveChoice('granted');loadAnalytics(true);
-      window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
+      const applied=loadAnalytics('granted');
+      if(applied==='granted')window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'});
       hide();
     });
-    banner.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{
-      saveChoice('denied');loadAnalytics(false);hide();
+    banner.querySelector('[data-consent-basic]')?.addEventListener('click',()=>{loadAnalytics('basic');hide()});
+    banner.querySelector('[data-consent-off]')?.addEventListener('click',()=>{loadAnalytics('denied');hide()});
+    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',()=>{
+      try{sessionStorage.setItem('nexusnova_analytics_banner_dismissed_v2','1')}catch(_){}
+      hide();
     });
-    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',hide);
 
     const reopen=document.createElement('button');
     reopen.type='button';
@@ -81,12 +97,11 @@
     });
 
     const choice=readChoice();
-    if(choice==='granted'||choice==='denied'){
-      window.setTimeout(()=>loadAnalytics(choice==='granted'),0);
+    if(choice==='granted'||choice==='basic'||choice==='denied'){
+      window.setTimeout(()=>loadAnalytics(choice),0);
       hide();
     }else{
-      // Keep consent UI closed by default. Users can open it from the footer "Privacy choices" control.
-      banner.hidden=true;
+      try{banner.hidden=sessionStorage.getItem('nexusnova_analytics_banner_dismissed_v2')==='1'}catch(_){banner.hidden=false}
     }
   };
 
