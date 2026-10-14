@@ -37,6 +37,20 @@ class FakeResponse:
 
 
 class LiveAuditCacheBustTests(unittest.TestCase):
+    def test_live_reviewer_audit_waits_for_exact_pages_commit_before_fetching(self):
+        workflow = (ROOT / ".github" / "workflows" / "adsense-reviewer-audit.yml").read_text(encoding="utf-8")
+        wait_step = workflow.index("name: Wait for changed static files to match this commit")
+        audit_step = workflow.index("name: Run repository + live reviewer audit")
+        self.assertLess(wait_step, audit_step, "Live audit must wait for Pages deployment before fetching production pages")
+        self.assertIn("fetch-depth: 2", workflow)
+        self.assertIn("git diff --name-only HEAD^ HEAD", workflow)
+        self.assertIn("hashlib.sha256(Path(path).read_bytes()).hexdigest()", workflow)
+        self.assertIn("hashlib.sha256(body).hexdigest()", workflow)
+        self.assertIn("for attempt in range(1, 41)", workflow)
+        self.assertIn("Cache-Control", workflow)
+        self.assertIn("PRODUCTION FAIL: ", workflow)
+        self.assertIn("if: github.event_name != 'pull_request'", workflow)
+
     @patch.object(AUDIT.urllib.request, "urlopen")
     def test_live_request_preserves_logical_url_and_adds_unique_no_cache_query(self, urlopen):
         original = "https://nexusnovatools.com/image-resizer.html?source=fixture"
