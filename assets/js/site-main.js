@@ -63,7 +63,7 @@
     banner.hidden=true;
     banner.setAttribute('role','region');
     banner.setAttribute('aria-label','Optional analytics settings');
-    banner.innerHTML=`<p><strong>Privacy & Analytics Settings</strong><br>Basic page-view measurement uses analytics storage by default where permitted. In the EEA, UK and Switzerland it starts off until you choose. Detailed tool-interaction analytics only starts when you choose <strong>Allow detailed analytics</strong>; advertising and personalization remain off. <a href="${base}privacy.html">Privacy details</a>.</p><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-dismiss>Dismiss</button></div>`;
+    banner.innerHTML=`<div class="nn-consent-copy"><strong>We use cookies</strong><p>Basic page-view measurement runs where permitted. Choose <strong>Accept all</strong> to enable optional detailed analytics such as selected tool run, copy and download events. <strong>Basic only</strong> keeps page-view measurement; <strong>Reject optional</strong> turns analytics off. Advertising storage and ad personalization stay off. <a href="${base}privacy.html">Privacy policy</a>.</p></div><div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Accept all</button><button type="button" data-consent-basic>Basic only</button><button type="button" data-consent-off>Reject optional</button></div>`;
     document.body.appendChild(banner);
 
     const hide=()=>{banner.hidden=true};
@@ -77,10 +77,6 @@
     });
     banner.querySelector('[data-consent-basic]')?.addEventListener('click',()=>{loadAnalytics('basic');hide()});
     banner.querySelector('[data-consent-off]')?.addEventListener('click',()=>{loadAnalytics('denied');hide()});
-    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',()=>{
-      try{sessionStorage.setItem('nexusnova_analytics_banner_dismissed_v2','1')}catch(_){}
-      hide();
-    });
 
     const reopen=document.createElement('button');
     reopen.type='button';
@@ -102,7 +98,7 @@
       window.setTimeout(()=>loadAnalytics(choice),0);
       hide();
     }else{
-      try{banner.hidden=sessionStorage.getItem('nexusnova_analytics_banner_dismissed_v2')==='1'}catch(_){banner.hidden=false}
+      banner.hidden=false;
     }
   };
 
