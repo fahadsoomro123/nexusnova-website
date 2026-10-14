@@ -113,7 +113,7 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
     "const consentKey='nexusnova_analytics_consent_v1';",
     "analytics_storage:readChoice()==='granted'?'granted':'denied'",
     "window.gtag('consent','update',{",
-    "window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})",
+    "window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});",
     'if(window.__nexusnovaGa4BootstrapReady)return;',
     'window.__nexusnovaGa4BootstrapReady=true;',
     "const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);",
@@ -129,7 +129,7 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   const shell = fs.readFileSync('assets/js/site-main.js', 'utf8');
   const handler = wrapper.slice(wrapper.indexOf('window.__nexusnovaLoadAnalytics=granted=>{'), wrapper.indexOf('const hydrateDynamicLinks='));
   assert.ok(!handler.includes("window.gtag('event','analytics_detail_opt_in'"));
-  assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
+  assert.ok(shell.includes("window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});"));
 });
 
 test('production GA4 verifier waits for deployed assets and inspects POST events without weakening realtime gate', () => {
@@ -142,10 +142,12 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
     "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
     "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "parse_qs(request_record['post_data'])",
-    "'httpStatusCounts':{}",
+    "parse_qs(chunk)",
+    "'httpStatusCounts':{}"",
     "rt['apiErrors'].append",
-    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}",
-    "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
+    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'dimensionFilter':{'filter':{'fieldName':'eventName','stringFilter':{'matchType':'EXACT','value':'analytics_detail_opt_in'}}},'limit':5}",
+    "for event_index,event_name in enumerate(event_names)
+    optInEventCallback:window.__nexusnovaOptInEventCallback===true
+    assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
   ]) assert.ok(workflow.includes(token), token);
 });
