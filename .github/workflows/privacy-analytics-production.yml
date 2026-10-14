@@ -137,11 +137,26 @@ jobs:
           pages=['/','/tools.html','/categories.html','/guides.html','/whatsapp-link-generator.html']
           results=[]
 
+          def is_report_only_csp_notice(message):
+              normalized=message.lower()
+              return (
+                  'violates the following report-only content security policy directive' in normalized
+                  and 'no further action has been taken' in normalized
+              )
+
+          def record_console_message(message, errors, report_only_csp_notices):
+              if message.type!='error':
+                  return
+              if is_report_only_csp_notice(message.text):
+                  report_only_csp_notices.append(message.text[:600])
+              else:
+                  errors.append('console:'+message.text)
+
           def inspect_page(page, path, label, width, height):
-              requests_seen=[]; errors=[]
+              requests_seen=[]; errors=[]; report_only_csp_notices=[]
               page.on('request', lambda req: requests_seen.append(req.url))
               page.on('pageerror', lambda err: errors.append(str(err)))
-              page.on('console', lambda msg: errors.append('console:'+msg.text) if msg.type=='error' else None)
+              page.on('console', lambda msg: record_console_message(msg, errors, report_only_csp_notices))
               page.goto(BASE_URL + path + '?ga4_qa=' + os.environ['QA_VERSION'] + '&ga4_view=' + label, wait_until='domcontentloaded', timeout=30000)
               page.wait_for_timeout(9000)
               info=page.evaluate('''() => {
@@ -189,7 +204,7 @@ jobs:
                   if q.get('tid',[''])[0]==MEASUREMENT_ID:
                       collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'dt':q.get('dt',[''])[0],'gcs':q.get('gcs',[''])[0]})
               pageviews=[x for x in collect if x['en']=='page_view']
-              row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20]}
+              row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20],'reportOnlyCspNotices':report_only_csp_notices[:10]}
               row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and info['defaultAnalyticsStorage']=='denied' and info['savedConsent']=='' and info['privacyChoiceAvailable'] and not info['consentPanelVisible'] and not info['allowButtonVisible'] and not info['consentTextVisible'] and any(x['gcs']=='G100' for x in pageviews) and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
               return row
 
@@ -205,11 +220,11 @@ jobs:
 
               context=browser.new_context(viewport={'width':1280,'height':800},timezone_id='Asia/Karachi')
               page=context.new_page()
-              optin_requests=[];optin_responses=[];optin_errors=[]
+              optin_requests=[];optin_responses=[];optin_errors=[];optin_report_only_csp_notices=[]
               page.on('request',lambda req:optin_requests.append({'url':req.url,'method':req.method,'post_data':req.post_data or ''}))
               page.on('response',lambda response:optin_responses.append({'url':response.url,'method':response.request.method,'post_data':response.request.post_data or '','httpStatus':response.status}) if 'google-analytics.com/g/collect' in response.url else None)
               page.on('pageerror',lambda err:optin_errors.append(str(err)))
-              page.on('console',lambda msg:optin_errors.append('console:'+msg.text) if msg.type=='error' else None)
+              page.on('console',lambda msg:record_console_message(msg,optin_errors,optin_report_only_csp_notices))
               page.goto(BASE_URL+'/tools.html?ga4_qa='+os.environ['QA_VERSION']+'&ga4_view=explicit-opt-in',wait_until='domcontentloaded',timeout=30000)
               page.wait_for_timeout(9000)
               page.locator('.nn-standalone-consent-open').click(timeout=8000)
@@ -295,15 +310,37 @@ jobs:
                               'method':response_record['method']
                           })
               consented_response_events=[x for x in optin_response_evidence if x['en']=='analytics_detail_opt_in' and x['gcs']=='G101' and isinstance(x['httpStatus'],int) and 200<=x['httpStatus']<300]
-              optin_result={'page':optin_info,'ga4Collect':optin_collect,'consentedOptInEvents':consented_events,'ga4CollectResponses':optin_response_evidence,'consentedOptInResponses':consented_response_events,'errors':optin_errors[:20]}
+              optin_result={'page':optin_info,'ga4Collect':optin_collect,'consentedOptInEvents':consented_events,'ga4CollectResponses':optin_response_evidence,'consentedOptInResponses':consented_response_events,'errors':optin_errors[:20],'reportOnlyCspNotices':optin_report_only_csp_notices[:10]}
               optin_result['success']=optin_info['path']=='/tools.html' and optin_info['savedConsent']=='granted' and optin_info['gtag'] and optin_info['gaScriptCount']==1 and optin_info['gaConfigCount']==1 and optin_info['consentUpdateGranted'] and optin_info['optInEventCommand'] and optin_info['optInEventCallback'] and len(consented_events)>=1 and len(consented_response_events)>=1 and not optin_errors
               context.close()
               browser.close()
 
-          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'analytics_detail_opt_in','expectedPageTitle':optin_info['title'],'httpStatusCounts':{},'apiErrors':[]}
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'analytics_detail_opt_in','expectedPageTitle':optin_info['title'],'httpStatusCounts':{},'apiErrors':[],'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
           if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
+              auth_headers={'Authorization':f'Bearer {creds.token}','Content-Type':'application/json'}
+              admin_endpoint=f'https://analyticsadmin.googleapis.com/v1beta/properties/{PROPERTY_ID}/dataStreams'
+              try:
+                  admin_response=requests.get(admin_endpoint,headers=auth_headers,params={'pageSize':200},timeout=20)
+                  rt['adminDataStreamsHttpStatus']=admin_response.status_code
+                  if admin_response.ok:
+                      stream_data=admin_response.json()
+                      for stream in stream_data.get('dataStreams',[]):
+                          web_stream=stream.get('webStreamData',{})
+                          stream_measurement_id=web_stream.get('measurementId','')
+                          rt['adminDataStreams'].append({
+                              'name':stream.get('name',''),
+                              'displayName':stream.get('displayName',''),
+                              'type':stream.get('type',''),
+                              'measurementId':stream_measurement_id,
+                              'matchesExpectedMeasurementId':stream_measurement_id==MEASUREMENT_ID
+                          })
+                  else:
+                      rt['adminDataStreamsError']=admin_response.text[:600]
+              except (requests.RequestException,ValueError) as exc:
+                  rt['adminDataStreamsError']=f'{type(exc).__name__}: {str(exc)[:400]}'
+              rt['dataStreamMeasurementMatch']=any(x['matchesExpectedMeasurementId'] for x in rt['adminDataStreams'])
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
               # The opt-in browser probe already confirms this event came from /tools.html and records
               # the page title in local evidence. Realtime activeUsers is incompatible with this
@@ -312,7 +349,7 @@ jobs:
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
-                  response=requests.post(endpoint,headers={'Authorization':f'Bearer {creds.token}','Content-Type':'application/json'},json=payload,timeout=20)
+                  response=requests.post(endpoint,headers=auth_headers,json=payload,timeout=20)
                   status_key=str(response.status_code)
                   rt['lastHttpStatus']=response.status_code
                   rt['httpStatusCounts'][status_key]=rt['httpStatusCounts'].get(status_key,0)+1
@@ -341,6 +378,34 @@ jobs:
                   if rt['success']:break
                   time.sleep(10)
               if not rt.get('rows'):rt['rows']=[]
+
+              if not rt['success']:
+                  rt['historicalReport']['attempted']=True
+                  report_endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runReport'
+                  report_payload={
+                      'dateRanges':[{'startDate':'7daysAgo','endDate':'today'}],
+                      'dimensions':[{'name':'eventName'}],
+                      'metrics':[{'name':'eventCount'}],
+                      'limit':100
+                  }
+                  try:
+                      history_response=requests.post(report_endpoint,headers=auth_headers,json=report_payload,timeout=25)
+                      rt['historicalReport']['httpStatus']=history_response.status_code
+                      if history_response.ok:
+                          history_data=history_response.json()
+                          history_rows=history_data.get('rows',[])
+                          rt['historicalReport']['rowCount']=len(history_rows)
+                          for row in history_rows:
+                              dims=[x.get('value','') for x in row.get('dimensionValues',[])]
+                              metrics=[x.get('value','') for x in row.get('metricValues',[])]
+                              if dims and dims[0]:
+                                  rt['historicalReport']['eventNames'].append(dims[0])
+                                  if dims[0]=='analytics_detail_opt_in':
+                                      rt['historicalReport']['matchedEventCount']=metrics[0] if metrics else ''
+                      else:
+                          rt['historicalReport']['apiError']=history_response.text[:600]
+                  except (requests.RequestException,ValueError) as exc:
+                      rt['historicalReport']['apiError']=f'{type(exc).__name__}: {str(exc)[:400]}'
 
           report={'measurementId':MEASUREMENT_ID,'viewports':[x[0] for x in viewports],'browser':results,'explicitOptIn':optin_result,'realtime':rt}
           REPORT.write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
