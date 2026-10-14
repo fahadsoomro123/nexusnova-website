@@ -145,6 +145,7 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "parse_qs(request_record['post_data'])",
     "'httpStatusCounts':{}",
     "rt['apiErrors'].append",
+    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}",
     "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
   ]) assert.ok(workflow.includes(token), token);
 });
