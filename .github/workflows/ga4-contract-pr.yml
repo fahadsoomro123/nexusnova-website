@@ -1,0 +1,32 @@
+name: GA4 Contract PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'assets/js/tool-analytics.js'
+      - 'index.html'
+      - 'tools.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'whatsapp-link-generator.html'
+      - 'tests/ga4-loader.test.cjs'
+      - '.github/workflows/ga4-contract-pr.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+      - name: Run GA4 source contract tests
+        run: node --test tests/ga4-loader.test.cjs
