@@ -89,3 +89,22 @@ test('HEIC to JPG supports bounded batch conversion with one local ZIP download'
   assert.match(logic, /downloadBlob\(archive,'nexusnova-heic-to-jpg\.zip'\)/);
   assert.match(logic, /not uploaded to NexusNova/);
 });
+
+test('JPG to PDF supports page size, orientation, margins and a bounded local batch', () => {
+  const html = read('jpg-to-pdf.html');
+  const logic = read('assets/js/popular-tools.js');
+  assert.match(html, /id="pdf-page-size"/);
+  assert.match(html, /value="a4"/);
+  assert.match(html, /value="letter"/);
+  assert.match(html, /value="legal"/);
+  assert.match(html, /id="pdf-orientation"/);
+  assert.match(html, /Auto \(match each image\)/);
+  assert.match(html, /id="pdf-margin"/);
+  assert.match(html, /100 MB combined/i);
+  assert.match(logic, /maxPdfInputBytes = 100 \* 1024 \* 1024/);
+  assert.match(logic, /pdfPageSizes = \{ a4: \[595\.28, 841\.89\], letter: \[612, 792\], legal: \[612, 1008\] \}/);
+  assert.match(logic, /orientation === 'auto' && img\.width > img\.height/);
+  assert.match(logic, /MediaBox \[0 0 \$\{pageW\} \$\{pageH\}\]/);
+  assert.match(logic, /\[pageSizeKey\] \|\| 'A4'/);
+});
+
