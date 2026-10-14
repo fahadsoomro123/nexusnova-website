@@ -175,7 +175,7 @@ jobs:
                   const rect=el.getBoundingClientRect();
                   return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&rect.width>0&&rect.height>0;
                 };
-                const banner=document.querySelector('#nexusnova-analytics-consent');
+                const banner=document.querySelector('#nexusnova-analytics-consent, #nexusnova-analytics-consent-banner');
                 const dialog=document.querySelector('#nexusnova-analytics-consent-dialog');
                 const consentPanelVisible=visible(banner)||(!!dialog&&dialog.open&&visible(dialog));
                 const allow=document.querySelector('[data-consent-allow]');

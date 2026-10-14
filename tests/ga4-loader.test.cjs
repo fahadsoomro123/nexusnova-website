@@ -158,6 +158,7 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "('/categories.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
     "('/guides.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
     "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
+    "const banner=document.querySelector('#nexusnova-analytics-consent, #nexusnova-analytics-consent-banner');",
     "def add_collect_events(q,method,source):",
     "body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]",
     "optin_responses=[];optin_errors=[];optin_report_only_csp_notices=[]",
