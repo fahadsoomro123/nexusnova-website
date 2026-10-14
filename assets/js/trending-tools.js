@@ -11,8 +11,8 @@ const button=(label,primary=true)=>`<button type="button" class="trend-action${p
 const resultBox='<div class="trend-output" data-output>Ready.</div>';
 const loadScript=src=>new Promise((resolve,reject)=>{const old=[...document.scripts].find(s=>s.src===src);if(old){if(old.dataset.ready==='1')return resolve();old.addEventListener('load',resolve,{once:true});return;}const s=document.createElement('script');s.src=src;s.async=true;s.onload=()=>{s.dataset.ready='1';resolve()};s.onerror=reject;document.head.appendChild(s)});
 const downloadBlob=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)};
-const readImage=file=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=URL.createObjectURL(file)});
-const canvasBlob=(canvas,type,quality=.92)=>new Promise(r=>canvas.toBlob(r,type,quality));
+const readImage=file=>new Promise((resolve,reject)=>{const img=new Image();const objectUrl=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(objectUrl);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(objectUrl);reject(new Error('The selected image could not be decoded.'))};img.src=objectUrl});
+const canvasBlob=(canvas,type,quality=.92)=>new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('This browser could not export the selected image format. Try PNG or JPEG.')),type,quality));
 function bind(fn){$('[data-go]')?.addEventListener('click',()=>Promise.resolve(fn()).catch(e=>out(`<span style="color:#ff8ca0">${esc(e.message||'Something went wrong.')}</span>`)))}
 function qr(){root.innerHTML=`<div class="trend-ui"><label>Text or URL<textarea data-text placeholder="https://nexusnovatools.com"></textarea></label><label>Size<select data-size><option>200</option><option selected>300</option><option>400</option></select></label>${button('GENERATE QR CODE')}${resultBox}<div data-qr></div><p class="trend-note">QR generation runs in your browser after the small QR library loads.</p></div>`;bind(async()=>{const text=$('[data-text]').value.trim();if(!text)throw Error('Enter text or a URL first.');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js');const box=$('[data-qr]');box.innerHTML='';new QRCode(box,{text,width:+$('[data-size]').value,height:+$('[data-size]').value,colorDark:'#07111f',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});out('<strong>QR code ready.</strong> Long-press or save the generated image.');});}
 function scientific(){root.innerHTML=`<div class="trend-ui"><div class="trend-row"><label>Value X<input type="number" step="any" data-x value="45"></label><label>Value Y<input type="number" step="any" data-y value="2"></label></div><label>Operation<select data-op><option value="sin">sin(X°)</option><option value="cos">cos(X°)</option><option value="tan">tan(X°)</option><option value="sqrt">√X</option><option value="log">log10(X)</option><option value="ln">ln(X)</option><option value="pow">Xʸ</option><option value="pct">X% of Y</option></select></label>${button('CALCULATE')}${resultBox}</div>`;bind(()=>{const x=+$('[data-x]').value,y=+$('[data-y]').value,op=$('[data-op]').value;if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('Enter valid numbers.');const rad=x*Math.PI/180;let r={sin:Math.sin(rad),cos:Math.cos(rad),tan:Math.tan(rad),sqrt:Math.sqrt(x),log:Math.log10(x),ln:Math.log(x),pow:Math.pow(x,y),pct:x/100*y}[op];if(!Number.isFinite(r))throw Error('That operation is not valid for this input.');out(`<strong>${fmt(r)}</strong>`)});}
@@ -20,7 +20,80 @@ function bmi(){root.innerHTML=`<div class="trend-ui"><div class="trend-row"><lab
 function emi(){root.innerHTML=`<div class="trend-ui"><label>Loan amount<input type="number" data-p value="500000" min="1"></label><div class="trend-row"><label>Annual interest %<input type="number" step=".01" data-r value="12"></label><label>Term (months)<input type="number" data-n value="36" min="1"></label></div>${button('CALCULATE EMI')}${resultBox}</div>`;bind(()=>{const p=+$('[data-p]').value,r=+$('[data-r]').value/1200,n=+$('[data-n]').value;if(p<=0||n<=0||r<0)throw Error('Enter valid loan values.');const payment=r===0?p/n:p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);const total=payment*n;out(`<strong>${fmt(payment)}</strong> / month\nTotal payment: ${fmt(total)}\nTotal interest: ${fmt(total-p)}`)});}
 function countdown(mode='timer'){root.innerHTML=`<div class="trend-ui"><div class="trend-row"><label>Minutes<input type="number" data-min value="5" min="0"></label><label>Seconds<input type="number" data-sec value="0" min="0" max="59"></label></div><div class="trend-actions"><button class="trend-action primary" data-start>START</button><button class="trend-action" data-pause>PAUSE</button><button class="trend-action" data-reset>RESET</button></div><div class="trend-output"><strong data-clock>05:00</strong></div></div>`;let left=300,t=null;const draw=()=>{const m=Math.floor(left/60),s=left%60;$('[data-clock]').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`};const read=()=>Math.max(0,(+$('[data-min]').value||0)*60+(+$('[data-sec]').value||0));$('[data-start]').onclick=()=>{if(!t){if(left<=0)left=read();t=setInterval(()=>{left--;draw();if(left<=0){clearInterval(t);t=null;out('<strong>00:00</strong> — Time is up.')}},1000)}};$('[data-pause]').onclick=()=>{clearInterval(t);t=null};$('[data-reset]').onclick=()=>{clearInterval(t);t=null;left=read();draw()};left=read();draw();}
 function stopwatch(){root.innerHTML=`<div class="trend-ui"><div class="trend-actions"><button class="trend-action primary" data-start>START</button><button class="trend-action" data-pause>PAUSE</button><button class="trend-action" data-reset>RESET</button></div><div class="trend-output"><strong data-clock>00:00.0</strong></div></div>`;let base=0,start=0,t=null;const draw=()=>{const ms=base+(t?performance.now()-start:0),tenths=Math.floor(ms/100)%10,sec=Math.floor(ms/1000)%60,min=Math.floor(ms/60000);$('[data-clock]').textContent=`${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${tenths}`};$('[data-start]').onclick=()=>{if(!t){start=performance.now();t=setInterval(draw,100)}};$('[data-pause]').onclick=()=>{if(t){base+=performance.now()-start;clearInterval(t);t=null;draw()}};$('[data-reset]').onclick=()=>{clearInterval(t);t=null;base=0;draw()};draw();}
-function imageResize(){root.innerHTML=`<div class="trend-ui"><label class="trend-file">Choose image<input type="file" accept="image/*" data-file></label><div class="trend-row"><label>Width px<input type="number" data-w value="1200" min="1"></label><label>Height px<input type="number" data-h value="800" min="1"></label></div><label><span><input type="checkbox" data-ratio checked> Keep aspect ratio</span></label>${button('RESIZE & DOWNLOAD')}${resultBox}</div>`;let img=null,ratio=1;$('[data-file]').onchange=async()=>{const f=$('[data-file]').files[0];if(!f)return;img=await readImage(f);ratio=img.width/img.height;$('[data-w]').value=img.width;$('[data-h]').value=img.height;out(`Loaded ${img.width} × ${img.height}px.`)};$('[data-w]').oninput=()=>{if(img&&$('[data-ratio]').checked)$('[data-h]').value=Math.max(1,Math.round(+$('[data-w]').value/ratio))};$('[data-h]').oninput=()=>{if(img&&$('[data-ratio]').checked)$('[data-w]').value=Math.max(1,Math.round(+$('[data-h]').value*ratio))};bind(async()=>{if(!img)throw Error('Choose an image first.');const w=+$('[data-w]').value,h=+$('[data-h]').value;if(w<1||h<1)throw Error('Enter valid dimensions.');const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);const blob=await canvasBlob(c,'image/png');downloadBlob(blob,'nexusnova-resized.png');out(`<strong>${w} × ${h}px</strong> image downloaded.`)});}
+function imageResize(){
+  root.innerHTML=`<div class="trend-ui">
+    <label class="trend-file">Choose image<input type="file" accept="image/*" data-file></label>
+    <div class="trend-row">
+      <label>Width px<input type="number" data-w value="1200" min="1" step="1"></label>
+      <label>Height px<input type="number" data-h value="800" min="1" step="1"></label>
+    </div>
+    <label><span><input type="checkbox" data-ratio checked> Keep aspect ratio</span></label>
+    <label>Output format<select data-format>
+      <option value="image/png" selected>PNG · lossless, supports transparency</option>
+      <option value="image/jpeg">JPEG · photo-friendly, no transparency</option>
+      <option value="image/webp">WebP · modern web image</option>
+    </select></label>
+    <label data-quality-label>Quality <span data-quality-value>85%</span><input type="range" data-quality min="50" max="100" step="1" value="85"></label>
+    <p class="trend-note">Quality applies to JPEG and WebP, not PNG. JPEG transparency is flattened onto white.</p>
+    ${button('RESIZE & DOWNLOAD')}${resultBox}
+  </div>`;
+  let img=null,ratio=1;
+  const width=$('[data-w]'),height=$('[data-h]'),ratioLock=$('[data-ratio]'),format=$('[data-format]'),quality=$('[data-quality]');
+  const syncQuality=()=>{
+    $('[data-quality-value]').textContent=quality.value+'%';
+    $('[data-quality-label]').style.display=format.value==='image/png'?'none':'grid';
+  };
+  format.onchange=syncQuality;
+  quality.oninput=syncQuality;
+  syncQuality();
+  $('[data-file]').onchange=async()=>{
+    img=null;
+    const file=$('[data-file]').files[0];
+    if(!file)return;
+    try{
+      const decoded=await readImage(file);
+      img=decoded;
+      ratio=img.width/img.height;
+      width.value=img.width;
+      height.value=img.height;
+      out(`Loaded ${img.width} × ${img.height}px. Choose the output dimensions and format.`);
+    }catch(_){
+      out('This image could not be opened by the browser. Try a supported image file.');
+    }
+  };
+  width.oninput=()=>{
+    const value=Number(width.value);
+    if(img&&ratioLock.checked&&Number.isFinite(value)&&value>0)height.value=Math.max(1,Math.round(value/ratio));
+  };
+  height.oninput=()=>{
+    const value=Number(height.value);
+    if(img&&ratioLock.checked&&Number.isFinite(value)&&value>0)width.value=Math.max(1,Math.round(value*ratio));
+  };
+  bind(async()=>{
+    if(!img)throw Error('Choose an image first.');
+    const w=Number(width.value),h=Number(height.value);
+    if(!Number.isSafeInteger(w)||!Number.isSafeInteger(h)||w<1||h<1)throw Error('Enter positive whole-number dimensions.');
+    if(w>16000||h>16000||w*h>32000000)throw Error('For browser stability, the output must stay within 16,000 px per side and 32 million total pixels. Choose smaller dimensions.');
+    const type=format.value;
+    const extension=type==='image/jpeg'?'jpg':type==='image/webp'?'webp':'png';
+    const canvas=document.createElement('canvas');
+    canvas.width=w;
+    canvas.height=h;
+    const context=canvas.getContext('2d');
+    if(!context)throw Error('Your browser could not create an image canvas.');
+    if(type==='image/jpeg'){
+      context.fillStyle='#fff';
+      context.fillRect(0,0,w,h);
+    }
+    context.drawImage(img,0,0,w,h);
+    const blob=await canvasBlob(canvas,type,Number(quality.value)/100);
+    if(blob.type!==type)throw Error('This browser does not support '+extension.toUpperCase()+' export. Choose PNG or JPEG instead.');
+    downloadBlob(blob,`nexusnova-resized.${extension}`);
+    const qualityNote=type==='image/png'?'PNG export is lossless.':extension.toUpperCase()+' quality '+quality.value+'%.';
+    const ratioNote=ratioLock.checked?'Aspect ratio preserved.':'Aspect ratio lock is off; the image may be stretched.';
+    out(`<strong>${w} × ${h}px</strong> ${extension.toUpperCase()} downloaded (${(blob.size/1024).toFixed(1)} KB). ${qualityNote} ${ratioNote}`);
+  });
+}
 function imageConvert(type,ext){root.innerHTML=`<div class="trend-ui"><label class="trend-file">Choose image<input type="file" accept="image/*" data-file></label>${button(`CONVERT TO ${ext.toUpperCase()}`)}${resultBox}</div>`;bind(async()=>{const f=$('[data-file]').files[0];if(!f)throw Error('Choose an image first.');const img=await readImage(f),c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');if(type==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height)}ctx.drawImage(img,0,0);const blob=await canvasBlob(c,type,.92);downloadBlob(blob,`nexusnova-converted.${ext}`);out(`<strong>${img.width} × ${img.height}px</strong> ${ext.toUpperCase()} downloaded.`)});}
 async function pdfLib(){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');return window.PDFLib;}
 function mergePdf(){root.innerHTML=`<div class="trend-ui"><label class="trend-file">Choose PDFs<input type="file" accept="application/pdf" multiple data-file></label>${button('MERGE PDF FILES')}${resultBox}</div>`;bind(async()=>{const files=[...$('[data-file]').files];if(files.length<2)throw Error('Choose at least two PDF files.');const {PDFDocument}=await pdfLib(),dest=await PDFDocument.create();for(const f of files){const src=await PDFDocument.load(await f.arrayBuffer());const pages=await dest.copyPages(src,src.getPageIndices());pages.forEach(p=>dest.addPage(p))}downloadBlob(new Blob([await dest.save()],{type:'application/pdf'}),'nexusnova-merged.pdf');out(`<strong>${files.length} PDFs merged.</strong>`)});}
