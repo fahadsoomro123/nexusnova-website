@@ -242,6 +242,16 @@ jobs:
           check_contains '/articles/google-releases-chrome-152-for-android.html' 'Chrome 152 for Android: Release Timeline and Security Fixes' 'Chrome release article title present'
           check_contains '/articles/chrome-152-for-android-adds-desktop-security-fixes.html' 'content="noindex,follow,max-image-preview:large"' 'duplicate Chrome archive noindex'
           check_contains '/articles/chrome-152-for-android-adds-desktop-security-fixes.html' '<link rel="canonical" href="https://nexusnovatools.com/articles/google-releases-chrome-152-for-android.html">' 'duplicate Chrome archive canonical'
+          check_contains '/guides/unit-conversion.html' 'NIST Guide to the SI' 'unit conversion guide includes NIST reference factors'
+          check_contains '/guides/unit-conversion.html' 'Updated 14 October 2026' 'unit conversion guide carries its current review date'
+          check_contains '/emi-calculator.html' 'Compare offers on total borrowing cost' 'EMI page explains total borrowing cost'
+          check_contains '/emi-calculator.html' 'https://www.consumerfinance.gov/ask-cfpb/what-is-amortization-and-how-could-it-affect-my-auto-loan-en-771/' 'EMI page links amortization guidance'
+          check_absent '/emi-calculator.html' 'Guide on Structured EMI and Debt Calculation' 'duplicate EMI template block removed'
+          check_absent '/emi-calculator.html' 'Frequently Asked Questions — EMI Calculator' 'repeated EMI FAQ block removed'
+          check_contains '/bmi-calculator.html' 'age- and sex-specific BMI-for-age percentiles' 'BMI page distinguishes pediatric interpretation'
+          check_contains '/bmi-calculator.html' 'https://www.cdc.gov/bmi/child-teen-calculator/' 'BMI page links CDC child and teen guidance'
+          check_absent '/bmi-calculator.html' 'Key Features &amp; Practical Applications — BMI Calculator' 'duplicate BMI template block removed'
+          check_absent '/bmi-calculator.html' 'Frequently Asked Questions — BMI Calculator' 'repeated BMI FAQ block removed'
 
           cp "$(route_file '/sitemap.xml')" /tmp/nexusnova-sitemap.xml
           python3 - <<'PY'
