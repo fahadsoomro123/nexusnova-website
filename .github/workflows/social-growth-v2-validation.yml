@@ -96,11 +96,17 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           resilient=Path('.github/scripts/premium_social_resilient.py').read_text(encoding='utf-8')
-          if '_emergency_background' in resilient or 'cached-ai-library' in resilient:
-              raise SystemExit('Unrelated or generic social-image fallback is still present.')
-          if 'Relevant AI creative unavailable' not in resilient:
-              raise SystemExit('Relevant-image refusal guard is missing.')
-          print('No unrelated-image fallback: PASS')
+          campaign=Path('.github/scripts/premium_social_campaign.py').read_text(encoding='utf-8')
+          workflow=Path('.github/workflows/premium-social-daily.yml').read_text(encoding='utf-8')
+          if 'def _native_background(prompt: str, seed: int)' not in resilient:
+              raise SystemExit('Topic-matched native visual fallback is missing.')
+          if 'return _native_background(prompt, seed), "emergency-branded"' not in resilient:
+              raise SystemExit('Native provider identity is missing.')
+          if 'cached = _cached_ai(prompt)' not in resilient:
+              raise SystemExit('Exact-prompt AI cache fallback is missing.')
+          if 'NATIVE VISUAL' not in campaign or "'emergency-branded'" not in workflow:
+              raise SystemExit('Native visual labeling or provider gate is missing.')
+          print('Topic-matched fallback, exact-cache priority and truthful label: PASS')
           PY
 
       - name: Credential-free metrics smoke test
