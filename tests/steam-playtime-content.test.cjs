@@ -5,8 +5,12 @@ const fs = require('node:fs');
 test('Steam playtime page distinguishes continuous days from average daily hours', () => {
   const html = fs.readFileSync('steam-playtime-calculator.html', 'utf8');
 
-  assert.match(html, /<title>Steam Playtime Calculator: Hours, Days &amp; Averages<\/title>|<title>Steam Playtime Calculator: Hours, Days & Averages<\/title>/);
+  assert.match(html, /<title>Steam Playtime Calculator: Hours to Days &amp; Daily Average<\\/title>|<title>Steam Playtime Calculator: Hours to Days & Daily Average<\\/title>/);
   assert.match(html, /Convert Steam hours into full days and average hours per day, week or month\./);
+  assert.match(html, /Compare examples from 100 to 2,000 hours/);
+  assert.match(html, /name="description" content="Convert Steam hours to days and average daily playtime/);
+  assert.match(html, /property="og:title" content="Steam Playtime Calculator: Hours to Days & Daily Average/);
+  assert.match(html, /name="twitter:title" content="Steam Playtime Calculator: Hours to Days & Daily Average/);
   assert.match(html, /Divide total playtime by 24 to convert hours into full days of continuous gameplay\./);
   assert.match(html, /full days of play = total hours ÷ 24/);
   assert.match(html, /average about 2\.74 hours a day/);
