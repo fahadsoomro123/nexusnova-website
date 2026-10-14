@@ -66,3 +66,25 @@ test('photo restoration guide cites primary documentation for resampling and gen
   assert.equal(article['@type'], 'Article');
   assert.equal(article.dateModified, '2026-10-14');
 });
+
+
+test('image format guide links to current browser-format reference', () => {
+  const file = path.join(root, 'articles', 'jpg-png-webp-avif-guide.html');
+  const html = fs.readFileSync(file, 'utf8');
+  const url = 'https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types';
+
+  assert.ok(html.includes('<h2 id="image-format-sources-title">Standards and browser reference</h2>'));
+  assert.ok(html.includes(url), 'missing MDN image-format reference');
+  const start = html.indexOf('<a href="' + url + '"');
+  assert.notEqual(start, -1, 'MDN source URL should be linked from the article');
+  const end = html.indexOf('>', start);
+  const anchor = html.slice(start, end + 1);
+  assert.ok(anchor.includes('target="_blank"'));
+  assert.ok(anchor.includes('rel="noopener noreferrer"'));
+
+  const jsonLd = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
+  assert.ok(jsonLd, 'Article structured data should be present');
+  const article = JSON.parse(jsonLd[1]);
+  assert.equal(article['@type'], 'Article');
+  assert.equal(article.dateModified, '2026-10-14');
+});
