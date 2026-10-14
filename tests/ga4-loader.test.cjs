@@ -144,7 +144,7 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
     "def add_collect_events(q,method,source):",
     "body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]",
-    "event_callback:()=>{window.__nexusnovaOptInEventCallback=true}",
+    "optInEventCallback:window.__nexusnovaOptInEventCallback===true",
     "optInEventCommand:eventCommands.includes('analytics_detail_opt_in')",
     "'httpStatusCounts':{}",
     "rt['apiErrors'].append",
