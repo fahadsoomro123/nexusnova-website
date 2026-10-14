@@ -12,9 +12,10 @@
   const readChoice=()=>{
     try{
       const current=localStorage.getItem(consentKey)||'';
-      if(['basic','granted','denied'].includes(current))return current;
+      if(['basic','granted','denied','legacy-basic'].includes(current))return current;
       const legacy=localStorage.getItem(legacyConsentKey)||'';
       if(legacy==='granted'){localStorage.setItem(consentKey,'granted');return 'granted';}
+      if(legacy==='denied'){localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}
     }catch(_){}
     return '';
   };
