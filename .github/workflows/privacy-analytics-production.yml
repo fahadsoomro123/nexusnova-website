@@ -387,7 +387,7 @@ jobs:
                       rt['apiErrors'].append({'httpStatus':response.status_code,'message':message[:600]})
                       if response.status_code not in (429,500,502,503,504):
                           rt['fatalApiError']=True
-if rt['success'] or rt['fatalApiError']:break
+                  if rt['success'] or rt['fatalApiError']:break
                   time.sleep(10)
               if not rt.get('rows'):rt['rows']=[]
 
