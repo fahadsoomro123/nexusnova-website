@@ -19,6 +19,8 @@ test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-lo
     "const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];",
     "window.gtag('consent','default',{analytics_storage:'granted'",
     'const readSavedAnalyticsChoice=()=>{',
+    "if(current==='basic'||current==='granted'||current==='denied'||current==='legacy-basic')return current;",
+    "if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}",
     'wait_for_update:500',
     "window.gtag('consent','update',{",
     "ad_storage:'denied'",
@@ -96,6 +98,7 @@ test('homepage defaults basic pageview analytics on where permitted and denies r
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("nexusnova_analytics_consent_v2"));
   assert.ok(html.includes("nexusnova_analytics_consent_v1"));
+  assert.ok(html.includes("nexusnova_analytics_consent_v2', 'legacy-basic'"));
   assert.ok(html.includes("analytics_storage: 'denied',"));
   assert.ok(html.includes("region: nexusnovaRestrictedAnalyticsRegions"));
   assert.ok(html.includes("analytics_storage: 'granted'"));
@@ -128,6 +131,7 @@ test('standalone GA4 loader uses regional defaults, persists the selected mode a
   ]) assert.ok(loader.includes(token), token);
   assert.ok(loader.includes("analytics_storage:'denied',region:restrictedAnalyticsRegions"), 'restricted regions must default denied');
   assert.ok(loader.includes("analytics_storage:'granted'"), 'basic pageview measurement must be enabled where permitted');
+  assert.ok(loader.includes("if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}"), 'legacy basic choice should be reviewed rather than silently treated as detailed opt-in');
   assert.ok(loader.includes("banner.dataset.nexusnovaConsent=''"), 'first-visit settings must be visible to the production verifier');
   assert.ok(loader.includes("const chooseBasic=()=>{applyChoice('basic')"), 'basic choice must not require detailed-interaction opt-in');
   assert.ok(loader.includes("const chooseDetailed=()=>{"), 'detailed opt-in handler must be explicit');
