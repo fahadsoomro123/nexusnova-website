@@ -149,3 +149,31 @@ test('password security guide links current NIST and CISA guidance', () => {
   assert.ok(article, 'Article JSON-LD should remain valid');
   assert.equal(article.dateModified, '2026-10-14');
 });
+
+test('EMI calculator avoids repeated template explanations and keeps decision-useful specifics', () => {
+  const file = path.join(root, 'emi-calculator.html');
+  const html = fs.readFileSync(file, 'utf8');
+
+  assert.ok(html.includes('Worked EMI example'));
+  assert.ok(html.includes('16,607.15'));
+  assert.ok(html.includes('What formula the tool uses'));
+  assert.ok(html.includes('What the estimate does not include'));
+  assert.ok(html.includes('Compare offers on total borrowing cost'));
+  assert.ok(html.includes('https://www.consumerfinance.gov/ask-cfpb/what-is-amortization-and-how-could-it-affect-my-auto-loan-en-771/'));
+  assert.ok(html.includes('https://www.consumerfinance.gov/ask-cfpb/what-is-the-difference-between-a-loan-interest-rate-and-the-apr-en-733/'));
+  assert.doesNotMatch(html, /Guide on Structured EMI and Debt Calculation|Key Features &amp; Practical Applications — EMI Calculator|Frequently Asked Questions — EMI Calculator|How the estimate works/);
+});
+
+test('BMI calculator uses concise sourced interpretation guidance instead of duplicate template copy', () => {
+  const file = path.join(root, 'bmi-calculator.html');
+  const html = fs.readFileSync(file, 'utf8');
+
+  assert.ok(html.includes('70 ÷ (1.75 × 1.75)'));
+  assert.ok(html.includes('age- and sex-specific BMI-for-age percentiles'));
+  assert.ok(html.includes('https://www.cdc.gov/bmi/about/'));
+  assert.ok(html.includes('https://www.cdc.gov/bmi/adult-calculator/calculator.html'));
+  assert.ok(html.includes('https://www.cdc.gov/bmi/child-teen-calculator/'));
+  assert.ok(html.includes('data-tool="bmi-calculator"'));
+  assert.doesNotMatch(html, /Guide on How to Use the BMI Calculator|Key Features &amp; Practical Applications — BMI Calculator|Frequently Asked Questions — BMI Calculator/);
+});
+
