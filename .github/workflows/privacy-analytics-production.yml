@@ -23,7 +23,7 @@ permissions:
 
 env:
   GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
-  GA4_QA_VERSION: '20261014-dynamic-link-hydration-v1'
+  GA4_QA_VERSION: '20261014-main-thread-idle-v1'
 
 jobs:
   verify:
@@ -57,7 +57,7 @@ jobs:
           base = 'https://nexusnovatools.com'
           deploy_sha = os.environ['DEPLOY_SHA']
           pages = [
-              ('/', 'assets/js/main.js?v=20261014-dynamic-link-hydration-v1'),
+              ('/', 'assets/js/main.js?v=20261014-main-thread-idle-v1'),
               ('/tools.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
               ('/categories.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
               ('/guides.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
@@ -85,7 +85,7 @@ jobs:
               try:
                   main_js = session.get(
                       base + '/assets/js/main.js',
-                      params={'v': '20261014-dynamic-link-hydration-v1', 'nn_deploy_probe': deploy_sha},
+                      params={'v': '20261014-main-thread-idle-v1', 'nn_deploy_probe': deploy_sha},
                       headers=headers,
                       timeout=4,
                   )

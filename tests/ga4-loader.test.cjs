@@ -84,7 +84,7 @@ test('GA4 external loader only runs on the owned production hostname', () => {
 
 test('homepage requests the current consent-aware production bootstrap', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('assets/js/main.js?v=20261014-dynamic-link-hydration-v1'));
+  assert.ok(html.includes('assets/js/main.js?v=20261014-main-thread-idle-v1'));
   assert.ok(!html.includes('assets/js/main.js?v=20261013-ga4-hostguard-v3'));
   assert.ok(!html.includes('assets/js/main.js?v=20261005-ga4a'));
 });
@@ -93,7 +93,7 @@ test('homepage inline consent defaults deny analytics unless a saved explicit op
   const html = fs.readFileSync('index.html', 'utf8');
   assert.ok(html.includes("var nexusnovaAnalyticsStorage = 'denied';"));
   assert.ok(html.includes("window.localStorage.getItem('nexusnova_analytics_consent_v1') === 'granted'"));
-  assert.ok(html.includes('assets/js/main.js?v=20261014-dynamic-link-hydration-v1'));
+  assert.ok(html.includes('assets/js/main.js?v=20261014-main-thread-idle-v1'));
   assert.ok(!html.includes("analytics_storage: 'granted'"));
 });
 
@@ -136,8 +136,8 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/', 'assets/js/main.js?v=20261014-dynamic-link-hydration-v1')",
-    "GA4_QA_VERSION: '20261014-dynamic-link-hydration-v1'",
+    "('/', 'assets/js/main.js?v=20261014-main-thread-idle-v1')",
+    "GA4_QA_VERSION: '20261014-main-thread-idle-v1'",
     "('/tools.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
     "('/categories.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
     "('/guides.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
