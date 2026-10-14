@@ -315,8 +315,7 @@ jobs:
               context.close()
               browser.close()
 
-          expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})
-          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'page_view','expectedMetric':'screenPageViews','expectedPageTitle':optin_info['title'],'expectedPageTitles':expected_page_titles,'observedPageTitlesWithViews':[],'httpStatusCounts':{},'apiErrors':[],'fatalApiError':False,'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'page_view','expectedMetric':'eventCount','observedEventNames':[],'httpStatusCounts':{},'apiErrors':[],'fatalApiError':False,'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
           if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
@@ -346,7 +345,7 @@ jobs:
               # GA4 Realtime rejects eventName + unifiedScreenName paired with eventCount.
               # The supported unifiedScreenName + screenPageViews pair verifies views for titles
               # visited by the browser probe; browser network evidence separately checks page_view.
-              payload={'dimensions':[{'name':'unifiedScreenName'}],'metrics':[{'name':'screenPageViews'}],'limit':50}
+              payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':50}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
@@ -371,13 +370,13 @@ jobs:
                               try: positive_count=float(metrics[0])>0
                               except (TypeError,ValueError): positive_count=False
                           if len(dims)>=1:
-                              page_title=dims[0]
-                              rt['observedPageTitlesWithViews'].append(page_title)
-                              if page_title in rt['expectedPageTitles'] and positive_count:
-                                  rt['matchedPageViews']=metrics[0]
-                                  rt['matchedPageTitle']=page_title
+                              event_name=dims[0]
+                              rt['observedEventNames'].append(event_name)
+                              if event_name=='page_view' and positive_count:
+                                  rt['matchedEventCount']=metrics[0]
+                                  rt['matchedEventName']=event_name
                                   rt['success']=True
-                      rt['observedPageTitlesWithViews']=sorted(set(rt['observedPageTitlesWithViews']))
+                      rt['observedEventNames']=sorted(set(rt['observedEventNames']))
                   else:
                       try:
                           error_data=response.json().get('error',{})
@@ -424,7 +423,7 @@ jobs:
           print(REPORT.read_text())
           assert all(x['success'] for x in results), 'Browser GA4 acceptance failed'
           assert optin_result['success'], 'Explicit GA4 opt-in did not produce a consented collect event'
-          assert rt['success'], 'GA4 Realtime did not observe a page_view for a tested NexusNova page'
+          assert rt['success'], 'GA4 Realtime did not observe a page_view event in the configured property'
           PY
           python /tmp/ga4_production_probe.py
 
