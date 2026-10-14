@@ -74,7 +74,7 @@ class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
             if item.get("url") == "https://nexusnovatools.com/articles/social-security-cola-2027-estimate.html"
         )
         self.assertEqual(article["title"], "2027 Social Security COLA: Official 3.6% Rate and Payment Dates")
-        self.assertIn("announced a 3.6% Social Security COLA for 2027 on October 14, 2026", article["description"])
+        self.assertIn("The official 3.6% 2027 COLA, announced by SSA on October 14, 2026", article["description"])
 
 
 class MetaDescriptionParserRegressionTests(unittest.TestCase):
