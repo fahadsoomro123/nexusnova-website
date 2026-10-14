@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/production-smoke.yml'
+      - '.github/workflows/privacy-analytics-production.yml'
       - '**.html'
       - 'assets/js/site-main.js'
       - 'robots.txt'

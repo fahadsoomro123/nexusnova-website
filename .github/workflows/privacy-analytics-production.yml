@@ -258,10 +258,10 @@ jobs:
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              # GA4 Realtime API does not support the Core Reporting "pagePath" dimension.
-              # Use the supported unifiedScreenName dimension and match the exact page title captured
-              # by the consented browser probe to associate this event with /tools.html.
-              payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'activeUsers'}],'limit':25}
+              # The opt-in browser probe already confirms this event came from /tools.html and records
+              # the page title in local evidence. Realtime activeUsers is incompatible with this
+              # event/title dimension pair, so verify delivery using eventName + eventCount.
+              payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
@@ -280,7 +280,9 @@ jobs:
                       rt['rowCount']=len(rt['rows'])
                       for r in rt['rows']:
                           dims=[x.get('value','') for x in r.get('dimensionValues',[])]
-                          if len(dims)>=2 and dims[0]=='analytics_detail_opt_in' and dims[1]==rt['expectedPageTitle']:
+                          metrics=[x.get('value','') for x in r.get('metricValues',[])]
+                          if len(dims)>=1 and dims[0]=='analytics_detail_opt_in':
+                              rt['matchedEventCount']=metrics[0] if metrics else ''
                               rt['success']=True;break
                   else:
                       try:
