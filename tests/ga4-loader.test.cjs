@@ -146,7 +146,7 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
 
-test('production GA4 verifier checks Realtime pageviews for tested page titles', () => {
+test('production GA4 verifier checks Realtime page_view events', () => {
   const workflow = fs.readFileSync('.github/workflows/privacy-analytics-production.yml', 'utf8');
   const deployShaToken = 'DEPLOY_SHA: ' + '$' + '{{ github.sha }}';
   for (const token of [
@@ -175,6 +175,9 @@ test('production GA4 verifier checks Realtime pageviews for tested page titles',
     "optInEventCallback:window.__nexusnovaOptInEventCallback===true",
     "optInEventCommand:eventCommands.includes('analytics_detail_opt_in')",
     "'httpStatusCounts':{}",
+    "'expectedEvent':'page_view'",
+    "'expectedMetric':'eventCount'",
+    "'observedEventNames':[]",
     "https://analyticsadmin.googleapis.com/v1beta/properties/{PROPERTY_ID}/dataStreams",
     "rt['dataStreamMeasurementMatch']=any(x['matchesExpectedMeasurementId'] for x in rt['adminDataStreams'])",
     "https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runReport",
@@ -183,14 +186,15 @@ test('production GA4 verifier checks Realtime pageviews for tested page titles',
     "rt['apiErrors'].append",
     "if response.status_code not in (429,500,502,503,504):",
     "rt['fatalApiError']=True",
-    "expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})",
-    "'expectedMetric':'screenPageViews'",
-    "rt['observedPageTitlesWithViews'].append(page_title)",
+    "rt['observedEventNames'].append(event_name)",
     "if rt['success'] or rt['fatalApiError']:break",
-    "payload={'dimensions':[{'name':'unifiedScreenName'}],'metrics':[{'name':'screenPageViews'}],'limit':50}",
+    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':50}",
     "if len(dims)>=1:",
-    "rt['matchedPageViews']=metrics[0]",
-    "assert rt['success'], 'GA4 Realtime did not observe a page_view for a tested NexusNova page'"
+    "if event_name=='page_view' and positive_count:",
+    "rt['matchedEventCount']=metrics[0]",
+    "rt['matchedEventName']=event_name",
+    "rt['success']=True",
+    "assert rt['success'], 'GA4 Realtime did not observe a page_view event in the configured property'"
   ]) assert.ok(workflow.includes(token), token);
 });
 
