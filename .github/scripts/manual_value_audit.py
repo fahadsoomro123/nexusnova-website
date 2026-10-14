@@ -54,6 +54,35 @@ def main_fragment(text: str) -> str:
     m = re.search(r'<main\b[^>]*>(.*?)</main>', text, re.I | re.S)
     return m.group(1) if m else text
 
+def duplicate_section_blocks(fragment: str) -> list[dict]:
+    """Find substantial, exact duplicate visible sections inside one page.
+
+    This is a redundancy detector, not a minimum-word-count rule. Hidden responsive
+    copies are ignored, and only sections with at least 80 words are compared to
+    keep ordinary short UI fragments from becoming false positives.
+    """
+    seen: dict[str, tuple[int, int]] = {}
+    duplicates: list[dict] = []
+    pattern = re.compile(r'<section\b(?P<attrs>[^>]*)>(?P<body>.*?)</section\s*>', re.I | re.S)
+    for index, match in enumerate(pattern.finditer(fragment), start=1):
+        attrs = match.group('attrs') or ''
+        if re.search(r'\bhidden\b|aria-hidden\s*=\s*["\']true|display\s*:\s*none|(?:^|["\' ])(?:hidden|d-none|is-hidden|u-hidden)(?:["\' ])', attrs, re.I):
+            continue
+        plain = clean_fragment(match.group('body'))
+        count = len(words(plain))
+        if count < 80:
+            continue
+        normalized = re.sub(r'[^a-z0-9]+', ' ', plain.lower()).strip()
+        if not normalized:
+            continue
+        if normalized in seen:
+            first_index, first_count = seen[normalized]
+            duplicates.append({'first_section': first_index, 'duplicate_section': index, 'word_count': min(first_count, count)})
+        else:
+            seen[normalized] = (index, count)
+    return duplicates
+
+
 
 def clean_fragment(fragment: str) -> str:
     fragment = re.sub(r'<!--.*?-->', ' ', fragment, flags=re.S)
@@ -230,6 +259,7 @@ def main() -> None:
             'canonical': canonical(source),
             'plain': plain,
             'shingles': shingles(plain),
+            'duplicate_sections': duplicate_section_blocks(frag),
         }
         pages[path] = entry
         title_seen[title.strip().lower()].append(path)
@@ -240,6 +270,18 @@ def main() -> None:
                 repeated[normalized].append(path)
 
     findings: list[dict] = []
+    for path, page in pages.items():
+        for duplicate in page.get('duplicate_sections', []):
+            findings.append({
+                'severity': 'high',
+                'type': 'duplicate_section_content',
+                'path': path,
+                'detail': (
+                    f"Sections {duplicate['first_section']} and {duplicate['duplicate_section']} "
+                    f"repeat the same visible {duplicate['word_count']}-word content block"
+                ),
+            })
+
     for path, page in pages.items():
         kind = page['kind']
         wc = page['words']

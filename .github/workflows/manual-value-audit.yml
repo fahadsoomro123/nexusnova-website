@@ -1,6 +1,13 @@
 name: NexusNova Strict Manual Value Audit
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/scripts/manual_value_audit.py'
+      - '.github/workflows/manual-value-audit.yml'
+      - '**.html'
+      - 'sitemap*.xml'
   push:
     branches: [main]
     paths:
@@ -57,7 +64,8 @@ jobs:
           summary=data.get('summary',{})
           blockers=int(summary.get('blockers',0) or 0)
           high=int(summary.get('high',0) or 0)
-          print(f"Manual value gate: {summary.get('status')} — {blockers} blocker(s), {high} high finding(s), {summary.get('warnings',0)} warning(s)")
-          if blockers or high:
+          warnings=int(summary.get('warnings',0) or 0)
+          print(f"Manual value gate: {summary.get('status')} — {blockers} blocker(s), {high} high finding(s), {warnings} warning(s)")
+          if blockers or high or warnings:
               raise SystemExit('Manual value audit requires remediation before AdSense resubmission.')
           PY
