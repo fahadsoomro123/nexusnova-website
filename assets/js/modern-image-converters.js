@@ -61,11 +61,10 @@ function heicToJpg(){
     try{
       if(!files.length)throw new Error('Choose at least one HEIC or HEIF photo first.');
       if(files.length>maxFiles)throw new Error(`Choose no more than ${maxFiles} photos per batch to protect device memory.`);
-      if(files.some(file=>!(/\\.(heic|heif)$/i.test(file.name)||/image\\/(heic|heif)/i.test(file.type))))throw new Error('Every selected file must be a HEIC or HEIF photo.');
+      if(files.some(file=>!(/\.(heic|heif)$/i.test(file.name)||/image\/(heic|heif)/i.test(file.type))))throw new Error('Every selected file must be a HEIC or HEIF photo.');
       const totalBytes=files.reduce((sum,file)=>sum+file.size,0);
       if(totalBytes>maxTotalBytes)throw new Error('The selected photos exceed the 100 MB combined batch limit. Choose a smaller batch.');
       button.disabled=true;
-      const originalLabel=button.textContent;
       button.textContent='PREPARING…';
       out('Loading the HEIC decoder…');
       await loadScript(decoderUrl,'heic2any');
