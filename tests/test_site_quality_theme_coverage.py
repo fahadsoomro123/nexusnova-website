@@ -61,6 +61,24 @@ class HomepageCriticalPathRegressionTests(unittest.TestCase):
         self.assertIn("window.setTimeout(startV20,700)", script)
 
 
+class HomepageConsentCriticalPathRegressionTests(unittest.TestCase):
+    """Keep the visible privacy banner from being injected after a delayed shell load."""
+
+    def test_homepage_mounts_consent_before_the_shared_shell(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        consent = html.index('assets/js/home-consent-ui.js?v=20261015-lcp')
+        shared = html.index('assets/js/main.js?v=20261015-cookie-consent-v1')
+        self.assertLess(consent, shared)
+
+    def test_early_banner_preserves_the_current_choice_contract(self):
+        script = (ROOT / "assets" / "js" / "home-consent-ui.js").read_text(encoding="utf-8")
+        for value in ("Accept all", "Basic only", "Reject optional", "Privacy choices"):
+            self.assertIn(value, script)
+        self.assertIn("nexusnova_analytics_consent_v2", script)
+        self.assertIn("ad_personalization:'denied'", script)
+        self.assertIn("window.__nexusnovaConsentUiReady=true", script)
+
+
 class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
     """Guard the published 2027 COLA rate and discovery copy against stale claims."""
 
