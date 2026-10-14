@@ -1,10 +1,17 @@
 (()=>{
   'use strict';
   const CONSENT_ID='nexusnova-analytics-consent';
-  const CONSENT_KEY='nexusnova_analytics_consent_v1';
+  const CONSENT_KEY='nexusnova_analytics_consent_v2';
+  const LEGACY_CONSENT_KEY='nexusnova_analytics_consent_v1';
   const REOPEN_SELECTOR='[data-nexusnova-privacy-settings-link]';
 
-  const readChoice=()=>{try{return localStorage.getItem(CONSENT_KEY)||''}catch(_){return ''}};
+  const readChoice=()=>{try{
+    const current=localStorage.getItem(CONSENT_KEY)||'';
+    if(current)return current;
+    const legacy=localStorage.getItem(LEGACY_CONSENT_KEY)||'';
+    if(legacy==='granted'){localStorage.setItem(CONSENT_KEY,'granted');return 'granted'}
+    return '';
+  }catch(_){return ''}};
 
   const boot=()=>{
     const banner=document.getElementById(CONSENT_ID);
