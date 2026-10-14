@@ -15,12 +15,12 @@ const search = new SearchCore({ maxResults: 100 });
 
 test('search index count constants match the actual dataset', () => {
   assert.deepEqual({ ...search.getCounts() }, {
-    tool: 95,
+    tool: 93,
     category: 9,
     article: 34,
     guide: 9
   });
-  assert.equal(search.size, 147);
+  assert.equal(search.size, 145);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
 });

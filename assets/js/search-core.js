@@ -95,9 +95,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Gold Rates", url:"gold-rates.html", type:"tool", category:"Live Information", tags:["gold rates","live information","gold","rates","tool","utility"] },
   { title:"Fuel Rates", url:"fuel-rates.html", type:"tool", category:"Live Information", tags:["fuel rates","live information","fuel","rates","tool","utility"] },
   { title:"Pakistan Weather", url:"weather-live.html", type:"tool", category:"Live Information", tags:["pakistan weather","weather live","live information","pakistan","weather","tool","utility"] },
-  { title:"Air Quality", url:"aqi-live.html", type:"tool", category:"Live Information", tags:["air quality","aqi live","live information","air","quality","tool","utility"] },
   { title:"Recent Earthquakes", url:"earthquakes-live.html", type:"tool", category:"Live Information", tags:["recent earthquakes","earthquakes live","live information","recent","earthquakes","tool","utility"] },
-  { title:"Crypto Market", url:"crypto-live.html", type:"tool", category:"Live Information", tags:["crypto market","crypto live","live information","crypto","market","tool","utility"] },
   { title:"Live Alerts", url:"live-alerts.html", type:"tool", category:"Live Information", tags:["live alerts","live information","live","alerts","tool","utility"] },
   { title:"Live Sports", url:"sports-live.html", type:"tool", category:"Live Information", tags:["live sports","sports live","live information","live","sports","tool","utility"] },
   { title:"NexusNova Pulse", url:"pulse.html", type:"tool", category:"Live Information", tags:["nexusnova pulse","pulse","live information","tool","utility"] },
@@ -157,7 +155,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:95,
+  tool:93,
   category:9,
   article:34,
   guide:9
@@ -701,13 +699,13 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:95,
+  tool:93,
   category:9,
   article:34,
   guide:9
 });
 
-NexusNovaSearchCore.DATASET_SIZE=147;
+NexusNovaSearchCore.DATASET_SIZE=145;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;

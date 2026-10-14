@@ -21,6 +21,9 @@ test('main sitemap contains only unique HTTPS canonical URLs and the previously 
   assert.ok(urls.length >= 120);
   assert.equal(new Set(urls).size, urls.length);
   assert.ok(urls.every(url => url.startsWith('https://nexusnovatools.com/')));
+  assert.ok(!urls.includes('https://nexusnovatools.com/aqi-live.html'));
+  assert.ok(!urls.includes('https://nexusnovatools.com/crypto-live.html'));
+  assert.ok(urls.includes('https://nexusnovatools.com/social-security-cola-calculator-2027.html'));
   for (const url of [
     'https://nexusnovatools.com/articles/youtube-thumbnail-size-guide-2026.html',
     'https://nexusnovatools.com/articles/typing-speed-wpm-accuracy-guide.html',
