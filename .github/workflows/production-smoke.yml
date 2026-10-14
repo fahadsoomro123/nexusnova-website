@@ -16,33 +16,57 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
-      - name: Wait for deployed homepage marker
+      - name: Wait for the matching Pages deployment and content marker
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           base='https://nexusnovatools.com'
           expected_title='NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides'
-          ready=0
+          pages_ready=0
+          for attempt in $(seq 1 24); do
+            run_state="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100" | python3 -c 'import json,os,sys; d=json.load(sys.stdin); r=[x for x in d.get("workflow_runs",[]) if x.get("name","").strip().lower()=="pages build and deployment" and x.get("head_sha")==os.environ["GITHUB_SHA"]]; print("missing" if not r else ("success" if r[0].get("status")=="completed" and r[0].get("conclusion")=="success" else ("failed" if r[0].get("status")=="completed" else "pending")))')"
+            echo "Matching Pages deployment state: $run_state (attempt $attempt/24)."
+            if [ "$run_state" = 'success' ]; then
+              pages_ready=1
+              break
+            fi
+            if [ "$run_state" = 'failed' ]; then
+              echo "PRODUCTION FAIL: the GitHub Pages deployment for this exact commit failed." >&2
+              exit 1
+            fi
+            if [ "$attempt" -lt 24 ]; then sleep 5; fi
+          done
+          if [ "$pages_ready" -ne 1 ]; then
+            echo "PRODUCTION FAIL: no successful Pages deployment was reported for commit $GITHUB_SHA within the bounded wait." >&2
+            exit 1
+          fi
+
+          content_ready=0
           for attempt in $(seq 1 20); do
             home="$(curl -fsSL --connect-timeout 2 --max-time 4 -H 'Cache-Control: no-cache' "$base/?smoke=$GITHUB_SHA-$attempt" || true)"
-            if grep -Fq -- "$expected_title" <<<"$home" && grep -Fq -- 'document-workbench.html' <<<"$home"; then
-              echo "DEPLOYMENT READY: current homepage markers appeared on attempt $attempt."
-              ready=1
+            resizer="$(curl -fsSL --connect-timeout 2 --max-time 4 -H 'Cache-Control: no-cache' "$base/image-resizer.html?smoke=$GITHUB_SHA-$attempt" || true)"
+            if grep -Fq -- "$expected_title" <<<"$home" && grep -Fq -- 'document-workbench.html' <<<"$home" && grep -Fq -- 'data-flagship-depth' <<<"$resizer"; then
+              echo "DEPLOYMENT READY: homepage and Image Resizer markers verified after successful Pages deployment."
+              content_ready=1
               break
             fi
             actual_title="$(grep -o '<title>[^<]*</title>' <<<"$home" | head -1 || true)"
             if [ -z "$actual_title" ]; then actual_title='no title/HTTP body'; fi
-            echo "Waiting for homepage deployment marker (attempt $attempt/20); observed $actual_title."
+            if grep -Fq -- 'data-flagship-depth' <<<"$resizer"; then resizer_marker='present'; else resizer_marker='missing'; fi
+            echo "Waiting for public content propagation (attempt $attempt/20); homepage=$actual_title; image-resizer marker=$resizer_marker."
             if [ "$attempt" -lt 20 ]; then sleep 3; fi
           done
-          if [ "$ready" -ne 1 ]; then
-            echo "PRODUCTION FAIL: homepage did not expose the expected 92-tool + Document Workbench markers within the bounded deployment wait." >&2
+          if [ "$content_ready" -ne 1 ]; then
+            echo "PRODUCTION FAIL: Pages succeeded, but the expected homepage/Image Resizer markers did not appear at the public domain." >&2
             exit 1
           fi
 
