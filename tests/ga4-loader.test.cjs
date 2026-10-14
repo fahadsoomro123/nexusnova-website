@@ -66,8 +66,6 @@ test('automatic GA4 configuration cannot initialize twice on the same page', () 
   assert.ok(!text.includes('analyticsLoaded=false'));
 });
 
-
-
 test('GA4 external loader only runs on the owned production hostname', () => {
   const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
   const productionHostGuard = "const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);";
@@ -138,6 +136,8 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
+    "('/', 'assets/js/main.js?v=20261014-dynamic-link-hydration-v1')",
+    "GA4_QA_VERSION: '20261014-dynamic-link-hydration-v1'",
     "('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
     "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
     "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
