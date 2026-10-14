@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import unittest
+from urllib.parse import parse_qs, urlsplit
 from unittest.mock import patch
 
 from PIL import Image, ImageChops
@@ -9,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".github" / "scripts"))
 
 import premium_social_resilient as resilient  # noqa: E402
+import publish_premium_social as publisher  # noqa: E402
+import premium_telegram_publish as telegram  # noqa: E402
 
 
 class PremiumSocialFallbackTests(unittest.TestCase):
@@ -43,6 +46,46 @@ class PremiumSocialFallbackTests(unittest.TestCase):
         self.assertIn('visual_label = "NATIVE VISUAL" if image_provider == "emergency-branded" else "AI VISUAL"', campaign)
         self.assertIn("'emergency-branded'", workflow)
         self.assertIn("topic-matched native creative required", workflow)
+
+
+class PremiumSocialTrafficLinkTests(unittest.TestCase):
+    def test_all_scheduled_slots_are_link_enabled(self):
+        # Slot 2/4 previously omitted tracked URLs, turning successful publishing into
+        # follower-only activity instead of website referral traffic.
+        self.assertEqual(publisher.NATIVE_GROWTH_SLOTS, set())
+        self.assertEqual(telegram.NATIVE_GROWTH_SLOTS, set())
+
+    def test_tracked_urls_keep_campaign_and_slot_utm_across_platforms(self):
+        item = {
+            "url": "https://nexusnovatools.com/guides/unit-conversion.html",
+            "campaign": "premium_social_20261014_s4_unit-conversion-made-practic",
+            "utm_content": "premium_s4",
+        }
+        expected_campaign = item["campaign"]
+        for source in ("x", "facebook", "instagram"):
+            tracked = publisher.tracked_url(item, source)
+            query = parse_qs(urlsplit(tracked).query)
+            self.assertEqual(query["utm_source"], [source])
+            self.assertEqual(query["utm_medium"], ["social"])
+            self.assertEqual(query["utm_campaign"], [expected_campaign])
+            self.assertEqual(query["utm_content"], ["premium_s4"])
+
+        message, tracked = telegram.build_message(
+            {
+                **item,
+                "slot": 4,
+                "platform_copy": {"telegram": "Use the unit conversion guide and verify the formula."},
+                "hashtags": ["UnitConversion"],
+            },
+            recovery_only=False,
+        )
+        query = parse_qs(urlsplit(tracked).query)
+        self.assertIn(tracked, message)
+        self.assertEqual(query["utm_source"], ["telegram"])
+        self.assertEqual(query["utm_medium"], ["social"])
+        self.assertEqual(query["utm_campaign"], [expected_campaign])
+        self.assertEqual(query["utm_content"], ["premium_s4"])
+
 
 if __name__ == "__main__":
     unittest.main()
