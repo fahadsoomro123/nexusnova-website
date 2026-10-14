@@ -1,0 +1,71 @@
+name: GA4 Contract Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/ga4-contract-tests.yml'
+      - '.github/workflows/privacy-analytics-production.yml'
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'assets/js/tool-analytics.js'
+      - 'index.html'
+      - 'tools.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'whatsapp-link-generator.html'
+      - 'tests/ga4-loader.test.cjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ga4-contract-tests.yml'
+      - '.github/workflows/privacy-analytics-production.yml'
+      - 'assets/js/main.js'
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'assets/js/tool-analytics.js'
+      - 'index.html'
+      - 'tools.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'whatsapp-link-generator.html'
+      - 'tests/ga4-loader.test.cjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ga4-contract-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Run GA4 source contract tests
+        run: node --test tests/ga4-loader.test.cjs
+
+      - name: Parse the embedded production GA4 probe
+        run: |
+          python - <<'PY'
+          import ast
+          import re
+          import textwrap
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/privacy-analytics-production.yml').read_text(encoding='utf-8')
+          pattern = re.compile(
+              r"cat > /tmp/ga4_production_probe\.py <<'PY'\n(.*?)\n[ \t]+PY\n[ \t]+python /tmp/ga4_production_probe\.py",
+              re.DOTALL,
+          )
+          match = pattern.search(workflow)
+          if not match:
+              raise SystemExit('Embedded GA4 production probe heredoc was not found')
+          probe = textwrap.dedent(match.group(1))
+          ast.parse(probe, filename='ga4_production_probe.py')
+          print('Embedded GA4 production probe Python syntax is valid.')
+          PY
