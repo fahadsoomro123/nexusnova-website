@@ -15,6 +15,13 @@ AUDIT = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(AUDIT)
 
+VALUE_SPEC = importlib.util.spec_from_file_location(
+    "manual_value_audit", ROOT / ".github" / "scripts" / "manual_value_audit.py"
+)
+VALUE_AUDIT = importlib.util.module_from_spec(VALUE_SPEC)
+assert VALUE_SPEC.loader is not None
+VALUE_SPEC.loader.exec_module(VALUE_AUDIT)
+
 
 class ThemeCoverageRegressionTests(unittest.TestCase):
     def test_shared_site_stylesheet_is_recognized_from_root_page(self):
@@ -67,6 +74,26 @@ class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
         )
         self.assertEqual(article["title"], "2027 Social Security COLA: Official Status and Illustrative Scenarios")
         self.assertIn("had not yet listed an official 2027 percentage", article["description"])
+
+
+class MetaDescriptionParserRegressionTests(unittest.TestCase):
+    """Guard quoted HTML attributes against premature apostrophe truncation."""
+
+    def test_apostrophe_inside_double_quoted_description_is_preserved(self):
+        html = """<meta name="description" content="SSA's public summary includes the annual rate and a detailed explanation.">"""
+        self.assertEqual(
+            VALUE_AUDIT.meta_description(html),
+            "SSA's public summary includes the annual rate and a detailed explanation.",
+        )
+
+    def test_description_attribute_order_is_not_significant(self):
+        html = '<meta content="A distinct description with adequate search context." name="description">'
+        self.assertEqual(
+            VALUE_AUDIT.meta_description(html),
+            "A distinct description with adequate search context.",
+        )
+
+
 
 
 if __name__ == "__main__":
