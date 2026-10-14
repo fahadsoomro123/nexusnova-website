@@ -43,7 +43,7 @@ class LiveAuditCacheBustTests(unittest.TestCase):
         audit_step = workflow.index("name: Run repository + live reviewer audit")
         self.assertLess(wait_step, audit_step, "Live audit must wait for Pages deployment before fetching production pages")
         self.assertIn("fetch-depth: 2", workflow)
-        self.assertIn("git diff --name-only HEAD^ HEAD", workflow)
+        self.assertIn("'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--'", workflow)
         self.assertIn("hashlib.sha256(Path(path).read_bytes()).hexdigest()", workflow)
         self.assertIn("hashlib.sha256(body).hexdigest()", workflow)
         self.assertIn("for attempt in range(1, 41)", workflow)
