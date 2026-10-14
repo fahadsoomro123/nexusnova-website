@@ -19,7 +19,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"WebP to JPG", url:"webp-to-jpg.html", type:"tool", category:"Images", tags:["webp to jpg","images","webp","jpg","tool","utility"] },
   { title:"WebP to PNG", url:"webp-to-png.html", type:"tool", category:"Images", tags:["webp to png","images","webp","png","tool","utility"] },
   { title:"YouTube Thumbnail Downloader", url:"youtube-thumbnail-downloader.html", type:"tool", category:"Images", tags:["youtube thumbnail downloader","images","youtube","thumbnail","downloader","tool","utility"] },
-  { title:"JPG to PDF", url:"jpg-to-pdf.html", type:"tool", category:"PDF & Documents", tags:["jpg to pdf","pdf & documents","jpg","pdf","tool","utility"] },
+  { title:"JPG to PDF", url:"jpg-to-pdf.html", type:"tool", category:"PDF & Documents", tags:["jpg to pdf","jpg to pdf converter","images to pdf","convert jpg to pdf","photo to pdf","multiple images to pdf","A4 PDF","US Letter PDF","PDF & documents","jpg","pdf","tool","utility"] },
   { title:"PDF Document Workbench", url:"document-workbench.html", type:"tool", category:"PDF & Documents", tags:["pdf document workbench","pdf & documents","merge pdf","merge PDFs","split pdf","extract pages","page ranges","combine PDFs","document workflow","local processing","tool","utility"] },
   { title:"Text to PDF", url:"text-to-pdf.html", type:"tool", category:"PDF & Documents", tags:["text to pdf","pdf & documents","text","pdf","tool","utility"] },
   { title:"AI Token Calculator", url:"ai-token-calculator.html", type:"tool", category:"Calculators", tags:["ai token calculator","calculators","token","calculator","tool","utility"] },
