@@ -100,7 +100,7 @@ test('homepage inline consent defaults deny analytics unless a saved explicit op
 test('previously uninstrumented public hubs load the standalone analytics and choice UI', () => {
   for (const path of ['tools.html', 'categories.html', 'guides.html', 'whatsapp-link-generator.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.ok(html.includes('assets/js/analytics.js?v=20261013-anonymous-consent-v1'), path + ' loader');
+    assert.ok(html.includes('assets/js/analytics.js?v=20261014-explicit-opt-in-v1'), path + ' loader');
   }
 });
 
@@ -111,7 +111,7 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
     "const consentKey='nexusnova_analytics_consent_v1';",
     "analytics_storage:readChoice()==='granted'?'granted':'denied'",
     "window.gtag('consent','update',{",
-    "window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})",
+    "window.__nexusnovaOptInEventRequested=true;",
     'if(window.__nexusnovaGa4BootstrapReady)return;',
     'window.__nexusnovaGa4BootstrapReady=true;',
     "const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);",
@@ -138,11 +138,14 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     deployShaToken,
     "('/', 'assets/js/main.js?v=20261014-dynamic-link-hydration-v1')",
     "GA4_QA_VERSION: '20261014-dynamic-link-hydration-v1'",
-    "('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "parse_qs(request_record['post_data'])",
+    "('/tools.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
+    "def add_collect_events(q,method,source):",
+    "body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]",
+    "event_callback:()=>{window.__nexusnovaOptInEventCallback=true}",
+    "optInEventCommand:eventCommands.includes('analytics_detail_opt_in')",
     "'httpStatusCounts':{}",
     "rt['apiErrors'].append",
     "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}",
