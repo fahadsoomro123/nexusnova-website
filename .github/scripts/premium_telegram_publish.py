@@ -19,6 +19,8 @@ PUBLISHED = ROOT / "assets/data/premium-social-published.json"
 HISTORY = ROOT / "assets/data/premium-social-history.json"
 PKT = timezone(timedelta(hours=5))
 EXPECTED_PLATFORMS = {"x", "facebook", "instagram", "telegram"}
+# Every scheduled slot should carry a tracked destination while website traffic is the goal.
+NATIVE_GROWTH_SLOTS: set[int] = set()
 
 
 def parse_dt(value: str) -> datetime | None:
@@ -28,7 +30,7 @@ def parse_dt(value: str) -> datetime | None:
         return None
 
 
-def tracked_url(raw_url: str, campaign: str) -> str:
+def tracked_url(raw_url: str, campaign: str, content: str = "premium") -> str:
     raw_url = str(raw_url or "").strip()
     if not raw_url:
         return ""
@@ -39,7 +41,7 @@ def tracked_url(raw_url: str, campaign: str) -> str:
             "utm_source": "telegram",
             "utm_medium": "social",
             "utm_campaign": campaign or "premium_social",
-            "utm_content": "premium",
+            "utm_content": content or "premium",
         }
     )
     return urllib.parse.urlunsplit(
@@ -111,8 +113,8 @@ def build_message(item: dict, recovery_only: bool) -> tuple[str, str]:
     tags = " ".join(f"#{tag}" for tag in hashtags)
 
     campaign = str(item.get("campaign") or f"premium_social_slot_{slot}").strip()
-    url = tracked_url(str(item.get("url") or ""), campaign)
-    native_growth = slot in {2, 4}
+    url = tracked_url(str(item.get("url") or ""), campaign, str(item.get("utm_content") or "premium"))
+    native_growth = slot in NATIVE_GROWTH_SLOTS
     parts = [body]
     if not native_growth and url:
         parts.append(url)
@@ -175,6 +177,8 @@ def main() -> None:
     existing = today_slot_row(rows, slot)
 
     attempted = False
+    tracked_destination = ""
+    message = ""
     ok = False
     configured = bool(os.getenv("TELEGRAM_BOT_TOKEN", "").strip() and os.getenv("TELEGRAM_CHANNEL_ID", "").strip())
     detail = ""
@@ -194,7 +198,7 @@ def main() -> None:
             token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
             chat_id = os.getenv("TELEGRAM_CHANNEL_ID", "").strip()
             campaign = str(item.get("campaign") or f"premium_social_slot_{slot}").strip()
-            message, _ = build_message(item, recovery_only)
+            message, tracked_destination = build_message(item, recovery_only)
             image_url = f"https://nexusnovatools.com/assets/generated/premium-social-slot-{slot}.jpg"
             try:
                 if not base.wait_for_public_image(image_url, attempts=12, delay=5):
@@ -224,6 +228,9 @@ def main() -> None:
         "attempted": attempted,
         "ok": ok,
         "message_id": message_id,
+        "destination_url": str(item.get("url") or "") if isinstance(item, dict) else "",
+        "tracked_url": tracked_destination,
+        "tracked_link_in_attempted_message": bool(attempted and tracked_destination and tracked_destination in message),
         "detail": detail,
     }
     REPORT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
