@@ -181,10 +181,15 @@ test('production GA4 verifier checks Realtime pageviews for tested page titles',
     "'startDate':'7daysAgo','endDate':'today'",
     "rt['historicalReport']['matchedEventCount']=metrics[0] if metrics else ''",
     "rt['apiErrors'].append",
+    "if response.status_code not in (429,500,502,503,504):",
+    "rt['fatalApiError']=True",
     "expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})",
-    "payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'eventCount'}],'limit':50}",
-    "if len(dims)>=2 and dims[0]=='page_view':",
-    "rt['optionalDetailedOptInObserved']=True",
+    "'expectedMetric':'screenPageViews'",
+    "rt['observedPageTitlesWithViews'].append(page_title)",
+    "if rt['success'] or rt['fatalApiError']:break",
+    "payload={'dimensions':[{'name':'unifiedScreenName'}],'metrics':[{'name':'screenPageViews'}],'limit':50}",
+    "if len(dims)>=1:",
+    "rt['matchedPageViews']=metrics[0]",
     "assert rt['success'], 'GA4 Realtime did not observe a page_view for a tested NexusNova page'"
   ]) assert.ok(workflow.includes(token), token);
 });

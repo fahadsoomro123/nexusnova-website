@@ -316,7 +316,7 @@ jobs:
               browser.close()
 
           expected_page_titles=sorted({row['page']['title'] for row in results if row.get('page',{}).get('title')} | {optin_info['title']})
-          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'page_view','expectedPageTitle':optin_info['title'],'expectedPageTitles':expected_page_titles,'observedPageViewTitles':[],'optionalDetailedOptInObserved':False,'httpStatusCounts':{},'apiErrors':[],'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
+          rt={'attempts':0,'success':False,'propertyIdPresent':bool(PROPERTY_ID),'serviceAccountPresent':bool(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')),'expectedEvent':'page_view','expectedMetric':'screenPageViews','expectedPageTitle':optin_info['title'],'expectedPageTitles':expected_page_titles,'observedPageTitlesWithViews':[],'httpStatusCounts':{},'apiErrors':[],'fatalApiError':False,'adminDataStreams':[],'adminDataStreamsHttpStatus':None,'adminDataStreamsError':'','historicalReport':{'attempted':False,'httpStatus':None,'rowCount':0,'eventNames':[],'matchedEventCount':None,'apiError':''}}
           if PROPERTY_ID and os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'):
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
@@ -343,10 +343,10 @@ jobs:
                   rt['adminDataStreamsError']=f'{type(exc).__name__}: {str(exc)[:400]}'
               rt['dataStreamMeasurementMatch']=any(x['matchesExpectedMeasurementId'] for x in rt['adminDataStreams'])
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              # The browser probes capture the collection requests directly. For the main gate,
-              # require Realtime to show a page_view for a title visited by this production probe.
-              # Detailed opt-in Realtime visibility remains diagnostic, not a substitute for pageviews.
-              payload={'dimensions':[{'name':'eventName'},{'name':'unifiedScreenName'}],'metrics':[{'name':'eventCount'}],'limit':50}
+              # GA4 Realtime rejects eventName + unifiedScreenName paired with eventCount.
+              # The supported unifiedScreenName + screenPageViews pair verifies views for titles
+              # visited by the browser probe; browser network evidence separately checks page_view.
+              payload={'dimensions':[{'name':'unifiedScreenName'}],'metrics':[{'name':'screenPageViews'}],'limit':50}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
@@ -370,15 +370,14 @@ jobs:
                           if metrics:
                               try: positive_count=float(metrics[0])>0
                               except (TypeError,ValueError): positive_count=False
-                          if len(dims)>=2 and dims[0]=='page_view':
-                              rt['observedPageViewTitles'].append(dims[1])
-                              if dims[1] in rt['expectedPageTitles'] and positive_count:
-                                  rt['matchedEventCount']=metrics[0]
-                                  rt['matchedPageTitle']=dims[1]
+                          if len(dims)>=1:
+                              page_title=dims[0]
+                              rt['observedPageTitlesWithViews'].append(page_title)
+                              if page_title in rt['expectedPageTitles'] and positive_count:
+                                  rt['matchedPageViews']=metrics[0]
+                                  rt['matchedPageTitle']=page_title
                                   rt['success']=True
-                          elif len(dims)>=2 and dims[0]=='analytics_detail_opt_in' and dims[1]==rt['expectedPageTitle'] and positive_count:
-                              rt['optionalDetailedOptInObserved']=True
-                      rt['observedPageViewTitles']=sorted(set(rt['observedPageViewTitles']))
+                      rt['observedPageTitlesWithViews']=sorted(set(rt['observedPageTitlesWithViews']))
                   else:
                       try:
                           error_data=response.json().get('error',{})
@@ -386,7 +385,9 @@ jobs:
                       except ValueError:
                           message='GA4 Data API returned a non-JSON error response'
                       rt['apiErrors'].append({'httpStatus':response.status_code,'message':message[:600]})
-                  if rt['success']:break
+                      if response.status_code not in (429,500,502,503,504):
+                          rt['fatalApiError']=True
+                  if rt['success'] or rt['fatalApiError']:break
                   time.sleep(10)
               if not rt.get('rows'):rt['rows']=[]
 
