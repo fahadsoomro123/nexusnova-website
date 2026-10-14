@@ -41,6 +41,12 @@ jobs:
             ocr="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/image-to-text-ocr.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             invoice="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/invoice-maker.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             jpgpdf="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/jpg-to-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            directory="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/tools.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            workbench="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/document-workbench.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            pdfhub="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/pdf-tools.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            merge="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/merge-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            split="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/split-pdf.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
+            sitemap="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/sitemap.xml?smoke=${GITHUB_SHA}-${attempt}" || true)"
             aiprompt="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/ai-prompt-builder.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             sens="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/gaming-sensitivity-converter.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
             typing="$(curl -fsSL --connect-timeout 10 --max-time 20 -H 'Cache-Control: no-cache' "$base/typing-speed-test.html?smoke=${GITHUB_SHA}-${attempt}" || true)"
@@ -57,9 +63,28 @@ jobs:
             check_absent() { ! grep -Fq -- "$2" <<<"$1"; }
 
             check_contains "$home" '<link rel="canonical" href="https://nexusnovatools.com/">' || ok=0
-            check_contains "$home" 'NexusNova HumanProof' || ok=0
-            check_contains "$home" 'id="trust"' || ok=0
-            check_contains "$home" 'humanproof.html#live-verification' || ok=0
+            # These markers follow the current main homepage rather than the retired HumanProof hero.
+            check_contains "$home" 'NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides' || ok=0
+            check_contains "$home" 'document-workbench.html' || ok=0
+
+            # Confirm the PDF merge/extract consolidation is actually visible on production.
+            check_contains "$directory" 'id="directory-search-count">92 tools' || ok=0
+            check_contains "$directory" 'document-workbench.html' || ok=0
+            check_absent "$directory" 'href="merge-pdf.html"' || ok=0
+            check_absent "$directory" 'href="split-pdf.html"' || ok=0
+            check_contains "$workbench" '<title>PDF Workbench: Merge &amp; Extract Pages | NexusNova Tools</title>' || ok=0
+            check_contains "$workbench" 'merge.onclick=async' || ok=0
+            check_contains "$workbench" 'extract.onclick=async' || ok=0
+            check_contains "$pdfhub" 'href="document-workbench.html"' || ok=0
+            check_absent "$pdfhub" 'href="merge-pdf.html"' || ok=0
+            check_absent "$pdfhub" 'href="split-pdf.html"' || ok=0
+            check_contains "$merge" '<meta name="robots" content="noindex,follow,max-image-preview:large">' || ok=0
+            check_contains "$split" '<meta name="robots" content="noindex,follow,max-image-preview:large">' || ok=0
+            check_contains "$merge" 'href="document-workbench.html"' || ok=0
+            check_contains "$split" 'href="document-workbench.html"' || ok=0
+            check_contains "$sitemap" 'https://nexusnovatools.com/document-workbench.html' || ok=0
+            check_absent "$sitemap" 'https://nexusnovatools.com/merge-pdf.html' || ok=0
+            check_absent "$sitemap" 'https://nexusnovatools.com/split-pdf.html' || ok=0
 
 
             check_contains "$humanproof" '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' || ok=0
@@ -80,7 +105,7 @@ jobs:
 
             check_contains "$aiprompt" 'Prompt review before you send it' || ok=0
             check_contains "$aiprompt" 'Key Features &amp; Practical Applications' || ok=0
-            check_contains "$aiprompt" 'Frequently Asked Questions' || ok=0
+            check_contains "$aiprompt" 'AI Prompt Builder FAQ' || ok=0
             check_absent "$aiprompt" 'Guide on How to Use the AI Prompt Builder' || ok=0
 
             check_contains "$sens" 'data-flagship-depth' || ok=0
@@ -152,6 +177,11 @@ jobs:
             '/image-to-text-ocr.html'
             '/invoice-maker.html'
             '/jpg-to-pdf.html'
+            '/tools.html'
+            '/document-workbench.html'
+            '/pdf-tools.html'
+            '/merge-pdf.html'
+            '/split-pdf.html'
             '/contrast-checker.html'
             '/text-diff-checker.html'
             '/csv-json-converter.html'
