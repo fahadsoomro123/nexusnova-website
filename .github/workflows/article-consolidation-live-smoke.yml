@@ -103,14 +103,15 @@ jobs:
                   "archive is noindex": bool(re.search(r'<meta\s+name="robots"\s+content="noindex,follow', archive, re.I)),
                   "archive canonical points to maintained page": f'<link rel="canonical" href="{BASE}{PRIMARY}">' in archive,
                   "archive links users to maintained page": f'href="google-releases-chrome-152-for-android.html"' in archive,
-                  "sitemap omits archive and includes primary": ARCHIVE.lstrip("/") not in sitemap and f"{BASE}{PRIMARY}" in sitemap,
+                  "primary timeline remains noindex under current approved quarantine": bool(re.search(r'<meta\s+name="robots"\s+content="noindex,follow', primary, re.I)),
+                  "sitemap omits noindex archive and quarantined primary": ARCHIVE.lstrip("/") not in sitemap and f"{BASE}{PRIMARY}" not in sitemap,
                   "search index omits archive and includes primary": ARCHIVE.lstrip("/") not in search_core and f'url:"{PRIMARY.lstrip("/")}"' in search_core,
               }
               try:
                   feed = json.loads(feed_text)
                   feed_urls = [str(item.get("url", "")) for item in feed.get("items", [])]
-                  required["article feed omits archive and includes maintained page"] = (
-                      f"{BASE}{ARCHIVE}" not in feed_urls and f"{BASE}{PRIMARY}" in feed_urls
+                  required["article feed omits both noindex archive and quarantined primary"] = (
+                      f"{BASE}{ARCHIVE}" not in feed_urls and f"{BASE}{PRIMARY}" not in feed_urls
                   )
               except Exception:
                   required["article feed is valid JSON"] = False

@@ -42,19 +42,30 @@ test('COLA calculator and explainer are discoverable from a natural search query
   assert.ok(urls.has('articles/social-security-cola-2027-estimate.html'));
 });
 
-test('the older Chrome 152 Android article is excluded from indexing and points to the consolidated timeline', () => {
+test('Chrome 152 archive and retained timeline follow the approved NOINDEX quarantine consistently', () => {
   const archivePath = path.join(root, 'articles/chrome-152-for-android-adds-desktop-security-fixes.html');
   const archive = fs.readFileSync(archivePath, 'utf8');
   const hub = fs.readFileSync(path.join(root, 'articles.html'), 'utf8');
   const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  const primaryPath = path.join(root, 'articles/google-releases-chrome-152-for-android.html');
+  const primary = fs.readFileSync(primaryPath, 'utf8');
+  const approvedPolicy = fs.readFileSync(path.join(root, 'ADSENSE-REMEDIATION-REPORT-2026-09-11.md'), 'utf8');
+  const feed = JSON.parse(fs.readFileSync(path.join(root, 'articles.json'), 'utf8'));
   const archiveUrl = 'articles/chrome-152-for-android-adds-desktop-security-fixes.html';
   const primaryUrl = 'articles/google-releases-chrome-152-for-android.html';
+
+  const canonicalPrimaryUrl = 'https://nexusnovatools.com/' + primaryUrl;
 
   assert.match(archive, /<meta name="robots" content="noindex,follow/i);
   assert.ok(archive.includes('href="https://nexusnovatools.com/' + primaryUrl + '"'), 'archive canonical should point to the consolidated page');
   assert.ok(archive.includes('href="google-releases-chrome-152-for-android.html"'), 'archive should link visitors to the maintained page');
   assert.ok(!hub.includes('href="' + archiveUrl + '"'), 'archive should not remain in the indexable article hub');
   assert.ok(!sitemap.includes(archiveUrl), 'noindex archive must not appear in sitemap.xml');
+  assert.ok(primary.includes('<meta name="robots" content="noindex,follow,max-image-preview:large">'), 'retained timeline must remain noindex under the current approved quarantine');
+  assert.ok(approvedPolicy.includes('- `' + primaryUrl + '`'), 'retained timeline must stay listed in the approved NOINDEX plan until explicitly reviewed');
+  assert.ok(!sitemap.includes(canonicalPrimaryUrl), 'approved noindex timeline must not appear in sitemap.xml');
+  assert.equal(feed.items.some(record => record.url === canonicalPrimaryUrl), false, 'articles.json must exclude the approved noindex timeline');
+  assert.ok(hub.includes('href="' + primaryUrl + '"'), 'retained timeline remains available through the visitor-facing hub');
   assert.equal(data.some(record => record.url === archiveUrl), false);
   assert.equal(data.some(record => record.url === primaryUrl), true);
   assert.ok(search.query('Chrome 152 Android release timeline').some(result => result.url === primaryUrl));
