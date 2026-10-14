@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-14T20:21:41.877Z",
+  "generated_at": "2026-10-14T20:30:45.935Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,30 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-14T20:21:38.000Z",
+  "feed_generated_at": "2026-10-14T20:30:38.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 34,
+  "source_count": 35,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "pr71536713",
+      "magnitude": 3.14,
+      "place": "57 km NW of San Antonio, Puerto Rico",
+      "time": "2026-10-14T20:10:09.470Z",
+      "updated": "2026-10-14T20:29:49.540Z",
+      "depth_km": 15.5,
+      "coordinates": {
+        "lat": 18.8555,
+        "lon": -67.4878
+      },
+      "significance": 152,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71536713",
+      "pakistan_region": false
+    },
     {
       "id": "nn00925751",
       "magnitude": 3.04,
