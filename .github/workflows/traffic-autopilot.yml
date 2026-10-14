@@ -265,6 +265,40 @@ jobs:
           echo 'Social creative images and campaign history remain private-run outputs; they are not committed, deployed, indexed or posted.'
           echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
 
+      - name: Detect fresh Social Growth v2 review output
+        id: fresh-social-growth
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f social-growth-publish.json ]; then
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+            echo 'No new Social Growth v2 package was produced; old tracked creatives will be omitted from this run artifact.'
+            echo 'No fresh Social Growth v2 package was produced; tracked legacy images were not packaged.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          for path in assets/data/social-growth-history.json assets/generated/social-growth-feed.jpg assets/generated/social-growth-vertical.jpg; do
+            if [ ! -s "$path" ]; then
+              echo "ERROR: fresh Social Growth v2 package is missing $path" >&2
+              exit 1
+            fi
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('social-growth-publish.json').read_text(encoding='utf-8'))
+          history=json.loads(Path('assets/data/social-growth-history.json').read_text(encoding='utf-8'))
+          campaign=str(payload.get('campaign',''))
+          assert campaign.startswith('social_growth_'), 'package campaign is invalid'
+          assert payload.get('url','').startswith('https://nexusnovatools.com/'), 'package URL must target NexusNova'
+          assert payload.get('instagram_image','').endswith('/assets/generated/social-growth-feed.jpg')
+          assert payload.get('vertical_image','').endswith('/assets/generated/social-growth-vertical.jpg')
+          assert any(row.get('campaign') == campaign for row in history.get('posts', []) if isinstance(row, dict)), 'campaign missing from generated history'
+          print(f'Fresh Social Growth v2 review package verified: {campaign}')
+          PY
+          echo "fresh=true" >> "$GITHUB_OUTPUT"
+          echo 'Fresh Social Growth v2 package verified and will be uploaded separately.'
+
       - name: Publish run summary
         if: always()
         run: |
@@ -300,11 +334,7 @@ jobs:
             search-growth-changes.json
             search-growth-changed-files.txt
             social-growth-metrics.json
-            social-growth-publish.json
             social-growth-report.txt
-            assets/data/social-growth-history.json
-            assets/generated/social-growth-feed.jpg
-            assets/generated/social-growth-vertical.jpg
             social-distribution-report.json
             adsense-readiness.json
             adsense-readiness.txt
@@ -313,4 +343,17 @@ jobs:
             social-publish.json
             autopilot-changed-urls.txt
           if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload fresh Social Growth review artifacts
+        if: always() && steps.fresh-social-growth.outputs.fresh == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-social-growth-review-${{ github.run_id }}
+          path: |
+            social-growth-publish.json
+            assets/data/social-growth-history.json
+            assets/generated/social-growth-feed.jpg
+            assets/generated/social-growth-vertical.jpg
+          if-no-files-found: error
           retention-days: 14
