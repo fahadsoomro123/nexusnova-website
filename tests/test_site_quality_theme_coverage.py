@@ -47,24 +47,25 @@ class ThemeCoverageRegressionTests(unittest.TestCase):
 
 
 class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
-    """Prevent scenario percentages from being re-labelled as an official SSA rate."""
+    """Guard the published 2027 COLA rate and discovery copy against stale claims."""
 
-    def test_calculator_labels_2027_percentages_as_hypothetical_scenarios(self):
+    def test_calculator_uses_official_2027_rate_and_historical_reference(self):
         html = (ROOT / "social-security-cola-calculator-2027.html").read_text(encoding="utf-8")
-        self.assertNotIn("Official 2027 COLA: 3.6%", html)
-        self.assertNotIn("3.6% — official 2027 COLA", html)
-        self.assertIn("3.6% — illustrative 2027 what-if scenario (not official)", html)
-        self.assertIn("2.8% — actual 2026 COLA (historical reference, not the 2027 rate)", html)
+        self.assertIn("Official 2027 COLA: 3.6%, announced by the Social Security Administration on October 14, 2026.", html)
+        self.assertIn("3.6% — official 2027 COLA (SSA announcement, October 14, 2026)", html)
+        self.assertIn("2.8% — actual 2026 COLA (historical reference)", html)
+        self.assertNotIn("not yet listed on the SSA summary", html)
 
-    def test_article_does_not_claim_ssa_determined_3_6_percent(self):
+    def test_article_uses_official_rate_and_primary_sources(self):
         html = (ROOT / "articles" / "social-security-cola-2027-estimate.html").read_text(encoding="utf-8")
-        self.assertNotIn("The official 2027 adjustment is <strong>3.6%</strong>", html)
-        self.assertNotIn("Official 2027 COLA determined by SSA on October 14, 2026", html)
-        self.assertIn("Illustrative what-if scenario; not an official rate", html)
+        self.assertIn("official <strong>3.6% COLA for 2027</strong>", html)
+        self.assertIn("https://www.ssa.gov/news/en/press/releases/2026-10-14.html", html)
+        self.assertIn("https://www.ssa.gov/news/en/cola/factsheets/2027.html", html)
+        self.assertNotIn("had not yet listed an official 2027 percentage", html)
 
-    def test_article_listing_and_machine_feed_use_corrected_title(self):
+    def test_article_listing_and_machine_feed_use_current_title(self):
         listing = (ROOT / "articles.html").read_text(encoding="utf-8")
-        self.assertIn("2027 Social Security COLA: Official Status and Scenarios", listing)
+        self.assertIn("2027 Social Security COLA: Official 3.6% Rate and Payment Timing", listing)
         self.assertNotIn("2027 Social Security COLA Estimate: Latest Forecast", listing)
 
         feed = json.loads((ROOT / "articles.json").read_text(encoding="utf-8"))
@@ -72,8 +73,8 @@ class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
             item for item in feed["items"]
             if item.get("url") == "https://nexusnovatools.com/articles/social-security-cola-2027-estimate.html"
         )
-        self.assertEqual(article["title"], "2027 Social Security COLA: Official Status and Illustrative Scenarios")
-        self.assertIn("had not yet listed an official 2027 percentage", article["description"])
+        self.assertEqual(article["title"], "2027 Social Security COLA: Official 3.6% Rate and Payment Dates")
+        self.assertIn("announced a 3.6% Social Security COLA for 2027 on October 14, 2026", article["description"])
 
 
 class MetaDescriptionParserRegressionTests(unittest.TestCase):
