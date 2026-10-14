@@ -19,6 +19,8 @@
    * - Advertising storage, Google Signals and ad personalization stay denied.
    * Compatibility: the legacy v1 key remains readable; only an explicit detail opt-in is migrated.
    * The old "Keep basic measurement" state is not treated as detailed consent.
+   * "Allow analytics" remains an audit-compatible legacy label; the current choice is "Allow detailed analytics".
+   * "Privacy choices" remains the persistent control for reopening the settings.
    */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
