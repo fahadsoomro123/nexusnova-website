@@ -41,7 +41,8 @@
       banner.querySelector('[data-consent-allow]')?.focus();
     });
 
-    if(!readChoice()){
+    const choice=readChoice();
+    if(!choice||choice==='legacy-basic'){
       banner.hidden=false;
       banner.setAttribute('aria-hidden','false');
     }
