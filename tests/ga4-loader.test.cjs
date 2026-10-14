@@ -185,3 +185,12 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
     "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
   ]) assert.ok(workflow.includes(token), token);
 });
+
+test('live performance workflow fingerprint follows the canonical GA4 loader signature', () => {
+  const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
+  const workflow = fs.readFileSync('.github/workflows/live-performance-100.yml', 'utf8');
+  const expected = 'window.__nexusnovaLoadAnalytics=choice=>{';
+  assert.ok(wrapper.includes(expected), 'canonical GA4 loader signature must exist');
+  assert.ok(workflow.includes('grep -Fq "' + expected + '" assets/js/main.js'), 'live performance fingerprint must match the canonical loader');
+  assert.ok(!workflow.includes('window.__nexusnovaLoadAnalytics=granted=>{'), 'obsolete loader signature must not return');
+});
