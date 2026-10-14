@@ -342,9 +342,9 @@ jobs:
                   rt['adminDataStreamsError']=f'{type(exc).__name__}: {str(exc)[:400]}'
               rt['dataStreamMeasurementMatch']=any(x['matchesExpectedMeasurementId'] for x in rt['adminDataStreams'])
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              # GA4 Realtime rejects eventName + unifiedScreenName paired with eventCount.
-              # The supported unifiedScreenName + screenPageViews pair verifies views for titles
-              # visited by the browser probe; browser network evidence separately checks page_view.
+              # Query the compatible eventName + eventCount pair to verify page_view directly.
+              # The exact page_view event is the basic measurement target.
+              # Browser network evidence separately checks its collection request and HTTP response.
               payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':50}
               deadline=time.time()+150
               while time.time()<deadline:
