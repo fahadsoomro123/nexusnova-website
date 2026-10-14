@@ -62,21 +62,31 @@ class HomepageCriticalPathRegressionTests(unittest.TestCase):
 
 
 class HomepageConsentCriticalPathRegressionTests(unittest.TestCase):
-    """Keep the visible privacy banner from being injected after a delayed shell load."""
+    """Keep the privacy banner visible from the initial HTML, not a late external fetch."""
 
-    def test_homepage_mounts_consent_before_the_shared_shell(self):
+    def test_homepage_renders_consent_markup_before_header_without_external_loader(self):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
-        consent = html.index('assets/js/home-consent-ui.js?v=20261015-lcp')
-        shared = html.index('assets/js/main.js?v=20261015-cookie-consent-v1')
-        self.assertLess(consent, shared)
+        banner = html.index('data-nexusnova-consent')
+        header = html.index('<header class="nn-header"')
+        self.assertLess(banner, header)
+        self.assertIn('<style id="nn-home-consent-critical-css">', html)
+        self.assertIn('<script id="nn-home-consent-critical-init">', html)
+        self.assertNotIn('assets/js/home-consent-ui.js', html)
+        self.assertIn('data-nexusnova-consent-reopen', html)
 
-    def test_early_banner_preserves_the_current_choice_contract(self):
-        script = (ROOT / "assets" / "js" / "home-consent-ui.js").read_text(encoding="utf-8")
+    def test_static_banner_preserves_saved_choices_and_denies_ad_storage(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
         for value in ("Accept all", "Basic only", "Reject optional", "Privacy choices"):
-            self.assertIn(value, script)
-        self.assertIn("nexusnova_analytics_consent_v2", script)
-        self.assertIn("ad_personalization:'denied'", script)
-        self.assertIn("window.__nexusnovaConsentUiReady=true", script)
+            self.assertIn(value, html)
+        self.assertIn("nexusnova_analytics_consent_v2", html)
+        self.assertIn("nexusnova_analytics_consent_v1", html)
+        self.assertIn("window.__nexusnovaConsentUiReady = true", html)
+        self.assertIn("ad_storage: 'denied'", html)
+        self.assertIn("ad_user_data: 'denied'", html)
+        self.assertIn("ad_personalization: 'denied'", html)
+        self.assertIn("window.__nexusnovaLoadAnalytics", html)
+
+
 
 
 class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
