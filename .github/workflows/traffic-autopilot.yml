@@ -230,8 +230,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo 'Automatic public publishing is disabled. The workflow is analysis-first with one allowlisted machine-generated data surface.'
-          echo 'Article HTML, sitemap/discovery, design, scripts, and application code mutations are still treated as failures.'
+          echo 'Automatic public publishing is disabled. The workflow only prepares private analysis and review artifacts.'
+          echo 'Article HTML, sitemap/discovery, design, scripts, application code and all unlisted tracked files remain forbidden.'
           allowed='assets/data/live-tech-pulse.json'
           changes="$(git status --porcelain --untracked-files=no)"
           disallowed=''
@@ -239,7 +239,8 @@ jobs:
             [ -z "$line" ] && continue
             path="${line:3}"
             case "$path" in
-              "$allowed") echo "Allowlisted generated data surface changed: $path" ;;
+              "$allowed"|assets/data/social-growth-history.json|assets/generated/social-growth-feed.jpg|assets/generated/social-growth-vertical.jpg)
+                echo "Allowlisted private-review output changed: $path" ;;
               *) disallowed="${disallowed}${line}\n" ;;
             esac
           done <<< "$changes"
@@ -260,7 +261,8 @@ jobs:
           PY
           fi
           echo 'Review-only boundary: PASS'
-          echo 'No article, sitemap, design, application or automation source files were changed.'
+          echo 'No article HTML, sitemap/discovery, application, design or automation source files were changed.'
+          echo 'Social creative images and campaign history remain private-run outputs; they are not committed, deployed, indexed or posted.'
           echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
 
       - name: Publish run summary
@@ -300,6 +302,9 @@ jobs:
             social-growth-metrics.json
             social-growth-publish.json
             social-growth-report.txt
+            assets/data/social-growth-history.json
+            assets/generated/social-growth-feed.jpg
+            assets/generated/social-growth-vertical.jpg
             social-distribution-report.json
             adsense-readiness.json
             adsense-readiness.txt
