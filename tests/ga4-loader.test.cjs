@@ -102,7 +102,7 @@ test('homepage inline consent defaults deny analytics unless a saved explicit op
 test('previously uninstrumented public hubs load the standalone analytics and choice UI', () => {
   for (const path of ['tools.html', 'categories.html', 'guides.html', 'whatsapp-link-generator.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.ok(html.includes('assets/js/analytics.js?v=20261013-anonymous-consent-v1'), path + ' loader');
+    assert.ok(html.includes('assets/js/analytics.js?v=20261014-optin-event-v2'), path + ' loader');
   }
 });
 
@@ -113,7 +113,7 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
     "const consentKey='nexusnova_analytics_consent_v1';",
     "analytics_storage:readChoice()==='granted'?'granted':'denied'",
     "window.gtag('consent','update',{",
-    "window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})",
+    "window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});",
     'if(window.__nexusnovaGa4BootstrapReady)return;',
     'window.__nexusnovaGa4BootstrapReady=true;',
     "const isProductionAnalyticsHost=/^(?:www\\.)?nexusnovatools\\.com$/i.test(location.hostname);",
@@ -132,20 +132,22 @@ test('detailed opt-in event is fired by an explicit choice, not on every page lo
   assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
 
-test('production GA4 verifier waits for deployed assets and inspects POST events without weakening realtime gate', () => {
+test('production GA4 verifier captures explicit opt-in commands and batched collect events', () => {
   const workflow = fs.readFileSync('.github/workflows/privacy-analytics-production.yml', 'utf8');
   const deployShaToken = 'DEPLOY_SHA: ' + '$' + '{{ github.sha }}';
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/tools.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/categories.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/guides.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261013-anonymous-consent-v1')",
-    "parse_qs(request_record['post_data'])",
+    "('/tools.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-optin-event-v2')",
+    'parse_qs(chunk)',
+    'for event_index,event_name in enumerate(event_names)',
+    'optInEventCallback:window.__nexusnovaOptInEventCallback===true',
     "'httpStatusCounts':{}",
     "rt['apiErrors'].append",
-    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}",
+    "payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'dimensionFilter':{'filter':{'fieldName':'eventName','stringFilter':{'matchType':'EXACT','value':'analytics_detail_opt_in'}}},'limit':5}",
     "assert rt['success'], 'GA4 Realtime did not observe explicit opt-in in the existing property'"
   ]) assert.ok(workflow.includes(token), token);
 });

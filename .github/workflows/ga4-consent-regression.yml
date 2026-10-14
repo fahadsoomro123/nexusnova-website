@@ -1,0 +1,50 @@
+name: GA4 Consent Regression Tests
+
+on:
+  push:
+    branches:
+      - main
+      - fix/ga4-consented-event-delivery-20261014
+    paths:
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'tests/ga4-loader.test.cjs'
+      - 'tools.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'whatsapp-link-generator.html'
+      - '.github/workflows/privacy-analytics-production.yml'
+      - '.github/workflows/ga4-consent-regression.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/js/analytics.js'
+      - 'assets/js/site-main.js'
+      - 'tests/ga4-loader.test.cjs'
+      - 'tools.html'
+      - 'categories.html'
+      - 'guides.html'
+      - 'whatsapp-link-generator.html'
+      - '.github/workflows/privacy-analytics-production.yml'
+      - '.github/workflows/ga4-consent-regression.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ga4-consent-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ga4-consent-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Run GA4 consent regression tests
+        run: node --test tests/ga4-loader.test.cjs
