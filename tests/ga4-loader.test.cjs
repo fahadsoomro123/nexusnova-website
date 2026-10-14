@@ -11,12 +11,16 @@ test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-lo
   const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
   const required = [
     "const measurementId='G-YLPFKWSS12';",
-    "const consentKey='nexusnova_analytics_consent_v1';",
+    "const consentKey='nexusnova_analytics_consent_v2';",
     'window.dataLayer=window.dataLayer||[];',
     'window.gtag=window.gtag||function',
     "window.gtag('consent','default',{",
-    "analytics_storage:readSavedAnalyticsChoice()==='granted'?'granted':'denied'",
+    "const legacyConsentKey='nexusnova_analytics_consent_v1';",
+    "const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];",
+    "window.gtag('consent','default',{analytics_storage:'granted'",
     'const readSavedAnalyticsChoice=()=>{',
+    "if(current==='basic'||current==='granted'||current==='denied'||current==='legacy-basic')return current;",
+    "if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}",
     'wait_for_update:500',
     "window.gtag('consent','update',{",
     "ad_storage:'denied'",
@@ -30,7 +34,7 @@ test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-lo
     'allow_ad_personalization_signals:false',
     'ads_data_redaction:true',
     'window.__nexusnovaConsentReady=true',
-    'window.__nexusnovaLoadAnalytics=granted=>{',
+    'window.__nexusnovaLoadAnalytics=choice=>{',
     'if(window.__nexusnovaGa4BootstrapReady)return;',
     'window.__nexusnovaGa4BootstrapReady=true;',
     "script[data-nexusnova-ga4]"
@@ -43,6 +47,7 @@ test('legacy site shell delegates analytics loading through the canonical GA4 br
   const text = fs.readFileSync('assets/js/site-main.js', 'utf8');
   for (const token of [
     "const measurementId='G-YLPFKWSS12';",
+    'nexusnova_analytics_consent_v2',
     'nexusnova_analytics_consent_v1',
     'window.__nexusnovaLoadAnalytics',
     'data-consent-allow'
@@ -52,7 +57,7 @@ test('legacy site shell delegates analytics loading through the canonical GA4 br
 test('tool analytics detail events require the explicit analytics opt-in', () => {
   const text = fs.readFileSync('assets/js/tool-analytics.js', 'utf8');
   assert.ok(text.includes('const detailAllowed=()=>{'));
-  assert.ok(text.includes("localStorage.getItem('nexusnova_analytics_consent_v1')==='granted'"));
+  assert.ok(text.includes("localStorage.getItem('nexusnova_analytics_consent_v2')==='granted'"));
   assert.ok(text.includes("const allowed=()=>typeof window.gtag==='function'&&detailAllowed();"));
 });
 
@@ -84,32 +89,37 @@ test('GA4 external loader only runs on the owned production hostname', () => {
 
 test('homepage requests the current consent-aware production bootstrap', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('assets/js/main.js?v=20261014-main-thread-idle-v1'));
+  assert.ok(html.includes('assets/js/main.js?v=20261014-basic-pageview-consent-v2'));
   assert.ok(!html.includes('assets/js/main.js?v=20261013-ga4-hostguard-v3'));
   assert.ok(!html.includes('assets/js/main.js?v=20261005-ga4a'));
 });
 
-test('homepage inline consent defaults deny analytics unless a saved explicit opt-in exists', () => {
+test('homepage defaults basic pageview analytics on where permitted and denies restricted regions until choice', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes("var nexusnovaAnalyticsStorage = 'denied';"));
-  assert.ok(html.includes("window.localStorage.getItem('nexusnova_analytics_consent_v1') === 'granted'"));
-  assert.ok(html.includes('assets/js/main.js?v=20261014-main-thread-idle-v1'));
-  assert.ok(!html.includes("analytics_storage: 'granted'"));
+  assert.ok(html.includes("nexusnova_analytics_consent_v2"));
+  assert.ok(html.includes("nexusnova_analytics_consent_v1"));
+  assert.ok(html.includes("nexusnova_analytics_consent_v2', 'legacy-basic'"));
+  assert.ok(html.includes("analytics_storage: 'denied',"));
+  assert.ok(html.includes("region: nexusnovaRestrictedAnalyticsRegions"));
+  assert.ok(html.includes("analytics_storage: 'granted'"));
+  assert.ok(html.includes("window.navigator && window.navigator.globalPrivacyControl === true"));
+  assert.ok(html.includes('assets/js/main.js?v=20261014-basic-pageview-consent-v2'));
 });
 
 test('previously uninstrumented public hubs load the standalone analytics and choice UI', () => {
   for (const path of ['tools.html', 'categories.html', 'guides.html', 'whatsapp-link-generator.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.ok(html.includes('assets/js/analytics.js?v=20261014-explicit-opt-in-v1'), path + ' loader');
+    assert.ok(html.includes('assets/js/analytics.js?v=20261014-basic-pageview-consent-v2'), path + ' loader');
   }
 });
 
-test('standalone GA4 loader defaults denied, persists explicit consent and only runs on NexusNova production', () => {
+test('standalone GA4 loader uses regional defaults, persists the selected mode and only runs on NexusNova production', () => {
   const loader = fs.readFileSync('assets/js/analytics.js', 'utf8');
   for (const token of [
     "const measurementId='G-YLPFKWSS12';",
-    "const consentKey='nexusnova_analytics_consent_v1';",
-    "analytics_storage:readChoice()==='granted'?'granted':'denied'",
+    "const consentKey='nexusnova_analytics_consent_v2';",
+    "const legacyConsentKey='nexusnova_analytics_consent_v1';",
+    "window.gtag('consent','default',{analytics_storage:'granted'",
     "window.gtag('consent','update',{",
     "window.__nexusnovaOptInEventRequested=true;",
     'if(window.__nexusnovaGa4BootstrapReady)return;',
@@ -119,13 +129,19 @@ test('standalone GA4 loader defaults denied, persists explicit consent and only 
     'Keep basic measurement',
     'Allow detailed analytics'
   ]) assert.ok(loader.includes(token), token);
-  assert.ok(!loader.includes("analytics_storage:'granted'"), 'fresh visitors must default denied');
+  assert.ok(loader.includes("analytics_storage:'denied',region:restrictedAnalyticsRegions"), 'restricted regions must default denied');
+  assert.ok(loader.includes("analytics_storage:'granted'"), 'basic pageview measurement must be enabled where permitted');
+  assert.ok(loader.includes("if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}"), 'legacy basic choice should be reviewed rather than silently treated as detailed opt-in');
+  assert.ok(loader.includes("banner.dataset.nexusnovaConsent=''"), 'first-visit settings must be visible to the production verifier');
+  assert.ok(loader.includes("const chooseBasic=()=>{applyChoice('basic')"), 'basic choice must not require detailed-interaction opt-in');
+  assert.ok(loader.includes("const chooseDetailed=()=>{"), 'detailed opt-in handler must be explicit');
+  assert.ok(loader.includes("const chooseOff=()=>{applyChoice('denied')"), 'visitors must be able to turn analytics off');
 });
 
 test('detailed opt-in event is fired by an explicit choice, not on every page load', () => {
   const wrapper = fs.readFileSync('assets/js/main.js', 'utf8');
   const shell = fs.readFileSync('assets/js/site-main.js', 'utf8');
-  const handler = wrapper.slice(wrapper.indexOf('window.__nexusnovaLoadAnalytics=granted=>{'), wrapper.indexOf('const hydrateDynamicLinks='));
+  const handler = wrapper.slice(wrapper.indexOf('window.__nexusnovaLoadAnalytics=choice=>{'), wrapper.indexOf('const hydrateDynamicLinks='));
   assert.ok(!handler.includes("window.gtag('event','analytics_detail_opt_in'"));
   assert.ok(shell.includes("window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced'})"));
 });
@@ -136,12 +152,13 @@ test('production GA4 verifier waits for deployed assets and inspects POST events
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/', 'assets/js/main.js?v=20261014-main-thread-idle-v1')",
-    "GA4_QA_VERSION: '20261014-main-thread-idle-v1'",
-    "('/tools.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
-    "('/categories.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
-    "('/guides.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
-    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1')",
+    "('/', 'assets/js/main.js?v=20261014-basic-pageview-consent-v2')",
+    "GA4_QA_VERSION: '20261014-basic-pageview-consent-v2'",
+    "('/tools.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2')",
+    "const banner=document.querySelector('#nexusnova-analytics-consent, #nexusnova-analytics-consent-banner');",
     "def add_collect_events(q,method,source):",
     "body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]",
     "optin_responses=[];optin_errors=[];optin_report_only_csp_notices=[]",

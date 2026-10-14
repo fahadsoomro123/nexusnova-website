@@ -23,7 +23,7 @@ permissions:
 
 env:
   GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
-  GA4_QA_VERSION: '20261014-main-thread-idle-v1'
+  GA4_QA_VERSION: '20261014-basic-pageview-consent-v2'
 
 jobs:
   verify:
@@ -57,11 +57,11 @@ jobs:
           base = 'https://nexusnovatools.com'
           deploy_sha = os.environ['DEPLOY_SHA']
           pages = [
-              ('/', 'assets/js/main.js?v=20261014-main-thread-idle-v1'),
-              ('/tools.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
-              ('/categories.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
-              ('/guides.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
-              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-explicit-opt-in-v1'),
+              ('/', 'assets/js/main.js?v=20261014-basic-pageview-consent-v2'),
+              ('/tools.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2'),
+              ('/categories.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2'),
+              ('/guides.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2'),
+              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261014-basic-pageview-consent-v2'),
           ]
           headers = {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
           session = requests.Session()
@@ -85,7 +85,7 @@ jobs:
               try:
                   main_js = session.get(
                       base + '/assets/js/main.js',
-                      params={'v': '20261014-main-thread-idle-v1', 'nn_deploy_probe': deploy_sha},
+                      params={'v': '20261014-basic-pageview-consent-v2', 'nn_deploy_probe': deploy_sha},
                       headers=headers,
                       timeout=4,
                   )
@@ -168,14 +168,14 @@ jobs:
                   return [];
                 });
                 const defaults=args.filter(x=>x[0]==='consent'&&x[1]==='default').map(x=>x[2]||{});
-                const savedConsent=(()=>{try{return localStorage.getItem('nexusnova_analytics_consent_v1')||''}catch(_){return 'unavailable'}})();
+                const savedConsent=(()=>{try{return localStorage.getItem('nexusnova_analytics_consent_v2')||''}catch(_){return 'unavailable'}})();
                 const visible=el=>{
                   if(!el)return false;
                   const style=getComputedStyle(el);
                   const rect=el.getBoundingClientRect();
                   return !el.hidden&&style.display!=='none'&&style.visibility!=='hidden'&&rect.width>0&&rect.height>0;
                 };
-                const banner=document.querySelector('#nexusnova-analytics-consent');
+                const banner=document.querySelector('#nexusnova-analytics-consent, #nexusnova-analytics-consent-banner');
                 const dialog=document.querySelector('#nexusnova-analytics-consent-dialog');
                 const consentPanelVisible=visible(banner)||(!!dialog&&dialog.open&&visible(dialog));
                 const allow=document.querySelector('[data-consent-allow]');
@@ -187,6 +187,7 @@ jobs:
                   gaConfigCount:args.filter(x=>x[0]==='config').length,
                   gaJsCount:args.filter(x=>x[0]==='js').length,
                   defaultAnalyticsStorage:defaults.length?defaults[defaults.length-1].analytics_storage:'',
+                  regionSpecificDenied:defaults.some(x=>x.analytics_storage==='denied'&&Array.isArray(x.region)&&x.region.includes('GB')&&x.region.includes('CH')),
                   savedConsent,
                   privacyChoiceAvailable:!!document.querySelector('.nn-consent-reopen, .nn-standalone-consent-open'),
                   consentPanelVisible,
@@ -205,7 +206,7 @@ jobs:
                       collect.append({'en':q.get('en',[''])[0],'dl':q.get('dl',[''])[0],'dt':q.get('dt',[''])[0],'gcs':q.get('gcs',[''])[0]})
               pageviews=[x for x in collect if x['en']=='page_view']
               row={'viewport':label,'path':path,'page':info,'ga4Collect':collect,'pageViews':pageviews,'errors':errors[:20],'reportOnlyCspNotices':report_only_csp_notices[:10]}
-              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and info['defaultAnalyticsStorage']=='denied' and info['savedConsent']=='' and info['privacyChoiceAvailable'] and not info['consentPanelVisible'] and not info['allowButtonVisible'] and not info['consentTextVisible'] and any(x['gcs']=='G100' for x in pageviews) and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
+              row['success']=info['gtag'] and len(info['gaScript'])==1 and info['gaConfigCount']==1 and info['gaJsCount']==1 and info['defaultAnalyticsStorage']=='granted' and info['regionSpecificDenied'] and info['savedConsent']=='' and info['privacyChoiceAvailable'] and info['consentPanelVisible'] and info['allowButtonVisible'] and info['consentTextVisible'] and any(x['gcs'] in ('G100','G101') for x in pageviews) and info['path']==path and info['overflow']['sw']<=info['overflow']['cw']+6 and not errors
               return row
 
           with sync_playwright() as p:
@@ -227,8 +228,7 @@ jobs:
               page.on('console',lambda msg:record_console_message(msg,optin_errors,optin_report_only_csp_notices))
               page.goto(BASE_URL+'/tools.html?ga4_qa='+os.environ['QA_VERSION']+'&ga4_view=explicit-opt-in',wait_until='domcontentloaded',timeout=30000)
               page.wait_for_timeout(9000)
-              page.locator('.nn-standalone-consent-open').click(timeout=8000)
-              page.locator('#nexusnova-analytics-consent-dialog [data-consent-allow]').click(timeout=8000)
+              page.locator('#nexusnova-analytics-consent-banner [data-consent-allow]').click(timeout=8000)
               page.wait_for_timeout(8000)
               optin_info=page.evaluate('''() => {
                 const args=(window.dataLayer||[]).map(x=>{
@@ -238,7 +238,7 @@ jobs:
                 const updates=args.filter(x=>x[0]==='consent'&&x[1]==='update').map(x=>x[2]||{});
                 const eventCommands=args.filter(x=>x[0]==='event').map(x=>String(x[1]||''));
                 let savedConsent='';
-                try { savedConsent=localStorage.getItem('nexusnova_analytics_consent_v1')||''; } catch(_) {}
+                try { savedConsent=localStorage.getItem('nexusnova_analytics_consent_v2')||''; } catch(_) {}
                 return {
                   path:location.pathname,
                   title:document.title,

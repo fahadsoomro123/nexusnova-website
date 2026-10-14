@@ -2,31 +2,49 @@
   'use strict';
 
   const measurementId='G-YLPFKWSS12';
-  const consentKey='nexusnova_analytics_consent_v1';
+  const consentKey='nexusnova_analytics_consent_v2';
+  const legacyConsentKey='nexusnova_analytics_consent_v1';
+  const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
-  const readChoice=()=>{try{return window.localStorage.getItem(consentKey)||''}catch(_){return ''}};
-  const applyChoice=granted=>{
+  const isGpcEnabled=()=>window.navigator?.globalPrivacyControl===true;
+  const readChoice=()=>{
+    try{
+      const current=window.localStorage.getItem(consentKey)||'';
+      if(['basic','granted','denied','legacy-basic'].includes(current))return current;
+      const legacy=window.localStorage.getItem(legacyConsentKey)||'';
+      if(legacy==='granted'){window.localStorage.setItem(consentKey,'granted');return 'granted';}
+      if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}
+    }catch(_){}
+    return '';
+  };
+  const applyChoice=choice=>{
+    const requested=choice===true?'granted':choice===false?'denied':choice;
+    const selected=['basic','granted','denied'].includes(requested)?requested:'denied';
+    const effective=isGpcEnabled()?'denied':selected;
     window.gtag('consent','update',{
-      analytics_storage:granted?'granted':'denied',
+      analytics_storage:effective==='denied'?'denied':'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
-    try{window.localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
+    try{window.localStorage.setItem(consentKey,effective)}catch(_){}
+    return effective;
   };
 
+  const initialChoice=readChoice();
   if(!window.__nexusnovaConsentDefaulted){
-    window.gtag('consent','default',{
-      analytics_storage:readChoice()==='granted'?'granted':'denied',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied',
-      wait_for_update:500
-    });
+    if(isGpcEnabled()||initialChoice==='denied'){
+      window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else if(initialChoice==='basic'||initialChoice==='granted'){
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else{
+      window.gtag('consent','default',{analytics_storage:'denied',region:restrictedAnalyticsRegions,ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }
     window.__nexusnovaConsentDefaulted=true;
   }
   window.__nexusnovaConsentReady=true;
@@ -47,7 +65,7 @@
     document.head.appendChild(analyticsScript);
   }
 
-  window.__nexusnovaLoadAnalytics=granted=>applyChoice(!!granted);
+  window.__nexusnovaLoadAnalytics=choice=>applyChoice(choice);
 
   const mountStandaloneChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
@@ -56,7 +74,7 @@
 
     const style=document.createElement('style');
     style.dataset.nexusnovaStandaloneConsent='';
-    style.textContent='.nn-standalone-consent{position:fixed;inset:auto 16px 16px;z-index:9999;max-width:560px;margin:auto;padding:14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.45 system-ui,sans-serif}.nn-standalone-consent[hidden]{display:none}.nn-standalone-consent p{margin:0 0 10px}.nn-standalone-consent-actions{display:flex;flex-wrap:wrap;gap:7px}.nn-standalone-consent button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-standalone-consent .primary{background:#111827;color:#fff;border-color:#111827}.nn-standalone-consent a{color:inherit;text-decoration:underline}.nn-standalone-consent-open{cursor:pointer}.nn-standalone-consent-dialog{max-width:560px;border:1px solid #cbd5e1;border-radius:14px;padding:18px;background:#fff;color:#111827;box-shadow:0 18px 45px rgba(15,23,42,.18)}.nn-standalone-consent-dialog::backdrop{background:rgba(15,23,42,.28)}';
+    style.textContent='.nn-standalone-consent-banner{position:fixed;inset:auto 16px 16px;z-index:9998;max-width:560px;margin:auto;padding:14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.45 system-ui,sans-serif}.nn-standalone-consent-banner[hidden]{display:none}.nn-standalone-consent-banner p{margin:0 0 10px}.nn-standalone-consent{position:fixed;inset:auto 16px 16px;z-index:9999;max-width:560px;margin:auto;padding:14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.45 system-ui,sans-serif}.nn-standalone-consent[hidden]{display:none}.nn-standalone-consent p{margin:0 0 10px}.nn-standalone-consent-actions{display:flex;flex-wrap:wrap;gap:7px}.nn-standalone-consent button,.nn-standalone-consent-banner button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-standalone-consent .primary,.nn-standalone-consent-banner .primary{background:#111827;color:#fff;border-color:#111827}.nn-standalone-consent a,.nn-standalone-consent-banner a{color:inherit;text-decoration:underline}.nn-standalone-consent-open{cursor:pointer}.nn-standalone-consent-dialog{max-width:560px;border:1px solid #cbd5e1;border-radius:14px;padding:18px;background:#fff;color:#111827;box-shadow:0 18px 45px rgba(15,23,42,.18)}.nn-standalone-consent-dialog::backdrop{background:rgba(15,23,42,.28)}@media(max-width:640px){.nn-standalone-consent-banner,.nn-standalone-consent{left:10px;right:10px;bottom:10px}}';
     document.head.appendChild(style);
 
     const open=document.createElement('a');
@@ -67,21 +85,46 @@
     const privacyLink=Array.from(footer.querySelectorAll('a')).find(link=>/\/privacy\.html$/i.test(link.getAttribute('href')||''));
     if(privacyLink)privacyLink.insertAdjacentElement('afterend',open);else footer.appendChild(open);
 
+    const banner=document.createElement('div');
+    banner.className='nn-standalone-consent-banner';
+    banner.dataset.nexusnovaConsent='';
+    banner.id='nexusnova-analytics-consent-banner';
+    banner.hidden=true;
+    banner.setAttribute('role','region');
+    banner.setAttribute('aria-label','Privacy and analytics choices');
+    banner.innerHTML='<p><strong>Privacy & Analytics Settings</strong><br>Basic page-view measurement uses analytics storage by default where permitted. In the EEA, UK and Switzerland it starts off until you choose. Detailed tool-interaction events only start when you choose Allow detailed analytics; advertising and personalization storage stay off. <a href="privacy.html">Privacy details</a>.</p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-dismiss>Dismiss</button></div>';
+    document.body.appendChild(banner);
+
     const dialog=document.createElement('dialog');
     dialog.id='nexusnova-analytics-consent-dialog';
     dialog.className='nn-standalone-consent-dialog';
-    dialog.dataset.nexusnovaConsent='';
     dialog.setAttribute('aria-labelledby','nexusnova-analytics-consent-title');
-    dialog.innerHTML='<h2 id="nexusnova-analytics-consent-title" style="margin:0 0 8px;font-size:18px">Privacy & Analytics Settings</h2><p style="margin:0 0 10px;color:#475569">Detailed GA4 analytics stays denied until you explicitly allow it. Basic measurement remains privacy-preserving, and advertising/personalization storage stays off.</p><p style="margin:0 0 14px"><a href="privacy.html">Read privacy details</a></p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-deny>Keep basic measurement</button><button type="button" data-consent-close>Close</button></div>';
+    dialog.innerHTML='<h2 id="nexusnova-analytics-consent-title" style="margin:0 0 8px;font-size:18px">Privacy & Analytics Settings</h2><p style="margin:0 0 10px;color:#475569">Basic page views use analytics storage where permitted. Detailed tool interactions require an explicit opt-in. Advertising and personalization storage stay off.</p><p style="margin:0 0 14px"><a href="privacy.html">Read privacy details</a></p><div class="nn-standalone-consent-actions"><button type="button" class="primary" data-consent-allow>Allow detailed analytics</button><button type="button" data-consent-basic>Keep basic measurement</button><button type="button" data-consent-off>Turn analytics off</button><button type="button" data-consent-close>Close</button></div>';
     document.body.appendChild(dialog);
 
-    const close=()=>dialog.close();
-    dialog.querySelector('[data-consent-allow]')?.addEventListener('click',()=>{
-      applyChoice(true);
-      window.__nexusnovaOptInEventCallback=false;window.__nexusnovaOptInEventRequested=true;window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});
-      close();
-    });
-    dialog.querySelector('[data-consent-deny]')?.addEventListener('click',()=>{applyChoice(false);close()});
+    const close=()=>{if(dialog.open)dialog.close();else dialog.removeAttribute('open')};
+    const chooseDetailed=()=>{
+      const effective=applyChoice('granted');
+      if(effective==='granted'){
+        window.__nexusnovaOptInEventCallback=false;
+        window.__nexusnovaOptInEventRequested=true;
+        window.gtag('event','analytics_detail_opt_in',{detail_level:'enhanced',send_to:measurementId,event_callback:()=>{window.__nexusnovaOptInEventCallback=true},event_timeout:3000});
+      }
+      banner.hidden=true;close();
+    };
+    const chooseBasic=()=>{applyChoice('basic');banner.hidden=true;close()};
+    const chooseOff=()=>{applyChoice('denied');banner.hidden=true;close()};
+    const dismiss=()=>{
+      banner.hidden=true;
+      try{sessionStorage.setItem('nexusnova_analytics_banner_dismissed_v2','1')}catch(_){}
+    };
+    banner.querySelector('[data-consent-allow]')?.addEventListener('click',chooseDetailed);
+    banner.querySelector('[data-consent-basic]')?.addEventListener('click',chooseBasic);
+    banner.querySelector('[data-consent-off]')?.addEventListener('click',chooseOff);
+    banner.querySelector('[data-consent-dismiss]')?.addEventListener('click',dismiss);
+    dialog.querySelector('[data-consent-allow]')?.addEventListener('click',chooseDetailed);
+    dialog.querySelector('[data-consent-basic]')?.addEventListener('click',chooseBasic);
+    dialog.querySelector('[data-consent-off]')?.addEventListener('click',chooseOff);
     dialog.querySelector('[data-consent-close]')?.addEventListener('click',close);
     open.addEventListener('click',event=>{
       event.preventDefault();
@@ -90,7 +133,11 @@
     });
 
     const choice=readChoice();
-    if(choice==='granted'||choice==='denied')applyChoice(choice==='granted');
+    if(choice==='granted'||choice==='basic'||choice==='denied'){
+      applyChoice(choice);banner.hidden=true;
+    }else{
+      try{banner.hidden=sessionStorage.getItem('nexusnova_analytics_banner_dismissed_v2')==='1'}catch(_){banner.hidden=false}
+    }
   };
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountStandaloneChoices,{once:true});

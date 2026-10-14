@@ -2,7 +2,7 @@
   'use strict';
   const tool=(location.pathname.split('/').pop()||'home').replace(/\.html$/i,'');
   const detailAllowed=()=>{
-    try{return localStorage.getItem('nexusnova_analytics_consent_v1')==='granted'}catch(_){return false}
+    try{return localStorage.getItem('nexusnova_analytics_consent_v2')==='granted'&&window.navigator?.globalPrivacyControl!==true}catch(_){return false}
   };
   const allowed=()=>typeof window.gtag==='function'&&detailAllowed();
   const send=(name,action)=>{

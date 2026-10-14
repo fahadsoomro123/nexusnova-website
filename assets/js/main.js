@@ -5,30 +5,50 @@
   enforceCleanCanonical();
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',enforceCleanCanonical,{once:true});
   const measurementId='G-YLPFKWSS12';
-  const consentKey='nexusnova_analytics_consent_v1';
+  const consentKey='nexusnova_analytics_consent_v2';
+  const legacyConsentKey='nexusnova_analytics_consent_v1';
+  const restrictedAnalyticsRegions=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
   if(window.__nexusnovaGa4BootstrapReady)return;
   window.__nexusnovaGa4BootstrapReady=true;
 
   /*
    * NexusNova measurement policy:
-   * - Fresh visitors start with analytics_storage denied.
-   * - Consent Mode may send limited cookieless measurement while denied.
-   * - Detailed analytics storage requires a saved explicit opt-in.
+   * - Basic page-view measurement is enabled by default where permitted.
+   * - EEA, UK and Switzerland use denied-by-default analytics storage until a choice.
+   * - Detailed tool-interaction events require an explicit opt-in.
    * - Advertising storage, Google Signals and ad personalization stay denied.
+   * Compatibility: legacy v1 "Allow detailed analytics" is migrated as granted.
+   * Legacy v1 "Keep basic measurement" uses the basic pageview mode, never detailed events.
+   * A legacy basic choice is region-denied in the EEA, UK and Switzerland pending a fresh choice.
+   * "Allow analytics" remains an audit-compatible legacy label; the current choice is "Allow detailed analytics".
+   * "Privacy choices" remains the persistent control for reopening the settings.
    */
   window.__nexusnovaConsentReady=true;
   window.dataLayer=window.dataLayer||[];
   window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
 
-  const readSavedAnalyticsChoice=()=>{try{return window.localStorage.getItem(consentKey)||''}catch(_){return ''}};
+  const isGpcEnabled=()=>window.navigator?.globalPrivacyControl===true;
+  const readSavedAnalyticsChoice=()=>{
+    try{
+      const current=window.localStorage.getItem(consentKey)||'';
+      if(current==='basic'||current==='granted'||current==='denied'||current==='legacy-basic')return current;
+      const legacy=window.localStorage.getItem(legacyConsentKey)||'';
+      if(legacy==='granted'){window.localStorage.setItem(consentKey,'granted');return 'granted';}
+      if(legacy==='denied'){window.localStorage.setItem(consentKey,'legacy-basic');return 'legacy-basic';}
+    }catch(_){}
+    return '';
+  };
+  const savedAnalyticsChoice=readSavedAnalyticsChoice();
   if(!window.__nexusnovaConsentDefaulted){
-    window.gtag('consent','default',{
-      analytics_storage:readSavedAnalyticsChoice()==='granted'?'granted':'denied',
-      ad_storage:'denied',
-      ad_user_data:'denied',
-      ad_personalization:'denied',
-      wait_for_update:500
-    });
+    if(isGpcEnabled()||savedAnalyticsChoice==='denied'){
+      window.gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else if(savedAnalyticsChoice==='basic'||savedAnalyticsChoice==='granted'){
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }else{
+      // More specific regional defaults take precedence over the general default.
+      window.gtag('consent','default',{analytics_storage:'denied',region:restrictedAnalyticsRegions,ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+      window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',wait_for_update:500});
+    }
     window.__nexusnovaConsentDefaulted=true;
   }
 
@@ -64,14 +84,18 @@
     document.head.appendChild(analyticsScript);
   }
 
-  window.__nexusnovaLoadAnalytics=granted=>{
+  window.__nexusnovaLoadAnalytics=choice=>{
+    const requested=choice===true?'granted':choice===false?'denied':choice;
+    const selected=['basic','granted','denied'].includes(requested)?requested:'denied';
+    const effective=isGpcEnabled()?'denied':selected;
     window.gtag('consent','update',{
-      analytics_storage:granted?'granted':'denied',
+      analytics_storage:effective==='denied'?'denied':'granted',
       ad_storage:'denied',
       ad_user_data:'denied',
       ad_personalization:'denied'
     });
-    try{window.localStorage.setItem(consentKey,granted?'granted':'denied')}catch(_){}
+    try{window.localStorage.setItem(consentKey,effective)}catch(_){}
+    return effective;
   };
 
   const dynamicLinkSelector='a[data-nova-dynamic-href]';
@@ -246,7 +270,7 @@
   else scheduleShare();
 
   const inSubdir=/\/(guides|articles|tech)\//.test(location.pathname);const base=inSubdir?'../':'';
-  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20261013-consent-v1';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
+  const loadShell=()=>{if(document.querySelector('script[data-nexusnova-site-shell]'))return;const shell=document.createElement('script');shell.src=base+'assets/js/site-main.js?v=20261014-basic-pageview-consent-v2';shell.dataset.nexusnovaSiteShell='';document.body.appendChild(shell);};
   const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260930-social4';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();

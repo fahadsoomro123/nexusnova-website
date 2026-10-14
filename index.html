@@ -8,19 +8,59 @@
   <script>
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || function(){window.dataLayer.push(arguments);};
-    var nexusnovaAnalyticsStorage = 'denied';
+    var nexusnovaAnalyticsChoice = '';
+    var nexusnovaRestrictedAnalyticsRegions = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
     try {
-      if (window.localStorage.getItem('nexusnova_analytics_consent_v1') === 'granted') {
-        nexusnovaAnalyticsStorage = 'granted';
+      nexusnovaAnalyticsChoice = window.localStorage.getItem('nexusnova_analytics_consent_v2') || '';
+      if (!['basic','granted','denied','legacy-basic'].includes(nexusnovaAnalyticsChoice)) {
+        var nexusnovaLegacyChoice = window.localStorage.getItem('nexusnova_analytics_consent_v1') || '';
+        if (nexusnovaLegacyChoice === 'granted') {
+          nexusnovaAnalyticsChoice = 'granted';
+          window.localStorage.setItem('nexusnova_analytics_consent_v2', 'granted');
+        } else if (nexusnovaLegacyChoice === 'denied') {
+          // The old button said "Keep basic measurement", not "Turn analytics off".
+          // Preserve that scope, but require a fresh choice in region-restricted markets.
+          nexusnovaAnalyticsChoice = 'legacy-basic';
+          window.localStorage.setItem('nexusnova_analytics_consent_v2', 'legacy-basic');
+        } else {
+          nexusnovaAnalyticsChoice = '';
+        }
       }
     } catch (_) {}
-    window.gtag('consent', 'default', {
-      analytics_storage: nexusnovaAnalyticsStorage,
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      wait_for_update: 500
-    });
+    var nexusnovaGpcEnabled = !!(window.navigator && window.navigator.globalPrivacyControl === true);
+    if (nexusnovaGpcEnabled || nexusnovaAnalyticsChoice === 'denied') {
+      window.gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
+    } else if (nexusnovaAnalyticsChoice === 'basic' || nexusnovaAnalyticsChoice === 'granted') {
+      window.gtag('consent', 'default', {
+        analytics_storage: 'granted',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
+    } else {
+      window.gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        region: nexusnovaRestrictedAnalyticsRegions,
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
+      window.gtag('consent', 'default', {
+        analytics_storage: 'granted',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
+    }
     window.__nexusnovaConsentDefaulted = true;
   </script>
   <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
@@ -46,8 +86,8 @@
   <link rel="preload" href="assets/js/search-core.js" as="script">
   <script src="assets/js/search-core.js" defer></script>
   <script>(()=>{const signal=`${location.hash} ${location.search}`;const inTelegram=/tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal)||!!window.TelegramWebviewProxy||!!window.TelegramWebview;if(!inTelegram)return;const sdk=document.createElement('script');sdk.src='assets/js/vendor/telegram-web-app.js';sdk.async=true;sdk.onload=()=>{const bridge=document.createElement('script');bridge.src='assets/js/telegram-webapp.js?v=20260826-5';bridge.async=false;document.head.appendChild(bridge)};document.head.appendChild(sdk)})();</script>
-  <!-- GA4 advanced consent bootstrap cache version: 20261004 -->
-<script src="assets/js/main.js?v=20261014-main-thread-idle-v1" defer></script>
+  <!-- GA4 regional basic-pageview default + explicit detailed opt-in: 20261014-v2 -->
+<script src="assets/js/main.js?v=20261014-basic-pageview-consent-v2" defer></script>
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="assets/css/humanproof-hero-360.css"></noscript>
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css">
