@@ -52,7 +52,8 @@ jobs:
               '*.html', 'assets/**/*.css', 'assets/**/*.js',
               'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'ads.txt', 'sitemap*.xml'
           ], text=True).splitlines()
-          paths = [p for p in paths if p and not p.startswith('.github/')]
+          # Deleted assets are intentionally absent from the current checkout; only hash files that still exist.
+          paths = [p for p in paths if p and not p.startswith('.github/') and Path(p).is_file()]
           if not paths:
               paths = ['index.html']
           expected = {
