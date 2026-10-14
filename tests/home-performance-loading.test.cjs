@@ -20,13 +20,22 @@ test('below-the-fold HumanProof and footer CSS load asynchronously with no-scrip
 });
 
 
-test('live performance gate hashes the exact deployed homepage before measuring', () => {
+test('live performance gate hashes the exact deployed runtime and changed static files before measuring', () => {
   const workflow = fs.readFileSync('.github/workflows/live-performance-100.yml', 'utf8');
-  assert.ok(workflow.includes('expected_html_sha="$(sha256sum index.html | awk'), 'expected hash must come from current checkout');
-  assert.ok(workflow.includes('actual_html_sha="$(sha256sum "$tmp_body" | awk'), 'live HTML must be hashed');
-  assert.ok(workflow.includes('[ "$expected_html_sha" = "$actual_html_sha" ]'), 'Lighthouse must wait for an exact HTML match');
-  assert.ok(workflow.includes('Cache-Control: no-cache, no-store, max-age=0'), 'probe must bypass cached homepage');
-  assert.ok(workflow.includes('Refusing to record a live Lighthouse result against stale content') || workflow.includes('refusing to record a live Lighthouse result against stale content'), 'stale deployments must fail closed');
+  assert.ok(workflow.includes('fetch-depth: 2'), 'checkout must include the parent for changed-file detection');
+  assert.ok(workflow.includes('Wait for exact homepage and changed assets to reach production'));
+  assert.ok(workflow.includes("'index.html', 'assets/js/main.js'"), 'both homepage HTML and shared runtime must be checked');
+  assert.ok(workflow.includes("'git', 'diff', '--name-only', 'HEAD^', 'HEAD'"), 'changed static files must be discovered from this commit');
+  assert.ok(workflow.includes('hashlib.sha256(Path(path).read_bytes()).hexdigest()'), 'expected hashes must come from the checked-out source');
+  assert.ok(workflow.includes('hashlib.sha256(body).hexdigest()'), 'production response bodies must be hashed');
+  assert.ok(workflow.includes("'Cache-Control': 'no-cache, no-store, max-age=0'"), 'asset probes must bypass cached responses');
+  assert.ok(workflow.includes('range(1, 41)'), 'the deployment wait must be bounded');
+  assert.ok(workflow.includes('refusing to measure a stale deployment'), 'stale deployments must fail closed');
+  assert.ok(
+    workflow.indexOf('Wait for exact homepage and changed assets to reach production') <
+    workflow.indexOf('Audit the actual production homepage'),
+    'Lighthouse must not run until runtime and changed assets match source'
+  );
 });
 
 test('homepage HumanProof attribution meets WCAG AA normal-text contrast', () => {
