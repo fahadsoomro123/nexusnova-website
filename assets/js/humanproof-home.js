@@ -96,7 +96,11 @@
       });
       document.head.appendChild(s);
     }
-    initV20();
+    // Paint the existing hero and copy first. Defer the decorative WebGL/model work
+    // until the browser has idle time so it cannot delay the homepage's main content.
+    const startV20=()=>initV20();
+    if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(startV20,{timeout:1800});
+    else window.setTimeout(startV20,700);
   };
 
   async function initV20(){
