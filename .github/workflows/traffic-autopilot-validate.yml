@@ -52,6 +52,7 @@ jobs:
           python -m py_compile .github/scripts/traffic_autopilot_editorial_guard.py
           python -m py_compile .github/scripts/traffic_autopilot_runner.py
           python -m py_compile tests/test_traffic_autopilot_readonly.py
+          python -m py_compile tests/test_traffic_autopilot_workflow_boundary.py
           python -m py_compile .github/scripts/build_articles_feed.py
           python -m py_compile .github/scripts/traffic_diagnosis.py
           python -m py_compile .github/scripts/search_growth_autopilot.py
@@ -68,6 +69,9 @@ jobs:
 
       - name: Test traffic autopilot read-only default
         run: python tests/test_traffic_autopilot_readonly.py
+
+      - name: Test private traffic artifact boundary
+        run: python tests/test_traffic_autopilot_workflow_boundary.py
 
       - name: Test low-CTR search opportunity reporting
         run: python tests/test_search_growth_opportunities.py
