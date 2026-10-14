@@ -220,6 +220,7 @@ jobs:
                   return [];
                 });
                 const updates=args.filter(x=>x[0]==='consent'&&x[1]==='update').map(x=>x[2]||{});
+                const eventNames=args.filter(x=>x[0]==='event').map(x=>String(x[1]||''));
                 let savedConsent='';
                 try { savedConsent=localStorage.getItem('nexusnova_analytics_consent_v1')||''; } catch(_) {}
                 return {
@@ -229,27 +230,51 @@ jobs:
                   gtag:typeof window.gtag==='function',
                   gaScriptCount:[...document.scripts].filter(s=>s.src.includes('googletagmanager.com/gtag/js')).length,
                   gaConfigCount:args.filter(x=>x[0]==='config').length,
-                  consentUpdateGranted:updates.some(x=>x.analytics_storage==='granted'&&x.ad_storage==='denied'&&x.ad_user_data==='denied'&&x.ad_personalization==='denied')
+                  consentUpdateGranted:updates.some(x=>x.analytics_storage==='granted'&&x.ad_storage==='denied'&&x.ad_user_data==='denied'&&x.ad_personalization==='denied'),
+                  optInEventCommand:eventNames.includes('analytics_detail_opt_in'),
+                  optInEventRequested:window.__nexusnovaOptInEventRequested===true,
+                  optInEventCallback:window.__nexusnovaOptInEventCallback===true,
+                  eventCommandNames:eventNames.slice(-20)
                 };
               }''')
               optin_collect=[]
+              def value_at(values,index):
+                  if index < len(values): return values[index]
+                  return values[-1] if values else ''
+              def add_collect_events(q,method,source):
+                  if q.get('tid',[''])[0]!=MEASUREMENT_ID: return
+                  event_names=q.get('en',[''])
+                  for event_index,event_name in enumerate(event_names):
+                      optin_collect.append({
+                          'en':event_name,
+                          'dl':value_at(q.get('dl',[]),event_index),
+                          'gcs':value_at(q.get('gcs',[]),event_index),
+                          'method':method,
+                          'source':source
+                      })
               for request_record in optin_requests:
                   url=request_record['url']
                   if 'google-analytics.com/g/collect' not in url: continue
-                  q=parse_qs(urlparse(url).query)
-                  if request_record.get('post_data'):
-                      q.update(parse_qs(request_record['post_data']))
-                  if q.get('tid',[''])[0]==MEASUREMENT_ID:
-                      optin_collect.append({
-                          'en':q.get('en',[''])[0],
-                          'dl':q.get('dl',[''])[0],
-                          'gcs':q.get('gcs',[''])[0],
-                          'method':request_record.get('method','GET'),
-                          'source':'body' if 'en' in parse_qs(request_record.get('post_data','')) else 'query'
-                      })
+                  query_q=parse_qs(urlparse(url).query)
+                  post_data=request_record.get('post_data','')
+                  if post_data:
+                      body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]
+                      body_qs=[]
+                      for chunk in body_chunks:
+                          parsed=parse_qs(chunk)
+                          if parsed.get('en') or parsed.get('tid'):
+                              body_qs.append(parsed)
+                      if not body_qs:
+                          body_qs=[parse_qs(post_data)]
+                      for body_q in body_qs:
+                          merged=dict(query_q)
+                          merged.update(body_q)
+                          add_collect_events(merged,request_record.get('method','POST'),'body')
+                  else:
+                      add_collect_events(query_q,request_record.get('method','GET'),'query')
               consented_events=[x for x in optin_collect if x['en']=='analytics_detail_opt_in' and x['gcs']=='G101']
               optin_result={'page':optin_info,'ga4Collect':optin_collect,'consentedOptInEvents':consented_events,'errors':optin_errors[:20]}
-              optin_result['success']=optin_info['path']=='/tools.html' and optin_info['savedConsent']=='granted' and optin_info['gtag'] and optin_info['gaScriptCount']==1 and optin_info['gaConfigCount']==1 and optin_info['consentUpdateGranted'] and len(consented_events)>=1 and not optin_errors
+              optin_result['success']=optin_info['path']=='/tools.html' and optin_info['savedConsent']=='granted' and optin_info['gtag'] and optin_info['gaScriptCount']==1 and optin_info['gaConfigCount']==1 and optin_info['consentUpdateGranted'] and optin_info['optInEventCommand'] and optin_info['optInEventCallback'] and len(consented_events)>=1 and not optin_errors
               context.close()
               browser.close()
 
@@ -258,10 +283,9 @@ jobs:
               creds=service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON']),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
               creds.refresh(Request())
               endpoint=f'https://analyticsdata.googleapis.com/v1beta/properties/{PROPERTY_ID}:runRealtimeReport'
-              # The opt-in browser probe already confirms this event came from /tools.html and records
-              # the page title in local evidence. Realtime activeUsers is incompatible with this
-              # event/title dimension pair, so verify delivery using eventName + eventCount.
-              payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'limit':25}
+              # Filter to this exact event so common event names cannot crowd it out of the report.
+              # Explicit opt-in is also checked in the browser network capture and event callback above.
+              payload={'dimensions':[{'name':'eventName'}],'metrics':[{'name':'eventCount'}],'dimensionFilter':{'filter':{'fieldName':'eventName','stringFilter':{'matchType':'EXACT','value':'analytics_detail_opt_in'}}},'limit':5}
               deadline=time.time()+150
               while time.time()<deadline:
                   rt['attempts']+=1
