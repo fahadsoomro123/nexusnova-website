@@ -14,6 +14,7 @@ on:
       - 'assets/**/*.png'
       - 'assets/**/*.webp'
       - 'robots.txt'
+      - 'ads.txt'
       - 'sitemap*.xml'
   workflow_dispatch:
 
@@ -49,7 +50,7 @@ jobs:
           paths = subprocess.check_output([
               'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--',
               '*.html', 'assets/**/*.css', 'assets/**/*.js',
-              'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'sitemap*.xml'
+              'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'ads.txt', 'sitemap*.xml'
           ], text=True).splitlines()
           paths = [p for p in paths if p and not p.startswith('.github/')]
           if not paths:
@@ -161,6 +162,7 @@ jobs:
           /articles/google-releases-chrome-152-for-android.html
           /articles/chrome-152-for-android-adds-desktop-security-fixes.html
           /robots.txt
+          /ads.txt
           /sitemap.xml
           /sitemap-index.xml
           ROUTES
@@ -188,6 +190,8 @@ jobs:
           }
 
           check_contains '/' '<link rel="canonical" href="https://nexusnovatools.com/">' 'homepage canonical'
+          check_contains '/' 'client=ca-pub-5070673529890078' 'homepage AdSense publisher ID'
+          check_contains '/ads.txt' 'google.com, pub-5070673529890078, DIRECT, f08c47fec0942fa0' 'ads.txt declares the homepage AdSense publisher'
           check_contains '/' 'NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides' 'homepage reflects current 92-tool version'
           check_contains '/' 'document-workbench.html' 'homepage advertises the combined PDF workbench'
           check_contains '/tools.html' 'id="directory-search-count">92 tools' 'directory count matches 92'
