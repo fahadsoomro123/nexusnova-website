@@ -145,7 +145,7 @@ for (const file of files()) {
       const schemaClose = schemaStart >= 0 ? html.indexOf('</script>', schemaStart) : -1;
       const oldSchema = schemaStart >= 0 && schemaClose >= 0 ? html.slice(schemaStart, schemaClose + 9) : '';
       if (faqStart >= 0 && schemaClose >= 0 && /"@type":"FAQPage"/.test(oldSchema)) {
-        const tail = html.slice(schemaClose + 9).replace(/^\\s*(?=<\\/main>)/i, '');
+        const tail = html.slice(schemaClose + 9).replace(/^\s*(?=<\/main>)/i, '');
         html = html.slice(0, markerStart) + insertion + tail;
       } else {
         throw new Error(`Cannot safely refresh existing guide/FAQ block in ${file}`);
