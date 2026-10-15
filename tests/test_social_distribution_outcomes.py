@@ -102,6 +102,14 @@ class SocialDistributionOutcomeTests(unittest.TestCase):
         self.assertNotIn("access_token", str(row))
         self.assertNotIn("secret", str(row))
 
+    def test_error_details_redact_token_values(self) -> None:
+        detail = publisher.safe_error(
+            RuntimeError("HTTP 403: access_token=SECRET123 Bearer abc.def/ghi")
+        )
+        self.assertNotIn("SECRET123", detail)
+        self.assertNotIn("abc.def/ghi", detail)
+        self.assertIn("[redacted]", detail)
+
     def test_instagram_published_media_identifier_is_returned(self) -> None:
         with (
             patch.object(base, "social_image_url", return_value="https://nexusnovatools.com/assets/generated/campaign.jpg"),
