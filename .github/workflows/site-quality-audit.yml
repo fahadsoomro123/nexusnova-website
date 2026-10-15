@@ -87,26 +87,37 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          # Replace only the actual AdSense network URL in the local QA copy.
-          # Production index.html remains unchanged by this step.
+          # Stub the historical static AdSense tag if present in this local QA copy.
+          # The production homepage now loads AdSense dynamically from main.js.
           index = Path('index.html')
           html = index.read_text(encoding='utf-8')
           ads_src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5070673529890078'
-          if html.count(ads_src) != 1:
-              raise SystemExit(f'Expected one static AdSense script in index.html, found {html.count(ads_src)}')
-          html = html.replace(ads_src, 'data:text/javascript,window.__nexusnovaLocalAdSenseStub=true', 1)
-          index.write_text(html, encoding='utf-8')
+          static_count = html.count(ads_src)
+          if static_count > 1:
+              raise SystemExit(f'Expected zero or one static AdSense URL in index.html, found {static_count}')
+          if static_count == 1:
+              html = html.replace(ads_src, 'data:text/javascript,window.__nexusnovaLocalAdSenseStub=true', 1)
+              index.write_text(html, encoding='utf-8')
+
+          # Disable the dynamically injected AdSense URL in the local audit copy.
+          path = Path('assets/js/main.js')
+          source = path.read_text(encoding='utf-8')
+          lines = source.splitlines()
+          ad_matches = [i for i, line in enumerate(lines) if 'adsenseScript.src=' in line and 'pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' in line]
+          if len(ad_matches) != 1:
+              raise SystemExit(f'Expected exactly one dynamic AdSense loader source line, found {len(ad_matches)}')
+          lines[ad_matches[0]] = "    adsenseScript.src='data:text/javascript,window.__nexusnovaLocalAdSenseStub=true';"
+          path.write_text('\\n'.join(lines)+'\\n', encoding='utf-8')
 
           # Disable external GA4 only in this local audit copy.
-          path = Path('assets/js/main.js')
-          text = path.read_text(encoding='utf-8')
-          lines = text.splitlines()
+          source = path.read_text(encoding='utf-8')
+          lines = source.splitlines()
           matches = [i for i, line in enumerate(lines) if (('analyticsScript.src=' in line or 'script.src=' in line) and 'googletagmanager.com/gtag/js' in line)]
           if len(matches) != 1:
               raise SystemExit(f'Expected exactly one GA4 loader source line, found {len(matches)}')
           lines[matches[0]] = "    analyticsScript.src='data:text/javascript,window.__nexusnovaLocalGa4Stub=true';"
-          path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
-          print('Local browser QA disables external AdSense and GA4 downloads in its copy only; production sources are untouched.')
+          path.write_text('\\n'.join(lines)+'\\n', encoding='utf-8')
+          print('Local browser QA stubs dynamic AdSense and external GA4 downloads in its copy only; production sources are untouched.')
           PY
       - name: Start local website server
         run: |
