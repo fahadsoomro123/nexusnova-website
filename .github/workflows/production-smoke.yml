@@ -47,7 +47,7 @@ jobs:
           grep -Fq "homepage document title matches 97 tools" .github/workflows/production-smoke.yml
           grep -Fq "homepage Open Graph title matches 97 tools" .github/workflows/production-smoke.yml
           grep -Fq "homepage Twitter title matches 97 tools" .github/workflows/production-smoke.yml
-          grep -Fq "assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2" .github/workflows/production-smoke.yml
+          grep -Fq "assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v3" .github/workflows/production-smoke.yml
 
   production-smoke:
     if: github.event_name != 'pull_request'
@@ -279,7 +279,7 @@ jobs:
           check_contains '/ai-prompt-builder.html' 'Prompt review before you send it' 'AI Prompt Builder review section'
           check_contains '/ai-prompt-builder.html' 'Key Features &amp; Practical Applications' 'AI Prompt Builder practical applications'
           check_contains '/ai-prompt-builder.html' 'AI Prompt Builder FAQ' 'AI Prompt Builder FAQ'
-          check_contains '/' 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2' 'homepage loads versioned instant search index'
+          check_contains '/' 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v3' 'homepage loads versioned instant search index'
           check_contains '/tools.html' 'id="directory-search-count">97 tools' 'directory count reflects the Tier-1 expansion'
           check_contains '/ai-prompt-enhancer.html' 'data-tier1-tool="prompt-enhancer"' 'AI prompt enhancer route is the expected tool'
           check_contains '/short-form-video-hook-generator.html' 'data-tier1-tool="video-hooks"' 'short-form script generator route is the expected tool'
@@ -295,8 +295,8 @@ jobs:
           check_contains '/guides/app-privacy-terms-checklist.html' 'href="https://nexusnovatools.com/guides/app-privacy-terms-checklist.html"' 'privacy checklist guide canonical'
           check_contains '/categories.html' 'Browse All 97 Tools Directory' 'categories hub count matches 97'
           check_contains '/tools.html' 'assets/css/site.css?build=20261015-tier1-expansion-1&v=20261015-v2' 'tools directory CSS cache-busted'
-          check_contains '/guides.html' 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2' 'guides hub search asset cache-busted'
-          check_contains '/articles.html' 'assets/js/search-core.js?v=20261015-v2' 'articles hub search asset cache-busted'
+          check_contains '/guides.html' 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v3' 'guides hub search asset cache-busted'
+          check_contains '/articles.html' 'assets/js/search-core.js?v=20261015-v3' 'articles hub search asset cache-busted'
           check_contains '/short-form-video-hook-generator.html' 'assets/js/tier1-tools.js?build=20261015-tier1-expansion-1&v=20261015-v2' 'hook generator cache-busted engine'
           check_contains '/freelance-rate-calculator.html' 'assets/js/tier1-tools.js?build=20261015-tier1-expansion-1&v=20261015-v2' 'freelance calculator cache-busted engine'
           check_contains '/privacy-policy-terms-generator.html' 'assets/js/tier1-tools.js?build=20261015-tier1-expansion-1&v=20261015-v2' 'policy generator cache-busted engine'
@@ -310,7 +310,7 @@ jobs:
           grep -F '<title>NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides</title>' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: title tag is not 97 tools.' >&2; exit 1; }
           grep -F '<meta property="og:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Open Graph title is stale.' >&2; exit 1; }
           grep -F '<meta name="twitter:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Twitter title is stale.' >&2; exit 1; }
-          grep -F 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: v2 search asset reference is missing.' >&2; exit 1; }
+          grep -F 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v3' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: v2 search asset reference is missing.' >&2; exit 1; }
           echo 'LIVE RAW BODY PASS: homepage title + social titles + v2 search asset are present in the deployed HTTP body.'
 
           live_tools_headers=/tmp/nexusnova-live-tools.headers
@@ -322,7 +322,7 @@ jobs:
           grep -F 'id="directory-search-count">97 tools' "$live_tools_body" || { echo 'LIVE RAW BODY FAIL: tools count is not 97.' >&2; exit 1; }
           echo 'LIVE RAW BODY PASS: tools directory count is 97.'
 
-          live_search_url="$base/assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2"
+          live_search_url="$base/assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v3"
           curl -fsS -L --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' "$live_search_url" -o /tmp/nexusnova-live-search-core.js || { echo 'LIVE SEARCH FAIL: could not fetch the public v2 search asset.' >&2; exit 1; }
           node - <<'NODE' || { echo 'LIVE SEARCH FAIL: live search runtime assertions failed.' >&2; exit 1; }
           const fs = require('node:fs');
@@ -333,11 +333,25 @@ jobs:
           const Engine = sandbox.NexusNovaSearchCore || sandbox.window.NexusNovaSearchCore;
           if (typeof Engine !== 'function') throw new Error('Live search asset did not export NexusNovaSearchCore');
           const engine = new Engine();
-          for (const [query, expected] of [['TikTok', 'short-form-video-hook-generator.html'], ['Crypto Tax', 'crypto-tax-profit-estimator.html']]) {
+          const checks = [
+            ['T', ['image-to-text-ocr.html']],
+            ['tik', ['short-form-video-hook-generator.html']],
+            ['tok', ['short-form-video-hook-generator.html']],
+            ['calc', ['calculator.html']],
+            ['calcuator', ['calculator.html']],
+            ['tax', ['salary-tax-calculator-pakistan.html', 'fbr-tax-calculator-pakistan.html', 'crypto-tax-profit-estimator.html']],
+            ['pdf', ['jpg-to-pdf.html', 'document-workbench.html', 'text-to-pdf.html']],
+            ['c', ['csv-json-converter.html']],
+            ['TikTok', ['short-form-video-hook-generator.html']],
+            ['Crypto Tax', ['crypto-tax-profit-estimator.html']]
+          ];
+          for (const [query, expected] of checks) {
             const results = engine.query(query);
-            const match = results.find(item => item.url === expected);
-            console.log('LIVE SEARCH PASS', JSON.stringify({ query, expected, top: results[0]?.url || null, match: Boolean(match) }));
-            if (!match) throw new Error('Live search failed to return expected route for query: ' + query);
+            const urls = new Set(results.map(item => item.url));
+            const missing = expected.filter(url => !urls.has(url));
+            console.log('LIVE SEARCH PASS', JSON.stringify({ query, count: results.length, top: results.slice(0, 6).map(x => x.url), expected, missing }));
+            if (!results.length || missing.length) throw new Error('Live search failed for "' + query + '": ' + missing.join(', '));
+            if (['T', 'c'].includes(query) && results.some(item => item.type !== 'tool')) throw new Error('Short query was not tool-prioritized: ' + query);
           }
           NODE
           check_absent '/ai-prompt-builder.html' 'Guide on How to Use the AI Prompt Builder' 'duplicate AI prompt guide removed'
