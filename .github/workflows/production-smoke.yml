@@ -135,7 +135,7 @@ jobs:
           while IFS= read -r route; do
             [ -n "$route" ] || continue
             body="$(route_file "$route")"
-            code="$(curl -sS -L -o "$body" -w '%{http_code}' --connect-timeout 2 --max-time 3 -H 'Cache-Control: no-cache' "$base$route?smoke=$GITHUB_SHA" || true)"
+            code="$(curl -sS -L -o "$body" -w '%{http_code}' --connect-timeout 2 --max-time 5 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: NexusNovaLiveSmoke/2.0' "$base$route?smoke=$GITHUB_SHA" || true)"
             if [ "$code" = '200' ]; then
               echo "ROUTE PASS $code $route"
             else
@@ -178,6 +178,8 @@ jobs:
           /emi-calculator.html
           /bmi-calculator.html
           /tools.html
+          /categories.html
+          /guides.html
           /document-workbench.html
           /pdf-tools.html
           /merge-pdf.html
