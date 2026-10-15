@@ -1,0 +1,59 @@
+name: AdSense Tier-1 Remediation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'scripts/*.mjs'
+      - '.github/workflows/adsense-tier1-remediation.yml'
+      - 'sitemap.xml'
+      - 'robots.txt'
+  push:
+    branches:
+      - 'adsense-tier1-us-traffic-*'
+
+permissions:
+  contents: write
+
+jobs:
+  remediate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate page remediation
+        run: node scripts/adsense-tier1-remediation.mjs
+
+      - name: Add global homepage discovery layer
+        run: node scripts/tier1-home-structure.mjs
+
+      - name: Regenerate sitemap
+        run: node scripts/refresh-tier1-sitemap.mjs
+
+      - name: Clean non-tool schema
+        run: node scripts/cleanup-tier1-nontool-schema.mjs
+
+      - name: Validate remediation
+        run: node scripts/validate-tier1-remediation.mjs
+
+      - name: Commit generated remediation
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          if git diff --quiet; then
+            echo 'No generated changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add '*.html' sitemap.xml robots.txt
+          git commit -m 'chore: materialize tier-1 content and schema remediation'
+          git push origin HEAD:${{ github.head_ref }}
