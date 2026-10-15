@@ -39,11 +39,13 @@ def indexable(text: str) -> bool:
 def cache_bust():
     changed=[]
     attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])(?P<url>(?:\.\.?/)*assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
+    absolute_attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])/(?P<url>assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
     for path in public_html():
         text=read(path)
         def repl(m):
             return f'{m.group("prefix")}{m.group("url")}?v={VERSION}{m.group("quote")}'
         new=attr_re.sub(repl,text)
+        new=absolute_attr_re.sub(repl,new)
         if new != text and write_if_changed(path,new): changed.append(path.as_posix())
     return changed
 
@@ -106,8 +108,8 @@ def build_sitemap():
     urls=[]
     for path in public_html():
         text=read(path)
-        if not indexable(text): continue
         rel=path.relative_to(ROOT).as_posix()
+        if rel=='404.html' or not indexable(text): continue
         if rel=='index.html': loc=SITE
         else: loc=SITE+rel
         urls.append((loc,git_date(rel)))
