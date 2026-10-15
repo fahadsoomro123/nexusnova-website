@@ -74,6 +74,7 @@ class WesternMarketGrowthTests(unittest.TestCase):
             page.write_text(
                 '<html><head><title>JPG to PDF Converter</title>'
                 '<meta name="description" content="Convert JPEG images to PDF with A4, US Letter and Legal options.">'
+                '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">'
                 '</head><body><script type="application/ld+json">{"@type":"WebApplication"}</script></body></html>',
                 encoding="utf-8",
             )
@@ -97,7 +98,8 @@ class WesternMarketGrowthTests(unittest.TestCase):
             with mock.patch.object(social_growth_engine, "ROOT", root), \
                  mock.patch.object(social_growth_engine, "ARTICLE", empty), \
                  mock.patch.object(social_growth_engine, "PULSE", empty), \
-                 mock.patch.object(social_growth_engine, "TRAFFIC", traffic_path):
+                 mock.patch.object(social_growth_engine, "TRAFFIC", traffic_path), \
+                 mock.patch.object(social_growth_engine, "tracked_paths", return_value={"jpg-to-pdf.html"}):
                 candidates = social_growth_engine.build_candidates()
 
         candidate = candidates["https://nexusnovatools.com/jpg-to-pdf.html"]
