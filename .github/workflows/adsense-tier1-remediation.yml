@@ -46,6 +46,7 @@ jobs:
         run: node scripts/validate-tier1-remediation.mjs
 
       # Push events materialize generated pages; pull_request events validate only, avoiding concurrent branch writes.
+      # The guide generator normalizes the FAQ block tail so repeat runs stay idempotent.
       - name: Commit generated remediation
         if: github.event_name == 'push'
         run: |
