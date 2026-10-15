@@ -52,7 +52,7 @@ for rel in GUIDES:
  assert f'url:"{rel}", type:"guide"' in core,f"missing search record: {rel}"
 for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool search record: {rel}"
 assert "build=20261015-tier1-expansion-1" in home,"homepage assets need build version"
-assert "v=20261015-v2" in home,"homepage assets must be cache-busted for the live refresh"
-assert "v=20261015-v2" in directory,"directory assets must be cache-busted for the live refresh"
+assert "v=20261015-v3" in home,"homepage assets must be cache-busted for the live refresh"
+assert "v=20261015-v3" in directory,"directory assets must be cache-busted for the live refresh"
 print("PASS: 97 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache versions on 97 tool routes.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")

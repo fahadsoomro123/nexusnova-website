@@ -286,7 +286,7 @@ function fuzzyTokenScore(queryToken,candidateToken){
   const query=String(queryToken||''), candidate=String(candidateToken||'');
   if(!query||!candidate) return 0;
   if(query===candidate) return 1;
-  if(query.length<4) return 0;
+  if(query.length<2) return 0;
 
   if(candidate.includes(query)&&query.length>=3) return 0.93;
 
@@ -403,7 +403,7 @@ class NexusNovaSearchCore{
       return {score:weights.exact,coverage:1,exact:queryTokens.length,fuzzy:0,distance:0,mode:'exact'};
     }
 
-    if(query.length>=4&&field.includes(query)){
+    if(field.includes(query)){
       return {score:weights.phrase,coverage:1,exact:queryTokens.length,fuzzy:0,distance:0,mode:'phrase'};
     }
 
@@ -498,6 +498,9 @@ class NexusNovaSearchCore{
     }
 
     scored.sort((left,right)=>{
+      const typePriority=type=>type==='tool'?0:(type==='category'?1:2);
+      const priorityDiff=typePriority(left.record.type)-typePriority(right.record.type);
+      if(priorityDiff) return priorityDiff;
       if(right.score!==left.score) return right.score-left.score;
       if(right.match.coverage!==left.match.coverage) return right.match.coverage-left.match.coverage;
       if(right.match.exactTokens!==left.match.exactTokens) return right.match.exactTokens-left.match.exactTokens;
@@ -589,8 +592,13 @@ class NexusNovaSearchCore{
       meta.className='nn-search-result-meta';
       meta.textContent=result.category||result.type;
 
+      const url=document.createElement('span');
+      url.className='nn-search-result-url';
+      url.textContent=result.url;
+
       main.appendChild(title);
       main.appendChild(meta);
+      main.appendChild(url);
       item.appendChild(icon);
       item.appendChild(main);
       item.appendChild(document.createTextNode('→'));
