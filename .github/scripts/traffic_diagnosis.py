@@ -14,6 +14,7 @@ JSON_OUT = ROOT / 'traffic-diagnosis.json'
 TEXT_OUT = ROOT / 'traffic-diagnosis.txt'
 SITE_URL = os.getenv('GSC_SITE_URL', 'sc-domain:nexusnovatools.com').strip() or 'sc-domain:nexusnovatools.com'
 GA4_PROPERTY_ID = os.getenv('GA4_PROPERTY_ID', '').strip()
+WESTERN_COUNTRIES = ('USA', 'GBR', 'CAN', 'AUS', 'NZL', 'IRL')
 
 
 def pct_change(current: float, previous: float) -> float | None:
@@ -59,7 +60,14 @@ def google_token() -> tuple[str | None, str | None]:
         return None, f'Google credential error: {exc}'
 
 
-def gsc_query(token: str, start: date, end: date, dimensions: list[str] | None = None, row_limit: int = 250) -> dict:
+def gsc_query(
+    token: str,
+    start: date,
+    end: date,
+    dimensions: list[str] | None = None,
+    row_limit: int = 250,
+    country: str | None = None,
+) -> dict:
     endpoint = (
         'https://searchconsole.googleapis.com/webmasters/v3/sites/'
         + urllib.parse.quote(SITE_URL, safe='')
@@ -72,6 +80,15 @@ def gsc_query(token: str, start: date, end: date, dimensions: list[str] | None =
     }
     if dimensions:
         payload['dimensions'] = dimensions
+    if country:
+        payload['dimensionFilterGroups'] = [{
+            'groupType': 'and',
+            'filters': [{
+                'dimension': 'country',
+                'operator': 'equals',
+                'expression': country.lower(),
+            }],
+        }]
     return post_json(endpoint, payload, token)
 
 
@@ -99,6 +116,63 @@ def gsc_page_map(data: dict) -> dict[str, dict]:
             'position': float(row.get('position', 0)),
         }
     return result
+
+
+def gsc_western_page_signals(token: str, start: date, end: date) -> tuple[list[dict], list[str]]:
+    """Collect Search Console page signals from English-speaking Western markets."""
+    aggregate: dict[str, dict] = {}
+    errors: list[str] = []
+    for country in WESTERN_COUNTRIES:
+        try:
+            rows = gsc_page_map(
+                gsc_query(
+                    token,
+                    start,
+                    end,
+                    dimensions=['page'],
+                    row_limit=250,
+                    country=country,
+                )
+            )
+        except Exception as exc:
+            errors.append(f'{country}: {type(exc).__name__}')
+            continue
+
+        for page, metrics in rows.items():
+            row = aggregate.setdefault(page, {
+                'page': page,
+                'clicks': 0.0,
+                'impressions': 0.0,
+                'weighted_position_sum': 0.0,
+                'market_breakdown': {},
+            })
+            clicks = float(metrics.get('clicks', 0) or 0)
+            impressions = float(metrics.get('impressions', 0) or 0)
+            position = float(metrics.get('position', 0) or 0)
+            row['clicks'] += clicks
+            row['impressions'] += impressions
+            row['weighted_position_sum'] += position * impressions
+            row['market_breakdown'][country] = {
+                'clicks': round(clicks, 1),
+                'impressions': round(impressions, 1),
+                'ctr': round(float(metrics.get('ctr', 0) or 0), 2),
+                'position': round(position, 2),
+            }
+
+    result: list[dict] = []
+    for row in aggregate.values():
+        impressions = row.pop('impressions')
+        clicks = row.pop('clicks')
+        weighted_position_sum = row.pop('weighted_position_sum')
+        row['impressions'] = round(impressions, 1)
+        row['clicks'] = round(clicks, 1)
+        row['ctr'] = round((clicks / impressions * 100) if impressions else 0, 2)
+        row['position'] = round((weighted_position_sum / impressions) if impressions else 0, 2)
+        row['markets'] = sorted(row['market_breakdown'])
+        result.append(row)
+
+    result.sort(key=lambda row: (row['clicks'], row['impressions']), reverse=True)
+    return result[:50], errors
 
 
 def ga4_report(token: str, start: date, end: date, dimensions: list[str] | None = None, metrics: list[str] | None = None, limit: int = 100) -> dict:
@@ -231,6 +305,7 @@ def main() -> None:
         gsc_week_prev = gsc_metrics(gsc_query(token, *gsc_week_previous))
         pages_cur = gsc_page_map(gsc_query(token, *gsc_week_current, dimensions=['page'], row_limit=250))
         pages_prev = gsc_page_map(gsc_query(token, *gsc_week_previous, dimensions=['page'], row_limit=250))
+        western_market_pages, western_market_errors = gsc_western_page_signals(token, *gsc_week_current)
         report['gsc'] = {
             'day': {'current_date': gsc_day_current.isoformat(), 'previous_date': gsc_day_previous.isoformat(), 'current': gsc_day_cur, 'previous': gsc_day_prev},
             'week': {'current_range': [d.isoformat() for d in gsc_week_current], 'previous_range': [d.isoformat() for d in gsc_week_previous], 'current': gsc_week_cur, 'previous': gsc_week_prev},
@@ -239,6 +314,8 @@ def main() -> None:
                 'week': comparison(gsc_week_cur, gsc_week_prev, ['clicks', 'impressions', 'ctr', 'position']),
             },
             'page_movers': page_movers(pages_cur, pages_prev),
+            'western_market_pages': western_market_pages,
+            'western_market_errors': western_market_errors,
         }
     except Exception as exc:
         report['gsc'] = {'error': str(exc)}
@@ -278,6 +355,12 @@ def main() -> None:
     gsc_change = ((report.get('gsc') or {}).get('changes') or {}).get('week')
     if gsc_week and gsc_change:
         lines += ['', f"GSC last complete 7d: {gsc_week.get('clicks', 0)} clicks, {gsc_week.get('impressions', 0)} impressions, {gsc_week.get('ctr', 0)}% CTR, position {gsc_week.get('position', 0)}", f"GSC WoW: clicks {gsc_change.get('clicks')}%, impressions {gsc_change.get('impressions')}%, CTR {gsc_change.get('ctr')}%"]
+        western_pages = (report.get('gsc') or {}).get('western_market_pages') or []
+        western_clicks = round(sum(float(row.get('clicks', 0) or 0) for row in western_pages), 1)
+        western_impressions = round(sum(float(row.get('impressions', 0) or 0) for row in western_pages), 1)
+        lines.append(f"Western-market Search Console: {len(western_pages)} page rows across USA/UK/Canada/Australia/New Zealand/Ireland; summed page clicks {western_clicks}, impressions {western_impressions} (page rows can be incomplete due to Search Console limits).")
+        for error in (report.get('gsc') or {}).get('western_market_errors') or []:
+            lines.append(f"Western-market query warning: {error}")
     ga_week = ((report.get('ga4') or {}).get('week') or {}).get('current')
     ga_change = ((report.get('ga4') or {}).get('changes') or {}).get('week')
     if ga_week and ga_change:
