@@ -2,8 +2,15 @@ name: NexusNova Daily Traffic Autopilot
 
 on:
   schedule:
-    - cron: '15 2 * * *'
+    # Publish when North American users are starting their workday (12:15 ET / 09:15 PT in daylight time).
+    - cron: '15 16 * * *'
   workflow_dispatch:
+    inputs:
+      publish_now:
+        description: 'Publish one scored, tracked social campaign now'
+        required: true
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -107,8 +114,17 @@ jobs:
         run: python .github/scripts/prepare_instagram_media.py
 
       - name: Build adaptive Social Growth v2 package
+        id: social-package
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: python .github/scripts/social_growth_engine.py
+        run: |
+          python .github/scripts/social_growth_engine.py
+          if [ -s social-growth-publish.json ]; then
+            echo 'candidate=true' >> "$GITHUB_OUTPUT"
+            echo 'A scored social campaign is ready.'
+          else
+            echo 'candidate=false' >> "$GITHUB_OUTPUT"
+            echo 'No scored campaign today; public distribution will be skipped.'
+          fi
 
       - name: Prepare legacy daily social fallback only if v2 has no candidate
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -226,11 +242,11 @@ jobs:
               print('Social Growth v2 safety boundary passed:', item.get('title'))
           PY
 
-      - name: Enforce review-only publishing boundary
+      - name: Enforce safe generated-output boundary
         shell: bash
         run: |
           set -euo pipefail
-          echo 'Automatic public publishing is disabled. The workflow only prepares private analysis and review artifacts.'
+          echo 'Public website-file publishing remains disabled. Only the separate, guarded social link-post step can publish externally.'
           echo 'Article HTML, sitemap/discovery, design, scripts, application code and all unlisted tracked files remain forbidden.'
           allowed='assets/data/live-tech-pulse.json'
           changes="$(git status --porcelain --untracked-files=no)"
@@ -260,10 +276,42 @@ jobs:
           print('Live Tech Pulse schema: PASS')
           PY
           fi
-          echo 'Review-only boundary: PASS'
+          echo 'Generated-output safety boundary: PASS'
           echo 'No article HTML, sitemap/discovery, application, design or automation source files were changed.'
-          echo 'Social creative images and campaign history remain private-run outputs; they are not committed, deployed, indexed or posted.'
-          echo 'No commit, push, IndexNow submission or social distribution is performed by this workflow.'
+          echo 'Generated creative images remain private-run outputs and are not deployed. Scheduled promotion uses a tracked text/link post to avoid stale public images.'
+          echo 'No source commit, site-content push or IndexNow submission is performed by the social distribution step.'
+
+      - name: Publish one daily tracked social campaign
+        if: >-
+          (github.event_name == 'schedule' ||
+          (github.event_name == 'workflow_dispatch' && inputs.publish_now == true)) &&
+          steps.social-package.outputs.candidate == 'true'
+        env:
+          NEXUSNOVA_SOCIAL_TEXT_ONLY: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python .github/scripts/distribute_social_growth.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report_path = Path('social-distribution-report.json')
+          if not report_path.exists():
+              raise SystemExit('Social distribution report missing; cannot verify that the campaign was accepted.')
+          report = json.loads(report_path.read_text(encoding='utf-8'))
+          url = str(report.get('url', ''))
+          if not url.startswith('https://nexusnovatools.com/'):
+              raise SystemExit('Social campaign URL escaped the NexusNova domain boundary.')
+          outcomes = report.get('outcomes') if isinstance(report.get('outcomes'), list) else []
+          successful = [row for row in outcomes if isinstance(row, dict) and row.get('ok')]
+          print('Campaign:', report.get('campaign'))
+          print('Target:', url)
+          print('Successful social destinations:', len(successful))
+          for row in outcomes:
+              print(f"- {row.get('platform', 'unknown')}: {'posted' if row.get('ok') else 'failed/skipped'}")
+          if not successful:
+              raise SystemExit('No social destination accepted the tracked campaign; inspect the outcomes above.')
+          PY
 
       - name: Detect fresh Social Growth v2 review output
         id: fresh-social-growth
