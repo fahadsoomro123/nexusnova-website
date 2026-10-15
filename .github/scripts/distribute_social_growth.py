@@ -36,6 +36,8 @@ def tracked_url(item: dict, source: str) -> str:
 
 def safe_error(exc: Exception) -> str:
     text = str(exc).replace("\n", " ").strip()
+    text = re.sub(r"(?i)\b(access_token|refresh_token|api_key|authorization|token)\b(?:\\s*[:=]\\s*|\\s+)[^&\\s,;]+", r"\1=[redacted]", text)
+    text = re.sub(r"(?i)\\bBearer\\s+[A-Za-z0-9._~+/-]+=*", "Bearer [redacted]", text)
     return text[:350]
 
 
@@ -67,9 +69,11 @@ def _safe_public_post_url(value) -> str:
         parts = urllib.parse.urlsplit(candidate)
         host = (parts.hostname or "").lower().rstrip(".")
         allowed = any(host == item or host.endswith("." + item) for item in _PUBLIC_POST_HOSTS)
+        if parts.username or parts.password or parts.port not in (None, 443):
+            return ""
         if parts.scheme.lower() != "https" or not allowed or not parts.path:
             return ""
-        return urllib.parse.urlunsplit(("https", parts.netloc, parts.path, "", ""))
+        return urllib.parse.urlunsplit(("https", host, parts.path, "", ""))
     except ValueError:
         return ""
 
@@ -271,7 +275,7 @@ def main() -> None:
     if webhook:
         try:
             result = base.post_json(webhook, item)
-            record("webhook", result, "Webhook accepted the campaign request")
+            record("webhook", {"posted": True, "provider": "webhook", "response": result}, "Webhook accepted the campaign request")
         except Exception as exc:
             record("webhook", None, safe_error(exc))
 
