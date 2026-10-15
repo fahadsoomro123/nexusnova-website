@@ -71,6 +71,22 @@ def run_report(
     return post_json(endpoint, payload, token)
 
 
+def top_countries_last_7d(token: str) -> list[dict]:
+    """Return the leading countries by sessions for a settled seven-day window."""
+    return dimension_rows(
+        run_report(
+            token,
+            "7daysAgo",
+            "yesterday",
+            ["sessions"],
+            ["country"],
+            limit=12,
+        ),
+        "country",
+        "sessions",
+    )
+
+
 def run_daily_trend(token: str) -> dict:
     endpoint = f"https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:runReport"
     payload = {
@@ -208,6 +224,7 @@ def main() -> None:
             "active_users",
         )
         daily_active_users = daily_trend_rows(run_daily_trend(token))
+        countries = top_countries_last_7d(token)
 
         traffic_seen = bool(today["activeUsers"] > 0 or today["sessions"] > 0 or today["screenPageViews"] > 0)
         changes = {key: pct_change(today[key], yesterday[key]) for key in metric_names}
@@ -226,6 +243,7 @@ def main() -> None:
             "top_sources_today": sources,
             "top_pages_today": pages,
             "top_cities_today": cities,
+            "top_countries_last_7_days": countries,
             "devices_today": devices,
             "note": "GA4 same-day totals are intraday and can still be adjusted by Google Analytics processing.",
         }
@@ -249,6 +267,11 @@ def main() -> None:
                 f"Realtime last 30m: {fmt_number(realtime['activeUsers'])} active users, "
                 f"{fmt_number(realtime['screenPageViews'])} page views, {fmt_number(realtime['eventCount'])} events"
             ),
+            "Top countries — last 7 days:",
+            *[
+                f"- {item['country'] or '(not set)'}: {fmt_number(item['sessions'])} sessions"
+                for item in countries[:8]
+            ],
             "Note: today's GA4 totals are intraday and may still adjust during processing.",
         ]
         TEXT_OUT.write_text("\n".join(text_lines) + "\n", encoding="utf-8")
@@ -299,6 +322,11 @@ def main() -> None:
             md += ["", "### Top sources / medium today"]
             for item in sources[:5]:
                 md.append(f"- `{item['source_medium'] or '(not set)'}` — {fmt_number(item['sessions'])} sessions")
+
+        if countries:
+            md += ["", "### Top countries — last 7 days"]
+            for item in countries[:8]:
+                md.append(f"- `{item['country'] or '(not set)'}` — {fmt_number(item['sessions'])} sessions")
 
         if pages:
             md += ["", "### Top pages today"]
