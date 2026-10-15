@@ -600,7 +600,7 @@ class NexusNovaSearchCore{
       const item=document.createElement('a');
       item.id='nn-core-search-result-'+(index+1);
       item.className='nn-search-result';
-      item.href='/'+String(result.url||'').replace(/^\\/+/, '');
+      item.href='/'+String(result.url||'').replace(/^\/+/, '');
       item.setAttribute('role','option');
       item.setAttribute('data-nn-search-result','');
       item.setAttribute('aria-label',(result.displayTitle||result.title)+', '+(result.category||TYPE_LABELS[result.type]||result.type)+', '+item.href);
@@ -615,7 +615,7 @@ class NexusNovaSearchCore{
 
       const title=document.createElement('span');
       title.className='nn-search-result-title';
-      title.textContent=result.displayTitle||String(result.title||'').replace(/^\\[(?:Tool|Category|Guide|Article)\\]\\s*/,'');
+      title.textContent=result.displayTitle||String(result.title||'').replace(/^\[(?:Tool|Category|Guide|Article)\]\s*/,'');
 
       const meta=document.createElement('span');
       meta.className='nn-search-result-meta';
@@ -624,7 +624,7 @@ class NexusNovaSearchCore{
 
       const route=document.createElement('span');
       route.className='nn-search-result-url';
-      route.textContent='/'+String(result.url||'').replace(/^\\/+/, '');
+      route.textContent='/'+String(result.url||'').replace(/^\/+/, '');
 
       main.appendChild(title);
       main.appendChild(meta);
@@ -692,7 +692,7 @@ class NexusNovaSearchCore{
       }
 
       event.preventDefault();
-      window.location.assign('/'+String(results[0].url||'').replace(/^\\/+/, ''));
+      window.location.assign('/'+String(results[0].url||'').replace(/^\/+/, ''));
     };
 
     const onKeyDown=event=>{
