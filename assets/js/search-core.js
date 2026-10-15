@@ -108,7 +108,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Productivity", url:"productivity-tools.html", type:"category", category:"", tags:["productivity","productivity tools","category","hub"] },
   { title:"Gaming", url:"gaming.html", type:"category", category:"", tags:["gaming","game","edpi","sensitivity","reaction","category","hub"] },
   { title:"Live Information", url:"live.html", type:"category", category:"", tags:["live information","live","information","category","hub","today","pakistan today","dashboard","weather","sports","gold","fuel","currency","aqi","crypto","earthquakes"] },
-  { title:"2027 Social Security COLA Estimate: Latest Forecast and Dates", url:"articles/social-security-cola-2027-estimate.html", type:"article", category:"Articles", tags:["2027 Social Security COLA Estimate: Latest Forecast and Dates","The latest reported 2027 Social Security COLA estimates sit around 3.4%–3.6%. See what is official, how CPI-W sets the adjustment, and calculate a benefit scenario.","U.S. Benefits","2027 social security cola estimate forecast cost of living adjustment CPI-W third quarter retirement benefits monthly payment increase Social Security Administration official rate announcement estimate scenario"] },
+  { title:"2027 Social Security COLA: Official 3.6% Rate and Payment Dates", url:"articles/social-security-cola-2027-estimate.html", type:"article", category:"Articles", tags:["2027 Social Security COLA Estimate: Latest Forecast and Dates","SSA announced a 3.6% Social Security COLA for 2027 on October 14, 2026. See payment timing, the CPI-W method, and calculate a gross benefit scenario.","U.S. Benefits","2027 social security cola estimate forecast cost of living adjustment CPI-W third quarter retirement benefits monthly payment increase Social Security Administration official rate announcement estimate scenario"] },
   { title:"CS2 vs Valorant Sensitivity & eDPI Guide", url:"articles/cs2-valorant-sensitivity-edpi-guide.html", type:"article", category:"Articles", tags:["CS2 vs Valorant Sensitivity & eDPI Guide","Learn how CS2 and Valorant sensitivity conversion works, what eDPI means, why 360-distance matters and how to test aim settings without guessing.","Articles","CS2 vs Valorant sensitivity and eDPI: a practical guide. | CS2 to Valorant sensitivity formula | What eDPI means | Why eDPI is not automatically comparable between games | 360-distance is a starting point, not the whole feel | A simple way to test a new sensitivity | Why this topic matters now | Related tools | sensitivity formula A common yaw-based conversion is: Valorant sensitivity ≈ CS2 | game. Calculate your eDPI → Why eDPI is not automatically comparable between games | scoped multipliers and visual design. A converted sensitivity should be treated | games. That makes sensitivity and aim-setting searches a repeat-use problem rather"] },
   { title:"AI Photo Restoration vs Enhancement", url:"articles/ai-photo-restoration-vs-enhancement.html", type:"article", category:"Articles", tags:["AI Photo Restoration vs Enhancement","Understand the difference between sharpening, color correction, upscaling and AI photo restoration — including what an old or blurry photo can and cannot.","Articles","AI Photo Restoration vs Enhancement: What Can Really Be Recovered? | Enhancement works with the pixels you have | AI restoration can infer missing detail | Why faces need extra caution | What sharpening can actually do | A safer restoration workflow | When 2× upscaling helps | Bottom line ? Separate enhancement from reconstruction | Try a transparent browser-based workflow | Better-looking is not the same as recovered truth. | image-processing operations. They can make existing edges easier to see and faded | information to prove those details. For family memories that may be acceptable | side by side with the source. Label generative AI restorations as reconstructed | settings first, and be clear about which method produced the final image. Try"] },
   { title:"Online Background Removers: What to Check in 2026", url:"articles/background-removal-online-guide.html", type:"article", category:"Articles", tags:["Online Background Removers: What to Check in 2026","A practical guide to online background removal: edge quality, hair and product cutouts, privacy, transparent PNG output, batch workflows and when local.","Articles","Online Background Removers: Quality, Privacy and What to Check in 2026 | The hard part is the edge | Product photos need different checks | Transparent PNG is usually the practical output | Privacy matters when the photo is personal | Local processing has trade-offs | What to check before downloading | Do you always need AI? | Bottom line — Online Background Removers | Related NexusNova tools | Check edges, output format and privacy. | difficult edge cases. A good result should preserve believable boundaries without | background removers process images on a remote server. That can be perfectly acceptable | Check for a white or dark halo around the subject. Inspect transparent areas such | privacy before uploading personal photos. A trustworthy tool should explain whether"] },
@@ -486,6 +486,9 @@ class NexusNovaSearchCore{
     const queryTokens=tokenizeSearchText(query);
     if(!queryTokens.length) return [];
 
+    // Single-character searches are discovery queries, not fuzzy full-text queries.
+    // Do not let article prose or generic tags such as "tool" dominate a query like "t".
+    const singleCharacterQuery=queryTokens.length===1 && query.length===1;
     const aliasTargets=NEXUSNOVA_ALIAS_MAP[query];
     const scored=[];
 
@@ -494,10 +497,30 @@ class NexusNovaSearchCore{
       if(!result) continue;
 
       if(aliasTargets&&!aliasTargets.includes(result.record.url)) continue;
+
+      if(singleCharacterQuery){
+        const token=queryTokens[0];
+        const titlePrefix=record._titleTokens.some(candidate=>candidate.startsWith(token));
+        const urlPrefix=record._urlTokens.some(candidate=>candidate.startsWith(token));
+        if(!titlePrefix&&!urlPrefix) continue;
+        result.singleCharacterPrefix=titlePrefix?2:1;
+      }
+
       scored.push(result);
     }
 
+    if(singleCharacterQuery&&scored.some(item=>item.record.type==='tool')){
+      const tools=scored.filter(item=>item.record.type==='tool');
+      const nonTools=scored.filter(item=>item.record.type!=='tool');
+      scored.length=0;
+      scored.push(...tools,...nonTools);
+    }
+
     scored.sort((left,right)=>{
+      if(singleCharacterQuery){
+        const prefixDiff=(right.singleCharacterPrefix||0)-(left.singleCharacterPrefix||0);
+        if(prefixDiff) return prefixDiff;
+      }
       const typePriority=type=>type==='tool'?0:(type==='category'?1:2);
       const priorityDiff=typePriority(left.record.type)-typePriority(right.record.type);
       if(priorityDiff) return priorityDiff;
