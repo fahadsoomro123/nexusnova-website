@@ -45,7 +45,8 @@ jobs:
       - name: Validate remediation
         run: node scripts/validate-tier1-remediation.mjs
 
-      # Push events materialize generated pages; pull_request events validate only, avoiding concurrent branch writes.\n      - name: Commit generated remediation
+      # Push events materialize generated pages; pull_request events validate only, avoiding concurrent branch writes.
+      - name: Commit generated remediation
         if: github.event_name == 'push'
         run: |
           if git diff --quiet; then
