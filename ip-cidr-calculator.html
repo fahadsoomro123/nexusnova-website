@@ -25,7 +25,7 @@
 <ol><li>Enter the IPv4 address and prefix length supplied by the network plan.</li><li>Check that the prefix is between 0 and 32 and that the address is valid IPv4 syntax.</li><li>Compare the calculated network and broadcast addresses against the intended allocation.</li><li>Check special cases such as /31 point-to-point links and /32 single-host routes before applying a generic host-count assumption.</li></ol>
 <p>For example, a /24 network contains 256 total IPv4 addresses, but the conventional number available to ordinary hosts is often lower because network and broadcast addresses have special meanings. The treatment of small prefixes depends on the networking context and configuration. Do not copy a host count without checking the purpose of the subnet and the network equipment's rules.</p>
 <h2>Security and verification limits</h2>
-<p>This calculator performs address arithmetic; it does not scan a network, check whether a host responds or decide whether you are authorised to access a range. A mathematically valid range can still conflict with another network or an organisation's addressing plan. Verify allocations with the network administrator and test routing separately before changing production systems.</p>
+<p>This calculator performs address arithmetic; it does not scan a network, test host responses or grant access. A valid range can conflict with an existing plan, so verify allocations and routing with the network administrator before changing production systems.</p>
 <h2>CIDR questions</h2>
 <h3>Does a calculated broadcast address prove that a host is online?</h3><p>No. CIDR arithmetic describes an address range. Connectivity requires separate routing, firewall and service checks.</p>
 
