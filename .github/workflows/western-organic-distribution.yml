@@ -8,6 +8,9 @@ on:
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/today_traffic_pulse.py'
       - 'tests/test_western_organic_distribution.py'
+      - 'tests/test_western_market_growth.py'
+      - '.github/scripts/traffic_diagnosis.py'
+      - '.github/scripts/distribute_update.py'
   push:
     branches: [main]
     paths:
@@ -15,10 +18,19 @@ on:
       - '.github/scripts/social_growth_engine.py'
       - '.github/scripts/today_traffic_pulse.py'
       - 'tests/test_western_organic_distribution.py'
+      - 'tests/test_western_market_growth.py'
+      - '.github/scripts/traffic_diagnosis.py'
+      - '.github/scripts/distribute_update.py'
   schedule:
     # 16:15 UTC: US/Canada lunchtime and UK late afternoon.
     - cron: '15 16 * * *'
   workflow_dispatch:
+    inputs:
+      publish_now:
+        description: 'Publish one scored Western-market campaign now'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -62,7 +74,7 @@ jobs:
           PY
 
   distribute:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.publish_now == true)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -209,6 +221,8 @@ jobs:
 
       - name: Publish one daily campaign to configured organic channels
         if: steps.daily-cap.outputs.skip != 'true'
+        env:
+          NEXUSNOVA_SOCIAL_TEXT_ONLY: '1'
         run: python .github/scripts/distribute_social_growth.py
       - name: Require at least one successful destination
         if: steps.daily-cap.outputs.skip != 'true'
