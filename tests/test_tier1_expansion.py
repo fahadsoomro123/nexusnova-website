@@ -28,6 +28,8 @@ assert len(tool_routes)==97,"search index must expose 97 tool records"
 assert len(guide_routes)==14,"search index must expose 14 guide records"
 assert "DATASET_SIZE=154" in core,"search dataset total should be 154"
 assert "NexusNova Tools — 97 Free Browser Tools" in home,"homepage metadata must match the 97 searchable tools"
+home_cards=re.findall(r'<a class="nn-master-tool" href="([^"]+)"',home)
+assert len(home_cards)==97,"homepage master directory must expose all 97 searchable tool cards"
 assert len(re.findall(r'data-tool-card',directory))>=97,"directory must include all tool cards"
 assert len(re.findall(r'data-guide-card',hub))>=14,"guide hub must expose all guide cards"
 for rel in tool_routes:
@@ -52,7 +54,7 @@ for rel in GUIDES:
  assert f'url:"{rel}", type:"guide"' in core,f"missing search record: {rel}"
 for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool search record: {rel}"
 assert "build=20261015-tier1-expansion-1" in home,"homepage assets need build version"
-assert "v=20261015-v2" in home,"homepage assets must be cache-busted for the live refresh"
-assert "v=20261015-v2" in directory,"directory assets must be cache-busted for the live refresh"
-print("PASS: 97 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache versions on 97 tool routes.")
+assert "v=20261015-v3" in home,"homepage assets must be cache-busted for the live refresh"
+assert "v=20261015-v3" in directory,"directory assets must be cache-busted for the live refresh"
+print("PASS: 97 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and v3 cache versions on core pages and 97 tool routes.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")

@@ -108,7 +108,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Productivity", url:"productivity-tools.html", type:"category", category:"", tags:["productivity","productivity tools","category","hub"] },
   { title:"Gaming", url:"gaming.html", type:"category", category:"", tags:["gaming","game","edpi","sensitivity","reaction","category","hub"] },
   { title:"Live Information", url:"live.html", type:"category", category:"", tags:["live information","live","information","category","hub","today","pakistan today","dashboard","weather","sports","gold","fuel","currency","aqi","crypto","earthquakes"] },
-  { title:"2027 Social Security COLA Estimate: Latest Forecast and Dates", url:"articles/social-security-cola-2027-estimate.html", type:"article", category:"Articles", tags:["2027 Social Security COLA Estimate: Latest Forecast and Dates","The latest reported 2027 Social Security COLA estimates sit around 3.4%–3.6%. See what is official, how CPI-W sets the adjustment, and calculate a benefit scenario.","U.S. Benefits","2027 social security cola estimate forecast cost of living adjustment CPI-W third quarter retirement benefits monthly payment increase Social Security Administration official rate announcement estimate scenario"] },
+  { title:"2027 Social Security COLA: Official 3.6% Rate and Payment Dates", url:"articles/social-security-cola-2027-estimate.html", type:"article", category:"Articles", tags:["2027 Social Security COLA official 3.6 percent payment dates","SSA announced the official 3.6% 2027 COLA on October 14, 2026. Check payment timing, transparent gross-benefit examples, and the limits of a simple estimate.","U.S. Benefits","2027 social security cola official rate 3.6 percent SSA October 14 2026 CPI-W retirement benefits monthly increase SSI payment timing calculator gross benefit example"] },
   { title:"CS2 vs Valorant Sensitivity & eDPI Guide", url:"articles/cs2-valorant-sensitivity-edpi-guide.html", type:"article", category:"Articles", tags:["CS2 vs Valorant Sensitivity & eDPI Guide","Learn how CS2 and Valorant sensitivity conversion works, what eDPI means, why 360-distance matters and how to test aim settings without guessing.","Articles","CS2 vs Valorant sensitivity and eDPI: a practical guide. | CS2 to Valorant sensitivity formula | What eDPI means | Why eDPI is not automatically comparable between games | 360-distance is a starting point, not the whole feel | A simple way to test a new sensitivity | Why this topic matters now | Related tools | sensitivity formula A common yaw-based conversion is: Valorant sensitivity ≈ CS2 | game. Calculate your eDPI → Why eDPI is not automatically comparable between games | scoped multipliers and visual design. A converted sensitivity should be treated | games. That makes sensitivity and aim-setting searches a repeat-use problem rather"] },
   { title:"AI Photo Restoration vs Enhancement", url:"articles/ai-photo-restoration-vs-enhancement.html", type:"article", category:"Articles", tags:["AI Photo Restoration vs Enhancement","Understand the difference between sharpening, color correction, upscaling and AI photo restoration — including what an old or blurry photo can and cannot.","Articles","AI Photo Restoration vs Enhancement: What Can Really Be Recovered? | Enhancement works with the pixels you have | AI restoration can infer missing detail | Why faces need extra caution | What sharpening can actually do | A safer restoration workflow | When 2× upscaling helps | Bottom line ? Separate enhancement from reconstruction | Try a transparent browser-based workflow | Better-looking is not the same as recovered truth. | image-processing operations. They can make existing edges easier to see and faded | information to prove those details. For family memories that may be acceptable | side by side with the source. Label generative AI restorations as reconstructed | settings first, and be clear about which method produced the final image. Try"] },
   { title:"Online Background Removers: What to Check in 2026", url:"articles/background-removal-online-guide.html", type:"article", category:"Articles", tags:["Online Background Removers: What to Check in 2026","A practical guide to online background removal: edge quality, hair and product cutouts, privacy, transparent PNG output, batch workflows and when local.","Articles","Online Background Removers: Quality, Privacy and What to Check in 2026 | The hard part is the edge | Product photos need different checks | Transparent PNG is usually the practical output | Privacy matters when the photo is personal | Local processing has trade-offs | What to check before downloading | Do you always need AI? | Bottom line — Online Background Removers | Related NexusNova tools | Check edges, output format and privacy. | difficult edge cases. A good result should preserve believable boundaries without | background removers process images on a remote server. That can be perfectly acceptable | Check for a white or dark halo around the subject. Inspect transparent areas such | privacy before uploading personal photos. A trustworthy tool should explain whether"] },
@@ -319,8 +319,22 @@ function tokenCoverage(queryTokens,candidateTokens){
         break;
       }
 
-      if(candidateToken.includes(queryToken)&&queryToken.length>=4){
-        bestScore=Math.max(bestScore,0.93);
+      // Prefix matches are essential while a person is still typing ("t", "tik", "tax").
+      // Keep one-letter substring matches weaker because they are intentionally broad.
+      if(candidateToken.startsWith(queryToken)){
+        bestScore=Math.max(bestScore,0.97);
+        bestDistance=Math.min(bestDistance,Math.abs(candidateToken.length-queryToken.length));
+        continue;
+      }
+
+      if(queryToken.length>=2&&candidateToken.includes(queryToken)){
+        bestScore=Math.max(bestScore,0.82);
+        bestDistance=Math.min(bestDistance,Math.abs(candidateToken.length-queryToken.length));
+        continue;
+      }
+
+      if(queryToken.length===1&&candidateToken.includes(queryToken)){
+        bestScore=Math.max(bestScore,0.68);
         bestDistance=Math.min(bestDistance,Math.abs(candidateToken.length-queryToken.length));
         continue;
       }
@@ -407,6 +421,27 @@ class NexusNovaSearchCore{
       return {score:weights.phrase,coverage:1,exact:queryTokens.length,fuzzy:0,distance:0,mode:'phrase'};
     }
 
+    if(queryTokens.length===1&&field.startsWith(query)){
+      return {score:weights.prefix??Math.round(weights.token*0.97),coverage:1,exact:0,fuzzy:1,distance:0,mode:'prefix'};
+    }
+
+    if(queryTokens.length===1&&tokens.includes(query)){
+      return {score:weights.token+weights.exactToken*2,coverage:1,exact:1,fuzzy:0,distance:0,mode:'token'};
+    }
+
+    if(queryTokens.length===1&&tokens.some(token=>token.startsWith(query))){
+      // For a one-character query, a title that begins with that letter outranks an
+      // internal word ("T" should surface TikTok and Timers before "Image to Text").
+      const score=query.length===1
+        ? (weights.substring??Math.round(weights.token*0.55))*0.65
+        : (weights.prefix??Math.round(weights.token*0.97));
+      return {score,coverage:query.length===1?0.68:1,exact:0,fuzzy:1,distance:0,mode:'prefix'};
+    }
+
+    if(queryTokens.length===1&&query.length>=2&&tokens.some(token=>token.includes(query))){
+      return {score:weights.substring??Math.round(weights.token*0.82),coverage:0.82,exact:0,fuzzy:1,distance:0,mode:'substring'};
+    }
+
     const coverage=tokenCoverage(queryTokens,tokens);
     if(coverage.coverage<0.62) return null;
 
@@ -427,17 +462,17 @@ class NexusNovaSearchCore{
   scoreRecord(query,queryTokens,record){
     const title=this.scoreField(
       query,queryTokens,record._title,record._titleTokens,
-      {exact:1900,phrase:1550,token:1200,exactToken:70,fuzzyToken:35}
+      {exact:1900,phrase:1550,prefix:1620,substring:1020,token:1200,exactToken:70,fuzzyToken:35}
     );
 
     const url=this.scoreField(
       query,queryTokens,record._url,record._urlTokens,
-      {exact:1200,phrase:1000,token:800,exactToken:45,fuzzyToken:24}
+      {exact:1200,phrase:1000,prefix:980,substring:680,token:800,exactToken:45,fuzzyToken:24}
     );
 
     const tags=this.scoreField(
       query,queryTokens,record._tags.join(' '),record._tagTokens,
-      {exact:1400,phrase:1150,token:980,exactToken:55,fuzzyToken:30}
+      {exact:1400,phrase:1150,prefix:1160,substring:820,token:980,exactToken:55,fuzzyToken:30}
     );
 
     if(!title&&!url&&!tags) return null;
@@ -497,7 +532,12 @@ class NexusNovaSearchCore{
       scored.push(result);
     }
 
+    const TYPE_PRIORITY={tool:0,category:1,guide:2,article:3};
     scored.sort((left,right)=>{
+      // Keep the interactive dropdown tool-first regardless of article SEO metadata or tag length.
+      const leftPriority=TYPE_PRIORITY[left.record.type]??99;
+      const rightPriority=TYPE_PRIORITY[right.record.type]??99;
+      if(leftPriority!==rightPriority) return leftPriority-rightPriority;
       if(right.score!==left.score) return right.score-left.score;
       if(right.match.coverage!==left.match.coverage) return right.match.coverage-left.match.coverage;
       if(right.match.exactTokens!==left.match.exactTokens) return right.match.exactTokens-left.match.exactTokens;
@@ -569,9 +609,10 @@ class NexusNovaSearchCore{
       const item=document.createElement('a');
       item.id='nn-core-search-result-'+(index+1);
       item.className='nn-search-result';
-      item.href=result.url;
+      item.href='/'+String(result.url||'').replace(/^\/+/, '');
       item.setAttribute('role','option');
       item.setAttribute('data-nn-search-result','');
+      item.setAttribute('aria-label',(result.displayTitle||result.title)+', '+(result.category||TYPE_LABELS[result.type]||result.type)+', '+item.href);
 
       const icon=document.createElement('span');
       icon.className='nn-search-result-icon';
@@ -583,14 +624,20 @@ class NexusNovaSearchCore{
 
       const title=document.createElement('span');
       title.className='nn-search-result-title';
-      title.textContent=result.title;
+      title.textContent=result.displayTitle||String(result.title||'').replace(/^\[(?:Tool|Category|Guide|Article)\]\s*/,'');
 
       const meta=document.createElement('span');
       meta.className='nn-search-result-meta';
-      meta.textContent=result.category||result.type;
+      const typeLabel=TYPE_LABELS[result.type]||result.type||'Result';
+      meta.textContent=(result.category||typeLabel)+' · '+typeLabel;
+
+      const route=document.createElement('span');
+      route.className='nn-search-result-url';
+      route.textContent='/'+String(result.url||'').replace(/^\/+/, '');
 
       main.appendChild(title);
       main.appendChild(meta);
+      main.appendChild(route);
       item.appendChild(icon);
       item.appendChild(main);
       item.appendChild(document.createTextNode('→'));
@@ -654,7 +701,7 @@ class NexusNovaSearchCore{
       }
 
       event.preventDefault();
-      window.location.assign(results[0].url);
+      window.location.assign('/'+String(results[0].url||'').replace(/^\/+/, ''));
     };
 
     const onKeyDown=event=>{

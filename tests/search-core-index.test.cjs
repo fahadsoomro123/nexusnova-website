@@ -25,6 +25,58 @@ test('search index count constants match the actual dataset', () => {
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
 });
 
+test('partial one-to-three character searches return matching tools before editorial results', () => {
+  const cases = ['t', 'tik', 'tax', 'pdf', 'c'];
+  for (const query of cases) {
+    const results = search.query(query);
+    assert.ok(results.length > 0, 'partial query should return results: ' + query);
+    assert.equal(results[0].type, 'tool', 'a matching tool must lead the dropdown for: ' + query);
+    const firstArticle = results.findIndex(result => result.type === 'article');
+    const visibleBeforeArticles = firstArticle < 0 ? results : results.slice(0, firstArticle);
+    assert.ok(visibleBeforeArticles.every(result => result.type !== 'article'),
+      'article results must never precede a matching tool for: ' + query);
+    assert.ok(firstArticle < 0 || !results.slice(firstArticle + 1).some(result => result.type === 'tool'),
+      'a tool result must not appear after any article for: ' + query);
+    for (const result of results.filter(result => result.type === 'tool')) {
+      assert.ok(result.displayTitle, 'tool result must expose a clean display title');
+      assert.ok(result.category, 'tool result must expose its category');
+      assert.ok(result.url && result.url.endsWith('.html'), 'tool result must expose a direct route');
+    }
+  }
+
+  assert.equal(search.query('tik')[0].url, 'short-form-video-hook-generator.html',
+    'TikTok prefix should find the hook generator without the full word');
+  assert.ok(search.query('t').some(result => result.url === 'short-form-video-hook-generator.html'),
+    'single-letter T search should retain the TikTok tool');
+  assert.ok(search.query('t').some(result => ['time-duration-calculator.html', 'online-timer.html', 'pomodoro-timer.html'].includes(result.url)),
+    'single-letter T search should include time and timer tools');
+  assert.ok(search.query('tax').some(result => ['crypto-tax-profit-estimator.html', 'salary-tax-calculator-pakistan.html', 'fbr-tax-calculator-pakistan.html'].includes(result.url)),
+    'tax prefix should find a tax tool');
+  assert.ok(search.query('pdf').some(result => result.url === 'document-workbench.html'),
+    'PDF query should find the combined document workbench');
+  assert.ok(search.query('c').some(result => result.url === 'calculator.html' || result.url === 'crypto-tax-profit-estimator.html'),
+    'single-letter C search should find calculator or crypto tools');
+
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const toolCardHrefs = [...home.matchAll(/<a class="nn-master-tool" href="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(toolCardHrefs.length, 97, 'homepage card inventory and search index must agree');
+  const indexedToolRoutes = new Set(data.filter(record => record.type === 'tool').map(record => record.url));
+  assert.deepEqual(toolCardHrefs.filter(url => !indexedToolRoutes.has(url)), [],
+    'homepage must not contain tool cards missing from search');
+  assert.deepEqual([...indexedToolRoutes].filter(url => !toolCardHrefs.includes(url)), [],
+    'all 97 indexed tools must have a homepage card');
+  for (const url of ['ai-prompt-enhancer.html', 'short-form-video-hook-generator.html',
+    'freelance-rate-calculator.html', 'crypto-tax-profit-estimator.html',
+    'privacy-policy-terms-generator.html']) {
+    assert.ok(toolCardHrefs.includes(url), 'missing homepage card: ' + url);
+  }
+  assert.match(home, /result\.displayTitle\s*\|\|/);
+  assert.match(home, /nn-search-result-url/);
+  const source = fs.readFileSync(path.join(root, 'assets/js/search-core.js'), 'utf8');
+  assert.match(source, /TYPE_PRIORITY=\{tool:0,category:1,guide:2,article:3\}/);
+  assert.match(source, /route\.textContent=.*result\.url/);
+});
+
 test('PDF Document Workbench replaces the separate merge and split discovery pages', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const directory = fs.readFileSync(path.join(root, 'tools.html'), 'utf8');
@@ -36,7 +88,7 @@ test('PDF Document Workbench replaces the separate merge and split discovery pag
   const directoryCards = [...directory.matchAll(/<a class="nn-tool-card" href="([^"]+)"/g)].map(m => m[1]);
   const legacy = ['merge-pdf.html', 'split-pdf.html'];
 
-  assert.equal(homeCards.length, 92, 'homepage master directory count should match the published 92-tool label');
+  assert.equal(homeCards.length, 97, 'homepage master directory must expose all 97 searchable tools');
   assert.equal(directoryCards.length, 97, 'tool directory card count should match the published count');
   assert.equal(data.filter(record => record.type === 'tool').length, 97);
   assert.ok(homeCards.includes('document-workbench.html'));

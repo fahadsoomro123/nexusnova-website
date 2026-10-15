@@ -197,3 +197,6 @@ h3{font-size:21px}
   flex:0 0 18px!important;
   display:block!important;
 }
+
+/* Search suggestions show the canonical direct route as a third, scannable line. */
+.nn-search-result-url{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;color:var(--muted,#a9b7c8);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:10px;line-height:1.25}
