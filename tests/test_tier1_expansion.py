@@ -38,5 +38,13 @@ for rel in GUIDES:
  assert f'url:"{rel}", type:"guide"' in core,f"missing search record: {rel}"
 for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool search record: {rel}"
 assert "build=20261015-tier1-expansion-1" in home,"homepage assets need build version"
+for rel in re.findall(r'url:"([^"]+)", type:"tool"',core):
+ f=ROOT/rel
+ assert f.exists(),f"search route missing from repository: {rel}"
+ text=f.read_text(encoding="utf-8-sig")
+ for attr in ("href","src"):
+  for url in re.findall(r'\\b'+attr+r'=["\\']([^"\\']+\\.(?:css|js)(?:\\?[^"\\']*)?)["\\']',text,re.I):
+   if url.startswith("assets/") and "build=20261015-tier1-expansion-1" not in url:
+    raise AssertionError(f"asset reference missing build version in {rel}: {url}")
 print("PASS: 97 searchable tools, 14 guides, 5 new tools and 5 guides over 1200 words, metadata, sitemap, shared UI and cache-busted assets.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")
