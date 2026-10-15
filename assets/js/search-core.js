@@ -714,7 +714,7 @@ NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
   guide:9
 });
 
-NexusNovaSearchCore.DATASET_SIZE=144;
+NexusNovaSearchCore.DATASET_SIZE=154;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
