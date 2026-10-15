@@ -421,12 +421,21 @@ class NexusNovaSearchCore{
       return {score:weights.phrase,coverage:1,exact:queryTokens.length,fuzzy:0,distance:0,mode:'phrase'};
     }
 
+    if(queryTokens.length===1&&field.startsWith(query)){
+      return {score:weights.prefix??Math.round(weights.token*0.97),coverage:1,exact:0,fuzzy:1,distance:0,mode:'prefix'};
+    }
+
     if(queryTokens.length===1&&tokens.includes(query)){
       return {score:weights.token+weights.exactToken*2,coverage:1,exact:1,fuzzy:0,distance:0,mode:'token'};
     }
 
     if(queryTokens.length===1&&tokens.some(token=>token.startsWith(query))){
-      return {score:weights.prefix??Math.round(weights.token*0.97),coverage:1,exact:0,fuzzy:1,distance:0,mode:'prefix'};
+      // For a one-character query, a title that begins with that letter outranks an
+      // internal word ("T" should surface TikTok and Timers before "Image to Text").
+      const score=query.length===1
+        ? (weights.substring??Math.round(weights.token*0.55))*0.65
+        : (weights.prefix??Math.round(weights.token*0.97));
+      return {score,coverage:query.length===1?0.68:1,exact:0,fuzzy:1,distance:0,mode:'prefix'};
     }
 
     if(queryTokens.length===1&&query.length>=2&&tokens.some(token=>token.includes(query))){
