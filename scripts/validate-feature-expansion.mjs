@@ -38,7 +38,7 @@ for(const file of newGuides){
   if(!html.includes('rel="canonical"'))failures.push(file+': missing canonical');
   if(!sitemap.includes('<loc>https://nexusnovatools.com/'+file+'</loc>'))failures.push('Sitemap missing '+file);
 }
-if(!sitemap.includes('<loc>https://nexusnovatools.com/guides/</loc>'))failures.push('Sitemap missing /guides/ hub');
+if(!sitemap.includes('<loc>https://nexusnovatools.com/guides/index.html</loc>'))failures.push('Sitemap missing canonical /guides/index.html hub');
 const sitemapUrls=[...sitemap.matchAll(/<loc>/g)].length;
 if(sitemapUrls!==149)failures.push('Expected 149 sitemap URLs; found '+sitemapUrls);
 const guideCounts=newGuides.map(file=>{const html=read(file);const plain=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&amp;/g,' ').replace(/\s+/g,' ');return {path:file,words:(plain.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)||[]).length}});
