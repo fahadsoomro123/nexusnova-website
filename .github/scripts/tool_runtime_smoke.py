@@ -21,7 +21,7 @@ missing = [route for route in routes if not (ROOT / route).is_file()]
 if missing:
     raise SystemExit("Search index contains missing tool files: " + ", ".join(missing))
 
-report = {"expected_tools": 97, "routes": [], "severe": [], "console_errors": []}
+report = {"expected_tools": 97, "routes": [], "severe": [], "console_errors": [], "first_party_console_errors": []}
 BASE_HOST = urlsplit(BASE).netloc
 ACTION_WORDS = re.compile(
     r"\b(calculate|convert|generate|create|estimate|compress|resize|enhance|check|inspect|analyse|analyze|validate|format|encode|decode|hash|count|extract|merge|split|run|process|apply|compare|test)\b",
@@ -48,8 +48,11 @@ with sync_playwright() as playwright:
             "selects_exercised": 0,
             "action_buttons_exercised": [],
             "console_errors": [],
+            "first_party_console_errors": [],
             "page_errors": [],
             "local_resource_failures": [],
+            "copy_button_exercised": None,
+            "clipboard_text_length": 0,
         }
 
         def on_page_error(error):
@@ -66,6 +69,9 @@ with sync_playwright() as playwright:
             }
             row["console_errors"].append(item)
             report["console_errors"].append({"route": route, **item})
+            if urlsplit(source_url).netloc == BASE_HOST:
+                row["first_party_console_errors"].append(item)
+                report["first_party_console_errors"].append({"route": route, **item})
 
         def on_response(response):
             parsed = urlsplit(response.url)
@@ -97,7 +103,7 @@ with sync_playwright() as playwright:
             # Exercise representative data entry without submitting forms or changing
             # remote accounts. Input/change events run the page's own listeners.
             inputs = page.locator(
-                "input:not([type=hidden]):not([type=password]):not([type=file]):"
+                "input:not([type=hidden]):not([type=file]):"
                 "not([type=checkbox]):not([type=radio]):not([type=button]):"
                 "not([type=submit]):not([type=reset]), textarea"
             )
@@ -115,7 +121,10 @@ with sync_playwright() as playwright:
                         "url": "https://example.com",
                         "tel": "1234567",
                         "search": "test",
+                        "password": "NexusNova-QA!2026-Strong",
                     }.get(field_type, "test")
+                    if route == "unix-timestamp-converter.html":
+                        value = "1792022400"
                     field.fill(value, timeout=700)
                     changed += 1
                 except Exception:
@@ -168,6 +177,37 @@ with sync_playwright() as playwright:
                 except Exception:
                     continue
 
+            # Try one visible copy control after the primary action. Clipboard access
+            # is granted only to this local audit context; no copied data leaves the page.
+            copy_buttons = page.locator("button, [role=button], input[type=button]")
+            for copy_index in range(min(copy_buttons.count(), 30)):
+                button = copy_buttons.nth(copy_index)
+                try:
+                    if not button.is_visible() or not button.is_enabled():
+                        continue
+                    tag = button.evaluate("el => el.tagName")
+                    label = " ".join([
+                        button.inner_text(timeout=300) if tag == "BUTTON" else "",
+                        button.get_attribute("aria-label") or "",
+                        button.get_attribute("title") or "",
+                        button.get_attribute("value") or "",
+                    ]).strip()
+                    if not re.search(r"\bcopy\b", label, re.I):
+                        continue
+                    button.click(timeout=800)
+                    row["copy_button_exercised"] = label[:120]
+                    page.wait_for_timeout(80)
+                    copied = page.evaluate("() => navigator.clipboard.readText()")
+                    row["clipboard_text_length"] = len(copied or "")
+                    if not (copied or "").strip():
+                        row["page_errors"].append("Copy button produced an empty clipboard: " + label[:120])
+                    break
+                except Exception as error:
+                    row["page_errors"].append(
+                        "Copy button check failed: " + type(error).__name__ + ": " + str(error)[:220]
+                    )
+                    break
+
             # Give promise callbacks from input and button handlers a chance to surface.
             page.wait_for_timeout(100)
         except Exception as error:
@@ -181,6 +221,11 @@ with sync_playwright() as playwright:
                 report["severe"].append(
                     f"{route}: local resource failure(s): " +
                     ", ".join(f"{item['status']} {item['url']}" for item in row["local_resource_failures"][:3])
+                )
+            if row["first_party_console_errors"]:
+                report["severe"].append(
+                    f"{route}: first-party console error(s): " +
+                    " | ".join(item["text"] for item in row["first_party_console_errors"][:3])
                 )
             report["routes"].append(row)
             page.close()
@@ -196,8 +241,11 @@ summary = {
     "input_events_exercised": sum(row["inputs_exercised"] for row in report["routes"]),
     "select_events_exercised": sum(row["selects_exercised"] for row in report["routes"]),
     "primary_actions_exercised": sum(bool(row["action_buttons_exercised"]) for row in report["routes"]),
+    "copy_buttons_exercised": sum(bool(row["copy_button_exercised"]) for row in report["routes"]),
+    "successful_clipboard_copies": sum(row["clipboard_text_length"] > 0 for row in report["routes"]),
     "page_errors": sum(len(row["page_errors"]) for row in report["routes"]),
     "console_errors_recorded": len(report["console_errors"]),
+    "first_party_console_errors": len(report["first_party_console_errors"]),
     "local_resource_failures": sum(len(row["local_resource_failures"]) for row in report["routes"]),
     "severe": len(report["severe"]),
     "report": str(report_path.relative_to(ROOT)),
