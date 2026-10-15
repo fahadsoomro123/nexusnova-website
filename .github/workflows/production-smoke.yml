@@ -305,10 +305,10 @@ jobs:
           echo "LIVE RAW HTTP PROOF homepage status=$live_home_code url=$base/?live-proof=$GITHUB_SHA"
           grep -iE '^(HTTP/|date:|content-type:|cache-control:|etag:|last-modified:|age:|via:|server:|x-cache:|x-served-by:)' "$live_home_headers" | tail -n 24 || true
           if [ "$live_home_code" != '200' ]; then echo 'LIVE RAW HTTP FAIL: homepage did not return HTTP 200.' >&2; exit 1; fi
-          grep -F '<title>NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides</title>' "$live_home_body"
-          grep -F '<meta property="og:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body"
-          grep -F '<meta name="twitter:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body"
-          grep -F 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2' "$live_home_body"
+          grep -F '<title>NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides</title>' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: title tag is not 97 tools.' >&2; exit 1; }
+          grep -F '<meta property="og:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Open Graph title is stale.' >&2; exit 1; }
+          grep -F '<meta name="twitter:title" content="NexusNova Tools — 97 Free Browser Tools, Categories, Articles & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Twitter title is stale.' >&2; exit 1; }
+          grep -F 'assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: v2 search asset reference is missing.' >&2; exit 1; }
           echo 'LIVE RAW BODY PASS: homepage title + social titles + v2 search asset are present in the deployed HTTP body.'
 
           live_tools_headers=/tmp/nexusnova-live-tools.headers
@@ -317,12 +317,12 @@ jobs:
           echo "LIVE RAW HTTP PROOF tools status=$live_tools_code url=$base/tools.html?live-proof=$GITHUB_SHA"
           grep -iE '^(HTTP/|date:|content-type:|cache-control:|etag:|last-modified:|age:|via:|server:|x-cache:|x-served-by:)' "$live_tools_headers" | tail -n 24 || true
           if [ "$live_tools_code" != '200' ]; then echo 'LIVE RAW HTTP FAIL: tools directory did not return HTTP 200.' >&2; exit 1; fi
-          grep -F 'id="directory-search-count">97 tools' "$live_tools_body"
+          grep -F 'id="directory-search-count">97 tools' "$live_tools_body" || { echo 'LIVE RAW BODY FAIL: tools count is not 97.' >&2; exit 1; }
           echo 'LIVE RAW BODY PASS: tools directory count is 97.'
 
           live_search_url="$base/assets/js/search-core.js?build=20261015-tier1-expansion-1&v=20261015-v2"
-          curl -fsS -L --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' "$live_search_url" -o /tmp/nexusnova-live-search-core.js
-          node - <<'NODE'
+          curl -fsS -L --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' "$live_search_url" -o /tmp/nexusnova-live-search-core.js || { echo 'LIVE SEARCH FAIL: could not fetch the public v2 search asset.' >&2; exit 1; }
+          node - <<'NODE' || { echo 'LIVE SEARCH FAIL: live search runtime assertions failed.' >&2; exit 1; }
           const fs = require('node:fs');
           const vm = require('node:vm');
           const sandbox = { window: {} };
