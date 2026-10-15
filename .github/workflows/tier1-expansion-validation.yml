@@ -1,0 +1,46 @@
+name: Tier-1 Expansion Validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "tools.html"
+      - "guides.html"
+      - "sitemap.xml"
+      - "articles.json"
+      - "assets/js/search-core.js"
+      - "assets/js/tier1-tools.js"
+      - "assets/css/tier1-tools.css"
+      - "ai-prompt-enhancer.html"
+      - "short-form-video-hook-generator.html"
+      - "freelance-rate-calculator.html"
+      - "crypto-tax-profit-estimator.html"
+      - "privacy-policy-terms-generator.html"
+      - "guides/**"
+      - "tests/test_tier1_expansion.py"
+      - ".github/workflows/tier1-expansion-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "assets/js/tier1-tools.js"
+      - "tests/test_tier1_expansion.py"
+permissions:
+  contents: read
+jobs:
+  validate-expansion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+      - name: Check browser engine syntax
+        run: node --check assets/js/tier1-tools.js
+      - name: Check site search index syntax
+        run: node --check assets/js/search-core.js
+      - name: Validate tools, guides, search, metadata and cache versions
+        run: python tests/test_tier1_expansion.py
