@@ -42,5 +42,7 @@ jobs:
         run: node --check assets/js/tier1-tools.js
       - name: Check site search index syntax
         run: node --check assets/js/search-core.js
+      - name: Run complete Node regression suite for tool UI, forms, copy and security contracts
+        run: npm test
       - name: Validate tools, guides, search, metadata and cache versions
         run: python tests/test_tier1_expansion.py
