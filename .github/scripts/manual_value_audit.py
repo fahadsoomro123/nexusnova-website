@@ -478,6 +478,10 @@ def main() -> None:
         lines.append('- None')
     OUT_MD.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
+    for item in findings:
+        if item['severity'] == 'warning':
+            target = item.get('path') or ', '.join(item.get('paths', []))
+            print(f"WARNING {item['type']} {target}: {item['detail']}")
     print(json.dumps(out['summary'], indent=2))
 
 
