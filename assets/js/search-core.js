@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 92 tools + 9 categories + 34 articles + 9 guides = 144 records.
+ * 97 tools + 9 categories + 34 articles + 14 guides = 154 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -150,14 +150,24 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Turn JPG images into a PDF properly.", url:"guides/jpg-to-pdf.html", type:"guide", category:"Guides", tags:["turn jpg images into a pdf properly.","guides jpg to pdf","guides","turn","jpg","images","pdf","properly","guide","methodology"] },
   { title:"Build a resume that is easy to scan.", url:"guides/resume-writing.html", type:"guide", category:"Guides", tags:["build a resume that is easy to scan.","guides resume writing","guides","build","resume","easy","scan","guide","methodology"] },
   { title:"Write AI prompts that are easier to verify.", url:"guides/ai-prompting.html", type:"guide", category:"Guides", tags:["write ai prompts that are easier to verify.","guides ai prompting","guides","write","prompts","easier","verify","guide","methodology"] },
-  { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] }
+  { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] },
+  { title:"AI Prompt Enhancer for Midjourney & Sora", url:"ai-prompt-enhancer.html", type:"tool", category:"Creator & Work", tags:["ai prompt enhancer for midjourney & sora","ai prompt enhancer","creator","work","tool","utility"] },
+  { title:"TikTok & Reel Script Hook Generator", url:"tiktok-reel-hook-generator.html", type:"tool", category:"Creator & Work", tags:["tiktok & reel script hook generator","tiktok reel hook generator","creator","work","tool","utility"] },
+  { title:"Freelance Hourly Rate & Project Quote Calculator", url:"freelance-rate-calculator.html", type:"tool", category:"Creator & Work", tags:["freelance hourly rate & project quote calculator","freelance rate calculator","creator","work","tool","utility"] },
+  { title:"Crypto Tax & Profit/Loss Estimator (US & UK)", url:"crypto-tax-estimator.html", type:"tool", category:"Creator & Work", tags:["crypto tax & profit/loss estimator (us & uk)","crypto tax estimator","creator","work","tool","utility"] },
+  { title:"Privacy Policy & Terms Generator for SaaS/Mobile Apps", url:"privacy-policy-terms-generator.html", type:"tool", category:"Creator & Work", tags:["privacy policy & terms generator for saas/mobile apps","privacy policy terms generator","creator","work","tool","utility"] },
+  { title:"A Practical Prompting Workflow for Midjourney Images and Sora Video", url:"guides/ai-prompting-midjourney-sora.html", type:"guide", category:"Guides", tags:["a practical prompting workflow for midjourney images and sora video","ai prompting midjourney sora","guide","methodology","how to"] },
+  { title:"How to Plan Better Hooks and Scripts for TikTok and Reels", url:"guides/short-form-video-hooks.html", type:"guide", category:"Guides", tags:["how to plan better hooks and scripts for tiktok and reels","short form video hooks","guide","methodology","how to"] },
+  { title:"A Freelance Pricing Method That Covers Billable Time, Overhead and Risk", url:"guides/freelance-project-pricing.html", type:"guide", category:"Guides", tags:["a freelance pricing method that covers billable time, overhead and risk","freelance project pricing","guide","methodology","how to"] },
+  { title:"Crypto Tax Records and Gain Estimates: US and UK Planning Guide", url:"guides/crypto-tax-recordkeeping-us-uk.html", type:"guide", category:"Guides", tags:["crypto tax records and gain estimates: us and uk planning guide","crypto tax recordkeeping us uk","guide","methodology","how to"] },
+  { title:"Privacy Policies and Terms for SaaS and Mobile Apps: A Practical Checklist", url:"guides/privacy-and-terms-checklist-for-apps.html", type:"guide", category:"Guides", tags:["privacy policies and terms for saas and mobile apps: a practical checklist","privacy and terms checklist for apps","guide","methodology","how to"] },
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:92,
+  tool:97,
   category:9,
   article:34,
-  guide:9
+  guide:14
 });
 
 const NEXUSNOVA_ALIAS_MAP = Object.freeze({
@@ -698,13 +708,13 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:92,
+  tool:97,
   category:9,
   article:34,
-  guide:9
+  guide:14
 });
 
-NexusNovaSearchCore.DATASET_SIZE=144;
+NexusNovaSearchCore.DATASET_SIZE=154;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;

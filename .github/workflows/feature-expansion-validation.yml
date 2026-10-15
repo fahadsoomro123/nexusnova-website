@@ -1,0 +1,52 @@
+name: World-Class Feature Expansion Validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ai-prompt-enhancer.html'
+      - 'tiktok-reel-hook-generator.html'
+      - 'freelance-rate-calculator.html'
+      - 'crypto-tax-estimator.html'
+      - 'privacy-policy-terms-generator.html'
+      - 'guides/**'
+      - 'assets/css/feature-expansion.css'
+      - 'assets/js/feature-expansion.js'
+      - 'assets/js/search-core.js'
+      - 'index.html'
+      - 'tools.html'
+      - 'sitemap.xml'
+      - 'scripts/validate-feature-expansion.mjs'
+      - '.github/workflows/feature-expansion-validation.yml'
+      - '.github/workflows/production-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ai-prompt-enhancer.html'
+      - 'tiktok-reel-hook-generator.html'
+      - 'freelance-rate-calculator.html'
+      - 'crypto-tax-estimator.html'
+      - 'privacy-policy-terms-generator.html'
+      - 'guides/**'
+      - 'assets/css/feature-expansion.css'
+      - 'assets/js/feature-expansion.js'
+      - 'assets/js/search-core.js'
+      - 'index.html'
+      - 'tools.html'
+      - 'sitemap.xml'
+      - 'scripts/validate-feature-expansion.mjs'
+      - '.github/workflows/feature-expansion-validation.yml'
+      - '.github/workflows/production-smoke.yml'
+  workflow_dispatch:
+jobs:
+  validate-expansion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+      - name: Validate tool count, cache busting, sitemap and long-form guides
+        run: node scripts/validate-feature-expansion.mjs
+      - name: Syntax-check browser interactions and search engine
+        run: node --check assets/js/feature-expansion.js && node --check assets/js/search-core.js
