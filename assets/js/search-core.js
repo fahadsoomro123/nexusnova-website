@@ -1,8 +1,8 @@
-'use strict';
+﻿'use strict';
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 97 tools + 9 categories + 34 articles + 14 guides = 154 records.
+ * 103 tools + 9 categories + 34 articles + 14 guides = 160 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -99,7 +99,12 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Live Sports", url:"sports-live.html", type:"tool", category:"Live Information", tags:["live sports","sports live","live information","live","sports","tool","utility"] },
   { title:"NexusNova Pulse", url:"pulse.html", type:"tool", category:"Live Information", tags:["nexusnova pulse","pulse","live information","tool","utility"] },
   { title:"Pakistan Today Widget", url:"widget-pakistan-today.html", type:"tool", category:"Live Information", tags:["pakistan today widget","widget pakistan today","live information","pakistan","today","widget","tool","utility"] },
-  { title:"Images", url:"image-tools.html", type:"category", category:"", tags:["images","image tools","category","hub"] },
+  { title:"Instant Quote Card Maker", url:"tools/quote-card-maker.html", type:"tool", category:"Creator & Social", tags:["quote card maker","status card generator","roman urdu quote card","urdu status card","whatsapp status","instagram quote"] },
+  { title:"Gold & Jewellery Calculator Pakistan", url:"tools/gold-calculator-pakistan.html", type:"tool", category:"Pakistan", tags:["gold calculator pakistan","gold rate calculator","tola calculator","masha calculator","ratti calculator","jewellery calculator"] },
+  { title:"Solar Bill Calculator", url:"tools/solar-bill-calculator.html", type:"tool", category:"Pakistan", tags:["solar calculator pakistan","electric bill savings","solar panel calculator","battery backup calculator","solar system size"] },
+  { title:"US Tip & Bill Splitter", url:"tools/us-tip-bill-splitter.html", type:"tool", category:"Money & Records", tags:["tip calculator","restaurant tip calculator","bill splitter","us tax calculator","split restaurant bill"] },
+  { title:"Hourly-to-Salary Calculator", url:"tools/hourly-to-salary-calculator.html", type:"tool", category:"Money & Records", tags:["hourly to salary","paycheck calculator","salary calculator","take home pay","us paycheck"] },
+  { title:"Instant PDF Invoice Generator", url:"tools/instant-pdf-invoice-generator.html", type:"tool", category:"PDF & Documents", tags:["pdf invoice generator","invoice maker","freelance invoice","client invoice","download invoice pdf"] },  { title:"Images", url:"image-tools.html", type:"category", category:"", tags:["images","image tools","category","hub"] },
   { title:"PDF & Documents", url:"pdf-tools.html", type:"category", category:"", tags:["pdf & documents","pdf tools","pdf","documents","category","hub"] },
   { title:"Calculators", url:"calculator-tools.html", type:"category", category:"", tags:["calculators","calculator tools","category","hub"] },
   { title:"Pakistan Tools", url:"pakistan-tools.html", type:"category", category:"", tags:["pakistan tools","pakistan","category","hub"] },
@@ -164,7 +169,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:97,
+  tool:103,
   category:9,
   article:34,
   guide:14
@@ -739,13 +744,13 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:97,
+  tool:103,
   category:9,
   article:34,
   guide:14
 });
 
-NexusNovaSearchCore.DATASET_SIZE=154;
+NexusNovaSearchCore.DATASET_SIZE=160;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
@@ -755,3 +760,5 @@ if(typeof window!=='undefined'){
 if(typeof globalThis!=='undefined'){
   globalThis.NexusNovaSearchCore=NexusNovaSearchCore;
 }
+
+
