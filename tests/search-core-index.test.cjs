@@ -35,6 +35,8 @@ test('partial one-to-three character searches return matching tools before edito
     const visibleBeforeArticles = firstArticle < 0 ? results : results.slice(0, firstArticle);
     assert.ok(visibleBeforeArticles.every(result => result.type !== 'article'),
       'article results must never precede a matching tool for: ' + query);
+    assert.ok(firstArticle < 0 || !results.slice(firstArticle + 1).some(result => result.type === 'tool'),
+      'a tool result must not appear after any article for: ' + query);
     for (const result of results.filter(result => result.type === 'tool')) {
       assert.ok(result.displayTitle, 'tool result must expose a clean display title');
       assert.ok(result.category, 'tool result must expose its category');
@@ -58,6 +60,11 @@ test('partial one-to-three character searches return matching tools before edito
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const toolCardHrefs = [...home.matchAll(/<a class="nn-master-tool" href="([^"]+)"/g)].map(match => match[1]);
   assert.equal(toolCardHrefs.length, 97, 'homepage card inventory and search index must agree');
+  const indexedToolRoutes = new Set(data.filter(record => record.type === 'tool').map(record => record.url));
+  assert.deepEqual(toolCardHrefs.filter(url => !indexedToolRoutes.has(url)), [],
+    'homepage must not contain tool cards missing from search');
+  assert.deepEqual([...indexedToolRoutes].filter(url => !toolCardHrefs.includes(url)), [],
+    'all 97 indexed tools must have a homepage card');
   for (const url of ['ai-prompt-enhancer.html', 'short-form-video-hook-generator.html',
     'freelance-rate-calculator.html', 'crypto-tax-profit-estimator.html',
     'privacy-policy-terms-generator.html']) {
