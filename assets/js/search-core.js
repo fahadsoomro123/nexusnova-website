@@ -708,10 +708,10 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:92,
+  tool:97,
   category:9,
   article:34,
-  guide:9
+  guide:14
 });
 
 NexusNovaSearchCore.DATASET_SIZE=154;
