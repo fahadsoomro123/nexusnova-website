@@ -11,8 +11,8 @@ test('homepage preconnects to its early third-party script origins', () => {
 test('below-the-fold HumanProof and footer CSS load asynchronously with no-script fallback', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   for (const file of ['humanproof-hero-360.css', 'footer-social.css']) {
-    assert.ok(html.includes('href="assets/css/' + file + '" media="print" onload="this.media=\'all\'"'), file + ' should be non-render-blocking');
-    assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>'), file + ' must keep the no-script fallback');
+    assert.ok(html.includes('href="assets/css/' + file + '?v=20261015-v2" media="print" onload="this.media=\'all\'"'), file + ' should be non-render-blocking with the live cache key');
+    assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '?v=20261015-v2"></noscript>'), file + ' must keep the no-script fallback with the live cache key');
     const head = html.slice(0, html.indexOf('</head>'));
     const activeHead = head.replace('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>', '');
     assert.ok(!activeHead.includes('<link rel="stylesheet" href="assets/css/' + file + '">'), file + ' must not have a render-blocking head link outside noscript');
