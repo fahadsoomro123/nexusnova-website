@@ -106,10 +106,10 @@ if (fs.existsSync(colaPath)) {
   if (/treat a 2027 cola percentage as hypothetical unless/i.test(cola)) {
     failures.push('social-security-cola-calculator-2027.html: obsolete hypothetical-rate claim contradicts official 2027 COLA');
   }
-  if (!/official 3\\.6% COLA for 2027/i.test(cola)) {
+  if (!/official 3\.6% COLA for 2027/i.test(cola)) {
     failures.push('social-security-cola-calculator-2027.html: guide must state the official 3.6% 2027 COLA');
   }
-  if (/How to use 2027 Social Security COLA Calculator: Official 3\\.6% Rate for everyday work and study/i.test(cola)) {
+  if (/How to use 2027 Social Security COLA Calculator: Official 3\.6% Rate for everyday work and study/i.test(cola)) {
     failures.push('social-security-cola-calculator-2027.html: generated guide label must use the page H1, not the full SEO title');
   }
 }
