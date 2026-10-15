@@ -16,7 +16,7 @@ ALLOWED_PRIVATE_OUTPUTS = (
 class TrafficAutopilotWorkflowBoundaryTests(unittest.TestCase):
     def test_only_named_generated_files_are_allowlisted(self):
         workflow = AUTOPILOT.read_text(encoding="utf-8")
-        start = workflow.index("      - name: Enforce safe generated-output boundary")
+        start = workflow.index("      - name: Enforce review-only publishing boundary")
         end = workflow.index("      - name: Publish run summary", start)
         boundary = workflow[start:end]
         self.assertIn('git status --porcelain --untracked-files=no', boundary)
@@ -59,17 +59,11 @@ class TrafficAutopilotWorkflowBoundaryTests(unittest.TestCase):
         self.assertIn("if-no-files-found: error", fresh_upload)
         self.assertIn("retention-days: 14", fresh_upload)
 
-    def test_public_distribution_is_guarded_and_measurable(self):
+    def test_public_distribution_remains_disabled_in_daily_pipeline(self):
         workflow = AUTOPILOT.read_text(encoding="utf-8")
-        self.assertIn("Publish one daily tracked social campaign", workflow)
-        self.assertIn("steps.social-package.outputs.candidate == 'true'", workflow)
-        self.assertIn("inputs.publish_now == true", workflow)
-        self.assertIn("default: false", workflow)
-        self.assertIn("NEXUSNOVA_SOCIAL_TEXT_ONLY: '1'", workflow)
-        self.assertIn("python .github/scripts/distribute_social_growth.py", workflow)
-        self.assertIn("No social destination accepted the tracked campaign", workflow)
-        self.assertIn("social-growth-publish.json", workflow)
-        self.assertNotIn("No commit, push, IndexNow submission or social distribution is performed by this workflow.", workflow)
+        self.assertIn("Automatic public publishing is disabled.", workflow)
+        self.assertIn("No commit, push, IndexNow submission or social distribution is performed by this workflow.", workflow)
+        self.assertNotIn("python .github/scripts/distribute_social_growth.py", workflow)
 
     def test_validator_runs_this_regression_test(self):
         workflow = VALIDATOR.read_text(encoding="utf-8")
