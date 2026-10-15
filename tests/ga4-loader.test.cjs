@@ -4,7 +4,7 @@ const fs = require('node:fs');
 
 test('public HumanProof page loads the canonical main bootstrap', () => {
   const text = fs.readFileSync('humanproof.html', 'utf8');
-  assert.ok(text.includes('<script src="assets/js/main.js" defer></script>'));
+  assert.ok(text.includes('<script src="assets/js/main.js?v=20261015-v4" defer></script>'));
 });
 
 test('GA4 bootstrap preserves the measurement ID, privacy defaults and single-load guard', () => {
@@ -89,7 +89,7 @@ test('GA4 external loader only runs on the owned production hostname', () => {
 
 test('homepage requests the current consent-aware production bootstrap', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('assets/js/main.js?v=20261015-cookie-consent-v1'));
+  assert.ok(html.includes('assets/js/main.js?v=20261015-v4'));
   assert.ok(!html.includes('assets/js/main.js?v=20261013-ga4-hostguard-v3'));
   assert.ok(!html.includes('assets/js/main.js?v=20261005-ga4a'));
 });
@@ -103,13 +103,13 @@ test('homepage defaults basic pageview analytics on where permitted and denies r
   assert.ok(html.includes("region: nexusnovaRestrictedAnalyticsRegions"));
   assert.ok(html.includes("analytics_storage: 'granted'"));
   assert.ok(html.includes("window.navigator && window.navigator.globalPrivacyControl === true"));
-  assert.ok(html.includes('assets/js/main.js?v=20261015-cookie-consent-v1'));
+  assert.ok(html.includes('assets/js/main.js?v=20261015-v4'));
 });
 
 test('previously uninstrumented public hubs load the standalone analytics and choice UI', () => {
   for (const path of ['tools.html', 'categories.html', 'guides.html', 'whatsapp-link-generator.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.ok(html.includes('assets/js/analytics.js?v=20261015-cookie-consent-v1'), path + ' loader');
+    assert.ok(html.includes('assets/js/analytics.js?v=20261015-v4'), path + ' loader');
   }
 });
 
@@ -152,12 +152,12 @@ test('production GA4 verifier checks Realtime page_view events', () => {
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/', 'assets/js/main.js?v=20261015-cookie-consent-v1')",
-    "GA4_QA_VERSION: '20261015-cookie-consent-v1'",
-    "('/tools.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1')",
-    "('/categories.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1')",
-    "('/guides.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1')",
-    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1')",
+    "('/', 'assets/js/main.js?v=20261015-v4')",
+    "GA4_QA_VERSION: '20261015-v4'",
+    "('/tools.html', 'assets/js/analytics.js?v=20261015-v4')",
+    "('/categories.html', 'assets/js/analytics.js?v=20261015-v4')",
+    "('/guides.html', 'assets/js/analytics.js?v=20261015-v4')",
+    "('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261015-v4')",
     "const banner=document.querySelector('#nexusnova-analytics-consent, #nexusnova-analytics-consent-banner');",
     "def add_collect_events(q,method,source):",
     "body_chunks=[chunk.strip() for chunk in post_data.splitlines() if chunk.strip()]",
