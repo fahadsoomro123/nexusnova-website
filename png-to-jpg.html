@@ -13,6 +13,19 @@
 <p>A JPEG photo may be smaller than a PNG, but the exact size depends on the image. This tool does not resize pixel dimensions. If a site has a megabyte limit, check the exported file size and use a resizer or compressor only if needed; changing format repeatedly is not a substitute for choosing appropriate dimensions and can introduce more JPEG loss. A browser canvas export should not be assumed to retain metadata such as EXIF camera, date or location details.</p>
 <p>See <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types" target="_blank" rel="noopener noreferrer">MDN's image format guide</a> for the JPEG/PNG trade-offs. If transparency must remain, use <a href="jpg-to-png.html">JPG to PNG</a> only for the reverse format task, or keep the original PNG; if the destination requires different dimensions, use the <a href="image-resizer.html">Image Resizer</a>.</p>
 </div></section>
+
+<section class="section"><div class="container article">
+<h2>Use JPG when the destination needs a compact, opaque image</h2>
+<p>PNG and JPG solve different problems. PNG is generally useful for sharp graphics, screenshots and transparent artwork; JPG is a widely supported lossy format for photographs and uploads that require an image without transparency. Converting PNG to JPG can improve compatibility with forms or older software, but it may also increase or decrease file size depending on the image, quality setting and dimensions.</p>
+<h2>Prepare and verify the converted image</h2>
+<ol><li>Keep the original PNG if it contains transparency or details you may need later.</li><li>Choose the image and any available output-quality setting.</li><li>Run the conversion and download the newly encoded JPG.</li><li>Open the result at normal size and zoom in on text, thin lines and edges to check compression artefacts.</li><li>Confirm that the background looks correct anywhere the original was transparent.</li></ol>
+<p>For example, a logo designed with a transparent background may look fine on a white page after conversion but show a white rectangle when placed over a dark banner. If transparency is required, keep PNG or use another format that supports alpha. A repeated JPG export can also introduce more compression damage, so convert from the cleanest available source rather than repeatedly resaving copies.</p>
+<h2>What conversion does not do</h2>
+<p>Changing the file format does not recreate missing detail, upscale the image automatically or prove that the output meets a website's upload-size limit. Resolution, compression quality, dimensions and format are separate constraints. If the destination specifies a maximum pixel size or a file-size threshold, check that requirement after conversion.</p>
+<h2>PNG-to-JPG questions</h2>
+<h3>Will the JPG remain transparent?</h3><p>No. JPG does not support an alpha channel; transparent areas need a background colour in the exported image.</p>
+<h3>Will JPG always be smaller?</h3><p>No. File size depends on image content, dimensions and encoding settings. Compare the actual exported file.</p>
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>

@@ -33,6 +33,19 @@
 <h2>Keep the original and compare the result</h2>
 <p>Download and open the PNG before replacing or deleting the WebP source. Compare dimensions, colors, transparent edges and file size, and retain the original if you need to preserve embedded metadata such as camera, date or location information; canvas re-encoding should not be assumed to keep all source metadata. For implementation details, see <a href="https://developers.google.com/speed/webp" target="_blank" rel="noopener noreferrer">Google's WebP documentation</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types" target="_blank" rel="noopener noreferrer">MDN's image format guide</a>. For an opaque JPEG copy instead, use <a href="webp-to-jpg.html">WebP to JPG</a>.</p>
 </div></section>
+
+<section class="section"><div class="container article">
+<h2>Choose PNG when transparency or editing matters</h2>
+<p>WebP and PNG can both support transparency, but they use different encoding approaches. PNG is widely supported in design software, office applications and workflows that expect a lossless raster image. Converting a WebP image to PNG can help when a receiving app does not accept WebP or when a transparent graphic needs to move into another editing workflow. The conversion does not automatically improve the image quality or make the file smaller.</p>
+<h2>Inspect the exported file</h2>
+<ol><li>Select the WebP file you want to convert and run the conversion.</li><li>Download the new PNG and open it in an image viewer or editor.</li><li>Check the dimensions and compare edges, text and transparent areas against the original.</li><li>Place the image over both light and dark backgrounds to spot an unexpected solid background.</li><li>Keep the original WebP until the output is verified and accepted by the destination.</li></ol>
+<p>For example, a logo with a transparent background should remain usable over a coloured slide or website section. If the result shows a white rectangle, verify the output's alpha channel and the viewer's transparency display. If the goal is reducing storage or upload time, PNG may be the wrong choice because it can be much larger than the original WebP.</p>
+<h2>Privacy and conversion limits</h2>
+<p>The tool is intended to process the selected image in the browser rather than upload it to a NexusNova image-storage service. The website itself may still load scripts or other resources through normal browser requests. Conversion changes the file encoding, not its visible content; it does not remove sensitive details embedded in the pixels, restore missing quality or guarantee that every specialised metadata field survives unchanged.</p>
+<h2>WebP-to-PNG questions</h2>
+<h3>Will PNG always be a higher-quality image?</h3><p>PNG stores the decoded pixels without further lossy image compression, but it cannot restore information already lost in the source WebP.</p>
+<h3>Will the file be smaller?</h3><p>Not necessarily. PNG files are often larger for photographs; compare the resulting file size before choosing the format.</p>
+</div></section>
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>

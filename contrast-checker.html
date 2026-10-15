@@ -43,6 +43,19 @@
 <details><summary>Does this tool send my colors to a server?</summary><p>No. The calculation runs locally in the browser. Only the hexadecimal color values you enter are used by the page to calculate the ratio and preview the sample.</p></details>
 <p class="mini-note">Reference: <a href="https://www.w3.org/TR/WCAG22/" rel="noopener noreferrer">W3C Web Content Accessibility Guidelines (WCAG) 2.2</a>.</p>
 </div></section>
+
+<section class="section"><div class="container article">
+<h2>What a contrast ratio tells you</h2>
+<p>A contrast ratio compares the relative luminance of foreground and background colours. Dark text on a light background usually has higher contrast than mid-grey text on a mid-grey background. The ratio is useful for checking one important accessibility condition, but it does not measure font readability in every context, the quality of the wording, keyboard access or the accessibility of the whole interface.</p>
+<h2>How to use the result in a design review</h2>
+<ol><li>Enter or select the foreground colour used by the text or icon.</li><li>Enter the actual background colour behind that element.</li><li>Check the reported ratio against the relevant WCAG 2.2 threshold for the text size and weight.</li><li>Repeat for hover, focus, disabled, error and other states that users can encounter.</li><li>Review the colours in the real layout, including gradients, images and transparent overlays.</li></ol>
+<p>For example, a grey label may pass on a white panel but fail when displayed on a tinted card. A colour combination that passes for large text may not meet the normal-text threshold. The checker compares the values you provide; it cannot automatically know which colour is behind each element in a complex page or whether a component meets every WCAG success criterion.</p>
+<h2>Accessibility checks beyond colour</h2>
+<p>Do not communicate status through colour alone. Pair error, success and warning colours with clear text, icons or other cues. Also check visible focus, logical headings, keyboard interaction, form labels, text zoom and the actual content. Contrast standards are a valuable measurable baseline, not a substitute for testing the experience with different users and assistive technology.</p>
+<h2>Contrast-checker questions</h2>
+<h3>Why can the same colours look different on two screens?</h3><p>Display calibration, brightness, ambient light and colour profiles can alter the perceived appearance. The mathematical ratio remains tied to the selected values, not every physical display.</p>
+<h3>Does passing contrast make the page accessible?</h3><p>No. It checks the specified colour pair only. The rest of the interface needs its own accessibility checks.</p>
+</div></section>
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>

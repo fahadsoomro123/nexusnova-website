@@ -7,6 +7,19 @@
 <p>DNS records help clients locate services. A records can map a name to IPv4, AAAA to IPv6, MX records describe mail routing, TXT records carry text-based configuration, and CNAME records provide aliases. The returned set is one view of the domain's current public DNS state.</p>
 <p>Caching means a resolver can serve an earlier answer until its TTL expires. A changed record may therefore appear differently across networks for a while without either resolver being broken.</p>
 <h3>Use DNS as one diagnostic signal</h3><p>Compare the returned data with the authoritative provider configuration and the service you expect. Correct DNS does not itself prove application availability, certificate validity, routing or firewall access.</p></div></section>
+
+<section class="section"><div class="container article">
+<h2>Use DNS records to troubleshoot the right layer</h2>
+<p>DNS lookup asks the resolver for public records associated with a domain. A records map names to IPv4 addresses; AAAA records map names to IPv6 addresses; MX records describe mail-routing hosts; TXT records can hold verification and email-authentication values; CNAME records alias one name to another; NS records identify authoritative name servers; and CAA records can restrict which certificate authorities may issue certificates for a domain.</p>
+<h2>A practical troubleshooting sequence</h2>
+<ol><li>Enter the hostname or domain without a copied URL path.</li><li>Choose the record type related to the issue, such as MX for mail routing or A/AAAA for address resolution.</li><li>Review the answer, TTL and any alias chain shown by the resolver.</li><li>Compare the response with the domain owner's intended DNS configuration before changing records.</li></ol>
+<p>If a record was changed recently, cached answers may remain visible until their TTL expires. A successful answer from one recursive resolver does not mean every resolver worldwide has updated, and a missing record does not by itself prove that a website is down. Check authoritative name servers and the service configuration when the problem affects a production domain.</p>
+<h2>Privacy and limits</h2>
+<p>This lookup uses a public DNS-over-HTTPS resolver. The resolver sees the query, so avoid submitting internal hostnames or confidential infrastructure names unless you are authorised to do so. Public DNS records are only one part of troubleshooting; they do not prove that the target server is listening, that TLS is configured correctly or that an email will avoid spam filtering.</p>
+<h2>DNS lookup questions</h2>
+<h3>Why do two DNS tools return different answers?</h3><p>They may query different recursive resolvers, use different caches or follow alias chains differently.</p>
+<h3>Does a DNS result confirm a website is online?</h3><p>No. DNS resolution and service reachability are separate checks.</p>
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>
