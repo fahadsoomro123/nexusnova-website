@@ -33,12 +33,12 @@ test('Telegram SDK and NexusNova bridge load before page-specific app code', () 
 
 test('all Telegram entry pages use the exact same bridge cache version', () => {
   const versions = ['index.html', 'register.html', 'account.html'].map(file => {
-    const match = read(file).match(/assets\/js\/telegram-webapp\.js\?v=([0-9-]+)/);
+    const match = read(file).match(/assets\/js\/telegram-webapp\.js\?v=([0-9-]+v\d+)/);
     assert.ok(match, `${file} is missing a versioned Telegram bridge`);
     return match[1];
   });
   assert.deepEqual(new Set(versions).size, 1);
-  assert.equal(versions[0], '20260826-5');
+  assert.equal(versions[0], '20261015-v4');
 });
 
 test('account pages avoid the global heavy bundle and NOVA assistant injection', () => {
@@ -86,7 +86,7 @@ test('Telegram avatar is fallback-first and never guesses a username image URL',
   assert.match(dashboard, /probe\.src=photoUrl/);
   assert.match(dashboard, /probe\.naturalWidth>0&&probe\.naturalHeight>0/);
   assert.doesNotMatch(dashboard, /telegramPublicAvatarUrl|t\.me\/i\/userpic\/320\/\$\{/);
-  assert.match(read('account.html'), /account-dashboard\.js\?v=20260826-6/);
+  assert.match(read('account.html'), /account-dashboard\.js\?v=20261015-v4/);
 });
 
 test('Telegram backend requests cannot hang the account page indefinitely', () => {
