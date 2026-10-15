@@ -18,6 +18,7 @@ const excluded = new Set([
   'new-tools.html','popular-tools.html','smart-tools.html','trending-tools.html','daily-tools-directory.html'
 ]);
 const genericAudience = {
+  benefit: 'US retirees planning monthly budgets, caregivers comparing official benefit notices, and students studying inflation adjustments',
   calculator: 'freelancers estimating project hours, remote workers checking a quick business number, and students validating coursework before submitting it',
   word: 'freelancers preparing proposals and briefs, remote workers checking document limits, and students measuring essays, applications, or research drafts',
   timer: 'remote workers using focused work blocks, freelancers tracking billable sessions, and students managing revision, practice, or exam drills',
@@ -28,10 +29,11 @@ const genericAudience = {
 function files() { return fs.readdirSync(ROOT).filter(f => f.endsWith('.html') && !excluded.has(f)); }
 function read(file) { return fs.readFileSync(path.join(ROOT, file), 'utf8'); }
 function clean(s) { return s.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); }
-function titleOf(html, file) { const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i); return clean(m?.[1] || file.replace(/\.html$/, '').replace(/[-_]+/g, ' ')); }
+function titleOf(html, file) { const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i); const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i); return clean(h1?.[1] || m?.[1] || file.replace(/\.html$/, '').replace(/[-_]+/g, ' ')); }
 function canonicalOf(html, file) { const m = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i); return m?.[1] || `https://nexusnovatools.com/${file}`; }
 function kind(file, title) {
   const s = `${file} ${title}`.toLowerCase();
+  if (/social-security|\bcola\b|benefit/.test(s)) return 'benefit';
   if (/word-counter|word count/.test(s)) return 'word';
   if (/timer|stopwatch|pomodoro|reaction-time/.test(s)) return 'timer';
   if (/converter|conversion|unit/.test(s)) return 'converter';
@@ -74,7 +76,7 @@ function specificExample(file, tool, k) {
   "roman-numeral-converter.html": "Check that the input falls within the converter's supported range and that subtractive forms follow the intended convention, such as IV rather than IIII for four. Roman numerals lack one universal convention for every large number, zero, or decimal representation, so confirm the required style for formal or historical use.",
   "salary-tax-calculator-pakistan.html": "Use the relevant tax year and distinguish gross salary from taxable income after any applicable treatment of benefits and deductions. Withholding, other income, tax credits, and annual slab changes may affect the final amount. Compare the estimate with current FBR guidance and payroll records.",
   "scientific-calculator.html": "Check whether trigonometric functions use degrees or radians, then test parentheses, powers, roots, logarithms, and scientific notation with a known result. Very large or small values can show floating-point rounding effects. For coursework or lab work, record the units and significant figures too.",
-  "social-security-cola-calculator-2027.html": "Treat a 2027 COLA percentage as hypothetical unless the Social Security Administration has officially announced that year's adjustment. This tool illustrates how a chosen percentage changes a starting benefit amount; it does not predict eligibility, Medicare premiums, withholding, or a personal award. Check the SSA's latest publication before planning benefits.",
+  "social-security-cola-calculator-2027.html": "The Social Security Administration announced an official 3.6% COLA for 2027 on October 14, 2026; the 2.8% rate is the historical 2026 comparison. For a $2,000 gross monthly benefit, a 3.6% increase is about $72 per month or $864 over twelve months before deductions. This is percentage arithmetic, not a personal award: Medicare premiums, tax withholding, benefit-specific rules, rounding, and other deductions can change the deposited amount. Use the current SSA notice for personal budgeting.",
   "steam-playtime-calculator.html": "Confirm whether the source is hours, minutes, or another platform-reported value before converting it into days or weeks. Time reported by a game platform can reflect the game being open rather than active attention, and rounding can change totals. Use the result as a rough personal summary, not proof of work or engagement.",
   "stopwatch.html": "Run a short practice interval and compare start, lap, split, and reset behavior before timing the actual task. Human reaction time limits manual starts and stops, and background tabs or device sleep can affect reliability. Keep the measurement method consistent when comparing attempts.",
   "storage-size-converter.html": "Check whether the source uses decimal units such as GB or binary units such as GiB. Manufacturers and operating systems may label capacity differently, so correct displays can show different numbers for the same device. Compare unit definitions before deciding that storage is missing or a transfer size is wrong.",
