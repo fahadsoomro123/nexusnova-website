@@ -182,6 +182,19 @@ jobs:
           /text-diff-checker.html
           /csv-json-converter.html
           /ai-prompt-builder.html
+          /ai-prompt-enhancer.html
+          /short-form-video-hook-generator.html
+          /freelance-rate-calculator.html
+          /crypto-tax-profit-estimator.html
+          /privacy-policy-terms-generator.html
+          /guides/ai-prompt-workflows-2026.html
+          /guides/short-form-hooks-2026.html
+          /guides/freelance-pricing-remote-work.html
+          /guides/crypto-recordkeeping-us-uk-2026.html
+          /guides/app-privacy-terms-checklist.html
+          /assets/js/search-core.js
+          /assets/js/tier1-tools.js
+          /assets/css/tier1-tools.css
           /gaming-sensitivity-converter.html
           /typing-speed-test.html
           /photo-cctv-enhancer.html
@@ -224,7 +237,7 @@ jobs:
           check_contains '/ads.txt' 'google.com, pub-5070673529890078, DIRECT, f08c47fec0942fa0' 'ads.txt declares the homepage AdSense publisher'
           check_contains '/' 'NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides' 'homepage reflects current 92-tool version'
           check_contains '/' 'document-workbench.html' 'homepage advertises the combined PDF workbench'
-          check_contains '/tools.html' 'id="directory-search-count">92 tools' 'directory count matches 92'
+          check_contains '/tools.html' 'id="directory-search-count">97 tools' 'directory count matches 97 after Tier-1 expansion'
           check_contains '/tools.html' 'document-workbench.html' 'directory lists the combined PDF workbench'
           check_absent '/tools.html' 'href="merge-pdf.html"' 'directory no longer lists legacy Merge PDF card'
           check_absent '/tools.html' 'href="split-pdf.html"' 'directory no longer lists legacy Split PDF card'
@@ -258,6 +271,20 @@ jobs:
           check_contains '/ai-prompt-builder.html' 'Prompt review before you send it' 'AI Prompt Builder review section'
           check_contains '/ai-prompt-builder.html' 'Key Features &amp; Practical Applications' 'AI Prompt Builder practical applications'
           check_contains '/ai-prompt-builder.html' 'AI Prompt Builder FAQ' 'AI Prompt Builder FAQ'
+          check_contains '/' 'assets/js/search-core.js?build=20261015-tier1-expansion-1' 'homepage loads cache-busted instant search index'
+          check_contains '/tools.html' 'id="directory-search-count">97 tools' 'directory count reflects the Tier-1 expansion'
+          check_contains '/ai-prompt-enhancer.html' 'data-tier1-tool="prompt-enhancer"' 'AI prompt enhancer route is the expected tool'
+          check_contains '/short-form-video-hook-generator.html' 'data-tier1-tool="video-hooks"' 'short-form script generator route is the expected tool'
+          check_contains '/freelance-rate-calculator.html' 'data-tier1-tool="freelance-rate"' 'freelance calculator route is the expected tool'
+          check_contains '/crypto-tax-profit-estimator.html' 'data-tier1-tool="crypto-tax"' 'crypto estimator route is the expected tool'
+          check_contains '/privacy-policy-terms-generator.html' 'data-tier1-tool="policy-generator"' 'privacy and terms generator route is the expected tool'
+          check_contains '/ai-prompt-enhancer.html' 'assets/css/tier1-tools.css?build=20261015-tier1-expansion-1' 'new tool links versioned shared CSS'
+          check_contains '/crypto-tax-profit-estimator.html' 'assets/js/tier1-tools.js?build=20261015-tier1-expansion-1' 'new tool links versioned shared engine'
+          check_contains '/guides/ai-prompt-workflows-2026.html' 'href="https://nexusnovatools.com/guides/ai-prompt-workflows-2026.html"' 'AI prompt guide canonical'
+          check_contains '/guides/short-form-hooks-2026.html' 'href="https://nexusnovatools.com/guides/short-form-hooks-2026.html"' 'short-form guide canonical'
+          check_contains '/guides/freelance-pricing-remote-work.html' 'href="https://nexusnovatools.com/guides/freelance-pricing-remote-work.html"' 'freelance pricing guide canonical'
+          check_contains '/guides/crypto-recordkeeping-us-uk-2026.html' 'href="https://nexusnovatools.com/guides/crypto-recordkeeping-us-uk-2026.html"' 'crypto recordkeeping guide canonical'
+          check_contains '/guides/app-privacy-terms-checklist.html' 'href="https://nexusnovatools.com/guides/app-privacy-terms-checklist.html"' 'privacy checklist guide canonical'
           check_absent '/ai-prompt-builder.html' 'Guide on How to Use the AI Prompt Builder' 'duplicate AI prompt guide removed'
           check_contains '/gaming-sensitivity-converter.html' 'data-flagship-depth' 'sensitivity converter depth marker'
           check_contains '/typing-speed-test.html' 'data-flagship-depth' 'typing test depth marker'
@@ -330,6 +357,61 @@ jobs:
           if failures:
               raise SystemExit(f'SITEMAP FAIL: {len(failures)} of {len(urls)} URLs failed HTTP 200.')
           print(f'CANONICAL SITEMAP PRODUCTION INTEGRITY PASS: all {len(urls)} advertised URLs returned HTTP 200.')
+          PY
+
+          python3 - <<'PY'
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import Request, urlopen
+          import os, re
+
+          base = 'https://nexusnovatools.com'
+          source = Path('assets/js/search-core.js').read_text(encoding='utf-8')
+          tool_routes = re.findall(r'url:"([^"]+)", type:"tool"', source)
+          if len(tool_routes) != 97 or len(set(tool_routes)) != 97:
+              raise SystemExit(f'SEARCH INDEX FAIL: expected 97 unique tool routes, found {len(tool_routes)} records / {len(set(tool_routes))} unique.')
+          guide_routes = [
+              'guides/ai-prompt-workflows-2026.html',
+              'guides/short-form-hooks-2026.html',
+              'guides/freelance-pricing-remote-work.html',
+              'guides/crypto-recordkeeping-us-uk-2026.html',
+              'guides/app-privacy-terms-checklist.html',
+          ]
+          missing = [route for route in tool_routes + guide_routes if not (Path(route).is_file())]
+          if missing:
+              raise SystemExit('SOURCE ROUTE FAIL: ' + ', '.join(missing))
+          token = os.environ.get('GITHUB_SHA', 'production-smoke')
+          routes = ['/'] + ['/' + route.lstrip('/') for route in tool_routes + guide_routes
+
+          ]
+          def verify(route):
+              url = f'{base}{route}?smoke={token}-tier1'
+              request = Request(url, headers={'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache', 'User-Agent': 'NexusNovaTier1ProductionSmoke/1.0'})
+              try:
+                  with urlopen(request, timeout=8) as response:
+                      status = response.status
+              except HTTPError as exc:
+                  status = exc.code
+              except (URLError, TimeoutError, OSError) as exc:
+                  return route, 'FAIL', type(exc).__name__
+              return route, 'PASS' if status == 200 else 'FAIL', str(status)
+          failures = []
+          with ThreadPoolExecutor(max_workers=16) as pool:
+              futures = [pool.submit(verify, route) for route in routes]
+              for future in as_completed(futures):
+                  result = future.result()
+                  if result[1] == 'PASS':
+                      if result[0] in routes[:1] or result[0] in ['/ai-prompt-enhancer.html','/short-form-video-hook-generator.html','/freelance-rate-calculator.html','/crypto-tax-profit-estimator.html','/privacy-policy-terms-generator.html'] or result[0].startswith('/guides/'):
+                          print(f'TIER1 ROUTE PASS {result[2]} {result[0]}')
+                  else:
+                      failures.append(result)
+          if failures:
+              for route, _, detail in failures[:50]:
+                  print(f'TIER1 ROUTE FAIL {detail} {route}')
+              raise SystemExit(f'TIER1 PRODUCTION FAIL: {len(failures)} of {len(routes)} requests did not return HTTP 200.')
+          print(f'TIER1 PRODUCTION PASS: homepage + all {len(tool_routes)} searchable tool pages + {len(guide_routes)} new guide pages returned HTTP 200.')
           PY
 
           if [ "$route_failures" -gt 0 ] || [ "$content_failures" -gt 0 ]; then
