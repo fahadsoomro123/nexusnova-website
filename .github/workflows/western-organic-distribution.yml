@@ -1,0 +1,304 @@
+name: NexusNova Western Organic Traffic Distribution
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/western-organic-distribution.yml'
+      - '.github/scripts/social_growth_engine.py'
+      - '.github/scripts/today_traffic_pulse.py'
+      - 'tests/test_western_organic_distribution.py'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/western-organic-distribution.yml'
+      - '.github/scripts/social_growth_engine.py'
+      - '.github/scripts/today_traffic_pulse.py'
+      - 'tests/test_western_organic_distribution.py'
+  schedule:
+    # 16:15 UTC: US/Canada lunchtime and UK late afternoon.
+    - cron: '15 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-western-organic-distribution
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependency
+        run: python -m pip install --disable-pip-version-check pillow
+      - name: Compile scripts and run tests
+        run: |
+          python -m py_compile .github/scripts/social_growth_engine.py
+          python -m py_compile .github/scripts/distribute_social_growth.py
+          python -m py_compile .github/scripts/distribute_update.py
+          python -m py_compile .github/scripts/today_traffic_pulse.py
+          python tests/test_western_organic_distribution.py
+      - name: Verify all curated campaign destinations
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('.github/scripts').resolve()))
+          import social_growth_engine as engine
+          invalid=[row['path'] for row in engine.WESTERN_EVERGREEN_TOOLS if not engine.is_public_indexable_page(engine.SITE+row['path'])]
+          if invalid:
+              raise SystemExit(f'Campaign destinations are not canonical/indexable tracked pages: {invalid}')
+          print(f'Indexability gate passed for {len(engine.WESTERN_EVERGREEN_TOOLS)} curated destinations.')
+          PY
+
+  distribute:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+      GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
+      SEARCH_GROWTH_MIN_IMPRESSIONS: ${{ vars.SEARCH_GROWTH_MIN_IMPRESSIONS }}
+      SEARCH_GROWTH_COOLDOWN_DAYS: ${{ vars.SEARCH_GROWTH_COOLDOWN_DAYS }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL_ID: ${{ vars.TELEGRAM_CHANNEL_ID }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      BUFFER_X_CHANNEL_ID: '6a987ad2065799be4676b541'
+      FACEBOOK_PAGE_ID: ${{ vars.FACEBOOK_PAGE_ID }}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+      SOCIAL_WEBHOOK_URL: ${{ secrets.SOCIAL_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Install traffic and social dependencies
+        run: python -m pip install --disable-pip-version-check pillow google-auth requests feedparser
+
+      - name: Prevent duplicate successful campaigns on the same UTC day
+        id: daily-cap
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          try:
+              doc=json.loads(Path('assets/data/social-growth-history.json').read_text(encoding='utf-8'))
+          except Exception:
+              doc={'posts': []}
+          today=datetime.now(timezone.utc).strftime('%Y-%m-%d')
+          prior=[
+              row.get('campaign') for row in doc.get('posts',[])
+              if str(row.get('generated_at','')).startswith(today)
+              and str(row.get('campaign','')).startswith('social_growth_western_'+today.replace('-','')+'_')
+              and int(row.get('successful_destinations',0) or 0)>0
+          ]
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+              out.write('skip=' + ('true' if prior else 'false') + '\n')
+          print('Already delivered today; skip publishing.' if prior else 'Daily organic campaign slot is available.')
+          if prior:
+              print('Recorded campaign(s):',prior)
+          PY
+
+      - name: Collect search and tool-of-day signals
+        if: steps.daily-cap.outputs.skip != 'true'
+        continue-on-error: true
+        run: |
+          python -m py_compile .github/scripts/traffic_autopilot_runner.py
+          python .github/scripts/traffic_autopilot_runner.py
+      - name: Refresh search and landing-page diagnostics
+        if: steps.daily-cap.outputs.skip != 'true'
+        continue-on-error: true
+        run: python .github/scripts/traffic_diagnosis.py
+      - name: Refresh social campaign feedback
+        if: steps.daily-cap.outputs.skip != 'true'
+        continue-on-error: true
+        run: python .github/scripts/social_growth_metrics.py
+      - name: Select one curated, indexable campaign
+        if: steps.daily-cap.outputs.skip != 'true'
+        run: python .github/scripts/social_growth_engine.py
+
+      - name: Verify safe live destination and remove unpublished media links
+        if: steps.daily-cap.outputs.skip != 'true'
+        id: campaign
+        run: |
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          p=Path('social-growth-publish.json')
+          if not p.is_file():
+              raise SystemExit('No eligible campaign payload was generated.')
+          item=json.loads(p.read_text(encoding='utf-8'))
+          parts=urlsplit(str(item.get('url','')))
+          if parts.scheme!='https' or parts.netloc!='nexusnovatools.com':
+              raise SystemExit('Campaign URL must be an HTTPS NexusNova destination.')
+          rel=(parts.path or '/').lstrip('/')
+          if not rel.endswith('.html') or rel in {'index.html','articles.html','tools.html','popular-tools.html','categories.html','guides.html'}:
+              raise SystemExit('Refusing generic/non-tool destination: '+rel)
+          page=Path(rel)
+          if not page.is_file():
+              raise SystemExit('Refusing missing destination: '+rel)
+          html=page.read_text(encoding='utf-8',errors='ignore')
+          for tag in re.findall(r'<meta\b[^>]*>',html,re.I):
+              if re.search(r'name=["\']robots["\']',tag,re.I) and re.search(r'content=["\'][^"\']*noindex',tag,re.I):
+                  raise SystemExit('Refusing noindex destination: '+rel)
+          # Do not link to stale or unpublished generated images.
+          for key in ('social_image','instagram_image','image','vertical_image'):
+              item.pop(key,None)
+          p.write_text(json.dumps(item,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as out:
+              out.write('campaign='+str(item.get('campaign',''))+'\n')
+              out.write('destination='+str(item['url'])+'\n')
+          print('Verified candidate:',item['url'])
+          print('Campaign:',item.get('campaign'))
+          PY
+
+      - name: Wait for exact destination HTML to reach production
+        if: steps.daily-cap.outputs.skip != 'true'
+        env:
+          CAMPAIGN_URL: ${{ steps.campaign.outputs.destination }}
+          CAMPAIGN_ID: ${{ steps.campaign.outputs.campaign }}
+        run: |
+          python - <<'PY'
+          import hashlib, os, time
+          from pathlib import Path
+          from urllib.parse import urlsplit, quote
+          from urllib.request import Request, urlopen
+          destination=os.environ['CAMPAIGN_URL'].strip()
+          campaign=os.environ['CAMPAIGN_ID'].strip()
+          rel=(urlsplit(destination).path or '/').lstrip('/')
+          expected=hashlib.sha256(Path(rel).read_bytes()).hexdigest()
+          for attempt in range(1,25):
+              url='https://nexusnovatools.com/'+quote(rel,safe='/')+'?nn_western_campaign='+campaign+'&probe='+str(attempt)
+              req=Request(url,headers={'Cache-Control':'no-cache, no-store, max-age=0','Pragma':'no-cache','Accept-Encoding':'identity','User-Agent':'NexusNovaOrganicCampaign/1.0'})
+              try:
+                  with urlopen(req,timeout=8) as response:
+                      body=response.read()
+                      status=response.status
+                  actual=hashlib.sha256(body).hexdigest()
+                  if status==200 and actual==expected:
+                      print('LIVE DESTINATION VERIFIED: '+destination+'; exact SHA256 match on attempt '+str(attempt)+'.')
+                      break
+                  print(f'Waiting for live page {attempt}/24: status={status}, expected={expected[:12]}, actual={actual[:12]}')
+              except Exception as exc:
+                  print(f'Waiting for live page {attempt}/24: {type(exc).__name__}: {exc}')
+              if attempt==24:
+                  raise SystemExit('Live destination did not match checked-in source; refusing to publish.')
+              time.sleep(5)
+          PY
+
+      - name: Publish one daily campaign to configured organic channels
+        if: steps.daily-cap.outputs.skip != 'true'
+        run: python .github/scripts/distribute_social_growth.py
+      - name: Require at least one successful destination
+        if: steps.daily-cap.outputs.skip != 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('social-distribution-report.json')
+          if not p.is_file():
+              raise SystemExit('Publisher did not create a delivery report.')
+          report=json.loads(p.read_text(encoding='utf-8'))
+          success=int(report.get('successful_destinations',0) or 0)
+          print('Campaign:',report.get('campaign'))
+          print('Successful destinations:',success)
+          for row in report.get('outcomes',[]):
+              print(f"- {row.get('platform')}: {'POSTED' if row.get('ok') else 'SKIPPED/FAILED'} — {row.get('detail','')}")
+          if success<1:
+              raise SystemExit('No configured organic destination published successfully. Check repository secrets/channel IDs; no traffic is claimed.')
+          PY
+
+      - name: Save delivery result and repeat-protection history
+        if: steps.daily-cap.outputs.skip != 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
+          history_path=Path('assets/data/social-growth-history.json')
+          doc=json.loads(history_path.read_text(encoding='utf-8'))
+          found=False
+          for row in reversed(doc.get('posts',[])):
+              if row.get('campaign')==report.get('campaign'):
+                  row['successful_destinations']=int(report.get('successful_destinations',0) or 0)
+                  row['distribution_outcomes']=report.get('outcomes',[])
+                  row['distribution_confirmed_at']=report.get('generated_at')
+                  found=True
+                  break
+          if not found:
+              raise SystemExit('Delivered campaign missing from history.')
+          doc['version']=2
+          doc['posts']=doc.get('posts',[])[-120:]
+          history_path.write_text(json.dumps(doc,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          PY
+          cp assets/data/social-growth-history.json /tmp/nexusnova-social-growth-history.json
+          git reset --hard HEAD
+          cp /tmp/nexusnova-social-growth-history.json assets/data/social-growth-history.json
+          git config user.name 'nexusnova-organic-growth[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/data/social-growth-history.json
+          if git diff --cached --quiet; then
+            echo 'No campaign-history delta to commit.'
+          else
+            git commit -m "automation: record verified organic campaign ${{ steps.campaign.outputs.campaign }}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Publish run summary
+        if: always()
+        run: |
+          echo '## NexusNova Western Organic Distribution' >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.daily-cap.outputs.skip }}" = "true" ]; then
+            echo 'A successful campaign was already recorded for this UTC date; duplicate publish skipped.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ -f social-growth-publish.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          item=json.loads(Path('social-growth-publish.json').read_text(encoding='utf-8'))
+          print('Campaign: '+str(item.get('campaign','')))
+          print('Destination: '+str(item.get('url','')))
+          print('Audience focus: '+str(item.get('audience_focus','English-language Western market use cases')))
+          if Path('social-distribution-report.json').is_file():
+              r=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
+              print('Successful destinations: '+str(r.get('successful_destinations',0)))
+              for o in r.get('outcomes',[]):
+                  print(str(o.get('platform'))+': '+('posted' if o.get('ok') else 'skipped/failed')+' — '+str(o.get('detail','')))
+          PY
+          else
+            echo 'No campaign payload was produced. Review the job log.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload campaign and delivery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-western-organic-distribution-${{ github.run_id }}
+          path: |
+            social-growth-publish.json
+            social-growth-report.txt
+            social-distribution-report.json
+            traffic-diagnosis.json
+            traffic-diagnosis.txt
+          if-no-files-found: ignore
+          retention-days: 30
