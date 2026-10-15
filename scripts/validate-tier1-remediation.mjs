@@ -100,5 +100,18 @@ for (const required of ['about.html','contact.html','privacy.html','terms.html']
 }
 if (!/^User-agent:\s*\*/m.test(robots)) failures.push('robots.txt: missing User-agent wildcard');
 if (!/Sitemap:\s*https:\/\/nexusnovatools\.com\/sitemap\.xml/m.test(robots)) failures.push('robots.txt: missing primary sitemap declaration');
+const colaPath = path.join(root, 'social-security-cola-calculator-2027.html');
+if (fs.existsSync(colaPath)) {
+  const cola = fs.readFileSync(colaPath, 'utf8');
+  if (/treat a 2027 cola percentage as hypothetical unless/i.test(cola)) {
+    failures.push('social-security-cola-calculator-2027.html: obsolete hypothetical-rate claim contradicts official 2027 COLA');
+  }
+  if (!/official 3\\.6% COLA for 2027/i.test(cola)) {
+    failures.push('social-security-cola-calculator-2027.html: guide must state the official 3.6% 2027 COLA');
+  }
+  if (/How to use 2027 Social Security COLA Calculator: Official 3\\.6% Rate for everyday work and study/i.test(cola)) {
+    failures.push('social-security-cola-calculator-2027.html: generated guide label must use the page H1, not the full SEO title');
+  }
+}
 console.log(JSON.stringify({sitemapUrls:sitemapUrls.size,toolPages:indexable,webApps,genericPages,faqPages,failures},null,2));
 if (failures.length) process.exit(1);
