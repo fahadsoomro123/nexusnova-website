@@ -1,4 +1,4 @@
-name: Privacy Analytics Production Verification
+﻿name: Privacy Analytics Production Verification
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ permissions:
 
 env:
   GA4_MEASUREMENT_ID: 'G-YLPFKWSS12'
-  GA4_QA_VERSION: '20261015-cookie-consent-v1'
+  GA4_QA_VERSION: '20261015-v4'
 
 jobs:
   verify:
@@ -57,11 +57,11 @@ jobs:
           base = 'https://nexusnovatools.com'
           deploy_sha = os.environ['DEPLOY_SHA']
           pages = [
-              ('/', 'assets/js/main.js?v=20261015-cookie-consent-v1'),
-              ('/tools.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1'),
-              ('/categories.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1'),
-              ('/guides.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1'),
-              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261015-cookie-consent-v1'),
+              ('/', 'assets/js/main.js?v=20261015-v4'),
+              ('/tools.html', 'assets/js/analytics.js?v=20261015-v4'),
+              ('/categories.html', 'assets/js/analytics.js?v=20261015-v4'),
+              ('/guides.html', 'assets/js/analytics.js?v=20261015-v4'),
+              ('/whatsapp-link-generator.html', 'assets/js/analytics.js?v=20261015-v4'),
           ]
           headers = {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
           session = requests.Session()
@@ -85,7 +85,7 @@ jobs:
               try:
                   main_js = session.get(
                       base + '/assets/js/main.js',
-                      params={'v': '20261015-cookie-consent-v1', 'nn_deploy_probe': deploy_sha},
+                      params={'v': '20261015-v4', 'nn_deploy_probe': deploy_sha},
                       headers=headers,
                       timeout=4,
                   )

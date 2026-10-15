@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -23,7 +23,7 @@ test('Instagram Business Login starts from a server-issued authorization URL', (
   assert.match(oauth, /instagram_business_basic/);
   assert.match(oauth, /https:\/\/nexusnovatools\.com\/instagram-callback\.html/);
   assert.match(callback, /body: JSON\.stringify\(\{ code, state, redirectUri: REDIRECT_URI \}\)/);
-  assert.match(shell, /instagram-auth-ui\.js\?v=20260901-4/);
+  assert.match(shell, /instagram-auth-ui\.js\?v=20261015-v4/);
 });
 
 test('Instagram OAuth state is HMAC signed and verified server-side instead of browser storage', () => {
