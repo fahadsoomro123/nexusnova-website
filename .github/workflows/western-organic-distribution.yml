@@ -62,7 +62,6 @@ jobs:
           python -m py_compile .github/scripts/social_growth_engine.py
           python -m py_compile .github/scripts/distribute_social_growth.py
           python -m py_compile .github/scripts/distribute_update.py
-          python -m py_compile .github/scripts/distribute_social_growth.py
           python -m py_compile .github/scripts/today_traffic_pulse.py
           python tests/test_western_organic_distribution.py
           python tests/test_social_distribution_outcomes.py
