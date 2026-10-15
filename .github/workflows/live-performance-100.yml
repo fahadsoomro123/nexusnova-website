@@ -2,6 +2,13 @@
 name: NexusNova Live Performance 100 Gate
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/js/**/*.js'
+      - '.github/workflows/live-performance-100.yml'
+      - 'tests/homepage-adsense-defer.test.cjs'
   push:
     branches: [main]
     paths:
@@ -19,7 +26,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate-bootstrap:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pull request source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify homepage AdSense scheduling contract
+        run: |
+          node --check assets/js/main.js
+          node --test tests/homepage-adsense-defer.test.cjs
+          grep -Fq "const measurementId='G-YLPFKWSS12';" assets/js/main.js
+          grep -Fq "window.requestIdleCallback(insertAdsenseScript,{timeout:4000})" assets/js/main.js
+          ! grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
+
   live-lighthouse:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -38,8 +67,11 @@ jobs:
           grep -Fq "const measurementId='G-YLPFKWSS12';" assets/js/main.js
           grep -Fq "window.__nexusnovaLoadAnalytics=choice=>{" assets/js/main.js
           grep -Fq "const adsenseScriptSelector=" assets/js/main.js
-          grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
+          grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" assets/js/main.js
+          grep -Fq "window.requestIdleCallback(insertAdsenseScript,{timeout:4000})" assets/js/main.js
+          ! grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
           ! grep -Fq "mountChoices" assets/js/main.js
+          node --test tests/homepage-adsense-defer.test.cjs
 
       - name: Wait for exact homepage and changed assets to reach production
         shell: bash
