@@ -10,7 +10,7 @@
 
 <section class="section"><div class="container article">
 <h2>Use DNS records to troubleshoot the right layer</h2>
-<p>DNS lookup asks the resolver for public records associated with a domain. A records map names to IPv4 addresses; AAAA records map names to IPv6 addresses; MX records describe mail-routing hosts; TXT records can hold verification and email-authentication values; CNAME records alias one name to another; NS records identify authoritative name servers; and CAA records can restrict which certificate authorities may issue certificates for a domain.</p>
+<p>DNS lookup asks a resolver for public records. A maps a name to IPv4; AAAA to IPv6; MX routes mail; TXT can hold verification or email-authentication values; CNAME aliases a name; NS identifies name servers; and CAA can restrict certificate authorities.</p>
 <h2>A practical troubleshooting sequence</h2>
 <ol><li>Enter the hostname or domain without a copied URL path.</li><li>Choose the record type related to the issue, such as MX for mail routing or A/AAAA for address resolution.</li><li>Review the answer, TTL and any alias chain shown by the resolver.</li><li>Compare the response with the domain owner's intended DNS configuration before changing records.</li></ol>
 <p>If a record was changed recently, cached answers may remain visible until their TTL expires. A successful answer from one recursive resolver does not mean every resolver worldwide has updated, and a missing record does not by itself prove that a website is down. Check authoritative name servers and the service configuration when the problem affects a production domain.</p>
