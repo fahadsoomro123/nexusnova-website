@@ -51,8 +51,8 @@ class HomepageCriticalPathRegressionTests(unittest.TestCase):
 
     def test_existing_hero_assets_are_discovered_in_the_initial_document(self):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
-        self.assertIn('assets/css/humanproof-home.css?v=20261015-v2" data-humanproof-loader', html)
-        self.assertIn('assets/js/humanproof-home.js?v=20261015-v2" data-humanproof-loader defer', html)
+        self.assertIn('assets/css/humanproof-home.css?v=20261015-v3" data-humanproof-loader', html)
+        self.assertIn('assets/js/humanproof-home.js?v=20261015-v3" data-humanproof-loader defer', html)
         self.assertIn('assets/logo.png', html)
 
     def test_decorative_3d_work_waits_for_browser_idle_time(self):
@@ -87,10 +87,8 @@ class HomepageConsentCriticalPathRegressionTests(unittest.TestCase):
         self.assertIn("window.__nexusnovaLoadAnalytics", html)
 
 
-
-
 class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
-    """Guard the published 2027 COLA rate and discovery copy against stale claims."""
+    """Guard the published 2027 COLA rate and historical reference against stale claims."""
 
     def test_calculator_uses_official_2027_rate_and_historical_reference(self):
         html = (ROOT / "social-security-cola-calculator-2027.html").read_text(encoding="utf-8")
@@ -136,8 +134,6 @@ class MetaDescriptionParserRegressionTests(unittest.TestCase):
             VALUE_AUDIT.meta_description(html),
             "A distinct description with adequate search context.",
         )
-
-
 
 
 if __name__ == "__main__":
