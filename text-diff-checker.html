@@ -9,10 +9,10 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta property="og:image:alt" content="NexusNova Tools"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="Text Diff Checker Online — NexusNova Tools"><meta property="og:description" content="Compare two text versions locally in your browser and inspect added, removed and unchanged lines."><meta property="og:url" content="https://nexusnovatools.com/text-diff-checker.html">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:image:alt" content="NexusNova Tools"><meta name="twitter:title" content="Text Diff Checker Online — NexusNova Tools"><meta name="twitter:description" content="Compare text locally in your browser with clear added, removed and unchanged lines.">
-<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/site.css?build=20261015-worldclass1">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Text Diff Checker","url":"https://nexusnovatools.com/text-diff-checker.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Compare two text versions locally in the browser and inspect added, removed and unchanged lines."}</script>
-<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
-<link rel="stylesheet" href="assets/css/footer-social.css">
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css?build=20261015-worldclass1">
+<link rel="stylesheet" href="assets/css/footer-social.css?build=20261015-worldclass1">
 </head>
 <body class="nn-inner-page">
 <header class="nn-header" data-nn-header><div class="nn-shell nn-header-row"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button><nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="index.html#master-directory">All Tools</a><a href="index.html#content-library">Content</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
@@ -117,6 +117,6 @@ $('diff-run').onclick=()=>{try{const a=lines($('diff-left').value,$('ignore-whit
 $('diff-copy').onclick=async()=>{if(!latest){$('diff-status').textContent='Run a comparison first.';return;}try{await navigator.clipboard.writeText(latest);$('diff-status').textContent='Diff copied.';}catch{$('diff-status').textContent='Clipboard access is unavailable in this browser.';}};
 $('diff-clear').onclick=()=>{$('diff-left').value='';$('diff-right').value='';$('diff-output').innerHTML='';$('diff-status').textContent='Enter two text versions to compare.';latest='';};
 })();
-</script><script src="assets/js/main.js" defer></script>
-<script src="assets/js/nn-inner-shell.js" defer></script>
+</script><script src="assets/js/main.js?build=20261015-worldclass1" defer></script>
+<script src="assets/js/nn-inner-shell.js?build=20261015-worldclass1" defer></script>
 </body></html>
