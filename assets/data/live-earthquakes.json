@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-14T21:44:49.705Z",
+  "generated_at": "2026-10-15T00:09:01.643Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,17 +16,93 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-14T21:44:48.000Z",
+  "feed_generated_at": "2026-10-15T00:08:38.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 34,
+  "source_count": 33,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "pr71536748",
+      "magnitude": 3.1,
+      "place": "22 km NNE of Brenas, Puerto Rico",
+      "time": "2026-10-14T23:24:41.550Z",
+      "updated": "2026-10-15T00:00:12.369Z",
+      "depth_km": 73.8,
+      "coordinates": {
+        "lat": 18.6637,
+        "lon": -66.282
+      },
+      "significance": 148,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71536748",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2d6",
+      "magnitude": 4.5,
+      "place": "82 km SSW of Mil’kovo, Russia",
+      "time": "2026-10-14T23:20:59.714Z",
+      "updated": "2026-10-14T23:35:48.040Z",
+      "depth_km": 183.5,
+      "coordinates": {
+        "lat": 54.0004,
+        "lon": 158.1848
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2d6",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2cy",
+      "magnitude": 3.6,
+      "place": "18 km NNW of Whites City, New Mexico",
+      "time": "2026-10-14T22:55:19.298Z",
+      "updated": "2026-10-14T23:57:10.047Z",
+      "depth_km": 9.5,
+      "coordinates": {
+        "lat": 32.3282,
+        "lon": -104.4459
+      },
+      "significance": 200,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2cy",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2c6",
+      "magnitude": 4.1,
+      "place": "33 km NE of Bahía de Caráquez, Ecuador",
+      "time": "2026-10-14T20:34:46.590Z",
+      "updated": "2026-10-14T22:17:52.040Z",
+      "depth_km": 49.6,
+      "coordinates": {
+        "lat": -0.3599,
+        "lon": -80.2447
+      },
+      "significance": 259,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2c6",
+      "pakistan_region": false
+    },
     {
       "id": "pr71536713",
       "magnitude": 3.14,
       "place": "57 km NW of San Antonio, Puerto Rico",
       "time": "2026-10-14T20:10:09.470Z",
-      "updated": "2026-10-14T20:29:49.540Z",
+      "updated": "2026-10-14T21:47:06.040Z",
       "depth_km": 15.5,
       "coordinates": {
         "lat": 18.8555,
@@ -45,14 +121,14 @@
       "magnitude": 3.04,
       "place": "12 km NE of Walker Lake, Nevada",
       "time": "2026-10-14T19:54:40.223Z",
-      "updated": "2026-10-14T21:13:43.844Z",
+      "updated": "2026-10-14T22:18:07.767Z",
       "depth_km": 10.2,
       "coordinates": {
         "lat": 38.7308,
         "lon": -118.6531
       },
       "significance": 142,
-      "felt": 0,
+      "felt": 1,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -102,14 +178,14 @@
       "magnitude": 4.3,
       "place": "122 km SW of Bengkulu, Indonesia",
       "time": "2026-10-14T15:12:40.526Z",
-      "updated": "2026-10-14T16:24:34.040Z",
+      "updated": "2026-10-14T22:37:47.896Z",
       "depth_km": 10,
       "coordinates": {
         "lat": -4.6878,
         "lon": 101.6053
       },
-      "significance": 284,
-      "felt": 0,
+      "significance": 285,
+      "felt": 1,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -140,14 +216,14 @@
       "magnitude": 2.99,
       "place": "23 km NE of Hydesville, CA",
       "time": "2026-10-14T13:56:12.400Z",
-      "updated": "2026-10-14T18:02:15.192Z",
+      "updated": "2026-10-14T23:58:38.988Z",
       "depth_km": 4.4,
       "coordinates": {
         "lat": 40.677,
         "lon": -123.8893
       },
       "significance": 139,
-      "felt": 6,
+      "felt": 7,
       "alert": null,
       "status": "automatic",
       "tsunami": false,
@@ -159,14 +235,14 @@
       "magnitude": 2.45,
       "place": "4 km SSW of Thomasville, Missouri",
       "time": "2026-10-14T13:31:12.510Z",
-      "updated": "2026-10-14T17:05:11.626Z",
+      "updated": "2026-10-14T22:20:05.661Z",
       "depth_km": 1.5,
       "coordinates": {
         "lat": 36.759,
         "lon": -91.557
       },
-      "significance": 95,
-      "felt": 8,
+      "significance": 96,
+      "felt": 10,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -349,14 +425,14 @@
       "magnitude": 2.65,
       "place": "5 km WSW of Wilderness Rim, Washington",
       "time": "2026-10-14T09:00:04.270Z",
-      "updated": "2026-10-14T20:36:48.197Z",
+      "updated": "2026-10-14T22:57:59.141Z",
       "depth_km": 19.1,
       "coordinates": {
         "lat": 47.4222,
         "lon": -121.825
       },
-      "significance": 126,
-      "felt": 67,
+      "significance": 127,
+      "felt": 69,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -570,101 +646,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u26c",
-      "pakistan_region": false
-    },
-    {
-      "id": "ci41347255",
-      "magnitude": 2.46,
-      "place": "13 km NNW of Borrego Springs, CA",
-      "time": "2026-10-13T23:59:55.930Z",
-      "updated": "2026-10-14T14:49:19.730Z",
-      "depth_km": 11.3,
-      "coordinates": {
-        "lat": 33.3652,
-        "lon": -116.4115
-      },
-      "significance": 93,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41347255",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026ueznej",
-      "magnitude": 2.6,
-      "place": "50 km S of Whites City, New Mexico",
-      "time": "2026-10-13T23:54:43.577Z",
-      "updated": "2026-10-14T14:54:57.553Z",
-      "depth_km": 6.7,
-      "coordinates": {
-        "lat": 31.722,
-        "lon": -104.3
-      },
-      "significance": 104,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026ueznej",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71536653",
-      "magnitude": 2.83,
-      "place": "7 km NNE of Isabela, Puerto Rico",
-      "time": "2026-10-13T23:29:55.680Z",
-      "updated": "2026-10-13T23:43:55.880Z",
-      "depth_km": 21.7,
-      "coordinates": {
-        "lat": 18.5627,
-        "lon": -67.003
-      },
-      "significance": 123,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71536653",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u265",
-      "magnitude": 4.4,
-      "place": "70 km NNE of Calama, Chile",
-      "time": "2026-10-13T23:26:52.460Z",
-      "updated": "2026-10-14T03:03:21.040Z",
-      "depth_km": 124.3,
-      "coordinates": {
-        "lat": -21.8365,
-        "lon": -68.7527
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u265",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u25y",
-      "magnitude": 3.6,
-      "place": "23 km WSW of Carlsbad, New Mexico",
-      "time": "2026-10-13T22:39:00.232Z",
-      "updated": "2026-10-14T14:33:09.045Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 32.3762,
-        "lon": -104.478
-      },
-      "significance": 210,
-      "felt": 32,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u25y",
       "pakistan_region": false
     }
   ]
