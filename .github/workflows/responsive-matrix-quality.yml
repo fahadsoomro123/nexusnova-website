@@ -93,6 +93,27 @@ jobs:
                               failures.append(f'{name}@{width}: horizontal overflow ({metrics["sw"]}/{metrics["cw"]})')
                           if metrics['h1'] != 1 and rel not in {'register.html'}:
                               failures.append(f'{name}@{width}: H1 count {metrics["h1"]}')
+                          if name == 'home' and width == 1280:
+                              search_input = page.locator('[data-nexusnova-search-input]')
+                              probes = [
+                                  ('T', ['image-to-text-ocr.html']),
+                                  ('tik', ['short-form-video-hook-generator.html']),
+                                  ('tok', ['short-form-video-hook-generator.html']),
+                                  ('calc', ['calculator.html']),
+                                  ('tax', ['crypto-tax-profit-estimator.html']),
+                                  ('pdf', ['jpg-to-pdf.html', 'document-workbench.html', 'text-to-pdf.html']),
+                                  ('c', ['csv-json-converter.html']),
+                              ]
+                              for query, expected_routes in probes:
+                                  search_input.fill(query)
+                                  result_items = page.locator('#nn-search-suggestions [data-nn-search-result]')
+                                  result_items.first.wait_for(timeout=5000)
+                                  visible_routes = result_items.evaluate_all(
+                                      "(items) => items.map(item => new URL(item.href).pathname.split('/').pop())"
+                                  )
+                                  missing = [route for route in expected_routes if route not in visible_routes]
+                                  if missing:
+                                      failures.append(f'home@{width}: input {query!r} missing {missing}; got {visible_routes}')
                           if errors:
                               failures.append(f'{name}@{width}: console errors: {" | ".join(dict.fromkeys(errors))}')
                           if not metrics['header']:
