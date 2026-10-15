@@ -112,6 +112,10 @@ def tracked_url(url: str, source: str, kind: str) -> str:
 
 
 def social_image_url(item: dict) -> str:
+    # Scheduled traffic promotion deliberately posts text + tracked links only.
+    # Do not attach an older public image whose artwork may describe another campaign.
+    if os.getenv('NEXUSNOVA_SOCIAL_TEXT_ONLY', '').strip() == '1':
+        return ''
     for key in ('social_image', 'instagram_image', 'image', 'vertical_image'):
         value = str(item.get(key, '')).strip()
         if value.startswith('https://'):
