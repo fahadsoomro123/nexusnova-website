@@ -53,19 +53,33 @@
   }
 
   // Load AdSense on public, indexable pages only and after consent defaults.
-  // The homepage carries the official static tag; this shared loader covers inner pages.
+  // Defer the homepage request until the load event + an idle callback so the
+  // first render/LCP is not competing with the heavy advertising runtime.
+  // Inner pages retain their current early async injection behavior.
   const adsenseScriptSelector='script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]';
   const isLocalAuditHost=/^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
   const robotsDirective=document.querySelector('meta[name="robots"]')?.getAttribute('content')||'';
   const isNoindexPage=/\bnoindex\b/i.test(robotsDirective);
   const restrictedPage=/^\/(?:404\.html|account\.html|account-deletion\.html|register\.html|app\.html)$/i.test(location.pathname);
-  if(!isLocalAuditHost&&!isNoindexPage&&!restrictedPage&&!document.querySelector(adsenseScriptSelector)){
+  const isHomepage=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  const insertAdsenseScript=()=>{
+    if(isLocalAuditHost||isNoindexPage||restrictedPage||document.querySelector(adsenseScriptSelector))return;
     const adsenseScript=document.createElement('script');
     adsenseScript.async=true;
     adsenseScript.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5070673529890078';
     adsenseScript.crossOrigin='anonymous';
     adsenseScript.dataset.nexusnovaAdsense='';
     document.head.appendChild(adsenseScript);
+  };
+  if(isHomepage&&!isLocalAuditHost&&!isNoindexPage&&!restrictedPage&&!document.querySelector(adsenseScriptSelector)){
+    const scheduleAfterLoad=()=>{
+      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(insertAdsenseScript,{timeout:4000});
+      else window.setTimeout(insertAdsenseScript,1500);
+    };
+    if(document.readyState==='complete')scheduleAfterLoad();
+    else window.addEventListener('load',scheduleAfterLoad,{once:true});
+  }else{
+    insertAdsenseScript();
   }
 
   const isProductionAnalyticsHost=/^(?:www\.)?nexusnovatools\.com$/i.test(location.hostname);
