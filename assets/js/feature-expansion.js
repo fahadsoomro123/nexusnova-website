@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-function $(root,selector){return root.querySelector(selector)}
+function $(root,selector){if(!selector){selector=root;root=document}return root.querySelector(selector)}
 function value(root,selector){var el=$(root,selector);return el?String(el.value||'').trim():''}
 function number(root,selector){var n=Number(value(root,selector));return Number.isFinite(n)?n:0}
 function money(n,currency){return new Intl.NumberFormat('en-US',{style:'currency',currency:currency||'USD',maximumFractionDigits:2}).format(Number.isFinite(n)?n:0)}
