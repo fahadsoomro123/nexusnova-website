@@ -119,6 +119,28 @@ def meta_description(text: str) -> str:
             return attrs.get('content', '').strip()
     return ''
 
+def meta_value(text: str, wanted: str) -> str:
+    """Read one named/property metadata value without assuming attribute order."""
+    attr_pattern = re.compile(r"""([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))""", re.I)
+    wanted = wanted.strip().lower()
+    for tag in re.findall(r'<meta\b[^>]*>', text, re.I | re.S):
+        attrs = {}
+        for match in attr_pattern.finditer(tag):
+            key = match.group(1).lower()
+            value = next((group for group in match.groups()[1:] if group is not None), '')
+            attrs[key] = html_lib.unescape(value).strip()
+        if attrs.get('name', '').lower() == wanted or attrs.get('property', '').lower() == wanted:
+            return attrs.get('content', '').strip()
+    return ''
+
+
+def has_faq_section(headings: list[str]) -> bool:
+    """Recognize visible FAQ/questions headings and natural question headings."""
+    if any(re.search(r'\b(?:faq|frequently asked questions|common questions|questions)\b', h, re.I) for h in headings):
+        return True
+    return any('?' in h for h in headings)
+
+
 def is_noindex(text: str) -> bool:
     return bool(re.search(r'<meta\s+name=["\']robots["\'][^>]*content=["\'][^"\']*noindex', text, re.I))
 
@@ -263,6 +285,13 @@ def main() -> None:
             'title': title,
             'description': desc,
             'canonical': canonical(source),
+            'og_title': meta_value(source, 'og:title'),
+            'og_description': meta_value(source, 'og:description'),
+            'og_url': meta_value(source, 'og:url'),
+            'twitter_card': meta_value(source, 'twitter:card'),
+            'twitter_title': meta_value(source, 'twitter:title'),
+            'twitter_description': meta_value(source, 'twitter:description'),
+            'faq': has_faq_section(headings),
             'plain': plain,
             'shingles': shingles(plain),
             'duplicate_sections': duplicate_section_blocks(frag),
@@ -306,14 +335,32 @@ def main() -> None:
             findings.append({'severity':'warning','type':'meta','path':path,'detail':'Very short meta description; review search clarity'})
         if not page['canonical']:
             findings.append({'severity':'warning','type':'canonical','path':path,'detail':'Missing canonical URL'})
+        else:
+            expected_canonical = BASE if path == 'index.html' else BASE + path
+            if page['canonical'].rstrip('/') != expected_canonical.rstrip('/'):
+                findings.append({'severity':'warning','type':'canonical_mismatch','path':path,'detail':f"Expected canonical {expected_canonical}; found {page['canonical']}"})
+
+        for field, label in (
+            ('og_title', 'Open Graph title'),
+            ('og_description', 'Open Graph description'),
+            ('og_url', 'Open Graph URL'),
+            ('twitter_card', 'Twitter card type'),
+            ('twitter_title', 'Twitter title'),
+            ('twitter_description', 'Twitter description'),
+        ):
+            if not page[field]:
+                findings.append({'severity':'warning','type':'social_metadata','path':path,'detail':f'Missing {label}'})
 
         if kind == 'tool':
             if not page['functional']:
                 findings.append({'severity':'blocker','type':'nonfunctional_tool_surface','path':path,'detail':page['function_evidence']})
             signals = sum(bool(page[name]) for name in ('method','example','limits'))
-            # Google does not publish a minimum word count. This gate therefore
-            # only escalates an unusually sparse tool when useful context is also
-            # missing; short but complete utilities are not penalized for brevity.
+            # 600 words is this project's requested editorial target, not a Google-published minimum.
+            if wc < 600:
+                findings.append({'severity':'warning','type':'tool_content_below_target','path':path,'detail':f'{wc} visible main-content words; project target is at least 600 plus page-specific examples and limitations'})
+            if not page['faq']:
+                findings.append({'severity':'warning','type':'tool_faq_missing','path':path,'detail':'No visible FAQ/questions heading or question heading found'})
+            # Retain the existing severe checks for pages that are unusually sparse and lack useful context.
             if wc < 120:
                 findings.append({'severity':'high','type':'weak_tool_value','path':path,'detail':f'Only {wc} main-content words on an indexable tool page'})
             elif wc < 220 and signals < 2:
@@ -340,7 +387,7 @@ def main() -> None:
             if wc < 180 and signals < 2:
                 findings.append({'severity':'high','type':'weak_live_value','path':path,'detail':f'{wc} words with insufficient source/method/limitations context'})
 
-        if kind in {'tool','support','live'} and re.search(r'\b(?:coming soon|lorem ipsum|under construction)\b', body, re.I):
+        if kind in {'tool','support','live'} and re.search(r'\b(?:coming soon|lorem ipsum|under construction|TODO|FIXME|sample text goes here)\b', body, re.I):
             findings.append({'severity':'blocker','type':'unfinished_copy','path':path,'detail':'Unfinished/placeholder wording on an indexable page'})
         if 'preview' in path.lower() or re.search(r'(?:preview|demo)\s*v?\d+', page['title'], re.I):
             findings.append({'severity':'blocker','type':'indexable_preview','path':path,'detail':'Preview/demo appears indexable'})
@@ -406,7 +453,7 @@ def main() -> None:
 
     lines=[
         '# NexusNova Strict Manual Value Audit','',
-        'This audit checks actual functionality and useful context. It does not treat a fixed word count as a Google requirement.','',
+        'This audit checks functionality, useful context, visible FAQ coverage and metadata completeness. The 600-word tool depth target is a project editorial standard, not a Google-published minimum.','',
         f'**Status: {status}**','',
         f"Pages audited: **{len(pages)}**",
         f"Blockers: **{counts.get('blocker',0)}**",
