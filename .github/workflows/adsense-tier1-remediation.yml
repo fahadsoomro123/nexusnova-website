@@ -33,6 +33,12 @@ jobs:
       - name: Generate page remediation
         run: node scripts/adsense-tier1-remediation.mjs
 
+      - name: Add global homepage discovery layer
+        run: node scripts/tier1-home-structure.mjs
+
+      - name: Regenerate sitemap
+        run: node scripts/refresh-tier1-sitemap.mjs
+
       - name: Clean non-tool schema
         run: node scripts/cleanup-tier1-nontool-schema.mjs
 
