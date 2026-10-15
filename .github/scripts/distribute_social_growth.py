@@ -96,6 +96,9 @@ def build_delivery_outcome(
     is_buffer_queue = platform == "x" and provider.lower() == "buffer"
     if not ok:
         delivery_state = "failed"
+    elif is_buffer_queue:
+        # A successful Buffer API response means queued, not proof the post is live.
+        delivery_state = "queued"
     elif platform == "webhook":
         delivery_state = "accepted"
     else:
@@ -238,7 +241,7 @@ def main() -> None:
             result = base.post_x(x_copy, tracked_url(item, "x"), hashtags, image_url=image_url)
             record("x", result, f"direct X fallback · {media_detail(result)}")
         except Exception as exc:
-            record("x", False, safe_error(exc))
+            record("x", None, safe_error(exc))
     else:
         record("x", None, "not configured")
 
