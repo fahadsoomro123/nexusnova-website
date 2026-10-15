@@ -2013,6 +2013,7 @@
           var main = document.createElement('span');
           var title = document.createElement('span');
           var meta = document.createElement('span');
+          var url = document.createElement('span');
           var key = document.createElement('span');
 
           item.id = 'nn-search-result-' + (index + 1);
@@ -2034,12 +2035,16 @@
           meta.className = 'nn-search-result-meta';
           meta.textContent = result.category || 'NEXUSNOVA TOOL';
 
+          url.className = 'nn-search-result-url';
+          url.textContent = result.url;
+
           key.className = 'nn-search-result-key';
           key.textContent = index < 9 ? 'ALT ' + (index + 1) : '';
 
           meta.appendChild(key);
           main.appendChild(title);
           main.appendChild(meta);
+          main.appendChild(url);
           item.appendChild(icon);
           item.appendChild(main);
           item.appendChild(document.createTextNode('→'));
