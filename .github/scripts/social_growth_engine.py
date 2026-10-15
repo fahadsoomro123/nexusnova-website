@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import json
 import re
+import subprocess
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +38,68 @@ STOPWORDS = {
     "how", "what", "why", "into", "using", "use", "best", "quick",
 }
 FORMATS = ["quick_tip", "problem_solution", "tool_demo", "bookmark_worthy"]
+
+# Curated, existing utility pages for English-speaking markets. Scores are
+# ranking priors for campaign selection, not keyword-volume or traffic estimates.
+# The actual destination must also be tracked, canonical, indexable and live.
+WESTERN_EVERGREEN_TOOLS = [
+    {
+        "path": "/jpg-to-pdf.html",
+        "score": 74,
+        "summary": "Turn multiple JPG/JPEG photos into one PDF. Choose US Letter, Legal or A4, set orientation and margins, and keep the files in your browser.",
+    },
+    {
+        "path": "/heic-to-jpg.html",
+        "score": 72,
+        "summary": "Convert up to 10 HEIC/HEIF iPhone photos to JPG in your browser and download one ZIP for upload forms, editors or shared folders.",
+    },
+    {
+        "path": "/paper-size-converter.html",
+        "score": 69,
+        "summary": "Convert A4, US Letter and Legal paper sizes to pixel dimensions at your target DPI before preparing print files or forms.",
+    },
+    {
+        "path": "/image-compressor.html",
+        "score": 67,
+        "summary": "Reduce JPG, PNG or WebP image dimensions and file size in your browser for upload limits and faster sharing.",
+    },
+    {
+        "path": "/image-resizer.html",
+        "score": 66,
+        "summary": "Resize JPG, PNG or WebP images to exact pixel dimensions while preserving their proportions.",
+    },
+    {
+        "path": "/webp-to-jpg.html",
+        "score": 65,
+        "summary": "Convert WebP images to JPG for apps, upload forms and software that expects JPEG files.",
+    },
+    {
+        "path": "/image-metadata-remover.html",
+        "score": 64,
+        "summary": "Create a clean image copy without common EXIF, GPS or camera metadata before sharing photos.",
+    },
+    {
+        "path": "/qr-code-scanner.html",
+        "score": 63,
+        "summary": "Decode a QR code from a screenshot or photo and inspect the text or URL before opening it.",
+    },
+    {
+        "path": "/timezone-meeting-planner.html",
+        "score": 62,
+        "summary": "Compare time zones for scheduling remote meetings across the US, UK, Europe and other regions.",
+    },
+    {
+        "path": "/meta-tag-generator.html",
+        "score": 61,
+        "summary": "Generate SEO titles, meta descriptions, canonical, robots, Open Graph and Twitter tags with live previews.",
+    },
+    {
+        "path": "/ai-token-calculator.html",
+        "score": 60,
+        "summary": "Estimate approximate LLM token count and context use before sending text to an AI API.",
+    },
+]
+_TRACKED_PATHS: set[str] | None = None
 
 
 def load_json(path: Path, default):
@@ -73,6 +136,63 @@ def canonical_url(url: str) -> str:
 def is_generic_social_hub(url: str) -> bool:
     path = urlsplit(url).path or "/"
     return path.lower() in GENERIC_SOCIAL_HUBS
+
+
+def tracked_paths() -> set[str]:
+    global _TRACKED_PATHS
+    if _TRACKED_PATHS is None:
+        try:
+            result = subprocess.run(
+                ["git", "ls-files", "-z"],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+            )
+            _TRACKED_PATHS = {
+                value.decode("utf-8", errors="replace")
+                for value in result.stdout.split(b"\0")
+                if value
+            }
+        except Exception:
+            # Fail closed: never promote a generated/untracked page.
+            _TRACKED_PATHS = set()
+    return _TRACKED_PATHS
+
+
+def is_public_indexable_page(url: str) -> bool:
+    """Only permit existing canonical pages that are tracked and not noindex."""
+    canonical = canonical_url(url)
+    if not canonical or is_generic_social_hub(canonical):
+        return False
+    path = urlsplit(canonical).path or "/"
+    rel = "index.html" if path == "/" else path.lstrip("/")
+    if not rel.endswith(".html") or rel not in tracked_paths():
+        return False
+    target = ROOT / rel
+    if not target.is_file():
+        return False
+    try:
+        raw = target.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return False
+
+    for tag in re.findall(r'<meta\b[^>]*>', raw, flags=re.I):
+        name = re.search(r'\bname\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
+        content = re.search(r'\bcontent\s*=\s*["\']([^"\']*)["\']', tag, flags=re.I)
+        if name and name.group(1).strip().lower() == "robots" and content:
+            if "noindex" in content.group(1).lower().split(","):
+                return False
+
+    canonical_href = ""
+    for tag in re.findall(r'<link\b[^>]*>', raw, flags=re.I):
+        rel_match = re.search(r'\brel\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
+        if not rel_match or "canonical" not in rel_match.group(1).lower().split():
+            continue
+        href_match = re.search(r'\bhref\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
+        if href_match:
+            canonical_href = href_match.group(1).strip()
+            break
+    return bool(canonical_href and canonical_url(canonical_href) == canonical)
 
 
 def is_dedicated_tool(url: str) -> bool:
@@ -129,7 +249,7 @@ def local_html_metadata(url: str) -> tuple[str, str] | None:
 
 def add_candidate(pool: dict[str, dict], url: str, title: str, summary: str, source: str, score: float, reason: str) -> None:
     url = canonical_url(url)
-    if not url:
+    if not url or not is_public_indexable_page(url):
         return
     if is_generic_social_hub(url):
         return
@@ -241,6 +361,19 @@ def build_candidates() -> dict[str, dict]:
             reason,
         )
 
+    # Ensure one daily candidate exists even when GSC/GA4 credentials are unavailable.
+    # Real GSC momentum and GA4 engagement still add score to matching pages above.
+    for row in WESTERN_EVERGREEN_TOOLS:
+        add_candidate(
+            pool,
+            row["path"],
+            "",
+            row["summary"],
+            "western_evergreen",
+            float(row["score"]),
+            "curated English-language utility for US/Canada/UK/Australia use cases",
+        )
+
     return pool
 
 
@@ -343,6 +476,23 @@ def build_copy(item: dict, fmt: str) -> dict:
     else:
         hook = f"Worth bookmarking: {title}"
         kicker = "BOOKMARK THIS"
+
+    path = (urlsplit(item.get("url", "")).path or "").lower()
+    market_hooks = {
+        "/jpg-to-pdf.html": ("Turn phone photos into a US Letter, Legal or A4 PDF", "PRINT-READY PDF"),
+        "/heic-to-jpg.html": ("Convert iPhone HEIC photos to JPG in one batch", "IPHONE PHOTO WORKFLOW"),
+        "/paper-size-converter.html": ("Match US Letter, Legal or A4 to your target DPI", "PAPER SIZE CHECK"),
+        "/image-compressor.html": ("Shrink images before upload size limits get in the way", "IMAGE SIZE CONTROL"),
+        "/image-resizer.html": ("Resize images to exact pixels without stretching", "EXACT IMAGE DIMENSIONS"),
+        "/webp-to-jpg.html": ("Make a WebP image work where JPEG is required", "IMAGE COMPATIBILITY"),
+        "/image-metadata-remover.html": ("Remove common photo metadata before sharing", "PRIVACY CHECK"),
+        "/qr-code-scanner.html": ("Read a QR code and inspect its URL before opening", "CHECK BEFORE OPENING"),
+        "/timezone-meeting-planner.html": ("Find a meeting time that works across US and UK time zones", "REMOTE TEAM SCHEDULING"),
+        "/meta-tag-generator.html": ("Build SEO and social preview tags with a live check", "PUBLISHING WORKFLOW"),
+        "/ai-token-calculator.html": ("Estimate LLM tokens before an API request", "AI DEVELOPER TOOL"),
+    }
+    if path in market_hooks:
+        hook, kicker = market_hooks[path]
 
     cta = "Try it free on NexusNova Tools"
     tags = keyword_tags(title)
@@ -470,7 +620,7 @@ def main() -> None:
     fmt = choose_format(history, traffic)
     copy = build_copy(selected, fmt)
     day = datetime.now(timezone.utc).strftime("%Y%m%d")
-    campaign = f"social_growth_{day}_{slugify(selected['title'])}"
+    campaign = f"social_growth_western_{day}_{slugify(selected['title'])}"
 
     render_card(FEED_IMAGE, 1080, 1350, selected, copy)
     render_card(VERTICAL_IMAGE, 1080, 1920, selected, copy)
@@ -491,6 +641,7 @@ def main() -> None:
         "vertical_image": f"{SITE}/assets/generated/social-growth-vertical.jpg",
         "selection_score": round(selected["score"], 2),
         "selection_reasons": selected["reasons"],
+        "audience_focus": "English-language US, Canada, UK and Australia use cases; organic distribution is not geo-targeted",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
     OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
