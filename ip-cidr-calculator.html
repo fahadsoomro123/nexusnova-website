@@ -17,6 +17,19 @@
 <p>The prefix length determines how many IPv4 bits belong to the network portion and how many remain for hosts. A /24 leaves eight host bits, while a /16 leaves sixteen. The calculated network and broadcast boundaries are mathematical properties of that block.</p>
 <p>Cloud platforms, routers, VPNs and firewalls can impose additional rules. Some environments reserve addresses for infrastructure, and security policies can make an otherwise valid address unusable for a particular service.</p>
 <h3>Cross-check before a live network change</h3><p>Verify the prefix, compare the calculated range with the current configuration, and confirm provider-specific reservations. CIDR arithmetic can identify a range; it cannot prove a host exists or accepts traffic.</p></div></section>
+
+<section class="section"><div class="container article">
+<h2>Use the subnet result for planning, not reachability</h2>
+<p>CIDR combines an IPv4 address with a prefix length that identifies the network bits. Shorter prefixes cover larger ranges; longer prefixes cover fewer addresses. The calculator returns network, mask, broadcast and host-range values for planning.</p>
+<h2>Review the prefix and usable-host count</h2>
+<ol><li>Enter the IPv4 address and prefix length supplied by the network plan.</li><li>Check that the prefix is between 0 and 32 and that the address is valid IPv4 syntax.</li><li>Compare the calculated network and broadcast addresses against the intended allocation.</li><li>Check special cases such as /31 point-to-point links and /32 single-host routes before applying a generic host-count assumption.</li></ol>
+<p>For example, a /24 network contains 256 total IPv4 addresses, but the conventional number available to ordinary hosts is often lower because network and broadcast addresses have special meanings. The treatment of small prefixes depends on the networking context and configuration. Do not copy a host count without checking the purpose of the subnet and the network equipment's rules.</p>
+<h2>Security and verification limits</h2>
+<p>This calculator performs address arithmetic; it does not scan a network, test host responses or grant access. A valid range can conflict with an existing plan, so verify allocations and routing with the network administrator before changing production systems.</p>
+<h2>CIDR questions</h2>
+<h3>Does a calculated broadcast address prove that a host is online?</h3><p>No. CIDR arithmetic describes an address range. Connectivity requires separate routing, firewall and service checks.</p>
+
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>

@@ -8,6 +8,17 @@
 <p>A TLS certificate binds a public key to names and a validity period. Certificate metadata can help reveal subject names, issuer and expiration information seen for a public HTTPS endpoint, which is useful when investigating an unexpected certificate or a renewal date.</p>
 <p>A valid certificate is not a guarantee that the application is secure or healthy. Certificate chains, hostname matching, server configuration, protocol support, authentication and application controls also affect the real service.</p>
 <h3>Pair certificate checks with service context</h3><p>Confirm the hostname you tested is the hostname users reach, then compare the certificate details with the server or provider configuration. For an outage, use DNS and application diagnostics alongside this result.</p></div></section>
+
+<section class="section"><div class="container article">
+<h2>Use certificate details to narrow a problem</h2>
+<p>A TLS certificate helps a browser verify a website hostname and establish encrypted HTTPS communication. Compare the expiry date, issuer and subject alternative names with the hostname entered. A certificate may cover one hostname but not another, and different servers can serve different certificates.</p>
+<p>For example, a certificate that lists <code>example.com</code> may not cover <code>shop.example.com</code> unless the second name or a suitable wildcard is included. If the expiry date is approaching, the site operator should check the renewal and deployment chain. If the certificate looks valid but a browser still reports a warning, investigate the hostname, intermediate chain, client clock, proxy and the exact error message.</p>
+<h2>Interpretation and limits</h2>
+<p>This check targets the public HTTPS service on port 443 from the checker’s network vantage point. It does not test every route, private hostname, custom port, certificate chain seen by every browser, application login or the security of the site's content. A successful certificate check is one useful signal, not a full website security audit. Do not send credentials to a page merely because its certificate is valid.</p>
+<h2>Certificate-checking questions</h2>
+<h3>Does a valid certificate mean a website is trustworthy?</h3><p>No. It helps secure the connection to the hostname but does not certify the owner’s intentions, content quality or business legitimacy.</p>
+
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>

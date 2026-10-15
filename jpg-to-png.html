@@ -14,6 +14,19 @@
 <h2>Check the exported file before replacing the source</h2>
 <p>Open the downloaded PNG and confirm its width and height, colors, text edges and appearance on the destination app. Keep the original JPEG if you might need to compare quality or retrieve embedded date, camera or GPS information: a browser canvas conversion should not be assumed to preserve the source file's EXIF metadata. See <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types" target="_blank" rel="noopener noreferrer">MDN's image format guide</a> for the differences between JPEG and PNG. For a WebP source, use <a href="webp-to-png.html">WebP to PNG</a>; to change pixel dimensions, use the <a href="image-resizer.html">Image Resizer</a>.</p>
 </div></section>
+
+<section class="section"><div class="container article">
+<h2>When a PNG copy is useful</h2>
+<p>JPEG is a lossy format frequently used for photographs. PNG uses lossless compression for the encoded pixels and is commonly useful for screenshots, interface elements, diagrams and images that need to be edited repeatedly. Converting a JPG to PNG does not restore image detail that was already lost to JPEG compression. It simply stores the current decoded image in another format, which can make the file larger.</p>
+<h2>Check the export before replacing a source</h2>
+<ol><li>Select the JPEG image you want to convert.</li><li>Run the conversion and download the generated PNG.</li><li>Open both files and compare dimensions, colour, sharp edges and any visible compression artefacts.</li><li>Use PNG where the destination benefits from the format; keep the original JPEG as a separate source file.</li></ol>
+<p>A practical example is a screenshot saved as JPG that will be inserted into a slide deck or used in a design workflow. Converting to PNG can prevent another lossy JPG encoding if an editor later exports the image, but the original screenshot's quality cannot be recreated. If you need transparent background, conversion alone does not create transparency; the pixels in the JPG already contain a solid background.</p>
+<h2>Limits to understand</h2>
+<p>File format, dimensions, compression and transparency are separate properties. A PNG can be lossless and still contain low-resolution pixels. A larger file is not automatically better for every use case, and some sites impose upload-size limits or re-encode uploaded images themselves. Check the destination's requirements and preview the actual file after the final export.</p>
+<h2>JPG-to-PNG questions</h2>
+<h3>Will this remove JPG artefacts?</h3><p>No. It preserves the pixels decoded from the JPG in a new format; it does not recreate lost detail.</p>
+<h3>Will the new PNG have a transparent background?</h3><p>No. A JPG has no alpha channel, so any background it contains remains part of the image unless edited separately.</p>
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>

@@ -14,6 +14,19 @@
 <h2>Verify the actual file you will upload</h2>
 <p>Open the downloaded JPG and check its dimensions, background color, file size and appearance in the app or upload form you plan to use. If the background looks unexpectedly white, that is a result of flattening transparency, not a broken conversion. For format details, see <a href="https://developers.google.com/speed/webp" target="_blank" rel="noopener noreferrer">Google's WebP documentation</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types" target="_blank" rel="noopener noreferrer">MDN's image format guide</a>. Use the <a href="image-compressor.html">Image Compressor</a> only when the output's size is the problem, not its format.</p>
 </div></section>
+
+<section class="section"><div class="container article">
+<h2>Choose the conversion for compatibility</h2>
+<p>WebP is common on modern websites because it can store compressed images efficiently, while JPG remains supported by many older upload forms, office tools and editing applications. Converting WebP to JPG is useful when the receiving service explicitly needs a JPEG, not simply because JPG is always better. A conversion can increase file size, introduce lossy compression or remove transparency, so keep the original until you have checked the output.</p>
+<h2>Step-by-step conversion review</h2>
+<ol><li>Choose the WebP file you intend to use.</li><li>Select the available quality or output options that match the task.</li><li>Run the conversion and download the JPG copy.</li><li>Open the result at full size and inspect text, edges, gradients and areas with fine detail.</li><li>Check the dimensions and file size against the destination's actual requirements.</li></ol>
+<p>For example, a transparent graphic may need a solid background for JPG export. A photograph can usually tolerate some quality loss, but a screenshot containing small text may show visible artefacts at low quality. If the receiving platform accepts WebP, keeping the original can be preferable because it avoids another encode/decode step.</p>
+<h2>Privacy and format limitations</h2>
+<p>The converter is designed to process the selected image in the browser instead of uploading it to a NexusNova image-storage service. Browser code and ordinary site requests may still load over the network. Converting the image does not remove visual personal information from the pixels, guarantee complete metadata removal, recover detail that was not in the source or turn an animated image into a faithful animation-preserving JPG workflow.</p>
+<h2>WebP-to-JPG questions</h2>
+<h3>Will the JPG have the same dimensions?</h3><p>Conversion normally targets the source dimensions unless an available option changes them. Inspect the exported file rather than assuming.</p>
+<h3>Is conversion always a smaller file?</h3><p>No. Result size depends on image complexity, quality and output encoding. Compare the file actually downloaded.</p>
+</div></section>
 </main><footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"><span class="nn-footer-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities with clear limits and useful workflows.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>
