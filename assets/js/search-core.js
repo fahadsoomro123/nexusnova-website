@@ -150,7 +150,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Turn JPG images into a PDF properly.", url:"guides/jpg-to-pdf.html", type:"guide", category:"Guides", tags:["turn jpg images into a pdf properly.","guides jpg to pdf","guides","turn","jpg","images","pdf","properly","guide","methodology"] },
   { title:"Build a resume that is easy to scan.", url:"guides/resume-writing.html", type:"guide", category:"Guides", tags:["build a resume that is easy to scan.","guides resume writing","guides","build","resume","easy","scan","guide","methodology"] },
   { title:"Write AI prompts that are easier to verify.", url:"guides/ai-prompting.html", type:"guide", category:"Guides", tags:["write ai prompts that are easier to verify.","guides ai prompting","guides","write","prompts","easier","verify","guide","methodology"] },
-  { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] }
+  { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] },
   { title:"AI Prompt Enhancer for Midjourney & Sora", url:"ai-prompt-enhancer.html", type:"tool", category:"Developer & Data", tags:["ai prompt enhancer","midjourney prompt enhancer","sora prompt generator","ai video prompt","image prompt","camera movement","lighting","prompt writing"] },
   { title:"TikTok & Reels Hook Generator", url:"short-form-video-hook-generator.html", type:"tool", category:"Developer & Data", tags:["tiktok hook generator","reels hook generator","short form video script","instagram reels","youtube shorts","creator hooks","video script","cta generator"] },
   { title:"Freelance Rate & Project Quote Calculator", url:"freelance-rate-calculator.html", type:"tool", category:"Calculators", tags:["freelance hourly rate calculator","freelance pricing","project quote calculator","billable hours","freelancer rate","remote work","contractor estimate"] },
@@ -708,10 +708,10 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:92,
+  tool:97,
   category:9,
   article:34,
-  guide:9
+  guide:14
 });
 
 NexusNovaSearchCore.DATASET_SIZE=154;
