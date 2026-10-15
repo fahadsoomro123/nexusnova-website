@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 92 tools + 9 categories + 34 articles + 9 guides = 144 records.
+ * 97 tools + 9 categories + 34 articles + 14 guides = 154 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -151,13 +151,18 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Build a resume that is easy to scan.", url:"guides/resume-writing.html", type:"guide", category:"Guides", tags:["build a resume that is easy to scan.","guides resume writing","guides","build","resume","easy","scan","guide","methodology"] },
   { title:"Write AI prompts that are easier to verify.", url:"guides/ai-prompting.html", type:"guide", category:"Guides", tags:["write ai prompts that are easier to verify.","guides ai prompting","guides","write","prompts","easier","verify","guide","methodology"] },
   { title:"FBR ATL status: check CNIC/NTN and resolve missing results", url:"guides/fbr-atl-status.html", type:"guide", category:"Guides", tags:["FBR ATL status","active taxpayer list","CNIC","NTN","passport","Pakistan","filer status","SMS 9966","not active","late return","official FBR","tax guide"] }
+  { title:"AI Prompt Enhancer for Midjourney & Sora", url:"ai-prompt-enhancer.html", type:"tool", category:"Developer & Data", tags:["ai prompt enhancer","midjourney prompt enhancer","sora prompt generator","ai video prompt","image prompt","camera movement","lighting","prompt writing"] },
+  { title:"TikTok & Reels Hook Generator", url:"short-form-video-hook-generator.html", type:"tool", category:"Developer & Data", tags:["tiktok hook generator","reels hook generator","short form video script","instagram reels","youtube shorts","creator hooks","video script","cta generator"] },
+  { title:"Freelance Rate & Project Quote Calculator", url:"freelance-rate-calculator.html", type:"tool", category:"Calculators", tags:["freelance hourly rate calculator","freelance pricing","project quote calculator","billable hours","freelancer rate","remote work","contractor estimate"] },
+  { title:"Crypto Tax & Profit/Loss Estimator", url:"crypto-tax-profit-estimator.html", type:"tool", category:"Calculators", tags:["crypto tax calculator","crypto profit loss","capital gains tax calculator","bitcoin tax estimator","US crypto tax","UK crypto tax","capital gains","cost basis"] },
+  { title:"Privacy Policy & Terms Generator", url:"privacy-policy-terms-generator.html", type:"tool", category:"Developer & Data", tags:["privacy policy generator","terms of service generator","SaaS privacy policy","mobile app terms","privacy notice","app legal templates","GDPR template"] },
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:92,
+  tool:97,
   category:9,
   article:34,
-  guide:9
+  guide:14
 });
 
 const NEXUSNOVA_ALIAS_MAP = Object.freeze({
@@ -704,7 +709,7 @@ NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
   guide:9
 });
 
-NexusNovaSearchCore.DATASET_SIZE=144;
+NexusNovaSearchCore.DATASET_SIZE=154;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
