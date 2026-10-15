@@ -366,6 +366,12 @@ def post_instagram(item: dict, assets: dict, tracked_article_url: str) -> None:
     )
     if not published.get('id'):
         raise RuntimeError('Instagram media_publish did not return a media ID')
+    return {
+        'posted': True,
+        'image_attached': True,
+        'response': published,
+        'creation_id': creation_id,
+    }
 
 
 def load_item() -> dict | None:

@@ -11,6 +11,8 @@ on:
       - 'tests/test_western_market_growth.py'
       - '.github/scripts/traffic_diagnosis.py'
       - '.github/scripts/distribute_update.py'
+      - '.github/scripts/distribute_social_growth.py'
+      - 'tests/test_social_distribution_outcomes.py'
   push:
     branches: [main]
     paths:
@@ -21,6 +23,8 @@ on:
       - 'tests/test_western_market_growth.py'
       - '.github/scripts/traffic_diagnosis.py'
       - '.github/scripts/distribute_update.py'
+      - '.github/scripts/distribute_social_growth.py'
+      - 'tests/test_social_distribution_outcomes.py'
   schedule:
     # 16:15 UTC: US/Canada lunchtime and UK late afternoon.
     - cron: '15 16 * * *'
@@ -60,6 +64,7 @@ jobs:
           python -m py_compile .github/scripts/distribute_update.py
           python -m py_compile .github/scripts/today_traffic_pulse.py
           python tests/test_western_organic_distribution.py
+          python tests/test_social_distribution_outcomes.py
       - name: Verify all curated campaign destinations
         run: |
           python - <<'PY'
@@ -236,11 +241,16 @@ jobs:
           report=json.loads(p.read_text(encoding='utf-8'))
           success=int(report.get('successful_destinations',0) or 0)
           print('Campaign:',report.get('campaign'))
-          print('Successful destinations:',success)
+          print('Accepted destination submissions:',success)
+          print('Published destinations:',int(report.get('published_destinations',0) or 0))
+          print('Queued destinations:',int(report.get('queued_destinations',0) or 0))
+          print('Webhook-accepted submissions:',int(report.get('accepted_destinations',0) or 0))
           for row in report.get('outcomes',[]):
-              print(f"- {row.get('platform')}: {'POSTED' if row.get('ok') else 'SKIPPED/FAILED'} — {row.get('detail','')}")
+              print(f"- {row.get('platform')}: {str(row.get('delivery_state','failed')).upper()} — {row.get('detail','')}"
+                    + (f" — ref {row['post_id']}" if row.get('post_id') else "")
+                    + (f" — {row['post_url']}" if row.get('post_url') else ""))
           if success<1:
-              raise SystemExit('No configured organic destination published successfully. Check repository secrets/channel IDs; no traffic is claimed.')
+              raise SystemExit('No configured organic destination accepted the campaign. Check repository secrets/channel IDs; no traffic is claimed.')
           PY
 
       - name: Save delivery result and repeat-protection history
@@ -296,9 +306,17 @@ jobs:
           print('Audience focus: '+str(item.get('audience_focus','English-language Western market use cases')))
           if Path('social-distribution-report.json').is_file():
               r=json.loads(Path('social-distribution-report.json').read_text(encoding='utf-8'))
-              print('Successful destinations: '+str(r.get('successful_destinations',0)))
+              print('Accepted destination submissions: '+str(r.get('successful_destinations',0)))
+              print('Published destinations: '+str(r.get('published_destinations',0)))
+              print('Queued destinations: '+str(r.get('queued_destinations',0)))
+              print('Webhook-accepted submissions: '+str(r.get('accepted_destinations',0)))
               for o in r.get('outcomes',[]):
-                  print(str(o.get('platform'))+': '+('posted' if o.get('ok') else 'skipped/failed')+' — '+str(o.get('detail','')))
+                  line=str(o.get('platform'))+': '+str(o.get('delivery_state','failed')).upper()+' — '+str(o.get('detail',''))
+                  if o.get('post_id'):
+                      line+=' — ref '+str(o['post_id'])
+                  if o.get('post_url'):
+                      line+=' — '+str(o['post_url'])
+                  print(line)
           PY
           else
             echo 'No campaign payload was produced. Review the job log.' >> "$GITHUB_STEP_SUMMARY"
