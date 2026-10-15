@@ -142,13 +142,6 @@ def build_delivery_outcome(
         post_url = _safe_public_post_url(
             response.get("permalink") or response.get("permalink_url") or response.get("post_url")
         )
-    elif is_buffer_queue:
-        post_id = _safe_identifier(response.get("id") or response.get("post_id"))
-        provider_status = _safe_identifier(response.get("status"))
-        scheduled_for = str(response.get("dueAt") or "").strip()[:80]
-        post_url = _safe_public_post_url(
-            response.get("permalink") or response.get("permalink_url") or response.get("post_url")
-        )
     elif platform == "webhook":
         post_id = _safe_identifier(response.get("id") or response.get("post_id") or response.get("message_id"))
         post_url = _safe_public_post_url(
