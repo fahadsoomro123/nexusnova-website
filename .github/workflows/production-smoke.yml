@@ -3,6 +3,10 @@
 name: NexusNova Production Smoke
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-smoke.yml'
   push:
     branches: [main]
     paths:
@@ -22,7 +26,27 @@ permissions:
   contents: read
 
 jobs:
+  validate-smoke-contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pull request source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate deferred AdSense production-smoke assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Fq "client=ca-pub-5070673529890078" index.html
+          grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" assets/js/main.js
+          grep -Fq "check_absent '/' 'client=ca-pub-5070673529890078' 'homepage does not eagerly load AdSense'" .github/workflows/production-smoke.yml
+          grep -Fq "check_contains '/assets/js/main.js' 'adsbygoogle.js?client=ca-pub-5070673529890078' 'shared AdSense loader retains publisher ID'" .github/workflows/production-smoke.yml
+          grep -Fq "          /assets/js/main.js" .github/workflows/production-smoke.yml
+
   production-smoke:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -117,6 +141,7 @@ jobs:
             fi
           done <<'ROUTES'
           /
+          /assets/js/main.js
           /humanproof.html
           /live.html
           /sports-live.html
@@ -194,7 +219,8 @@ jobs:
           }
 
           check_contains '/' '<link rel="canonical" href="https://nexusnovatools.com/">' 'homepage canonical'
-          check_contains '/' 'client=ca-pub-5070673529890078' 'homepage AdSense publisher ID'
+          check_absent '/' 'client=ca-pub-5070673529890078' 'homepage does not eagerly load AdSense'
+          check_contains '/assets/js/main.js' 'adsbygoogle.js?client=ca-pub-5070673529890078' 'shared AdSense loader retains publisher ID'
           check_contains '/ads.txt' 'google.com, pub-5070673529890078, DIRECT, f08c47fec0942fa0' 'ads.txt declares the homepage AdSense publisher'
           check_contains '/' 'NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides' 'homepage reflects current 92-tool version'
           check_contains '/' 'document-workbench.html' 'homepage advertises the combined PDF workbench'
