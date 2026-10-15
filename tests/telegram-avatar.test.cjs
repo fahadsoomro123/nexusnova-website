@@ -33,7 +33,7 @@ test('linked account avatar prefers verified backend image sources and survives 
   const refresh = read('assets/js/telegram-avatar-refresh.js');
   const account = read('account.html');
 
-  assert.match(account, /telegram-avatar-refresh\.js\?v=20260830-1/);
+  assert.match(account, /telegram-avatar-refresh\.js\?v=20261015-v4/);
   assert.match(refresh, /telegramSessionCall/);
   assert.match(refresh, /response\?\.data\?\.linked/);
   assert.match(refresh, /serverUser\.avatarDataUrl/);
@@ -61,5 +61,5 @@ test('signed-in account becomes visible before remote profile refresh waits', ()
   assert.ok(loadAccount >= 0, 'loadAccount should exist');
   assert.ok(reveal > loadAccount, 'dashboard reveal should be inside loadAccount');
   assert.ok(reload > reveal, 'dashboard should reveal before waiting for user.reload');
-  assert.match(account, /account-dashboard\.js\?v=20260826-6/);
+  assert.match(account, /account-dashboard\.js\?v=20261015-v4/);
 });
