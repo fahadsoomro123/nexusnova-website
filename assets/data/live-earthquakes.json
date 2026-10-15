@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-15T12:46:20.997Z",
+  "generated_at": "2026-10-15T14:28:02.813Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,125 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-15T12:45:48.000Z",
+  "feed_generated_at": "2026-10-15T14:27:06.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 35,
+  "source_count": 37,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "ci41347847",
+      "magnitude": 2.64,
+      "place": "21 km W of Delta, B.C., MX",
+      "time": "2026-10-15T14:09:56.670Z",
+      "updated": "2026-10-15T14:20:18.720Z",
+      "depth_km": 13.6,
+      "coordinates": {
+        "lat": 32.3705,
+        "lon": -115.4193
+      },
+      "significance": 107,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41347847",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026ulejvq",
+      "magnitude": 3,
+      "place": "56 km ENE of Ferry, Alaska",
+      "time": "2026-10-15T14:02:45.435Z",
+      "updated": "2026-10-15T14:06:19.764Z",
+      "depth_km": 107.8,
+      "coordinates": {
+        "lat": 64.16,
+        "lon": -148
+      },
+      "significance": 138,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026ulejvq",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2hv",
+      "magnitude": 5.2,
+      "place": "107 km NNE of Hihifo, Tonga",
+      "time": "2026-10-15T13:29:31.862Z",
+      "updated": "2026-10-15T13:52:47.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -15.0429,
+        "lon": -173.4439
+      },
+      "significance": 416,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2hv",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2hr",
+      "magnitude": 4.7,
+      "place": "114 km SSW of Nikolski, Alaska",
+      "time": "2026-10-15T13:16:26.373Z",
+      "updated": "2026-10-15T14:06:23.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 52.0024,
+        "lon": -169.576
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2hr",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u2hp",
+      "magnitude": 5.2,
+      "place": "157 km W of Sola, Vanuatu",
+      "time": "2026-10-15T13:06:51.678Z",
+      "updated": "2026-10-15T13:27:08.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -13.8878,
+        "lon": 166.0921
+      },
+      "significance": 416,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2hp",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026ulcmta",
+      "magnitude": 3,
+      "place": "40 km NNW of Lake Minchumina, Alaska",
+      "time": "2026-10-15T13:05:45.094Z",
+      "updated": "2026-10-15T13:42:23.895Z",
+      "depth_km": 8.2,
+      "coordinates": {
+        "lat": 64.194,
+        "lon": -152.746
+      },
+      "significance": 139,
+      "felt": 1,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026ulcmta",
+      "pakistan_region": false
+    },
     {
       "id": "aka2026ulaxcs",
       "magnitude": 2.6,
@@ -83,14 +197,14 @@
       "magnitude": 5.6,
       "place": "43 km NNW of Lake Minchumina, Alaska",
       "time": "2026-10-15T11:07:01.800Z",
-      "updated": "2026-10-15T12:40:56.780Z",
+      "updated": "2026-10-15T13:47:04.864Z",
       "depth_km": 4.5,
       "coordinates": {
         "lat": 64.22,
         "lon": -152.746
       },
-      "significance": 523,
-      "felt": 73,
+      "significance": 526,
+      "felt": 79,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -102,14 +216,14 @@
       "magnitude": 3.16,
       "place": "74 km W of Petrolia, CA",
       "time": "2026-10-15T10:37:57.870Z",
-      "updated": "2026-10-15T11:07:20.604Z",
+      "updated": "2026-10-15T14:26:29.615Z",
       "depth_km": 10.7,
       "coordinates": {
         "lat": 40.4165,
         "lon": -125.1495
       },
       "significance": 154,
-      "felt": 0,
+      "felt": 1,
       "alert": null,
       "status": "automatic",
       "tsunami": false,
@@ -384,19 +498,19 @@
     },
     {
       "id": "uw714120202",
-      "magnitude": 2.72188603878021,
-      "place": "7 km WSW of Wilderness Rim, Washington",
-      "time": "2026-10-15T01:09:22.750Z",
-      "updated": "2026-10-15T07:21:02.984Z",
-      "depth_km": 16.9,
+      "magnitude": 2.65,
+      "place": "5 km SW of Wilderness Rim, Washington",
+      "time": "2026-10-15T01:09:22.670Z",
+      "updated": "2026-10-15T14:23:12.194Z",
+      "depth_km": 19.5,
       "coordinates": {
         "lat": 47.4208,
-        "lon": -121.8615
+        "lon": -121.8237
       },
-      "significance": 124,
-      "felt": 37,
+      "significance": 118,
+      "felt": 38,
       "alert": null,
-      "status": "automatic",
+      "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/uw714120202",
       "pakistan_region": false
@@ -608,82 +722,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2a6",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u2gk",
-      "magnitude": 4.7,
-      "place": "central Mid-Atlantic Ridge",
-      "time": "2026-10-14T14:17:21.408Z",
-      "updated": "2026-10-15T12:13:58.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": -0.343,
-        "lon": -19.2064
-      },
-      "significance": 340,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2gk",
-      "pakistan_region": false
-    },
-    {
-      "id": "nc75449266",
-      "magnitude": 2.99,
-      "place": "23 km NE of Hydesville, CA",
-      "time": "2026-10-14T13:56:12.400Z",
-      "updated": "2026-10-14T23:58:38.988Z",
-      "depth_km": 4.4,
-      "coordinates": {
-        "lat": 40.677,
-        "lon": -123.8893
-      },
-      "significance": 139,
-      "felt": 7,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75449266",
-      "pakistan_region": false
-    },
-    {
-      "id": "nm60628596",
-      "magnitude": 2.45,
-      "place": "4 km SSW of Thomasville, Missouri",
-      "time": "2026-10-14T13:31:12.510Z",
-      "updated": "2026-10-15T01:58:17.417Z",
-      "depth_km": 1.5,
-      "coordinates": {
-        "lat": 36.759,
-        "lon": -91.557
-      },
-      "significance": 97,
-      "felt": 11,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nm60628596",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u2a0",
-      "magnitude": 4.4,
-      "place": "45 km SSE of Ōfunato, Japan",
-      "time": "2026-10-14T13:19:07.599Z",
-      "updated": "2026-10-14T14:44:18.040Z",
-      "depth_km": 56.6,
-      "coordinates": {
-        "lat": 38.6954,
-        "lon": 141.9302
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2a0",
       "pakistan_region": false
     }
   ]
