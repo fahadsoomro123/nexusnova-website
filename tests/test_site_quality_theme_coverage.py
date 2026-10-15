@@ -51,8 +51,8 @@ class HomepageCriticalPathRegressionTests(unittest.TestCase):
 
     def test_existing_hero_assets_are_discovered_in_the_initial_document(self):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
-        self.assertIn('assets/css/humanproof-home.css?v=20260909-2" data-humanproof-loader', html)
-        self.assertIn('assets/js/humanproof-home.js?v=20260909-2" data-humanproof-loader defer', html)
+        self.assertIn('assets/css/humanproof-home.css?v=20261015-v2" data-humanproof-loader', html)
+        self.assertIn('assets/js/humanproof-home.js?v=20261015-v2" data-humanproof-loader defer', html)
         self.assertIn('assets/logo.png', html)
 
     def test_decorative_3d_work_waits_for_browser_idle_time(self):

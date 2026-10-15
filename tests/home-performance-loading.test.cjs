@@ -11,8 +11,8 @@ test('homepage preconnects to its early third-party script origins', () => {
 test('below-the-fold HumanProof and footer CSS load asynchronously with no-script fallback', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   for (const file of ['humanproof-hero-360.css', 'footer-social.css']) {
-    assert.ok(html.includes('href="assets/css/' + file + '" media="print" onload="this.media=\'all\'"'), file + ' should be non-render-blocking');
-    assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>'), file + ' must keep the no-script fallback');
+    assert.ok(html.includes('href="assets/css/' + file + '?v=20261015-v2" media="print" onload="this.media=\'all\'"'), file + ' should be non-render-blocking with the live cache key');
+    assert.ok(html.includes('<noscript><link rel="stylesheet" href="assets/css/' + file + '?v=20261015-v2"></noscript>'), file + ' must keep the no-script fallback with the live cache key');
     const head = html.slice(0, html.indexOf('</head>'));
     const activeHead = head.replace('<noscript><link rel="stylesheet" href="assets/css/' + file + '"></noscript>', '');
     assert.ok(!activeHead.includes('<link rel="stylesheet" href="assets/css/' + file + '">'), file + ' must not have a render-blocking head link outside noscript');
@@ -51,13 +51,13 @@ test('homepage HumanProof attribution meets WCAG AA normal-text contrast', () =>
 
 test('homepage header and footer use responsive WebP logo sources with PNG fallbacks', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  const source = '<source type="image/webp" srcset="assets/logo-2x.webp 2x, assets/logo-3x.webp 3x">';
-  assert.equal(html.split(source).length - 1, 2, 'header and footer must use responsive WebP sources');
+  const source = /<source type="image\/webp" srcset="assets\/logo-2x\.webp(?:\?[^ ]*)? 2x, assets\/logo-3x\.webp(?:\?[^ ]*)? 3x">/g;
+  assert.equal((html.match(source) || []).length, 2, 'header and footer must use responsive WebP sources');
   for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
-    const pattern = new RegExp('<picture><source type="image/webp" srcset="assets/logo-2x\\.webp 2x, assets/logo-3x\\.webp 3x"><img src="assets/logo\\.png" alt="NexusNova Tools Logo" width="1040" height="345" class="' + className + '"></picture>');
+    const pattern = new RegExp('<picture><source type="image/webp" srcset="assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo" width="1040" height="345" class="' + className + '"></picture>');
     assert.ok(pattern.test(html), className + ' keeps the original accessible PNG fallback and intrinsic dimensions');
   }
-  assert.ok(html.includes('content="https://nexusnovatools.com/assets/logo.png"'), 'social preview image remains unchanged');
+  assert.ok(/content="https:\/\/nexusnovatools\.com\/assets\/logo\.png(?:\?[^"]*)?"/.test(html), 'social preview image URL remains valid and cache-busted');
 });
 
 test('global footer copyright text meets WCAG AA normal-text contrast', () => {
@@ -74,12 +74,14 @@ test('global footer copyright text meets WCAG AA normal-text contrast', () => {
 });
 
 test('app and tools hero/footer use responsive WebP logos and preserve each page social image', () => {
-  const source = '<source type="image/webp" srcset="assets/logo-2x.webp 2x, assets/logo-3x.webp 3x">';
+  const source = /<source type="image\/webp" srcset="assets\/logo-2x\.webp(?:\?[^ ]*)? 2x, assets\/logo-3x\.webp(?:\?[^ ]*)? 3x">/g;
   for (const path of ['app.html', 'tools.html']) {
     const html = fs.readFileSync(path, 'utf8');
-    assert.equal(html.split(source).length - 1, 2, path + ' must use responsive logo sources in header and footer');
-    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"></picture>'), path + ' header keeps the original PNG fallback and alt text');
-    assert.ok(html.includes('<picture>' + source + '<img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-footer-brand-logo"></picture>'), path + ' footer keeps the original PNG fallback and alt text');
+    assert.equal((html.match(source) || []).length, 2, path + ' must use responsive logo sources in header and footer');
+    for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
+      const pattern = new RegExp('<picture><source type="image/webp" srcset="assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo" class="' + className + '"></picture>');
+      assert.ok(pattern.test(html), path + ' ' + className + ' keeps the PNG fallback and alt text');
+    }
     const socialImageMeta = html.match(/<meta\b(?=[^>]*(?:property|name)=["'](?:og:image|twitter:image)["'])[^>]*>/gi) || [];
     assert.ok(socialImageMeta.length > 0, path + ' must keep its existing social image metadata');
     const expectedSocialImage = path === 'app.html'
