@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -15,12 +15,12 @@ const search = new SearchCore({ maxResults: 100 });
 
 test('search index count constants match the actual dataset', () => {
   assert.deepEqual({ ...search.getCounts() }, {
-    tool: 97,
+    tool: 103,
     category: 9,
     article: 34,
     guide: 14
   });
-  assert.equal(search.size, 154);
+  assert.equal(search.size, 160);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
 });
@@ -37,8 +37,8 @@ test('PDF Document Workbench replaces the separate merge and split discovery pag
   const legacy = ['merge-pdf.html', 'split-pdf.html'];
 
   assert.equal(homeCards.length, 92, 'homepage master directory count should match the published 92-tool label');
-  assert.equal(directoryCards.length, 97, 'tool directory card count should match the published count');
-  assert.equal(data.filter(record => record.type === 'tool').length, 97);
+  assert.equal(directoryCards.length, 103, 'tool directory card count should match the published count');
+  assert.equal(data.filter(record => record.type === 'tool').length, 103);
   assert.ok(homeCards.includes('document-workbench.html'));
   assert.ok(directoryCards.includes('document-workbench.html'));
   assert.ok(pdfHub.includes('href="document-workbench.html"'));
@@ -145,3 +145,5 @@ test('every guide card is linked to its search-index entry', () => {
   assert.ok(search.query('FBR ATL status CNIC NTN 9966')
     .some(result => result.url === 'guides/fbr-atl-status.html'));
 });
+
+
