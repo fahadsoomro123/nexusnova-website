@@ -22,6 +22,7 @@ for(const record of toolRows){
 const newTools=['ai-prompt-enhancer.html','tiktok-reel-hook-generator.html','freelance-rate-calculator.html','crypto-tax-estimator.html','privacy-policy-terms-generator.html'];
 for(const file of newTools){
   const html=read(file);
+  const title=(html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]||'').replace(/<[^>]+>/g,'').trim();if(title.length>70)failures.push(file+': title too long ('+title.length+' chars)');
   if(!html.includes('"@type":"WebApplication"'))failures.push(file+': missing WebApplication schema');
   if(!html.includes('"@type":"FAQPage"'))failures.push(file+': missing FAQPage schema');
   if(!html.includes('data-feature-tool='))failures.push(file+': missing working-tool form contract');
@@ -31,6 +32,7 @@ const newGuides=['ai-prompting-midjourney-sora','short-form-video-hooks','freela
 for(const file of newGuides){
   if(!fs.existsSync(path.join(root,file))){failures.push('Missing guide '+file);continue;}
   const html=read(file);
+  const title=(html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]||'').replace(/<[^>]+>/g,'').trim();if(title.length>70)failures.push(file+': title too long ('+title.length+' chars)');
   const plain=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&amp;/g,' ').replace(/\s+/g,' ');
   const words=(plain.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)||[]).length;
   if(words<1200)failures.push(file+': expected 1200 visible words, found '+words);
