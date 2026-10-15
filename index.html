@@ -1828,7 +1828,7 @@
         if (!queryToken || !candidateToken) return false;
         if (queryToken === candidateToken) return true;
 
-        if (candidateToken.indexOf(queryToken) !== -1 || queryToken.indexOf(candidateToken) !== -1) {
+        if (candidateToken.indexOf(queryToken) !== -1 || queryToken.length >= 2 && queryToken.indexOf(candidateToken) !== -1) {
           return true;
         }
 
@@ -1845,6 +1845,7 @@
           category: node.querySelector('.nn-master-tool-category')?.textContent.trim() || '',
           aliases: [],
           keywords: searchText.split('|').map(function (part) { return part.trim(); }).filter(Boolean),
+          type: 'tool',
           priority: directoryNodes.length - index
         };
       });
@@ -1930,15 +1931,28 @@
       }
 
       function search(query) {
+        var results = [];
         if (externalEngine) {
           try {
-            var results = externalEngine.query(query);
-            if (Array.isArray(results) && results.length) return results;
+            var engineResults = externalEngine.query(query);
+            if (Array.isArray(engineResults)) results = engineResults;
           } catch (error) {
             externalEngine = null;
           }
         }
-        return fallbackQuery(query);
+        if (!results.length) results = fallbackQuery(query);
+        return sortToolsFirst(results);
+      }
+
+      function sortToolsFirst(results) {
+        var priority = function (result) {
+          return result.type === 'tool' ? 0 : (result.type === 'category' ? 1 : 2);
+        };
+        return results.slice().sort(function (left, right) {
+          var difference = priority(left) - priority(right);
+          if (difference) return difference;
+          return (right.matchScore || 0) - (left.matchScore || 0);
+        });
       }
 
       var state = { results: [], activeIndex: -1 };
