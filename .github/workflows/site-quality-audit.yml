@@ -129,6 +129,9 @@ jobs:
       - name: Verify desktop and mobile browser quality
         run: python .github/scripts/browser_quality_guard.py
 
+      - name: Runtime smoke every searchable tool page
+        run: python .github/scripts/tool_runtime_smoke.py
+
       - name: Require zero browser findings
         if: always()
         run: |
