@@ -74,5 +74,22 @@ class WesternOrganicDistributionTests(unittest.TestCase):
         self.assertEqual(rows[1], {"country": "United Kingdom", "sessions": 6.0})
 
 
+    def test_main_branch_push_runs_the_guarded_distribution_job(self) -> None:
+        workflow = (ROOT / ".github" / "workflows" / "western-organic-distribution.yml").read_text(encoding="utf-8")
+        distribution = workflow.split("  distribute:", 1)[1]
+        condition = next(line.strip() for line in distribution.splitlines() if line.strip().startswith("if:"))
+        self.assertIn("github.event_name == 'schedule'", condition)
+        self.assertIn("github.event_name == 'push'", condition)
+        self.assertIn("github.ref == 'refs/heads/main'", condition)
+        for safety_gate in (
+            "Prevent duplicate successful campaigns on the same UTC day",
+            "Verify safe live destination and remove unpublished media links",
+            "Wait for exact destination HTML to reach production",
+            "Require at least one successful destination",
+        ):
+            with self.subTest(safety_gate=safety_gate):
+                self.assertIn(safety_gate, distribution)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
