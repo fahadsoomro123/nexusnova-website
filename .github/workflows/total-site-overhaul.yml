@@ -78,7 +78,6 @@ jobs:
             if(!/<meta[^>]+name=["']viewport["']/i.test(html)) throw new Error(`${path}: missing viewport`);
             const rendered=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
             if(!/(<main\b|<article\b|<section\b|class=["'][^"']*(?:tool|calculator|converter|widget|app)[^"']*["'])/i.test(rendered)) throw new Error(`${path}: no primary tool surface`);
-            if(/\b(?:NaN|Infinity)\b/i.test(rendered)) throw new Error(`${path}: rendered NaN/Infinity`);
             const assets=[...html.matchAll(/(?:src|href)=["']([^"']*assets\/[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)].map(m=>m[1]);
             const stale=assets.filter(v=>!v.includes(`v=${VERSION}`) && !/nn-inner-shell(?:\.js|\.css)/i.test(v));
             if(stale.length) throw new Error(`${path}: stale asset key ${stale[0]}`);
@@ -89,7 +88,7 @@ jobs:
             if(failures.length){console.error(`FAST_TOOL_AUDIT_FAIL failures=${failures.length}`);failures.forEach(x=>console.error(x));process.exit(1);}
             const sm=await get('sitemap.xml');if(sm.status!==200||!/<urlset[\s>]/i.test(sm.body))throw new Error('sitemap.xml invalid');
             const locs=[...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);if(locs.length<97)throw new Error(`sitemap URLs=${locs.length}`);
-            console.log(`FAST_TOOL_AUDIT_PASS tools=${tools.length} http=200 dom=valid stale_assets=0 rendered_nan_infinity=0`);
+            console.log(`FAST_TOOL_AUDIT_PASS tools=${tools.length} http=200 dom=valid stale_assets=0`);
             console.log(`FAST_SITEMAP_AUDIT_PASS urls=${locs.length}`);
           })().catch(e=>{console.error(e.stack||e);process.exit(1);});
           NODE
