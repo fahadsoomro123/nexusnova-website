@@ -317,6 +317,28 @@ def build_candidates() -> dict[str, dict]:
         )
 
     traffic = load_json(TRAFFIC, {})
+    western_pages = (((traffic.get("gsc") or {}).get("western_market_pages") or []))[:25]
+    for row in western_pages:
+        url = str(row.get("page", "") or "").strip()
+        if not url.startswith("https://nexusnovatools.com/"):
+            continue
+        clicks = max(0.0, float(row.get("clicks", 0) or 0))
+        impressions = max(0.0, float(row.get("impressions", 0) or 0))
+        markets = [str(code).upper() for code in (row.get("markets") or []) if str(code).strip()]
+        if impressions <= 0 and clicks <= 0:
+            continue
+        score = 54 + min(26, impressions * 0.2) + min(25, clicks * 4)
+        market_label = ", ".join(markets[:6]) or "Western English-speaking markets"
+        add_candidate(
+            pool,
+            url,
+            "",
+            "",
+            "western_market_gsc",
+            score,
+            f"Western-market Search Console evidence ({market_label}): {round(clicks, 1)} clicks / {round(impressions, 1)} impressions in the last complete 7-day window",
+        )
+
     gains = (((traffic.get("gsc") or {}).get("page_movers") or {}).get("gains") or [])[:12]
     for row in gains:
         imp = max(0.0, float(row.get("impressions_delta", 0) or 0))
