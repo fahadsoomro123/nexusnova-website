@@ -9,10 +9,10 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website"><meta property="og:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta property="og:image:alt" content="NexusNova Tools"><meta property="og:site_name" content="NexusNova Tools"><meta property="og:title" content="CSV to JSON Converter & JSON to CSV | NexusNova Tools"><meta property="og:description" content="Convert structured CSV and JSON data locally in your browser."><meta property="og:url" content="https://nexusnovatools.com/csv-json-converter.html">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://nexusnovatools.com/assets/nexusnova-logo-512.svg"><meta name="twitter:image:alt" content="NexusNova Tools"><meta name="twitter:title" content="CSV to JSON Converter & JSON to CSV | NexusNova Tools"><meta name="twitter:description" content="Browser-local conversion between CSV and JSON.">
-<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/site.css?build=20261015-tier1-expansion-1">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CSV to JSON Converter","url":"https://nexusnovatools.com/csv-json-converter.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"description":"Convert CSV to JSON or JSON to CSV locally in the browser with quoted-field parsing and downloadable output."}</script>
-<link rel="stylesheet" href="assets/css/nn-inner-shell.css">
-<link rel="stylesheet" href="assets/css/footer-social.css">
+<link rel="stylesheet" href="assets/css/nn-inner-shell.css?build=20261015-tier1-expansion-1">
+<link rel="stylesheet" href="assets/css/footer-social.css?build=20261015-tier1-expansion-1">
 </head>
 <body class="nn-inner-page">
 <header class="nn-header" data-nn-header><div class="nn-shell nn-header-row"><a class="nn-brand" href="index.html" aria-label="NexusNova Tools home"><img src="assets/logo.png" alt="NexusNova Tools Logo" class="nn-brand-logo-img"><span class="nn-brand-copy"><strong>NEXUSNOVA TOOLS</strong><small>FAST EVERYDAY UTILITIES</small></span></a><button class="nn-menu" type="button" data-nn-menu aria-expanded="false" aria-controls="nn-primary-nav" aria-label="Open navigation">☰</button><nav class="nn-nav" id="nn-primary-nav" data-nn-nav aria-label="Primary navigation"><a href="index.html">Home</a><a href="index.html#master-directory">All Tools</a><a href="index.html#content-library">Content</a><a href="categories.html">Categories</a><a href="articles.html">Articles</a><a href="guides.html">Guides</a></nav></div></header>
@@ -109,6 +109,6 @@ $('json-to-csv').onclick=()=>{try{const value=JSON.parse($('data-input').value);
 $('copy-output').onclick=async()=>{if(!output)return $('data-status').textContent='Run a conversion first.';try{await navigator.clipboard.writeText(output);$('data-status').textContent='Output copied.';}catch{$('data-status').textContent='Clipboard access is unavailable in this browser.';}};
 $('download-output').onclick=()=>{if(!output)return $('data-status').textContent='Run a conversion first.';const blob=new Blob([output],{type:filename.endsWith('.json')?'application/json;charset=utf-8':'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0);$('data-status').textContent='Downloaded '+filename+'.';};
 })();
-</script><style>.tool-actions{flex-wrap:wrap}</style><script src="assets/js/main.js" defer></script>
-<script src="assets/js/nn-inner-shell.js" defer></script>
+</script><style>.tool-actions{flex-wrap:wrap}</style><script src="assets/js/main.js?build=20261015-tier1-expansion-1" defer></script>
+<script src="assets/js/nn-inner-shell.js?build=20261015-tier1-expansion-1" defer></script>
 </body></html>
