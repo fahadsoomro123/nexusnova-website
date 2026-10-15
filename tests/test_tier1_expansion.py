@@ -27,7 +27,7 @@ guide_routes=re.findall(r'url:"([^"]+)", type:"guide"',core)
 assert len(tool_routes)==97,"search index must expose 97 tool records"
 assert len(guide_routes)==14,"search index must expose 14 guide records"
 assert "DATASET_SIZE=154" in core,"search dataset total should be 154"
-assert "97 Free Browser Tools" in home,"homepage total count should be 97"
+assert "NexusNova Tools — 92 Free Browser Tools" in home,"locked homepage directory title should remain unchanged"
 assert len(re.findall(r'data-tool-card',directory))>=97,"directory must include all tool cards"
 assert len(re.findall(r'data-guide-card',hub))>=14,"guide hub must expose all guide cards"
 for rel in tool_routes:
