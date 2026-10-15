@@ -46,7 +46,7 @@ jobs:
         run: node scripts/validate-tier1-remediation.mjs
 
       - name: Commit generated remediation
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'push'
         run: |
           if git diff --quiet; then
             echo 'No generated changes to commit.'
