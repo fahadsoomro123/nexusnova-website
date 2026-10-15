@@ -150,7 +150,7 @@ def tracked_paths() -> set[str]:
             )
             _TRACKED_PATHS = {
                 value.decode("utf-8", errors="replace")
-                for value in result.stdout.split(b"\\0")
+                for value in result.stdout.split(b"\0")
                 if value
             }
         except Exception:
@@ -176,19 +176,19 @@ def is_public_indexable_page(url: str) -> bool:
     except Exception:
         return False
 
-    for tag in re.findall(r"<meta\\b[^>]*>", raw, flags=re.I):
-        name = re.search(r"\\bname\\s*=\\s*[\\"']([^\\"']+)[\\"']", tag, flags=re.I)
-        content = re.search(r"\\bcontent\\s*=\\s*[\\"']([^\\"']*)[\\"']", tag, flags=re.I)
+    for tag in re.findall(r'<meta\b[^>]*>', raw, flags=re.I):
+        name = re.search(r'\bname\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
+        content = re.search(r'\bcontent\s*=\s*["\']([^"\']*)["\']', tag, flags=re.I)
         if name and name.group(1).strip().lower() == "robots" and content:
             if "noindex" in content.group(1).lower().split(","):
                 return False
 
     canonical_href = ""
-    for tag in re.findall(r"<link\\b[^>]*>", raw, flags=re.I):
-        rel_match = re.search(r"\\brel\\s*=\\s*[\\"']([^\\"']+)[\\"']", tag, flags=re.I)
+    for tag in re.findall(r'<link\b[^>]*>', raw, flags=re.I):
+        rel_match = re.search(r'\brel\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
         if not rel_match or "canonical" not in rel_match.group(1).lower().split():
             continue
-        href_match = re.search(r"\\bhref\\s*=\\s*[\\"']([^\\"']+)[\\"']", tag, flags=re.I)
+        href_match = re.search(r'\bhref\s*=\s*["\']([^"\']+)["\']', tag, flags=re.I)
         if href_match:
             canonical_href = href_match.group(1).strip()
             break
