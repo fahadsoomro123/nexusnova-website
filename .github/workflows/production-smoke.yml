@@ -117,6 +117,7 @@ jobs:
             fi
           done <<'ROUTES'
           /
+          /assets/js/main.js
           /humanproof.html
           /live.html
           /sports-live.html
@@ -194,7 +195,8 @@ jobs:
           }
 
           check_contains '/' '<link rel="canonical" href="https://nexusnovatools.com/">' 'homepage canonical'
-          check_contains '/' 'client=ca-pub-5070673529890078' 'homepage AdSense publisher ID'
+          check_absent '/' 'client=ca-pub-5070673529890078' 'homepage does not eagerly load AdSense'
+          check_contains '/assets/js/main.js' 'adsbygoogle.js?client=ca-pub-5070673529890078' 'shared AdSense loader retains publisher ID'
           check_contains '/ads.txt' 'google.com, pub-5070673529890078, DIRECT, f08c47fec0942fa0' 'ads.txt declares the homepage AdSense publisher'
           check_contains '/' 'NexusNova Tools — 92 Free Browser Tools, Categories, Articles & Guides' 'homepage reflects current 92-tool version'
           check_contains '/' 'document-workbench.html' 'homepage advertises the combined PDF workbench'
