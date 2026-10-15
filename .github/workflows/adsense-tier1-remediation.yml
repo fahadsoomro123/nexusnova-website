@@ -5,8 +5,7 @@ on:
     branches: [main]
     paths:
       - '*.html'
-      - 'scripts/adsense-tier1-remediation.mjs'
-      - 'scripts/validate-tier1-remediation.mjs'
+      - 'scripts/*.mjs'
       - '.github/workflows/adsense-tier1-remediation.yml'
       - 'sitemap.xml'
       - 'robots.txt'
@@ -33,6 +32,9 @@ jobs:
 
       - name: Generate page remediation
         run: node scripts/adsense-tier1-remediation.mjs
+
+      - name: Clean non-tool schema
+        run: node scripts/cleanup-tier1-nontool-schema.mjs
 
       - name: Validate remediation
         run: node scripts/validate-tier1-remediation.mjs
