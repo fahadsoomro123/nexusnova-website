@@ -55,9 +55,9 @@ test('personal referral code is server-created, collision-checked and bound to o
   assert.match(referral, /status: fsString\(['"]active['"]\)/);
   assert.match(referral, /shareUrl: referralShareUrl/);
 
-  assert.match(account, /account-shell\.js\?v=20260901-1/);
-  assert.match(shell, /account-eligibility-ui\.js\?v=20260830-1/);
-  assert.match(shell, /referral-code-ui\.js\?v=20260830-1/);
+  assert.match(account, /account-shell\.js\?v=20261015-v4/);
+  assert.match(shell, /account-eligibility-ui\.js\?v=20261015-v4/);
+  assert.match(shell, /referral-code-ui\.js\?v=20261015-v4/);
   assert.match(ui, /user\.getIdToken\(true\)/);
   assert.match(ui, /getReferralCodeCall/);
   assert.match(ui, /COPY INVITE LINK/);
