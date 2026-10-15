@@ -41,17 +41,17 @@
 
   if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="email"]')){
     for(const [src,key] of [
-      ['./account-eligibility-ui.js?v=20260830-1','nexusnovaEligibility'],
-      ['./referral-code-ui.js?v=20260830-1','nexusnovaReferralCode']
+      ['./account-eligibility-ui.js?v=20261015-v4','nexusnovaEligibility'],
+      ['./referral-code-ui.js?v=20261015-v4','nexusnovaReferralCode']
     ]) loadModule(src,key);
   }
 
   if(document.querySelector('[data-account-form]')||document.querySelector('[data-dashboard]')){
-    loadModule('./google-auth-ui.js?v=20260831-6','nexusnovaGoogleAuth');
-    loadModule('./external-auth-ui.js?v=20260831-5','nexusnovaExternalAuth');
+    loadModule('./google-auth-ui.js?v=20261015-v4','nexusnovaGoogleAuth');
+    loadModule('./external-auth-ui.js?v=20261015-v4','nexusnovaExternalAuth');
   }
 
   if(document.querySelector('[data-dashboard]')&&document.querySelector('[data-mission="instagram"]')){
-    loadModule('./instagram-auth-ui.js?v=20260901-4','nexusnovaInstagramAuth');
+    loadModule('./instagram-auth-ui.js?v=20261015-v4','nexusnovaInstagramAuth');
   }
 })();
