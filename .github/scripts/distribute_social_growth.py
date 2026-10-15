@@ -36,8 +36,8 @@ def tracked_url(item: dict, source: str) -> str:
 
 def safe_error(exc: Exception) -> str:
     text = str(exc).replace("\n", " ").strip()
-    text = re.sub(r"(?i)\b(access_token|refresh_token|api_key|authorization|token)\b(?:\\s*[:=]\\s*|\\s+)[^&\\s,;]+", r"\1=[redacted]", text)
-    text = re.sub(r"(?i)\\bBearer\\s+[A-Za-z0-9._~+/-]+=*", "Bearer [redacted]", text)
+    text = re.sub(r"(?i)\b(access_token|refresh_token|api_key|authorization|token)\b(?:\s*[:=]\s*|\s+)[^&\s,;]+", r"\1=[redacted]", text)
+    text = re.sub(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*", "Bearer [redacted]", text)
     return text[:350]
 
 
@@ -96,9 +96,6 @@ def build_delivery_outcome(
     is_buffer_queue = platform == "x" and provider.lower() == "buffer"
     if not ok:
         delivery_state = "failed"
-    elif is_buffer_queue:
-        # Buffer accepts a queue submission; that does not prove that the post is live.
-        delivery_state = "queued"
     elif platform == "webhook":
         delivery_state = "accepted"
     else:
@@ -117,6 +114,13 @@ def build_delivery_outcome(
             post_url = f"https://t.me/{username}/{post_id}"
         post_url = post_url or _safe_public_post_url(
             message.get("permalink") or message.get("permalink_url") or message.get("post_url")
+        )
+    elif platform == "x" and is_buffer_queue:
+        post_id = _safe_identifier(response.get("id") or response.get("post_id"))
+        provider_status = _safe_identifier(response.get("status"))
+        scheduled_for = str(response.get("dueAt") or "").strip()[:80]
+        post_url = _safe_public_post_url(
+            response.get("permalink") or response.get("permalink_url") or response.get("post_url")
         )
     elif platform == "x":
         data = response.get("data") if isinstance(response.get("data"), dict) else {}
