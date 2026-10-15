@@ -7,7 +7,7 @@ let changed = 0;
 for (const file of fs.readdirSync(root).filter(f => f.endsWith('.html') && excluded.has(f))) {
   const p = path.join(root,file);
   const before = fs.readFileSync(p,'utf8');
-  const after = before.replace(/\s*<script data-nexusnova-tier1-webapp type="application\/ld\+json">[\s\S]*?<\/script>/g, '');
+  const after = before.replace(/\s*<script[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?"@type"\s*:\s*"WebApplication"[\s\S]*?<\/script>/g, '');
   if (after !== before) { fs.writeFileSync(p,after); changed++; }
 }
 console.log(`Cleaned ${changed} non-tool pages.`);
