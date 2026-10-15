@@ -1,50 +1,6 @@
-:root{--nn-bg:#fff;--nn-surface:#fff;--nn-surface-2:#f8fafc;--nn-text:#111827;--nn-muted:#64748b;--nn-line:#e2e8f0;--nn-accent:#6d28d9;--nn-accent-2:#5b21b6;--nn-input:#fff;--nn-shadow:0 14px 40px rgba(15,23,42,.08)}
-html[data-theme=dark]{color-scheme:dark;--nn-bg:#0b0f19;--nn-surface:#1e293b;--nn-surface-2:#172033;--nn-text:#f8fafc;--nn-muted:#94a3b8;--nn-line:#334155;--nn-accent:#a78bfa;--nn-accent-2:#8b5cf6;--nn-input:#0f172a;--nn-shadow:0 18px 48px rgba(0,0,0,.35)}
-html,body{background:var(--nn-bg);color:var(--nn-text);transition:background-color .2s ease,color .2s ease}
+/* Light-only shared tokens for the six standalone utilities. No dark-mode toggle or theme switching. */
+:root{color-scheme:light;--nn-bg:#fff;--nn-surface:#fff;--nn-surface-2:#f8fafc;--nn-text:#111827;--nn-muted:#64748b;--nn-line:#e2e8f0;--nn-accent:#6d28d9;--nn-accent-2:#5b21b6;--nn-input:#fff;--nn-shadow:0 14px 40px rgba(15,23,42,.08)}
+html,body{background:var(--nn-bg);color:var(--nn-text)}
 body .nn-header,body .nn-search-field,body .nn-search-suggestions,body .nn-humanproof-card,body .nn-proof-360-holder,body .nn-search-result,body .nn-card,body .nn-tool-card,body article,body main section,body .nn-footer{background-color:var(--nn-surface);color:var(--nn-text);border-color:var(--nn-line)}
 body input,body textarea,body select{background:var(--nn-input);color:var(--nn-text);border-color:var(--nn-line)}
-body a{color:inherit}.nn-theme-toggle{width:38px;height:38px;border:1px solid var(--nn-line);background:var(--nn-surface);color:var(--nn-text);display:inline-grid;place-items:center;border-radius:10px;flex:0 0 auto}.nn-theme-toggle:hover{border-color:var(--nn-accent);color:var(--nn-accent)}.nn-theme-toggle svg{width:18px;height:18px}.nn-theme-toggle .moon{display:block}.nn-theme-toggle .sun{display:none}html[data-theme=dark] .nn-theme-toggle .moon{display:none}html[data-theme=dark] .nn-theme-toggle .sun{display:block}.nn-theme-transition *{transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease}.nn-theme-ready{visibility:visible}
-@media(max-width:640px){.nn-theme-toggle{width:36px;height:36px}.nn-nav{gap:4px}.nn-nav a{padding-inline:7px}.nn-brand-copy{display:none}}
-@media(prefers-reduced-motion:reduce){html,body,.nn-theme-transition *{transition:none!important}}
-
-/* Dark-mode contrast contract: scoped to dark mode so the original light theme remains untouched. */
-html[data-theme=dark] body .nn-header,
-html[data-theme=dark] body .nn-search-field,
-html[data-theme=dark] body .nn-search-suggestions,
-html[data-theme=dark] body .nn-humanproof-card,
-html[data-theme=dark] body .nn-proof-360-holder,
-html[data-theme=dark] body .nn-search-result,
-html[data-theme=dark] body .nn-card,
-html[data-theme=dark] body .nn-tool-card,
-html[data-theme=dark] body article,
-html[data-theme=dark] body main section,
-html[data-theme=dark] body .nn-footer {
-  background-color: #1e293b;
-  color: #f8fafc;
-  border-color: #334155;
-}
-html[data-theme=dark] body h1,
-html[data-theme=dark] body h2,
-html[data-theme=dark] body h3,
-html[data-theme=dark] body h4,
-html[data-theme=dark] body h5,
-html[data-theme=dark] body h6,
-html[data-theme=dark] body .nn-brand,
-html[data-theme=dark] body .nn-brand a,
-html[data-theme=dark] body .nn-brand-copy,
-html[data-theme=dark] body .nn-nav,
-html[data-theme=dark] body .nn-nav a,
-html[data-theme=dark] body header a {
-  color: #f8fafc;
-}
-html[data-theme=dark] body p,
-html[data-theme=dark] body small,
-html[data-theme=dark] body .muted,
-html[data-theme=dark] body .description,
-html[data-theme=dark] body .nn-muted {
-  color: #94a3b8;
-}
-html[data-theme=dark] body {
-  background-color: #0b0f19;
-  color: #f8fafc;
-}
+body a{color:inherit}
