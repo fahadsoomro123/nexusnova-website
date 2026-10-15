@@ -171,6 +171,11 @@ const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
 });
 
 const NEXUSNOVA_ALIAS_MAP = Object.freeze({
+  'tik':['short-form-video-hook-generator.html'],
+  'tok':['short-form-video-hook-generator.html'],
+  'tik tok':['short-form-video-hook-generator.html'],
+  'tiktok':['short-form-video-hook-generator.html'],
+  'pdf':['jpg-to-pdf.html','document-workbench.html','text-to-pdf.html'],
   'salery':['salary-tax-calculator-pakistan.html'],
   'salary':['salary-tax-calculator-pakistan.html','fbr-tax-calculator-pakistan.html'],
   'salary tax':['salary-tax-calculator-pakistan.html','fbr-tax-calculator-pakistan.html'],
@@ -286,9 +291,14 @@ function fuzzyTokenScore(queryToken,candidateToken){
   const query=String(queryToken||''), candidate=String(candidateToken||'');
   if(!query||!candidate) return 0;
   if(query===candidate) return 1;
-  if(query.length<4) return 0;
 
-  if(candidate.includes(query)&&query.length>=3) return 0.93;
+  // Incremental search: match prefixes and internal substrings as soon as input arrives.
+  // A one-character query uses literal substring matching only; it never guesses by edit distance.
+  if(candidate.includes(query)){
+    if(query.length===1) return candidate.startsWith(query)?0.91:0.73;
+    return candidate.startsWith(query)?0.98:0.89;
+  }
+  if(query.length<4) return 0;
 
   const maxLength=Math.max(query.length,candidate.length);
   if(maxLength<4) return 0;
@@ -319,9 +329,14 @@ function tokenCoverage(queryTokens,candidateTokens){
         break;
       }
 
-      if(candidateToken.includes(queryToken)&&queryToken.length>=4){
-        bestScore=Math.max(bestScore,0.93);
-        bestDistance=Math.min(bestDistance,Math.abs(candidateToken.length-queryToken.length));
+      if(candidateToken.includes(queryToken)&&queryToken.length>=1){
+        const partialScore=queryToken.length===1
+          ? (candidateToken.startsWith(queryToken)?0.91:0.73)
+          : (candidateToken.startsWith(queryToken)?0.98:0.89);
+        if(partialScore>bestScore){
+          bestScore=partialScore;
+          bestDistance=Math.abs(candidateToken.length-queryToken.length);
+        }
         continue;
       }
 
@@ -498,6 +513,12 @@ class NexusNovaSearchCore{
     }
 
     scored.sort((left,right)=>{
+      // For short partial queries, tool pages take priority over mentions in articles/guides.
+      if(query.length<=4&&left.record.type!==right.record.type){
+        const typePriority={tool:0,category:1,guide:2,article:3};
+        const typeDifference=(typePriority[left.record.type]??9)-(typePriority[right.record.type]??9);
+        if(typeDifference!==0) return typeDifference;
+      }
       if(right.score!==left.score) return right.score-left.score;
       if(right.match.coverage!==left.match.coverage) return right.match.coverage-left.match.coverage;
       if(right.match.exactTokens!==left.match.exactTokens) return right.match.exactTokens-left.match.exactTokens;
