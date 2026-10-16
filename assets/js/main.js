@@ -288,6 +288,86 @@
   const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260930-social4';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
+  // Globally bootstrap related-tools on legacy static tool pages without editing each HTML file.
+  const bootstrapGlobalRelatedTools = () => {
+    if (window.__nexusnovaRelatedToolsBootstrapStarted) return;
+    window.__nexusnovaRelatedToolsBootstrapStarted = true;
+    if (!document.querySelector('main')) return;
+
+    const pathname = String(window.location.pathname || '/');
+    if (!/^\/(?:tools\/)?[^/]+\.html$/i.test(pathname)) return;
+    const excludedPages = new Set([
+      '/', '/index.html', '/tools.html', '/categories.html', '/articles.html',
+      '/guides.html', '/faq.html', '/about.html', '/contact.html', '/terms.html',
+      '/privacy.html', '/disclaimer.html', '/refund-policy.html', '/editorial-policy.html',
+      '/editorial-team.html', '/tool-methodology.html', '/app.html', '/live.html',
+      '/labs.html', '/widgets.html', '/gaming.html', '/links.html', '/404.html'
+    ]);
+    if (excludedPages.has(pathname.toLowerCase())) return;
+
+    const normalizeLocalPath = (value) => {
+      try {
+        const url = new URL(value, window.location.origin + '/');
+        if (url.origin !== window.location.origin || !/\.html$/i.test(url.pathname)) return null;
+        return url.pathname.replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const currentPaths = new Set([normalizeLocalPath(window.location.pathname)].filter(Boolean));
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical && canonical.href) {
+      const canonicalPath = normalizeLocalPath(canonical.href);
+      if (canonicalPath) currentPaths.add(canonicalPath);
+    }
+
+    const mountIfTool = () => {
+      const data = window.NexusNovaSearchData;
+      if (!Array.isArray(data)) return;
+      const isIndexedTool = data.some((entry) => {
+        if (!entry || entry.type !== 'tool' || typeof entry.url !== 'string') return false;
+        const route = normalizeLocalPath(entry.url);
+        return route !== null && currentPaths.has(route);
+      });
+      if (!isIndexedTool) return;
+
+      if (window.NexusNovaRelatedTools && typeof window.NexusNovaRelatedTools.render === 'function') {
+        window.NexusNovaRelatedTools.render(document, window);
+        return;
+      }
+      if (document.querySelector('script[data-nexusnova-global-related-tools]')) return;
+      const renderer = document.createElement('script');
+      renderer.src = '/assets/js/related-tools.js?v=20261016-global-related-v1';
+      renderer.async = true;
+      renderer.dataset.nexusnovaGlobalRelatedTools = '';
+      renderer.onload = () => {
+        if (window.NexusNovaRelatedTools) window.NexusNovaRelatedTools.render(document, window);
+      };
+      document.head.appendChild(renderer);
+    };
+
+    if (Array.isArray(window.NexusNovaSearchData)) {
+      mountIfTool();
+      return;
+    }
+    // Deferred scripts in the HTML have completed by DOMContentLoaded, so avoid racing or
+    // redeclaring the search core on pages that already load it.
+    if (document.querySelector('script[src*="search-core.js"]')) return;
+    const searchCore = document.createElement('script');
+    searchCore.src = '/assets/js/search-core.js?v=20261016-global-related-v1';
+    searchCore.async = true;
+    searchCore.dataset.nexusnovaGlobalRelatedSearchCore = '';
+    searchCore.onload = mountIfTool;
+    document.head.appendChild(searchCore);
+  };
+
+  if (document.readyState === 'complete') {
+    bootstrapGlobalRelatedTools();
+  } else {
+    document.addEventListener('DOMContentLoaded', bootstrapGlobalRelatedTools, { once: true });
+  }
+
 })();
 
 
