@@ -132,6 +132,9 @@ test('renderer leaves non-tool pages untouched and does not duplicate a mounted 
 test('global shared loader reaches all 103 indexed tool pages without hand-editing every page', () => {
   const core = fs.readFileSync(path.join(ROOT, 'assets/js/search-core.js'), 'utf8');
   const main = fs.readFileSync(path.join(ROOT, 'assets/js/main.js'), 'utf8');
+  const innerShell = fs.readFileSync(path.join(ROOT, 'assets/js/nn-inner-shell.js'), 'utf8');
+  const tier1 = fs.readFileSync(path.join(ROOT, 'assets/js/tier1-tools.js'), 'utf8');
+  const bootstrap = fs.readFileSync(path.join(ROOT, 'assets/js/related-tools-bootstrap.js'), 'utf8');
   const matches = [...core.matchAll(/\{\s*title\s*:\s*"[^"]+"\s*,\s*url\s*:\s*"([^"]+)"\s*,\s*type\s*:\s*"tool"/g)];
   const routes = matches.map(match => match[1]);
 
