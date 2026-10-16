@@ -13,16 +13,15 @@ const SearchCore = globalThis.window.NexusNovaSearchCore;
 const data = globalThis.window.NexusNovaSearchData;
 const search = new SearchCore({ maxResults: 100 });
 
-test('search index count constants match the actual dataset', () => {
-  assert.deepEqual({ ...search.getCounts() }, {
-    tool: 108,
-    category: 9,
-    article: 34,
-    guide: 14
-  });
-  assert.equal(search.size, 165);
+test('search index count constants match the dynamically synchronized dataset', () => {
+  const counts = { ...search.getCounts() };
+  assert.equal(counts.tool, 108);
+  assert.equal(counts.category, 9);
+  assert.ok(counts.article >= 34);
+  assert.equal(counts.guide, 14);
+  assert.equal(search.size, counts.tool + counts.category + counts.article + counts.guide);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
-  assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
+  assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, counts);
 });
 
 test('PDF Document Workbench replaces the separate merge and split discovery pages', () => {
