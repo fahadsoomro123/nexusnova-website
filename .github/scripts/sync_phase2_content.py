@@ -19,12 +19,20 @@ def meta(path):
     return title,desc,canonical,cat
 
 records=[]
+sitemap_records=[]
 for p in sorted((ROOT/"articles").glob("*.html")):
     title,desc,canonical,cat=meta(p)
     raw=p.read_text(encoding="utf-8-sig")[:5000]
-    if not canonical or "noindex" in raw.lower(): continue
-    if not title: continue
-    records.append((title,canonical.replace(BASE,""),desc,cat))
+    if not canonical or not title: continue
+    page_url=BASE+p.relative_to(ROOT).as_posix()
+    indexable="noindex" not in raw.lower()
+    canonical=canonical.rstrip("/")
+    # Keep self-canonical noindex pages searchable internally, but never submit
+    # them in the sitemap. Drop noindex aliases whose canonical points elsewhere.
+    if not indexable and canonical != page_url.rstrip("/"): continue
+    record=(title,canonical.replace(BASE,""),desc,cat)
+    records.append(record)
+    if indexable: sitemap_records.append(record)
 
 core=CORE.read_text(encoding="utf-8-sig")
 article_re=re.compile(r'\s*\{ title:"((?:[^"\\]|\\.)*)", url:"((?:[^"\\]|\\.)*)", type:"article", category:"Articles", tags:\[((?:[^\]])*)\] \},?\n?')
@@ -61,7 +69,7 @@ for title,url,desc,cat in records:
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
-for _,url,_,_ in records:
+for _,url,_,_ in sitemap_records:
     full=BASE+url
     if full in sm: continue
     sm=sm.replace("</urlset>",f'  <url><loc>{full}</loc><lastmod>2026-10-16</lastmod></url>\n</urlset>',1)
