@@ -263,13 +263,13 @@ test('global shared loader reaches all 103 indexed tool pages without hand-editi
     const pagePath = path.join(ROOT, entry.url);
     assert.ok(fs.existsSync(pagePath), 'indexed ' + entry.type + ' page is missing: ' + entry.url);
     const html = fs.readFileSync(pagePath, 'utf8');
-    if (!/assets\\/js\\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) {
+    if (!/assets\/js\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) {
       uncovered.push(entry.url);
     }
   }
   for (const route of ['articles.html', 'guides.html', 'categories.html']) {
     const html = fs.readFileSync(path.join(ROOT, route), 'utf8');
-    if (!/assets\\/js\\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) uncovered.push(route);
+    if (!/assets\/js\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) uncovered.push(route);
   }
   assert.deepEqual(uncovered, [], 'all tool, article, guide and category routes must load a shared bootstrap entrypoint');
 });
