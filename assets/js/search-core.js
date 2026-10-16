@@ -187,7 +187,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
   tool:108,
   category:9,
-  article:34,
+  article:45,
   guide:14
 });
 
