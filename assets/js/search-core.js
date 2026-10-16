@@ -749,13 +749,13 @@ class NexusNovaSearchCore{
 }
 
 NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:103,
+  tool:108,
   category:9,
   article:34,
   guide:14
 });
 
-NexusNovaSearchCore.DATASET_SIZE=160;
+NexusNovaSearchCore.DATASET_SIZE=165;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
