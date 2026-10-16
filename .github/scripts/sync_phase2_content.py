@@ -37,8 +37,8 @@ else:
     core=core.replace(marker,block+marker,1)
 tools=len(re.findall(r'type:"tool"',core)); cats=len(re.findall(r'type:"category"',core)); guides=len(re.findall(r'type:"guide"',core)); articles=len(records); total=tools+cats+guides+articles
 core=re.sub(
-    r'const NEXUSNOVA_EXPECTED_COUNTS = Object\\.freeze\\(\\{.*?\\}\\);',
-    f'const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({{\\n  tool:{tools},\\n  category:{cats},\\n  article:{articles},\\n  guide:{guides}\\n}});',
+    r'const NEXUSNOVA_EXPECTED_COUNTS = Object\.freeze\(\{.*?\}\);',
+    f'const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({{\n  tool:{tools},\n  category:{cats},\n  article:{articles},\n  guide:{guides}\n}});',
     core,count=1,flags=re.S
 )
 core=re.sub(r'/\*\*\n \* NexusNova Deep Client-Side Search Core\n \*.*?\n \*/',f'/**\n * NexusNova Deep Client-Side Search Core\n * {tools} tools + {cats} categories + {articles} articles + {guides} guides = {total} records.\n * Local-only, dependency-free, network-free search.\n */',core,count=1,flags=re.S)
