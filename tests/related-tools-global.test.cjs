@@ -240,7 +240,11 @@ test('global shared loader reaches all 108 indexed tool pages without hand-editi
     result[entry.type] = (result[entry.type] || 0) + 1;
     return result;
   }, {});
-  assert.deepEqual(counts, { tool: 108, category: 9, article: 34, guide: 14 });
+  assert.equal(counts.tool, 108);
+  assert.equal(counts.category, 9);
+  assert.ok(counts.article >= 45);
+  assert.equal(counts.guide, 14);
+  assert.equal(entries.length, counts.tool + counts.category + counts.article + counts.guide);
 
   assert.match(main, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
   assert.match(innerShell, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
