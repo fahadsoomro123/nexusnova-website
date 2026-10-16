@@ -102,6 +102,16 @@
     }
   }
 
+  function isToolPage(data, currentPath, options) {
+    const settings = options || {};
+    const origin = settings.origin || DEFAULT_ORIGIN;
+    const activePath = normalizePath(currentPath);
+    if (!activePath || !Array.isArray(data)) return false;
+    return data.some(item =>
+      item && item.type === 'tool' && getCanonicalPath(item, origin) === activePath
+    );
+  }
+
   function hash(value) {
     let result = 2166136261;
     for (let i = 0; i < value.length; i += 1) {
@@ -151,6 +161,17 @@
     } else {
       if (category && category === String(current.category || '').toLowerCase()) score += 5;
     }
+
+    const ignoredTags = new Set(['tool', 'utility', 'free', 'online']);
+    const currentTags = new Set(
+      (Array.isArray(current.tags) ? current.tags : [])
+        .map(tag => String(tag).trim().toLowerCase())
+        .filter(tag => tag && !ignoredTags.has(tag))
+    );
+    const sharedTags = (Array.isArray(entry.tags) ? entry.tags : [])
+      .map(tag => String(tag).trim().toLowerCase())
+      .filter(tag => tag && !ignoredTags.has(tag) && currentTags.has(tag));
+    score += Math.min(sharedTags.length * 2, 10);
 
     const popularIndex = POPULAR_PATHS.map(pathValue => getCanonicalPath({ url: pathValue })).indexOf(path);
     if (!isPakistan && !isFinance && !isPdf && !isCreator && popularIndex >= 0) score += 18;
@@ -228,14 +249,15 @@
   function render(doc, win) {
     if (!doc || !win || !win.location || !win.NexusNovaSearchData) return null;
     const activePath = normalizePath(win.location.pathname);
-    if (!activePath || !activePath.startsWith('/tools/')) return null;
+    if (!activePath) return null;
     if (doc.querySelector('[data-nexusnova-related-tools]')) return null;
     const main = doc.querySelector('main');
     if (!main) return null;
 
     const canonical = doc.querySelector('link[rel="canonical"]');
     const canonicalPath = canonical ? getCanonicalPath({ url: canonical.href }, win.location.origin) : null;
-    const route = canonicalPath && canonicalPath.startsWith('/tools/') ? canonicalPath : activePath;
+    const route = canonicalPath || activePath;
+    if (!isToolPage(win.NexusNovaSearchData, route, { origin: win.location.origin })) return null;
     const entries = selectRelatedTools(win.NexusNovaSearchData, route, {
       origin: win.location.origin,
       limit: 4
@@ -282,5 +304,5 @@
     return section;
   }
 
-  return Object.freeze({ getCanonicalPath, selectRelatedTools, render });
+  return Object.freeze({ getCanonicalPath, isToolPage, selectRelatedTools, render });
 });
