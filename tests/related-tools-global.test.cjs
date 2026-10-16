@@ -136,16 +136,20 @@ test('global shared loader reaches all 103 indexed tool pages without hand-editi
   const routes = matches.map(match => match[1]);
 
   assert.equal(routes.length, 103, 'test the full search-core tool catalogue, not a hand-picked subset');
-  assert.match(main, /bootstrapGlobalRelatedTools/);
-  assert.match(main, /search-core\.js\?v=20261016-global-related-v1/);
-  assert.match(main, /related-tools\.js\?v=20261016-global-related-v1/);
+  assert.match(main, /related-tools-bootstrap\.js\?v=20261016-global-related-v2/);
+  assert.match(innerShell, /related-tools-bootstrap\.js\?v=20261016-global-related-v2/);
+  assert.match(tier1, /related-tools-bootstrap\.js\?v=20261016-global-related-v2/);
+  assert.match(bootstrap, /search-core\.js\?v=20261016-global-related-v2/);
+  assert.match(bootstrap, /related-tools\.js\?v=20261016-global-related-v2/);
+  assert.match(bootstrap, /NexusNovaSearchData/);
+  assert.match(bootstrap, /mountIfTool/);
 
   const uncovered = [];
   for (const route of routes) {
     const pagePath = path.join(ROOT, route);
     assert.ok(fs.existsSync(pagePath), 'indexed tool page is missing: ' + route);
     const html = fs.readFileSync(pagePath, 'utf8');
-    if (!/assets\/js\/main\.js(?:[?"'])/.test(html) && !/assets\/js\/related-tools\.js(?:[?"'])/.test(html)) {
+    if (!/assets\/js\/(?:main|nn-inner-shell|tier1-tools)\.js(?:[?"'])/.test(html) && !/assets\/js\/related-tools\.js(?:[?"'])/.test(html)) {
       uncovered.push(route);
     }
   }
