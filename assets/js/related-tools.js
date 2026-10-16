@@ -162,7 +162,7 @@
       if (category && category === String(current.category || '').toLowerCase()) score += 5;
     }
 
-    const ignoredTags = new Set(['tool', 'utility', 'free', 'online']);
+    const ignoredTags = new Set(['tool', 'tools', 'utility', 'free', 'online', 'category', 'hub', 'article', 'articles', 'guide', 'guides', 'the', 'and', 'for', 'with']);
     const currentTags = new Set(
       (Array.isArray(current.tags) ? current.tags : [])
         .map(tag => String(tag).trim().toLowerCase())
@@ -175,6 +175,8 @@
 
     const popularIndex = POPULAR_PATHS.map(pathValue => getCanonicalPath({ url: pathValue })).indexOf(path);
     if (!isPakistan && !isFinance && !isPdf && !isCreator && popularIndex >= 0) score += 18;
+    if (entry.category && current.category && !/^(articles?|guides?|category)$/i.test(current.category) &&
+        String(entry.category).toLowerCase() === String(current.category).toLowerCase()) score += 6;
     return score;
   }
 
@@ -196,9 +198,9 @@
       candidates.push(normalized);
     }
 
-    const current = data.find(item =>
-      item && item.type === 'tool' && getCanonicalPath(item, origin) === activePath
-    ) || { title: '', category: '' };
+    const current = settings.currentEntry || data.find(item =>
+      item && getCanonicalPath(item, origin) === activePath
+    ) || { title: '', category: '', tags: [] };
 
     const result = [];
     const included = new Set();
@@ -224,6 +226,134 @@
     return result.slice(0, limit);
   }
 
+
+  function getPageContext(data, currentPaths) {
+    const pathSet = currentPaths instanceof Set ? currentPaths : new Set([currentPaths]);
+    const listingKinds = {
+      '/articles.html': 'article-list',
+      '/guides.html': 'guide-list',
+      '/categories.html': 'category-list'
+    };
+    for (const path of pathSet) {
+      const kind = listingKinds[String(path || '').toLowerCase()];
+      if (kind) return { kind, entry: null, path };
+    }
+
+    const priority = ['category', 'article', 'guide', 'tool'];
+    for (const type of priority) {
+      const entry = data.find(item =>
+        item && item.type === type && getCanonicalPath(item) && pathSet.has(getCanonicalPath(item))
+      );
+      if (entry) return { kind: type, entry, path: getCanonicalPath(entry) };
+    }
+    return null;
+  }
+
+  function tokenize(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !/^(the|and|for|with|from|your|you|how|what|this|that|guide|tool|tools|online|free)$/.test(word));
+  }
+
+  function contentScore(candidate, current, toolEntries, currentPath) {
+    let score = 0;
+    const ignored = new Set(['tool', 'tools', 'utility', 'free', 'online', 'category', 'hub', 'article', 'articles', 'guide', 'guides']);
+    const contextTags = new Set([
+      ...(Array.isArray(current && current.tags) ? current.tags : []),
+      ...(toolEntries || []).flatMap(item => Array.isArray(item.tags) ? item.tags : [])
+    ].map(tag => String(tag).trim().toLowerCase()).filter(tag => tag && !ignored.has(tag)));
+
+    const candidateTags = (Array.isArray(candidate.tags) ? candidate.tags : [])
+      .map(tag => String(tag).trim().toLowerCase()).filter(tag => tag && !ignored.has(tag));
+    const shared = candidateTags.filter(tag => contextTags.has(tag));
+    score += Math.min(shared.length * 5, 35);
+
+    const currentCategory = String(current && current.category || '').toLowerCase();
+    const candidateCategory = String(candidate.category || '').toLowerCase();
+    if (currentCategory && !/^(articles?|guides?|category)$/i.test(currentCategory) &&
+        currentCategory === candidateCategory) score += 8;
+
+    const currentWords = new Set(tokenize([
+      current && current.title,
+      ...(Array.isArray(current && current.tags) ? current.tags : []),
+      ...(toolEntries || []).map(item => item.title)
+    ].join(' ')));
+    const candidateWords = tokenize(candidate.title + ' ' + (candidate.url || ''));
+    score += Math.min(candidateWords.filter(word => currentWords.has(word)).length * 3, 18);
+
+    if (getCanonicalPath(candidate) === currentPath) return -1000;
+    return score;
+  }
+
+  function selectRelatedReading(data, current, currentPath, toolEntries, options) {
+    const settings = options || {};
+    const limit = Math.max(1, Math.min(3, Number(settings.limit) || 2));
+    const preferredType = settings.preferredType;
+    const candidates = [];
+    const seen = new Set();
+
+    for (const entry of data || []) {
+      if (!entry || !['article', 'guide'].includes(entry.type) || typeof entry.title !== 'string') continue;
+      const path = getCanonicalPath(entry);
+      if (!path || path === currentPath || seen.has(path)) continue;
+      seen.add(path);
+      candidates.push(Object.assign({}, entry, { href: path }));
+    }
+
+    const sorted = candidates.map(entry => {
+      let score = contentScore(entry, current || {}, toolEntries || [], currentPath);
+      if (preferredType && entry.type === preferredType) score += 5;
+      // Topic-neutral directory views still show stable, useful reading links.
+      const tie = hash(String(currentPath || '/') + '|reading|' + entry.href);
+      return { entry, score, tie };
+    }).sort((a, b) => b.score - a.score || a.tie - b.tie);
+
+    return sorted.slice(0, limit).map(item => item.entry);
+  }
+
+  function categoryToolEntries(data, context, currentPath, origin) {
+    const entry = context && context.entry;
+    const title = String(entry && entry.title || '').toLowerCase();
+    const categoryAliases = {
+      'security & network': ['security', 'developer & data'],
+      'pdf & documents': ['pdf & documents'],
+      'live information': ['live information'],
+      'calculators': ['calculators'],
+      'images': ['images'],
+      'pakistan tools': ['pakistan', 'pakistan tools'],
+      'productivity': ['productivity'],
+      'developer & data': ['developer & data'],
+      'gaming': ['gaming', 'calculators']
+    };
+    const allowed = categoryAliases[title] || [title];
+    const currentTags = new Set((Array.isArray(entry && entry.tags) ? entry.tags : [])
+      .map(tag => String(tag).toLowerCase()).filter(tag => tag && !['category', 'hub', 'tool', 'utility'].includes(tag)));
+    const candidates = (data || []).filter(item =>
+      item && item.type === 'tool' && getCanonicalPath(item, origin) !== currentPath
+    ).map(item => {
+      let score = 0;
+      const category = String(item.category || '').toLowerCase();
+      if (allowed.includes(category)) score += 22;
+      const tags = (Array.isArray(item.tags) ? item.tags : []).map(tag => String(tag).toLowerCase());
+      score += Math.min(tags.filter(tag => currentTags.has(tag)).length * 5, 30);
+      score += scoreCandidate(item, entry || { title, category: title, tags: [...currentTags] }, currentPath);
+      return { item, score, tie: hash(String(currentPath) + '|category|' + getCanonicalPath(item, origin)) };
+    }).sort((a, b) => b.score - a.score || a.tie - b.tie);
+
+    const seen = new Set();
+    return candidates.map(row => {
+      const href = getCanonicalPath(row.item, origin);
+      return Object.assign({}, row.item, { href });
+    }).filter(item => {
+      if (!item.href || seen.has(item.href)) return false;
+      seen.add(item.href);
+      return true;
+    }).slice(0, 4);
+  }
+
   function injectStyles(doc) {
     if (doc.querySelector('[data-nexusnova-related-tools-style]')) return;
     const style = doc.createElement('style');
@@ -247,62 +377,103 @@
   }
 
   function render(doc, win) {
-    if (!doc || !win || !win.location || !win.NexusNovaSearchData) return null;
+    if (!doc || !win || !win.location || !Array.isArray(win.NexusNovaSearchData)) return null;
+    const data = win.NexusNovaSearchData;
     const activePath = normalizePath(win.location.pathname);
     if (!activePath) return null;
-    if (doc.querySelector('[data-nexusnova-related-tools]')) return null;
+    if (doc.querySelector('[data-nexusnova-related-tools]') || doc.querySelector('[data-nexusnova-related-content]')) return null;
     const main = doc.querySelector('main');
     if (!main) return null;
 
     const canonical = doc.querySelector('link[rel="canonical"]');
     const canonicalPath = canonical ? getCanonicalPath({ url: canonical.href }, win.location.origin) : null;
-    const route = canonicalPath || activePath;
-    if (!isToolPage(win.NexusNovaSearchData, route, { origin: win.location.origin })) return null;
-    const entries = selectRelatedTools(win.NexusNovaSearchData, route, {
-      origin: win.location.origin,
-      limit: 4
-    });
-    if (entries.length < 3) return null;
+    const currentPaths = new Set([activePath, canonicalPath].filter(Boolean));
+    const context = getPageContext(data, currentPaths);
+    if (!context) return null;
 
+    const isListing = ['article-list', 'guide-list', 'category-list'].includes(context.kind);
+    const currentPath = context.path || canonicalPath || activePath;
+    const currentEntry = context.entry || {
+      title: context.kind === 'article-list' ? 'Articles' :
+        context.kind === 'guide-list' ? 'Guides' : 'Categories',
+      category: context.kind === 'article-list' ? 'Articles' :
+        context.kind === 'guide-list' ? 'Guides' : '',
+      tags: []
+    };
+
+    let tools;
+    if (context.kind === 'category' || context.kind === 'category-list') {
+      tools = context.kind === 'category'
+        ? categoryToolEntries(data, context, currentPath, win.location.origin)
+        : selectRelatedTools(data, currentPath, { origin: win.location.origin, limit: 4, currentEntry });
+    } else {
+      tools = selectRelatedTools(data, currentPath, {
+        origin: win.location.origin,
+        limit: 4,
+        currentEntry
+      });
+    }
+    if (tools.length < 3) return null;
+
+    const contentPage = ['article', 'guide', 'article-list', 'guide-list'].includes(context.kind);
+    const preferredType = context.kind === 'article-list' ? 'guide' :
+      context.kind === 'guide-list' ? 'article' : undefined;
+    const reading = contentPage
+      ? selectRelatedReading(data, context.entry || currentEntry, currentPath, tools, { limit: 2, preferredType })
+      : [];
     const section = doc.createElement('section');
     section.className = 'nn-related-tools';
     section.dataset.nexusnovaRelatedTools = '';
+    if (contentPage) section.dataset.nexusnovaRelatedContent = '';
+    else section.dataset.nexusnovaFeaturedUtilities = '';
     section.setAttribute('aria-labelledby', 'nn-related-tools-heading');
 
     const heading = doc.createElement('h2');
     heading.id = 'nn-related-tools-heading';
     heading.className = 'nn-related-tools__heading';
-    heading.textContent = 'You May Also Like';
+    heading.textContent = contentPage ? 'Recommended Tools & Related Guides' :
+      'Featured Utilities';
     section.appendChild(heading);
 
     const intro = doc.createElement('p');
     intro.className = 'nn-related-tools__intro';
-    intro.textContent = 'Explore a few related free tools for your next task.';
+    intro.textContent = contentPage
+      ? 'Explore useful utilities and related reading selected from the NexusNova content index.'
+      : 'Explore useful free utilities from this part of NexusNova Tools.';
     section.appendChild(intro);
 
     const grid = doc.createElement('div');
     grid.className = 'nn-related-tools__grid';
-    entries.forEach(entry => {
+    grid.setAttribute('aria-label', contentPage ? 'Recommended tools and related reading' : 'Featured utilities');
+
+    const appendCard = (entry, type, actionLabel) => {
+      const href = entry.href || getCanonicalPath(entry, win.location.origin);
+      if (!href) return;
       const card = doc.createElement('a');
       card.className = 'nn-related-tools__card';
-      card.href = entry.href;
+      card.href = href;
       const category = doc.createElement('span');
       category.className = 'nn-related-tools__category';
-      category.textContent = entry.category || 'Free utility';
+      category.textContent = type === 'tool' ? (entry.category || 'Free utility') :
+        type === 'guide' ? 'Related guide' : 'Related article';
       const title = doc.createElement('h3');
       title.className = 'nn-related-tools__title';
       title.textContent = entry.title;
       const action = doc.createElement('span');
       action.className = 'nn-related-tools__action';
-      action.textContent = 'Open tool →';
+      action.textContent = actionLabel || (type === 'tool' ? 'Open tool →' :
+        type === 'guide' ? 'Read guide →' : 'Read article →');
       card.append(category, title, action);
       grid.appendChild(card);
-    });
+    };
+
+    tools.forEach(entry => appendCard(entry, 'tool', 'Open tool →'));
+    reading.forEach(entry => appendCard(entry, entry.type, entry.type === 'guide' ? 'Read guide →' : 'Read article →'));
     section.appendChild(grid);
     injectStyles(doc);
     main.appendChild(section);
     return section;
   }
 
-  return Object.freeze({ getCanonicalPath, isToolPage, selectRelatedTools, render });
+  return Object.freeze({ getCanonicalPath, getPageContext, isToolPage, selectRelatedReading, selectRelatedTools, render });
 });
