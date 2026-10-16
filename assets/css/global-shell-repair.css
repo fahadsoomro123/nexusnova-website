@@ -54,3 +54,38 @@ body.nn-global-shell-ready :is(img,svg,canvas,video){max-width:100%;height:auto}
 }
 @media(max-width:420px){.nn-global-search-submit{padding-inline:9px}.nn-global-shell-footer-inner{align-items:flex-start;flex-direction:column}}
 
+/* Keep calculator surfaces and outputs legible when legacy site CSS uses dark panels. */
+body.nn-global-shell-ready main :is(.panel,.calculator-card,.calculator-container,.calc-card,.calculator-panel,.nn-tool-card){
+ background:#fff!important;
+ color:#0f172a!important;
+ border-color:#e2e8f0!important;
+ box-shadow:0 5px 20px rgba(15,23,42,.045);
+}
+body.nn-global-shell-ready main :is(.result,.output,.result-box,.calculator-output,.calc-output,[data-calculator-result],#result){
+ display:block;
+ min-width:0;
+ max-width:100%;
+ padding:12px 14px;
+ border:1px solid #cbd5e1!important;
+ border-radius:10px;
+ background:#fff!important;
+ color:#0f172a!important;
+ box-shadow:inset 0 1px 2px rgba(15,23,42,.035);
+ overflow-wrap:anywhere;
+ word-break:normal;
+}
+body.nn-global-shell-ready main :is(.result,.output,.result-box,.calculator-output,.calc-output,[data-calculator-result],#result)[data-result-state="error"],
+body.nn-global-shell-ready main :is(.result,.output,.result-box,.calculator-output,.calc-output,[data-calculator-result],#result)[aria-invalid="true"]{
+ border-color:#fca5a5!important;
+ background:#fff7f7!important;
+ color:#991b1b!important;
+}
+body.nn-global-shell-ready main :is(.result,.output,.result-box,.calculator-output,.calc-output,[data-calculator-result],#result)[data-result-state="success"]{
+ border-color:#86efac!important;
+ background:#f0fdf4!important;
+ color:#166534!important;
+}
+body.nn-global-shell-ready main :is(.panel,.calculator-card,.calculator-container,.calc-card,.calculator-panel) :is(h2,h3,label){
+ color:#0f172a;
+}
+

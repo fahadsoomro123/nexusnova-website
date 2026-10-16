@@ -34,5 +34,8 @@ test('responsive fixes include light inputs and mobile single-column calculators
  assert.match(css,/@media\(max-width:760px\)/);
  assert.match(css,/grid-template-columns:minmax\(0,1fr\)/);
  assert.match(css,/overflow-x:clip/);
+ assert.match(css,/background:#fff!important/);
+ assert.match(css,/data-result-state="error"/);
+ assert.match(css,/data-result-state="success"/);
 });
 
