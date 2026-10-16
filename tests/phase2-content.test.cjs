@@ -23,11 +23,11 @@ test('Phase 2 article batches have indexable SEO foundations and contextual tool
   assert.match(h,/<link rel="canonical"/,p+' needs a canonical');
   assert.match(h,/"@type":"Article"/,p+' needs Article JSON-LD');
   assert.doesNotMatch(h,/<meta name="robots" content="noindex/i,p+' must be indexable');
-  const m=h.match(/<article class="article-main">([\\s\\S]*?)<\\/article>/);
+  const m=h.match(/<article class="article-main">([\s\S]*?)<\/article>/);
   assert.ok(m,p+' needs a readable article body');
   assert.ok((m[1].match(/<h2>/g)||[]).length>=5,p+' needs useful article structure');
-  assert.ok((m[1].match(/<a href="\\.\\.\\/[^"]+\\.html"/g)||[]).length>=3,p+' needs at least three contextual internal links');
-  assert.ok(m[1].replace(/<[^>]+>/g,' ').split(/\\s+/).filter(Boolean).length>=500,p+' needs substantial visible content');
+  assert.ok((m[1].match(/<a href="\.\.\/[^"]+\.html"/g)||[]).length>=3,p+' needs at least three contextual internal links');
+  assert.ok(m[1].replace(/<[^>]+>/g,' ').split(/\s+/).filter(Boolean).length>=500,p+' needs substantial visible content');
  }
 });
 
@@ -35,8 +35,8 @@ test('Phase 2 synchronization workflow exists and does not promise instant index
  const wf=fs.readFileSync('.github/workflows/google-sitemap-submit.yml','utf8');
  const guide=fs.readFileSync('docs/google-search-console-indexing.md','utf8');
  const sync=fs.readFileSync('.github/scripts/sync_phase2_content.py','utf8');
- assert.match(wf,/sitemap\\.xml/); assert.match(wf,/GSC_SERVICE_ACCOUNT_JSON/);
+ assert.match(wf,/sitemap\.xml/); assert.match(wf,/GSC_SERVICE_ACCOUNT_JSON/);
  assert.match(wf,/workflow_dispatch/);
  assert.match(guide,/does not guarantee one-second indexing/i); assert.match(guide,/Search Console Sitemap API/i);
- assert.match(sync,/articles\\.glob/); assert.match(sync,/sitemap\\.xml/);
+ assert.match(sync,/articles\.glob/); assert.match(sync,/sitemap\.xml/);
 });
