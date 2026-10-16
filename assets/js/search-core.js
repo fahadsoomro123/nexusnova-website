@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 103 tools + 9 categories + 34 articles + 14 guides = 160 records.
+ * 108 tools + 9 categories + 34 articles + 14 guides = 165 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -161,6 +161,11 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Freelance Rate & Project Quote Calculator", url:"freelance-rate-calculator.html", type:"tool", category:"Calculators", tags:["freelance hourly rate calculator","freelance pricing","project quote calculator","billable hours","freelancer rate","remote work","contractor estimate"] },
   { title:"Crypto Tax & Profit/Loss Estimator", url:"crypto-tax-profit-estimator.html", type:"tool", category:"Calculators", tags:["crypto tax calculator","crypto profit loss","capital gains tax calculator","bitcoin tax estimator","US crypto tax","UK crypto tax","capital gains","cost basis"] },
   { title:"Privacy Policy & Terms Generator", url:"privacy-policy-terms-generator.html", type:"tool", category:"Developer & Data", tags:["privacy policy generator","terms of service generator","SaaS privacy policy","mobile app terms","privacy notice","app legal templates","GDPR template"] },
+  { title:"2026 US Federal Tax Bracket Calculator", url:"tools/us-federal-tax-bracket-calculator.html", type:"tool", category:"Money & Records", tags:["us federal tax brackets","2026 federal tax brackets","federal income tax calculator","tax bracket calculator","tax bracket calculator 2026","irs tax brackets","income tax brackets","marginal tax rate","taxable income","single filer","married filing jointly","married filing separately","head of household","2026 US tax estimator"] },
+  { title:"Mortgage Payoff Calculator", url:"tools/mortgage-payoff-calculator.html", type:"tool", category:"Money & Records", tags:["mortgage payoff calculator","mortgage payoff calculator with extra payments","early mortgage payoff","home loan payoff calculator","pay off mortgage calculator","extra principal payment","mortgage interest savings","remaining mortgage balance","mortgage amortization","mortgage repayment calculator"] },
+  { title:"Loan Payoff Calculator", url:"tools/loan-payoff-calculator.html", type:"tool", category:"Money & Records", tags:["loan payoff calculator","loan payback calculator","loan repayment calculator","loan calculator online","early loan payoff","loan amortization calculator","loan payoff with extra payments","personal loan payoff","car loan payoff","remaining loan balance","calculate loan interest"] },
+  { title:"Stock Profit Calculator", url:"tools/stock-profit-calculator.html", type:"tool", category:"Money & Records", tags:["stock profit calculator","share profit calculator","stock return calculator","calculate stock gains","stock trading profit","investment return calculator","share price profit loss","brokerage fees","stock break even price","dividend return","fractional shares"] },
+  { title:"Crypto Profit Calculator", url:"tools/crypto-profit-calculator.html", type:"tool", category:"Money & Records", tags:["crypto profit calculator","cryptocurrency profit calculator","bitcoin profit calculator","crypto trade calculator","crypto P&L calculator","crypto trading fees","crypto ROI","break even crypto price","entry price exit price","spot trade profit","crypto gain loss","transaction fee calculator"] },
   { title:"A Practical AI Prompt Workflow for Midjourney Images and Sora Video", url:"guides/ai-prompt-workflows-2026.html", type:"guide", category:"AI Workflows", tags:["A Practical AI Prompt Workflow for Midjourney Images and Sora Video","AI Workflows","AI Prompt Enhancer","Build clearer image and video prompts by specifying the subject, framing, light, action and continuity, then test revisions systematically."] },
   { title:"Short-Form Video Hooks in 2026: Build a Useful TikTok or Reels Opening", url:"guides/short-form-hooks-2026.html", type:"guide", category:"Creator Workflows", tags:["Short-Form Video Hooks in 2026: Build a Useful TikTok or Reels Opening","Creator Workflows","TikTok & Reels Hook Generator","Write stronger short-form openings with a clear promise, visible evidence, a compact script structure and platform-aware testing."] },
   { title:"How to Set a Freelance Hourly Rate and Quote Remote Projects", url:"guides/freelance-pricing-remote-work.html", type:"guide", category:"Remote Work", tags:["How to Set a Freelance Hourly Rate and Quote Remote Projects","Remote Work","Freelance Rate Calculator","Build a sustainable freelance rate from realistic billable capacity, overhead, reserves, project scope, contingency and delivery risk."] },
@@ -169,7 +174,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:103,
+  tool:108,
   category:9,
   article:34,
   guide:14
