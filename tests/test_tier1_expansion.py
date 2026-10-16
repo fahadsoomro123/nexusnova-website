@@ -69,7 +69,7 @@ for rel in GUIDES:
  assert f'url:"{rel}", type:"guide"' in core,f"missing search record: {rel}"
 for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool search record: {rel}"
 assert "v=20261015-v4" in home,"homepage assets need the current cache version"
-assert "v=20261015-v4" in home,"homepage assets must be cache-busted for the live refresh"
+assert "assets/css/humanproof-home.css?v=20261015-v4" in home,"homepage hero stylesheet must use its current cache version"
 assert "v=20261015-v4" in directory,"directory assets must be cache-busted for the live refresh"
 print("PASS: 108 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache-busted assets.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")
