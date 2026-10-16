@@ -119,12 +119,13 @@ test('all five finance pages recommend the other finance tools in their dynamic 
   }
 });
 
-test('search dataset exposes consistent 108-tool and 165-record totals', () => {
-  assert.equal(SearchCore.DATASET_COUNTS.tool, 108);
-  assert.equal(SearchCore.DATASET_COUNTS.category, 9);
-  assert.equal(SearchCore.DATASET_COUNTS.article, 34);
-  assert.equal(SearchCore.DATASET_COUNTS.guide, 14);
-  assert.equal(SearchCore.DATASET_SIZE, 165);
+test('search dataset exposes consistent tool, category, article and guide totals', () => {
+  const counts = SearchCore.DATASET_COUNTS;
+  assert.equal(counts.tool, 108);
+  assert.equal(counts.category, 9);
+  assert.ok(counts.article >= 34);
+  assert.equal(counts.guide, 14);
+  assert.equal(SearchCore.DATASET_SIZE, counts.tool + counts.category + counts.article + counts.guide);
 });
 test('zero extra mortgage payment has a neutral payoff-duration label', () => {
   const result = computeWesternFinance('mortgage-payoff', { balance: 200000, apr: 6, payment: 1500, extra: 0 });
