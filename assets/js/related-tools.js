@@ -232,7 +232,7 @@
       '.nn-related-tools{margin:28px 0 32px;padding:clamp(18px,2.5vw,26px);border:1px solid #e2e8f0;border-radius:18px;background:#fff;color:#0f172a;box-shadow:0 8px 24px rgba(15,23,42,.045)}',
       '.nn-related-tools__heading{margin:0 0 6px;color:#0f172a;font-size:clamp(1.35rem,2.8vw,1.7rem);line-height:1.25}',
       '.nn-related-tools__intro{margin:0 0 16px;color:#475569;line-height:1.65}',
-      '.nn-related-tools__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}',
+      '.nn-related-tools__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}',
       '.nn-related-tools__card{display:flex;min-width:0;flex-direction:column;gap:8px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;color:#0f172a;text-decoration:none;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}',
       '.nn-related-tools__card:hover{transform:translateY(-2px);border-color:#cbd5e1;box-shadow:0 10px 22px rgba(15,23,42,.08)}',
       '.nn-related-tools__card:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}',
