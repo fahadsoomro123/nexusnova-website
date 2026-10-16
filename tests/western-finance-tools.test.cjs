@@ -62,6 +62,7 @@ test('crypto calculator includes percentage fees and validates fee rates', () =>
   assert.equal(result.proceeds, 249.75);
   assert.equal(result.profit, 49.55);
   assert.equal(computeWesternFinance('crypto-profit', { entryPrice: 100, exitPrice: 125, quantity: 2, buyFeePct: 0.1, sellFeePct: 100 }).ok, false);
+  assert.equal(computeWesternFinance('crypto-profit', { entryPrice: 100, exitPrice: 125, quantity: 2, buyFeePct: 100, sellFeePct: 0.1 }).ok, false);
 });
 
 test('all five new finance tool pages have indexable canonicals, shared search integration and 250+ words of guidance', () => {
