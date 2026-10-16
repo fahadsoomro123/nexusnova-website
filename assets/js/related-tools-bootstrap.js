@@ -3,6 +3,7 @@
 
   if (!root || !root.document || root.__nexusNovaRelatedToolsBootstrapStarted) return;
   root.__nexusNovaRelatedToolsBootstrapStarted = true;
+  root.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
 
   const doc = root.document;
   const normalizeLocalPath = (value) => {
