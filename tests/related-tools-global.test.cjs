@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const {
   getCanonicalPath,
   isToolPage,
@@ -108,6 +109,7 @@ test('related grid dynamically mounts on a root-level tool page using search-cor
   assert.ok(section.children[2].children.every(card => card.href.startsWith('/')));
   assert.ok(section.children[2].children.every(card => card.href !== '/image-compressor.html'));
   assert.equal(doc.head.children.length, 1, 'related-tools light-theme CSS should be injected');
+  assert.match(doc.head.children[0].textContent, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
 test('renderer leaves non-tool pages untouched and does not duplicate a mounted grid', () => {
@@ -127,6 +129,42 @@ test('renderer leaves non-tool pages untouched and does not duplicate a mounted 
   assert.ok(render(toolDoc, toolWin));
   assert.equal(render(toolDoc, toolWin), null);
   assert.equal(toolDoc.main.children.filter(node => node.dataset && 'nexusnovaRelatedTools' in node.dataset).length, 1);
+});
+
+test('global bootstrap loads the search index then dynamically mounts related cards for a canonical tool route', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'assets/js/related-tools-bootstrap.js'), 'utf8');
+  const doc = new FakeDocument('https://nexusnovatools.com/image-compressor.html');
+  const win = {
+    document: doc,
+    location: { pathname: '/image-compressor.html', origin },
+    NexusNovaSearchData: null
+  };
+
+  vm.runInNewContext(source, { window: win, URL, Set });
+
+  const coreScript = doc.head.children.find(node => String(node.src).includes('search-core.js'));
+  assert.ok(coreScript, 'the bootstrap should fetch search-core when the page has no indexed data');
+  assert.match(coreScript.src, /search-core\.js\?v=20261016-global-related-v2/);
+
+  win.NexusNovaSearchData = [
+    tool('Image Compressor', 'image-compressor.html', 'Images', ['image', 'compress']),
+    tool('Image Resizer', 'image-resizer.html', 'Images', ['image', 'resize']),
+    tool('JPG to PNG', 'jpg-to-png.html', 'Images', ['image', 'convert']),
+    tool('PNG to JPG', 'png-to-jpg.html', 'Images', ['image', 'convert']),
+    tool('WebP to JPG', 'webp-to-jpg.html', 'Images', ['image', 'convert'])
+  ];
+  coreScript.onload();
+
+  const renderer = doc.head.children.find(node => String(node.src).includes('related-tools.js'));
+  assert.ok(renderer, 'the bootstrap should then load the shared renderer for indexed tool routes');
+  win.NexusNovaRelatedTools = require('../assets/js/related-tools.js');
+  renderer.onload();
+
+  const section = doc.querySelector('[data-nexusnova-related-tools]');
+  assert.ok(section, 'the shared bootstrap should mount the actual related-tools grid');
+  assert.equal(section.children[0].textContent, 'You May Also Like');
+  assert.equal(section.children[2].children.length, 4);
+  assert.ok(section.children[2].children.every(card => card.href !== '/image-compressor.html'));
 });
 
 test('global shared loader reaches all 103 indexed tool pages without hand-editing every page', () => {
