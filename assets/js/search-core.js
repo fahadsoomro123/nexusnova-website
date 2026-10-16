@@ -761,4 +761,14 @@ if(typeof globalThis!=='undefined'){
   globalThis.NexusNovaSearchCore=NexusNovaSearchCore;
 }
 
+if(typeof window!=='undefined'&&window.document&&!window.__nexusNovaRelatedToolsBootstrapScriptRequested){
+  window.__nexusNovaRelatedToolsBootstrapScriptRequested=true;
+  const relatedBootstrap=document.createElement('script');
+  relatedBootstrap.src='/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
+  relatedBootstrap.async=true;
+  relatedBootstrap.dataset.nexusnovaRelatedToolsBootstrap='';
+  relatedBootstrap.onerror=()=>{window.__nexusNovaRelatedToolsBootstrapScriptRequested=false;};
+  document.head.appendChild(relatedBootstrap);
+}
+
 
