@@ -6,6 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { computeWesternFinance, taxFor, simulatePayoff } = require('../assets/js/western-finance-tools.js');
 const { selectRelatedTools } = require('../assets/js/related-tools.js');
+require('../assets/js/search-core.js');
+const SearchCore = globalThis.NexusNovaSearchCore;
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -115,4 +117,18 @@ test('all five finance pages recommend the other finance tools in their dynamic 
     assert.ok(related.every(entry => entry.href !== currentPath));
     assert.equal(new Set(related.map(entry => entry.href)).size, 4);
   }
+});
+
+test('search dataset exposes consistent 108-tool and 165-record totals', () => {
+  assert.equal(SearchCore.DATASET_COUNTS.tool, 108);
+  assert.equal(SearchCore.DATASET_COUNTS.category, 9);
+  assert.equal(SearchCore.DATASET_COUNTS.article, 34);
+  assert.equal(SearchCore.DATASET_COUNTS.guide, 14);
+  assert.equal(SearchCore.DATASET_SIZE, 165);
+});
+test('zero extra mortgage payment has a neutral payoff-duration label', () => {
+  const result = computeWesternFinance('mortgage-payoff', { balance: 200000, apr: 6, payment: 1500, extra: 0 });
+  assert.equal(result.ok, true);
+  assert.equal(result.monthsSaved, 0);
+  assert.match(require('../assets/js/western-finance-tools.js').formatResult('mortgage-payoff', result), /Payoff time shortened by: 0 months/);
 });
