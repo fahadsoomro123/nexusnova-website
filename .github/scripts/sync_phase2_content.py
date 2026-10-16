@@ -32,7 +32,7 @@ for p in sorted((ROOT/"articles").glob("*.html")):
     if not indexable and canonical != page_url.rstrip("/"): continue
     record=(title,canonical.replace(BASE,""),desc,cat)
     records.append(record)
-    if indexable: sitemap_records.append(record)
+    if indexable and canonical.startswith(BASE + "articles/"): sitemap_records.append(record)
 
 core=CORE.read_text(encoding="utf-8-sig")
 article_re=re.compile(r'\s*\{ title:"((?:[^"\\]|\\.)*)", url:"((?:[^"\\]|\\.)*)", type:"article", category:"Articles", tags:\[((?:[^\]])*)\] \},?\n?')
@@ -69,9 +69,27 @@ for title,url,desc,cat in records:
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
-for _,url,_,_ in sitemap_records:
-    full=BASE+url
-    if full in sm: continue
-    sm=sm.replace("</urlset>",f'  <url><loc>{full}</loc><lastmod>2026-10-16</lastmod></url>\n</urlset>',1)
+existing_lastmod={}
+for match in re.finditer(r'<url>\s*<loc>(https://nexusnovatools\\.com/articles/[^<]+)</loc>\s*(?:<lastmod>([^<]+)</lastmod>\s*)?</url>',sm,re.S):
+    existing_lastmod[match.group(1)]=match.group(2) or __import__("datetime").date.today().isoformat()
+
+# Rebuild article URL entries instead of append-only syncing.
+sm=re.sub(
+    r'\s*<url>\s*<loc>https://nexusnovatools\\.com/articles/[^<]+</loc>[\s\S]*?</url>',
+    '',
+    sm
+)
+article_urls=sorted({
+    BASE+url.lstrip("/")
+    for _,url,_,_ in sitemap_records
+    if (BASE+url.lstrip("/")).startswith(BASE+"articles/")
+})
+article_xml="".join(
+    f'  <url><loc>{html.escape(url,quote=False)}</loc><lastmod>{existing_lastmod.get(url,__import__("datetime").date.today().isoformat())}</lastmod></url>\\n'
+    for url in article_urls
+)
+if "</urlset>" not in sm:
+    raise SystemExit("ERROR: sitemap.xml has no closing </urlset> element")
+sm=sm.replace("</urlset>",article_xml+"</urlset>",1)
 SITEMAP.write_text(sm,encoding="utf-8")
-print(f"PASS: synchronized {articles} indexable article records; dataset={total}")
+print(f"PASS: synchronized {articles} search article records; sitemap_articles={len(article_urls)}; dataset={total}")

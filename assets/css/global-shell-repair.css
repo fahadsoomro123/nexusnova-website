@@ -1,0 +1,56 @@
+/* Shared responsive safeguards for NexusNova tool, article, and guide pages. */
+html{min-width:320px;overflow-x:clip}
+body.nn-global-shell-ready{min-width:320px;overflow-x:clip}
+body.nn-global-shell-ready :is(header,main,footer,section,article,.container,.wrap,.panel,.card,.tool-card,.nn-card){min-width:0;max-width:100%}
+body.nn-global-shell-ready :is(header,footer){visibility:visible!important;opacity:1!important;height:auto!important;overflow:visible!important}
+body.nn-global-shell-ready footer{display:block!important;position:relative;z-index:1}
+.nn-global-shell-header{z-index:500;position:relative}
+.nn-global-shell-header-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;min-width:0}
+.nn-global-shell-brand{display:inline-flex;align-items:center;min-width:0;font-weight:900;text-decoration:none;color:#0f172a}
+.nn-global-shell-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.nn-global-shell-header:not([data-nn-has-menu-toggle]) nav{display:flex!important;visibility:visible!important;position:static!important;flex-wrap:wrap!important;gap:8px}
+.nn-global-shell-header nav a{min-width:0;overflow-wrap:anywhere}
+.nn-global-search{display:flex;position:relative;align-items:center;gap:6px;flex:1 1 230px;min-width:180px;max-width:100%;margin:0;z-index:600}
+.nn-global-search-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.nn-global-search input[type="search"]{display:block;flex:1 1 auto;width:100%;min-width:0;max-width:100%;min-height:42px;margin:0;padding:9px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff!important;color:#0f172a!important;box-shadow:none;font:500 14px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}
+.nn-global-search input[type="search"]::placeholder{color:#64748b;opacity:1}
+.nn-global-search input[type="search"]:focus-visible{outline:3px solid #c4b5fd;outline-offset:2px;border-color:#7c3aed}
+.nn-global-search-submit{flex:0 0 auto;min-height:42px;padding:8px 12px;border:1px solid #6d28d9;border-radius:10px;background:#6d28d9!important;color:#fff!important;font:750 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer}
+.nn-global-search-panel{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:9999;max-height:min(420px,55vh);overflow:auto;padding:6px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#0f172a;box-shadow:0 14px 38px rgba(15,23,42,.18)}
+.nn-global-search-panel[hidden]{display:none!important}
+.nn-search-result{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;color:#0f172a!important;text-decoration:none!important;overflow-wrap:anywhere}
+.nn-search-result:hover,.nn-search-result:focus-visible,.nn-search-result.is-active{background:#f5f3ff;outline:2px solid #c4b5fd;outline-offset:-2px}
+.nn-search-result-title{font-size:13px;font-weight:800;line-height:1.35}
+.nn-search-result-meta{font-size:11px;color:#64748b}
+.nn-search-empty{padding:12px;color:#475569;font-size:13px}
+body.nn-global-shell-ready :is(input,select,textarea,button){box-sizing:border-box;max-width:100%;min-width:0}
+body.nn-global-shell-ready :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),select,textarea){color-scheme:light;background-color:#fff;color:#0f172a}
+body.nn-global-shell-ready :is(button,input[type="button"],input[type="submit"]){white-space:normal;overflow-wrap:anywhere}
+body.nn-global-shell-ready :is(main,.container,.wrap,.panel,.card,.tool-card,.nn-card,.calc-grid,.calculator-grid,.calc-layout,.calculator-layout,.form-row,.fields,.form-grid,.tool-grid){min-width:0}
+body.nn-global-shell-ready :is(.calc-grid,.calculator-grid,.calc-layout,.calculator-layout,.calculator-fields,.form-grid,.fields,.form-row){grid-template-columns:repeat(2,minmax(0,1fr))}
+body.nn-global-shell-ready :is(.result,.output,[aria-live="polite"],pre,code,td,th){overflow-wrap:anywhere;max-width:100%}
+body.nn-global-shell-ready :is(pre,.result,.output){white-space:pre-wrap}
+body.nn-global-shell-ready table{width:100%;max-width:100%;border-collapse:collapse}
+body.nn-global-shell-ready main{overflow-wrap:anywhere}
+.nn-global-shell-faq{margin:28px auto;padding:clamp(16px,2.5vw,24px);border:1px solid #e2e8f0;border-radius:16px;background:#fff;color:#0f172a}
+.nn-global-shell-faq h2{margin:0 0 14px;color:#0f172a;font-size:clamp(20px,3vw,25px);line-height:1.25}
+.nn-global-shell-faq details{padding:12px 0;border-top:1px solid #e2e8f0}
+.nn-global-shell-faq summary{color:#0f172a;font-weight:800;cursor:pointer;line-height:1.5}
+.nn-global-shell-faq p{margin:8px 0 0;color:#475569;line-height:1.65}
+.nn-global-shell-footer{padding:20px 16px;border-top:1px solid #e2e8f0;background:#fff;color:#475569}
+.nn-global-shell-footer-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:1440px;margin:0 auto}
+.nn-global-shell-footer-inner p{margin:0}
+.nn-global-shell-footer-inner nav{display:flex;gap:12px;flex-wrap:wrap}
+.nn-global-shell-footer-inner a{color:#475569;text-underline-offset:3px}
+body.nn-global-shell-ready :is(img,svg,canvas,video){max-width:100%;height:auto}
+@media(max-width:760px){
+ .nn-global-shell-header-row{gap:8px}
+ .nn-global-search{order:4;flex:1 1 100%;width:100%;min-width:0}
+ .nn-global-shell-nav{max-width:100%}
+ body.nn-global-shell-ready :is(.calc-grid,.calculator-grid,.calc-layout,.calculator-layout,.calculator-fields,.form-grid,.fields,.form-row){grid-template-columns:minmax(0,1fr)}
+ body.nn-global-shell-ready :is(.calc-grid,.calculator-grid,.calc-layout,.calculator-layout){gap:12px}
+ body.nn-global-shell-ready :is(input,select,textarea){font-size:16px}
+ body.nn-global-shell-ready table{display:block;overflow-x:auto}
+}
+@media(max-width:420px){.nn-global-search-submit{padding-inline:9px}.nn-global-shell-footer-inner{align-items:flex-start;flex-direction:column}}
+

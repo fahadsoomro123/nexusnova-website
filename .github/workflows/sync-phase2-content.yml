@@ -32,17 +32,10 @@ jobs:
           node-version: "20"
       - name: Synchronize search index, article hub and sitemap
         run: python .github/scripts/sync_phase2_content.py
-      - name: Validate generated discovery
+      - name: Validate global layout and sitemap parity
         run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-          core=Path('assets/js/search-core.js').read_text(encoding='utf-8-sig')
-          assert len(re.findall(r'type:"article"', core)) >= 35
-          assert 'NexusNovaSearchCore.DATASET_SIZE=' in core
-          assert Path('sitemap.xml').read_text(encoding='utf-8-sig').count('/articles/') >= 30
-          print('PASS: Phase 2 discovery synchronization contract')
-          PY
+          python -m py_compile .github/scripts/sync_phase2_content.py .github/scripts/validate_global_layout.py
+          python .github/scripts/validate_global_layout.py
       - name: Run npm check
         run: npm run check
       - name: Run npm test

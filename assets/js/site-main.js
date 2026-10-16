@@ -381,3 +381,17 @@ if(page==='index.html'){
     const meta=[...document.querySelectorAll('.article-meta span')].find(el=>el.textContent.trim()==='NexusNova Editorial Team');if(meta&&!meta.querySelector('a')){const link=document.createElement('a');link.href='../editorial-team.html';link.textContent='NexusNova Editorial Team';link.setAttribute('aria-label','About the NexusNova Editorial Team');meta.textContent='';meta.appendChild(link)}
   }
 })();
+
+
+/* Load the shared responsive header/search/footer repair layer once per page. */
+(function(){
+  if(typeof window==='undefined'||!window.document)return;
+  if(window.__nexusNovaGlobalShellGuardRequested)return;
+  window.__nexusNovaGlobalShellGuardRequested=true;
+  var script=document.createElement('script');
+  script.src='/assets/js/global-shell-guard.js?v=20261017-ui-sweep';
+  script.async=true;
+  script.dataset.nexusnovaGlobalShellGuard='';
+  script.onerror=function(){window.__nexusNovaGlobalShellGuardRequested=false;};
+  (document.head||document.documentElement).appendChild(script);
+})();
