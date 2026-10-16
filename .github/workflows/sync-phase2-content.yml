@@ -2,9 +2,9 @@ name: Sync Phase 2 Article Discovery
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
     paths:
-      - "articles/*.html"
+      - "articles/**"
       - ".github/scripts/sync_phase2_content.py"
       - ".github/workflows/sync-phase2-content.yml"
   workflow_dispatch:
