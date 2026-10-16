@@ -232,6 +232,7 @@ test('global shared loader reaches all 103 indexed tool pages without hand-editi
   const main = fs.readFileSync(path.join(ROOT, 'assets/js/main.js'), 'utf8');
   const innerShell = fs.readFileSync(path.join(ROOT, 'assets/js/nn-inner-shell.js'), 'utf8');
   const tier1 = fs.readFileSync(path.join(ROOT, 'assets/js/tier1-tools.js'), 'utf8');
+  const analytics = fs.readFileSync(path.join(ROOT, 'assets/js/analytics.js'), 'utf8');
   const bootstrap = fs.readFileSync(path.join(ROOT, 'assets/js/related-tools-bootstrap.js'), 'utf8');
   const matches = [...searchCore.matchAll(/\{\s*title\s*:\s*"[^"]+"\s*,\s*url\s*:\s*"([^"]+)"\s*,\s*type\s*:\s*"(tool|article|guide|category)"/g)];
   const entries = matches.map(match => ({ url: match[1], type: match[2] }));
@@ -245,6 +246,7 @@ test('global shared loader reaches all 103 indexed tool pages without hand-editi
   assert.match(innerShell, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
   assert.match(tier1, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
   assert.match(searchCore, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
+  assert.match(analytics, /related-tools-bootstrap\.js\?v=20261016-related-content-v1/);
   assert.match(bootstrap, /search-core\.js\?v=20261016-related-content-v1/);
   assert.match(bootstrap, /related-tools\.js\?v=20261016-related-content-v1/);
   assert.match(bootstrap, /NexusNovaSearchData/);
@@ -261,13 +263,13 @@ test('global shared loader reaches all 103 indexed tool pages without hand-editi
     const pagePath = path.join(ROOT, entry.url);
     assert.ok(fs.existsSync(pagePath), 'indexed ' + entry.type + ' page is missing: ' + entry.url);
     const html = fs.readFileSync(pagePath, 'utf8');
-    if (!/assets\/js\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools)\.js(?:[?"'])/.test(html)) {
+    if (!/assets\\/js\\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) {
       uncovered.push(entry.url);
     }
   }
   for (const route of ['articles.html', 'guides.html', 'categories.html']) {
     const html = fs.readFileSync(path.join(ROOT, route), 'utf8');
-    if (!/assets\/js\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools)\.js(?:[?"'])/.test(html)) uncovered.push(route);
+    if (!/assets\\/js\\/(?:main|nn-inner-shell|tier1-tools|search-core|related-tools|analytics)\.js(?:[?"'])/.test(html)) uncovered.push(route);
   }
   assert.deepEqual(uncovered, [], 'all tool, article, guide and category routes must load a shared bootstrap entrypoint');
 });
