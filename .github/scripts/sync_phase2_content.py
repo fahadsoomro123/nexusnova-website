@@ -19,12 +19,20 @@ def meta(path):
     return title,desc,canonical,cat
 
 records=[]
+sitemap_records=[]
 for p in sorted((ROOT/"articles").glob("*.html")):
     title,desc,canonical,cat=meta(p)
     raw=p.read_text(encoding="utf-8-sig")[:5000]
-    if not canonical or "noindex" in raw.lower(): continue
-    if not title: continue
-    records.append((title,canonical.replace(BASE,""),desc,cat))
+    if not canonical or not title: continue
+    page_url=BASE+p.relative_to(ROOT).as_posix()
+    indexable="noindex" not in raw.lower()
+    canonical=canonical.rstrip("/")
+    # Keep self-canonical noindex pages searchable internally, but never submit
+    # them in the sitemap. Drop noindex aliases whose canonical points elsewhere.
+    if not indexable and canonical != page_url.rstrip("/"): continue
+    record=(title,canonical.replace(BASE,""),desc,cat)
+    records.append(record)
+    if indexable: sitemap_records.append(record)
 
 core=CORE.read_text(encoding="utf-8-sig")
 article_re=re.compile(r'\s*\{ title:"((?:[^"\\]|\\.)*)", url:"((?:[^"\\]|\\.)*)", type:"article", category:"Articles", tags:\[((?:[^\]])*)\] \},?\n?')
@@ -36,6 +44,11 @@ else:
     marker='  { title:"Images", url:"image-tools.html", type:"category"'
     core=core.replace(marker,block+marker,1)
 tools=len(re.findall(r'type:"tool"',core)); cats=len(re.findall(r'type:"category"',core)); guides=len(re.findall(r'type:"guide"',core)); articles=len(records); total=tools+cats+guides+articles
+core=re.sub(
+    r'const NEXUSNOVA_EXPECTED_COUNTS = Object\.freeze\(\{.*?\}\);',
+    f'const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({{\n  tool:{tools},\n  category:{cats},\n  article:{articles},\n  guide:{guides}\n}});',
+    core,count=1,flags=re.S
+)
 core=re.sub(r'/\*\*\n \* NexusNova Deep Client-Side Search Core\n \*.*?\n \*/',f'/**\n * NexusNova Deep Client-Side Search Core\n * {tools} tools + {cats} categories + {articles} articles + {guides} guides = {total} records.\n * Local-only, dependency-free, network-free search.\n */',core,count=1,flags=re.S)
 core=re.sub(r'NexusNovaSearchCore\.DATASET_SIZE=\d+;',f'NexusNovaSearchCore.DATASET_SIZE={total};',core)
 core=re.sub(r'NexusNovaSearchCore\.DATASET_COUNTS=Object\.freeze\(\{[^}]+\}\);',f'NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({{tool:{tools},category:{cats},article:{articles},guide:{guides}}});',core)
@@ -56,7 +69,7 @@ for title,url,desc,cat in records:
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
-for _,url,_,_ in records:
+for _,url,_,_ in sitemap_records:
     full=BASE+url
     if full in sm: continue
     sm=sm.replace("</urlset>",f'  <url><loc>{full}</loc><lastmod>2026-10-16</lastmod></url>\n</urlset>',1)

@@ -33,7 +33,12 @@ tool_routes=re.findall(r'url:"([^"]+)", type:"tool"',core)
 guide_routes=re.findall(r'url:"([^"]+)", type:"guide"',core)
 assert len(tool_routes)==108,"search index must expose 108 tool records"
 assert len(guide_routes)==14,"search index must expose 14 guide records"
-assert "DATASET_SIZE=165" in core,"search dataset total should be 165"
+dataset_size_match=re.search(r'DATASET_SIZE=(\d+)',core)
+assert dataset_size_match,"search dataset size constant is missing"
+category_routes=re.findall(r'type:"category"',core)
+article_routes=re.findall(r'type:"article"',core)
+actual_total=len(tool_routes)+len(category_routes)+len(article_routes)+len(guide_routes)
+assert int(dataset_size_match.group(1))==actual_total,"search dataset size must match synchronized records"
 assert "NexusNova Tools — 108 Free Online Browser Tools" in home,"homepage metadata must match the 108 indexed tools"
 assert len(re.findall(r'data-tool-card',directory))>=108,"directory must include all tool cards"
 assert len(re.findall(r'data-guide-card',hub))>=14,"guide hub must expose all guide cards"

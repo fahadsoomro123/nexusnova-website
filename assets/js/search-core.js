@@ -1,8 +1,8 @@
-﻿'use strict';
+'use strict';
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 108 tools + 9 categories + 34 articles + 14 guides = 165 records.
+ * 108 tools + 9 categories + 45 articles + 14 guides = 176 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -147,6 +147,17 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Typing Speed Guide: WPM, Accuracy & How to Improve", url:"articles/typing-speed-wpm-accuracy-guide.html", type:"article", category:"Articles", tags:["Typing Speed Guide: WPM, Accuracy & How to Improve","Learn how typing WPM and accuracy are measured, why different tests can show different scores, and how to improve speed without sacrificing accuracy.","Productivity","Typing speed, WPM and accuracy: a practical guide. | What does WPM mean? | Why can two typing tests give different scores? | What is typing accuracy? | 30 seconds or 60 seconds? | How to improve without forcing speed | A simple weekly practice routine | What score is “good”? | Typing speed FAQ | Should I look at WPM or accuracy first? | Does a shorter test inflate WPM? | Can typing practice help with coding? | Typing Speed Test | Word Counter | Pomodoro Timer | mistakes are penalized, whether corrected errors count, and how they calculate | without forcing speed Start with accuracy. Slow down enough that your fingers | sharply, reduce the pace and rebuild control. What score is “good”? There is no | typing practice help with coding? It can improve keyboard familiarity, but code"] },
   { title:"Windows 11 August 2026 Gaming Crashes & RGB Drivers", url:"articles/windows-11-august-2026-rgb-gaming-crashes.html", type:"article", category:"Articles", tags:["Windows 11 August 2026 Gaming Crashes & RGB Drivers","What Microsoft has confirmed about the August 2026 Windows 11 gaming issue and what PC players should do next.","Gaming","Windows 11 August 2026 gaming crashes: what RGB drivers have to do with it. | What Microsoft has confirmed | Reported symptoms | Games named in Microsoft's report | What should PC players do? | Is there an official fix yet? | Useful NexusNova tools while troubleshooting | or internal components that support RGB lighting. The affected systems can include | crash in those games has the same cause. What should PC players do? Confirm your | manually can create a bigger problem. Microsoft has not published a universal | tools while troubleshooting Use the FPS & Frame-Time Calculator when comparing"] },
   { title:"YouTube Thumbnail Size Guide 2026: 3840×2160 vs 1280×720", url:"articles/youtube-thumbnail-size-guide-2026.html", type:"article", category:"Articles", tags:["YouTube Thumbnail Size Guide 2026: 3840×2160 vs 1280×720","Understand 3840×2160 vs 1280×720 thumbnail sizes, what each means, and how to choose an appropriate upload size.","Creator Tools","YouTube thumbnail size in 2026: why you may see both 3840×2160 and 1280×720. | The short answer | Why the two size recommendations are not a contradiction | Which size should a creator design? | Why does maxres sometimes fail? | What about vertical videos? | Can you reuse another creator's thumbnail? | Primary sources for thumbnail dimensions | YouTube thumbnail size FAQ | Is 1280×720 still a YouTube thumbnail size? | Should I upload only 1280×720? | thumbnail renditions: 120×90 default , 320×180 medium , 480×360 high , 640×480 | maxres sometimes fail? The Data API documentation says standard and maxres are | rules that apply to your situation. Try the tool: Use the NexusNova YouTube Thumbnail | thumbnail. Why does a downloader show several versions? YouTube resources can"] },
+  { title:"2026 US Federal Tax Brackets Explained", url:"articles/2026-us-federal-tax-brackets-explained.html", type:"article", category:"Articles", tags:["2026 US Federal Tax Brackets Explained","Understand the 2026 US federal income tax brackets, how marginal rates work, and why taxable income is not the same as salary.","Articles","US TAX PLANNING • OCTOBER 16, 2026"] },
+  { title:"Credit Card Payoff: Avalanche vs. Snowball Method", url:"articles/credit-card-payoff-avalanche-vs-snowball.html", type:"article", category:"Articles", tags:["Credit Card Payoff: Avalanche vs. Snowball Method","Compare the debt avalanche and snowball methods, organize minimum payments, and build a realistic credit-card payoff plan.","Articles","DEBT PLANNING • OCTOBER 16, 2026"] },
+  { title:"How to Build an Emergency Fund on Irregular Income", url:"articles/emergency-fund-for-irregular-income.html", type:"article", category:"Articles", tags:["How to Build an Emergency Fund on Irregular Income","Build a practical emergency fund when freelance, seasonal, commission, or contract income changes from month to month.","Articles","HOUSEHOLD FINANCE • OCTOBER 16, 2026"] },
+  { title:"Freelance Cash-Flow Budget Guide", url:"articles/freelance-cash-flow-budget.html", type:"article", category:"Articles", tags:["Freelance Cash-Flow Budget Guide","Build a freelance budget around uneven income instead of pretending every month will look like your best month.","Articles","BUDGETING • OCTOBER 16, 2026"] },
+  { title:"Freelance Invoice Payment Terms", url:"articles/freelance-invoice-payment-terms.html", type:"article", category:"Articles", tags:["Freelance Invoice Payment Terms","Choose clearer invoice payment terms, reduce avoidable delays, and build a freelance billing process that is easier for clients to follow.","Articles","FREELANCING • OCTOBER 16, 2026"] },
+  { title:"Gross vs. Net Pay: Take-Home Pay Guide", url:"articles/gross-to-net-paycheck-guide.html", type:"article", category:"Articles", tags:["Gross vs. Net Pay: Take-Home Pay Guide","Learn how gross salary turns into take-home pay, what payroll deductions mean, and how to sanity-check a paycheck estimate before budgeting.","Articles","CALCULATORS • OCTOBER 16, 2026"] },
+  { title:"How to Convert Hourly Pay to an Annual Salary", url:"articles/hourly-to-annual-salary-conversion-guide.html", type:"article", category:"Articles", tags:["How to Convert Hourly Pay to an Annual Salary","Convert an hourly wage into weekly, monthly, and annual gross pay, while accounting for unpaid time and benefits.","Articles","PAY AND JOB OFFERS • OCTOBER 16, 2026"] },
+  { title:"Extra Mortgage Payments: Interest Savings", url:"articles/mortgage-extra-payments-interest-savings.html", type:"article", category:"Articles", tags:["Extra Mortgage Payments: Interest Savings","Learn how extra principal payments can change mortgage payoff timing and interest, and what to check before sending extra cash.","Articles","HOME FINANCE • OCTOBER 16, 2026"] },
+  { title:"Profit Margin vs. Markup", url:"articles/profit-margin-vs-markup-small-business.html", type:"article", category:"Articles", tags:["Profit Margin vs. Markup","Learn the difference between profit margin and markup, use the correct formulas, and price products or services without confusing the two.","Articles","PRICING AND PROFIT • OCTOBER 16, 2026"] },
+  { title:"Quarterly Taxes for 1099 Freelancers", url:"articles/quarterly-estimated-taxes-1099.html", type:"article", category:"Articles", tags:["Quarterly Taxes for 1099 Freelancers","How US freelancers can turn irregular 1099 income into a simple quarterly tax reserve without pretending the estimate is an official tax bill.","Articles","FREELANCING • OCTOBER 16, 2026"] },
+  { title:"How to Calculate a Small-Business Break-Even Point", url:"articles/small-business-break-even-point.html", type:"article", category:"Articles", tags:["How to Calculate a Small-Business Break-Even Point","Calculate break-even sales using fixed costs, variable cost per sale, and contribution margin, with a worked small-business example.","Articles","SMALL-BUSINESS FINANCE • OCTOBER 16, 2026"] },
   { title:"How to use a weighted decision matrix without fooling yourself.", url:"guides/weighted-decision-matrix.html", type:"guide", category:"Guides", tags:["how to use a weighted decision matrix without fooling yourself.","guides weighted decision matrix","guides","weighted","decision","matrix","without","fooling","yourself","guide","methodology"] },
   { title:"Percentages without confusion", url:"guides/percentage-basics.html", type:"guide", category:"Guides", tags:["percentages without confusion","guides percentage basics","guides","percentages","without","confusion","guide","methodology"] },
   { title:"Stronger password habits for everyday accounts", url:"guides/password-security.html", type:"guide", category:"Guides", tags:["stronger password habits for everyday accounts","guides password security","guides","stronger","password","habits","everyday","accounts","guide","methodology"] },
@@ -176,7 +187,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
   tool:108,
   category:9,
-  article:34,
+  article:45,
   guide:14
 });
 
@@ -748,14 +759,9 @@ class NexusNovaSearchCore{
   }
 }
 
-NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({
-  tool:108,
-  category:9,
-  article:34,
-  guide:14
-});
+NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({tool:108,category:9,article:45,guide:14});
 
-NexusNovaSearchCore.DATASET_SIZE=165;
+NexusNovaSearchCore.DATASET_SIZE=176;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
