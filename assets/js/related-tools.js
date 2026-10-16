@@ -425,21 +425,23 @@
     section.className = 'nn-related-tools';
     section.dataset.nexusnovaRelatedTools = '';
     if (contentPage) section.dataset.nexusnovaRelatedContent = '';
-    else section.dataset.nexusnovaFeaturedUtilities = '';
+    else if (context.kind === 'category' || context.kind === 'category-list') section.dataset.nexusnovaFeaturedUtilities = '';
     section.setAttribute('aria-labelledby', 'nn-related-tools-heading');
 
     const heading = doc.createElement('h2');
     heading.id = 'nn-related-tools-heading';
     heading.className = 'nn-related-tools__heading';
     heading.textContent = contentPage ? 'Recommended Tools & Related Guides' :
-      'Featured Utilities';
+      context.kind === 'tool' ? 'You May Also Like' : 'Featured Utilities';
     section.appendChild(heading);
 
     const intro = doc.createElement('p');
     intro.className = 'nn-related-tools__intro';
     intro.textContent = contentPage
       ? 'Explore useful utilities and related reading selected from the NexusNova content index.'
-      : 'Explore useful free utilities from this part of NexusNova Tools.';
+      : context.kind === 'tool'
+        ? 'Explore a few related free tools for your next task.'
+        : 'Explore useful free utilities from this part of NexusNova Tools.';
     section.appendChild(intro);
 
     const grid = doc.createElement('div');
