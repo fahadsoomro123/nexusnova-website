@@ -212,7 +212,7 @@
         'Total future payments: ' + money(result.accelerated.totalPaid),
         '',
         'Estimated interest saved: ' + money(result.interestSaved),
-        'Payoff time shortened by: ' + duration(result.monthsSaved),
+        'Payoff time shortened by: ' + (result.monthsSaved ? duration(result.monthsSaved) : '0 months'),
         '',
         'Estimate assumes a constant APR and end-of-month payments. Fees, escrow, rate changes, penalties and lender-specific rounding are not included.'
       ].join('\n');
