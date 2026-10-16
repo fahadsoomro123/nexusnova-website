@@ -29,6 +29,12 @@ test('a working COLA calculator occupies the freed directory slot and is discove
   assert.ok(tools.includes('href="social-security-cola-calculator-2027.html"'));
   assert.ok(search.includes('title:"2027 Social Security COLA Calculator", url:"social-security-cola-calculator-2027.html", type:"tool"'));
   assert.ok(search.includes('tool:108,'));
-  assert.ok(search.includes('DATASET_SIZE=165'));
+  const countsMatch = search.match(/NexusNovaSearchCore\\.DATASET_COUNTS=Object\\.freeze\\(\\{tool:(\\d+),category:(\\d+),article:(\\d+),guide:(\\d+)\\}\\);/);
+  assert.ok(countsMatch, 'search dataset counts should be declared');
+  const counts = countsMatch.slice(1).map(Number);
+  assert.equal(counts[0], 108);
+  assert.ok(counts[2] >= 45);
+  const size = Number(search.match(/NexusNovaSearchCore\\.DATASET_SIZE=(\\d+);/)?.[1]);
+  assert.equal(size, counts.reduce((sum, value) => sum + value, 0));
 });
 
