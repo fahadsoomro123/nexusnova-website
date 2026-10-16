@@ -9,6 +9,11 @@ on:
       - "sitemap.xml"
       - "articles.json"
       - "assets/js/search-core.js"
+      - "assets/js/western-finance-tools.js"
+      - "assets/js/related-tools.js"
+      - "tools/*.html"
+      - "tests/western-finance-tools.test.cjs"
+      - "package.json"
       - "assets/js/tier1-tools.js"
       - "assets/css/tier1-tools.css"
       - "ai-prompt-enhancer.html"
@@ -23,6 +28,13 @@ on:
     branches: [main]
     paths:
       - "assets/js/tier1-tools.js"
+      - "assets/js/western-finance-tools.js"
+      - "assets/js/related-tools.js"
+      - "assets/js/search-core.js"
+      - "sitemap.xml"
+      - "tools/*.html"
+      - "package.json"
+      - "tests/western-finance-tools.test.cjs"
       - "tests/test_tier1_expansion.py"
 permissions:
   contents: read
@@ -42,5 +54,9 @@ jobs:
         run: node --check assets/js/tier1-tools.js
       - name: Check site search index syntax
         run: node --check assets/js/search-core.js
+      - name: Run project syntax checks
+        run: npm run check
+      - name: Run project test suite
+        run: npm test
       - name: Validate tools, guides, search, metadata and cache versions
         run: python tests/test_tier1_expansion.py

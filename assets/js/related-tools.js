@@ -66,6 +66,36 @@
       'invoice-maker.html',
       'bill-split-tip-calculator.html'
     ],
+    '/tools/us-federal-tax-bracket-calculator.html': [
+      'tools/mortgage-payoff-calculator.html',
+      'tools/loan-payoff-calculator.html',
+      'tools/stock-profit-calculator.html',
+      'tools/crypto-profit-calculator.html'
+    ],
+    '/tools/mortgage-payoff-calculator.html': [
+      'tools/loan-payoff-calculator.html',
+      'tools/us-federal-tax-bracket-calculator.html',
+      'tools/stock-profit-calculator.html',
+      'tools/crypto-profit-calculator.html'
+    ],
+    '/tools/loan-payoff-calculator.html': [
+      'tools/mortgage-payoff-calculator.html',
+      'tools/us-federal-tax-bracket-calculator.html',
+      'tools/stock-profit-calculator.html',
+      'tools/crypto-profit-calculator.html'
+    ],
+    '/tools/stock-profit-calculator.html': [
+      'tools/crypto-profit-calculator.html',
+      'tools/us-federal-tax-bracket-calculator.html',
+      'tools/mortgage-payoff-calculator.html',
+      'tools/loan-payoff-calculator.html'
+    ],
+    '/tools/crypto-profit-calculator.html': [
+      'tools/stock-profit-calculator.html',
+      'tools/us-federal-tax-bracket-calculator.html',
+      'tools/mortgage-payoff-calculator.html',
+      'tools/loan-payoff-calculator.html'
+    ],
     '/tools/instant-pdf-invoice-generator.html': [
       'tools/hourly-to-salary-calculator.html',
       'tools/us-tip-bill-splitter.html',
