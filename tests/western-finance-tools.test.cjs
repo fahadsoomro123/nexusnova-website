@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { computeWesternFinance, taxFor, simulatePayoff } = require('../assets/js/western-finance-tools.js');
+const { selectRelatedTools } = require('../assets/js/related-tools.js');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -89,5 +90,29 @@ test('all five new finance tool pages have indexable canonicals, shared search i
     assert.ok(html.includes('assets/js/search-core.js'));
     assert.ok(index.includes('url:"' + url + '"'));
     assert.ok(sitemap.includes('https://nexusnovatools.com/' + url), url + ' missing from sitemap');
+  }
+});
+
+test('all five finance pages recommend the other finance tools in their dynamic related-tools grid', () => {
+  const slugs = [
+    'us-federal-tax-bracket-calculator',
+    'mortgage-payoff-calculator',
+    'loan-payoff-calculator',
+    'stock-profit-calculator',
+    'crypto-profit-calculator'
+  ];
+  const data = slugs.map(slug => ({
+    title: slug,
+    url: 'tools/' + slug + '.html',
+    type: 'tool',
+    category: 'Money & Records',
+    tags: ['finance', slug]
+  }));
+  for (const slug of slugs) {
+    const currentPath = '/tools/' + slug + '.html';
+    const related = selectRelatedTools(data, currentPath);
+    assert.equal(related.length, 4);
+    assert.ok(related.every(entry => entry.href !== currentPath));
+    assert.equal(new Set(related.map(entry => entry.href)).size, 4);
   }
 });
