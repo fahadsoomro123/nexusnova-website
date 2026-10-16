@@ -293,7 +293,7 @@
     if (window.__nexusNovaRelatedToolsBootstrapScriptRequested) return;
     window.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
     var loader = document.createElement('script');
-    loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-global-related-v2';
+    loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
     loader.async = true;
     loader.dataset.nexusnovaRelatedToolsBootstrap = '';
     loader.onerror = function () {
