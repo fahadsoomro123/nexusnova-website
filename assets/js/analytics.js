@@ -137,4 +137,15 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountStandaloneChoices,{once:true});
   else mountStandaloneChoices();
+  // Shared entrypoint for legacy article/guide files that only load analytics.js.
+  if(!window.__nexusNovaRelatedToolsBootstrapScriptRequested){
+    window.__nexusNovaRelatedToolsBootstrapScriptRequested=true;
+    const relatedBootstrap=document.createElement('script');
+    relatedBootstrap.src='/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
+    relatedBootstrap.async=true;
+    relatedBootstrap.dataset.nexusnovaRelatedToolsBootstrap='';
+    relatedBootstrap.onerror=()=>{window.__nexusNovaRelatedToolsBootstrapScriptRequested=false;};
+    document.head.appendChild(relatedBootstrap);
+  }
+
 })();
