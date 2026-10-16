@@ -52,5 +52,5 @@ test('Phase 2 synchronization workflow exists and does not promise instant index
  assert.match(wf,/sitemap\.xml/); assert.match(wf,/GSC_SERVICE_ACCOUNT_JSON/);
  assert.match(wf,/workflow_dispatch/);
  assert.match(guide,/does not guarantee one-second indexing/i); assert.match(guide,/Search Console Sitemap API/i);
- assert.match(sync,/\.glob\("\*\.html"\)/); assert.match(sync,/sitemap\.xml/); assert.match(sync,/NEXUSNOVA_EXPECTED_COUNTS/);
+ assert.match(sync,/\.glob\("\*\.html"\)/); assert.match(sync,/sitemap\.xml/); assert.match(sync,/NEXUSNOVA_EXPECTED_COUNTS/); assert.match(sync,/sitemap_records/); assert.match(sync,/page_url/);
 });
