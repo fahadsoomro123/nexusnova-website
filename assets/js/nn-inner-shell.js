@@ -92,3 +92,17 @@ document.addEventListener("DOMContentLoaded",function(){
     });
   }
 });
+
+// Load the same route-aware related-tools bootstrap from the shared inner-page shell.
+(function () {
+  if (window.__nexusNovaRelatedToolsBootstrapScriptRequested) return;
+  window.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
+  var loader = document.createElement('script');
+  loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-global-related-v2';
+  loader.async = true;
+  loader.dataset.nexusnovaRelatedToolsBootstrap = '';
+  loader.onerror = function () {
+    window.__nexusNovaRelatedToolsBootstrapScriptRequested = false;
+  };
+  document.head.appendChild(loader);
+})();
