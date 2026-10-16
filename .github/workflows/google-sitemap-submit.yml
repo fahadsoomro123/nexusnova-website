@@ -1,0 +1,54 @@
+name: Submit Sitemap to Google Search Console
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sitemap.xml"
+      - "articles/**"
+      - "guides/**"
+      - "tools/**"
+      - "assets/js/search-core.js"
+      - "index.html"
+      - "articles.html"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit-sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Submit sitemap through Search Console API
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: |
+          python -m pip install --quiet google-auth requests
+          python - <<'PY'
+          import json, os, sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+
+          raw = os.environ.get('GSC_SERVICE_ACCOUNT_JSON', '').strip()
+          site = os.environ.get('GSC_SITE_URL', '').strip()
+          if not raw or not site:
+              print('Search Console secrets are not configured; skipping submission.')
+              sys.exit(0)
+
+          info = json.loads(raw)
+          credentials = service_account.Credentials.from_service_account_info(
+              info,
+              scopes=['https://www.googleapis.com/auth/webmasters']
+          )
+          session = AuthorizedSession(credentials)
+          sitemap = 'https://nexusnovatools.com/sitemap.xml'
+          endpoint = 'https://www.googleapis.com/webmasters/v3/sites/' + __import__('urllib.parse').parse.quote(site, safe='') + '/sitemaps/' + __import__('urllib.parse').parse.quote(sitemap, safe='')
+          response = session.put(endpoint, timeout=30)
+          if response.status_code not in (200, 204):
+              print(response.text)
+              response.raise_for_status()
+          print('Search Console sitemap submission accepted:', sitemap)
+          PY
