@@ -15,12 +15,12 @@ const search = new SearchCore({ maxResults: 100 });
 
 test('search index count constants match the actual dataset', () => {
   assert.deepEqual({ ...search.getCounts() }, {
-    tool: 103,
+    tool: 108,
     category: 9,
     article: 34,
     guide: 14
   });
-  assert.equal(search.size, 160);
+  assert.equal(search.size, 165);
   assert.equal(SearchCore.DATASET_SIZE, search.size);
   assert.deepEqual({ ...SearchCore.DATASET_COUNTS }, { ...search.getCounts() });
 });
@@ -37,8 +37,8 @@ test('PDF Document Workbench replaces the separate merge and split discovery pag
   const legacy = ['merge-pdf.html', 'split-pdf.html'];
 
   assert.equal(homeCards.length, 92, 'homepage master directory count should match the published 92-tool label');
-  assert.equal(directoryCards.length, 103, 'tool directory card count should match the published count');
-  assert.equal(data.filter(record => record.type === 'tool').length, 103);
+  assert.equal(directoryCards.length, 108, 'tool directory card count should match the published count');
+  assert.equal(data.filter(record => record.type === 'tool').length, 108);
   assert.ok(homeCards.includes('document-workbench.html'));
   assert.ok(directoryCards.includes('document-workbench.html'));
   assert.ok(pdfHub.includes('href="document-workbench.html"'));
