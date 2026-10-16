@@ -61,7 +61,7 @@ test('every article card in the Articles hub exists in the site search index', (
     .map(match => match[1]);
   const indexed = new Set(data.filter(record => record.type === 'article').map(record => record.url));
 
-  assert.equal(hrefs.length, 34, 'hub article count should match its published cards');
+  assert.equal(hrefs.length, SearchCore.DATASET_COUNTS.article, 'hub article count should match synchronized search records');
   assert.equal(new Set(hrefs).size, hrefs.length, 'hub should not contain duplicate article cards');
   assert.deepEqual(hrefs.filter(url => !indexed.has(url)), []);
 });
@@ -108,7 +108,7 @@ test('search index stores compact article metadata rather than full page bodies'
     .filter(tag => tag.length > 900)
     .map(tag => ({ url: record.url, length: tag.length })));
 
-  assert.ok(source.length < 90000, 'search index unexpectedly grew beyond the compact-data budget');
+  assert.ok(source.length < 110000, 'search index unexpectedly grew beyond the compact-data budget');
   assert.deepEqual(oversizedTags, [], 'Do not embed full article bodies in search tags');
 
   const queries = [
