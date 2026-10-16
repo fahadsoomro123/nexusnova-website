@@ -137,7 +137,7 @@
 
     if (kind === 'crypto-profit') {
       const keys = ['entryPrice', 'exitPrice', 'quantity', 'buyFeePct', 'sellFeePct'];
-      if (!validNonNegative(values, keys) || number(values, 'entryPrice') <= 0 || number(values, 'quantity') <= 0 || number(values, 'sellFeePct') >= 100) {
+      if (!validNonNegative(values, keys) || number(values, 'entryPrice') <= 0 || number(values, 'quantity') <= 0 || number(values, 'buyFeePct') >= 100 || number(values, 'sellFeePct') >= 100) {
         return { ok: false, error: 'Enter a positive entry price and quantity, non-negative exit price and fees, and a sell fee below 100%.' };
       }
       const entryPrice = number(values, 'entryPrice');
