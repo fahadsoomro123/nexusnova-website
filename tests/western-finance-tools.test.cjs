@@ -55,7 +55,7 @@ test('stock calculator includes order fees and dividends in its trade-level retu
   assert.equal(result.cost, 1005);
   assert.equal(result.proceeds, 1215);
   assert.equal(result.profit, 210);
-  assert.ok(result.breakEvenPrice > 100);
+  assert.equal(result.breakEvenPrice, 100);
 });
 
 test('crypto calculator includes percentage fees and validates fee rates', () => {
