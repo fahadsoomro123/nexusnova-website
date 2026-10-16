@@ -104,7 +104,52 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Solar Bill Calculator", url:"tools/solar-bill-calculator.html", type:"tool", category:"Pakistan", tags:["solar calculator pakistan","electric bill savings","solar panel calculator","battery backup calculator","solar system size"] },
   { title:"US Tip & Bill Splitter", url:"tools/us-tip-bill-splitter.html", type:"tool", category:"Money & Records", tags:["tip calculator","restaurant tip calculator","bill splitter","us tax calculator","split restaurant bill"] },
   { title:"Hourly-to-Salary Calculator", url:"tools/hourly-to-salary-calculator.html", type:"tool", category:"Money & Records", tags:["hourly to salary","paycheck calculator","salary calculator","take home pay","us paycheck"] },
-  { title:"Instant PDF Invoice Generator", url:"tools/instant-pdf-invoice-generator.html", type:"tool", category:"PDF & Documents", tags:["pdf invoice generator","invoice maker","freelance invoice","client invoice","download invoice pdf"] },  { title:"2026 US Federal Tax Brackets Explained", url:"articles/2026-us-federal-tax-brackets-explained.html", type:"article", category:"Articles", tags:["2026 US Federal Tax Brackets Explained","Understand the 2026 US federal income tax brackets, how marginal rates work, and why taxable income is not the same as salary.","Articles","US TAX PLANNING • OCTOBER 16, 2026"] },
+  { title:"Instant PDF Invoice Generator", url:"tools/instant-pdf-invoice-generator.html", type:"tool", category:"PDF & Documents", tags:["pdf invoice generator","invoice maker","freelance invoice","client invoice","download invoice pdf"] },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  { title:"2026 US Federal Tax Brackets Explained", url:"articles/2026-us-federal-tax-brackets-explained.html", type:"article", category:"Articles", tags:["2026 US Federal Tax Brackets Explained","Understand the 2026 US federal income tax brackets, how marginal rates work, and why taxable income is not the same as salary.","Articles","US TAX PLANNING • OCTOBER 16, 2026"] },
   { title:"AI Photo Restoration vs Enhancement: What Can Be Recovered?", url:"articles/ai-photo-restoration-vs-enhancement.html", type:"article", category:"Articles", tags:["AI Photo Restoration vs Enhancement: What Can Be Recovered?","Understand the difference between sharpening, color correction, upscaling and AI photo restoration — including what an old or blurry photo can and cannot.","Articles","PHOTO RESTORATION"] },
   { title:"AI Search and Planning in 2026: What Google Data Shows", url:"articles/ai-search-planning-decisions-2026.html", type:"article", category:"Articles", tags:["AI Search and Planning in 2026: What Google Data Shows","Google says AI Mode searches are longer and planning queries are growing faster than AI Mode overall. Here is what that means for useful planning tools.","Articles","SEARCH TRENDS // SEP 2, 2026"] },
   { title:"AI Tokens & Context Windows Explained | LLM Guide", url:"articles/ai-token-count-context-window-guide.html", type:"article", category:"Articles", tags:["AI Tokens & Context Windows Explained | LLM Guide","A practical guide to token estimates, context windows, prompt size and why exact token counts depend on the model tokenizer.","Articles","AI PRACTICAL GUIDE"] },
