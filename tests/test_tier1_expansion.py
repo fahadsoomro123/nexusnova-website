@@ -55,8 +55,8 @@ for rel in TOOLS:
  f=ROOT/rel; assert f.exists(),f"missing tool route: {rel}"
  h=f.read_text(encoding="utf-8-sig")
  assert f"https://nexusnovatools.com/{rel}" in h,f"missing canonical on {rel}"
- assert "assets/css/tier1-tools.css?build=20261015-tier1-expansion-1" in h,f"missing shared UI CSS version on {rel}"
- assert "assets/js/tier1-tools.js?build=20261015-tier1-expansion-1" in h,f"missing shared UI JS version on {rel}"
+ assert "assets/css/tier1-tools.css?v=20261015-v4" in h,f"missing shared UI CSS version on {rel}"
+ assert "assets/js/tier1-tools.js?v=20261015-v4" in h,f"missing shared UI JS version on {rel}"
  assert "<h2>Frequently asked questions</h2>" in h,f"missing FAQ section on {rel}"
  assert f"https://nexusnovatools.com/{rel}" in sitemap,f"missing sitemap entry: {rel}"
 for rel in GUIDES:
