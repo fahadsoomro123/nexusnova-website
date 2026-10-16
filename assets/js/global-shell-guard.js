@@ -125,10 +125,10 @@ function isToolPage(){
 function ensureToolFaq(){
  if(!isToolPage()||!doc.querySelector('main'))return;
  var headings=Array.from(doc.querySelectorAll('main h2,main h3')).map(function(h){return (h.textContent||'').trim();});
- if(headings.some(function(t){return /frequently asked|\\bfaq\\b|\\bquestions\\b|common questions/i.test(t);}))return;
+ if(headings.some(function(t){return /frequently asked|\bfaq\b|\bquestions\b|common questions/i.test(t);}))return;
  var main=doc.querySelector('main'),section=doc.createElement('section');section.className='nn-global-shell-faq';section.setAttribute('aria-labelledby','nn-global-shell-faq-title');
  var h=doc.createElement('h2');h.id='nn-global-shell-faq-title';h.textContent='Frequently asked questions';section.appendChild(h);
- var title=(doc.querySelector('h1')?.textContent||doc.title||'This tool').trim().replace(/\\s*\\|\\s*NexusNova Tools$/i,'');
+ var title=(doc.querySelector('h1')?.textContent||doc.title||'This tool').trim().replace(/\s*\|\s*NexusNova Tools$/i,'');
  var desc=(doc.querySelector('meta[name="description"]')?.content||'Use the controls on this page to complete the task described above.').trim();
  [
   ['What does '+title+' do?',desc],

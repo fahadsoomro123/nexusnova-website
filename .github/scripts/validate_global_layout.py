@@ -48,7 +48,8 @@ for page in sorted((ROOT/"articles").glob("*.html")):
         continue
     canonical=canonical.rstrip("/")
     indexable="noindex" not in source[:5000].lower()
-    if indexable and canonical.startswith(BASE+"articles/"):
+    page_url=(BASE+page.relative_to(ROOT).as_posix()).rstrip("/")
+    if indexable and canonical==page_url and canonical.startswith(BASE+"articles/"):
         expected.add(canonical)
 try:
     sitemap=ET.parse(ROOT/"sitemap.xml").getroot()
