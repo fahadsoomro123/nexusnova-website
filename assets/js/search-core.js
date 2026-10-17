@@ -4,6 +4,7 @@
  * NexusNova Deep Client-Side Search Core
  * 108 tools + 9 categories + 100 articles + 14 guides = 231 records.
  * Local-only, dependency-free, network-free search.
+ * SEO sync contract: 100 indexable self-canonical articles; title cap <=70 characters.
  */
 
 const NEXUSNOVA_SEARCH_DATA = Object.freeze([
