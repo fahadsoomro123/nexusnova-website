@@ -8,11 +8,13 @@ const articleFiles = fs.readdirSync(articleDir).filter(name => name.endsWith('.h
 const selfCanonicalArticles = articleFiles.filter(name => {
   const html = fs.readFileSync(path.join(articleDir, name), 'utf8');
   const canonical = html.match(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i);
-  return canonical && canonical[1].replace(/\/$/, '') === 'https://nexusnovatools.com/articles/' + name;
+  const robots = html.match(/<meta\s+name=["']robots["']\s+content=["']([^"']+)["']/i);
+  const indexable = !robots || !/\bnoindex\b/i.test(robots[1]);
+  return indexable && canonical && canonical[1].replace(/\/$/, '') === 'https://nexusnovatools.com/articles/' + name;
 });
 
-test('the canonical article library contains exactly 100 unique article pages', () => {
-  assert.equal(selfCanonicalArticles.length, 100, 'Expected 100 self-canonical articles, found ' + selfCanonicalArticles.length);
+test('the indexable canonical article library contains exactly 100 unique article pages', () => {
+  assert.equal(selfCanonicalArticles.length, 100, 'Expected 100 indexable self-canonical articles, found ' + selfCanonicalArticles.length);
 });
 
 test('the final cash-flow guide meets its publishing contract', () => {
