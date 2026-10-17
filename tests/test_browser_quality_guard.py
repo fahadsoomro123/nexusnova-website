@@ -81,13 +81,14 @@ class BrowserQualityRuleRegressionTests(unittest.TestCase):
         self.assertIn('data-mode="signin"', source)
 
 
-    def test_guides_page_has_accessible_mobile_navigation_toggle(self):
+    def test_guides_page_uses_static_scrollable_mobile_navigation(self):
         guides = (ROOT / "guides.html").read_text(encoding="utf-8", errors="replace")
-        self.assertIn('data-nn-menu', guides)
-        self.assertIn('aria-controls="nn-primary-nav"', guides)
-        self.assertIn('aria-expanded="false"', guides)
-        self.assertIn('button.addEventListener("click", toggleMenu)', guides)
-        self.assertIn('event.key === "Escape"', guides)
+        shell_css = (ROOT / "assets" / "css" / "static-site-shell.css").read_text(encoding="utf-8", errors="replace")
+        self.assertIn('<nav class="nn-nav" id="nn-primary-nav"', guides)
+        self.assertNotIn('data-nn-menu', guides)
+        self.assertNotIn('toggleMenu', guides)
+        self.assertIn('.nn-header .nn-nav{display:flex!important', shell_css)
+        self.assertIn('overflow-x:auto!important', shell_css)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

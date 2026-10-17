@@ -36,3 +36,38 @@
 .nn-global-footer .nn-footer-domain{color:var(--nn-purple)!important}
 @media(max-width:860px){.nn-header .nn-header-row{align-items:flex-start!important;flex-direction:column!important;gap:8px!important;padding:9px 0!important}.nn-header .nn-nav{justify-content:flex-start!important;flex-wrap:nowrap!important;width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}.nn-header .nn-nav a{flex:0 0 auto!important}.nn-global-footer .nn-global-footer-main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:22px!important}.nn-global-footer .nn-footer-social{grid-column:1/-1!important}}
 @media(max-width:560px){.nn-header .nn-shell,.nn-global-footer .nn-shell{width:min(var(--nn-max),calc(100% - 22px))!important}.nn-header .nn-brand-copy{display:none!important}.nn-header .nn-brand-logo-img{height:36px!important;max-height:36px!important}.nn-header .nn-nav{gap:3px!important}.nn-header .nn-nav a{min-height:34px!important;padding:7px 8px!important;font-size:11px!important}.nn-global-footer .nn-global-footer-main{grid-template-columns:minmax(0,1fr)!important;gap:20px!important}.nn-global-footer .nn-footer-social{grid-column:auto!important}.nn-global-footer .nn-global-footer-bottom{align-items:flex-start!important;flex-direction:column!important}}
+
+/* Build-time related content: generated as plain HTML and CSS. */
+.nn-related-tools{margin:28px 0 32px;padding:clamp(18px,2.5vw,26px);border:1px solid #e2e8f0;border-radius:18px;background:#fff;color:#0f172a;box-shadow:0 8px 24px rgba(15,23,42,.045)}
+.nn-related-tools__heading{margin:0 0 6px;color:#0f172a;font-size:clamp(1.35rem,2.8vw,1.7rem);line-height:1.25}
+.nn-related-tools__intro{margin:0 0 16px;color:#475569;line-height:1.65}
+.nn-related-tools__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.nn-related-tools__card{display:flex;min-width:0;flex-direction:column;gap:8px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#fff;color:#0f172a;text-decoration:none;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.nn-related-tools__card:hover{transform:translateY(-2px);border-color:#cbd5e1;box-shadow:0 10px 22px rgba(15,23,42,.08)}
+.nn-related-tools__card:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+.nn-related-tools__category{color:#64748b;font-size:.75rem;font-weight:700;letter-spacing:.02em}
+.nn-related-tools__title{margin:0;color:#0f172a;font-size:1rem;line-height:1.4;overflow-wrap:anywhere}
+.nn-related-tools__action{margin-top:auto;color:#334155;font-size:.85rem;font-weight:800}
+@media(max-width:900px){.nn-related-tools__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.nn-related-tools__grid{grid-template-columns:1fr}.nn-related-tools__card{min-height:0}}
+@media(prefers-reduced-motion:reduce){.nn-related-tools__card{transition:none}.nn-related-tools__card:hover{transform:none}}
+
+
+/* Static privacy control: interactive behavior binds to this source-authored button. */
+.nn-global-footer .nn-consent-reopen{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font:750 10px/1.3 var(--nn-sans);cursor:pointer}
+.nn-global-footer .nn-consent-reopen:hover{border-color:#c4b5fd;background:#faf5ff;color:#5b21b6}
+.nn-global-footer .nn-consent-reopen:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+
+
+/* Measured mobile overflow remediation from the all-HTML Chromium sweep. */
+.container.article code{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+.drop{min-width:0;max-width:100%;box-sizing:border-box}
+.drop input[type=file]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.drop span{max-width:100%;overflow-wrap:anywhere}
+.table-wrap{display:block;width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.nn12-zakat-grid{width:100%;min-width:0;max-width:100%}
+.nn12-zakat-field{width:100%;min-width:0;max-width:100%}
+.nn12-zakat-field>input,.nn12-zakat-field>select,.nn12-zakat-field>textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-card{min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-frame,.weather-media-frame--radar{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-frame--radar img{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;object-fit:contain}

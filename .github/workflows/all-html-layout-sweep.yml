@@ -6,10 +6,13 @@ on:
     paths:
       - "**/*.html"
       - "assets/css/**"
-      - "assets/js/global-shell-guard.js"
-      - "assets/js/nn-inner-shell.js"
+      - ".github/scripts/generate_static_related_tools.cjs"
+      - ".github/scripts/related_tools_selector.cjs"
+      - ".github/scripts/sync_static_site_shell.py"
       - ".github/scripts/validate_all_html_layout.py"
       - ".github/workflows/all-html-layout-sweep.yml"
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -44,6 +47,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate the permanent static shell contract
+        run: |
+          python .github/scripts/sync_static_site_shell.py --check
+          python .github/scripts/validate_global_layout.py
+          node .github/scripts/generate_static_related_tools.cjs --check
+
       - name: Install Chromium
         run: |
           python -m pip install --disable-pip-version-check playwright
@@ -74,6 +83,7 @@ jobs:
           retention-days: 30
 
   live-layout:
+    if: github.event_name != 'pull_request'
     needs: local-layout
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -97,16 +107,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          css='https://nexusnovatools.com/assets/css/global-shell-repair.css?v=20261017-ui-sweep'
+          css='https://nexusnovatools.com/assets/css/static-site-shell.css?v=20261017-static-shell-v1'
           hub='https://nexusnovatools.com/articles.html'
           for attempt in {1..60}; do
-            if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then
+            if curl --fail --silent "$css" | grep -q 'max-height:40px!important'; then
               html_url="${hub}?nn_live_validate=${GITHUB_SHA}-${attempt}"
               html="$(curl --fail --silent --show-error "$html_url" || true)"
               cards="$(grep -o 'class="nn-article-card" href="articles/[^"]*\.html"' <<< "$html" | wc -l | tr -d '[:space:]')"
               if [ "$cards" = "100" ] &&
                  [[ "$html" == *'id="articles-grid"'* ]] &&
-                 [[ "$html" == *'id="article-search-count">100 articles'* ]]; then
+                 [[ "$html" == *'id="article-search-count">100 articles'* ]] &&
+                 [[ "$html" == *'data-nexusnova-related-tools'* ]] &&
+                 [[ "$html" != *'assets/js/nn-inner-shell.js'* ]] &&
+                 [[ "$html" != *'assets/js/related-tools-bootstrap.js'* ]]; then
                 echo "LIVE_ARTICLE_HUB_HTML_PASS cards=$cards count=100 articles attempt=$attempt"
                 echo "LIVE_SHELL_CSS_PASS attempt=$attempt"
                 exit 0

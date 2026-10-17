@@ -2,9 +2,6 @@
   'use strict';
   document.documentElement.classList.add('nexusnova-scifi');
 
-  const year=document.querySelector('[data-year]');
-  if(year)year.textContent=String(new Date().getFullYear());
-
   const header=document.querySelector('[data-header]');
   const updateHeader=()=>header?.classList.toggle('scrolled',window.scrollY>6);
   updateHeader();

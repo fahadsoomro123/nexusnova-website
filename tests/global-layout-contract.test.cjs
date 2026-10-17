@@ -53,14 +53,28 @@ test('every HTML page has the canonical static index header and footer', () => {
   }
 });
 
-test('dynamic header and footer repair loaders are gone', () => {
-  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/related-tools.js']) {
-    assert.doesNotMatch(read(file), /global-shell-guard\.js/, file + ' still loads retired guard');
+test('shell and related-content runtime loaders are absent', () => {
+  for (const file of [
+    'assets/js/nn-inner-shell.js',
+    'assets/js/related-tools-bootstrap.js',
+    'assets/js/global-shell-guard.js',
+    'assets/js/related-tools.js',
+    'assets/js/privacy-bridge.js',
+    'assets/js/auth-header-state.js'
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, file)), false, file + ' must remain deleted');
   }
-  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|normalizeFooterStructure|global-shell-guard\.js/);
-  assert.doesNotMatch(read('assets/js/nn-inner-shell.js'), /normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header/);
-  assert.doesNotMatch(read('assets/js/global-shell-guard.js'), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
-  assert.match(read('assets/js/nn-inner-shell.js'), /related-tools-bootstrap\.js/);
+  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js', 'assets/js/assistant-core.js']) {
+    assert.doesNotMatch(read(file), /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header/,
+      file + ' must not request a retired shell or related-content loader');
+  }
+  for (const file of ['assets/js/assistant.js', 'assets/js/assistant-core.js']) {
+    assert.doesNotMatch(read(file), /nav\.appendChild\((?:a|link)\)|trending\.after\((?:a|link)\)/,
+      file + ' must not modify the shared primary navigation');
+  }
+  const selector = read('.github/scripts/related_tools_selector.cjs');
+  assert.doesNotMatch(selector, /\b(?:window|document)\s*(?:\.|\[)|createElement|appendChild|innerHTML|querySelector|MutationObserver/,
+    'build-time recommendation selection must not mutate browser DOM');
 });
 
 test('108 indexed tool routes resolve to unique HTML files', () => {
@@ -83,4 +97,14 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /@media\s*\(max-width:\s*560px\)/);
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
+
+test('measured mobile overflow regressions have targeted responsive constraints', () => {
+  const css = read('assets/css/static-site-shell.css');
+  assert.match(css, /\.container\.article code\{[^}]*overflow-wrap:anywhere/);
+  assert.match(css, /\.drop input\[type=file\]\{[^}]*min-width:0/);
+  assert.match(css, /\.table-wrap\{[^}]*overflow-x:auto/);
+  assert.match(css, /\.nn12-zakat-field\{[^}]*min-width:0/);
+  assert.match(css, /\.weather-media-frame--radar\{[^}]*min-width:0/);
 });

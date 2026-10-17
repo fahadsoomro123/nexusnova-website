@@ -69,21 +69,13 @@
 
   const mountStandaloneChoices=()=>{
     if(document.querySelector('[data-nexusnova-consent]'))return;
-    const footer=document.querySelector('.nn-global-footer .nn-footer-trust-grid');
-    if(!footer)return;
+    const open=document.querySelector('[data-nexusnova-consent-reopen]');
+    if(!open)return;
 
     const style=document.createElement('style');
     style.dataset.nexusnovaStandaloneConsent='';
     style.textContent='.nn-standalone-consent-banner{position:fixed;inset:auto 16px 16px;z-index:9998;max-width:560px;margin:auto;padding:14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.45 system-ui,sans-serif}.nn-standalone-consent-banner[hidden]{display:none}.nn-standalone-consent-banner p{margin:0 0 10px}.nn-standalone-consent{position:fixed;inset:auto 16px 16px;z-index:9999;max-width:560px;margin:auto;padding:14px;border:1px solid #cbd5e1;border-radius:14px;background:#fff;color:#111827;box-shadow:0 10px 30px rgba(15,23,42,.16);font:13px/1.45 system-ui,sans-serif}.nn-standalone-consent[hidden]{display:none}.nn-standalone-consent p{margin:0 0 10px}.nn-standalone-consent-actions{display:flex;flex-wrap:wrap;gap:7px}.nn-standalone-consent button,.nn-standalone-consent-banner button{border:1px solid #cbd5e1;border-radius:999px;padding:7px 11px;background:#fff;color:#111827;font:700 12px system-ui,sans-serif;cursor:pointer}.nn-standalone-consent .primary,.nn-standalone-consent-banner .primary{background:#111827;color:#fff;border-color:#111827}.nn-standalone-consent a,.nn-standalone-consent-banner a{color:inherit;text-decoration:underline}.nn-standalone-consent-open{cursor:pointer}.nn-standalone-consent-dialog{max-width:560px;border:1px solid #cbd5e1;border-radius:14px;padding:18px;background:#fff;color:#111827;box-shadow:0 18px 45px rgba(15,23,42,.18)}.nn-standalone-consent-dialog::backdrop{background:rgba(15,23,42,.28)}@media(max-width:640px){.nn-standalone-consent-banner,.nn-standalone-consent{left:10px;right:10px;bottom:10px}}';
     document.head.appendChild(style);
-
-    const open=document.createElement('a');
-    open.href='#privacy-choices';
-    open.className='nn-standalone-consent-open';
-    open.textContent='Privacy choices';
-    open.setAttribute('aria-controls','nexusnova-analytics-consent-dialog');
-    const privacyLink=Array.from(footer.querySelectorAll('a')).find(link=>/\/privacy\.html$/i.test(link.getAttribute('href')||''));
-    if(privacyLink)privacyLink.insertAdjacentElement('afterend',open);else footer.appendChild(open);
 
     const banner=document.createElement('div');
     banner.className='nn-standalone-consent-banner';
@@ -137,15 +129,5 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountStandaloneChoices,{once:true});
   else mountStandaloneChoices();
-  // Shared entrypoint for legacy article/guide files that only load analytics.js.
-  if(!window.__nexusNovaRelatedToolsBootstrapScriptRequested){
-    window.__nexusNovaRelatedToolsBootstrapScriptRequested=true;
-    const relatedBootstrap=document.createElement('script');
-    relatedBootstrap.src='/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
-    relatedBootstrap.async=true;
-    relatedBootstrap.dataset.nexusnovaRelatedToolsBootstrap='';
-    relatedBootstrap.onerror=()=>{window.__nexusNovaRelatedToolsBootstrapScriptRequested=false;};
-    document.head.appendChild(relatedBootstrap);
-  }
 
 })();

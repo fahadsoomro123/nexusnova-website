@@ -250,18 +250,4 @@
   const loadSocialShare=()=>{if(document.querySelector('script[data-nexusnova-social-share]'))return;const script=document.createElement('script');script.src=base+'assets/js/social-share.js?v=20260930-social4';script.dataset.nexusnovaSocialShare='';document.body.appendChild(script);};
   const scheduleShell=()=>{if(location.pathname==='/'||/\/index\.html$/.test(location.pathname)){const loadHomepageRuntime=()=>{loadShell();loadSocialShare();};if('requestIdleCallback' in window)window.requestIdleCallback(()=>window.setTimeout(loadHomepageRuntime,3200),{timeout:1800});else window.setTimeout(loadHomepageRuntime,3200);['pointerdown','keydown','scroll'].forEach(type=>window.addEventListener(type,loadHomepageRuntime,{once:true,passive:true}));return;}if('requestIdleCallback' in window){window.requestIdleCallback(loadShell,{timeout:1200});window.requestIdleCallback(loadSocialShare,{timeout:1800});}else{window.setTimeout(loadShell,120);window.setTimeout(loadSocialShare,1400);}};
   if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',scheduleShell,{once:true});else scheduleShell();
-  // One cached helper owns route detection, search-index loading and renderer injection.
-  (function () {
-    if (window.__nexusNovaRelatedToolsBootstrapScriptRequested) return;
-    window.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
-    var loader = document.createElement('script');
-    loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
-    loader.async = true;
-    loader.dataset.nexusnovaRelatedToolsBootstrap = '';
-    loader.onerror = function () {
-      window.__nexusNovaRelatedToolsBootstrapScriptRequested = false;
-    };
-    document.head.appendChild(loader);
-  })();
-
 })();

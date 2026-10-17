@@ -106,49 +106,6 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Hourly-to-Salary Calculator", url:"tools/hourly-to-salary-calculator.html", type:"tool", category:"Money & Records", tags:["hourly to salary","paycheck calculator","salary calculator","take home pay","us paycheck"] },
   { title:"Instant PDF Invoice Generator", url:"tools/instant-pdf-invoice-generator.html", type:"tool", category:"PDF & Documents", tags:["pdf invoice generator","invoice maker","freelance invoice","client invoice","download invoice pdf"] },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   { title:"2026 US Federal Tax Brackets Explained: Marginal vs. Effective Rate", url:"articles/2026-us-federal-tax-brackets-explained.html", type:"article", category:"Articles", tags:["2026 US Federal Tax Brackets Explained: Marginal vs. Effective Rate","Understand the 2026 US federal income tax brackets, how marginal rates work, and why taxable income is not the same as salary.","Articles","US TAX PLANNING • OCTOBER 16, 2026"] },
   { title:"The 50/30/20 Budget Rule: Adapt Percentages to Your Pay", url:"articles/50-30-20-budget-rule.html", type:"article", category:"Articles", tags:["The 50/30/20 Budget Rule: Adapt Percentages to Your Pay","Use 50/30/20 as a starting guideline and adapt it to actual housing, care, debt and income.","Articles","BUDGET FIELD GUIDE • OCTOBER 17, 2026"] },
   { title:"AI Photo Restoration vs Enhancement: What Can Really Be Recovered?", url:"articles/ai-photo-restoration-vs-enhancement.html", type:"article", category:"Articles", tags:["AI Photo Restoration vs Enhancement: What Can Really Be Recovered?","Understand the difference between sharpening, color correction, upscaling and AI photo restoration — including what an old or blurry photo can and cannot.","Articles","PHOTO RESTORATION"] },
@@ -258,49 +215,6 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Productivity", url:"productivity-tools.html", type:"category", category:"", tags:["productivity","productivity tools","category","hub"] },
   { title:"Gaming", url:"gaming.html", type:"category", category:"", tags:["gaming","game","edpi","sensitivity","reaction","category","hub"] },
   { title:"Live Information", url:"live.html", type:"category", category:"", tags:["live information","live","information","category","hub","today","pakistan today","dashboard","weather","sports","gold","fuel","currency","aqi","crypto","earthquakes"] },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   { title:"How to use a weighted decision matrix without fooling yourself.", url:"guides/weighted-decision-matrix.html", type:"guide", category:"Guides", tags:["how to use a weighted decision matrix without fooling yourself.","guides weighted decision matrix","guides","weighted","decision","matrix","without","fooling","yourself","guide","methodology"] },
   { title:"Percentages without confusion", url:"guides/percentage-basics.html", type:"guide", category:"Guides", tags:["percentages without confusion","guides percentage basics","guides","percentages","without","confusion","guide","methodology"] },
@@ -915,15 +829,3 @@ if(typeof window!=='undefined'){
 if(typeof globalThis!=='undefined'){
   globalThis.NexusNovaSearchCore=NexusNovaSearchCore;
 }
-
-if(typeof window!=='undefined'&&window.document&&!window.__nexusNovaRelatedToolsBootstrapScriptRequested){
-  window.__nexusNovaRelatedToolsBootstrapScriptRequested=true;
-  const relatedBootstrap=document.createElement('script');
-  relatedBootstrap.src='/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
-  relatedBootstrap.async=true;
-  relatedBootstrap.dataset.nexusnovaRelatedToolsBootstrap='';
-  relatedBootstrap.onerror=()=>{window.__nexusNovaRelatedToolsBootstrapScriptRequested=false;};
-  document.head.appendChild(relatedBootstrap);
-}
-
-

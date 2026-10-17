@@ -5,6 +5,7 @@ import argparse
 import datetime as dt
 import re
 import sys
+import subprocess
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -55,193 +56,6 @@ STATIC_CSS = r'''
 @media(max-width:860px){.nn-header .nn-header-row{align-items:flex-start!important;flex-direction:column!important;gap:8px!important;padding:9px 0!important}.nn-header .nn-nav{justify-content:flex-start!important;flex-wrap:nowrap!important;width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin}.nn-header .nn-nav a{flex:0 0 auto!important}.nn-global-footer .nn-global-footer-main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:22px!important}.nn-global-footer .nn-footer-social{grid-column:1/-1!important}}
 @media(max-width:560px){.nn-header .nn-shell,.nn-global-footer .nn-shell{width:min(var(--nn-max),calc(100% - 22px))!important}.nn-header .nn-brand-copy{display:none!important}.nn-header .nn-brand-logo-img{height:36px!important;max-height:36px!important}.nn-header .nn-nav{gap:3px!important}.nn-header .nn-nav a{min-height:34px!important;padding:7px 8px!important;font-size:11px!important}.nn-global-footer .nn-global-footer-main{grid-template-columns:minmax(0,1fr)!important;gap:20px!important}.nn-global-footer .nn-footer-social{grid-column:auto!important}.nn-global-footer .nn-global-footer-bottom{align-items:flex-start!important;flex-direction:column!important}}
 '''.strip() + "\n"
-
-VALIDATE_GLOBAL_LAYOUT = r'''#!/usr/bin/env python3
-"""Static contract checks for the shared site shell and article sitemap."""
-from __future__ import annotations
-import re
-import xml.etree.ElementTree as ET
-from pathlib import Path
-ROOT = Path(__file__).resolve().parents[2]
-BASE = "https://nexusnovatools.com/"
-SHELL_CSS = "/assets/css/static-site-shell.css"
-def fail(message):
-    print("FAIL:", message)
-    raise SystemExit(1)
-def outer(source, name):
-    pattern = re.compile(r"<" + name + r"\b[^>]*>[\s\S]*?</" + name + r"\s*>", re.I)
-    matches = list(pattern.finditer(source))
-    if name.lower() == "header":
-        canonical = next((m for m in matches if '<source type="image/webp"' in m.group(0) and 'nn-brand-logo-img' in m.group(0)), None)
-    elif name.lower() == "footer":
-        canonical = next((m for m in matches if '<source type="image/webp"' in m.group(0) and 'nn-footer-brand-logo' in m.group(0)), None)
-    else:
-        canonical = None
-    match = canonical or (matches[0] if matches else None)
-    return match.group(0) if match else ""
-
-
-def nav_labels(header):
-    nav = outer(header, "nav")
-    return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
-            for raw in re.findall(r"<a\b[^>]*>([\s\S]*?)</a\s*>", nav, re.I)]
-index_source = (ROOT / "index.html").read_text(encoding="utf-8")
-expected_header, expected_footer = outer(index_source, "header"), outer(index_source, "footer")
-if not expected_header or not expected_footer:
-    fail("index.html must contain canonical static header and footer")
-html_files = sorted(p for p in ROOT.rglob("*.html")
-                    if not any(part in {".git", "node_modules", "quality-artifacts"} for part in p.parts))
-if len(html_files) < 326:
-    fail(f"expected all repository HTML pages; found only {len(html_files)}")
-expected_nav = ["Home", "All Tools", "Content", "Categories", "Articles", "Guides"]
-if nav_labels(expected_header) != expected_nav:
-    fail(f"canonical navigation incorrect: {nav_labels(expected_header)!r}")
-problems = []
-for page in html_files:
-    source = page.read_text(encoding="utf-8-sig", errors="replace")
-    rel = page.relative_to(ROOT).as_posix()
-    if outer(source, "header") != expected_header:
-        problems.append(f"{rel}: header mismatch")
-    if outer(source, "footer") != expected_footer:
-        problems.append(f"{rel}: footer mismatch")
-    if len(re.findall(r"<footer\b", source, re.I)) != 1:
-        problems.append(f"{rel}: expected one footer element")
-    if source.count(SHELL_CSS) != 1:
-        problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js""", source, re.I):
-        problems.append(f"{rel}: retired dynamic shell guard still referenced")
-for name in ("main.js", "site-main.js", "analytics.js", "related-tools.js"):
-    source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
-    if "global-shell-guard.js" in source:
-        problems.append(f"assets/js/{name}: dynamic guard loader remains")
-guard = (ROOT / "assets/js/global-shell-guard.js").read_text(encoding="utf-8", errors="replace")
-if re.search(r"MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector", guard):
-    problems.append("assets/js/global-shell-guard.js: disabled guard is not inert")
-inner = (ROOT / "assets/js/nn-inner-shell.js").read_text(encoding="utf-8", errors="replace")
-if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header""", inner):
-    problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
-core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
-routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
-if len(routes) != 108 or len({url for _, url in routes}) != 108:
-    problems.append(f"expected 108 unique indexed tool routes; found {len(routes)}")
-expected = set()
-for page in sorted((ROOT / "articles").glob("*.html")):
-    source = page.read_text(encoding="utf-8-sig", errors="replace")
-    title = re.search(r"<title>\s*(.*?)\s*</title>", source, re.I | re.S)
-    canonical = re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)', source, re.I)
-    if not title or not canonical:
-        continue
-    canonical_url = canonical.group(1).strip().rstrip("/")
-    robots = re.search(r'<meta\s+name=["\']robots["\'][^>]*content=["\']([^"\']*)', source[:5000], re.I)
-    indexable = not (robots and "noindex" in robots.group(1).lower())
-    page_url = (BASE + page.relative_to(ROOT).as_posix()).rstrip("/")
-    if indexable and canonical_url == page_url and canonical_url.startswith(BASE + "articles/"):
-        expected.add(canonical_url)
-try:
-    sitemap = ET.parse(ROOT / "sitemap.xml").getroot()
-except ET.ParseError as error:
-    fail(f"sitemap.xml invalid: {error}")
-ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-article_locs = [n.text.strip().rstrip("/") for n in sitemap.findall(".//sm:loc", ns)
-                if n.text and "/articles/" in n.text]
-actual = set(article_locs)
-if len(article_locs) != len(actual):
-    problems.append("sitemap.xml contains duplicate article URLs")
-if actual != expected:
-    problems.append(f"sitemap/article mismatch: expected={len(expected)} actual={len(actual)} "
-                    f"missing={sorted(expected-actual)[:5]} stale={sorted(actual-expected)[:5]}")
-if problems:
-    fail("static layout contract failed: " + "; ".join(problems[:30]))
-print(f"PASS: static site shell; html_files={len(html_files)}; nav_items=6; tools={len(routes)}; sitemap_article_urls={len(actual)}")
-'''
-
-TEST_FILE = r'''const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const root = path.resolve(__dirname, '..');
-const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const shellPart = (source, tag) => {
-  const pattern = tag === 'header'
-    ? /<header\b(?=[^>]*class=["'][^"']*\bnn-header\b[^"']*["'])[^>]*>[\s\S]*?<\/header\s*>/i
-    : /<footer\b(?=[^>]*class=["'][^"']*\bnn-footer\b[^"']*\bnn-global-footer\b[^"']*["'])[^>]*>[\s\S]*?<\/footer\s*>/ig;
-  const matches = [...source.matchAll(new RegExp(pattern.source, 'ig'))];
-  if (!matches.length) return '';
-  if (tag === 'footer') {
-    const canonical = matches.find(match => match[0].includes('<source type="image/webp"') && match[0].includes('nn-footer-brand-logo'));
-    return (canonical || matches[matches.length - 1])[0];
-  }
-  return matches[0][0];
-};
-const labels = header => {
-  const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
-  return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
-    .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
-};
-
-test('every HTML page has the canonical static index header and footer', () => {
-  const index = read('index.html');
-  const header = shellPart(index, 'header');
-  const footer = shellPart(index, 'footer');
-  assert.ok(header, 'index.html header missing');
-  assert.ok(footer, 'index.html footer missing');
-  assert.deepEqual(labels(header), ['Home', 'All Tools', 'Content', 'Categories', 'Articles', 'Guides']);
-  const files = [];
-  const walk = dir => {
-    for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (['.git', 'node_modules', 'quality-artifacts'].includes(item.name)) continue;
-      const full = path.join(dir, item.name);
-      if (item.isDirectory()) walk(full);
-      else if (item.isFile() && item.name.toLowerCase().endsWith('.html')) files.push(full);
-    }
-  };
-  walk(root);
-  assert.ok(files.length >= 326, 'expected full repository sweep; found ' + files.length + ' HTML files');
-  for (const file of files) {
-    const source = fs.readFileSync(file, 'utf8');
-    const relative = path.relative(root, file);
-    assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
-    assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
-    assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
-    assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
-      relative + ' must load shared shell stylesheet once');
-    assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
-      relative + ' still loads retired dynamic guard');
-  }
-});
-
-test('dynamic header and footer repair loaders are gone', () => {
-  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/related-tools.js']) {
-    assert.doesNotMatch(read(file), /global-shell-guard\.js/, file + ' still loads retired guard');
-  }
-  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|normalizeFooterStructure|global-shell-guard\.js/);
-  assert.doesNotMatch(read('assets/js/nn-inner-shell.js'), /normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header/);
-  assert.doesNotMatch(read('assets/js/global-shell-guard.js'), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
-  assert.match(read('assets/js/nn-inner-shell.js'), /related-tools-bootstrap\.js/);
-});
-
-test('108 indexed tool routes resolve to unique HTML files', () => {
-  const core = read('assets/js/search-core.js');
-  const routes = [...core.matchAll(/\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"/g)].map(match => match[2]);
-  assert.equal(routes.length, 108);
-  assert.equal(new Set(routes).size, 108);
-  for (const route of routes) assert.ok(fs.existsSync(path.join(root, route.replace(/^\/+/, ''))), 'missing indexed tool route ' + route);
-});
-
-test('sitemap synchronization rebuilds the article URL set', () => {
-  assert.match(read('.github/scripts/sync_phase2_content.py'), /Rebuild article URL entries/);
-  assert.match(read('.github/scripts/validate_global_layout.py'), /expected/);
-  assert.match(read('.github/scripts/validate_global_layout.py'), /actual/);
-});
-
-test('static shell stylesheet caps logos and provides mobile-safe navigation', () => {
-  const css = read('assets/css/static-site-shell.css');
-  assert.match(css, /max-height:\s*40px\s*!important/);
-  assert.match(css, /@media\s*\(max-width:\s*560px\)/);
-  assert.match(css, /overflow-x:\s*auto\s*!important/);
-  assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-});
-'''
 
 class ElementSpanParser(HTMLParser):
     """Collect element source ranges while ignoring tag-like text in script/style data."""
@@ -312,7 +126,7 @@ def normalize_template_urls(template: str) -> str:
     template = re.sub(r"\b(href|src|poster|srcset)\s*=\s*([\"'])(.*?)\2", repl, template, flags=re.I | re.S)
     template = re.sub(r"\s+aria-current\s*=\s*([\"']).*?\1", "", template, flags=re.I)
     template = re.sub(
-        r"(<span\\b[^>]*\\bdata-year\\b[^>]*>)[\\s\\S]*?(</span\\s*>)",
+        r"(<span\b[^>]*\bdata-year\b[^>]*>)[\s\S]*?(</span\s*>)",
         lambda m: m.group(1) + str(dt.datetime.now(dt.timezone.utc).year) + m.group(2),
         template, count=1, flags=re.I,
     )
@@ -431,32 +245,20 @@ def all_html_files():
 
 def patch_supporting_sources():
     changed = []
-    stub = "/* Retired: the canonical site shell is static HTML; this file intentionally performs no DOM mutation. */\n"
-    guard_path = ROOT / "assets/js/global-shell-guard.js"
-    if guard_path.read_text(encoding="utf-8", errors="replace") != stub:
-        guard_path.write_text(stub, encoding="utf-8")
-        changed.append("assets/js/global-shell-guard.js")
+    # Obsolete shell/related-content loaders are removed, never recreated.
+    for obsolete in (
+        ROOT / "assets/js/global-shell-guard.js",
+        ROOT / "assets/js/nn-inner-shell.js",
+        ROOT / "assets/js/related-tools-bootstrap.js",
+        ROOT / "assets/js/related-tools.js",
+        ROOT / "assets/js/privacy-bridge.js",
+        ROOT / "assets/js/auth-header-state.js",
+    ):
+        if obsolete.exists():
+            obsolete.unlink()
+            changed.append(obsolete.relative_to(ROOT).as_posix())
 
-    # Keep the legacy shell filename only as a non-mutating related-content bootstrap.
-    inner_shell = """/* Related-content bootstrap only. Shared header and footer are static HTML. */
-(function () {
-  if (window.__nexusNovaRelatedToolsBootstrapScriptRequested) return;
-  window.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
-  var loader = document.createElement('script');
-  loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
-  loader.async = true;
-  loader.dataset.nexusnovaRelatedToolsBootstrap = '';
-  loader.onerror = function () {
-    window.__nexusNovaRelatedToolsBootstrapScriptRequested = false;
-  };
-  document.head.appendChild(loader);
-})();
-"""
-    inner_path = ROOT / "assets/js/nn-inner-shell.js"
-    if inner_path.read_text(encoding="utf-8", errors="replace") != inner_shell:
-        inner_path.write_text(inner_shell, encoding="utf-8")
-        changed.append("assets/js/nn-inner-shell.js")
-    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/related-tools.js"):
+    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js", "assets/js/assistant.js", "assets/js/assistant-core.js"):
         path = ROOT / relative
         original = path.read_text(encoding="utf-8-sig")
         source = remove_guard_loader(original)
@@ -466,37 +268,7 @@ def patch_supporting_sources():
             path.write_text(source, encoding="utf-8")
             changed.append(relative)
 
-    sync_path = ROOT / ".github/scripts/sync_phase2_content.py"
-    if sync_path.exists():
-        original = sync_path.read_text(encoding="utf-8-sig")
-        source = original
-        start = source.find("def ensure_global_shell_loader(path):")
-        if start >= 0:
-            end = source.find("\nrecords=[]", start)
-            if end < 0:
-                raise RuntimeError("sync_phase2_content.py shell loader end marker missing")
-            helper = r'''def ensure_related_tools_loader(path):
-    """Keep route-aware related content, but never inject the global shell guard."""
-    source = path.read_text(encoding="utf-8-sig")
-    original = source
-    source = re.sub(r'<script[^>]*global-shell-guard\.js[^>]*></script>', '', source, flags=re.I)
-    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
-    if not re.search(loader_pattern, source, re.I):
-        tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
-        updated, n = re.subn(r'</body\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
-        source = updated if n else source + tag
-    if source != original:
-        path.write_text(source, encoding="utf-8")
-        return True
-    return False
-
-
-'''
-            source = source[:start] + helper + source[end + 1:]
-        source = source.replace("    ensure_global_shell_loader(p)\n", "    ensure_related_tools_loader(p)\n")
-        if source != original:
-            sync_path.write_text(source, encoding="utf-8")
-            changed.append(".github/scripts/sync_phase2_content.py")
+    # sync_phase2_content.py owns its removal-only retired-loader cleanup helper.
 
     cleanup_path = ROOT / ".github/scripts/final_system_cleanup.py"
     if cleanup_path.exists():
@@ -525,9 +297,7 @@ def patch_supporting_sources():
             cleanup_path.write_text(source, encoding="utf-8")
             changed.append(".github/scripts/final_system_cleanup.py")
 
-    validator = ROOT / ".github/scripts/validate_global_layout.py"
-    validator.write_text(VALIDATE_GLOBAL_LAYOUT, encoding="utf-8")
-    changed.append(".github/scripts/validate_global_layout.py")
+    # Validation files are authored directly and must not be overwritten by stale templates.
 
     layout = ROOT / ".github/scripts/validate_all_html_layout.py"
     if layout.exists():
@@ -545,9 +315,6 @@ def patch_supporting_sources():
         if source != original:
             layout.write_text(source, encoding="utf-8")
             changed.append(".github/scripts/validate_all_html_layout.py")
-
-    (ROOT / "tests/global-layout-contract.test.cjs").write_text(TEST_FILE, encoding="utf-8")
-    changed.append("tests/global-layout-contract.test.cjs")
 
 
     # Keep existing feature contracts aligned with the deliberately static shell.
@@ -620,15 +387,36 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: expected exactly one footer element, found {len(parser.spans.get('footer', []))}")
         if source.count(SHELL_CSS_HREF) != 1:
             problems.append(f"{relative}: expected one shared stylesheet link")
-        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*global-shell-guard\.js", source, re.I):
-            problems.append(f"{relative}: retired shell script still referenced")
+        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap|related-tools)\.js", source, re.I):
+            problems.append(f"{relative}: retired shell/related-content script still referenced")
         if headers and source[headers[0][0]:headers[0][1]] != header_template:
             problems.append(f"{relative}: header differs from canonical index.html")
         if footers and source[footers[-1][0]:footers[-1][1]] != footer_template:
             problems.append(f"{relative}: footer differs from canonical index.html")
-    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/related-tools.js"):
-        if "global-shell-guard.js" in (ROOT / relative).read_text(encoding="utf-8", errors="replace"):
-            problems.append(f"{relative}: automatic shell loader remains")
+    runtime_files = ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js", "assets/js/account-shell.js")
+    forbidden_runtime = re.compile(r"nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js")
+    for relative in runtime_files:
+        runtime_path = ROOT / relative
+        if not runtime_path.exists():
+            problems.append(f"{relative}: required feature runtime is missing")
+            continue
+        runtime_source = runtime_path.read_text(encoding="utf-8", errors="replace")
+        if forbidden_runtime.search(runtime_source):
+            problems.append(f"{relative}: retired shell/related-content loader remains")
+    for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js", "assets/js/related-tools-bootstrap.js", "assets/js/related-tools.js", "assets/js/privacy-bridge.js", "assets/js/auth-header-state.js"):
+        if (ROOT / relative).exists():
+            problems.append(f"{relative}: obsolete browser runtime file must be absent")
+    loader_pattern = re.compile(r"<script\b[^>]*src=.*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard|related-tools)\.js", re.I)
+    related_pages = 0
+    for page in pages:
+        source = page.read_text(encoding="utf-8-sig", errors="replace")
+        relative = page.relative_to(ROOT).as_posix()
+        if loader_pattern.search(source):
+            problems.append(f"{relative}: obsolete browser loader referenced in HTML")
+        if "data-nexusnova-related-tools" in source:
+            related_pages += 1
+    if related_pages < 230:
+        problems.append(f"expected at least 230 pre-rendered recommendation sections; found {related_pages}")
     return problems
 
 
@@ -650,6 +438,13 @@ def main():
             if updated != original:
                 path.write_text(updated, encoding="utf-8")
                 changed_pages.append(path.relative_to(ROOT).as_posix())
+        related_run = subprocess.run(["node", str(ROOT / ".github/scripts/generate_static_related_tools.cjs")], cwd=ROOT, text=True, capture_output=True)
+        if related_run.stdout:
+            print(related_run.stdout.rstrip())
+        if related_run.returncode:
+            if related_run.stderr:
+                print(related_run.stderr.rstrip(), file=sys.stderr)
+            raise SystemExit("ERROR: static related-content generation failed")
         print(f"STATIC_SHELL_SYNC html_files={len(all_html_files())} changed_pages={len(changed_pages)} support_files_changed={len(changed_sources)}")
         for relative in changed_sources:
             print("UPDATED_SUPPORT", relative)

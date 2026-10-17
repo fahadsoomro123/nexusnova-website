@@ -162,7 +162,50 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         if metrics["footers"] != 1:
                             failures.append(f"{label}@{viewport_name}: visible footer count {metrics['footers']}")
                     if metrics["scrollWidth"] > metrics["clientWidth"] + 6:
-                        finding = f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}"
+                        evidence = page.evaluate(
+                            """() => {
+                              const viewport = document.documentElement.clientWidth;
+                              const selector = el => {
+                                const tag = el.tagName.toLowerCase();
+                                const id = el.id ? "#" + el.id : "";
+                                const classes = [...el.classList].slice(0, 3).map(name => "." + name).join("");
+                                return tag + id + classes;
+                              };
+                              return [...document.querySelectorAll("body *")].map(el => {
+                                const r = el.getBoundingClientRect();
+                                const style = getComputedStyle(el);
+                                if (r.width <= 0 || r.height <= 0 || style.display === "none" || style.visibility === "hidden") return null;
+                                const parent = el.parentElement;
+                                const ps = parent ? getComputedStyle(parent) : null;
+                                const pr = parent ? parent.getBoundingClientRect() : null;
+                                return {
+                                  selector: selector(el),
+                                  left: +r.left.toFixed(1), right: +r.right.toFixed(1),
+                                  top: +r.top.toFixed(1), width: +r.width.toFixed(1),
+                                  computedWidth: style.width, minWidth: style.minWidth,
+                                  maxWidth: style.maxWidth, boxSizing: style.boxSizing,
+                                  position: style.position, display: style.display,
+                                  whiteSpace: style.whiteSpace, overflowX: style.overflowX,
+                                  scrollWidth: el.scrollWidth, clientWidth: el.clientWidth,
+                                  parent: parent ? {
+                                    selector: selector(parent), left: +pr.left.toFixed(1),
+                                    right: +pr.right.toFixed(1), width: +pr.width.toFixed(1),
+                                    display: ps.display, widthCSS: ps.width,
+                                    minWidth: ps.minWidth, maxWidth: ps.maxWidth,
+                                    overflowX: ps.overflowX, position: ps.position
+                                  } : null,
+                                  viewport
+                                };
+                              }).filter(item => item && (item.right > viewport + 1 || item.left < -1))
+                                .sort((a, b) => b.right - a.right)
+                                .slice(0, 10);
+                            }"""
+                        )
+                        finding = (
+                            f"{label}@{viewport_name}: horizontal overflow "
+                            f"{metrics['scrollWidth']} > {metrics['clientWidth']}; "
+                            f"overflow_elements={json.dumps(evidence, separators=(',', ':'))}"
+                        )
                         (warnings if preview else failures).append(finding)
                     if urlparse(rel).path.lstrip("/") == ARTICLE_HUB:
                         article_cards = page.locator('#articles-grid a.nn-article-card[href$=".html"]').count()
