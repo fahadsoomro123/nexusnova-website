@@ -19,10 +19,10 @@ function htmlFiles(dir) {
 }
 
 function mainHeadings(html) {
-  const scope = (html.match(/<main\b[\s\S]*?<\/main\s*>/i)
-    || html.match(/<body\b[\s\S]*?<\/body\s*>/i)
-    || [html])[0];
-  const clean = scope
+  // Redirect stubs without a main region should not report footer headings as page headings.
+  const main = (html.match(/<main\b[\s\S]*?<\/main\s*>/i) || [])[0];
+  if (!main) return [];
+  const clean = main
     .replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ')
     .replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ');
@@ -89,4 +89,5 @@ test('repository-wide HTML heading-order diagnostic reports H2-first pages', () 
   }
   console.log(`SEO_HEADING_ORDER_AUDIT pages=${files.length} h2_first=${findings.length}`);
   if (findings.length) console.log(JSON.stringify(findings, null, 2));
+  assert.deepEqual(findings, [], 'Every page with a main region must start with H1');
 });
