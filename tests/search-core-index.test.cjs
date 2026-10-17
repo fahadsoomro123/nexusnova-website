@@ -95,10 +95,10 @@ test('Chrome 152 archive and retained timeline follow the approved NOINDEX quara
   assert.ok(approvedPolicy.includes('- `' + primaryUrl + '`'), 'retained timeline must stay listed in the approved NOINDEX plan until explicitly reviewed');
   assert.ok(!sitemap.includes(canonicalPrimaryUrl), 'approved noindex timeline must not appear in sitemap.xml');
   assert.equal(feed.items.some(record => record.url === canonicalPrimaryUrl), false, 'articles.json must exclude the approved noindex timeline');
-  assert.ok(hub.includes('href="' + primaryUrl + '"'), 'retained timeline remains available through the visitor-facing hub');
+  assert.ok(!hub.includes('href="' + primaryUrl + '"'), 'approved noindex timeline must be excluded from the indexable article hub');
   assert.equal(data.some(record => record.url === archiveUrl), false);
-  assert.equal(data.some(record => record.url === primaryUrl), true);
-  assert.ok(search.query('Chrome 152 Android release timeline').some(result => result.url === primaryUrl));
+  assert.equal(data.some(record => record.url === primaryUrl), false, 'approved noindex timeline must be excluded from the public search index');
+  assert.equal(search.query('Chrome 152 Android release timeline').some(result => result.url === primaryUrl), false);
 });
 
 
@@ -113,10 +113,10 @@ test('search index stores compact article metadata rather than full page bodies'
 
   const queries = [
     ['EXIF GPS metadata photos', 'articles/remove-exif-gps-metadata-photos.html'],
-    ['AI search planning 2026', 'articles/ai-search-planning-decisions-2026.html'],
-    ['Google Search Console platform properties 2026', 'articles/google-search-console-platform-properties-2026.html'],
-    ['Chrome 152 327 security fixes', 'articles/google-releases-chrome-152-with-327-security-fixes.html'],
-    ['AI tokens context windows', 'articles/ai-token-count-context-window-guide.html']
+    ['business cash runway calculation', 'articles/business-cash-runway-calculation.html'],
+    ['gross pay take home pay', 'articles/gross-pay-vs-take-home-pay.html'],
+    ['effective marginal tax rate', 'articles/effective-vs-marginal-tax-rate.html'],
+    ['weighted average purchase price', 'articles/average-vs-weighted-average.html']
   ];
   for (const [query, expectedUrl] of queries) {
     assert.ok(search.query(query).some(result => result.url === expectedUrl),
