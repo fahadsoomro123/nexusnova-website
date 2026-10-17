@@ -367,7 +367,7 @@ def main() -> None:
         )
 
     sync_patched = patch_phase2_sync_script()
-    lighthouse_diagnostics = add_lighthouse_failure_diagnostics()
+    lighthouse_diagnostics = False  # Workflow YAML is updated directly through the repository API.
     workflow_files, action_versions = upgrade_workflow_action_pins()
 
     sync_path = ROOT / ".github/scripts/sync_phase2_content.py"

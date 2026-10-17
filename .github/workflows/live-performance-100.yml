@@ -187,6 +187,22 @@ jobs:
 
           failures=[f'{k}={v}' for k,v in scores.items() if v < 100]
           if failures:
+              for category in ('performance','accessibility','best-practices','seo'):
+                  if scores.get(category, 100) < 100:
+                      print(f'FAILED LIGHTHOUSE CATEGORY: {category} score={scores[category]}')
+                      refs = data.get('categories', {}).get(category, {}).get('auditRefs', [])
+                      for ref in refs:
+                          audit = data.get('audits', {}).get(ref.get('id', ''), {})
+                          score = audit.get('score')
+                          if score is not None and score < 1:
+                              print('AUDIT_FAILURE', json.dumps({
+                                  'category': category,
+                                  'id': audit.get('id'),
+                                  'title': audit.get('title'),
+                                  'score': score,
+                                  'displayValue': audit.get('displayValue'),
+                                  'description': audit.get('description')
+                              }, ensure_ascii=False))
               raise SystemExit('Live Lighthouse 100 gate failed: '+', '.join(failures))
           PY
 
