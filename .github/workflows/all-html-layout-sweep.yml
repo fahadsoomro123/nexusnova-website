@@ -1,0 +1,121 @@
+name: NexusNova All HTML Layout Sweep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.html"
+      - "assets/css/**"
+      - "assets/js/global-shell-guard.js"
+      - "assets/js/nn-inner-shell.js"
+      - ".github/scripts/validate_all_html_layout.py"
+      - ".github/workflows/all-html-layout-sweep.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-all-html-layout-sweep
+  cancel-in-progress: true
+
+jobs:
+  local-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Run repository checks
+        run: |
+          npm run check
+          npm test
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Start local site
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-layout-http.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/nexusnova-layout-http.log
+          exit 1
+
+      - name: Validate every repository HTML surface
+        run: python .github/scripts/validate_all_html_layout.py --base-url http://127.0.0.1:8000
+
+      - name: Upload local layout evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-all-html-layout-local-${{ github.sha }}
+          path: quality-artifacts/all-html-layout-validation.json
+          if-no-files-found: error
+          retention-days: 30
+
+  live-layout:
+    needs: local-layout
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Chromium
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Wait for GitHub Pages deployment to expose this shell repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          css='https://nexusnovatools.com/assets/css/global-shell-repair.css?v=20261017-ui-sweep'
+          for attempt in {1..60}; do
+            if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then
+              echo "LIVE_SHELL_CSS_PASS attempt=$attempt"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for the repaired CSS to reach production.' >&2
+          exit 1
+
+      - name: Validate live sitemap pages and 100-article hub
+        run: python .github/scripts/validate_all_html_layout.py --base-url https://nexusnovatools.com --live
+
+      - name: Upload live layout evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nexusnova-all-html-layout-live-${{ github.sha }}
+          path: quality-artifacts/all-html-layout-validation.json
+          if-no-files-found: error
+          retention-days: 30
