@@ -42,6 +42,13 @@ body.nn-global-shell-ready main{overflow-wrap:anywhere}
 .nn-global-shell-footer-inner p{margin:0}
 .nn-global-shell-footer-inner nav{display:flex;gap:12px;flex-wrap:wrap}
 .nn-global-shell-footer-inner a{color:#475569;text-underline-offset:3px}
+/* Hard upper bound for every shared-shell logo. Intrinsic 1040x345 assets must never paint at source size. */
+body.nn-global-shell-ready header img,
+body.nn-global-shell-ready .nav-logo img,
+body.nn-global-shell-ready .site-logo,
+body.nn-global-shell-ready .nn-brand-logo-img,
+body.nn-global-shell-ready .nn-footer-brand-logo,
+body.nn-global-shell-ready .nn-global-shell-brand img{max-height:40px!important;width:auto!important;height:auto!important;max-width:100%!important;object-fit:contain}
 body.nn-global-shell-ready :is(img,svg,canvas,video){max-width:100%;height:auto}
 @media(max-width:760px){
  .nn-global-shell-header-row{gap:8px}
@@ -88,4 +95,3 @@ body.nn-global-shell-ready main :is(.result,.output,.result-box,.calculator-outp
 body.nn-global-shell-ready main :is(.panel,.calculator-card,.calculator-container,.calc-card,.calculator-panel) :is(h2,h3,label){
  color:#0f172a;
 }
-
