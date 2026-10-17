@@ -69,8 +69,18 @@ def fail(message):
     print("FAIL:", message)
     raise SystemExit(1)
 def outer(source, name):
-    match = re.search(r"<" + name + r"\b[^>]*>[\s\S]*?</" + name + r"\s*>", source, re.I)
+    pattern = re.compile(r"<" + name + r"\b[^>]*>[\s\S]*?</" + name + r"\s*>", re.I)
+    matches = list(pattern.finditer(source))
+    if name.lower() == "header":
+        canonical = next((m for m in matches if '<source type="image/webp"' in m.group(0) and 'nn-brand-logo-img' in m.group(0)), None)
+    elif name.lower() == "footer":
+        canonical = next((m for m in matches if '<source type="image/webp"' in m.group(0) and 'nn-footer-brand-logo' in m.group(0)), None)
+    else:
+        canonical = None
+    match = canonical or (matches[0] if matches else None)
     return match.group(0) if match else ""
+
+
 def nav_labels(header):
     nav = outer(header, "nav")
     return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
@@ -156,7 +166,7 @@ const shellPart = (source, tag) => {
   const matches = [...source.matchAll(new RegExp(pattern.source, 'ig'))];
   if (!matches.length) return '';
   if (tag === 'footer') {
-    const canonical = matches.find(match => match[0].includes('Practical browser tools, guides and utilities for everyday digital work.'));
+    const canonical = matches.find(match => match[0].includes('<source type="image/webp"') && match[0].includes('nn-footer-brand-logo'));
     return (canonical || matches[matches.length - 1])[0];
   }
   return matches[0][0];
