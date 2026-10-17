@@ -164,7 +164,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                     if metrics["scrollWidth"] > metrics["clientWidth"] + 6:
                         finding = f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}"
                         (warnings if preview else failures).append(finding)
-                    if rel == ARTICLE_HUB:
+                    if urlparse(rel).path.lstrip("/") == ARTICLE_HUB:
                         article_cards = page.locator('#articles-grid a.nn-article-card[href$=".html"]').count()
                         article_count_text = page.locator('#article-search-count').inner_text(timeout=5000).strip() == '100 articles'
                 except Exception as exc:
