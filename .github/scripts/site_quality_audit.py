@@ -115,6 +115,8 @@ def has_theme_coverage(text: str) -> bool:
     """
     markers = (
         'assets/css/site.css',
+        'assets/css/nn-inner-shell.css',
+        'assets/css/footer-social.css',
         'assets/css/scifi.css',
         'assets/js/main.js',
         'assets/css/humanproof.css',
