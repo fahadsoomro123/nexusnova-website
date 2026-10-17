@@ -18,9 +18,25 @@ def meta(path):
     cat=one(r'<span\s+class=["\']kicker["\']>\s*([^<]+)')
     return title,desc,canonical,cat
 
+
+def ensure_global_shell_loader(path):
+    source=path.read_text(encoding="utf-8-sig")
+    loader_pattern=r'<script\\b[^>]+src=["\\'][^"\\']*(?:global-shell-guard|nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools)\\.js(?:\\?[^"\\']*)?["\\']'
+    if re.search(loader_pattern, source, re.I):
+        return False
+    tag='\\n<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>\\n'
+    updated,n=re.subn(r'</body\\s*>',lambda m:tag+m.group(0),source,count=1,flags=re.I)
+    if not n:
+        updated=source+tag
+    if updated==source:
+        return False
+    path.write_text(updated,encoding="utf-8")
+    return True
+
 records=[]
 sitemap_records=[]
 for p in sorted((ROOT/"articles").glob("*.html")):
+    ensure_global_shell_loader(p)
     title,desc,canonical,cat=meta(p)
     raw=p.read_text(encoding="utf-8-sig")[:5000]
     if not canonical or not title: continue

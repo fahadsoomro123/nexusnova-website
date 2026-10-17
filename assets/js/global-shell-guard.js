@@ -146,7 +146,12 @@ function ensureRelatedTools(){
  if(window.NexusNovaSearchCore)render();else loadScript(SEARCH_CORE,'search-core',render);
 }
 function repair(){
- if(!doc.body)return;doc.body.classList.add('nn-global-shell-ready');loadStyle();
+ if(!doc.body)return;
+ // Skip shell mutation on the custom homepage and app experience. Both provide
+ // their own navigation/search; injecting another row causes measurable CLS.
+ var pagePath=normalizedPath(window.location.pathname);
+ if(pagePath==='/'||pagePath==='/app.html')return;
+ doc.body.classList.add('nn-global-shell-ready');loadStyle();
  var header=ensureHeader();ensureFooter();ensureToolFaq();bindSearch();ensureRelatedTools();header.setAttribute('data-nn-global-shell-ready','');
 }
 if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',repair,{once:true});else repair();

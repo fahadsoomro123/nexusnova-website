@@ -31,7 +31,7 @@ jobs:
       - name: Set up Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Set up Python 3.12
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -59,7 +59,7 @@ jobs:
           sleep 1
           curl --fail --silent http://127.0.0.1:8000/ >/dev/null
 
-      - name: Fast 97-tool HTTP and DOM contract audit
+      - name: Fast indexed-tool HTTP and DOM contract audit
         shell: bash
         run: |
           node <<'NODE'
@@ -70,7 +70,7 @@ jobs:
           const source = fs.readFileSync('assets/js/search-core.js', 'utf8');
           const tools = [...source.matchAll(/\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"([^"]+)",\s*type:"tool"/g)]
             .map(m => m[1]).filter((v,i,a)=>a.indexOf(v)===i).sort();
-          if (tools.length !== 97) throw new Error(`Expected 97 tool records, found ${tools.length}`);
+          if (tools.length !== 108) throw new Error(`Expected 108 unique tool records, found ${tools.length}`);
           function get(path) { return new Promise((resolve,reject)=>{ const req=http.get(BASE+'/'+path.replace(/^\//,''),{headers:{'user-agent':'NexusNova-fast-ci-audit/1.0'}},res=>{let b='';res.setEncoding('utf8');res.on('data',c=>b+=c);res.on('end',()=>resolve({status:res.statusCode||0,body:b}));}); req.setTimeout(5000,()=>req.destroy(new Error('timeout'))); req.on('error',reject); }); }
           function assertDom(path,html){
             if(!/^<!doctype html/i.test(html.trim())) throw new Error(`${path}: missing doctype`);
@@ -116,7 +116,7 @@ jobs:
             echo 'No production changes were required after verification.'
             exit 0
           fi
-          git commit -m 'fix: complete 97-tool production and search overhaul'
+          git commit -m 'fix: complete 108-tool production and search overhaul'
           git push origin HEAD:main
 
       - name: Verify deployed edge assets

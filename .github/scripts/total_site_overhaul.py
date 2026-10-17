@@ -53,6 +53,9 @@ def cache_bust():
 def patch_search():
     path=ROOT/'assets/js/search-core.js'
     text=read(path)
+    # Idempotence: the production index already has the hardened single-character rule.
+    if 'const singleCharacterQuery=queryTokens.length===1 && query.length===1;' in text:
+        return False
     needle='''    const queryTokens=tokenizeSearchText(query);\n    if(!queryTokens.length) return [];\n\n    const aliasTargets=NEXUSNOVA_ALIAS_MAP[query];\n    const scored=[];\n'''
     replacement='''    const queryTokens=tokenizeSearchText(query);\n    if(!queryTokens.length) return [];\n\n    // Single-character searches are discovery queries, not fuzzy full-text queries.\n    // Do not let article prose or generic tags such as "tool" dominate a query like "t".\n    const singleCharacterQuery=queryTokens.length===1 && query.length===1;\n    const aliasTargets=NEXUSNOVA_ALIAS_MAP[query];\n    const scored=[];\n'''
     if needle not in text: raise RuntimeError('search-core query guard anchor not found')
@@ -155,8 +158,8 @@ def main():
     if sitemap_changed: changes.append('sitemap.xml')
     validate_jsonld_and_canon()
     tools=tool_urls()
-    if len(tools)!=97:
-        raise RuntimeError(f'Expected 97 tool records in search index, found {len(tools)}')
+    if len(tools) < 100 or len(set(tools)) != len(tools):
+        raise RuntimeError(f'Expected at least 100 unique tool routes in search index, found {len(tools)}')
     print(f'OVERHAUL_PREP_PASS tools={len(tools)} public_urls={sitemap_count} changed={len(changes)}')
     for item in changes: print('CHANGED',item)
 
