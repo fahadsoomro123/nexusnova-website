@@ -105,7 +105,9 @@ test('homepage Lighthouse workflow compares AdSense locally without changing pro
     "'lcp_ms_max': 4000",
     "if failures:",
     'delta_baseline_minus_no_ads',
-    'no_ads_median'
+    'no_ads_median',
+    'No static AdSense tag found; AdSense differential diagnostic is not applicable.',
+    'AdSense differential diagnostic: NOT APPLICABLE (no static tag in index.html).'
   ]) assert.ok(workflow.includes(token), token);
   assert.ok(workflow.indexOf('Run representative Lighthouse audits') < workflow.indexOf('Diagnose homepage AdSense contribution'))
   assert.ok(workflow.indexOf('Diagnose homepage AdSense contribution') < workflow.indexOf('Enforce lab performance budgets'))
