@@ -306,34 +306,42 @@ def upgrade_workflow_action_pins() -> tuple[int, list[str]]:
     return changed, versions
 
 def add_lighthouse_failure_diagnostics() -> bool:
+    """Print individual failed Lighthouse audits when a category misses 100."""
     path = ROOT / ".github/workflows/live-performance-100.yml"
     source = path.read_text(encoding="utf-8-sig")
     original = source
-    old = """failures=[f'{k}={v}' for k,v in scores.items() if v < 100]
-if failures:
-    raise SystemExit('Live Lighthouse 100 gate failed: '+', '.join(failures))"""
-    new = """failures=[f'{k}={v}' for k,v in scores.items() if v < 100]
-if failures:
-    for category in ('performance','accessibility','best-practices','seo'):
-        if scores.get(category, 100) < 100:
-            print(f'FAILED LIGHTHOUSE CATEGORY: {category} score={scores[category]}')
-            refs = data.get('categories', {}).get(category, {}).get('auditRefs', [])
-            for ref in refs:
-                audit = data.get('audits', {}).get(ref.get('id', ''), {})
-                score = audit.get('score')
-                if score is not None and score < 1:
-                    print('AUDIT_FAILURE', json.dumps({
-                        'category': category,
-                        'id': audit.get('id'),
-                        'title': audit.get('title'),
-                        'score': score,
-                        'displayValue': audit.get('displayValue'),
-                        'description': audit.get('description')
-                    }, ensure_ascii=False))
-    raise SystemExit('Live Lighthouse 100 gate failed: '+', '.join(failures))"""
-    if old in source:
-        source = source.replace(old, new, 1)
-    if source != original:
+    pattern = re.compile(
+        r"(?m)^([ \t]*)failures=\[f'\{k\}=\{v\}' for k,v in scores\.items\(\) if v < 100\]\r?\n"
+        r"\1if failures:\r?\n"
+        r"\1    raise SystemExit\('Live Lighthouse 100 gate failed: '\+ ', '\.join\(failures\)\)"
+    )
+    def replace_block(match):
+        indent = match.group(1)
+        inner = indent + "    "
+        lines = [
+            indent + "failures=[f'{k}={v}' for k,v in scores.items() if v < 100]",
+            indent + "if failures:",
+            inner + "for category in ('performance','accessibility','best-practices','seo'):",
+            inner + "    if scores.get(category, 100) < 100:",
+            inner + "        print(f'FAILED LIGHTHOUSE CATEGORY: {category} score={scores[category]}')",
+            inner + "        refs = data.get('categories', {}).get(category, {}).get('auditRefs', [])",
+            inner + "        for ref in refs:",
+            inner + "            audit = data.get('audits', {}).get(ref.get('id', ''), {})",
+            inner + "            score = audit.get('score')",
+            inner + "            if score is not None and score < 1:",
+            inner + "                print('AUDIT_FAILURE', json.dumps({",
+            inner + "                    'category': category,",
+            inner + "                    'id': audit.get('id'),",
+            inner + "                    'title': audit.get('title'),",
+            inner + "                    'score': score,",
+            inner + "                    'displayValue': audit.get('displayValue'),",
+            inner + "                    'description': audit.get('description')",
+            inner + "                }, ensure_ascii=False))",
+            inner + "raise SystemExit('Live Lighthouse 100 gate failed: '+', '.join(failures))",
+        ]
+        return "\n".join(lines)
+    source, count = pattern.subn(replace_block, source, count=1)
+    if source != original and count:
         path.write_text(source, encoding="utf-8")
         return True
     return False
