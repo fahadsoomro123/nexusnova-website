@@ -86,6 +86,94 @@ jobs:
               --output-path="performance-artifacts/${name}.json"
           done
 
+      - name: Diagnose homepage AdSense contribution (temporary local copy only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p performance-artifacts/diagnostics
+          python3 - <<'PY'
+          from pathlib import Path
+          
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          tag = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5070673529890078" crossorigin="anonymous"></script>'
+          count = html.count(tag)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one static AdSense tag in the local checkout, found {count}; no local mutation made.')
+          path.write_text(html.replace(tag, '<!-- LOCAL LIGHTHOUSE DIAGNOSTIC ONLY: AdSense network disabled for this run. -->'), encoding='utf-8')
+          print('Removed one static AdSense script from the disposable local audit checkout only. The production file and live website are untouched.')
+          print('The shared runtime independently skips dynamic AdSense injection on localhost; this diagnostic is therefore a no-ads local variant.')
+          PY
+          for run in 1 2 3; do
+            npx lighthouse "http://127.0.0.1:8000/" \
+              --quiet \
+              --chrome-flags='--headless --no-sandbox --disable-gpu' \
+              --only-categories=performance \
+              --output=json \
+              --output-path="performance-artifacts/diagnostics/home-no-ads-${run}.json"
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from statistics import median
+          
+          root = Path('performance-artifacts')
+          diagnostic = root / 'diagnostics'
+          baseline_path = root / 'index.json'
+          candidates = sorted(diagnostic.glob('home-no-ads-*.json'))
+          if not baseline_path.exists() or len(candidates) != 3:
+              raise SystemExit(f'Expected baseline plus 3 no-ads Lighthouse reports; baseline={baseline_path.exists()}, no_ads={len(candidates)}')
+          
+          def metrics(path):
+              data = json.loads(path.read_text(encoding='utf-8'))
+              audits = data.get('audits', {})
+              categories = data.get('categories', {})
+              long_tasks = (audits.get('long-tasks') or {}).get('details', {}).get('items', [])
+              third_party = (audits.get('third-party-summary') or {}).get('details', {}).get('items', [])
+              main_thread = (audits.get('mainthread-work-breakdown') or {}).get('details', {}).get('items', [])
+              return {
+                  'file': path.name,
+                  'performance_score': round(float((categories.get('performance') or {}).get('score') or 0) * 100, 1),
+                  'lcp_ms': round(float((audits.get('largest-contentful-paint') or {}).get('numericValue') or 0)),
+                  'tbt_ms': round(float((audits.get('total-blocking-time') or {}).get('numericValue') or 0)),
+                  'cls': round(float((audits.get('cumulative-layout-shift') or {}).get('numericValue') or 0), 4),
+                  'top_long_tasks': [
+                      {'duration_ms': round(float(item.get('duration') or 0)), 'url': item.get('url', '')}
+                      for item in sorted(long_tasks, key=lambda item: float(item.get('duration') or 0), reverse=True)[:5]
+                  ],
+                  'top_main_thread_groups': [
+                      {'group': item.get('groupLabel') or item.get('group', ''), 'duration_ms': round(float(item.get('duration') or 0))}
+                      for item in sorted(main_thread, key=lambda item: float(item.get('duration') or 0), reverse=True)[:5]
+                  ],
+                  'top_third_parties': [
+                      {'entity': item.get('entity', ''), 'blocking_ms': round(float(item.get('blockingTime') or 0)), 'transfer_bytes': int(item.get('transferSize') or 0)}
+                      for item in sorted(third_party, key=lambda item: float(item.get('blockingTime') or 0), reverse=True)[:5]
+                  ]
+              }
+          
+          baseline = metrics(baseline_path)
+          no_ads = [metrics(path) for path in candidates]
+          medians = {
+              key: round(median(float(report[key]) for report in no_ads), 1)
+              for key in ('performance_score', 'lcp_ms', 'tbt_ms', 'cls')
+          }
+          report = {
+              'diagnostic': 'AdSense-blocked local comparison; not a production change',
+              'baseline_ads_enabled_local_audit': baseline,
+              'no_ads_repeat_runs': no_ads,
+              'no_ads_median': medians,
+              'delta_baseline_minus_no_ads': {
+                  'performance_score_points': round(baseline['performance_score'] - medians['performance_score'], 1),
+                  'lcp_ms': round(baseline['lcp_ms'] - medians['lcp_ms']),
+                  'tbt_ms': round(baseline['tbt_ms'] - medians['tbt_ms']),
+                  'cls': round(baseline['cls'] - medians['cls'], 4)
+              },
+              'interpretation': 'A repeatable TBT reduction supports a causal Ads contribution in this lab setup; the difference does not by itself establish the full production impact.'
+          }
+          output = diagnostic / 'adsense-differential-summary.json'
+          output.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, indent=2))
+          PY
       - name: Enforce lab performance budgets
         shell: bash
         run: |
