@@ -23,7 +23,7 @@ test('a working COLA calculator occupies the freed directory slot and is discove
   const home = read('index.html');
   const tools = read('tools.html');
   const search = read('assets/js/search-core.js');
-  assert.match(home, /NexusNova Tools — 108 Free Online Browser Tools & Guides/);
+  assert.ok(home.includes('<title>NexusNova Tools — 108 Free Online Browser Tools &amp; PDFs</title>'));
   assert.ok(home.includes('href="social-security-cola-calculator-2027.html"'));
   assert.match(tools, /id="directory-search-count">108 tools/);
   assert.ok(tools.includes('href="social-security-cola-calculator-2027.html"'));
