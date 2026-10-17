@@ -269,7 +269,7 @@ def distinctive_content(text: str) -> str:
     The original visible text and word counts remain unchanged. Only exact normalized
     matches in SHARED_EDITORIAL_BOILERPLATE are removed from the uniqueness signal.
     """
-    parts = re.split(r'(?<=[.!?])\\s+', text)
+    parts = re.split(r'(?<=[.!?])\s+', text)
     return ' '.join(part for part in parts if norm_sentence(part) not in SHARED_EDITORIAL_BOILERPLATE)
 
 
