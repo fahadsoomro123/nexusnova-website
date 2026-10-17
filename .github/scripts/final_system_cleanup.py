@@ -199,16 +199,6 @@ def is_indexable(source: str) -> bool:
 def update_article(path: Path) -> bool:
     source = path.read_text(encoding="utf-8-sig")
     original = source
-    canonical = canonical_url(source).rstrip("/")
-    expected_canonical = page_url(path).rstrip("/")
-    # The release contract requires 100 self-canonical article pages to be
-    # indexable. Keep aliases/non-canonical pages unchanged, but ensure a
-    # self-canonical article is not accidentally excluded by a stale noindex.
-    if canonical and canonical == expected_canonical:
-        robots_match = meta_tag_match(source, "name", "robots")
-        robots_content = get_attr(robots_match.group(0), "content") if robots_match else ""
-        if not robots_match or re.search(r"\bnoindex\b", robots_content, re.I):
-            source = set_meta(source, "name", "robots", "index,follow,max-image-preview:large")
     title = concise_title(get_title(source), path.name)
     title_core = re.sub(r"\s*\|\s*NexusNova Tools\s*$", "", title, flags=re.I).strip()
     description = CASHFLOW_DESCRIPTION if path.name == "cash-flow-forecast-small-business.html" else trim_description(get_description(source), get_h1(source))
@@ -265,7 +255,14 @@ def patch_phase2_sync_script() -> bool:
     output = []
     skipped_old_sub = False
     for line in lines:
-        if line.startswith("article_re=re.compile("):
+        if line.startswith("loader_pattern ="):
+            output.append('    loader_pattern = r"""<script\\b[^>]+src=["\'][^"\']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\\.js(?:\\?[^"\']*)?["\']"""')
+            continue
+        if line.strip().startswith("tag = ") and "global-shell-guard.js" in line:
+            output.append("    source = re.sub(r'<script[^>]*global-shell-guard\\.js[^>]*></script>', '', source, flags=re.I)")
+            output.append("    tag = '\\n<script defer src=\"../assets/js/nn-inner-shell.js?v=20261016-related-content-v1\"></script>\\n'")
+            continue
+        if line.startswith("article_re=re.compile(")
             output.append(
                 'core="\\n".join(line for line in core.splitlines() '
                 'if not (line.strip().startswith("{ title:") and \'type:"article"\' in line))+"\\n"'
@@ -274,22 +271,22 @@ def patch_phase2_sync_script() -> bool:
         if line.startswith('core=article_re.sub('):
             skipped_old_sub = True
             continue
-        if line.strip().startswith("if not indexable and canonical != page_url.rstrip"):
-            output.append('    if not indexable or canonical != page_url.rstrip("/"): continue')
+        if line.strip().startswith("if not indexable") and "canonical != page_url.rstrip" in line:
+            output.append('    if canonical != page_url.rstrip("/"): continue')
             continue
         if line.strip().startswith("    records.append(record)"):
             output.append(line)
             continue
-        if line.strip().startswith("    if indexable and canonical == page_url.rstrip"):
+        if line.strip().startswith("    if indexable and canonical == page_url.rstrip") or line.strip().startswith("    if indexable and canonical.startswith"):
             output.append("    sitemap_records.append(record)")
             continue
         output.append(line)
     source = "\n".join(output) + "\n"
-    # Require exactly 100 indexable self-canonical URLs and article records.
+    # Require exactly 100 self-canonical article records, preserving explicit noindex quarantines.
     marker = 'core=CORE.read_text(encoding="utf-8-sig")'
     source = source.replace(
         marker,
-        'if len(records) != 100:\n    raise SystemExit(f"ERROR: expected 100 indexable self-canonical articles, found {len(records)}")\n'
+        'if len(records) != 100:\n    raise SystemExit(f"ERROR: expected 100 self-canonical articles, found {len(records)}")\n'
         + marker, 1
     )
     if source != original:
@@ -361,16 +358,16 @@ def main() -> None:
         if update_article(path):
             changed_articles += 1
 
-    indexable_self = []
+    self_canonical_pages = []
     for path in sorted(ARTICLE_DIR.glob("*.html")):
         source = path.read_text(encoding="utf-8-sig")
         canonical = canonical_url(source).rstrip("/")
         expected = page_url(path).rstrip("/")
-        if is_indexable(source) and canonical == expected:
-            indexable_self.append(path)
-    if len(indexable_self) != 100:
+        if canonical == expected:
+            self_canonical_pages.append(path)
+    if len(self_canonical_pages) != 100:
         raise SystemExit(
-            f"ERROR: expected exactly 100 indexable self-canonical article pages; found {len(indexable_self)}"
+            f"ERROR: expected exactly 100 self-canonical article pages; found {len(self_canonical_pages)}"
         )
 
     sync_patched = patch_phase2_sync_script()
@@ -407,7 +404,7 @@ def main() -> None:
     print(
         "FINAL_SYSTEM_CLEANUP_PASS "
         f"article_files_scanned={len(list(ARTICLE_DIR.glob('*.html')))} "
-        f"indexable_self_canonical={len(indexable_self)} "
+        f"self_canonical_article_pages={len(self_canonical_pages)} "
         f"article_pages_changed={changed_articles} "
         f"sitemap_article_urls={len(article_sitemap_urls)} "
         f"search_article_records={len(article_records)} "
