@@ -22,6 +22,6 @@ test('runtime account menu builder has been removed while account functionality 
       relative + ' must not generate or load a runtime header');
   }
   assert.ok(fs.existsSync(path.join(ROOT, 'assets/js/account-dashboard.js')));
-  assert.doesNotMatch(read('assets/js/assistant.js'), /nav\\.appendChild\\(a\\)|trending\\.after\\(a\\)/,
+  assert.doesNotMatch(read('assets/js/assistant.js'), /nav\.appendChild\(a\)|trending\.after\(a\)/,
     'assistant must not inject links into the static primary navigation');
 });
