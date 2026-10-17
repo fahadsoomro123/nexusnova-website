@@ -58,12 +58,14 @@ test('shell and related-content runtime loaders are absent', () => {
     'assets/js/nn-inner-shell.js',
     'assets/js/related-tools-bootstrap.js',
     'assets/js/global-shell-guard.js',
-    'assets/js/related-tools.js'
+    'assets/js/related-tools.js',
+    'assets/js/privacy-bridge.js',
+    'assets/js/auth-header-state.js'
   ]) {
     assert.equal(fs.existsSync(path.join(root, file)), false, file + ' must remain deleted');
   }
-  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js']) {
-    assert.doesNotMatch(read(file), /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js/,
+  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js']) {
+    assert.doesNotMatch(read(file), /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header/,
       file + ' must not request a retired shell or related-content loader');
   }
   const selector = read('.github/scripts/related_tools_selector.cjs');
