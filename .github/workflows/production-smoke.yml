@@ -42,7 +42,7 @@ jobs:
       - name: Full repository test suite
         run: npm test
 
-            - name: Wait for changed static files to match this commit
+      - name: Wait for changed static files to match this commit
         shell: bash
         run: |
           set -euo pipefail
