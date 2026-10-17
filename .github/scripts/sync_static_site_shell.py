@@ -387,7 +387,7 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: expected exactly one footer element, found {len(parser.spans.get('footer', []))}")
         if source.count(SHELL_CSS_HREF) != 1:
             problems.append(f"{relative}: expected one shared stylesheet link")
-        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap)\.js", source, re.I):
+        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap|related-tools)\.js", source, re.I):
             problems.append(f"{relative}: retired shell/related-content script still referenced")
         if headers and source[headers[0][0]:headers[0][1]] != header_template:
             problems.append(f"{relative}: header differs from canonical index.html")
@@ -406,7 +406,7 @@ def check_static_shell(header_template, footer_template):
     for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js", "assets/js/related-tools-bootstrap.js", "assets/js/related-tools.js", "assets/js/privacy-bridge.js", "assets/js/auth-header-state.js"):
         if (ROOT / relative).exists():
             problems.append(f"{relative}: obsolete browser runtime file must be absent")
-    loader_pattern = re.compile(r"<script\b[^>]*src=.*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard)\.js", re.I)
+    loader_pattern = re.compile(r"<script\b[^>]*src=.*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard|related-tools)\.js", re.I)
     related_pages = 0
     for page in pages:
         source = page.read_text(encoding="utf-8-sig", errors="replace")

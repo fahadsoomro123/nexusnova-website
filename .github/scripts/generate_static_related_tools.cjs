@@ -11,7 +11,7 @@ const CSS_PATH = path.join(ROOT, 'assets/css/static-site-shell.css');
 const CORE_PATH = path.join(ROOT, 'assets/js/search-core.js');
 const related = require(path.join(ROOT, '.github/scripts/related_tools_selector.cjs'));
 
-const LOADER_RE = /\s*<script\b(?=[^>]*\bsrc\s*=\s*["'][^"']*(?:nn-inner-shell|related-tools-bootstrap)\.js(?:\?[^"']*)?["'])[^>]*>\s*<\/script\s*>/gi;
+const LOADER_RE = /\s*<script\b(?=[^>]*\bsrc\s*=\s*["'][^"']*(?:nn-inner-shell|related-tools-bootstrap|related-tools)\.js(?:\?[^"']*)?["'])[^>]*>\s*<\/script\s*>/gi;
 const RELATED_CSS = [
 '/* Build-time related content: generated as plain HTML and CSS. */',
 '.nn-related-tools{margin:28px 0 32px;padding:clamp(18px,2.5vw,26px);border:1px solid #e2e8f0;border-radius:18px;background:#fff;color:#0f172a;box-shadow:0 8px 24px rgba(15,23,42,.045)}',

@@ -50,7 +50,7 @@ for page in html_files:
         problems.append(f"{rel}: expected one footer element")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap)\.js""", source, re.I):
+    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap|related-tools)\.js""", source, re.I):
         problems.append(f"{rel}: retired shell/related-content loader still referenced")
 runtime_names = ("main.js", "site-main.js", "analytics.js", "search-core.js", "tier1-tools.js", "account-shell.js", "assistant.js", "assistant-core.js")
 for name in runtime_names:

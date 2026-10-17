@@ -119,7 +119,7 @@ test('obsolete shell and related-content loader scripts are absent from the repo
   ]) {
     assert.equal(fs.existsSync(path.join(ROOT, relative)), false, relative + ' must remain deleted');
   }
-  const forbiddenLoader = /<script\b[^>]*\bsrc=["'][^"']*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard)\.js/i;
+  const forbiddenLoader = /<script\b[^>]*\bsrc=["'][^"']*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard|related-tools)\.js/i;
   for (const file of htmlFiles()) {
     assert.doesNotMatch(fs.readFileSync(file, 'utf8'), forbiddenLoader, path.relative(ROOT, file));
   }
