@@ -122,6 +122,11 @@ jobs:
             exit 0
           fi
           git commit -m 'fix: complete 108-tool production and search overhaul'
+          # Scheduled content feeds can update disjoint files while this job is
+          # verifying the site. Rebase the verified changes on the latest main
+          # head before pushing instead of losing the release to a stale ref.
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
 
       - name: Verify deployed edge assets
