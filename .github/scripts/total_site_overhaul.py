@@ -1,61 +1,48 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
+from pathlib import Path
 import datetime as dt
 import html
 import json
 import re
 import subprocess
-from pathlib import Path
 
-ROOT = Path('.')
-SITE = 'https://nexusnovatools.com/'
-VERSION = '20261015-v4'
-PROTECTED = ('cloudflare/', 'functions/', 'firebase/', 'nexusnova-dev-ai/', 'ota/', 'downloads/')
-EXCLUDED = PROTECTED + ('.git/', 'node_modules/', 'tests/', 'vpn/')
+ROOT=Path(__file__).resolve().parents[2]
+SITE='https://nexusnovatools.com/'
+VERSION='20261015-v4'
 
+def read(path):
+    return path.read_text(encoding='utf-8',errors='replace')
 
-def read(path: Path) -> str:
-    return path.read_text(encoding='utf-8', errors='replace')
-
-
-def write_if_changed(path: Path, text: str) -> bool:
-    old = read(path) if path.exists() else ''
-    if old == text:
-        return False
-    path.write_text(text, encoding='utf-8')
+def write_if_changed(path,text):
+    if read(path)==text: return False
+    path.write_text(text,encoding='utf-8')
     return True
 
-
 def public_html():
-    return sorted(p for p in ROOT.rglob('*.html') if not p.as_posix().startswith(EXCLUDED))
+    for path in ROOT.rglob('*.html'):
+        rel=path.relative_to(ROOT)
+        if any(part.startswith('.') for part in rel.parts): continue
+        if 'node_modules' in rel.parts: continue
+        yield path
 
-
-def indexable(text: str) -> bool:
-    m = re.search(r'<meta[^>]+name=["\']robots["\'][^>]+content=["\']([^"\']*)', text, re.I)
+def indexable(text):
+    m=re.search(r'<meta[^>]+name=["\']robots["\'][^>]+content=["\']([^"\']*)',text,re.I)
     return not m or 'noindex' not in m.group(1).lower()
-
 
 def cache_bust():
     changed=[]
-    attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])(?P<url>(?:\.\.?/)*assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
-    absolute_attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])/(?P<url>assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
+    attr_re=re.compile(r'(?P<prefix>(?:src|href)=["\'])(?P<url>(?:\.\.?/)*assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])',re.I)
+    absolute_attr_re=re.compile(r'(?P<prefix>(?:src|href)=["\'])/(?P<url>assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])',re.I)
     for path in public_html():
         text=read(path)
-        def repl(m):
-            return f'{m.group("prefix")}{m.group("url")}?v={VERSION}{m.group("quote")}'
+        def repl(m): return f'{m.group("prefix")}{m.group("url")}?v={VERSION}{m.group("quote")}'
         new=attr_re.sub(repl,text)
         new=absolute_attr_re.sub(repl,new)
         if new != text and write_if_changed(path,new): changed.append(path.as_posix())
     return changed
 
-
 def patch_search():
-    path=ROOT/'assets/js/search-core.js'
-    text=read(path)
-    # Idempotence: the production index already has the hardened single-character rule.
-    if 'const singleCharacterQuery=queryTokens.length===1 && query.length===1;' in text:
-        return False
+    path=ROOT/'assets/js/search-core.js'; text=read(path)
+    if 'const singleCharacterQuery=queryTokens.length===1 && query.length===1;' in text: return False
     needle='''    const queryTokens=tokenizeSearchText(query);\n    if(!queryTokens.length) return [];\n\n    const aliasTargets=NEXUSNOVA_ALIAS_MAP[query];\n    const scored=[];\n'''
     replacement='''    const queryTokens=tokenizeSearchText(query);\n    if(!queryTokens.length) return [];\n\n    // Single-character searches are discovery queries, not fuzzy full-text queries.\n    // Do not let article prose or generic tags such as "tool" dominate a query like "t".\n    const singleCharacterQuery=queryTokens.length===1 && query.length===1;\n    const aliasTargets=NEXUSNOVA_ALIAS_MAP[query];\n    const scored=[];\n'''
     if needle not in text: raise RuntimeError('search-core query guard anchor not found')
@@ -70,7 +57,6 @@ def patch_search():
     text=text.replace(old_sort,new_sort,1)
     return write_if_changed(path,text)
 
-
 def patch_cola_content():
     path=ROOT/'articles/social-security-cola-2027-estimate.html'
     if not path.exists(): return False
@@ -80,19 +66,17 @@ def patch_cola_content():
     if old not in text: return False
     return write_if_changed(path,text.replace(old,new,1))
 
-
 def patch_search_data_cola():
-    path=ROOT/'assets/js/search-core.js'
-    text=read(path)
+    path=ROOT/'assets/js/search-core.js'; text=read(path)
     old='2027 Social Security COLA Estimate: Latest Forecast and Dates'
     if old not in text: return False
-    new='2027 Social Security COLA: Official 3.6% Rate and Payment Dates'
+    # Keep the reader-facing article title consistent with the canonical H1.
+    new='2027 Social Security COLA: Official 3.6% Rate and Payment Timing'
     text=text.replace(old,new,1)
     old2='The latest reported 2027 Social Security COLA estimates sit around 3.4%–3.6%. See what is official, how CPI-W sets the adjustment, and calculate a benefit scenario.'
     new2='SSA announced a 3.6% Social Security COLA for 2027 on October 14, 2026. See payment timing, the CPI-W method, and calculate a gross benefit scenario.'
     text=text.replace(old2,new2,1)
     return write_if_changed(path,text)
-
 
 def git_date(rel: str) -> str:
     try:
@@ -101,52 +85,27 @@ def git_date(rel: str) -> str:
     except Exception:
         return dt.date.today().isoformat()
 
-
 def canonical(text: str) -> str|None:
-    m=re.search(r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']+)',text,re.I)
-    return html.unescape(m.group(1)) if m else None
-
-
-def build_sitemap():
-    urls=[]
-    for path in public_html():
-        text=read(path)
-        rel=path.relative_to(ROOT).as_posix()
-        if rel=='404.html' or not indexable(text): continue
-        if rel=='index.html': loc=SITE
-        else: loc=SITE+rel
-        urls.append((loc,git_date(rel)))
-    urls=sorted(dict(urls).items())
-    body=['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for loc,lastmod in urls:
-        body.append(f'  <url><loc>{html.escape(loc)}</loc><lastmod>{lastmod}</lastmod></url>')
-    body.append('</urlset>')
-    changed=write_if_changed(ROOT/'sitemap.xml','\n'.join(body)+'\n')
-    return changed,len(urls)
-
+    m=re.search(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)',text,re.I)
+    return m.group(1) if m else None
 
 def validate_jsonld_and_canon():
     errors=[]
     for path in public_html():
         text=read(path)
         if not indexable(text): continue
-        rel=path.relative_to(ROOT).as_posix()
-        can=canonical(text)
+        rel=path.relative_to(ROOT).as_posix(); can=canonical(text)
         expected=SITE if rel=='index.html' else SITE+rel
-        if can and can.rstrip('/') != expected.rstrip('/'):
-            errors.append(f'{rel}: canonical={can!r} expected={expected!r}')
+        if can and can.rstrip('/') != expected.rstrip('/'): errors.append(f'{rel}: canonical={can!r} expected={expected!r}')
         for block in re.findall(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',text,re.I|re.S):
             try: json.loads(html.unescape(block).strip())
             except Exception as exc: errors.append(f'{rel}: invalid JSON-LD: {exc}')
-    if errors:
-        raise RuntimeError('Canonical/JSON-LD validation failed:\n'+'\n'.join(errors[:80]))
-
+    if errors: raise RuntimeError('Canonical/JSON-LD validation failed:\n'+'\n'.join(errors[:80]))
 
 def tool_urls():
     text=read(ROOT/'assets/js/search-core.js')
     pairs=re.findall(r'\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"([^"]+)",\s*type:"tool"',text)
     return sorted(dict.fromkeys(pairs))
-
 
 def main():
     changes=[]
@@ -158,8 +117,7 @@ def main():
     if sitemap_changed: changes.append('sitemap.xml')
     validate_jsonld_and_canon()
     tools=tool_urls()
-    if len(tools) < 100 or len(set(tools)) != len(tools):
-        raise RuntimeError(f'Expected at least 100 unique tool routes in search index, found {len(tools)}')
+    if len(tools) < 100 or len(set(tools)) != len(tools): raise RuntimeError(f'Expected at least 100 unique tool routes in search index, found {len(tools)}')
     print(f'OVERHAUL_PREP_PASS tools={len(tools)} public_urls={sitemap_count} changed={len(changes)}')
     for item in changes: print('CHANGED',item)
 
