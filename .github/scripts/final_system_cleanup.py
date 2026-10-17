@@ -265,7 +265,7 @@ def patch_phase2_sync_script() -> bool:
             skipped_old_sub = True
             continue
         if line.strip().startswith("if not indexable and canonical != page_url.rstrip"):
-            output.append("    if not indexable or canonical != page_url.rstrip(\\"/\\"): continue")
+            output.append('    if not indexable or canonical != page_url.rstrip("/"): continue')
             continue
         if line.strip().startswith("    records.append(record)"):
             output.append(line)
@@ -276,7 +276,7 @@ def patch_phase2_sync_script() -> bool:
         output.append(line)
     source = "\n".join(output) + "\n"
     # Require exactly 100 indexable self-canonical URLs and article records.
-    marker = "core=CORE.read_text(encoding=\\"utf-8-sig\\")"
+    marker = 'core=CORE.read_text(encoding="utf-8-sig")'
     source = source.replace(
         marker,
         'if len(records) != 100:\n    raise SystemExit(f"ERROR: expected 100 indexable self-canonical articles, found {len(records)}")\n'
