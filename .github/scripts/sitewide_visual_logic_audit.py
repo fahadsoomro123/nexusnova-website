@@ -422,7 +422,22 @@ def main() -> None:
                                 route_errors.append(f"{mode}/{scheme}: mobile navigation collapsed without a visible menu button")
                             elif scheme == "light":
                                 try:
-                                    menu_button = page.locator('[data-nn-menu], [data-menu-btn], button.nn-menu, button.menu-btn').first
+                                    menu_selector = page.evaluate("""() => {
+                                      const selectors = '[data-nn-menu], [data-menu-btn], button.nn-menu, button.menu-btn';
+                                      const candidates = [...document.querySelectorAll(selectors)];
+                                      const visible = el => {
+                                        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+                                        return r.width > 0 && r.height > 0 && s.display !== 'none' &&
+                                          s.visibility !== 'hidden' && Number(s.opacity || 1) > 0.05 && !el.disabled;
+                                      };
+                                      const candidate = candidates.find(visible);
+                                      if (!candidate) return '';
+                                      candidate.setAttribute('data-polish-visible-menu', '1');
+                                      return '[data-polish-visible-menu="1"]';
+                                    }""")
+                                    if not menu_selector:
+                                        raise RuntimeError("no visible enabled mobile-menu button found")
+                                    menu_button = page.locator(menu_selector)
                                     menu_button.click(timeout=1600)
                                     page.wait_for_timeout(80)
                                     nav_open = page.evaluate("""() => {
