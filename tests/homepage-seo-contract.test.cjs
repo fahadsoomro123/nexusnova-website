@@ -50,7 +50,7 @@ test('homepage starts with one H1 and has consistent SEO identity metadata', () 
   const description = metaContent(html, /<meta\b[^>]*name=["']description["'][^>]*>/i);
   assert.match(title, /Free Online Browser Tools/i);
   assert.match(title, /PDFs?/i);
-  assert.match(title, /Pakistan/i);
+  assert.match(title, /108/);
   assert.ok(description.length >= 100 && description.length <= 160, 'Homepage description should be 100-160 characters');
   assert.match(description, /free online browser tools/i);
   assert.match(description, /PDFs?/i);
