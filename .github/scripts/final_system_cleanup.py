@@ -510,6 +510,9 @@ def patch_phase2_sync_script() -> bool:
         if line.startswith("article_re=re.compile("):
             continue
         if line.startswith('core=article_re.sub('):
+        # Remove old copies of this filter so repeated cleanup runs stay idempotent.
+        if line.lstrip().startswith("core") and 'type:"article"' in line and ".splitlines()" in line:
+            continue
             continue
         if line.strip().startswith("if not indexable and canonical != page_url.rstrip"):
             output.append('    if not indexable or canonical != page_url.rstrip("/"): continue')
@@ -517,7 +520,7 @@ def patch_phase2_sync_script() -> bool:
         output.append(line)
     source = "\n".join(output) + "\n"
     marker = 'core=CORE.read_text(encoding="utf-8-sig")'
-    cleanup_line = 'core = "\\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and \'type:"article"\' in line)) + "\\n"'
+    cleanup_line = r'''core = "\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line)) + "\n"'''
     if marker not in source:
         raise SystemExit("ERROR: cannot find search-core load line while repairing sync script")
     if cleanup_line not in source:
@@ -634,6 +637,10 @@ def main() -> None:
     workflow_files, action_versions = 0, []
 
     sync_path = ROOT / ".github/scripts/sync_phase2_content.py"
+    try:
+        compile(sync_path.read_text(encoding="utf-8"), str(sync_path), "exec")
+    except SyntaxError as exc:
+        raise SystemExit(f"ERROR: article sync script has a Python syntax error: {exc}") from exc
     run = subprocess.run(
         [sys.executable, str(sync_path)],
         cwd=ROOT, text=True, capture_output=True
