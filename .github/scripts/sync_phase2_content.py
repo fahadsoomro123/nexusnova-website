@@ -44,19 +44,20 @@ for p in sorted((ROOT/"articles").glob("*.html")):
     raw=p.read_text(encoding="utf-8-sig")[:5000]
     if not canonical or not title: continue
     page_url=BASE+p.relative_to(ROOT).as_posix()
-    indexable="noindex" not in raw.lower()
+    robots_match=re.search(r'<meta\s+name=["\']robots["\']\s+content=["\']([^"\']+)["\']',raw,re.I)
+    indexable=not (robots_match and re.search(r'\bnoindex\b',robots_match.group(1),re.I))
     canonical=canonical.rstrip("/")
-    # Keep self-canonical noindex pages searchable internally, but never submit
-    # them in the sitemap. Drop noindex aliases whose canonical points elsewhere.
-    if canonical != page_url.rstrip("/"): continue
+    # Only the intended indexable, self-canonical article library belongs in
+    # public search discovery and sitemap.xml. Approved noindex/news archives
+    # and canonical aliases remain excluded.
+    if not indexable or canonical != page_url.rstrip("/"): continue
     record=(title,canonical.replace(BASE,""),desc,cat)
     records.append(record)
-    if indexable and canonical == page_url.rstrip("/") and canonical.startswith(BASE + "articles/"): sitemap_records.append(record)
+    if canonical.startswith(BASE + "articles/"): sitemap_records.append(record)
 
 if len(records) != 100:
     raise SystemExit(f"ERROR: expected 100 self-canonical articles, found {len(records)}")
 core=CORE.read_text(encoding="utf-8-sig")
-core = "\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line)) + "\n"
 core="\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line))+"\n"
 block="\n".join(f'  {{ title:{json.dumps(t,ensure_ascii=False)}, url:{json.dumps(u,ensure_ascii=False)}, type:"article", category:"Articles", tags:[{json.dumps(t,ensure_ascii=False)},{json.dumps(d,ensure_ascii=False)},{json.dumps("Articles")},{json.dumps(c,ensure_ascii=False)}] }},' for t,u,d,c in records)+"\n"
 marker='  { title:"How to use a weighted decision matrix without fooling yourself",'
