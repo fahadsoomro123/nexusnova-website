@@ -52,12 +52,12 @@ for page in html_files:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
     if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap)\.js""", source, re.I):
         problems.append(f"{rel}: retired shell/related-content loader still referenced")
-runtime_names = ("main.js", "site-main.js", "analytics.js", "search-core.js", "tier1-tools.js", "account-shell.js")
+runtime_names = ("main.js", "site-main.js", "analytics.js", "search-core.js", "tier1-tools.js", "account-shell.js", "assistant.js")
 for name in runtime_names:
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
-    if re.search(r"nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js", source):
+    if re.search(r"nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header", source):
         problems.append(f"assets/js/{name}: retired shell/related-content loader remains")
-for name in ("global-shell-guard.js", "nn-inner-shell.js", "related-tools-bootstrap.js", "related-tools.js", "privacy-bridge.js"):
+for name in ("global-shell-guard.js", "nn-inner-shell.js", "related-tools-bootstrap.js", "related-tools.js", "privacy-bridge.js", "auth-header-state.js"):
     if (ROOT / "assets/js" / name).exists():
         problems.append(f"assets/js/{name}: obsolete browser runtime file must be absent")
 related_sections = sum(
