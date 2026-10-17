@@ -628,7 +628,10 @@ def main() -> None:
 
     sync_patched = patch_phase2_sync_script()
     lighthouse_diagnostics = False  # Workflow YAML is updated directly through the repository API.
-    workflow_files, action_versions = upgrade_workflow_action_pins()
+    # Workflow YAML edits are applied as a separate repository operation.
+    # The Actions token intentionally lacks the workflows permission, so folding
+    # those files into this content release would make GitHub reject the whole push.
+    workflow_files, action_versions = 0, []
 
     sync_path = ROOT / ".github/scripts/sync_phase2_content.py"
     run = subprocess.run(
