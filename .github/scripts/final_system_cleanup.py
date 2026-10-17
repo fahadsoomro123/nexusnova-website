@@ -334,8 +334,12 @@ def ensure_replacement_articles() -> int:
             )
         )
         body.append(f'<h2>Frequently asked questions</h2>{faq}')
+        # Related URLs may target sibling article pages or root-level tools.
+        # Keep article links local to /articles/ and use ../ only for site-root tools.
+        article_targets = {item.name for item in ARTICLE_DIR.glob("*.html")}
+        article_targets.update(item["file"] for item in ARTICLE_REPLACEMENTS)
         related = " · ".join(
-            f'<a href="../{html.escape(href, quote=True)}">{html.escape(label)}</a>'
+            f'<a href="{html.escape(href if href in article_targets or href.startswith(("http://", "https://", "../", "/")) else "../" + href, quote=True)}">{html.escape(label)}</a>'
             for href, label in seed["related"]
         )
         body.append(f'<p><strong>Related tools and guides:</strong> {related}</p>')
