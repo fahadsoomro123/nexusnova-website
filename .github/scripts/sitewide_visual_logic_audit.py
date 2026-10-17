@@ -431,7 +431,7 @@ def main() -> None:
                                         menu_button.click(timeout=1600)
                                         page.wait_for_timeout(40)
                                 except Exception as exc:
-                                    route_errors.append(f"{mode}/{scheme}: mobile menu toggle failed: {str(exc)[:160]}
+                                    route_errors.append(f"{mode}/{scheme}: mobile menu toggle failed: {str(exc)[:160]}")
                         if not metrics["footer"]:
                             route_errors.append(f"{mode}/{scheme}: footer missing")
                         if not metrics["search"]:
