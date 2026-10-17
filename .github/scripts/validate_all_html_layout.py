@@ -169,7 +169,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         article_cards = page.locator('#articles-grid a.nn-article-card[href$=".html"]').count()
                         count_locator = page.locator('#article-search-count')
                         count_is_visible = count_locator.is_visible()
-                        count_value = re.sub(r"\\s+", " ", (count_locator.text_content(timeout=5000) or "").strip()).casefold()
+                        count_value = re.sub(r"\s+", " ", (count_locator.text_content(timeout=5000) or "").strip()).casefold()
                         count_pass = count_is_visible and count_value == "100 articles"
                         article_count_checks += 1
                         article_count_text = article_count_text and count_pass
