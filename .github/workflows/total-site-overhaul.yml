@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/scripts/total_site_overhaul.py'
+      - '.github/scripts/final_system_cleanup.py'
       - '.github/scripts/deep_site_audit_strict.py'
       - '.github/scripts/site_quality_audit.py'
       - '.github/workflows/total-site-overhaul.yml'
@@ -40,6 +41,9 @@ jobs:
 
       - name: Prepare deterministic production fixes
         run: python .github/scripts/total_site_overhaul.py
+
+      - name: Apply final metadata, discovery and action cleanup
+        run: python .github/scripts/final_system_cleanup.py
 
       - name: Syntax and repository tests
         run: |
