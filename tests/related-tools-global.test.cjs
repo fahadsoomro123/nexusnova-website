@@ -113,7 +113,8 @@ test('obsolete shell and related-content loader scripts are absent from the repo
     'assets/js/nn-inner-shell.js',
     'assets/js/related-tools-bootstrap.js',
     'assets/js/global-shell-guard.js',
-    'assets/js/related-tools.js'
+    'assets/js/related-tools.js',
+    'assets/js/privacy-bridge.js'
   ]) {
     assert.equal(fs.existsSync(path.join(ROOT, relative)), false, relative + ' must remain deleted');
   }
