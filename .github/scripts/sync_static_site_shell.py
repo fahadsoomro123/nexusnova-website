@@ -152,9 +152,14 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const shellPart = (source, tag) => {
   const pattern = tag === 'header'
     ? /<header\b(?=[^>]*class=["'][^"']*\bnn-header\b[^"']*["'])[^>]*>[\s\S]*?<\/header\s*>/i
-    : /<footer\b(?=[^>]*class=["'][^"']*\bnn-footer\b[^"']*\bnn-global-footer\b[^"']*["'])[^>]*>[\s\S]*?<\/footer\s*>/i;
-  const match = source.match(pattern);
-  return match ? match[0] : '';
+    : /<footer\b(?=[^>]*class=["'][^"']*\bnn-footer\b[^"']*\bnn-global-footer\b[^"']*["'])[^>]*>[\s\S]*?<\/footer\s*>/ig;
+  const matches = [...source.matchAll(new RegExp(pattern.source, tag === 'header' ? 'i' : 'ig'))];
+  if (!matches.length) return '';
+  if (tag === 'footer') {
+    const canonical = matches.find(match => match[0].includes('Practical browser tools, guides and utilities for everyday digital work.'));
+    return (canonical || matches[matches.length - 1])[0];
+  }
+  return matches[0][0];
 };
 const labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
@@ -520,7 +525,7 @@ def patch_supporting_sources():
     contracts = [
         ("tests/article-expansion-quality.test.cjs", [
             ("assert.match(html, /global-shell-guard\\.js/);",
-             "assert.match(html, /static-site-shell\\.css/);\\n  assert.doesNotMatch(html, /global-shell-guard\\.js/);")
+             "assert.match(html, /static-site-shell\\.css/);\n  assert.doesNotMatch(html, /global-shell-guard\\.js/);")
         ]),
         ("tests/dynamic-link-hydration-performance.test.cjs", [
             ("""  assert.ok(
@@ -536,7 +541,7 @@ def patch_supporting_sources():
   );""")
         ]),
         ("tests/live-gold.test.cjs", [
-            ('href="#master-directory">All Tools</a>', 'href="/#master-directory">All Tools</a>')
+            ('href="#master-directory"', 'href="/#master-directory"')
         ]),
         ("tests/pakistan-new-tools-surface.test.cjs", [
             ('assert.match(html,/href="index\\.html#master-directory"/);',
@@ -548,7 +553,8 @@ def patch_supporting_sources():
             ('src="assets\\/logo\\.png', 'src="\\/?assets\\/logo\\.png'),
             ('srcset="assets/logo-2x', 'srcset="/?assets/logo-2x'),
             (', assets/logo-3x', ', /?assets/logo-3x'),
-            ('src="assets/logo\\\\.png', 'src="/?assets/logo\\\\.png')
+            ('src="assets/logo\\\\.png', 'src="/?assets/logo\\\\.png'),
+            ('alt="NexusNova Tools Logo" class="', 'alt="NexusNova Tools Logo"(?: width="1040" height="345")? class="')
         ])
     ]
     for relative, replacements in contracts:
