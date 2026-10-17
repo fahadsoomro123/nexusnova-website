@@ -281,17 +281,8 @@ if(page==='index.html'){
     deferHomeTask(initMotion,1200);
     window.addEventListener('scroll',initMotion,{once:true,passive:true});
   }else initMotion();
-  const loadAuthHeader=()=>{
-    let authSeen=false;
-    try{authSeen=localStorage.getItem('nexusnova_auth_seen_v1')==='1'}catch(_){}
-    if(authSeen&&!document.querySelector('script[data-nexusnova-auth-header]')){
-      const m=document.createElement('script');
-      m.type='module';m.src=`${base}assets/js/auth-header-state.js`;
-      m.dataset.nexusnovaAuthHeader='';
-      document.body.appendChild(m);
-    }
-  };
-  deferHomeTask(loadAuthHeader,1200);
+  // Authentication navigation remains source-authored static HTML.
+
   if(document.querySelector('[data-article-comments]')&&!document.querySelector('script[data-nova-comments]')){const s=document.createElement('script');s.type='module';s.src=`${base}assets/js/comments.js`;s.dataset.novaComments='';document.body.appendChild(s)}
 })();
 
