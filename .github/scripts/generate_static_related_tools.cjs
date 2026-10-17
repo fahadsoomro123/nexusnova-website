@@ -133,6 +133,23 @@ function generate(options) {
     updated = updated.replace(/\s*(?:const|let|var)\s+\w+\s*=\s*document\.querySelector\(['"]\[data-year\]['"]\);\s*if\s*\(\w+\)\s*\w+\.textContent\s*=\s*(?:String\()?new Date\(\)\.getFullYear\(\)\)?;?/g, '');
     updated = updated.replace(/\s*document\.querySelectorAll\(['"]\[data-year\]['"]\)\.forEach\(\w+\s*=>\s*\{?\s*\w+\.textContent\s*=\s*String\(new Date\(\)\.getFullYear\(\)\);?\s*\}?\);?/g, '');
     const relPath = '/' + path.relative(ROOT, file).split(path.sep).join('/');
+    if (relPath === '/articles.html') {
+      const gridOpen = updated.indexOf('<div class="nn-article-grid" id="articles-grid">');
+      const firstCard = gridOpen < 0 ? -1 : updated.indexOf('<a class="nn-article-card"', gridOpen);
+      const earlyClose = gridOpen < 0 ? -1 : updated.indexOf('</div>', gridOpen);
+      if (gridOpen >= 0 && firstCard >= 0 && earlyClose >= 0 && earlyClose < firstCard) {
+        updated = updated.slice(0, earlyClose) + updated.slice(earlyClose + '</div>'.length);
+        updated = updated.replace(/(<div class="nn-article-grid" id="articles-grid">)\s*(?=<a class="nn-article-card")/, '$1\n          ');
+      }
+      const noResults = updated.indexOf('<div class="nn-no-results" id="article-no-results">');
+      if (gridOpen >= 0 && noResults >= 0) {
+        const lastCard = updated.lastIndexOf('<a class="nn-article-card"', noResults);
+        const gridClose = lastCard < 0 ? -1 : updated.indexOf('</div>', lastCard);
+        if (lastCard >= 0 && (gridClose < 0 || gridClose > noResults)) {
+          updated = updated.slice(0, noResults) + '</div>\n      ' + updated.slice(noResults);
+        }
+      }
+    }
     const context = pageContext(data, relPath);
     if (context && /<main\b/i.test(updated) && !/data-nexusnova-related-(?:tools|content)/i.test(updated)) {
       const section = renderSection(data, context, relPath);

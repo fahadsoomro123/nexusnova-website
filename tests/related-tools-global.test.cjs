@@ -76,6 +76,21 @@ test('tool, article, guide and category recommendations are source-rendered with
   assert.match(categorySection, /data-nexusnova-featured-utilities/);
 });
 
+test('all 100 article cards remain inside the static article grid', () => {
+  const hub = fs.readFileSync(path.join(ROOT, 'articles.html'), 'utf8');
+  const gridStart = hub.indexOf('<div class="nn-article-grid" id="articles-grid">');
+  const noResults = hub.indexOf('<div class="nn-no-results" id="article-no-results">', gridStart);
+  assert.ok(gridStart >= 0 && noResults > gridStart, 'article grid and no-results marker must exist');
+  const grid = hub.slice(gridStart, noResults);
+  const cards = grid.split('<a class="nn-article-card" href="articles/').length - 1;
+  assert.equal(cards, 100, 'article grid must contain exactly 100 source-authored cards');
+  const firstCard = grid.indexOf('<a class="nn-article-card"');
+  assert.ok(firstCard > 0 && grid.indexOf('</div>') > firstCard,
+    'grid must not close before the first article card');
+  assert.ok(grid.indexOf('</div>') > grid.lastIndexOf('</a>'),
+    'grid must close after its last card, before the no-results panel');
+});
+
 test('static footer privacy control and copyright are authored in HTML, not runtime injected', () => {
   const currentYear = new Date().getUTCFullYear();
   for (const file of htmlFiles()) {
