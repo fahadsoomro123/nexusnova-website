@@ -96,14 +96,20 @@ for title,url,desc,cat in records:
           </a>
 
 ''')
-marker = re.search(r'<div\\b(?=[^>]*\\bid=["\\']article-no-results["'])[^>]*>', hub, re.I)
-if marker:
-    hub = hub[:marker.start()] + "".join(cards) + hub[marker.start():]
+id_marker = 'id="article-no-results"'
+marker_pos = hub.find(id_marker)
+if marker_pos < 0:
+    marker_pos = hub.find("id='article-no-results'")
+if marker_pos >= 0:
+    marker_start = hub.rfind("<div", 0, marker_pos)
+    if marker_start < 0:
+        raise SystemExit("ERROR: article no-results ID exists without its opening div")
+    hub = hub[:marker_start] + "".join(cards) + hub[marker_start:]
 else:
-    main_close = re.search(r'</main\\s*>', hub, re.I)
-    if not main_close:
+    main_close_pos = hub.lower().find("</main>")
+    if main_close_pos < 0:
         raise SystemExit("ERROR: articles hub has neither the no-results marker nor a main landmark")
-    hub = hub[:main_close.start()] + "".join(cards) + hub[main_close.start():]
+    hub = hub[:main_close_pos] + "".join(cards) + hub[main_close_pos:]
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
