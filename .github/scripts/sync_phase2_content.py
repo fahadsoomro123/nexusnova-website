@@ -96,10 +96,14 @@ for title,url,desc,cat in records:
           </a>
 
 ''')
-marker='      <div class="nn-no-results" id="article-no-results">'
-if marker not in hub:
-    raise SystemExit("ERROR: articles hub is missing the no-results insertion marker")
-hub=hub.replace(marker, "".join(cards)+marker, 1)
+marker = re.search(r'<div\\b(?=[^>]*\\bid=["\\']article-no-results["'])[^>]*>', hub, re.I)
+if marker:
+    hub = hub[:marker.start()] + "".join(cards) + hub[marker.start():]
+else:
+    main_close = re.search(r'</main\\s*>', hub, re.I)
+    if not main_close:
+        raise SystemExit("ERROR: articles hub has neither the no-results marker nor a main landmark")
+    hub = hub[:main_close.start()] + "".join(cards) + hub[main_close.start():]
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
