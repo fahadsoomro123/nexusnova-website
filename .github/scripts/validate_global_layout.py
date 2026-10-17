@@ -46,6 +46,8 @@ for page in html_files:
         problems.append(f"{rel}: header mismatch")
     if outer(source, "footer") != expected_footer:
         problems.append(f"{rel}: footer mismatch")
+    if len(re.findall(r"<footer\b", source, re.I)) != 1:
+        problems.append(f"{rel}: expected one footer element")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
     if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js""", source, re.I):

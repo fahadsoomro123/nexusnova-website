@@ -45,6 +45,7 @@ test('every HTML page has the canonical static index header and footer', () => {
     const relative = path.relative(root, file);
     assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
     assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
+    assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
     assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
