@@ -91,19 +91,32 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p performance-artifacts/diagnostics
-          python3 - <<'PY'
+          if python3 - <<'PY'
           from pathlib import Path
           
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
           tag = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5070673529890078" crossorigin="anonymous"></script>'
           count = html.count(tag)
+          if count == 0:
+              print('No static AdSense tag found; AdSense differential diagnostic is not applicable.')
+              raise SystemExit(42)
           if count != 1:
-              raise SystemExit(f'Expected exactly one static AdSense tag in the local checkout, found {count}; no local mutation made.')
+              raise SystemExit(f'Expected exactly one static AdSense tag when present, found {count}; no local mutation made.')
           path.write_text(html.replace(tag, '<!-- LOCAL LIGHTHOUSE DIAGNOSTIC ONLY: AdSense network disabled for this run. -->'), encoding='utf-8')
           print('Removed one static AdSense script from the disposable local audit checkout only. The production file and live website are untouched.')
           print('The shared runtime independently skips dynamic AdSense injection on localhost; this diagnostic is therefore a no-ads local variant.')
           PY
+          then
+            :
+          else
+            diagnostic_status=$?
+            if [ "$diagnostic_status" -eq 42 ]; then
+              echo 'AdSense differential diagnostic: NOT APPLICABLE (no static tag in index.html).' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            exit "$diagnostic_status"
+          fi
           for run in 1 2 3; do
             npx lighthouse "http://127.0.0.1:8000/" \
               --quiet \
