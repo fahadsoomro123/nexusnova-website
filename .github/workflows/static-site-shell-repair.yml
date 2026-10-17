@@ -1,0 +1,84 @@
+name: NexusNova Static Site Shell Repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/scripts/sync_static_site_shell.py"
+      - ".github/workflows/static-site-shell-repair.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: nexusnova-static-shell-repair
+  cancel-in-progress: false
+
+jobs:
+  static-shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply canonical static header and footer to every HTML file
+        run: python .github/scripts/sync_static_site_shell.py --write
+
+      - name: Verify 326-page static shell contract
+        run: python .github/scripts/sync_static_site_shell.py --check
+
+      - name: Run repository JavaScript checks
+        run: npm run check
+
+      - name: Run complete Node test suite
+        run: npm test
+
+      - name: Verify static shell and sitemap invariants
+        run: python .github/scripts/validate_global_layout.py
+
+      - name: Check patch whitespace
+        run: git diff --check
+
+      - name: Commit and push verified synchronization
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No static shell changes required."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: synchronize all pages to static index shell"
+          git push origin HEAD:main
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+          echo "static_shell_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch full browser sweep and final regression verification
+        if: steps.commit.outputs.committed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run all-html-layout-sweep.yml --ref main
+          gh workflow run final-release-verification.yml --ref main
