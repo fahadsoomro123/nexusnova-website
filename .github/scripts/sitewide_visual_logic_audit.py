@@ -376,12 +376,12 @@ def main() -> None:
             for scheme in SCHEMES:
                 for mode, width, height in VIEWPORTS:
                     page = browser.new_page(viewport={"width":width,"height":height}, color_scheme=scheme, reduced_motion="reduce")
-                    page.add_init_script("""() => {
+                    page.add_init_script("""(() => {
                       try {
                         localStorage.setItem("nexusnova_analytics_consent_v2", "denied");
                         localStorage.setItem("nexusnova_analytics_consent_v1", "denied");
                       } catch (_) {}
-                    }""")
+                    })()""")
                     page.set_default_timeout(2500)
                     page_errors: list[str] = []
                     local_console: list[str] = []
@@ -427,8 +427,11 @@ def main() -> None:
                                       const candidates = [...document.querySelectorAll(selectors)];
                                       const visible = el => {
                                         const s = getComputedStyle(el), r = el.getBoundingClientRect();
-                                        return r.width > 0 && r.height > 0 && s.display !== 'none' &&
-                                          s.visibility !== 'hidden' && Number(s.opacity || 1) > 0.05 && !el.disabled;
+                                        const inViewport = r.right > 0 && r.bottom > 0 &&
+                                          r.left < window.innerWidth && r.top < window.innerHeight;
+                                        return inViewport && r.width > 0 && r.height > 0 &&
+                                          s.display !== 'none' && s.visibility !== 'hidden' &&
+                                          Number(s.opacity || 1) > 0.05 && !el.disabled;
                                       };
                                       const candidate = candidates.find(visible);
                                       if (!candidate) return '';
