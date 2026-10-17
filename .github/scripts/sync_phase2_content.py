@@ -21,10 +21,13 @@ def meta(path):
 
 def ensure_global_shell_loader(path):
     source=path.read_text(encoding="utf-8-sig")
-    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:global-shell-guard|nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools)\.js(?:\?[^"']*)?["']"""
+    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
     if re.search(loader_pattern, source, re.I):
         return False
-    tag = '\n<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>\n'
+    source = re.sub(r'<script[^>]*global-shell-guard\.js[^>]*></script>', '', source, flags=re.I)
+    tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
+    if path.name == "cash-flow-forecast-small-business.html":
+        tag += '<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>\n'
     updated,n=re.subn(r'</body\s*>', lambda m:tag+m.group(0), source, count=1, flags=re.I)
     if not n:
         updated=source+tag
@@ -45,14 +48,15 @@ for p in sorted((ROOT/"articles").glob("*.html")):
     canonical=canonical.rstrip("/")
     # Keep self-canonical noindex pages searchable internally, but never submit
     # them in the sitemap. Drop noindex aliases whose canonical points elsewhere.
-    if not indexable and canonical != page_url.rstrip("/"): continue
+    if canonical != page_url.rstrip("/"): continue
     record=(title,canonical.replace(BASE,""),desc,cat)
     records.append(record)
     if indexable and canonical == page_url.rstrip("/") and canonical.startswith(BASE + "articles/"): sitemap_records.append(record)
 
+if len(records) != 100:
+    raise SystemExit(f"ERROR: expected 100 self-canonical articles, found {len(records)}")
 core=CORE.read_text(encoding="utf-8-sig")
-article_re=re.compile(r'\s*\{ title:"((?:[^"\\]|\\.)*)", url:"((?:[^"\\]|\\.)*)", type:"article", category:"Articles", tags:\[((?:[^\]])*)\] \},?\n?')
-core=article_re.sub("\n",core)
+core="\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line))+"\n"
 block="\n".join(f'  {{ title:{json.dumps(t,ensure_ascii=False)}, url:{json.dumps(u,ensure_ascii=False)}, type:"article", category:"Articles", tags:[{json.dumps(t,ensure_ascii=False)},{json.dumps(d,ensure_ascii=False)},{json.dumps("Articles")},{json.dumps(c,ensure_ascii=False)}] }},' for t,u,d,c in records)+"\n"
 marker='  { title:"How to use a weighted decision matrix without fooling yourself",'
 if marker in core: core=core.replace(marker,block+marker,1)
