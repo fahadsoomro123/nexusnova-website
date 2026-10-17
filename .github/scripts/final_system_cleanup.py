@@ -274,10 +274,10 @@ def patch_phase2_sync_script() -> bool:
         if line.strip().startswith("if not indexable") and "canonical != page_url.rstrip" in line:
             output.append('    if canonical != page_url.rstrip("/"): continue')
             continue
-        if line.strip().startswith("    records.append(record)"):
+        if line.strip().startswith("records.append(record)"):
             output.append(line)
             continue
-        if line.strip().startswith("    if indexable and canonical == page_url.rstrip") or line.strip().startswith("    if indexable and canonical.startswith"):
+        if line.strip().startswith("if indexable and canonical == page_url.rstrip") or line.strip().startswith("if indexable and canonical.startswith"):
             output.append("    sitemap_records.append(record)")
             continue
         output.append(line)
