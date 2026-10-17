@@ -186,6 +186,10 @@ def main() -> int:
             preview_paths.add(path.relative_to(ROOT).as_posix())
     if args.live:
         urls = [(urlparse(url).path.lstrip("/") or "index.html", url) for url in live_sitemap_urls(args.base_url)]
+        article_hub_url = args.base_url.rstrip("/") + "/articles.html"
+        if not any(label == ARTICLE_HUB for label, _ in urls):
+            urls.append((ARTICLE_HUB, article_hub_url))
+        urls = sorted(dict(urls).items())
     else:
         urls = [(p.relative_to(ROOT).as_posix(), p.relative_to(ROOT).as_posix()) for p in files]
     browser_report = validate_browser(args.base_url, urls, args.live, preview_paths if not args.live else set())
