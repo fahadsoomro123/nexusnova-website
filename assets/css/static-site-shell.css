@@ -57,3 +57,17 @@
 .nn-global-footer .nn-consent-reopen{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font:750 10px/1.3 var(--nn-sans);cursor:pointer}
 .nn-global-footer .nn-consent-reopen:hover{border-color:#c4b5fd;background:#faf5ff;color:#5b21b6}
 .nn-global-footer .nn-consent-reopen:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+
+
+/* Measured mobile overflow remediation from the all-HTML Chromium sweep. */
+.container.article code{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+.drop{min-width:0;max-width:100%;box-sizing:border-box}
+.drop input[type=file]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.drop span{max-width:100%;overflow-wrap:anywhere}
+.table-wrap{display:block;width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.nn12-zakat-grid{width:100%;min-width:0;max-width:100%}
+.nn12-zakat-field{width:100%;min-width:0;max-width:100%}
+.nn12-zakat-field>input,.nn12-zakat-field>select,.nn12-zakat-field>textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-card{min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-frame,.weather-media-frame--radar{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.weather-media-frame--radar img{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;object-fit:contain}

@@ -98,3 +98,13 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
+
+
+test('measured mobile overflow regressions have targeted responsive constraints', () => {
+  const css = read('assets/css/static-site-shell.css');
+  assert.match(css, /\.container\.article code\{[^}]*overflow-wrap:anywhere/);
+  assert.match(css, /\.drop input\[type=file\]\{[^}]*min-width:0/);
+  assert.match(css, /\.table-wrap\{[^}]*overflow-x:auto/);
+  assert.match(css, /\.nn12-zakat-field\{[^}]*min-width:0/);
+  assert.match(css, /\.weather-media-frame--radar\{[^}]*min-width:0/);
+});
