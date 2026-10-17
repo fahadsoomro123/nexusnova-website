@@ -53,14 +53,22 @@ test('every HTML page has the canonical static index header and footer', () => {
   }
 });
 
-test('dynamic header and footer repair loaders are gone', () => {
-  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/related-tools.js']) {
-    assert.doesNotMatch(read(file), /global-shell-guard\.js/, file + ' still loads retired guard');
+test('shell and related-content runtime loaders are absent', () => {
+  for (const file of [
+    'assets/js/nn-inner-shell.js',
+    'assets/js/related-tools-bootstrap.js',
+    'assets/js/global-shell-guard.js',
+    'assets/js/related-tools.js'
+  ]) {
+    assert.equal(fs.existsSync(path.join(root, file)), false, file + ' must remain deleted');
   }
-  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|normalizeFooterStructure|global-shell-guard\.js/);
-  assert.doesNotMatch(read('assets/js/nn-inner-shell.js'), /normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header/);
-  assert.doesNotMatch(read('assets/js/global-shell-guard.js'), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
-  assert.match(read('assets/js/nn-inner-shell.js'), /related-tools-bootstrap\.js/);
+  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js']) {
+    assert.doesNotMatch(read(file), /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js/,
+      file + ' must not request a retired shell or related-content loader');
+  }
+  const selector = read('.github/scripts/related_tools_selector.cjs');
+  assert.doesNotMatch(selector, /\b(?:window|document)\s*(?:\.|\[)|createElement|appendChild|innerHTML|querySelector|MutationObserver/,
+    'build-time recommendation selection must not mutate browser DOM');
 });
 
 test('108 indexed tool routes resolve to unique HTML files', () => {

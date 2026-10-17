@@ -50,18 +50,22 @@ for page in html_files:
         problems.append(f"{rel}: expected one footer element")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js""", source, re.I):
-        problems.append(f"{rel}: retired dynamic shell guard still referenced")
-for name in ("main.js", "site-main.js", "analytics.js", "related-tools.js"):
+    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell|related-tools-bootstrap)\.js""", source, re.I):
+        problems.append(f"{rel}: retired shell/related-content loader still referenced")
+runtime_names = ("main.js", "site-main.js", "analytics.js", "search-core.js", "tier1-tools.js", "account-shell.js")
+for name in runtime_names:
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
-    if "global-shell-guard.js" in source:
-        problems.append(f"assets/js/{name}: dynamic guard loader remains")
-guard = (ROOT / "assets/js/global-shell-guard.js").read_text(encoding="utf-8", errors="replace")
-if re.search(r"MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector", guard):
-    problems.append("assets/js/global-shell-guard.js: disabled guard is not inert")
-inner = (ROOT / "assets/js/nn-inner-shell.js").read_text(encoding="utf-8", errors="replace")
-if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header""", inner):
-    problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
+    if re.search(r"nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js", source):
+        problems.append(f"assets/js/{name}: retired shell/related-content loader remains")
+for name in ("global-shell-guard.js", "nn-inner-shell.js", "related-tools-bootstrap.js", "related-tools.js"):
+    if (ROOT / "assets/js" / name).exists():
+        problems.append(f"assets/js/{name}: obsolete browser runtime file must be absent")
+related_sections = sum(
+    "data-nexusnova-related-tools" in page.read_text(encoding="utf-8-sig", errors="replace")
+    for page in html_files
+)
+if related_sections < 230:
+    problems.append(f"expected at least 230 static related-content sections; found {related_sections}")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
 if len(routes) != 108 or len({url for _, url in routes}) != 108:

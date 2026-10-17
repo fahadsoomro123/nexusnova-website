@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const {
   getCanonicalPath,
   selectRelatedTools
-} = require('../assets/js/related-tools.js');
+} = require('../.github/scripts/related_tools_selector.cjs');
 
 const origin = 'https://nexusnovatools.com';
 const tool = (title, url, category) => ({ title, url, category, type: 'tool' });

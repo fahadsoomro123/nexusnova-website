@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { computeWesternFinance, taxFor, simulatePayoff } = require('../assets/js/western-finance-tools.js');
-const { selectRelatedTools } = require('../assets/js/related-tools.js');
+const { selectRelatedTools } = require('../.github/scripts/related_tools_selector.cjs');
 require('../assets/js/search-core.js');
 const SearchCore = globalThis.NexusNovaSearchCore;
 

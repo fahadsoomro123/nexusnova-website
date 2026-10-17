@@ -50,7 +50,8 @@ test('account pages avoid the global heavy bundle and NOVA assistant injection',
   const shell = read('assets/js/account-shell.js');
   assert.doesNotMatch(shell, /assistant|googletagmanager|gtag|IntersectionObserver/);
   assert.match(shell, /data-menu-btn/);
-  assert.match(shell, /data-year/);
+  assert.doesNotMatch(shell, /data-year/);
+  assert.match(read('index.html'), /©\s*2026 NexusNova Tools/);
 });
 
 test('account pages use server verification and Firebase linking callables', () => {

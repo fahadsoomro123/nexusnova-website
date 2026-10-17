@@ -399,7 +399,6 @@ def ensure_replacement_articles() -> int:
 </article></div></section>
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><p>Practical calculators, careful explanations and transparent limits from NexusNova Tools.</p><nav aria-label="Footer links"><a href="../about.html">About</a><a href="../editorial-policy.html">Editorial policy</a><a href="../privacy.html">Privacy</a><a href="../contact.html">Contact</a></nav><small>Educational information only; verify contracts, applicable rates and professional requirements before acting.</small></div></footer>
-<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>
 
 </body>
 </html>

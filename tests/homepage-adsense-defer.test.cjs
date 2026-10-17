@@ -26,7 +26,7 @@ test('homepage AdSense request is scheduled after load and idle with a bounded f
   assert.ok(runtime.includes("window.addEventListener('load',scheduleAfterLoad,{once:true})"));
   assert.ok(runtime.includes("window.requestIdleCallback(insertAdsenseScript,{timeout:4000})"));
   assert.ok(runtime.includes("window.setTimeout(insertAdsenseScript,1500)"));
-  assert.ok(runtime.includes("else{\n    insertAdsenseScript();\n  }"));
+  assert.match(runtime, /else\s*\{\r?\n\s*insertAdsenseScript\(\);\r?\n\s*\}/);
 });
 
 test('GA4 measurement ID and consent updater remain untouched', () => {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json,re,html
+import json,re,html,subprocess,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
 BASE="https://nexusnovatools.com/"
@@ -23,16 +23,17 @@ def meta(path):
     return title,desc,canonical,cat
 
 
-def ensure_related_tools_loader(path):
+def remove_retired_shell_loaders(path):
     """Keep route-aware related content, but never inject the global shell guard."""
     source = path.read_text(encoding="utf-8-sig")
     original = source
     source = re.sub(r'<script[^>]*global-shell-guard\.js[^>]*></script>', '', source, flags=re.I)
-    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
-    if not re.search(loader_pattern, source, re.I):
-        tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
-        updated, n = re.subn(r'</body\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
-        source = updated if n else source + tag
+    source = re.sub(
+        r'<script\b(?=[^>]*\bsrc=["\'][^"\']*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard)\.js(?:\?[^"\']*)?["\'])[^>]*>\s*</script\s*>',
+        '',
+        source,
+        flags=re.I,
+    )
     if source != original:
         path.write_text(source, encoding="utf-8")
         return True
@@ -42,7 +43,7 @@ def ensure_related_tools_loader(path):
 records=[]
 sitemap_records=[]
 for p in sorted((ROOT/"articles").glob("*.html")):
-    ensure_related_tools_loader(p)
+    remove_retired_shell_loaders(p)
     title,desc,canonical,cat=meta(p)
     raw=p.read_text(encoding="utf-8-sig")[:5000]
     if not canonical or not title: continue
@@ -144,3 +145,10 @@ if len(article_urls) != 100:
 if len(re.findall(r'<a class="nn-article-card" href="articles/[^"]+\.html"', hub)) != 100:
     raise SystemExit("ERROR: Articles hub must contain exactly 100 indexable article cards")
 print(f"PASS: synchronized {articles} search article records; hub_cards=100; sitemap_articles={len(article_urls)}; dataset={total}")
+related = subprocess.run(["node", str(ROOT/".github/scripts/generate_static_related_tools.cjs")], cwd=ROOT, text=True, capture_output=True)
+if related.stdout:
+    print(related.stdout.rstrip())
+if related.returncode:
+    if related.stderr:
+        print(related.stderr.rstrip(), file=sys.stderr)
+    raise SystemExit("ERROR: static related-content generation failed")
