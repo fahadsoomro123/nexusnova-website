@@ -252,12 +252,13 @@ def patch_supporting_sources():
         ROOT / "assets/js/related-tools-bootstrap.js",
         ROOT / "assets/js/related-tools.js",
         ROOT / "assets/js/privacy-bridge.js",
+        ROOT / "assets/js/auth-header-state.js",
     ):
         if obsolete.exists():
             obsolete.unlink()
             changed.append(obsolete.relative_to(ROOT).as_posix())
 
-    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js"):
+    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js", "assets/js/assistant.js"):
         path = ROOT / relative
         original = path.read_text(encoding="utf-8-sig")
         source = remove_guard_loader(original)
@@ -402,7 +403,7 @@ def check_static_shell(header_template, footer_template):
         runtime_source = runtime_path.read_text(encoding="utf-8", errors="replace")
         if forbidden_runtime.search(runtime_source):
             problems.append(f"{relative}: retired shell/related-content loader remains")
-    for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js", "assets/js/related-tools-bootstrap.js", "assets/js/related-tools.js", "assets/js/privacy-bridge.js"):
+    for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js", "assets/js/related-tools-bootstrap.js", "assets/js/related-tools.js", "assets/js/privacy-bridge.js", "assets/js/auth-header-state.js"):
         if (ROOT / relative).exists():
             problems.append(f"{relative}: obsolete browser runtime file must be absent")
     loader_pattern = re.compile(r"<script\b[^>]*src=.*(?:nn-inner-shell|related-tools-bootstrap|global-shell-guard)\.js", re.I)
