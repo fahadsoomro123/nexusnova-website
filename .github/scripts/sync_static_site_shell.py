@@ -154,8 +154,8 @@ const shellPart = (source, tag) => {
 };
 const labels = header => {
   const nav = shellPart(header, 'nav');
-  return [...nav.matchAll(/<a\\b[^>]*>([\\s\\S]*?)<\\/a\\s*>/gi)]
-    .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim());
+  return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
+    .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 };
 
 test('every HTML page has exactly the canonical static index header and footer', () => {
@@ -181,18 +181,18 @@ test('every HTML page has exactly the canonical static index header and footer',
     const relative = path.relative(root, file);
     assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
     assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
-    assert.equal((source.match(/\\/assets\\/css\\/static-site-shell\\.css\\?/g) || []).length, 1,
+    assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
-    assert.doesNotMatch(source, /<script\\b[^>]*\\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell)\\.js/i,
+    assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell)\.js/i,
       relative + ' still loads retired shell script');
   }
 });
 
 test('dynamic guard loaders are gone and old guard files are inert', () => {
   for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/related-tools.js']) {
-    assert.doesNotMatch(read(file), /global-shell-guard\\.js/, file + ' still loads retired guard');
+    assert.doesNotMatch(read(file), /global-shell-guard\.js/, file + ' still loads retired guard');
   }
-  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|scheduleNonCriticalDomTask\\(enforceSelectedHeaderLogo\\)/);
+  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|scheduleNonCriticalDomTask\(enforceSelectedHeaderLogo\)/);
   for (const file of ['assets/js/global-shell-guard.js', 'assets/js/nn-inner-shell.js']) {
     assert.doesNotMatch(read(file), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
   }
@@ -200,10 +200,10 @@ test('dynamic guard loaders are gone and old guard files are inert', () => {
 
 test('108 indexed tool routes resolve to unique HTML files', () => {
   const core = read('assets/js/search-core.js');
-  const routes = [...core.matchAll(/\\{\\s*title:"((?:[^"\\\\]|\\\\.)*)",\\s*url:"((?:[^"\\\\]|\\\\.)*)",\\s*type:"tool"/g)].map(match => match[2]);
+  const routes = [...core.matchAll(/\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"/g)].map(match => match[2]);
   assert.equal(routes.length, 108);
   assert.equal(new Set(routes).size, 108);
-  for (const route of routes) assert.ok(fs.existsSync(path.join(root, route.replace(/^\\/+/, ''))), 'missing indexed tool route ' + route);
+  for (const route of routes) assert.ok(fs.existsSync(path.join(root, route.replace(/^\/+/, ''))), 'missing indexed tool route ' + route);
 });
 
 test('sitemap synchronization rebuilds the article URL set', () => {
@@ -214,10 +214,10 @@ test('sitemap synchronization rebuilds the article URL set', () => {
 
 test('static shell stylesheet caps logos and provides mobile-safe navigation', () => {
   const css = read('assets/css/static-site-shell.css');
-  assert.match(css, /max-height:\\s*40px\\s*!important/);
-  assert.match(css, /@media\\s*\\(max-width:\\s*560px\\)/);
-  assert.match(css, /overflow-x:\\s*auto\\s*!important/);
-  assert.match(css, /grid-template-columns:\\s*minmax\\(0,\\s*1fr\\)/);
+  assert.match(css, /max-height:\s*40px\s*!important/);
+  assert.match(css, /@media\s*\(max-width:\s*560px\)/);
+  assert.match(css, /overflow-x:\s*auto\s*!important/);
+  assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
 '''
 
