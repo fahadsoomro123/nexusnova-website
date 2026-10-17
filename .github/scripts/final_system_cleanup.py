@@ -255,14 +255,14 @@ def patch_phase2_sync_script() -> bool:
     output = []
     skipped_old_sub = False
     for line in lines:
-        if line.startswith("loader_pattern ="):
+        if line.strip().startswith("loader_pattern ="):
             output.append('    loader_pattern = r"""<script\\b[^>]+src=["\'][^"\']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\\.js(?:\\?[^"\']*)?["\']"""')
             continue
         if line.strip().startswith("tag = ") and "global-shell-guard.js" in line:
             output.append("    source = re.sub(r'<script[^>]*global-shell-guard\\.js[^>]*></script>', '', source, flags=re.I)")
             output.append("    tag = '\\n<script defer src=\"../assets/js/nn-inner-shell.js?v=20261016-related-content-v1\"></script>\\n'")
             continue
-        if line.startswith("article_re=re.compile(")
+        if line.startswith("article_re=re.compile("):
             output.append(
                 'core="\\n".join(line for line in core.splitlines() '
                 'if not (line.strip().startswith("{ title:") and \'type:"article"\' in line))+"\\n"'
