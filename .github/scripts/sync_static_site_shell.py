@@ -258,7 +258,7 @@ def patch_supporting_sources():
             obsolete.unlink()
             changed.append(obsolete.relative_to(ROOT).as_posix())
 
-    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js", "assets/js/assistant.js"):
+    for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/search-core.js", "assets/js/tier1-tools.js", "assets/js/assistant.js", "assets/js/assistant-core.js"):
         path = ROOT / relative
         original = path.read_text(encoding="utf-8-sig")
         source = remove_guard_loader(original)

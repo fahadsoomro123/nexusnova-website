@@ -16,7 +16,7 @@ test('account header and primary navigation are present in source HTML', () => {
 
 test('runtime account menu builder has been removed while account functionality remains', () => {
   assert.equal(fs.existsSync(path.join(ROOT, 'assets/js/auth-header-state.js')), false);
-  for (const relative of ['assets/js/assistant.js', 'assets/js/site-main.js', 'assets/js/main.js']) {
+  for (const relative of ['assets/js/assistant.js', 'assets/js/assistant-core.js', 'assets/js/site-main.js', 'assets/js/main.js']) {
     const source = read(relative);
     assert.doesNotMatch(source, /auth-header-state\.js|data-nexusnova-auth-header|data-nn-account-menu/,
       relative + ' must not generate or load a runtime header');
@@ -24,4 +24,6 @@ test('runtime account menu builder has been removed while account functionality 
   assert.ok(fs.existsSync(path.join(ROOT, 'assets/js/account-dashboard.js')));
   assert.doesNotMatch(read('assets/js/assistant.js'), /nav\.appendChild\(a\)|trending\.after\(a\)/,
     'assistant must not inject links into the static primary navigation');
+  assert.doesNotMatch(read('assets/js/assistant-core.js'), /nav\.appendChild\(link\)|trending\.after\(link\)/,
+    'assistant-core must not inject links into the static primary navigation');
 });

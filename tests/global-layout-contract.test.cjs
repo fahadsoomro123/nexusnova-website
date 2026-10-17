@@ -64,9 +64,13 @@ test('shell and related-content runtime loaders are absent', () => {
   ]) {
     assert.equal(fs.existsSync(path.join(root, file)), false, file + ' must remain deleted');
   }
-  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js']) {
+  for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js', 'assets/js/assistant-core.js']) {
     assert.doesNotMatch(read(file), /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header/,
       file + ' must not request a retired shell or related-content loader');
+  }
+  for (const file of ['assets/js/assistant.js', 'assets/js/assistant-core.js']) {
+    assert.doesNotMatch(read(file), /nav\.appendChild\((?:a|link)\)|trending\.after\((?:a|link)\)/,
+      file + ' must not modify the shared primary navigation');
   }
   const selector = read('.github/scripts/related_tools_selector.cjs');
   assert.doesNotMatch(selector, /\b(?:window|document)\s*(?:\.|\[)|createElement|appendChild|innerHTML|querySelector|MutationObserver/,

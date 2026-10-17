@@ -123,10 +123,18 @@ test('obsolete shell and related-content loader scripts are absent from the repo
   for (const file of htmlFiles()) {
     assert.doesNotMatch(fs.readFileSync(file, 'utf8'), forbiddenLoader, path.relative(ROOT, file));
   }
-  for (const relative of ['assets/js/main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js', 'assets/js/site-main.js']) {
+  for (const relative of ['assets/js/main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js', 'assets/js/assistant-core.js', 'assets/js/site-main.js']) {
     assert.doesNotMatch(fs.readFileSync(path.join(ROOT, relative), 'utf8'),
       /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header/,
       relative + ' must not dynamically request a retired loader');
+  }
+});
+
+test('assistant bundles cannot mutate the static primary navigation', () => {
+  for (const relative of ['assets/js/assistant.js', 'assets/js/assistant-core.js']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(ROOT, relative), 'utf8'),
+      /nav\.appendChild\((?:a|link)\)|trending\.after\((?:a|link)\)/,
+      relative + ' must not append navigation links at runtime');
   }
 });
 

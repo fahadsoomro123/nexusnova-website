@@ -15,16 +15,7 @@
   style.textContent='.breadcrumbs{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 18px;color:var(--muted);font-size:13px;font-weight:750}.breadcrumbs a{color:var(--accent)}.breadcrumbs span[aria-current="page"]{color:var(--text)}';
   if(!document.getElementById(style.id))document.head.appendChild(style);
 
-  /* main.js rebuilds the nav; restore Gaming in the shared navigation. */
-  const nav=document.querySelector('[data-nav]');
-  if(nav&&!nav.querySelector('a[href$="gaming.html"]')){
-    const link=document.createElement('a');
-    link.href=`${base}gaming.html`;
-    link.textContent='Gaming';
-    if(gamingFiles.has(page))link.setAttribute('aria-current','page');
-    const trending=[...nav.querySelectorAll('a')].find(a=>a.getAttribute('href')?.endsWith('trending-tools.html'));
-    if(trending)trending.after(link);else nav.appendChild(link);
-  }
+  /* Shared navigation is source-authored in HTML; no runtime links are inserted. */
 
   const schemaScripts=()=>[...document.querySelectorAll('script[type="application/ld+json"]')];
   const hasSchemaType=type=>schemaScripts().some(s=>{try{const d=JSON.parse(s.textContent||'{}');return d['@type']===type||d['@graph']?.some(x=>x?.['@type']===type)}catch{return false}});
