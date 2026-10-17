@@ -381,7 +381,7 @@ def remove_guard_loader(source: str) -> str:
         tail = re.search(r"\}\)\(\);\s*", source[start:])
         if tail:
             source = source[:start] + source[start + tail.end():]
-    return source
+    return source.rstrip() + "\n"
 
 
 def disable_legacy_logo_mutation(source: str) -> str:
