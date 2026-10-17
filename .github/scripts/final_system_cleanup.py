@@ -199,6 +199,16 @@ def is_indexable(source: str) -> bool:
 def update_article(path: Path) -> bool:
     source = path.read_text(encoding="utf-8-sig")
     original = source
+    canonical = canonical_url(source).rstrip("/")
+    expected_canonical = page_url(path).rstrip("/")
+    # The release contract requires 100 self-canonical article pages to be
+    # indexable. Keep aliases/non-canonical pages unchanged, but ensure a
+    # self-canonical article is not accidentally excluded by a stale noindex.
+    if canonical and canonical == expected_canonical:
+        robots_match = meta_tag_match(source, "name", "robots")
+        robots_content = get_attr(robots_match.group(0), "content") if robots_match else ""
+        if not robots_match or re.search(r"\bnoindex\b", robots_content, re.I):
+            source = set_meta(source, "name", "robots", "index,follow,max-image-preview:large")
     title = concise_title(get_title(source), path.name)
     title_core = re.sub(r"\s*\|\s*NexusNova Tools\s*$", "", title, flags=re.I).strip()
     description = CASHFLOW_DESCRIPTION if path.name == "cash-flow-forecast-small-business.html" else trim_description(get_description(source), get_h1(source))
