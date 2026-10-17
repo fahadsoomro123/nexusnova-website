@@ -106,9 +106,8 @@ def page_metrics(page) -> dict:
           const navs = header ? [...header.querySelectorAll('nav')] : [];
           const searches = header ? [...header.querySelectorAll('input[type="search"],form[role="search"] input')] : [];
           const logos = header ? [...header.querySelectorAll('img')].filter(visible).map(img => ({height: img.getBoundingClientRect().height, width: img.getBoundingClientRect().width, src: img.currentSrc || img.src})) : [];
-          const articleLinks = [...document.querySelectorAll('a[href]')].map(a => new URL(a.getAttribute('href'), location.href).pathname).filter(p => /\/articles\/[^/]+\.html$/i.test(p));
           const footer = [...document.querySelectorAll('footer,[role="contentinfo"]')].filter(el => !el.parentElement?.closest('footer,[role="contentinfo"]') && visible(el));
-          return {headers:headers.length,navs:navs.length,searches:searches.length,logos,footers:footer.length,articleLinks:[...new Set(articleLinks)],scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
+          return {headers:headers.length,navs:navs.length,searches:searches.length,logos,footers:footer.length,scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
         }
         """
     )
@@ -130,7 +129,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                 try:
                     target = rel if rel.startswith("http") else base_url.rstrip("/") + "/" + rel.lstrip("/")
                     response = page.goto(target, wait_until="domcontentloaded", timeout=30000)
-                    page.wait_for_timeout(150)
+                    page.wait_for_timeout(500)
                     status = response.status if response else 0
                     if status >= 400 or status == 0:
                         failures.append(f"{label}@{viewport_name}: HTTP {status}")
@@ -154,8 +153,8 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         finding = f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}"
                         (warnings if preview else failures).append(finding)
                     if rel == ARTICLE_HUB:
-                        article_cards = len(metrics["articleLinks"])
-                        article_count_text = bool(re.search(r"\b100\s+articles\b", page.locator("body").inner_text(), re.I))
+                        article_cards = page.locator('a.nn-article-card[href$=".html"]').count()
+                        article_count_text = page.locator('#article-search-count').inner_text(timeout=5000).strip() == '100 articles'
                 except Exception as exc:
                     failures.append(f"{label}@{viewport_name}: browser exception: {exc}")
                 finally:
