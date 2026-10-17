@@ -50,12 +50,7 @@
     const base=getBase();
     const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
 
-    const nav=document.querySelector('[data-nav]');
-    if(nav&&!nav.querySelector('a[href$="gaming.html"]')){
-      const a=document.createElement('a');a.href=`${base}gaming.html`;a.textContent='Gaming';
-      const trending=[...nav.querySelectorAll('a')].find(x=>x.getAttribute('href')?.endsWith('trending-tools.html'));
-      if(trending)trending.after(a);else nav.appendChild(a);
-    }
+    /* Header navigation is source-authored; never add links at runtime. */
 
     if(page==='tools.html'){
       const section=document.getElementById('dedicated-daily-pages');
@@ -110,13 +105,5 @@
   }
 })();
 
-(()=>{
-  if(document.querySelector('script[data-nexusnova-auth-header]'))return;
-  const current=document.currentScript;
-  const src=current?.src||'';
-  const module=document.createElement('script');
-  module.type='module';
-  module.src=src?src.replace(/assistant\.js(?:\?.*)?$/,'auth-header-state.js'):'assets/js/auth-header-state.js';
-  module.dataset.nexusnovaAuthHeader='';
-  document.body.appendChild(module);
-})();
+/* Authentication navigation remains source-authored; no header DOM bootstrap. */
+
