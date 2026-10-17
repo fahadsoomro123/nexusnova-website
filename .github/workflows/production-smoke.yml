@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout exact commit
+      - name: Checkout exact commit for deployment comparison
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Set up Node 22
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -42,7 +42,68 @@ jobs:
       - name: Full repository test suite
         run: npm test
 
-      - name: Verify source inventory and live production pages
+            - name: Wait for changed static files to match this commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import subprocess
+          import time
+          from concurrent.futures import ThreadPoolExecutor
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import Request, urlopen
+
+          base = 'https://nexusnovatools.com'
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          paths = subprocess.check_output([
+              'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--',
+              '*.html', 'assets/**/*.css', 'assets/**/*.js',
+              'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'ads.txt', 'sitemap*.xml'
+          ], text=True).splitlines()
+          paths = [p for p in paths if p and not p.startswith('.github/') and Path(p).is_file()]
+          if not paths:
+              paths = ['index.html']
+          expected = {
+              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+              for path in paths
+          }
+
+          def check(path, attempt):
+              route = '/' if path == 'index.html' else '/' + quote(path, safe='/')
+              url = f'{base}{route}?deploy={commit}-{attempt}'
+              request = Request(url, headers={
+                  'Cache-Control': 'no-cache, no-store, max-age=0',
+                  'Pragma': 'no-cache',
+                  'User-Agent': 'NexusNovaProductionSmoke/3.0'
+              })
+              try:
+                  with urlopen(request, timeout=8) as response:
+                      body = response.read()
+                      status = response.status
+                  actual = hashlib.sha256(body).hexdigest()
+                  return path, expected[path], actual, status
+              except (HTTPError, URLError, TimeoutError, OSError) as exc:
+                  return path, expected[path], type(exc).__name__, None
+
+          workers = min(24, max(1, len(paths)))
+          with ThreadPoolExecutor(max_workers=workers) as pool:
+              for attempt in range(1, 41):
+                  results = list(pool.map(lambda path: check(path, attempt), paths))
+                  stale = [result for result in results if result[1] != result[2] or result[3] != 200]
+                  if not stale:
+                      print(f'DEPLOYMENT READY: {len(paths)} changed static file(s) match commit {commit} on attempt {attempt}.')
+                      break
+                  for path, wanted, observed, status in stale[:8]:
+                      print(f'Waiting for deploy attempt {attempt}/40: {path} expected_sha256={wanted[:12]} actual={observed[:24]} status={status}')
+                  if attempt == 40:
+                      raise SystemExit(f'PRODUCTION FAIL: {len(stale)} changed static file(s) did not match this commit within the bounded wait.')
+                  time.sleep(3)
+          PY
+
+      - name: Verify production routes and content markers with diagnostics
         shell: bash
         run: |
           set -euo pipefail
