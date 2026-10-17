@@ -510,9 +510,9 @@ def patch_phase2_sync_script() -> bool:
         if line.startswith("article_re=re.compile("):
             continue
         if line.startswith('core=article_re.sub('):
+            continue
         # Remove old copies of this filter so repeated cleanup runs stay idempotent.
         if line.lstrip().startswith("core") and 'type:"article"' in line and ".splitlines()" in line:
-            continue
             continue
         if line.strip().startswith("if not indexable and canonical != page_url.rstrip"):
             output.append('    if not indexable or canonical != page_url.rstrip("/"): continue')
