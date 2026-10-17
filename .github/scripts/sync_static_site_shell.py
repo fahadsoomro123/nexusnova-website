@@ -96,7 +96,7 @@ for page in html_files:
         problems.append(f"{rel}: footer mismatch")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"<script\b[^>]*\bsrc=[\"'][^\"']*(?:global-shell-guard|nn-inner-shell)\.js", source, re.I):
+    if re.search(r"<script\b[^>]*\bsrc=[\"'][^\"']*global-shell-guard\.js", source, re.I):
         problems.append(f"{rel}: retired dynamic shell script still referenced")
 for name in ("main.js", "site-main.js", "analytics.js", "related-tools.js"):
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
@@ -183,7 +183,7 @@ test('every HTML page has exactly the canonical static index header and footer',
     assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
-    assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*(?:global-shell-guard|nn-inner-shell)\.js/i,
+    assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
       relative + ' still loads retired shell script');
   }
 });
@@ -339,7 +339,7 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
         edits.append((position, position, "\n" + footer_template + "\n"))
     source = apply_edits(source, edits)
     source = re.sub(
-        r"<script\b(?=[^>]*\bsrc\s*=\s*[\"'][^\"']*(?:global-shell-guard|nn-inner-shell)\.js(?:\?[^\"']*)?[\"'])[^>]*>[\s\S]*?</script\s*>",
+        r"<script\b(?=[^>]*\bsrc\s*=\s*[\"'][^\"']*global-shell-guard\.js(?:\?[^\"']*)?[\"'])[^>]*>[\s\S]*?</script\s*>",
         "", source, flags=re.I,
     )
     source = re.sub(r"<link\b(?=[^>]*global-shell-repair\.css)[^>]*>", "", source, flags=re.I)
@@ -365,15 +365,15 @@ def remove_guard_loader(source: str) -> str:
 
 
 def disable_legacy_logo_mutation(source: str) -> str:
-    marker = "// Enforce the selected NexusNova logo at runtime on every shared header variant."
-    start = source.find(marker)
+    start_marker = "  // Keep every visible footer Contact link consistent across the entire site."
+    end_marker = "  // Global share action:"
+    start = source.find(start_marker)
     if start < 0:
         return source
-    scheduler = source.find("  const scheduleNonCriticalDomTask=", start)
-    if scheduler < 0:
-        raise RuntimeError("main.js logo enforcement block changed unexpectedly")
-    source = source[:start] + source[scheduler:]
-    return re.sub(r"^\s*scheduleNonCriticalDomTask\(enforceSelectedHeaderLogo\);\s*$", "", source, flags=re.M)
+    end = source.find(end_marker, start)
+    if end < 0:
+        raise RuntimeError("main.js header/footer mutation block changed unexpectedly")
+    return source[:start] + source[end:]
 
 
 def replace_between(source, start_marker, end_marker, replacement):
@@ -393,12 +393,31 @@ def all_html_files():
 
 def patch_supporting_sources():
     changed = []
-    stub = "/* Retired: the canonical site shell is static HTML; this file intentionally performs no DOM mutation. */\n"
-    for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js"):
-        path = ROOT / relative
-        if path.read_text(encoding="utf-8", errors="replace") != stub:
-            path.write_text(stub, encoding="utf-8")
-            changed.append(relative)
+    stub = "/* Retired: the canonical site shell is static HTML; this file intentionally performs no DOM mutation. */\\n"
+    guard_path = ROOT / "assets/js/global-shell-guard.js"
+    if guard_path.read_text(encoding="utf-8", errors="replace") != stub:
+        guard_path.write_text(stub, encoding="utf-8")
+        changed.append("assets/js/global-shell-guard.js")
+
+    # Keep the legacy shell filename only as a non-mutating related-content bootstrap.
+    inner_shell = """/* Related-content bootstrap only. Shared header and footer are static HTML. */
+(function () {
+  if (window.__nexusNovaRelatedToolsBootstrapScriptRequested) return;
+  window.__nexusNovaRelatedToolsBootstrapScriptRequested = true;
+  var loader = document.createElement('script');
+  loader.src = '/assets/js/related-tools-bootstrap.js?v=20261016-related-content-v1';
+  loader.async = true;
+  loader.dataset.nexusnovaRelatedToolsBootstrap = '';
+  loader.onerror = function () {
+    window.__nexusNovaRelatedToolsBootstrapScriptRequested = false;
+  };
+  document.head.appendChild(loader);
+})();
+"""
+    inner_path = ROOT / "assets/js/nn-inner-shell.js"
+    if inner_path.read_text(encoding="utf-8", errors="replace") != inner_shell:
+        inner_path.write_text(inner_shell, encoding="utf-8")
+        changed.append("assets/js/nn-inner-shell.js")
     for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/related-tools.js"):
         path = ROOT / relative
         original = path.read_text(encoding="utf-8-sig")
@@ -415,11 +434,28 @@ def patch_supporting_sources():
         source = original
         start = source.find("def ensure_global_shell_loader(path):")
         if start >= 0:
-            end = source.find("\nrecords=[]", start)
+            end = source.find("\\nrecords=[]", start)
             if end < 0:
                 raise RuntimeError("sync_phase2_content.py shell loader end marker missing")
-            source = source[:start] + "# Static header/footer synchronization is handled by sync_static_site_shell.py.\n" + source[end + 1:]
-        source = source.replace("    ensure_global_shell_loader(p)\n", "")
+            helper = '''def ensure_related_tools_loader(path):
+    """Keep route-aware related content, but never inject the global shell guard."""
+    source = path.read_text(encoding="utf-8-sig")
+    original = source
+    source = re.sub(r'<script[^>]*global-shell-guard\\\\.js[^>]*></script>', '', source, flags=re.I)
+    loader_pattern = r"""<script\\\\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\\\\.js(?:\\\\?[^"']*)?["']"""
+    if not re.search(loader_pattern, source, re.I):
+        tag = '\\\\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\\\\n'
+        updated, n = re.subn(r'</body\\\\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
+        source = updated if n else source + tag
+    if source != original:
+        path.write_text(source, encoding="utf-8")
+        return True
+    return False
+
+
+'''
+            source = source[:start] + helper + source[end + 1:]
+        source = source.replace("    ensure_global_shell_loader(p)\\n", "    ensure_related_tools_loader(p)\\n")
         if source != original:
             sync_path.write_text(source, encoding="utf-8")
             changed.append(".github/scripts/sync_phase2_content.py")
@@ -508,7 +544,7 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: missing static footer")
         if source.count(SHELL_CSS_HREF) != 1:
             problems.append(f"{relative}: expected one shared stylesheet link")
-        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*(?:global-shell-guard|nn-inner-shell)\.js", source, re.I):
+        if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*global-shell-guard\.js", source, re.I):
             problems.append(f"{relative}: retired shell script still referenced")
         if headers and source[headers[0][0]:headers[0][1]] != header_template:
             problems.append(f"{relative}: header differs from canonical index.html")
