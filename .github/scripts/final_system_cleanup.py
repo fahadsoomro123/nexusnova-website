@@ -261,6 +261,8 @@ def patch_phase2_sync_script() -> bool:
         if line.strip().startswith("tag = ") and "global-shell-guard.js" in line:
             output.append("    source = re.sub(r'<script[^>]*global-shell-guard\\.js[^>]*></script>', '', source, flags=re.I)")
             output.append("    tag = '\\n<script defer src=\"../assets/js/nn-inner-shell.js?v=20261016-related-content-v1\"></script>\\n'")
+            output.append('    if path.name == "cash-flow-forecast-small-business.html":')
+            output.append('        tag += \'<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>\\n\'')
             continue
         if line.startswith("article_re=re.compile("):
             output.append(
@@ -278,7 +280,7 @@ def patch_phase2_sync_script() -> bool:
             output.append(line)
             continue
         if line.strip().startswith("if indexable and canonical == page_url.rstrip") or line.strip().startswith("if indexable and canonical.startswith"):
-            output.append("    sitemap_records.append(record)")
+            output.append(line)
             continue
         output.append(line)
     source = "\n".join(output) + "\n"
@@ -396,8 +398,15 @@ def main() -> None:
         r'\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"(?:[^"\\]|\\.)*",\s*type:"article",',
         search_core
     )
-    if len(article_sitemap_urls) != 100:
-        raise SystemExit(f"ERROR: expected 100 article sitemap URLs, found {len(article_sitemap_urls)}")
+    expected_sitemap_count = sum(
+        1 for path in self_canonical_pages
+        if is_indexable(path.read_text(encoding="utf-8-sig"))
+    )
+    if len(article_sitemap_urls) != expected_sitemap_count:
+        raise SystemExit(
+            f"ERROR: sitemap has {len(article_sitemap_urls)} article URLs; "
+            f"expected {expected_sitemap_count} indexable self-canonical articles, preserving approved noindex pages"
+        )
     if len(article_records) != 100:
         raise SystemExit(f"ERROR: expected 100 search article records, found {len(article_records)}")
 
@@ -407,6 +416,7 @@ def main() -> None:
         f"self_canonical_article_pages={len(self_canonical_pages)} "
         f"article_pages_changed={changed_articles} "
         f"sitemap_article_urls={len(article_sitemap_urls)} "
+        f"indexable_sitemap_target={expected_sitemap_count} "
         f"search_article_records={len(article_records)} "
         f"sync_script_fixed={sync_patched} "
         f"lighthouse_diagnostics_added={lighthouse_diagnostics} "
