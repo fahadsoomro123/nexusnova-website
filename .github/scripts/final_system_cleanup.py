@@ -400,7 +400,7 @@ def ensure_replacement_articles() -> int:
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><p>Practical calculators, careful explanations and transparent limits from NexusNova Tools.</p><nav aria-label="Footer links"><a href="../about.html">About</a><a href="../editorial-policy.html">Editorial policy</a><a href="../privacy.html">Privacy</a><a href="../contact.html">Contact</a></nav><small>Educational information only; verify contracts, applicable rates and professional requirements before acting.</small></div></footer>
 <script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>
-<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>
+
 </body>
 </html>
 '''
@@ -653,6 +653,18 @@ def main() -> None:
         if run.stderr:
             print(run.stderr.rstrip(), file=sys.stderr)
         raise SystemExit(f"ERROR: article discovery synchronization failed with exit code {run.returncode}")
+
+    # Reapply the static shell after generated content and article indexes are synchronized.
+    shell_sync = subprocess.run(
+        [sys.executable, str(ROOT / ".github/scripts/sync_static_site_shell.py"), "--write"],
+        cwd=ROOT, text=True, capture_output=True
+    )
+    if shell_sync.stdout:
+        print(shell_sync.stdout.rstrip())
+    if shell_sync.returncode:
+        if shell_sync.stderr:
+            print(shell_sync.stderr.rstrip(), file=sys.stderr)
+        raise SystemExit("ERROR: static site shell synchronization failed")
 
     # Assert the hard acceptance criteria without mutating protected logic.
     sitemap = (ROOT / "sitemap.xml").read_text(encoding="utf-8")

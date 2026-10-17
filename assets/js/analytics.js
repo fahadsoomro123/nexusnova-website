@@ -149,17 +149,3 @@
   }
 
 })();
-
-
-/* Load the shared responsive header/search/footer repair layer once per page. */
-(function(){
-  if(typeof window==='undefined'||!window.document)return;
-  if(window.__nexusNovaGlobalShellGuardRequested)return;
-  window.__nexusNovaGlobalShellGuardRequested=true;
-  var script=document.createElement('script');
-  script.src='/assets/js/global-shell-guard.js?v=20261017-ui-sweep';
-  script.async=true;
-  script.dataset.nexusnovaGlobalShellGuard='';
-  script.onerror=function(){window.__nexusNovaGlobalShellGuardRequested=false;};
-  (document.head||document.documentElement).appendChild(script);
-})();

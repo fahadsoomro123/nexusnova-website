@@ -57,12 +57,11 @@ class StructureParser(HTMLParser):
 
 
 def html_files() -> list[Path]:
-    paths = sorted(ROOT.glob("*.html"))
-    for folder in PUBLIC_FOLDERS:
-        base = ROOT / folder
-        if base.exists():
-            paths.extend(sorted(base.rglob("*.html")))
-    return sorted(set(paths))
+    """Enumerate every repository HTML document, including nested tech and app pages."""
+    return sorted(
+        path for path in ROOT.rglob("*.html")
+        if not any(part in {".git", "node_modules", "quality-artifacts"} for part in path.parts)
+    )
 
 
 def is_standalone_preview(parser: StructureParser, path: Path) -> bool:

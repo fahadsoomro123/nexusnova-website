@@ -27,7 +27,8 @@ test('the final cash-flow guide meets its publishing contract', () => {
   assert.match(html, /"@type":"Article"/);
   assert.match(html, /<strong>Formula:<\/strong>/);
   assert.match(html, /<table>/);
-  assert.match(html, /global-shell-guard\.js/);
+  assert.match(html, /static-site-shell\.css/);
+  assert.doesNotMatch(html, /global-shell-guard\.js/);
   assert.ok(words >= 500, 'Expected a substantive guide, found ' + words + ' words');
   for (const route of ['invoice-maker.html', 'freelance-rate-calculator.html', 'percentage-calculator.html']) {
     assert.ok(html.includes('href="../' + route + '"'), 'Missing related tool link: ' + route);

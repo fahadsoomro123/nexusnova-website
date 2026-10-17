@@ -22,9 +22,10 @@ test('dynamic link hydration scans inserted subtrees instead of the entire docum
     'the whole-body link scan must not run on pages with no dynamic links'
   );
   assert.ok(
-    source.includes('scheduleNonCriticalDomTask(enforceSelectedHeaderLogo)') &&
-    source.includes('scheduleNonCriticalDomTask(normalizeFooterStructure)'),
-    'non-critical header/footer normalization must wait for idle time'
+    !source.includes('enforceSelectedHeaderLogo') &&
+    !source.includes('normalizeFooterStructure') &&
+    !source.includes('global-shell-guard.js'),
+    'header/footer must remain static instead of being mutated at runtime'
   );
   assert.ok(source.includes('},2800);'), 'share control should wait until after initial rendering');
 

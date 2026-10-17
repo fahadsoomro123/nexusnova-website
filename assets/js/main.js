@@ -1,4 +1,4 @@
-﻿(()=>{
+(()=>{
   'use strict';
 
   const enforceCleanCanonical=()=>{const link=document.querySelector('link[rel="canonical"]');if(!link)return;try{const canonical=new URL(link.getAttribute('href')||location.href,location.origin);canonical.search='';canonical.hash='';link.setAttribute('href',canonical.href);}catch(_){}};
@@ -159,44 +159,6 @@
   };
   scheduleDynamicLinkHydration();
 
-  // Keep every visible footer Contact link consistent across the entire site.
-  // Enforce the selected NexusNova logo at runtime on every shared header variant.
-  const enforceSelectedHeaderLogo=()=>{
-    const base=(document.querySelector('base')?.href||document.baseURI);
-    const logoUrl=new URL((/\/(guides|articles|tech)\//.test(location.pathname)?'../':'')+'assets/logo.png',base).href;
-    document.querySelectorAll('.site-header .brand-mark,.site-header .mark,nav.nav .brand .mark,.header .brandmark').forEach(mark=>{
-      mark.style.backgroundImage='url("'+logoUrl.replace(/"/g,'%22')+'")';
-      mark.style.backgroundSize='contain';
-      mark.style.backgroundPosition='center';
-      mark.style.backgroundRepeat='no-repeat';
-      mark.style.color='transparent';
-      mark.style.fontSize='0';
-      mark.style.boxShadow='none';
-    });
-  };
-  const scheduleNonCriticalDomTask=callback=>{
-    const schedule=()=>{
-      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(callback,{timeout:1600});
-      else window.setTimeout(callback,150);
-    };
-    if(document.readyState==='loading')window.addEventListener('DOMContentLoaded',schedule,{once:true});
-    else schedule();
-  };
-  scheduleNonCriticalDomTask(enforceSelectedHeaderLogo);
-
-  const normalizeFooterContact=()=>{document.querySelectorAll('.site-footer .footer-links a[href="contact.html"]').forEach(link=>{link.textContent='Contact Us & Support';});};
-  scheduleNonCriticalDomTask(normalizeFooterContact);
-
-  // Keep legacy footer link lists from duplicating the structured footer on compact pages.
-  const normalizeFooterStructure=()=>{
-    document.querySelectorAll('.site-footer').forEach(footer=>{
-      const structured=footer.querySelector('.footer-console,.footer-grid');
-      const orphan=footer.querySelector(':scope > .footer-links');
-      if(structured&&orphan)orphan.remove();
-    });
-  };
-  scheduleNonCriticalDomTask(normalizeFooterStructure);
-
   // Global share action: one compact button, no in-page share panel.
   const mountShareWidget=()=>{
     if(document.querySelector('[data-nexusnova-share-widget]'))return;
@@ -302,18 +264,4 @@
     document.head.appendChild(loader);
   })();
 
-})();
-
-
-/* Load the shared responsive header/search/footer repair layer once per page. */
-(function(){
-  if(typeof window==='undefined'||!window.document)return;
-  if(window.__nexusNovaGlobalShellGuardRequested)return;
-  window.__nexusNovaGlobalShellGuardRequested=true;
-  var script=document.createElement('script');
-  script.src='/assets/js/global-shell-guard.js?v=20261017-ui-sweep';
-  script.async=true;
-  script.dataset.nexusnovaGlobalShellGuard='';
-  script.onerror=function(){window.__nexusNovaGlobalShellGuardRequested=false;};
-  (document.head||document.documentElement).appendChild(script);
 })();

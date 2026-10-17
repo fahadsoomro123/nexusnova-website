@@ -23,27 +23,26 @@ def meta(path):
     return title,desc,canonical,cat
 
 
-def ensure_global_shell_loader(path):
-    source=path.read_text(encoding="utf-8-sig")
-    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
-    if re.search(loader_pattern, source, re.I):
-        return False
+def ensure_related_tools_loader(path):
+    """Keep route-aware related content, but never inject the global shell guard."""
+    source = path.read_text(encoding="utf-8-sig")
+    original = source
     source = re.sub(r'<script[^>]*global-shell-guard\.js[^>]*></script>', '', source, flags=re.I)
-    tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
-    if path.name == "cash-flow-forecast-small-business.html":
-        tag += '<script defer src="../assets/js/global-shell-guard.js?v=20261017-ui-sweep"></script>\n'
-    updated,n=re.subn(r'</body\s*>', lambda m:tag+m.group(0), source, count=1, flags=re.I)
-    if not n:
-        updated=source+tag
-    if updated==source:
-        return False
-    path.write_text(updated,encoding="utf-8")
-    return True
+    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
+    if not re.search(loader_pattern, source, re.I):
+        tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
+        updated, n = re.subn(r'</body\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
+        source = updated if n else source + tag
+    if source != original:
+        path.write_text(source, encoding="utf-8")
+        return True
+    return False
+
 
 records=[]
 sitemap_records=[]
 for p in sorted((ROOT/"articles").glob("*.html")):
-    ensure_global_shell_loader(p)
+    ensure_related_tools_loader(p)
     title,desc,canonical,cat=meta(p)
     raw=p.read_text(encoding="utf-8-sig")[:5000]
     if not canonical or not title: continue

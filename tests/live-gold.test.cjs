@@ -60,7 +60,7 @@ test('browser exposes selected Sarafa source without publishing an invented loca
 test('primary navigation stays clean and the LIVE dashboard remains directory-linked',()=>{
   const hub=read('live.html');
   const navSource=read('index.html');
-  assert.match(navSource,/<nav class="nn-nav"[^>]*id="nn-primary-nav"[^>]*[\s\S]*?<a href="#master-directory">All Tools<\/a>/);
+  assert.match(navSource,/<nav class="nn-nav"[^>]*id="nn-primary-nav"[^>]*[\s\S]*?<a href="\/#master-directory">All Tools<\/a>/);
   assert.match(hub,/href="fuel-rates\.html"/);
   assert.match(hub,/href="gold-rates\.html"/);
   assert.match(hub,/href="sports-live\.html"/);
