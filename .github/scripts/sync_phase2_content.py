@@ -56,6 +56,7 @@ for p in sorted((ROOT/"articles").glob("*.html")):
 if len(records) != 100:
     raise SystemExit(f"ERROR: expected 100 self-canonical articles, found {len(records)}")
 core=CORE.read_text(encoding="utf-8-sig")
+core = "\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line)) + "\n"
 core="\n".join(line for line in core.splitlines() if not (line.strip().startswith("{ title:") and 'type:"article"' in line))+"\n"
 block="\n".join(f'  {{ title:{json.dumps(t,ensure_ascii=False)}, url:{json.dumps(u,ensure_ascii=False)}, type:"article", category:"Articles", tags:[{json.dumps(t,ensure_ascii=False)},{json.dumps(d,ensure_ascii=False)},{json.dumps("Articles")},{json.dumps(c,ensure_ascii=False)}] }},' for t,u,d,c in records)+"\n"
 marker='  { title:"How to use a weighted decision matrix without fooling yourself",'
