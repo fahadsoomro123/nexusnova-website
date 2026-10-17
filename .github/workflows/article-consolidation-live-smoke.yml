@@ -1,4 +1,4 @@
-name: NexusNova Article Consolidation Live Check
+name: NexusNova Canonical Article Registry Live Check
 
 on:
   push:
@@ -6,8 +6,6 @@ on:
     paths:
       - '.github/workflows/article-consolidation-live-smoke.yml'
       - 'articles.html'
-      - 'articles/google-releases-chrome-152-for-android.html'
-      - 'articles/chrome-152-for-android-adds-desktop-security-fixes.html'
       - 'assets/js/search-core.js'
       - 'sitemap.xml'
       - 'articles.json'
@@ -17,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: nexusnova-article-consolidation-live-check
+  group: nexusnova-canonical-article-registry-live-check
   cancel-in-progress: true
 
 jobs:
@@ -25,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Verify deployed article index and Chrome 152 consolidation
+      - name: Verify deployed canonical 100-article registry
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_RUN_ID: ${{ github.run_id }}
@@ -34,27 +32,55 @@ jobs:
           import concurrent.futures
           import hashlib
           import json
+          import os
           import re
           import time
           import urllib.error
           import urllib.parse
           import urllib.request
+          import xml.etree.ElementTree as ET
+          from html.parser import HTMLParser
 
           BASE = "https://nexusnovatools.com"
-          ARCHIVE = "/articles/chrome-152-for-android-adds-desktop-security-fixes.html"
-          PRIMARY = "/articles/google-releases-chrome-152-for-android.html"
           PATHS = [
               "/articles.html",
-              PRIMARY,
-              ARCHIVE,
-              "/sitemap.xml",
               "/assets/js/search-core.js",
+              "/sitemap.xml",
               "/articles.json",
           ]
+          ARTICLE_PATH = re.compile(r"^articles/[^/]+\\.html$")
+
+          class ArticleHubParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.cards = []
+                  self.in_count = False
+                  self.count_parts = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == "a" and "nn-article-card" in (attrs.get("class") or "").split():
+                      href = (attrs.get("href") or "").strip()
+                      if ARTICLE_PATH.fullmatch(href):
+                          self.cards.append(href)
+                  if tag == "span" and attrs.get("id") == "article-search-count":
+                      self.in_count = True
+
+              def handle_endtag(self, tag):
+                  if tag == "span" and self.in_count:
+                      self.in_count = False
+
+              def handle_data(self, data):
+                  if self.in_count:
+                      self.count_parts.append(data)
+
+              @property
+              def display_count(self):
+                  return " ".join("".join(self.count_parts).split())
 
           def fetch(path, attempt):
               query = urllib.parse.urlencode({
-                  "nn_live_verify": f"{__import__('os').environ['GITHUB_RUN_ID']}-{attempt}-{__import__('os').environ['GITHUB_SHA'][:12]}"
+                  "nn_live_verify": f"{os.environ['GITHUB_RUN_ID']}-{attempt}-{os.environ['GITHUB_SHA'][:12]}"
               })
               url = f"{BASE}{path}?{query}"
               request = urllib.request.Request(
@@ -62,7 +88,7 @@ jobs:
                   headers={
                       "Cache-Control": "no-cache, no-store, max-age=0",
                       "Pragma": "no-cache",
-                      "User-Agent": "NexusNova-Live-Article-Smoke/1.0",
+                      "User-Agent": "NexusNova-Canonical-Article-Smoke/1.0",
                   },
               )
               try:
@@ -75,56 +101,89 @@ jobs:
                   return {"path": path, "status": 0, "body": "", "url": url, "error": f"{type(exc).__name__}: {exc}"}
 
           latest = {}
+          required = {}
           for attempt in range(1, 19):
               with concurrent.futures.ThreadPoolExecutor(max_workers=len(PATHS)) as pool:
                   results = list(pool.map(lambda path: fetch(path, attempt), PATHS))
               latest = {item["path"]: item for item in results}
               for item in results:
-                  body = item["body"]
-                  print(
-                      f"attempt={attempt} status={item['status']} bytes={len(body.encode('utf-8'))} "
-                      f"sha256={hashlib.sha256(body.encode('utf-8')).hexdigest()[:16]} path={item['path']}"
-                  )
+                  digest = hashlib.sha256(item["body"].encode("utf-8")).hexdigest()[:16]
+                  print(f"attempt={attempt} status={item['status']} bytes={len(item['body'].encode('utf-8'))} sha256={digest} path={item['path']}")
 
-              hub = latest.get("/articles.html", {}).get("body", "")
-              primary = latest.get(PRIMARY, {}).get("body", "")
-              archive = latest.get(ARCHIVE, {}).get("body", "")
-              sitemap = latest.get("/sitemap.xml", {}).get("body", "")
-              search_core = latest.get("/assets/js/search-core.js", {}).get("body", "")
-              feed_text = latest.get("/articles.json", {}).get("body", "")
-              required = {
-                  "all six routes return HTTP 200": all(x["status"] == 200 for x in results),
-                  "hub reports 100 articles": "100 articles" in hub,
-                  "hub contains consolidated timeline": "Chrome 152 for Android: Release Timeline and Security Fixes" in hub,
-                  "hub omits old duplicate URL": ARCHIVE.lstrip("/") not in hub,
-                  "primary timeline has corrected title": "<title>Chrome 152 for Android: Release Timeline | NexusNova Tools</title>" in primary,
-                  "primary timeline includes .64, .75 and .82 milestones": all(f"152.0.7977.{v}" in primary for v in ("64", "75", "82")),
-                  "primary timeline includes 26 August, 1 September and 3 September": all(x in primary for x in ("26 August 2026", "1 September 2026", "3 September 2026")),
-                  "archive is noindex": bool(re.search(r'<meta\s+name="robots"\s+content="noindex,follow', archive, re.I)),
-                  "archive canonical points to maintained page": f'<link rel="canonical" href="{BASE}{PRIMARY}">' in archive,
-                  "archive links users to maintained page": f'href="google-releases-chrome-152-for-android.html"' in archive,
-                  "primary timeline remains noindex under current approved quarantine": bool(re.search(r'<meta\s+name="robots"\s+content="noindex,follow', primary, re.I)),
-                  "sitemap omits noindex archive and quarantined primary": ARCHIVE.lstrip("/") not in sitemap and f"{BASE}{PRIMARY}" not in sitemap,
-                  "search index omits archive and includes primary": ARCHIVE.lstrip("/") not in search_core and f'url:"{PRIMARY.lstrip("/")}"' in search_core,
-              }
+              hub = latest["/articles.html"]["body"]
+              search_core = latest["/assets/js/search-core.js"]["body"]
+              sitemap = latest["/sitemap.xml"]["body"]
+              feed_text = latest["/articles.json"]["body"]
+
+              hub_parser = ArticleHubParser()
+              hub_parser.feed(hub)
+              hub_urls = hub_parser.cards
+              hub_set = set(hub_urls)
+
+              # Read the article records from the actual client-side search dataset.
+              registry_urls = re.findall(
+                  r'url\\s*:\\s*["\\'](articles/[^"\\']+\\.html)["\\']\\s*,\\s*type\\s*:\\s*["\\']article["\\']',
+                  search_core,
+              )
+              registry_set = set(registry_urls)
+
+              sitemap_urls = []
+              try:
+                  root = ET.fromstring(sitemap)
+                  for element in root.iter():
+                      if element.tag.rsplit("}", 1)[-1] != "loc" or not element.text:
+                          continue
+                      parsed = urllib.parse.urlparse(element.text.strip())
+                      article_path = parsed.path.lstrip("/")
+                      if parsed.netloc == urllib.parse.urlparse(BASE).netloc and ARTICLE_PATH.fullmatch(article_path):
+                          sitemap_urls.append(article_path)
+              except ET.ParseError:
+                  sitemap_urls = []
+
+              feed_valid = False
+              feed_article_urls = []
               try:
                   feed = json.loads(feed_text)
-                  feed_urls = [str(item.get("url", "")) for item in feed.get("items", [])]
-                  required["article feed omits both noindex archive and quarantined primary"] = (
-                      f"{BASE}{ARCHIVE}" not in feed_urls and f"{BASE}{PRIMARY}" not in feed_urls
-                  )
-              except Exception:
-                  required["article feed is valid JSON"] = False
+                  if isinstance(feed, dict) and isinstance(feed.get("items"), list):
+                      feed_valid = True
+                      for item in feed["items"]:
+                          if not isinstance(item, dict):
+                              continue
+                          parsed = urllib.parse.urlparse(str(item.get("url", "")))
+                          article_path = parsed.path.lstrip("/")
+                          if parsed.netloc == urllib.parse.urlparse(BASE).netloc and ARTICLE_PATH.fullmatch(article_path):
+                              feed_article_urls.append(article_path)
+              except (json.JSONDecodeError, TypeError, ValueError):
+                  feed_valid = False
+
+              sitemap_set = set(sitemap_urls)
+              feed_set = set(feed_article_urls)
+              required = {
+                  "all four canonical routes return HTTP 200": all(x["status"] == 200 for x in results),
+                  "hub count label is exactly 100 articles": hub_parser.display_count == "100 articles",
+                  "hub contains exactly 100 unique canonical article cards": len(hub_urls) == 100 and len(hub_set) == 100,
+                  "search dataset contains exactly 100 unique article records": len(registry_urls) == 100 and len(registry_set) == 100,
+                  "hub and search registry match exactly": hub_set == registry_set,
+                  "sitemap contains exactly the canonical 100 article URLs": len(sitemap_urls) == 100 and len(sitemap_set) == 100 and sitemap_set == registry_set,
+                  "article feed is valid JSON": feed_valid,
+                  "article feed contains exactly the canonical 100 article URLs": len(feed_article_urls) == 100 and len(feed_set) == 100 and feed_set == registry_set,
+              }
 
               if all(x["status"] == 200 for x in results) and all(required.values()):
-                  print("LIVE ARTICLE CONSOLIDATION PASS")
-                  print(json.dumps(required, indent=2))
+                  print("LIVE CANONICAL ARTICLE REGISTRY PASS")
+                  print(json.dumps({
+                      "checks": required,
+                      "hub_cards": len(hub_urls),
+                      "search_registry_articles": len(registry_urls),
+                      "sitemap_article_urls": len(sitemap_urls),
+                      "feed_article_urls": len(feed_article_urls),
+                  }, indent=2))
                   raise SystemExit(0)
 
               if attempt < 18:
                   time.sleep(5)
 
-          print("LIVE ARTICLE CONSOLIDATION FAIL: deployed content did not converge to the repository state.")
+          print("LIVE CANONICAL ARTICLE REGISTRY FAIL: deployed content does not match the canonical registry.")
           print(json.dumps(required, indent=2))
           raise SystemExit(1)
           PY
