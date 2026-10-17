@@ -103,10 +103,10 @@ jobs:
             if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then
               html_url="${hub}?nn_live_validate=${GITHUB_SHA}-${attempt}"
               html="$(curl --fail --silent --show-error "$html_url" || true)"
-              cards="$(printf '%s' "$html" | grep -o 'class="nn-article-card" href="articles/[^"]*\.html"' | wc -l | tr -d '[:space:]')"
+              cards="$(grep -o 'class="nn-article-card" href="articles/[^"]*\.html"' <<< "$html" | wc -l | tr -d '[:space:]')"
               if [ "$cards" = "100" ] &&
-                 printf '%s' "$html" | grep -q 'id="articles-grid"' &&
-                 printf '%s' "$html" | grep -q 'id="article-search-count">100 articles'; then
+                 [[ "$html" == *'id="articles-grid"'* ]] &&
+                 [[ "$html" == *'id="article-search-count">100 articles'* ]]; then
                 echo "LIVE_ARTICLE_HUB_HTML_PASS cards=$cards count=100 articles attempt=$attempt"
                 echo "LIVE_SHELL_CSS_PASS attempt=$attempt"
                 exit 0
