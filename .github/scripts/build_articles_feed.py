@@ -16,6 +16,8 @@ class PageParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.title_parts: list[str] = []
         self.in_title = False
+        self.h1_parts: list[str] = []
+        self.in_h1 = False
         self.meta: dict[str, str] = {}
         self.canonical = ""
         self.jsonld: list[str] = []
@@ -26,6 +28,8 @@ class PageParser(HTMLParser):
         name = tag.lower()
         if name == "title":
             self.in_title = True
+        elif name == "h1":
+            self.in_h1 = True
         elif name == "meta":
             key = (data.get("property") or data.get("name") or "").strip().lower()
             if key:
@@ -39,6 +43,8 @@ class PageParser(HTMLParser):
         name = tag.lower()
         if name == "title":
             self.in_title = False
+        elif name == "h1":
+            self.in_h1 = False
         elif name == "script" and self._jsonld_buffer is not None:
             self.jsonld.append("".join(self._jsonld_buffer).strip())
             self._jsonld_buffer = None
@@ -46,12 +52,18 @@ class PageParser(HTMLParser):
     def handle_data(self, data: str) -> None:
         if self.in_title:
             self.title_parts.append(data)
+        if self.in_h1:
+            self.h1_parts.append(data)
         if self._jsonld_buffer is not None:
             self._jsonld_buffer.append(data)
 
     @property
     def title(self) -> str:
         return " ".join("".join(self.title_parts).split())
+
+    @property
+    def h1(self) -> str:
+        return " ".join("".join(self.h1_parts).split())
 
 
 def iter_jsonld_objects(raw: str):
@@ -125,7 +137,7 @@ def page_to_item(path: Path) -> dict | None:
     if not canonical.startswith(SITE):
         canonical = urljoin(SITE, relative)
 
-    title = clean_title(parser.meta.get("og:title") or data.get("headline") or parser.title)
+    title = clean_title(parser.h1 or parser.meta.get("og:title") or data.get("headline") or parser.title)
     if not title:
         return None
 

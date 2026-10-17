@@ -109,6 +109,11 @@ class COLAEditorialAccuracyRegressionTests(unittest.TestCase):
         self.assertIn("2027 Social Security COLA: Official 3.6% Rate and Payment Timing", listing)
         self.assertNotIn("2027 Social Security COLA Estimate: Latest Forecast", listing)
 
+        article_html = (ROOT / "articles" / "social-security-cola-2027-estimate.html").read_text(encoding="utf-8")
+        self.assertIn("<h1>2027 Social Security COLA: Official 3.6% Rate and Payment Timing</h1>", article_html)
+        seo_title = article_html.split("<title>", 1)[1].split("</title>", 1)[0]
+        self.assertLessEqual(len(seo_title), 70)
+
         feed = json.loads((ROOT / "articles.json").read_text(encoding="utf-8"))
         article = next(
             item for item in feed["items"]

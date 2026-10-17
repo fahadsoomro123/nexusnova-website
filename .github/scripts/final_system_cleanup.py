@@ -53,6 +53,7 @@ TITLE_OVERRIDES = {
     "seasonal-gas-heating-budget.html": "Seasonal Gas Heating Budget | NexusNova Tools",
     "sinking-funds-vs-emergency-funds.html": "Sinking Funds vs Emergency Funds | NexusNova Tools",
     "small-business-break-even.html": "Small Business Break-Even Analysis | NexusNova Tools",
+    "social-security-cola-2027-estimate.html": "2027 Social Security COLA: Official 3.6% | NexusNova Tools",
     "solar-panel-payback-period.html": "Solar Panel Payback Period Calculator | NexusNova Tools",
     "subscription-annual-cost.html": "Subscription Annual Cost Calculator | NexusNova Tools",
     "tax-withholding-adjustment.html": "Tax Withholding Adjustment Guide | NexusNova Tools",
@@ -465,11 +466,12 @@ def update_article(path: Path) -> bool:
     original = source
     title = concise_title(get_title(source), path.name)
     title_core = re.sub(r"\s*\|\s*NexusNova Tools\s*$", "", title, flags=re.I).strip()
+    content_title = get_h1(source) or title_core
     description = CASHFLOW_DESCRIPTION if path.name == "cash-flow-forecast-small-business.html" else trim_description(get_description(source), get_h1(source))
     source = set_title(source, title)
     source = set_meta(source, "name", "description", description)
-    source = set_meta(source, "property", "og:title", title_core)
-    source = set_meta(source, "name", "twitter:title", title_core)
+    source = set_meta(source, "property", "og:title", content_title)
+    source = set_meta(source, "name", "twitter:title", content_title)
     source = set_meta(source, "property", "og:description", description)
     source = set_meta(source, "name", "twitter:description", description)
 
@@ -490,7 +492,7 @@ def update_article(path: Path) -> bool:
     # Keep the structured Article headline aligned with the visible page title.
     source = re.sub(
         r'("headline"\s*:\s*)"(?:[^"\\]|\\.)*"',
-        lambda m: m.group(1) + json.dumps(title_core, ensure_ascii=False),
+        lambda m: m.group(1) + json.dumps(content_title, ensure_ascii=False),
         source, count=1
     )
     if source != original:

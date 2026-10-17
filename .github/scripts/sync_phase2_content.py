@@ -11,8 +11,12 @@ def meta(path):
     s=path.read_text(encoding="utf-8-sig")
     def one(p):
         m=re.search(p,s,re.I|re.S); return html.unescape(m.group(1)).strip() if m else ""
-    title=one(r"<title>\s*(.*?)\s*</title>")
-    title=re.sub(r"\s*\|\s*NexusNova Tools\s*$","",title)
+    title=one(r"<h1\b[^>]*>([\s\S]*?)</h1>")
+    title=html.unescape(re.sub(r"<[^>]+>", " ", title))
+    title=" ".join(title.split())
+    if not title:
+        title=one(r"<title>\s*(.*?)\s*</title>")
+        title=re.sub(r"\s*\|\s*NexusNova Tools\s*$","",title)
     desc=one(r'<meta\s+name=["\']description["\']\s+content=["\']([^"\']+)')
     canonical=one(r'<link\s+rel=["\']canonical["\']\s+href=["\']([^"\']+)')
     cat=one(r'<span\s+class=["\']kicker["\']>\s*([^<]+)')
