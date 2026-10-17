@@ -114,7 +114,8 @@ test('obsolete shell and related-content loader scripts are absent from the repo
     'assets/js/related-tools-bootstrap.js',
     'assets/js/global-shell-guard.js',
     'assets/js/related-tools.js',
-    'assets/js/privacy-bridge.js'
+    'assets/js/privacy-bridge.js',
+    'assets/js/auth-header-state.js'
   ]) {
     assert.equal(fs.existsSync(path.join(ROOT, relative)), false, relative + ' must remain deleted');
   }
@@ -122,9 +123,9 @@ test('obsolete shell and related-content loader scripts are absent from the repo
   for (const file of htmlFiles()) {
     assert.doesNotMatch(fs.readFileSync(file, 'utf8'), forbiddenLoader, path.relative(ROOT, file));
   }
-  for (const relative of ['assets/js/main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js']) {
+  for (const relative of ['assets/js/main.js', 'assets/js/analytics.js', 'assets/js/search-core.js', 'assets/js/tier1-tools.js', 'assets/js/assistant.js', 'assets/js/site-main.js']) {
     assert.doesNotMatch(fs.readFileSync(path.join(ROOT, relative), 'utf8'),
-      /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js/,
+      /nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js|auth-header-state\.js|data-nexusnova-auth-header/,
       relative + ' must not dynamically request a retired loader');
   }
 });
