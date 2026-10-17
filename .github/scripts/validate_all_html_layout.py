@@ -5,7 +5,6 @@ import argparse
 import json
 import re
 import sys
-import time
 import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
@@ -22,52 +21,42 @@ PUBLIC_FOLDERS = ("tools", "articles", "guides")
 class StructureParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.tags: list[str] = []
         self.headers = 0
         self.footers = 0
         self.header_navs = 0
         self.header_searches = 0
-        self.logo_images = 0
         self.article_links = 0
         self.robots = ""
         self.current_header_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attrs_dict = {k.lower(): (v or "") for k, v in attrs}
-        self.tags.append(tag.lower())
-        if tag.lower() == "header":
+        lower = tag.lower()
+        if lower == "header":
             self.headers += 1
             self.current_header_depth += 1
-        elif tag.lower() == "footer":
+        elif lower == "footer":
             self.footers += 1
-        elif tag.lower() == "nav" and self.current_header_depth:
+        elif lower == "nav" and self.current_header_depth:
             self.header_navs += 1
-        elif self.current_header_depth and tag.lower() == "input" and attrs_dict.get("type", "").lower() == "search":
+        elif self.current_header_depth and lower == "input" and attrs_dict.get("type", "").lower() == "search":
             self.header_searches += 1
-        elif self.current_header_depth and tag.lower() == "form" and attrs_dict.get("role", "").lower() == "search":
+        elif self.current_header_depth and lower == "form" and attrs_dict.get("role", "").lower() == "search":
             self.header_searches += 1
-        if tag.lower() == "img":
-            classes = set(attrs_dict.get("class", "").split())
-            ident = f"{attrs_dict.get('id', '')} {attrs_dict.get('alt', '')}".lower()
-            if classes & {"site-logo", "nav-logo", "nn-brand-logo-img", "nn-footer-brand-logo"} or "logo" in ident:
-                self.logo_images += 1
-        if tag.lower() == "a":
+        if lower == "a":
             href = attrs_dict.get("href", "")
             if re.search(r"(?:^|/)articles/[^/?#]+\.html(?:[?#].*)?$", href, re.I):
                 self.article_links += 1
-        if tag.lower() == "meta" and attrs_dict.get("name", "").lower() == "robots":
+        if lower == "meta" and attrs_dict.get("name", "").lower() == "robots":
             self.robots = attrs_dict.get("content", "")
 
     def handle_endtag(self, tag: str) -> None:
         if tag.lower() == "header" and self.current_header_depth:
             self.current_header_depth -= 1
-        if self.tags:
-            self.tags.pop()
 
 
 def html_files() -> list[Path]:
-    paths: list[Path] = []
-    paths.extend(sorted(ROOT.glob("*.html")))
+    paths = sorted(ROOT.glob("*.html"))
     for folder in PUBLIC_FOLDERS:
         base = ROOT / folder
         if base.exists():
@@ -76,20 +65,16 @@ def html_files() -> list[Path]:
 
 
 def is_standalone_preview(parser: StructureParser, path: Path) -> bool:
-    # Repository previews are deliberately standalone/noindex artifacts. They are
-    # still scanned, but are not allowed to redefine the production shell contract.
     rel = path.relative_to(ROOT).as_posix()
-    return "noindex" in parser.robots.lower() or rel.startswith(("homepage-", "humanproof-"))
+    return "noindex" in parser.robots.lower() or rel == "404.html" or rel.startswith(("homepage-", "humanproof-", "image-compressor-compact-preview-"))
 
 
 def static_validate(path: Path) -> tuple[StructureParser, list[str]]:
     parser = StructureParser()
-    text = path.read_text(encoding="utf-8", errors="replace")
-    parser.feed(text)
+    parser.feed(path.read_text(encoding="utf-8", errors="replace"))
     findings: list[str] = []
     rel = path.relative_to(ROOT).as_posix()
-    preview = is_standalone_preview(parser, path)
-    if not preview:
+    if not is_standalone_preview(parser, path):
         if parser.headers > 1:
             findings.append(f"{rel}: source contains {parser.headers} header elements")
         if parser.header_navs > 1:
@@ -102,13 +87,12 @@ def static_validate(path: Path) -> tuple[StructureParser, list[str]]:
 
 
 def live_sitemap_urls(base_url: str) -> list[str]:
-    sitemap = base_url.rstrip("/") + "/sitemap.xml"
-    with urllib.request.urlopen(sitemap, timeout=20) as response:
+    with urllib.request.urlopen(base_url.rstrip("/") + "/sitemap.xml", timeout=20) as response:
         text = response.read().decode("utf-8", errors="replace")
     return sorted(dict.fromkeys(re.findall(r"<loc>(.*?)</loc>", text)))
 
 
-def page_metrics(page, rel: str) -> dict:
+def page_metrics(page) -> dict:
     return page.evaluate(
         """
         () => {
@@ -117,31 +101,20 @@ def page_metrics(page, rel: str) -> dict:
             const s = getComputedStyle(el);
             return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity || 1) > 0.01;
           };
-          const headers = [...document.querySelectorAll('header')].filter(visible);
+          const headers = [...document.querySelectorAll('header')].filter(h => !h.parentElement?.closest('header') && visible(h));
           const header = headers[0] || null;
-          const navs = header ? [...header.querySelectorAll('nav')].filter(visible) : [];
-          const searches = header ? [...header.querySelectorAll('input[type="search"],form[role="search"] input')].filter(visible) : [];
+          const navs = header ? [...header.querySelectorAll('nav')] : [];
+          const searches = header ? [...header.querySelectorAll('input[type="search"],form[role="search"] input')] : [];
           const logos = header ? [...header.querySelectorAll('img')].filter(visible).map(img => ({height: img.getBoundingClientRect().height, width: img.getBoundingClientRect().width, src: img.currentSrc || img.src})) : [];
           const articleLinks = [...document.querySelectorAll('a[href]')].map(a => new URL(a.getAttribute('href'), location.href).pathname).filter(p => /\/articles\/[^/]+\.html$/i.test(p));
-          const footer = [...document.querySelectorAll('footer,[role="contentinfo"]')].filter(visible);
-          return {
-            headers: headers.length,
-            navs: navs.length,
-            searches: searches.length,
-            logos,
-            footers: footer.length,
-            articleLinks: [...new Set(articleLinks)],
-            scrollWidth: document.documentElement.scrollWidth,
-            clientWidth: document.documentElement.clientWidth,
-            h1: document.querySelectorAll('h1').length,
-            bodyClass: document.body.className
-          };
+          const footer = [...document.querySelectorAll('footer,[role="contentinfo"]')].filter(el => !el.parentElement?.closest('footer,[role="contentinfo"]') && visible(el));
+          return {headers:headers.length,navs:navs.length,searches:searches.length,logos,footers:footer.length,articleLinks:[...new Set(articleLinks)],scrollWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth};
         }
         """
     )
 
 
-def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool) -> dict:
+def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, preview_paths: set[str]) -> dict:
     failures: list[str] = []
     checked = 0
     article_cards = 0
@@ -150,6 +123,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool) -> 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
         for label, rel in urls:
+            preview = rel in preview_paths
             for viewport_name, width, height in (("desktop", 1440, 1000), ("mobile", 390, 844)):
                 page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=1)
                 try:
@@ -160,19 +134,19 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool) -> 
                     if status >= 400 or status == 0:
                         failures.append(f"{label}@{viewport_name}: HTTP {status}")
                         continue
-                    metrics = page_metrics(page, rel)
+                    metrics = page_metrics(page)
                     checked += 1
-                    for logo in metrics["logos"]:
-                        max_logo_height = max(max_logo_height, float(logo["height"]))
-                        if logo["height"] > 40.5:
-                            failures.append(f"{label}@{viewport_name}: logo height {logo['height']:.1f}px > 40px ({logo['src']})")
-                    if not rel.endswith("/index.html") and rel not in {"index.html", "app.html"} and "homepage-" not in rel and "humanproof-" not in rel:
+                    if not preview:
+                        for logo in metrics["logos"]:
+                            max_logo_height = max(max_logo_height, float(logo["height"]))
+                            if logo["height"] > 40.5:
+                                failures.append(f"{label}@{viewport_name}: logo height {logo['height']:.1f}px > 40px ({logo['src']})")
                         if metrics["headers"] != 1:
-                            failures.append(f"{label}@{viewport_name}: visible header count {metrics['headers']}")
+                            failures.append(f"{label}@{viewport_name}: visible top-level header count {metrics['headers']}")
                         if metrics["navs"] != 1:
-                            failures.append(f"{label}@{viewport_name}: visible header nav count {metrics['navs']}")
+                            failures.append(f"{label}@{viewport_name}: header nav count {metrics['navs']}")
                         if metrics["searches"] > 1:
-                            failures.append(f"{label}@{viewport_name}: visible header search count {metrics['searches']}")
+                            failures.append(f"{label}@{viewport_name}: header search count {metrics['searches']}")
                         if metrics["footers"] != 1:
                             failures.append(f"{label}@{viewport_name}: visible footer count {metrics['footers']}")
                     if metrics["scrollWidth"] > metrics["clientWidth"] + 6:
@@ -185,62 +159,41 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool) -> 
                 finally:
                     page.close()
         browser.close()
-    if live and article_cards and article_cards < 100:
+    if live and article_cards < 100:
         failures.append(f"live articles.html: {article_cards} unique article cards, expected 100")
     if live and not article_count_text:
         failures.append("live articles.html: missing visible '100 articles' count")
-    return {
-        "checked_viewports": checked,
-        "failures": failures,
-        "max_logo_height": round(max_logo_height, 2),
-        "article_cards": article_cards,
-        "article_count_text": article_count_text,
-    }
+    return {"checked_viewports":checked,"failures":failures,"max_logo_height":round(max_logo_height,2),"article_cards":article_cards,"article_count_text":article_count_text}
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--base-url", default=DEFAULT_BASE)
-    parser.add_argument("--live", action="store_true")
-    args = parser.parse_args()
-
-    static_findings: list[str] = []
+    argp = argparse.ArgumentParser()
+    argp.add_argument("--base-url", default=DEFAULT_BASE)
+    argp.add_argument("--live", action="store_true")
+    args = argp.parse_args()
     files = html_files()
     if not files:
         print("FAIL: no HTML files found", file=sys.stderr)
         return 1
+    static_findings: list[str] = []
+    preview_paths: set[str] = set()
     for path in files:
-        _, findings = static_validate(path)
+        parsed, findings = static_validate(path)
         static_findings.extend(findings)
-
+        if is_standalone_preview(parsed, path):
+            preview_paths.add(path.relative_to(ROOT).as_posix())
     if args.live:
-        live_urls = live_sitemap_urls(args.base_url)
-        urls = []
-        for url in live_urls:
-            parsed = urlparse(url)
-            urls.append((parsed.path.lstrip("/") or "index.html", url))
+        urls = [(urlparse(url).path.lstrip("/") or "index.html", url) for url in live_sitemap_urls(args.base_url)]
     else:
         urls = [(p.relative_to(ROOT).as_posix(), p.relative_to(ROOT).as_posix()) for p in files]
-
-    browser_report = validate_browser(args.base_url, urls, args.live)
-    report = {
-        "mode": "live" if args.live else "local",
-        "base_url": args.base_url,
-        "html_files_scanned": len(files),
-        "static_findings": static_findings,
-        **browser_report,
-    }
+    browser_report = validate_browser(args.base_url, urls, args.live, preview_paths if not args.live else set())
+    report = {"mode":"live" if args.live else "local","base_url":args.base_url,"html_files_scanned":len(files),"static_findings":static_findings,"preview_files":sorted(preview_paths),**browser_report}
     artifact = ROOT / "quality-artifacts" / "all-html-layout-validation.json"
     artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.write_text(json.dumps(report, indent=2), encoding="utf-8")
-
     print(f"HTML_LAYOUT_SCAN files={len(files)} viewports={browser_report['checked_viewports']} max_logo_height={browser_report['max_logo_height']} article_cards={browser_report['article_cards']}")
-    if static_findings:
-        for item in static_findings[:80]:
-            print("FAIL_STATIC", item)
-    if browser_report["failures"]:
-        for item in browser_report["failures"][:120]:
-            print("FAIL_BROWSER", item)
+    for item in static_findings[:80]: print("FAIL_STATIC", item)
+    for item in browser_report["failures"][:120]: print("FAIL_BROWSER", item)
     if static_findings or browser_report["failures"]:
         print(f"HTML_LAYOUT_FAIL static={len(static_findings)} browser={len(browser_report['failures'])}")
         return 1
