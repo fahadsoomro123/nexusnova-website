@@ -233,12 +233,12 @@ class ElementSpanParser(HTMLParser):
         self.spans: dict[str, list[tuple[int, int, tuple[str, ...]]]] = {}
         self.feed(source)
         self.close()
-    def offset(self) -> int:
+    def position(self) -> int:
         line, column = self.getpos()
         return self.line_offsets[line - 1] + column
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
-        start = self.offset()
+        start = self.position()
         ancestors = tuple(item[0] for item in self.stack)
         if tag not in VOID_TAGS:
             self.stack.append((tag, start, ancestors))
@@ -246,7 +246,7 @@ class ElementSpanParser(HTMLParser):
         return
     def handle_endtag(self, tag):
         tag = tag.lower()
-        end_start = self.offset()
+        end_start = self.position()
         end = self.source.find(">", end_start)
         end = len(self.source) if end < 0 else end + 1
         for index in range(len(self.stack) - 1, -1, -1):
