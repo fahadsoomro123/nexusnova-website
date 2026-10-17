@@ -57,7 +57,7 @@ for name in runtime_names:
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
     if re.search(r"nn-inner-shell\.js|related-tools-bootstrap\.js|global-shell-guard\.js", source):
         problems.append(f"assets/js/{name}: retired shell/related-content loader remains")
-for name in ("global-shell-guard.js", "nn-inner-shell.js", "related-tools-bootstrap.js", "related-tools.js"):
+for name in ("global-shell-guard.js", "nn-inner-shell.js", "related-tools-bootstrap.js", "related-tools.js", "privacy-bridge.js"):
     if (ROOT / "assets/js" / name).exists():
         problems.append(f"assets/js/{name}: obsolete browser runtime file must be absent")
 related_sections = sum(
