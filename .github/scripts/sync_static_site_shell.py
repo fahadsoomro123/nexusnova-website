@@ -313,7 +313,7 @@ def normalize_template_urls(template: str) -> str:
         lambda m: m.group(1) + str(dt.datetime.now(dt.timezone.utc).year) + m.group(2),
         template, count=1, flags=re.I,
     )
-    template = re.sub(r"[ \\t]+(?=\\r?$)", "", template, flags=re.M)
+    template = re.sub(r"[ \t]+(?=\r?$)", "", template, flags=re.M)
     return template
 
 
