@@ -93,19 +93,29 @@ jobs:
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
 
-      - name: Wait for GitHub Pages deployment to expose this shell repair
+      - name: Wait for GitHub Pages to expose the repaired shell and article grid
         shell: bash
         run: |
           set -euo pipefail
           css='https://nexusnovatools.com/assets/css/global-shell-repair.css?v=20261017-ui-sweep'
+          hub='https://nexusnovatools.com/articles.html'
           for attempt in {1..60}; do
             if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then
-              echo "LIVE_SHELL_CSS_PASS attempt=$attempt"
-              exit 0
+              html_url="${hub}?nn_live_validate=${GITHUB_SHA}-${attempt}"
+              html="$(curl --fail --silent --show-error "$html_url" || true)"
+              cards="$(printf '%s' "$html" | grep -o 'class="nn-article-card" href="articles/[^"]*\.html"' | wc -l | tr -d '[:space:]')"
+              if [ "$cards" = "100" ] &&
+                 printf '%s' "$html" | grep -q 'id="articles-grid"' &&
+                 printf '%s' "$html" | grep -q 'id="article-search-count">100 articles'; then
+                echo "LIVE_ARTICLE_HUB_HTML_PASS cards=$cards count=100 articles attempt=$attempt"
+                echo "LIVE_SHELL_CSS_PASS attempt=$attempt"
+                exit 0
+              fi
+              echo "Waiting for current article hub: attempt=$attempt cards=$cards"
             fi
             sleep 10
           done
-          echo 'Timed out waiting for the repaired CSS to reach production.' >&2
+          echo 'Timed out waiting for the repaired shell CSS and canonical 100-card article grid.' >&2
           exit 1
 
       - name: Validate live sitemap pages and 100-article hub

@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlsplit, urlunsplit
 
 from playwright.sync_api import sync_playwright
 
@@ -128,6 +129,17 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                 page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=1)
                 try:
                     target = rel if rel.startswith("http") else base_url.rstrip("/") + "/" + rel.lstrip("/")
+                    if live:
+                        parsed_target = urlsplit(target)
+                        query = parse_qsl(parsed_target.query, keep_blank_values=True)
+                        query.append(("nn_live_validate", f"{os.environ.get('GITHUB_SHA', 'live')}-{viewport_name}"))
+                        target = urlunsplit((
+                            parsed_target.scheme,
+                            parsed_target.netloc,
+                            parsed_target.path,
+                            urlencode(query),
+                            parsed_target.fragment,
+                        ))
                     response = page.goto(target, wait_until="domcontentloaded", timeout=30000)
                     page.wait_for_timeout(500)
                     status = response.status if response else 0
@@ -153,7 +165,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         finding = f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}"
                         (warnings if preview else failures).append(finding)
                     if rel == ARTICLE_HUB:
-                        article_cards = page.locator('a.nn-article-card[href$=".html"]').count()
+                        article_cards = page.locator('#articles-grid a.nn-article-card[href$=".html"]').count()
                         article_count_text = page.locator('#article-search-count').inner_text(timeout=5000).strip() == '100 articles'
                 except Exception as exc:
                     failures.append(f"{label}@{viewport_name}: browser exception: {exc}")
