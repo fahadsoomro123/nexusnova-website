@@ -129,31 +129,154 @@ jobs:
           git rebase origin/main
           git push origin HEAD:main
 
-      - name: Verify deployed edge assets
+      - name: Verify live article hub and sitemap after deployment
         shell: bash
         run: |
           set -euo pipefail
-          for i in {1..12}; do
-            if curl --fail --silent --show-error https://nexusnovatools.com/ | grep -q '20261015-v4'; then
-              echo "EDGE_DEPLOYMENT_PASS cache version 20261015-v4 visible on production homepage"
-              break
-            fi
-            echo "Waiting for GitHub Pages edge deployment ($i/12)..."
-            sleep 10
-            if [ "$i" = "12" ]; then
-              echo 'EDGE_DEPLOYMENT_FAIL: v4 asset marker not visible after 120 seconds' >&2
-              exit 1
-            fi
-          done
-          curl --fail --silent --show-error https://nexusnovatools.com/sitemap.xml -o /tmp/live-sitemap.xml
           python - <<'PY'
+          import html
+          import os
+          import re
+          import time
+          import urllib.error
+          import urllib.request
           import xml.etree.ElementTree as ET
-          root=ET.parse('/tmp/live-sitemap.xml').getroot()
-          ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9'}
-          urls=root.findall('s:url',ns)
-          assert urls, 'live sitemap has no URLs'
-          assert all(u.find('s:loc',ns) is not None for u in urls), 'sitemap loc missing'
-          assert all(u.find('s:lastmod',ns) is not None for u in urls), 'sitemap lastmod missing'
-          assert all(u.find('s:loc',ns).text.startswith('https://nexusnovatools.com/') for u in urls), 'non-canonical sitemap URL found'
-          print(f'LIVE_SITEMAP_PASS urls={len(urls)} lastmod=present canonical=https://nexusnovatools.com/')
+          from html.parser import HTMLParser
+
+          BASE = "https://nexusnovatools.com"
+          COMMIT = os.environ.get("GITHUB_SHA", "unknown")
+          USER_AGENT = "NexusNova-Production-Verification/2.1"
+
+          class HubParser(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.cards = 0
+                  self.capture_count = False
+                  self.count_parts = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag.lower() == "a":
+                      classes = attrs.get("class", "").split()
+                      href = attrs.get("href", "")
+                      if (
+                          "nn-article-card" in classes
+                          and re.fullmatch(r"articles/[^?#]+\.html", href)
+                      ):
+                          self.cards += 1
+                  if attrs.get("id") == "article-search-count":
+                      self.capture_count = True
+
+              def handle_data(self, data):
+                  if self.capture_count:
+                      self.count_parts.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "span" and self.capture_count:
+                      self.capture_count = False
+
+              @property
+              def display_count(self):
+                  return " ".join(" ".join(self.count_parts).split())
+
+          def fetch(path, attempt):
+              url = f"{BASE}/{path}?nn_live_deploy={COMMIT}-{attempt}"
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      "Cache-Control": "no-cache, no-store, max-age=0",
+                      "Pragma": "no-cache",
+                      "Accept-Encoding": "identity",
+                      "User-Agent": USER_AGENT,
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  body = response.read().decode("utf-8-sig", "replace")
+                  status = response.status
+                  final_url = response.geturl()
+              if status != 200:
+                  raise RuntimeError(f"{path}: HTTP {status} at {final_url}")
+              return body
+
+          hub_ok = False
+          last_hub_result = "not checked"
+          for attempt in range(1, 41):
+              try:
+                  live_hub = fetch("articles.html", attempt)
+                  parser = HubParser()
+                  parser.feed(live_hub)
+                  last_hub_result = f"cards={parser.cards} label={parser.display_count!r}"
+                  if parser.cards == 100 and parser.display_count == "100 articles":
+                      print(
+                          f"LIVE_ARTICLES_HUB_PASS http=200 article_cards={parser.cards} "
+                          f"display_count={parser.display_count!r} attempt={attempt} commit={COMMIT}"
+                      )
+                      hub_ok = True
+                      break
+                  print(
+                      f"Waiting for live article hub attempt={attempt}/40 "
+                      f"http=200 {last_hub_result}"
+                  )
+              except (urllib.error.URLError, TimeoutError, OSError, RuntimeError) as error:
+                  last_hub_result = str(error)
+                  print(f"Waiting for live article hub attempt={attempt}/40 error={error}")
+              if attempt < 40:
+                  time.sleep(3)
+          if not hub_ok:
+              raise SystemExit(
+                  "LIVE_ARTICLES_HUB_FAIL: expected HTTP 200, exactly 100 article cards, "
+                  f"and the 100-article display label; last result: {last_hub_result}"
+              )
+
+          sitemap_ok = False
+          last_sitemap_result = "not checked"
+          for attempt in range(1, 41):
+              try:
+                  sitemap_text = fetch("sitemap.xml", attempt)
+                  root = ET.fromstring(sitemap_text)
+                  ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+                  urls = root.findall("s:url", ns)
+                  locs = [
+                      node.find("s:loc", ns).text
+                      for node in urls
+                      if node.find("s:loc", ns) is not None and node.find("s:loc", ns).text
+                  ]
+                  lastmods = [node.find("s:lastmod", ns) for node in urls]
+                  article_urls = {
+                      loc for loc in locs
+                      if loc.startswith(BASE + "/articles/")
+                  }
+                  lastmod_ok = all(
+                      node is not None and (node.text or "").strip()
+                      for node in lastmods
+                  )
+                  valid = (
+                      len(urls) >= 97
+                      and len(locs) == len(urls)
+                      and len(article_urls) == 100
+                      and lastmod_ok
+                      and all(loc.startswith(BASE + "/") for loc in locs)
+                  )
+                  last_sitemap_result = (
+                      f"urls={len(urls)} locs={len(locs)} article_urls={len(article_urls)} "
+                      f"all_lastmod={lastmod_ok}"
+                  )
+                  if valid:
+                      print(
+                          f"LIVE_SITEMAP_PASS http=200 {last_sitemap_result} "
+                          f"canonical={BASE}/ attempt={attempt} commit={COMMIT}"
+                      )
+                      sitemap_ok = True
+                      break
+                  print(f"Waiting for live sitemap attempt={attempt}/40 {last_sitemap_result}")
+              except (urllib.error.URLError, TimeoutError, OSError, RuntimeError, ET.ParseError) as error:
+                  last_sitemap_result = str(error)
+                  print(f"Waiting for live sitemap attempt={attempt}/40 error={error}")
+              if attempt < 40:
+                  time.sleep(3)
+          if not sitemap_ok:
+              raise SystemExit(
+                  "LIVE_SITEMAP_FAIL: expected HTTP 200 with 100 article URLs, valid loc/lastmod "
+                  f"and canonical host; last result: {last_sitemap_result}"
+              )
           PY

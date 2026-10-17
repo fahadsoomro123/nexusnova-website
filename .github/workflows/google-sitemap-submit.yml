@@ -35,8 +35,34 @@ jobs:
           raw = os.environ.get('GSC_SERVICE_ACCOUNT_JSON', '').strip()
           site = os.environ.get('GSC_SITE_URL', '').strip()
           if not raw or not site:
-              print('Search Console secrets are not configured; skipping submission.')
-              sys.exit(0)
+              missing = [
+                  name for name, value in (
+                      ('GSC_SERVICE_ACCOUNT_JSON', raw),
+                      ('GSC_SITE_URL', site),
+                  )
+                  if not value
+              ]
+              setup = """## Google Search Console sitemap submission blocked
+
+Missing repository Actions secret(s): """ + ", ".join("[" + name + "]" for name in missing) + """.
+
+Complete this one-minute setup:
+1. Open https://github.com/fahadsoomro123/nexusnova-website/settings/secrets/actions
+2. Select New repository secret.
+3. Add GSC_SERVICE_ACCOUNT_JSON with the complete Google Cloud service-account JSON key contents. Do not commit the key to the repository.
+4. Add GSC_SITE_URL with exactly https://nexusnovatools.com/ for the verified URL-prefix property.
+5. In Google Search Console, grant the service-account email permission on that verified property.
+6. Re-run Submit Sitemap to Google Search Console from the Actions tab.
+
+The Google sitemap ping endpoint is deprecated and returns HTTP 404; this workflow will not report a fake submission success.
+"""
+              print('GSC_SUBMISSION_BLOCKED: missing ' + ', '.join(missing))
+              print('Setup guide: https://github.com/fahadsoomro123/nexusnova-website/settings/secrets/actions')
+              summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary_path:
+                  with open(summary_path, 'a', encoding='utf-8') as summary:
+                      summary.write(setup + '\n')
+              raise SystemExit(1)
 
           info = json.loads(raw)
           credentials = service_account.Credentials.from_service_account_info(
