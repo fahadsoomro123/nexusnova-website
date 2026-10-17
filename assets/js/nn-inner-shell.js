@@ -1,4 +1,35 @@
 document.addEventListener("DOMContentLoaded",function(){
+  function normalizeInnerHeader(){
+    const headers=[...document.querySelectorAll("header")].filter(h=>!h.parentElement?.closest("header"));
+    const header=headers.find(h=>h.querySelector("nav"))||headers[0];
+    if(!header) return;
+    headers.filter(h=>h!==header).forEach(h=>h.remove());
+    const navs=[...header.querySelectorAll("nav")];
+    const nav=navs.find(n=>n.matches("[data-nn-nav],.nn-nav,.nn-global-shell-nav,[role='navigation']"))||navs[0];
+    if(nav){
+      const seen=new Set();
+      navs.filter(n=>n!==nav).forEach(extra=>{
+        extra.querySelectorAll("a[href]").forEach(a=>{
+          const key=new URL(a.getAttribute("href")||a.href,location.href).pathname;
+          if(!seen.has(key)&&![...nav.querySelectorAll("a[href]")].some(x=>new URL(x.getAttribute("href")||x.href,location.href).pathname===key)) nav.appendChild(a.cloneNode(true));
+        });
+        extra.remove();
+      });
+      nav.querySelectorAll("a[href]").forEach(a=>{
+        const key=new URL(a.getAttribute("href")||a.href,location.href).pathname;
+        if(seen.has(key)) a.remove(); else seen.add(key);
+      });
+    }
+    const searches=[...header.querySelectorAll("input[type='search'],form[role='search'] input")];
+    const kept=new Set();
+    searches.forEach(input=>{
+      if(kept.size===0){kept.add(input);return;}
+      const form=input.closest("form[role='search'],.nn-global-search");
+      if(form) form.remove(); else input.remove();
+    });
+  }
+
+  normalizeInnerHeader();
   const yearEls=document.querySelectorAll("[data-year]");
   yearEls.forEach(function(el){el.textContent=new Date().getFullYear();});
   function ensureTrustFooter(){
@@ -72,7 +103,8 @@ document.addEventListener("DOMContentLoaded",function(){
   ensureWebsiteLaunchesBadge();
   const menu=document.querySelector("[data-nn-menu]");
   const nav=document.querySelector("[data-nn-nav]");
-  if(menu&&nav){
+  if(menu&&nav&&!menu.dataset.nnBound){
+    menu.dataset.nnBound="true";
     menu.addEventListener("click",function(){
       const open=nav.classList.toggle("is-open");
       menu.setAttribute("aria-expanded",open?"true":"false");
@@ -106,7 +138,6 @@ document.addEventListener("DOMContentLoaded",function(){
   };
   document.head.appendChild(loader);
 })();
-
 
 /* Load the shared responsive header/search/footer repair layer once per page. */
 (function(){
