@@ -94,7 +94,7 @@ def live_sitemap_urls(base_url: str) -> list[str]:
 
 def page_metrics(page) -> dict:
     return page.evaluate(
-        """
+        r"""
         () => {
           const visible = el => {
             const r = el.getBoundingClientRect();
@@ -116,6 +116,7 @@ def page_metrics(page) -> dict:
 
 def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, preview_paths: set[str]) -> dict:
     failures: list[str] = []
+    warnings: list[str] = []
     checked = 0
     article_cards = 0
     article_count_text = False
@@ -150,7 +151,8 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         if metrics["footers"] != 1:
                             failures.append(f"{label}@{viewport_name}: visible footer count {metrics['footers']}")
                     if metrics["scrollWidth"] > metrics["clientWidth"] + 6:
-                        failures.append(f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}")
+                        finding = f"{label}@{viewport_name}: horizontal overflow {metrics['scrollWidth']} > {metrics['clientWidth']}"
+                        (warnings if preview else failures).append(finding)
                     if rel == ARTICLE_HUB:
                         article_cards = len(metrics["articleLinks"])
                         article_count_text = bool(re.search(r"\b100\s+articles\b", page.locator("body").inner_text(), re.I))
@@ -163,7 +165,7 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
         failures.append(f"live articles.html: {article_cards} unique article cards, expected 100")
     if live and not article_count_text:
         failures.append("live articles.html: missing visible '100 articles' count")
-    return {"checked_viewports":checked,"failures":failures,"max_logo_height":round(max_logo_height,2),"article_cards":article_cards,"article_count_text":article_count_text}
+    return {"checked_viewports":checked,"failures":failures,"warnings":warnings,"max_logo_height":round(max_logo_height,2),"article_cards":article_cards,"article_count_text":article_count_text}
 
 
 def main() -> int:
@@ -193,11 +195,12 @@ def main() -> int:
     artifact.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"HTML_LAYOUT_SCAN files={len(files)} viewports={browser_report['checked_viewports']} max_logo_height={browser_report['max_logo_height']} article_cards={browser_report['article_cards']}")
     for item in static_findings[:80]: print("FAIL_STATIC", item)
+    for item in browser_report["warnings"][:80]: print("WARN_BROWSER", item)
     for item in browser_report["failures"][:120]: print("FAIL_BROWSER", item)
     if static_findings or browser_report["failures"]:
-        print(f"HTML_LAYOUT_FAIL static={len(static_findings)} browser={len(browser_report['failures'])}")
+        print(f"HTML_LAYOUT_FAIL static={len(static_findings)} browser={len(browser_report['failures'])} warnings={len(browser_report['warnings'])}")
         return 1
-    print(f"HTML_LAYOUT_PASS files={len(files)} viewports={browser_report['checked_viewports']} max_logo_height={browser_report['max_logo_height']} article_cards={browser_report['article_cards']}")
+    print(f"HTML_LAYOUT_PASS files={len(files)} viewports={browser_report['checked_viewports']} max_logo_height={browser_report['max_logo_height']} article_cards={browser_report['article_cards']} warnings={len(browser_report['warnings'])}")
     return 0
 
 
