@@ -104,6 +104,8 @@ for page in html_files:
         problems.append(f"{rel}: header mismatch")
     if outer(source, "footer") != expected_footer:
         problems.append(f"{rel}: footer mismatch")
+    if len(re.findall(r"<footer\b", source, re.I)) != 1:
+        problems.append(f"{rel}: expected one footer element")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
     if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js""", source, re.I):
@@ -200,6 +202,7 @@ test('every HTML page has the canonical static index header and footer', () => {
     const relative = path.relative(root, file);
     assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
     assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
+    assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
     assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
@@ -349,11 +352,25 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
         position = body.end() if body else (main.start() if main else 0)
         edits.append((position, position, "\n" + header_template + "\n"))
     last_main_end = max((span[1] for span in mains), default=-1)
-    global_footers = sorted((s for s in footers if is_global(s[2]) and s[0] > last_main_end), key=lambda s: s[0])
+    all_footers = sorted(footers, key=lambda span: span[0])
+    global_footers = sorted((span for span in all_footers if is_global(span[2]) and span[0] > last_main_end), key=lambda span: span[0])
     if global_footers:
-        edits.append((*global_footers[0][:2], footer_template))
-        edits.extend((*span[:2], "") for span in global_footers[1:])
+        keep_footer = global_footers[0]
+        edits.append((*keep_footer[:2], footer_template))
+        for span in all_footers:
+            if span == keep_footer:
+                continue
+            # Nested footer tags are removed with their enclosing footer, avoiding overlapping edits.
+            if any(parent[0] <= span[0] and span[1] <= parent[1] and parent != span for parent in all_footers):
+                continue
+            edits.append((*span[:2], ""))
     else:
+        # Some legacy pages put their only footer inside <main>. Remove every variant,
+        # then append the canonical footer once, after the page content.
+        for span in all_footers:
+            if any(parent[0] <= span[0] and span[1] <= parent[1] and parent != span for parent in all_footers):
+                continue
+            edits.append((*span[:2], ""))
         closes = list(re.finditer(r"</body\s*>", source, re.I))
         position = closes[-1].start() if closes else len(source)
         edits.append((position, position, "\n" + footer_template + "\n"))
@@ -598,6 +615,8 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: missing static header")
         if not footers:
             problems.append(f"{relative}: missing static footer")
+        if len(parser.spans.get("footer", [])) != 1:
+            problems.append(f"{relative}: expected exactly one footer element, found {len(parser.spans.get('footer', []))}")
         if source.count(SHELL_CSS_HREF) != 1:
             problems.append(f"{relative}: expected one shared stylesheet link")
         if re.search(r"<script\b[^>]*\bsrc\s*=\s*[\"'][^\"']*global-shell-guard\.js", source, re.I):
