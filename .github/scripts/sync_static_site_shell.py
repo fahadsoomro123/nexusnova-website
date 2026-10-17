@@ -96,7 +96,7 @@ for page in html_files:
         problems.append(f"{rel}: footer mismatch")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js", source, re.I):
+    if re.search(r"""<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js""", source, re.I):
         problems.append(f"{rel}: retired dynamic shell guard still referenced")
 for name in ("main.js", "site-main.js", "analytics.js", "related-tools.js"):
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
@@ -106,7 +106,7 @@ guard = (ROOT / "assets/js/global-shell-guard.js").read_text(encoding="utf-8", e
 if re.search(r"MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector", guard):
     problems.append("assets/js/global-shell-guard.js: disabled guard is not inert")
 inner = (ROOT / "assets/js/nn-inner-shell.js").read_text(encoding="utf-8", errors="replace")
-if re.search(r"normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header", inner):
+if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header""", inner):
     problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
@@ -438,7 +438,7 @@ def patch_supporting_sources():
         source = original
         start = source.find("def ensure_global_shell_loader(path):")
         if start >= 0:
-            end = source.find("\\nrecords=[]", start)
+            end = source.find("\nrecords=[]", start)
             if end < 0:
                 raise RuntimeError("sync_phase2_content.py shell loader end marker missing")
             helper = r'''def ensure_related_tools_loader(path):
@@ -458,17 +458,8 @@ def patch_supporting_sources():
 
 
 '''
-            end = source.find("\nrecords=[]", start)
-            if end < 0:
-                raise RuntimeError("sync_phase2_content.py content loader end marker missing")
             source = source[:start] + helper + source[end + 1:]
         source = source.replace("    ensure_global_shell_loader(p)\n", "    ensure_related_tools_loader(p)\n")
-        if source != original:
-            sync_path.write_text(source, encoding="utf-8")
-            changed.append(".github/scripts/sync_phase2_content.py")
-
-            source = source[:start] + helper + source[end + 1:]
-        source = source.replace("    ensure_global_shell_loader(p)\\n", "    ensure_related_tools_loader(p)\\n")
         if source != original:
             sync_path.write_text(source, encoding="utf-8")
             changed.append(".github/scripts/sync_phase2_content.py")
@@ -477,7 +468,7 @@ def patch_supporting_sources():
     if cleanup_path.exists():
         original = cleanup_path.read_text(encoding="utf-8-sig")
         source = re.sub(
-            r"^\s*<script defer src=[\"'][^\"']*(?:nn-inner-shell|global-shell-guard)\.js[^\"']*[\"']></script>\s*$",
+            r"^\s*<script defer src=[\"'][^\"']*global-shell-guard\.js[^\"']*[\"']></script>\s*$",
             "", original, flags=re.I | re.M,
         )
         marker = 'raise SystemExit(f"ERROR: article discovery synchronization failed with exit code {run.returncode}")'
