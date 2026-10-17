@@ -237,6 +237,41 @@ def norm_sentence(sentence: str) -> str:
     sentence = re.sub(r'[^a-z0-9%+ ]+', ' ', sentence)
     return re.sub(r'\s+', ' ', sentence).strip()
 
+# These exact normalized sentences are deliberately reused as safety, methodology,
+# and input-quality guidance. They remain visible on every page, but do not count as
+# page-specific editorial copy when measuring article uniqueness. Keep this allowlist
+# narrow and exact; new repeated prose should still be surfaced by the audit.
+SHARED_EDITORIAL_BOILERPLATE = frozenset({
+    'compare the estimate with an actual bill statement meter reading quote or contract',
+    'comparing different terms dates units and included charges must match',
+    'copying an example unchanged illustrative figures explain the method they do not replace your own data',
+    'editorial note this guide is educational and uses labelled illustrative examples',
+    'for financial tax contractual electrical or safety decisions use the calculation as preparation rather than a substitute for current qualified guidance',
+    'it is not personalised financial tax legal investment or safety advice',
+    'mixing monthly and annual periods unlike units gross and take home income or fixed and per unit charges can make correct arithmetic misleading',
+    'real results may change with rates fees timing usage eligibility and factors outside the model',
+    'record the date units source and period for each input',
+    'replace illustrative values with your own current statement quote contract meter or budget before using the result to make a commitment',
+    'test a conservative case and a plausible alternative while changing one variable at a time',
+    'verify current terms and appropriate local guidance for high impact decisions',
+    'verify important inputs with the original provider or official source',
+    'verify the rate fee unit eligibility and timing with a primary source',
+    'when an input is uncertain model a range rather than hiding it',
+    'related calculators use these nexusnova tools to test another input or compare a connected option percentage calculator for a related calculation or comparison',
+    'important limitation use real take home income and actual due dates allocations must fit essential needs',
+    'use real take home income and actual due dates allocations must fit essential needs',
+})
+
+
+def distinctive_content(text: str) -> str:
+    """Return content for uniqueness comparison without approved reusable boilerplate.
+
+    The original visible text and word counts remain unchanged. Only exact normalized
+    matches in SHARED_EDITORIAL_BOILERPLATE are removed from the uniqueness signal.
+    """
+    parts = re.split(r'(?<=[.!?])\\s+', text)
+    return ' '.join(part for part in parts if norm_sentence(part) not in SHARED_EDITORIAL_BOILERPLATE)
+
 
 def shingles(text: str, n: int = 4) -> set[tuple[str, ...]]:
     toks = [t.lower() for t in words(text) if t.lower() not in STOP and len(t) > 2]
@@ -293,7 +328,7 @@ def main() -> None:
             'twitter_description': meta_value(source, 'twitter:description'),
             'faq': has_faq_section(headings),
             'plain': plain,
-            'shingles': shingles(plain),
+            'shingles': shingles(distinctive_content(plain)),
             'duplicate_sections': duplicate_section_blocks(frag),
         }
         pages[path] = entry
@@ -301,7 +336,7 @@ def main() -> None:
         desc_seen[desc.strip().lower()].append(path)
         for sentence in sentences(plain):
             normalized = norm_sentence(sentence)
-            if len(words(normalized)) >= 10:
+            if len(words(normalized)) >= 10 and normalized not in SHARED_EDITORIAL_BOILERPLATE:
                 repeated[normalized].append(path)
 
     findings: list[dict] = []
