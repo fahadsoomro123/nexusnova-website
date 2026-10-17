@@ -388,7 +388,7 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
         body = re.search(r"<body\b[^>]*>", source, re.I)
         position = body.start() if body else 0
         source = source[:position] + css_link + "\n" + source[position:]
-    source = re.sub(r"[ \\t]+(?=\\r?$)", "", source, flags=re.M)
+    source = re.sub(r"[ \t]+(?=\r?$)", "", source, flags=re.M)
     return source
 
 
