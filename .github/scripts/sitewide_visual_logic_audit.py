@@ -401,7 +401,23 @@ def main() -> None:
                             page.evaluate("() => Promise.race([document.fonts.ready, new Promise(resolve => setTimeout(resolve, 1800))])")
                         except Exception:
                             pass
-                        page.wait_for_timeout(60)
+                        try:
+                            page.wait_for_load_state("load", timeout=3500)
+                        except Exception:
+                            pass
+                        # This is a test fixture: deny optional analytics if the consent UI is visible.
+                        try:
+                            page.evaluate("""() => {
+                              const button = document.querySelector('[data-consent-off]');
+                              if (!button) return false;
+                              const style = getComputedStyle(button), box = button.getBoundingClientRect();
+                              if (style.display === 'none' || style.visibility === 'hidden' || box.width <= 0 || box.height <= 0) return false;
+                              button.click();
+                              return true;
+                            }""")
+                        except Exception:
+                            pass
+                        page.wait_for_timeout(120)
                         metrics = page.evaluate(METRICS_JS)
                         render_count += 1
                         contrast_samples += int(metrics["contrastChecked"])

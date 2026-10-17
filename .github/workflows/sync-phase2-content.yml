@@ -41,14 +41,33 @@ jobs:
         run: npm run check
       - name: Run npm test
         run: npm test
-      - name: Commit synchronized discovery
+      - name: Commit synchronized discovery with race-safe retry
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/js/search-core.js articles.html sitemap.xml articles
-          if git diff --cached --quiet; then
-            echo 'Discovery already synchronized.'
-          else
+          for attempt in 1 2 3; do
+            echo "Phase-2 sync publication attempt \${attempt}/3"
+            git fetch origin main
+            git reset --hard origin/main
+            python .github/scripts/sync_phase2_content.py
+            python .github/scripts/validate_global_layout.py
+            npm run check
+            npm test
+            git add assets/js/search-core.js articles.html sitemap.xml articles
+            if git diff --cached --quiet; then
+              echo 'Discovery already synchronized on current main.'
+              exit 0
+            fi
             git commit -m 'seo: synchronize phase 2 article discovery [skip ci]'
-            git push
-          fi
+            if git push origin HEAD:main; then
+              echo 'Synchronized article discovery pushed successfully.'
+              exit 0
+            fi
+            echo "Main advanced during publish attempt \${attempt}; regenerating on the newest main."
+            git reset --hard
+            sleep "$((attempt * 2))"
+          done
+          echo 'Phase-2 sync could not publish after three fresh-main retries.' >&2
+          exit 1

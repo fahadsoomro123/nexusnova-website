@@ -71,6 +71,25 @@ jobs:
               for path in paths
           }
 
+          def current_main_sha():
+              try:
+                  result = subprocess.check_output(
+                      ['git', 'ls-remote', 'origin', 'refs/heads/main'],
+                      text=True,
+                      timeout=10,
+                  ).split()
+                  return result[0] if result else commit
+              except Exception:
+                  return commit
+
+          latest = current_main_sha()
+          if latest != commit:
+              print(
+                  f'SMOKE SUPERSEDED: tested commit {commit} is no longer main HEAD '
+                  f'({latest}); the newer main-head run owns production verification.'
+              )
+              raise SystemExit(0)
+
           def check(path, attempt):
               route = '/' if path == 'index.html' else '/' + quote(path, safe='/')
               url = f'{base}{route}?deploy={commit}-{attempt}'
@@ -93,6 +112,13 @@ jobs:
               for attempt in range(1, 41):
                   results = list(pool.map(lambda path: check(path, attempt), paths))
                   stale = [result for result in results if result[1] != result[2] or result[3] != 200]
+                  latest = current_main_sha()
+                  if latest != commit:
+                      print(
+                          f'SMOKE SUPERSEDED during deployment wait: commit {commit} is no longer main HEAD '
+                          f'({latest}); a newer main-head run will verify production.'
+                      )
+                      raise SystemExit(0)
                   if not stale:
                       print(f'DEPLOYMENT READY: {len(paths)} changed static file(s) match commit {commit} on attempt {attempt}.')
                       break

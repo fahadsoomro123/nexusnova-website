@@ -94,7 +94,7 @@ jobs:
               feed_text = latest.get("/articles.json", {}).get("body", "")
               required = {
                   "all six routes return HTTP 200": all(x["status"] == 200 for x in results),
-                  "hub reports 34 articles": "34 articles" in hub,
+                  "hub reports 100 articles": "100 articles" in hub,
                   "hub contains consolidated timeline": "Chrome 152 for Android: Release Timeline and Security Fixes" in hub,
                   "hub omits old duplicate URL": ARCHIVE.lstrip("/") not in hub,
                   "primary timeline has corrected title": "<title>Chrome 152 for Android: Release Timeline | NexusNova Tools</title>" in primary,

@@ -52,7 +52,7 @@ for rel in NEW_TOOLS:
  assert f"https://nexusnovatools.com/{rel}" in h,f"missing canonical on {rel}"
  assert 'property="og:image"' in h and 'name="twitter:image"' in h,f"missing social images: {rel}"
  assert "../assets/css/site.css?v=20261015-v4" in h,f"missing shared site stylesheet coverage: {rel}"
- assert "western-finance-v1" in h,f"missing cache version: {rel}"
+ assert "../assets/js/western-finance-tools.js?v=20261015-v4" in h,f"missing current Western finance engine reference: {rel}"
  assert f"https://nexusnovatools.com/{rel}" in sitemap,f"missing sitemap entry: {rel}"
  assert f'url:"{rel}", type:"tool"' in core,f"missing search record: {rel}"
  assert words(f)>=250,f"new tool needs 250+ visible guidance words: {rel}"
