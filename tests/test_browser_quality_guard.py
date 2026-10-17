@@ -81,13 +81,23 @@ class BrowserQualityRuleRegressionTests(unittest.TestCase):
         self.assertIn('data-mode="signin"', source)
 
 
-    def test_guides_page_has_accessible_mobile_navigation_toggle(self):
+    def test_guides_page_uses_static_scrollable_mobile_navigation(self):
         guides = (ROOT / "guides.html").read_text(encoding="utf-8", errors="replace")
-        self.assertIn('data-nn-menu', guides)
-        self.assertIn('aria-controls="nn-primary-nav"', guides)
-        self.assertIn('aria-expanded="false"', guides)
-        self.assertIn('button.addEventListener("click", toggleMenu)', guides)
-        self.assertIn('event.key === "Escape"', guides)
+        shell = (ROOT / "assets" / "css" / "static-site-shell.css").read_text(encoding="utf-8")
+
+        self.assertIn('<nav class="nn-nav" id="nn-primary-nav" aria-label="Primary navigation">', guides)
+        for href in ['href="/"', 'href="/#master-directory"', 'href="/categories.html"',
+                     'href="/articles.html"', 'href="/guides.html"']:
+            self.assertIn(href, guides)
+
+        # Static nav must not depend on a removed hamburger button or menu-toggle runtime.
+        self.assertNotIn('data-nn-menu', guides)
+        self.assertNotIn('toggleMenu', guides)
+        self.assertIn('assets/css/static-site-shell.css', guides)
+        self.assertRegex(
+            shell,
+            r'@media\(max-width:860px\)[^\n]*\.nn-header \.nn-nav\{[^}]*overflow-x:auto!important',
+        )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
