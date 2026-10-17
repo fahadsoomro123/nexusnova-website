@@ -153,7 +153,7 @@ const shellPart = (source, tag) => {
   const pattern = tag === 'header'
     ? /<header\b(?=[^>]*class=["'][^"']*\bnn-header\b[^"']*["'])[^>]*>[\s\S]*?<\/header\s*>/i
     : /<footer\b(?=[^>]*class=["'][^"']*\bnn-footer\b[^"']*\bnn-global-footer\b[^"']*["'])[^>]*>[\s\S]*?<\/footer\s*>/ig;
-  const matches = [...source.matchAll(new RegExp(pattern.source, tag === 'header' ? 'i' : 'ig'))];
+  const matches = [...source.matchAll(new RegExp(pattern.source, 'ig'))];
   if (!matches.length) return '';
   if (tag === 'footer') {
     const canonical = matches.find(match => match[0].includes('Practical browser tools, guides and utilities for everyday digital work.'));
@@ -541,7 +541,7 @@ def patch_supporting_sources():
   );""")
         ]),
         ("tests/live-gold.test.cjs", [
-            ('href="#master-directory"', 'href="/#master-directory"')
+            ('href="#master-directory"', 'href="\\/#master-directory"')
         ]),
         ("tests/pakistan-new-tools-surface.test.cjs", [
             ('assert.match(html,/href="index\\.html#master-directory"/);',
