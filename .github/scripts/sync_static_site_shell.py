@@ -397,7 +397,7 @@ def all_html_files():
 
 def patch_supporting_sources():
     changed = []
-    stub = "/* Retired: the canonical site shell is static HTML; this file intentionally performs no DOM mutation. */\\n"
+    stub = "/* Retired: the canonical site shell is static HTML; this file intentionally performs no DOM mutation. */\n"
     guard_path = ROOT / "assets/js/global-shell-guard.js"
     if guard_path.read_text(encoding="utf-8", errors="replace") != stub:
         guard_path.write_text(stub, encoding="utf-8")
