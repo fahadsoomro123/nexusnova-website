@@ -209,6 +209,12 @@ def update_article(path: Path) -> bool:
     source = set_meta(source, "property", "og:description", description)
     source = set_meta(source, "name", "twitter:description", description)
 
+    # Exactly 100 canonical article pages are the SEO article library. These
+    # self-canonical pages are indexable; the separate consolidated alias stays
+    # noindex and points at its current canonical destination.
+    if canonical_url(source).rstrip("/") == page_url(path).rstrip("/"):
+        source = set_meta(source, "name", "robots", "index,follow,max-image-preview:large")
+
     image_match = meta_tag_match(source, "property", "og:image")
     image = get_attr(image_match.group(0), "content") if image_match else ""
     if not image:
