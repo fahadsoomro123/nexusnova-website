@@ -581,21 +581,7 @@ def patch_supporting_sources():
             contract_path.write_text(source, encoding="utf-8")
             changed.append(relative)
 
-    sweep = ROOT / ".github/workflows/all-html-layout-sweep.yml"
-    if sweep.exists():
-        original = sweep.read_text(encoding="utf-8")
-        source = original.replace(
-            "css='https://nexusnovatools.com/assets/css/global-shell-repair.css?v=20261017-ui-sweep'",
-            "css='https://nexusnovatools.com/assets/css/static-site-shell.css?v=20261017-static-shell-v1'",
-        )
-        source = source.replace(
-            """            if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then""",
-            """            css_body="$(curl --fail --silent "$css" || true)"
-            if [[ "$css_body" == *'height:40px!important'* ]]; then""",
-        )
-        if source != original:
-            sweep.write_text(source, encoding="utf-8")
-            changed.append(".github/workflows/all-html-layout-sweep.yml")
+    # Workflows are intentionally left untouched: this job's GitHub App lacks workflow-file push permission.
     return sorted(set(changed))
 
 
