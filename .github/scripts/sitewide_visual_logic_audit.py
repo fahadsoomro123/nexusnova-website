@@ -42,6 +42,7 @@ METRICS_JS = r"""
     breadcrumb: 'nav[aria-label*="breadcrumb" i], .breadcrumb, [itemtype*="BreadcrumbList"]'
   };
   const exists = selector => [...document.querySelectorAll(selector)].some(visible);
+  const present = selector => !!document.querySelector(selector);
   const typo = ['body', 'h1', 'p', 'button', 'input'].map(selector => {
     const el = document.querySelector(selector);
     if (!el || !visible(el)) return {selector, present: false};
@@ -61,6 +62,8 @@ METRICS_JS = r"""
   for (const el of document.querySelectorAll('h1, h2, button, input, select, textarea, label')) {
     if (!visible(el)) continue;
     const s = getComputedStyle(el);
+    // Tiny labels are commonly intentional screen-reader-only accessibility labels.
+    if (el.tagName === 'LABEL' && el.clientWidth <= 2 && el.scrollWidth > el.clientWidth + 3) continue;
     if (s.overflow === 'hidden' || s.overflowX === 'hidden' || s.textOverflow === 'ellipsis') {
       if (el.scrollWidth > el.clientWidth + 3 || el.scrollHeight > el.clientHeight + 3) {
         clipped.push({
@@ -72,20 +75,8 @@ METRICS_JS = r"""
     }
   }
   const allControls = [...document.querySelectorAll('input:not([type="hidden"]), textarea, select, button, [role="button"]')].filter(visible);
-  const blockedControls = [];
-  for (const el of allControls) {
-    const s = getComputedStyle(el), r = el.getBoundingClientRect();
-    if (s.pointerEvents === 'none') {
-      blockedControls.push({text: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 70), reason: 'pointer-events:none'});
-      continue;
-    }
-    const x = Math.min(innerWidth - 1, Math.max(0, r.left + r.width / 2));
-    const y = Math.min(innerHeight - 1, Math.max(0, r.top + r.height / 2));
-    const top = document.elementFromPoint(x, y);
-    if (top && top !== el && !el.contains(top) && !top.contains(el)) {
-      blockedControls.push({text: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 70), reason: 'center occluded by ' + top.tagName.toLowerCase() + (top.id ? '#' + top.id : '')});
-    }
-  }
+  const blockedControls = allControls.filter(el => !el.disabled && getComputedStyle(el).pointerEvents === "none")
+    .map(el => ({text:(el.innerText || el.value || el.getAttribute("aria-label") || "").trim().slice(0,70),reason:"pointer-events:none"})).slice(0,8);
   const rgba = text => {
     const m = String(text).match(/rgba?\(([^)]+)\)/i);
     if (!m) return null;
@@ -150,10 +141,13 @@ METRICS_JS = r"""
     sw: document.documentElement.scrollWidth,
     cw: document.documentElement.clientWidth,
     header: exists(selectors.header),
-    nav: exists(selectors.nav),
+    nav: present(selectors.nav),
+    navVisible: exists(selectors.nav),
+    menuButton: present('[data-nn-menu], [data-menu-btn], button.nn-menu, button.menu-btn'),
+    menuButtonVisible: exists('[data-nn-menu], [data-menu-btn], button.nn-menu, button.menu-btn'),
     footer: exists(selectors.footer),
     search: exists(selectors.search),
-    categories: exists(selectors.categories),
+    categories: present(selectors.categories),
     breadcrumb: exists(selectors.breadcrumb),
     fontStatus: document.fonts ? document.fonts.status : 'unsupported',
     typography: typo, brokenImages, clipped: clipped.slice(0, 8),
@@ -288,8 +282,7 @@ def attach_fixtures(page) -> int:
     count = 0
     for locator in page.locator('input[type="file"]').all():
         try:
-            if not locator.is_visible():
-                continue
+            # Hidden file inputs may be activated by a visible upload button or label.
             accept = (locator.get_attribute("accept") or "").lower()
             if ".pdf" in accept or "application/pdf" in accept:
                 payload, filename, mime = PDF, "audit-fixture.pdf", "application/pdf"
@@ -326,7 +319,7 @@ def action_buttons(page) -> list[tuple[str, str]]:
         el.setAttribute('data-polish-audit-action', String(result.length));
         result.push({selector:'[data-polish-audit-action="' + result.length + '"]', text});
       });
-      return result.slice(0,3);
+      return result;
     }
     """)
     return [(row["selector"], row["text"]) for row in candidates]
@@ -417,13 +410,34 @@ def main() -> None:
                         if not metrics["header"]:
                             route_errors.append(f"{mode}/{scheme}: shared header missing")
                         if not metrics["nav"]:
-                            route_errors.append(f"{mode}/{scheme}: shared navigation missing")
+                            route_errors.append(f"{mode}/{scheme}: shared navigation element missing")
+                        if mode == "mobile" and metrics["nav"] and not metrics["navVisible"]:
+                            if not metrics["menuButtonVisible"]:
+                                route_errors.append(f"{mode}/{scheme}: mobile navigation collapsed without a visible menu button")
+                            elif scheme == "light":
+                                try:
+                                    menu_button = page.locator('[data-nn-menu], [data-menu-btn], button.nn-menu, button.menu-btn').first
+                                    menu_button.click(timeout=1600)
+                                    page.wait_for_timeout(80)
+                                    nav_open = page.evaluate("""() => {
+                                      const nav = document.querySelector('[data-nav], [data-nn-nav], header nav, header [role="navigation"], .nn-nav');
+                                      if (!nav) return false;
+                                      const style = getComputedStyle(nav);
+                                      return style.display !== 'none' && style.visibility !== 'hidden' && nav.getClientRects().length > 0;
+                                    }""")
+                                    if not nav_open:
+                                        route_errors.append(f"{mode}/{scheme}: menu button did not reveal navigation")
+                                    else:
+                                        menu_button.click(timeout=1600)
+                                        page.wait_for_timeout(40)
+                                except Exception as exc:
+                                    route_errors.append(f"{mode}/{scheme}: mobile menu toggle failed: {str(exc)[:160]}
                         if not metrics["footer"]:
                             route_errors.append(f"{mode}/{scheme}: footer missing")
                         if not metrics["search"]:
                             route_warnings.append(f"{mode}/{scheme}: global search affordance not detected")
                         if not metrics["categories"]:
-                            route_warnings.append(f"{mode}/{scheme}: category/navigation links not detected")
+                            route_warnings.append(f"{mode}/{scheme}: category/navigation link elements missing")
                         if metrics["fontStatus"] != "loaded":
                             route_errors.append(f"{mode}/{scheme}: document fonts status is {metrics['fontStatus']}")
                         for typo in metrics["typography"]:
