@@ -275,11 +275,29 @@ def patch_phase2_sync_script() -> bool:
     return source != original
 
 def upgrade_workflow_action_pins() -> tuple[int, list[str]]:
-    # Workflow files are updated through the repository connector's authorized
-    # commit path. A workflow GITHUB_TOKEN cannot push workflow YAML without
-    # the separate workflows permission, so never mutate workflow files here.
-    return 0, []
-
+    """Upgrade all matching official Actions pins to verified Node-24-capable releases."""
+    changed = 0
+    versions: list[str] = []
+    workflow_dir = ROOT / ".github/workflows"
+    for path in sorted(list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml"))):
+        source = path.read_text(encoding="utf-8-sig")
+        original = source
+        updated_lines = []
+        for line in source.splitlines(keepends=True):
+            updated = line
+            for action, (sha, version) in ACTION_PINS.items():
+                match = re.match(r"^(\s*(?:-\s*)?uses:\s*)" + re.escape(action) + r"@[^\s#]+(?:\s+#.*)?(\r?\n)?$", line)
+                if match:
+                    newline = match.group(2) or ""
+                    updated = match.group(1) + action + "@" + sha + " # " + version + newline
+                    versions.append(f"{path.relative_to(ROOT).as_posix()}: {action}@{version}")
+                    break
+            updated_lines.append(updated)
+        updated_source = "".join(updated_lines)
+        if updated_source != original:
+            path.write_text(updated_source, encoding="utf-8")
+            changed += 1
+    return changed, versions
 
 def add_lighthouse_failure_diagnostics() -> bool:
     path = ROOT / ".github/workflows/live-performance-100.yml"
