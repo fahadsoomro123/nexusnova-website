@@ -48,7 +48,7 @@ jobs:
               "/sitemap.xml",
               "/articles.json",
           ]
-          ARTICLE_PATH = re.compile(r"^articles/[^/]+\\.html$")
+          ARTICLE_PATH = re.compile(r"^articles/[^/]+\.html$")
 
           class ArticleHubParser(HTMLParser):
               def __init__(self):
@@ -122,7 +122,7 @@ jobs:
 
               # Read the article records from the actual client-side search dataset.
               registry_urls = re.findall(
-                  r'url\\s*:\\s*["\\'](articles/[^"\\']+\\.html)["\\']\\s*,\\s*type\\s*:\\s*["\\']article["\\']',
+                  r'url\s*:\s*"(articles/[^"]+\.html)"\s*,\s*type\s*:\s*"article"',
                   search_core,
               )
               registry_set = set(registry_urls)
