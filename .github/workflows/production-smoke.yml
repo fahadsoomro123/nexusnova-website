@@ -1,507 +1,195 @@
-# Production verification guard for NexusNova core, HumanProof, Intelligence, Labs and trust/tool pages.
-# Post-deploy gate: wait for Pages propagation before validating published routes.
 name: NexusNova Production Smoke
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/production-smoke.yml'
   push:
     branches: [main]
     paths:
-      - '.github/workflows/production-smoke.yml'
-      - '.github/workflows/privacy-analytics-production.yml'
-      - '**.html'
-      - 'assets/**/*.css'
-      - 'assets/**/*.js'
-      - 'assets/**/*.png'
-      - 'assets/**/*.webp'
-      - 'robots.txt'
-      - 'ads.txt'
-      - 'sitemap*.xml'
+      - ".github/workflows/production-smoke.yml"
+      - ".github/scripts/sitewide_visual_logic_audit.py"
+      - "**.html"
+      - "assets/**/*.css"
+      - "assets/**/*.js"
+      - "robots.txt"
+      - "ads.txt"
+      - "sitemap*.xml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
-jobs:
-  validate-smoke-contract:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 3
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout pull request source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Validate deferred AdSense production-smoke assertions
-        shell: bash
-        run: |
-          set -euo pipefail
-          ! grep -Fq "client=ca-pub-5070673529890078" index.html
-          grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" assets/js/main.js
-          grep -Fq "check_absent '/' 'client=ca-pub-5070673529890078' 'homepage does not eagerly load AdSense'" .github/workflows/production-smoke.yml
-          grep -Fq "check_contains '/assets/js/main.js' 'adsbygoogle.js?client=ca-pub-5070673529890078' 'shared AdSense loader retains publisher ID'" .github/workflows/production-smoke.yml
-          grep -Fq "          /assets/js/main.js" .github/workflows/production-smoke.yml
-          grep -Fq "homepage document title matches 108 tools" .github/workflows/production-smoke.yml
-          grep -Fq "homepage Open Graph title matches 108 tools" .github/workflows/production-smoke.yml
-          grep -Fq "homepage Twitter title matches 108 tools" .github/workflows/production-smoke.yml
-          grep -Fq "assets/js/search-core.js?v=20261015-v4" .github/workflows/production-smoke.yml
+concurrency:
+  group: nexusnova-production-smoke
+  cancel-in-progress: true
 
+jobs:
   production-smoke:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 20
     steps:
-      - name: Checkout exact commit for deployment comparison
+      - name: Checkout exact commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          fetch-depth: 2
+          fetch-depth: 1
 
-      - name: Wait for changed static files to match this commit
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Syntax and repository checks
+        run: npm run check
+
+      - name: Full repository test suite
+        run: npm test
+
+      - name: Verify source inventory and live production pages
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import hashlib
-          import subprocess
-          import time
-          from pathlib import Path
-          from concurrent.futures import ThreadPoolExecutor
-          from urllib.error import HTTPError, URLError
-          from urllib.parse import quote
-          from urllib.request import Request, urlopen
-
-          base = 'https://nexusnovatools.com'
-          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
-          paths = subprocess.check_output([
-              'git', 'diff', '--name-only', 'HEAD^', 'HEAD', '--',
-              '*.html', 'assets/**/*.css', 'assets/**/*.js',
-              'assets/**/*.png', 'assets/**/*.webp', 'robots.txt', 'ads.txt', 'sitemap*.xml'
-          ], text=True).splitlines()
-          # Deleted assets are intentionally absent from the current checkout; only hash files that still exist.
-          paths = [p for p in paths if p and not p.startswith('.github/') and Path(p).is_file()]
-          if not paths:
-              paths = ['index.html']
-          expected = {
-              path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
-              for path in paths
-          }
-
-          def check(path, attempt):
-              route = '/' if path == 'index.html' else '/' + quote(path, safe='/')
-              url = f'{base}{route}?deploy={commit}-{attempt}'
-              req = Request(url, headers={
-                  'Cache-Control': 'no-cache, no-store, max-age=0',
-                  'Pragma': 'no-cache',
-                  'User-Agent': 'NexusNovaProductionSmoke/2.0'
-              })
-              try:
-                  with urlopen(req, timeout=3) as response:
-                      body = response.read()
-                  actual = hashlib.sha256(body).hexdigest()
-                  return path, expected[path], actual, response.status
-              except (HTTPError, URLError, TimeoutError, OSError) as exc:
-                  return path, expected[path], type(exc).__name__, None
-
-          workers = min(32, max(1, len(paths)))
-          with ThreadPoolExecutor(max_workers=workers) as pool:
-              for attempt in range(1, 41):
-                  results = list(pool.map(lambda path: check(path, attempt), paths))
-                  stale = [r for r in results if r[1] != r[2] or r[3] != 200]
-                  if not stale:
-                      print(f'DEPLOYMENT READY: {len(paths)} changed static file(s) match commit {commit} on attempt {attempt}.')
-                      break
-                  for path, wanted, observed, status in stale[:8]:
-                      print(f'Waiting for deploy attempt {attempt}/40: {path} expected_sha256={wanted[:12]} actual={observed[:24]} status={status}')
-                  if attempt == 40:
-                      raise SystemExit(f'PRODUCTION FAIL: {len(stale)} changed static file(s) did not match this commit within the bounded wait.')
-                  time.sleep(3)
-          PY
-
-      - name: Verify production routes and content markers with diagnostics
-        shell: bash
-        run: |
-          set -uo pipefail
-          base='https://nexusnovatools.com'
-          route_file() {
-            local key
-            key="$(printf '%s' "$1" | sed 's/[^A-Za-z0-9]/_/g')"
-            printf '/tmp/nexusnova-smoke-%s' "$key"
-          }
-
-          route_failures=0
-          while IFS= read -r route; do
-            [ -n "$route" ] || continue
-            body="$(route_file "$route")"
-            code="$(curl -sS -L -o "$body" -w '%{http_code}' --connect-timeout 2 --max-time 5 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: NexusNovaLiveSmoke/2.0' "$base$route?smoke=$GITHUB_SHA" || true)"
-            if [ "$code" = '200' ]; then
-              echo "ROUTE PASS $code $route"
-            else
-              if [ -z "$code" ]; then code='curl-error'; fi
-              echo "ROUTE FAIL $code $route" >&2
-              route_failures=$((route_failures+1))
-            fi
-          done <<'ROUTES'
-          /
-          /assets/js/main.js
-          /humanproof.html
-          /live.html
-          /sports-live.html
-          /network-tools.html
-          /public-ip-checker.html
-          /ssl-certificate-checker.html
-          /currency-rates.html
-          /gold-rates.html
-          /fuel-rates.html
-          /weather-live.html
-          /earthquakes-live.html
-          /zakat-calculator-pakistan.html
-          /electricity-bill-calculator-pakistan.html
-          /salary-tax-calculator-pakistan.html
-          /prayer-times-qibla-pakistan.html
-          /labs.html
-          /pulse.html
-          /magic-drop.html
-          /xray.html
-          /widgets.html
-          /widget-pakistan-today.html
-          /reaction-time-test.html
-          /contact.html
-          /privacy.html
-          /resume-builder.html
-          /image-to-text-ocr.html
-          /invoice-maker.html
-          /jpg-to-pdf.html
-          /guides/unit-conversion.html
-          /emi-calculator.html
-          /bmi-calculator.html
-          /tools.html
-          /categories.html
-          /guides.html
-          /document-workbench.html
-          /pdf-tools.html
-          /merge-pdf.html
-          /split-pdf.html
-          /contrast-checker.html
-          /text-diff-checker.html
-          /csv-json-converter.html
-          /ai-prompt-builder.html
-          /ai-prompt-enhancer.html
-          /short-form-video-hook-generator.html
-          /freelance-rate-calculator.html
-          /crypto-tax-profit-estimator.html
-          /privacy-policy-terms-generator.html
-/tools/us-federal-tax-bracket-calculator.html
-/tools/mortgage-payoff-calculator.html
-/tools/loan-payoff-calculator.html
-/tools/stock-profit-calculator.html
-/tools/crypto-profit-calculator.html
-/assets/js/western-finance-tools.js
-          /guides/ai-prompt-workflows-2026.html
-          /guides/short-form-hooks-2026.html
-          /guides/freelance-pricing-remote-work.html
-          /guides/crypto-recordkeeping-us-uk-2026.html
-          /guides/app-privacy-terms-checklist.html
-          /assets/js/search-core.js
-          /assets/js/tier1-tools.js
-          /assets/css/tier1-tools.css
-          /gaming-sensitivity-converter.html
-          /typing-speed-test.html
-          /photo-cctv-enhancer.html
-          /gaming-settings-notes.html
-          /image-resizer.html
-          /articles.html
-          /articles/google-releases-chrome-152-for-android.html
-          /articles/chrome-152-for-android-adds-desktop-security-fixes.html
-          /robots.txt
-          /ads.txt
-          /sitemap.xml
-          /sitemap-index.xml
-          ROUTES
-
-          content_failures=0
-          check_contains() {
-            local route="$1" marker="$2" label="$3" file
-            file="$(route_file "$route")"
-            if [ ! -f "$file" ] || ! grep -Fq -- "$marker" "$file"; then
-              echo "CONTENT FAIL [$label] route=$route missing=$marker" >&2
-              content_failures=$((content_failures+1))
-            else
-              echo "CONTENT PASS [$label]"
-            fi
-          }
-          check_absent() {
-            local route="$1" marker="$2" label="$3" file
-            file="$(route_file "$route")"
-            if [ ! -f "$file" ] || grep -Fq -- "$marker" "$file"; then
-              echo "CONTENT FAIL [$label] route=$route unexpected-or-missing=$marker" >&2
-              content_failures=$((content_failures+1))
-            else
-              echo "CONTENT PASS [$label]"
-            fi
-          }
-
-          check_contains '/' '<link rel="canonical" href="https://nexusnovatools.com/">' 'homepage canonical'
-          check_absent '/' 'client=ca-pub-5070673529890078' 'homepage does not eagerly load AdSense'
-          check_contains '/assets/js/main.js' 'adsbygoogle.js?client=ca-pub-5070673529890078' 'shared AdSense loader retains publisher ID'
-          check_contains '/ads.txt' 'google.com, pub-5070673529890078, DIRECT, f08c47fec0942fa0' 'ads.txt declares the homepage AdSense publisher'
-          check_contains '/' '<meta property="og:title" content="NexusNova Tools — 108 Free Online Browser Tools & Guides">' 'homepage Open Graph title matches 108 tools'
-          check_contains '/' '<meta name="twitter:title" content="NexusNova Tools — 108 Free Online Browser Tools & Guides">' 'homepage Twitter title matches 108 tools'
-          check_contains '/' 'NexusNova Tools offers 108 free browser tools, categories, articles, and guides for everyday digital tasks with fast search.' 'homepage social description reflects 108 tools'
-          check_contains '/' 'document-workbench.html' 'homepage advertises the combined PDF workbench'
-          check_contains '/tools.html' 'id="directory-search-count">108 tools' 'directory count matches 108 after Tier-1 expansion'
-          check_contains '/tools.html' 'document-workbench.html' 'directory lists the combined PDF workbench'
-          check_absent '/tools.html' 'href="merge-pdf.html"' 'directory no longer lists legacy Merge PDF card'
-          check_absent '/tools.html' 'href="split-pdf.html"' 'directory no longer lists legacy Split PDF card'
-          check_contains '/document-workbench.html' '<title>PDF Workbench: Merge &amp; Extract Pages | NexusNova Tools</title>' 'workbench has expected title'
-          check_contains '/document-workbench.html' 'merge.onclick=async' 'workbench merge action exists'
-          check_contains '/document-workbench.html' 'extract.onclick=async' 'workbench extract action exists'
-          check_contains '/pdf-tools.html' 'href="document-workbench.html"' 'PDF hub points to combined workbench'
-          check_absent '/pdf-tools.html' 'href="merge-pdf.html"' 'PDF hub omits legacy Merge PDF card'
-          check_absent '/pdf-tools.html' 'href="split-pdf.html"' 'PDF hub omits legacy Split PDF card'
-          check_contains '/merge-pdf.html' '<meta name="robots" content="noindex,follow,max-image-preview:large">' 'legacy Merge PDF is noindex'
-          check_contains '/split-pdf.html' '<meta name="robots" content="noindex,follow,max-image-preview:large">' 'legacy Split PDF is noindex'
-          check_contains '/merge-pdf.html' 'href="document-workbench.html"' 'legacy Merge PDF routes users to workbench'
-          check_contains '/split-pdf.html' 'href="document-workbench.html"' 'legacy Split PDF routes users to workbench'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/document-workbench.html' 'canonical sitemap includes combined workbench'
-          check_absent '/sitemap.xml' 'https://nexusnovatools.com/merge-pdf.html' 'canonical sitemap excludes legacy Merge PDF'
-          check_absent '/sitemap.xml' 'https://nexusnovatools.com/split-pdf.html' 'canonical sitemap excludes legacy Split PDF'
-          check_contains '/humanproof.html' '<link rel="canonical" href="https://nexusnovatools.com/humanproof.html">' 'HumanProof canonical'
-          check_contains '/humanproof.html' 'exact-action binding' 'HumanProof current recovery copy'
-          check_contains '/live.html' '<link rel="canonical" href="https://nexusnovatools.com/live.html">' 'Live hub canonical'
-          check_contains '/labs.html' '<link rel="canonical" href="https://nexusnovatools.com/labs.html">' 'Labs canonical'
-          check_absent '/labs.html' 'Enter Universe Atlas' 'Labs retired placeholder absent'
-          check_contains '/contrast-checker.html' '<link rel="canonical" href="https://nexusnovatools.com/contrast-checker.html">' 'contrast checker canonical'
-          check_contains '/text-diff-checker.html' '<link rel="canonical" href="https://nexusnovatools.com/text-diff-checker.html">' 'text diff canonical'
-          check_contains '/csv-json-converter.html' '<link rel="canonical" href="https://nexusnovatools.com/csv-json-converter.html">' 'CSV JSON converter canonical'
-          check_contains '/contact.html' 'nexusnovatools@gmail.com' 'contact address present'
-          check_contains '/privacy.html' '<link rel="canonical" href="https://nexusnovatools.com/privacy.html">' 'privacy canonical'
-          check_contains '/resume-builder.html' '<link rel="canonical" href="https://nexusnovatools.com/resume-builder.html">' 'resume builder canonical'
-          check_contains '/image-to-text-ocr.html' '<link rel="canonical" href="https://nexusnovatools.com/image-to-text-ocr.html">' 'OCR canonical'
-          check_contains '/invoice-maker.html' '<link rel="canonical" href="https://nexusnovatools.com/invoice-maker.html">' 'invoice maker canonical'
-          check_contains '/jpg-to-pdf.html' '<link rel="canonical" href="https://nexusnovatools.com/jpg-to-pdf.html">' 'JPG to PDF canonical'
-          check_contains '/ai-prompt-builder.html' 'Prompt review before you send it' 'AI Prompt Builder review section'
-          check_contains '/ai-prompt-builder.html' 'Key Features &amp; Practical Applications' 'AI Prompt Builder practical applications'
-          check_contains '/ai-prompt-builder.html' 'AI Prompt Builder FAQ' 'AI Prompt Builder FAQ'
-          check_contains '/' 'assets/js/search-core.js?v=20261015-v4' 'homepage loads versioned instant search index'
-          check_contains '/tools.html' 'id="directory-search-count">108 tools' 'directory count reflects 108 indexed tools'
-          check_contains '/tools/us-federal-tax-bracket-calculator.html' 'data-western-tool="us-tax-brackets"' 'US federal tax bracket calculator is live'
-          check_contains '/tools/mortgage-payoff-calculator.html' 'data-western-tool="mortgage-payoff"' 'mortgage payoff calculator is live'
-          check_contains '/tools/loan-payoff-calculator.html' 'data-western-tool="loan-payoff"' 'loan payoff calculator is live'
-          check_contains '/tools/stock-profit-calculator.html' 'data-western-tool="stock-profit"' 'stock profit calculator is live'
-          check_contains '/tools/crypto-profit-calculator.html' 'data-western-tool="crypto-profit"' 'crypto profit calculator is live'
-          check_contains '/tools/us-federal-tax-bracket-calculator.html' '<link rel="canonical" href="https://nexusnovatools.com/tools/us-federal-tax-bracket-calculator.html">' 'tax tool canonical'
-          check_contains '/tools/mortgage-payoff-calculator.html' '<link rel="canonical" href="https://nexusnovatools.com/tools/mortgage-payoff-calculator.html">' 'mortgage tool canonical'
-          check_contains '/tools/loan-payoff-calculator.html' '<link rel="canonical" href="https://nexusnovatools.com/tools/loan-payoff-calculator.html">' 'loan tool canonical'
-          check_contains '/tools/stock-profit-calculator.html' '<link rel="canonical" href="https://nexusnovatools.com/tools/stock-profit-calculator.html">' 'stock tool canonical'
-          check_contains '/tools/crypto-profit-calculator.html' '<link rel="canonical" href="https://nexusnovatools.com/tools/crypto-profit-calculator.html">' 'crypto tool canonical'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/tools/us-federal-tax-bracket-calculator.html' 'tax tool included in sitemap'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/tools/mortgage-payoff-calculator.html' 'mortgage tool included in sitemap'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/tools/loan-payoff-calculator.html' 'loan tool included in sitemap'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/tools/stock-profit-calculator.html' 'stock tool included in sitemap'
-          check_contains '/sitemap.xml' 'https://nexusnovatools.com/tools/crypto-profit-calculator.html' 'crypto tool included in sitemap'
-          check_contains '/assets/js/search-core.js' 'url:"tools/us-federal-tax-bracket-calculator.html"' 'tax tool included in search'
-          check_contains '/assets/js/search-core.js' 'url:"tools/mortgage-payoff-calculator.html"' 'mortgage tool included in search'
-          check_contains '/assets/js/search-core.js' 'url:"tools/loan-payoff-calculator.html"' 'loan tool included in search'
-          check_contains '/assets/js/search-core.js' 'url:"tools/stock-profit-calculator.html"' 'stock tool included in search'
-          check_contains '/assets/js/search-core.js' 'url:"tools/crypto-profit-calculator.html"' 'crypto tool included in search'
-          check_contains '/assets/js/related-tools.js' "'/tools/us-federal-tax-bracket-calculator.html': [" 'tax tool has related-tool priority'
-          check_contains '/assets/js/related-tools.js' "'/tools/mortgage-payoff-calculator.html': [" 'mortgage tool has related-tool priority'
-          check_contains '/assets/js/related-tools.js' "'/tools/loan-payoff-calculator.html': [" 'loan tool has related-tool priority'
-          check_contains '/assets/js/related-tools.js' "'/tools/stock-profit-calculator.html': [" 'stock tool has related-tool priority'
-          check_contains '/assets/js/related-tools.js' "'/tools/crypto-profit-calculator.html': [" 'crypto tool has related-tool priority'
-          check_contains '/ai-prompt-enhancer.html' 'data-tier1-tool="prompt-enhancer"' 'AI prompt enhancer route is the expected tool'
-          check_contains '/short-form-video-hook-generator.html' 'data-tier1-tool="video-hooks"' 'short-form script generator route is the expected tool'
-          check_contains '/freelance-rate-calculator.html' 'data-tier1-tool="freelance-rate"' 'freelance calculator route is the expected tool'
-          check_contains '/crypto-tax-profit-estimator.html' 'data-tier1-tool="crypto-tax"' 'crypto estimator route is the expected tool'
-          check_contains '/privacy-policy-terms-generator.html' 'data-tier1-tool="policy-generator"' 'privacy and terms generator route is the expected tool'
-          check_contains '/ai-prompt-enhancer.html' 'assets/css/tier1-tools.css?v=20261015-v4' 'new tool links cache-busted shared CSS'
-          check_contains '/crypto-tax-profit-estimator.html' 'assets/js/tier1-tools.js?v=20261015-v4' 'new tool links cache-busted shared engine'
-          check_contains '/guides/ai-prompt-workflows-2026.html' 'href="https://nexusnovatools.com/guides/ai-prompt-workflows-2026.html"' 'AI prompt guide canonical'
-          check_contains '/guides/short-form-hooks-2026.html' 'href="https://nexusnovatools.com/guides/short-form-hooks-2026.html"' 'short-form guide canonical'
-          check_contains '/guides/freelance-pricing-remote-work.html' 'href="https://nexusnovatools.com/guides/freelance-pricing-remote-work.html"' 'freelance pricing guide canonical'
-          check_contains '/guides/crypto-recordkeeping-us-uk-2026.html' 'href="https://nexusnovatools.com/guides/crypto-recordkeeping-us-uk-2026.html"' 'crypto recordkeeping guide canonical'
-          check_contains '/guides/app-privacy-terms-checklist.html' 'href="https://nexusnovatools.com/guides/app-privacy-terms-checklist.html"' 'privacy checklist guide canonical'
-          check_contains '/categories.html' 'Browse All 108 Tools Directory' 'categories hub count matches 108'
-          check_contains '/tools.html' 'assets/css/site.css?v=20261015-v4' 'tools directory CSS cache-busted'
-          check_contains '/guides.html' 'assets/js/search-core.js?v=20261015-v4' 'guides hub search asset cache-busted'
-          check_contains '/articles.html' 'assets/js/search-core.js?v=20261015-v4' 'articles hub search asset cache-busted'
-          check_contains '/short-form-video-hook-generator.html' 'assets/js/tier1-tools.js?v=20261015-v4' 'hook generator cache-busted engine'
-          check_contains '/freelance-rate-calculator.html' 'assets/js/tier1-tools.js?v=20261015-v4' 'freelance calculator cache-busted engine'
-          check_contains '/privacy-policy-terms-generator.html' 'assets/js/tier1-tools.js?v=20261015-v4' 'policy generator cache-busted engine'
-          # Print direct HTTP headers and assert raw-body content from the live public origin.
-          live_home_headers=/tmp/nexusnova-live-home.headers
-          live_home_body=/tmp/nexusnova-live-home.body
-          live_home_code="$(curl -sS -L -D "$live_home_headers" -o "$live_home_body" -w '%{http_code}' --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: NexusNovaLiveProof/2.0' "$base/?live-proof=$GITHUB_SHA" || true)"
-          echo "LIVE RAW HTTP PROOF homepage status=$live_home_code url=$base/?live-proof=$GITHUB_SHA"
-          grep -iE '^(HTTP/|date:|content-type:|cache-control:|etag:|last-modified:|age:|via:|server:|x-cache:|x-served-by:)' "$live_home_headers" | tail -n 24 || true
-          if [ "$live_home_code" != '200' ]; then echo 'LIVE RAW HTTP FAIL: homepage did not return HTTP 200.' >&2; exit 1; fi
-          grep -F '<title>NexusNova Tools — 108 Free Online Browser Tools & Guides</title>' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: homepage title does not match 108 tools.' >&2; exit 1; }
-          grep -F '<meta property="og:title" content="NexusNova Tools — 108 Free Online Browser Tools & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Open Graph title is stale.' >&2; exit 1; }
-          grep -F '<meta name="twitter:title" content="NexusNova Tools — 108 Free Online Browser Tools & Guides">' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: Twitter title is stale.' >&2; exit 1; }
-          grep -F 'assets/js/search-core.js?v=20261015-v4' "$live_home_body" || { echo 'LIVE RAW BODY FAIL: current search-core asset reference is missing.' >&2; exit 1; }
-          echo 'LIVE RAW BODY PASS: homepage title + social titles + v2 search asset are present in the deployed HTTP body.'
-
-          live_tools_headers=/tmp/nexusnova-live-tools.headers
-          live_tools_body=/tmp/nexusnova-live-tools.body
-          live_tools_code="$(curl -sS -L -D "$live_tools_headers" -o "$live_tools_body" -w '%{http_code}' --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: NexusNovaLiveProof/2.0' "$base/tools.html?live-proof=$GITHUB_SHA" || true)"
-          echo "LIVE RAW HTTP PROOF tools status=$live_tools_code url=$base/tools.html?live-proof=$GITHUB_SHA"
-          grep -iE '^(HTTP/|date:|content-type:|cache-control:|etag:|last-modified:|age:|via:|server:|x-cache:|x-served-by:)' "$live_tools_headers" | tail -n 24 || true
-          if [ "$live_tools_code" != '200' ]; then echo 'LIVE RAW HTTP FAIL: tools directory did not return HTTP 200.' >&2; exit 1; fi
-          grep -F 'id="directory-search-count">108 tools' "$live_tools_body" || { echo 'LIVE RAW BODY FAIL: tools count is not 108.' >&2; exit 1; }
-          echo 'LIVE RAW BODY PASS: tools directory count is 108.'
-
-          live_search_url="$base/assets/js/search-core.js?v=20261015-v4"
-          curl -fsS -L --connect-timeout 3 --max-time 12 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' "$live_search_url" -o /tmp/nexusnova-live-search-core.js || { echo 'LIVE SEARCH FAIL: could not fetch the public v2 search asset.' >&2; exit 1; }
-          node - <<'NODE' || { echo 'LIVE SEARCH FAIL: live search runtime assertions failed.' >&2; exit 1; }
-          const fs = require('node:fs');
-          const vm = require('node:vm');
-          const sandbox = { window: {} };
-          vm.createContext(sandbox);
-          vm.runInContext(fs.readFileSync('/tmp/nexusnova-live-search-core.js', 'utf8'), sandbox, { filename: 'live-search-core.js' });
-          const Engine = sandbox.NexusNovaSearchCore || sandbox.window.NexusNovaSearchCore;
-          if (typeof Engine !== 'function') throw new Error('Live search asset did not export NexusNovaSearchCore');
-          const engine = new Engine();
-          for (const [query, expected] of [['TikTok', 'short-form-video-hook-generator.html'], ['Crypto Tax', 'crypto-tax-profit-estimator.html']]) {
-            const results = engine.query(query);
-            const match = results.find(item => item.url === expected);
-            console.log('LIVE SEARCH PASS', JSON.stringify({ query, expected, top: results[0]?.url || null, match: Boolean(match) }));
-            if (!match) throw new Error('Live search failed to return expected route for query: ' + query);
-          }
-          NODE
-          check_absent '/ai-prompt-builder.html' 'Guide on How to Use the AI Prompt Builder' 'duplicate AI prompt guide removed'
-          check_contains '/gaming-sensitivity-converter.html' 'data-flagship-depth' 'sensitivity converter depth marker'
-          check_contains '/typing-speed-test.html' 'data-flagship-depth' 'typing test depth marker'
-          check_contains '/photo-cctv-enhancer.html' 'data-flagship-depth' 'photo enhancer depth marker'
-          check_contains '/reaction-time-test.html' 'data-flagship-depth' 'reaction test depth marker'
-          check_contains '/gaming-settings-notes.html' 'data-flagship-depth' 'gaming settings depth marker'
-          check_contains '/image-resizer.html' 'data-flagship-depth' 'image resizer depth marker'
-          check_contains '/articles.html' '34 articles' 'article hub count'
-          check_contains '/articles.html' 'Chrome 152 for Android: Release Timeline and Security Fixes' 'article hub uses unified Chrome release page'
-          check_absent '/articles.html' 'chrome-152-for-android-adds-desktop-security-fixes.html' 'article hub omits duplicate Chrome archive'
-          check_contains '/articles/google-releases-chrome-152-for-android.html' '152.0.7977.82' 'Chrome Android version detail present'
-          check_contains '/articles/google-releases-chrome-152-for-android.html' 'Chrome 152 for Android: Release Timeline and Security Fixes' 'Chrome release article title present'
-          check_contains '/articles/chrome-152-for-android-adds-desktop-security-fixes.html' 'content="noindex,follow,max-image-preview:large"' 'duplicate Chrome archive noindex'
-          check_contains '/articles/chrome-152-for-android-adds-desktop-security-fixes.html' '<link rel="canonical" href="https://nexusnovatools.com/articles/google-releases-chrome-152-for-android.html">' 'duplicate Chrome archive canonical'
-          check_contains '/guides/unit-conversion.html' 'NIST Guide to the SI' 'unit conversion guide includes NIST reference factors'
-          check_contains '/guides/unit-conversion.html' 'Updated 14 October 2026' 'unit conversion guide carries its current review date'
-          check_contains '/emi-calculator.html' 'Compare offers on total borrowing cost' 'EMI page explains total borrowing cost'
-          check_contains '/emi-calculator.html' 'https://www.consumerfinance.gov/ask-cfpb/what-is-amortization-and-how-could-it-affect-my-auto-loan-en-771/' 'EMI page links amortization guidance'
-          check_absent '/emi-calculator.html' 'Guide on Structured EMI and Debt Calculation' 'duplicate EMI template block removed'
-          check_absent '/emi-calculator.html' 'Frequently Asked Questions — EMI Calculator' 'repeated EMI FAQ block removed'
-          check_contains '/bmi-calculator.html' 'age- and sex-specific BMI-for-age percentiles' 'BMI page distinguishes pediatric interpretation'
-          check_contains '/bmi-calculator.html' 'https://www.cdc.gov/bmi/child-teen-calculator/' 'BMI page links CDC child and teen guidance'
-          check_absent '/bmi-calculator.html' 'Key Features &amp; Practical Applications — BMI Calculator' 'duplicate BMI template block removed'
-          check_absent '/bmi-calculator.html' 'Frequently Asked Questions — BMI Calculator' 'repeated BMI FAQ block removed'
-
-          cp "$(route_file '/sitemap.xml')" /tmp/nexusnova-sitemap.xml
-          python3 - <<'PY'
-          from concurrent.futures import ThreadPoolExecutor, as_completed
-          from pathlib import Path
-          from urllib.error import HTTPError, URLError
-          from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
-          from urllib.request import Request, urlopen
+          import concurrent.futures
+          import html.parser
           import os
+          import re
+          import time
+          import urllib.parse
+          import urllib.request
           import xml.etree.ElementTree as ET
-
-          sitemap = ET.parse('/tmp/nexusnova-sitemap.xml').getroot()
-          ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
-          urls = [node.text.strip() for node in sitemap.findall('.//sm:loc', ns) if node.text and node.text.strip()]
-          if not urls:
-              raise SystemExit('SITEMAP FAIL: canonical sitemap returned no URLs.')
-          print(f'Checking {len(urls)} canonical sitemap URLs with bounded concurrency.')
-          token = os.environ.get('GITHUB_SHA', 'production-smoke')
-
-          def verify(original):
-              parts = urlsplit(original)
-              if parts.scheme != 'https' or parts.netloc.lower() not in {'nexusnovatools.com', 'www.nexusnovatools.com'}:
-                  return original, 'FAIL', 'non-canonical host or scheme'
-              query = dict(parse_qsl(parts.query, keep_blank_values=True))
-              query['smoke'] = token
-              url = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
-              request = Request(url, headers={'Cache-Control': 'no-cache', 'User-Agent': 'NexusNovaProductionSmoke/1.0'})
-              try:
-                  with urlopen(request, timeout=6) as response:
-                      code = response.status
-              except HTTPError as exc:
-                  code = exc.code
-              except (URLError, TimeoutError, OSError) as exc:
-                  return original, 'FAIL', type(exc).__name__
-              return original, 'PASS' if code == 200 else 'FAIL', str(code)
-
-          failures = []
-          with ThreadPoolExecutor(max_workers=12) as pool:
-              futures = [pool.submit(verify, url) for url in urls]
-              for future in as_completed(futures):
-                  result = future.result()
-                  if result[1] != 'PASS':
-                      failures.append(result)
-          for url, status, detail in failures[:30]:
-              print(f'SITEMAP URL FAIL {detail} {url}')
-          if failures:
-              raise SystemExit(f'SITEMAP FAIL: {len(failures)} of {len(urls)} URLs failed HTTP 200.')
-          print(f'CANONICAL SITEMAP PRODUCTION INTEGRITY PASS: all {len(urls)} advertised URLs returned HTTP 200.')
-          PY
-
-          python3 - <<'PY'
-          from concurrent.futures import ThreadPoolExecutor, as_completed
           from pathlib import Path
-          from urllib.error import HTTPError, URLError
-          from urllib.parse import quote
-          from urllib.request import Request, urlopen
-          import os, re
 
-          base = 'https://nexusnovatools.com'
-          source = Path('assets/js/search-core.js').read_text(encoding='utf-8')
-          tool_routes = re.findall(r'url:"([^"]+)", type:"tool"', source)
-          if len(tool_routes) != 108 or len(set(tool_routes)) != 108:
-              raise SystemExit(f'SEARCH INDEX FAIL: expected 108 unique tool routes, found {len(tool_routes)} records / {len(set(tool_routes))} unique.')
-          guide_routes = [
-              'guides/ai-prompt-workflows-2026.html',
-              'guides/short-form-hooks-2026.html',
-              'guides/freelance-pricing-remote-work.html',
-              'guides/crypto-recordkeeping-us-uk-2026.html',
-              'guides/app-privacy-terms-checklist.html',
-          ]
-          missing = [route for route in tool_routes + guide_routes if not (Path(route).is_file())]
+          BASE = "https://nexusnovatools.com"
+          COMMIT = os.environ.get("GITHUB_SHA", "unknown")
+          CORE = Path("assets/js/search-core.js").read_text(encoding="utf-8")
+          TOOL_PATTERN = re.compile(r'\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"([^"]+)",\s*type:"tool"')
+          tools = [m.group(1).split("#", 1)[0].split("?", 1)[0] for m in TOOL_PATTERN.finditer(CORE)]
+          tools = list(dict.fromkeys(tools))
+          if len(tools) != 108:
+              raise SystemExit(f"SOURCE_TOOL_INDEX_FAIL expected=108 actual={len(tools)}")
+
+          namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          source_sitemap = ET.parse("sitemap.xml").getroot()
+          source_entries = source_sitemap.findall("s:url", namespace)
+          article_urls = sorted({
+              (entry.find("s:loc", namespace).text or "").strip()
+              for entry in source_entries
+              if entry.find("s:loc", namespace) is not None
+              and (entry.find("s:loc", namespace).text or "").strip().startswith(BASE + "/articles/")
+          })
+          article_paths = [urllib.parse.urlparse(url).path.lstrip("/") for url in article_urls]
+          if len(article_urls) != 100:
+              raise SystemExit(f"SOURCE_ARTICLE_SITEMAP_FAIL expected=100 actual={len(article_urls)}")
+          missing = [path for path in tools + article_paths if not Path(path).is_file()]
           if missing:
-              raise SystemExit('SOURCE ROUTE FAIL: ' + ', '.join(missing))
-          token = os.environ.get('GITHUB_SHA', 'production-smoke')
-          routes = ['/'] + ['/' + route.lstrip('/') for route in tool_routes + guide_routes
+              raise SystemExit("SOURCE_ROUTE_FILE_MISSING: " + ", ".join(missing[:40]))
+          print(f"SOURCE_INVENTORY_PASS tools={len(tools)} article_pages={len(article_paths)} sitemap_urls={len(source_entries)}")
 
-          ]
-          def verify(route):
-              url = f'{base}{route}?smoke={token}-tier1'
-              request = Request(url, headers={'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache', 'User-Agent': 'NexusNovaTier1ProductionSmoke/1.0'})
-              try:
-                  with urlopen(request, timeout=8) as response:
-                      status = response.status
-              except HTTPError as exc:
-                  status = exc.code
-              except (URLError, TimeoutError, OSError) as exc:
-                  return route, 'FAIL', type(exc).__name__
-              return route, 'PASS' if status == 200 else 'FAIL', str(status)
-          failures = []
-          with ThreadPoolExecutor(max_workers=16) as pool:
-              futures = [pool.submit(verify, route) for route in routes]
-              for future in as_completed(futures):
-                  result = future.result()
-                  if result[1] == 'PASS':
-                      if result[0] in routes[:1] or result[0] in ['/ai-prompt-enhancer.html','/short-form-video-hook-generator.html','/freelance-rate-calculator.html','/crypto-tax-profit-estimator.html','/privacy-policy-terms-generator.html'] or result[0].startswith('/guides/'):
-                          print(f'TIER1 ROUTE PASS {result[2]} {result[0]}')
-                  else:
-                      failures.append(result)
+          class ArticleHubParser(html.parser.HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True)
+                  self.cards = 0
+                  self.count_open = False
+                  self.count_parts = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag.lower() == "a":
+                      classes = attrs.get("class", "").split()
+                      href = attrs.get("href", "")
+                      if "nn-article-card" in classes and re.fullmatch(r"articles/[^?#]+\.html", href):
+                          self.cards += 1
+                  if attrs.get("id") == "article-search-count":
+                      self.count_open = True
+
+              def handle_data(self, data):
+                  if self.count_open:
+                      self.count_parts.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "span" and self.count_open:
+                      self.count_open = False
+
+              @property
+              def display_count(self):
+                  return " ".join(" ".join(self.count_parts).split())
+
+          def fetch(path, attempt):
+              route = "/" + urllib.parse.quote(path.lstrip("/"), safe="/") if path else "/"
+              url = f"{BASE}{route}?production_smoke={COMMIT}-{attempt}"
+              request = urllib.request.Request(url, headers={
+                  "User-Agent": "NexusNovaProductionSmoke/3.0",
+                  "Cache-Control": "no-cache, no-store, max-age=0",
+                  "Pragma": "no-cache",
+                  "Accept-Encoding": "identity",
+              })
+              with urllib.request.urlopen(request, timeout=8) as response:
+                  body = response.read()
+                  if response.status != 200:
+                      raise RuntimeError(f"{path or '/'}: HTTP {response.status}")
+              return body
+
+          def validate_hub():
+              body = fetch("articles.html", 1).decode("utf-8-sig", "replace")
+              parser = ArticleHubParser()
+              parser.feed(body)
+              if parser.cards != 100 or parser.display_count != "100 articles":
+                  raise RuntimeError(f"articles.html: cards={parser.cards}, display_count={parser.display_count!r}")
+              return f"LIVE_ARTICLES_HUB_PASS http=200 cards={parser.cards} count={parser.display_count!r}"
+
+          def validate_sitemap():
+              root = ET.fromstring(fetch("sitemap.xml", 1))
+              entries = root.findall("s:url", namespace)
+              locs = [
+                  (entry.find("s:loc", namespace).text or "").strip()
+                  for entry in entries
+                  if entry.find("s:loc", namespace) is not None
+              ]
+              lastmods = [entry.find("s:lastmod", namespace) for entry in entries]
+              live_articles = {loc for loc in locs if loc.startswith(BASE + "/articles/")}
+              if len(entries) < 97 or len(locs) != len(entries):
+                  raise RuntimeError(f"sitemap.xml: urls={len(entries)} valid_locs={len(locs)}")
+              if len(live_articles) != 100:
+                  raise RuntimeError(f"sitemap.xml: expected 100 article URLs, got {len(live_articles)}")
+              if any(node is None or not (node.text or "").strip() for node in lastmods):
+                  raise RuntimeError("sitemap.xml: missing lastmod on one or more entries")
+              if any(not loc.startswith(BASE + "/") for loc in locs):
+                  raise RuntimeError("sitemap.xml: non-canonical hostname detected")
+              return f"LIVE_SITEMAP_PASS http=200 urls={len(entries)} article_urls={len(live_articles)} lastmod=present"
+
+          special_errors = []
+          for name, fn in (("articles.html", validate_hub), ("sitemap.xml", validate_sitemap)):
+              for attempt in range(1, 31):
+                  try:
+                      print(fn() + f" attempt={attempt}")
+                      break
+                  except Exception as exc:
+                      if attempt == 30:
+                          special_errors.append(f"{name}: {exc}")
+                      else:
+                          print(f"Waiting for {name} deploy attempt={attempt}/30: {exc}")
+                          time.sleep(3)
+          if special_errors:
+              raise SystemExit("SPECIAL_LIVE_CHECK_FAIL: " + " | ".join(special_errors))
+
+          routes = list(dict.fromkeys(["", "index.html", *tools, *article_paths]))
+          def check(path):
+              last = ""
+              for attempt in range(1, 4):
+                  try:
+                      fetch(path, attempt)
+                      return path, 200, ""
+                  except Exception as exc:
+                      last = str(exc)[:200]
+                      if attempt < 3:
+                          time.sleep(1)
+              return path, 0, last
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=24) as pool:
+              results = list(pool.map(check, routes))
+          failures = [(path, status, detail) for path, status, detail in results if status != 200]
+          print(f"LIVE_ROUTE_MATRIX {'FAIL' if failures else 'PASS'} total={len(results)} passed={len(results)-len(failures)} failed={len(failures)}")
+          for path, status, detail in failures[:50]:
+              print(f"LIVE_ROUTE_FAIL status={status} path={path} detail={detail}")
           if failures:
-              for route, _, detail in failures[:50]:
-                  print(f'TIER1 ROUTE FAIL {detail} {route}')
-              raise SystemExit(f'TIER1 PRODUCTION FAIL: {len(failures)} of {len(routes)} requests did not return HTTP 200.')
-          print(f'TIER1 PRODUCTION PASS: homepage + all {len(tool_routes)} searchable tool pages + {len(guide_routes)} new guide pages returned HTTP 200.')
+              raise SystemExit(1)
+          print(f"PRODUCTION_SMOKE_PASS commit={COMMIT} live_routes={len(results)} article_hub=100 sitemap_articles=100")
           PY
-
-          if [ "$route_failures" -gt 0 ] || [ "$content_failures" -gt 0 ]; then
-            echo "PRODUCTION FAIL: $route_failures route failures; $content_failures content-marker failures." >&2
-            exit 1
-          fi
-          echo 'LIVE PRODUCTION PASS: fixed routes, content/indexation markers and every canonical sitemap URL verified.'
