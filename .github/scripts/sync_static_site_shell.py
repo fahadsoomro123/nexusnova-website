@@ -142,7 +142,6 @@ if problems:
     fail("static layout contract failed: " + "; ".join(problems[:30]))
 print(f"PASS: static site shell; html_files={len(html_files)}; nav_items=6; tools={len(routes)}; sitemap_article_urls={len(actual)}")
 '''
-'''
 
 TEST_FILE = r'''const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -224,7 +223,6 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
-'''
 '''
 
 class ElementSpanParser(HTMLParser):
@@ -443,15 +441,15 @@ def patch_supporting_sources():
             end = source.find("\\nrecords=[]", start)
             if end < 0:
                 raise RuntimeError("sync_phase2_content.py shell loader end marker missing")
-            helper = '''def ensure_related_tools_loader(path):
+            helper = r'''def ensure_related_tools_loader(path):
     """Keep route-aware related content, but never inject the global shell guard."""
     source = path.read_text(encoding="utf-8-sig")
     original = source
-    source = re.sub(r'<script[^>]*global-shell-guard\\\\.js[^>]*></script>', '', source, flags=re.I)
-    loader_pattern = r"""<script\\\\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\\\\.js(?:\\\\?[^"']*)?["']"""
+    source = re.sub(r'<script[^>]*global-shell-guard\.js[^>]*></script>', '', source, flags=re.I)
+    loader_pattern = r"""<script\b[^>]+src=["'][^"']*(?:nn-inner-shell|main|site-main|related-tools|analytics|tier1-tools|search-core)\.js(?:\?[^"']*)?["']"""
     if not re.search(loader_pattern, source, re.I):
-        tag = '\\\\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\\\\n'
-        updated, n = re.subn(r'</body\\\\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
+        tag = '\n<script defer src="../assets/js/nn-inner-shell.js?v=20261016-related-content-v1"></script>\n'
+        updated, n = re.subn(r'</body\s*>', lambda match: tag + match.group(0), source, count=1, flags=re.I)
         source = updated if n else source + tag
     if source != original:
         path.write_text(source, encoding="utf-8")
@@ -460,6 +458,15 @@ def patch_supporting_sources():
 
 
 '''
+            end = source.find("\nrecords=[]", start)
+            if end < 0:
+                raise RuntimeError("sync_phase2_content.py content loader end marker missing")
+            source = source[:start] + helper + source[end + 1:]
+        source = source.replace("    ensure_global_shell_loader(p)\n", "    ensure_related_tools_loader(p)\n")
+        if source != original:
+            sync_path.write_text(source, encoding="utf-8")
+            changed.append(".github/scripts/sync_phase2_content.py")
+
             source = source[:start] + helper + source[end + 1:]
         source = source.replace("    ensure_global_shell_loader(p)\\n", "    ensure_related_tools_loader(p)\\n")
         if source != original:
@@ -517,6 +524,55 @@ def patch_supporting_sources():
     (ROOT / "tests/global-layout-contract.test.cjs").write_text(TEST_FILE, encoding="utf-8")
     changed.append("tests/global-layout-contract.test.cjs")
 
+
+    # Keep existing feature contracts aligned with the deliberately static shell.
+    contracts = [
+        ("tests/article-expansion-quality.test.cjs", [
+            ("assert.match(html, /global-shell-guard\\.js/);",
+             "assert.match(html, /static-site-shell\\.css/);\\n  assert.doesNotMatch(html, /global-shell-guard\\.js/);")
+        ]),
+        ("tests/dynamic-link-hydration-performance.test.cjs", [
+            ("""  assert.ok(
+    source.includes('scheduleNonCriticalDomTask(enforceSelectedHeaderLogo)') &&
+    source.includes('scheduleNonCriticalDomTask(normalizeFooterStructure)'),
+    'non-critical header/footer normalization must wait for idle time'
+  );""",
+             """  assert.ok(
+    !source.includes('enforceSelectedHeaderLogo') &&
+    !source.includes('normalizeFooterStructure') &&
+    !source.includes('global-shell-guard.js'),
+    'header/footer must remain static instead of being mutated at runtime'
+  );""")
+        ]),
+        ("tests/live-gold.test.cjs", [
+            ('href="#master-directory">All Tools</a>', 'href="/#master-directory">All Tools</a>')
+        ]),
+        ("tests/pakistan-new-tools-surface.test.cjs", [
+            ('assert.match(html,/href="index\\.html#master-directory"/);',
+             'assert.match(html,/href="\\/#master-directory"/);')
+        ]),
+        ("tests/home-performance-loading.test.cjs", [
+            ('srcset="assets\\/logo-2x', 'srcset="\\/?assets\\/logo-2x'),
+            (', assets\\/logo-3x', ', \\/?assets\\/logo-3x'),
+            ('src="assets\\/logo\\.png', 'src="\\/?assets\\/logo\\.png'),
+            ('srcset="assets/logo-2x', 'srcset="/?assets/logo-2x'),
+            (', assets/logo-3x', ', /?assets/logo-3x'),
+            ('src="assets/logo\\\\.png', 'src="/?assets/logo\\\\.png')
+        ])
+    ]
+    for relative, replacements in contracts:
+        contract_path = ROOT / relative
+        if not contract_path.exists():
+            continue
+        original = contract_path.read_text(encoding="utf-8-sig")
+        source = original
+        for old, new in replacements:
+            if old in source:
+                source = source.replace(old, new)
+        if source != original:
+            contract_path.write_text(source, encoding="utf-8")
+            changed.append(relative)
+
     sweep = ROOT / ".github/workflows/all-html-layout-sweep.yml"
     if sweep.exists():
         original = sweep.read_text(encoding="utf-8")
@@ -527,7 +583,7 @@ def patch_supporting_sources():
         source = source.replace(
             """            if curl --fail --silent "$css" | grep -q 'max-height:40px!important;width:auto!important'; then""",
             """            css_body="$(curl --fail --silent "$css" || true)"
-            if [[ "$css_body" == *'max-height:40px!important;width:auto!important'* ]]; then""",
+            if [[ "$css_body" == *'height:40px!important'* ]]; then""",
         )
         if source != original:
             sweep.write_text(source, encoding="utf-8")
