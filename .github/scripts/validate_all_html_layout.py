@@ -119,7 +119,8 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
     warnings: list[str] = []
     checked = 0
     article_cards = 0
-    article_count_text = False
+    article_count_text = True
+    article_count_checks = 0
     max_logo_height = 0.0
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
@@ -166,7 +167,14 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
                         (warnings if preview else failures).append(finding)
                     if urlparse(rel).path.lstrip("/") == ARTICLE_HUB:
                         article_cards = page.locator('#articles-grid a.nn-article-card[href$=".html"]').count()
-                        article_count_text = page.locator('#article-search-count').inner_text(timeout=5000).strip() == '100 articles'
+                        count_locator = page.locator('#article-search-count')
+                        count_is_visible = count_locator.is_visible()
+                        count_value = re.sub(r"\\s+", " ", (count_locator.text_content(timeout=5000) or "").strip()).casefold()
+                        count_pass = count_is_visible and count_value == "100 articles"
+                        article_count_checks += 1
+                        article_count_text = article_count_text and count_pass
+                        if not count_pass:
+                            failures.append(f"{label}@{viewport_name}: article count visible={count_is_visible} text={count_value!r}, expected '100 articles'")
                 except Exception as exc:
                     failures.append(f"{label}@{viewport_name}: browser exception: {exc}")
                 finally:
@@ -174,6 +182,8 @@ def validate_browser(base_url: str, urls: list[tuple[str, str]], live: bool, pre
         browser.close()
     if live and article_cards < 100:
         failures.append(f"live articles.html: {article_cards} unique article cards, expected 100")
+    if live and article_count_checks == 0:
+        failures.append("live articles.html: article count check was never executed")
     if live and not article_count_text:
         failures.append("live articles.html: missing visible '100 articles' count")
     return {"checked_viewports":checked,"failures":failures,"warnings":warnings,"max_logo_height":round(max_logo_height,2),"article_cards":article_cards,"article_count_text":article_count_text}
