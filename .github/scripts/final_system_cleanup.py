@@ -311,9 +311,9 @@ if failures:
     for category in ('performance','accessibility','best-practices','seo'):
         if scores.get(category, 100) < 100:
             print(f'FAILED LIGHTHOUSE CATEGORY: {category} score={scores[category]}')
-            refs = report.get('categories', {}).get(category, {}).get('auditRefs', [])
+            refs = data.get('categories', {}).get(category, {}).get('auditRefs', [])
             for ref in refs:
-                audit = report.get('audits', {}).get(ref.get('id', ''), {})
+                audit = data.get('audits', {}).get(ref.get('id', ''), {})
                 score = audit.get('score')
                 if score is not None and score < 1:
                     print('AUDIT_FAILURE', json.dumps({
@@ -353,7 +353,7 @@ def main() -> None:
         )
 
     sync_patched = patch_phase2_sync_script()
-    lighthouse_diagnostics = False
+    lighthouse_diagnostics = add_lighthouse_failure_diagnostics()
     workflow_files, action_versions = upgrade_workflow_action_pins()
 
     sync_path = ROOT / ".github/scripts/sync_phase2_content.py"
