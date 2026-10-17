@@ -77,17 +77,29 @@ core=re.sub(r'NexusNovaSearchCore\.DATASET_COUNTS=Object\.freeze\(\{[^}]+\}\);',
 CORE.write_text(core,encoding="utf-8")
 
 hub=HUB.read_text(encoding="utf-8-sig")
+# Rebuild the article-card surface instead of append-only updates. This removes
+# legacy cards pointing to noindex news pages and prevents duplicate cards after
+# repeated sync workflow runs.
+hub, removed_cards = re.subn(
+    r'\s*<a class="nn-article-card" href="articles/[^"]+"[^>]*>[\s\S]*?</a>\s*',
+    '\\n',
+    hub,
+    flags=re.I
+)
+cards=[]
 for title,url,desc,cat in records:
-    if f'href="{url}"' in hub: continue
-    card=f'''          <a class="nn-article-card" href="{url}" data-article-card data-search-url="{url}">
-            <span class="nn-article-tag">Phase 2</span>
+    cards.append(f'''          <a class="nn-article-card" href="{html.escape(url, quote=True)}" data-article-card data-search-url="{html.escape(url, quote=True)}">
+            <span class="nn-article-tag">Practical guide</span>
             <h3>{html.escape(title)}</h3>
             <p>{html.escape(desc)}</p>
             <span class="nn-article-link">Read article →</span>
           </a>
 
-'''
-    hub=hub.replace('      <div class="nn-no-results" id="article-no-results">',card+'      <div class="nn-no-results" id="article-no-results">',1)
+''')
+marker='      <div class="nn-no-results" id="article-no-results">'
+if marker not in hub:
+    raise SystemExit("ERROR: articles hub is missing the no-results insertion marker")
+hub=hub.replace(marker, "".join(cards)+marker, 1)
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
@@ -114,4 +126,8 @@ if "</urlset>" not in sm:
     raise SystemExit("ERROR: sitemap.xml has no closing </urlset> element")
 sm=sm.replace("</urlset>",article_xml+"</urlset>",1)
 SITEMAP.write_text(sm,encoding="utf-8")
-print(f"PASS: synchronized {articles} search article records; sitemap_articles={len(article_urls)}; dataset={total}")
+if len(article_urls) != 100:
+    raise SystemExit(f"ERROR: expected 100 indexable article URLs in sitemap.xml, found {len(article_urls)}")
+if len(re.findall(r'<a class="nn-article-card" href="articles/[^"]+\.html"', hub)) != 100:
+    raise SystemExit("ERROR: Articles hub must contain exactly 100 indexable article cards")
+print(f"PASS: synchronized {articles} search article records; hub_cards=100; sitemap_articles={len(article_urls)}; dataset={total}")
