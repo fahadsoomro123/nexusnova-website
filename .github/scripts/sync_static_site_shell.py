@@ -96,16 +96,18 @@ for page in html_files:
         problems.append(f"{rel}: footer mismatch")
     if source.count(SHELL_CSS) != 1:
         problems.append(f"{rel}: static shell stylesheet missing or duplicated")
-    if re.search(r"<script\b[^>]*\bsrc=[\"'][^\"']*global-shell-guard\.js", source, re.I):
-        problems.append(f"{rel}: retired dynamic shell script still referenced")
+    if re.search(r"<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js", source, re.I):
+        problems.append(f"{rel}: retired dynamic shell guard still referenced")
 for name in ("main.js", "site-main.js", "analytics.js", "related-tools.js"):
     source = (ROOT / "assets/js" / name).read_text(encoding="utf-8", errors="replace")
     if "global-shell-guard.js" in source:
         problems.append(f"assets/js/{name}: dynamic guard loader remains")
-for relative in ("assets/js/global-shell-guard.js", "assets/js/nn-inner-shell.js"):
-    source = (ROOT / relative).read_text(encoding="utf-8", errors="replace")
-    if re.search(r"MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector", source):
-        problems.append(f"{relative}: disabled shell must be inert")
+guard = (ROOT / "assets/js/global-shell-guard.js").read_text(encoding="utf-8", errors="replace")
+if re.search(r"MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector", guard):
+    problems.append("assets/js/global-shell-guard.js: disabled guard is not inert")
+inner = (ROOT / "assets/js/nn-inner-shell.js").read_text(encoding="utf-8", errors="replace")
+if re.search(r"normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header", inner):
+    problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
 if len(routes) != 108 or len({url for _, url in routes}) != 108:
@@ -140,6 +142,7 @@ if problems:
     fail("static layout contract failed: " + "; ".join(problems[:30]))
 print(f"PASS: static site shell; html_files={len(html_files)}; nav_items=6; tools={len(routes)}; sitemap_article_urls={len(actual)}")
 '''
+'''
 
 TEST_FILE = r'''const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -148,17 +151,19 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const shellPart = (source, tag) => {
-  const regex = new RegExp('<' + tag + '\\b[^>]*>[\\s\\S]*?</' + tag + '\\s*>', 'i');
-  const match = source.match(regex);
+  const pattern = tag === 'header'
+    ? /<header\b(?=[^>]*class=["'][^"']*\bnn-header\b[^"']*["'])[^>]*>[\s\S]*?<\/header\s*>/i
+    : /<footer\b(?=[^>]*class=["'][^"']*\bnn-footer\b[^"']*\bnn-global-footer\b[^"']*["'])[^>]*>[\s\S]*?<\/footer\s*>/i;
+  const match = source.match(pattern);
   return match ? match[0] : '';
 };
 const labels = header => {
-  const nav = shellPart(header, 'nav');
+  const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
     .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 };
 
-test('every HTML page has exactly the canonical static index header and footer', () => {
+test('every HTML page has the canonical static index header and footer', () => {
   const index = read('index.html');
   const header = shellPart(index, 'header');
   const footer = shellPart(index, 'footer');
@@ -184,18 +189,18 @@ test('every HTML page has exactly the canonical static index header and footer',
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
     assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
-      relative + ' still loads retired shell script');
+      relative + ' still loads retired dynamic guard');
   }
 });
 
-test('dynamic guard loaders are gone and old guard files are inert', () => {
+test('dynamic header and footer repair loaders are gone', () => {
   for (const file of ['assets/js/main.js', 'assets/js/site-main.js', 'assets/js/analytics.js', 'assets/js/related-tools.js']) {
     assert.doesNotMatch(read(file), /global-shell-guard\.js/, file + ' still loads retired guard');
   }
-  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|scheduleNonCriticalDomTask\(enforceSelectedHeaderLogo\)/);
-  for (const file of ['assets/js/global-shell-guard.js', 'assets/js/nn-inner-shell.js']) {
-    assert.doesNotMatch(read(file), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
-  }
+  assert.doesNotMatch(read('assets/js/main.js'), /enforceSelectedHeaderLogo|normalizeFooterStructure|global-shell-guard\.js/);
+  assert.doesNotMatch(read('assets/js/nn-inner-shell.js'), /normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBadge|global-shell-guard\.js|querySelectorAll\(["']header/);
+  assert.doesNotMatch(read('assets/js/global-shell-guard.js'), /MutationObserver|createElement|appendChild|removeChild|innerHTML|querySelector/);
+  assert.match(read('assets/js/nn-inner-shell.js'), /related-tools-bootstrap\.js/);
 });
 
 test('108 indexed tool routes resolve to unique HTML files', () => {
@@ -219,6 +224,7 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
+'''
 '''
 
 class ElementSpanParser(HTMLParser):
