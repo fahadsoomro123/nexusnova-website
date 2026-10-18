@@ -43,6 +43,10 @@ def cache_bust():
     for path in public_html():
         text=read(path)
         def repl(m):
+            # app.html loads this consent runtime directly during the first deferred pass.
+            # Keep its targeted cache key so production edges do not reuse the previous script.
+            if path.as_posix() == 'app.html' and m.group("url").endswith('assets/js/site-main.js'):
+                return f'{m.group("prefix")}{m.group("url")}?v=20261018-app-consent-lcp-v1{m.group("quote")}'
             return f'{m.group("prefix")}{m.group("url")}?v={VERSION}{m.group("quote")}'
         new=attr_re.sub(repl,text)
         new=absolute_attr_re.sub(repl,new)

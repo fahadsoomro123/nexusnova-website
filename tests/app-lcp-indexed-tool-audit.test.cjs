@@ -42,3 +42,17 @@ test('static shell sync excludes OTA and protected runtime trees rather than rew
   assert.ok(sync.includes('def is_shell_managed_html(path: Path) -> bool:'), 'all sync targets must pass through the exclude predicate');
   assert.ok(sync.includes('def all_html_files():\n    return sorted(p for p in ROOT.rglob("*.html") if is_shell_managed_html(p))'));
 });
+
+test('overhaul cache-buster preserves the app consent runtime version', () => {
+  const overhaul = fs.readFileSync('.github/scripts/total_site_overhaul.py', 'utf8');
+  assert.ok(overhaul.includes("path.as_posix() == 'app.html'"), 'the app-only cache exception must be scoped to app.html');
+  assert.ok(overhaul.includes("m.group(\"url\").endswith('assets/js/site-main.js')"), 'only the direct consent runtime receives the exception');
+  assert.ok(overhaul.includes('20261018-app-consent-lcp-v1'), 'the current app consent runtime cache key is preserved');
+  assert.ok(overhaul.includes("return f'{m.group(\"prefix\")}{m.group(\"url\")}?v={VERSION}{m.group(\"quote\")}'"), 'all other assets keep the normal global version');
+});
+
+test('generated static shell HTML contract threshold excludes the protected OTA page', () => {
+  const sync = fs.readFileSync('.github/scripts/sync_static_site_shell.py', 'utf8');
+  assert.ok(sync.includes("files.length >= 325, 'expected public static HTML sweep; found ' + files.length + ' HTML files'"));
+  assert.ok(!sync.includes("files.length >= 326, 'expected full repository sweep"));
+});

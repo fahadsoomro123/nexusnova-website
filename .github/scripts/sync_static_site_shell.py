@@ -200,7 +200,7 @@ test('every HTML page has the canonical static index header and footer', () => {
     }
   };
   walk(root);
-  assert.ok(files.length >= 326, 'expected full repository sweep; found ' + files.length + ' HTML files');
+  assert.ok(files.length >= 325, 'expected public static HTML sweep; found ' + files.length + ' HTML files');
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
     const relative = path.relative(root, file);
