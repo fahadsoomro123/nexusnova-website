@@ -57,7 +57,7 @@ class StructureParser(HTMLParser):
 
 
 def html_files() -> list[Path]:
-    """Enumerate public static HTML pages; native app/worker payloads are excluded."""
+    """Enumerate every repository HTML document, including nested tech and app pages."""
     return sorted(
         path for path in ROOT.rglob("*.html")
         if not any(part in {".git", "node_modules", "quality-artifacts", "ota", "downloads", "cloudflare", "functions", "firebase", "nexusnova-dev-ai"} for part in path.parts)
