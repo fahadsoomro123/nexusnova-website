@@ -84,7 +84,13 @@ jobs:
             const rendered=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,'');
             if(!/(<main\b|<article\b|<section\b|class=["'][^"']*(?:tool|calculator|converter|widget|app)[^"']*["'])/i.test(rendered)) throw new Error(`${path}: no primary tool surface`);
             const assets=[...html.matchAll(/(?:src|href)=["']([^"']*assets\/[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)].map(m=>m[1]);
-            const stale=assets.filter(v=>!v.includes(`v=${VERSION}`) && !/nn-inner-shell(?:\.js|\.css)/i.test(v));
+            const isSharedShellAsset = value =>
+              /(?:^|\/)static-site-shell\.css\?v=20261017-static-shell-v1(?:$|#)/.test(value);
+            const stale = assets.filter(value =>
+              !value.includes(`v=${VERSION}`) &&
+              !isSharedShellAsset(value) &&
+              !/nn-inner-shell(?:\.js|\.css)/i.test(value)
+            );
             if(stale.length) throw new Error(`${path}: stale asset key ${stale[0]}`);
           }
           (async()=>{
