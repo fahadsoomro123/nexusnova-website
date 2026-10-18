@@ -94,7 +94,8 @@ index_source = (ROOT / "index.html").read_text(encoding="utf-8")
 expected_header, expected_footer = outer(index_source, "header"), outer(index_source, "footer")
 if not expected_header or not expected_footer:
     fail("index.html must contain canonical static header and footer")
-html_files = sorted(p for p in ROOT.rglob("*.html") if is_shell_managed_html(p))
+html_files = sorted(p for p in ROOT.rglob("*.html")
+                    if not any(part in {".git", "node_modules", "quality-artifacts", "ota", "downloads", "cloudflare", "functions", "firebase", "nexusnova-dev-ai"} for part in p.parts))
 if len(html_files) < 325:
     fail(f"expected at least 325 public shell-managed HTML pages; found only {len(html_files)}")
 expected_nav = ["Home", "All Tools", "Content", "Categories", "Articles", "Guides"]

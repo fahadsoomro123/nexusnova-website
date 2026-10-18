@@ -56,3 +56,18 @@ test('generated static shell HTML contract threshold excludes the protected OTA 
   assert.ok(sync.includes("files.length >= 325, 'expected public static HTML sweep; found ' + files.length + ' HTML files'"));
   assert.ok(!sync.includes("files.length >= 326, 'expected full repository sweep"));
 });
+
+test('generated standalone shell validator uses its own protected-folder filter', () => {
+  const sync = fs.readFileSync('.github/scripts/sync_static_site_shell.py', 'utf8');
+  const start = sync.indexOf("VALIDATE_GLOBAL_LAYOUT = r'''");
+  const end = sync.indexOf("TEST_FILE = r'''", start);
+  assert.ok(start >= 0 && end > start, 'standalone validator template must be present');
+  const template = sync.slice(start, end);
+  assert.ok(template.includes('if not any(part in {" .git"') === false, 'avoid malformed protected-set spelling');
+  assert.ok(template.includes("'ota'") || template.includes('"ota"'), 'validator should exclude OTA payloads');
+  assert.ok(template.includes('for part in p.parts'), 'validator must use its own path check');
+  assert.ok(!template.includes('if is_shell_managed_html(p)'), 'standalone generated validator must not depend on synchronizer-only helpers');
+  const actual = fs.readFileSync('.github/scripts/validate_global_layout.py', 'utf8');
+  assert.ok(actual.includes('for part in p.parts'));
+  assert.ok(!actual.includes('is_shell_managed_html(p)'));
+});
