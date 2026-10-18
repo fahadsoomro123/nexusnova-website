@@ -470,7 +470,7 @@
 </head>
 <body>
   <div class="nn-consent" id="nexusnova-analytics-consent" data-nexusnova-consent role="region" aria-label="Privacy and analytics choices">
-    <div class="nn-consent-copy"><strong>We use cookies</strong><p>Basic page-view measurement runs where permitted. Choose <strong>Accept all</strong> to enable optional detailed analytics such as selected tool run, copy and download events. <strong>Basic only</strong> keeps page-view measurement; <strong>Reject optional</strong> denies analytics storage and detailed tool interactions; limited cookie-less measurement signals may still be sent by Google Consent Mode. Google ad storage and Google ad personalization stay off. The Adsterra placement below asks for separate permission before loading, and its creatives may include adult content. <a href="privacy.html">Privacy policy</a>.</p></div>
+    <div class="nn-consent-copy"><strong>We use cookies</strong><p>Basic page-view measurement runs where permitted. Choose <strong>Accept all</strong> to enable optional detailed analytics such as selected tool run, copy and download events. <strong>Basic only</strong> keeps page-view measurement; <strong>Reject optional</strong> denies analytics storage and detailed tool interactions; limited cookie-less measurement signals may still be sent by Google Consent Mode. Google ad storage and Google ad personalization stay off. A third-party Adsterra advertisement may load automatically below the featured tools; ad creatives may include adult content. See our Privacy policy for details. <a href="privacy.html">Privacy policy</a>.</p></div>
     <div class="nn-consent-actions"><button type="button" class="primary" data-consent-allow>Accept all</button><button type="button" data-consent-basic>Basic only</button><button type="button" data-consent-off>Reject optional</button></div>
   </div>
   <script id="nn-home-consent-critical-init">
@@ -553,85 +553,42 @@
 
     <section class="nn-adsterra-slot" aria-label="Sponsored advertising">
       <div class="nn-shell">
-        <div class="nn-adsterra-card" data-nn-adsterra-consent>
-          <div class="nn-adsterra-copy">
-            <span class="nn-adsterra-kicker">Sponsored advertising</span>
-            <p>Adsterra creatives may include adult content. Choose <strong>Allow ads</strong> to load this third-party placement. You can keep ads off and continue using every NexusNova tool.</p>
-          </div>
-          <div class="nn-adsterra-actions">
-            <button type="button" class="primary" data-nn-adsterra-allow>Allow ads</button>
-            <button type="button" data-nn-adsterra-deny>Keep ads off</button>
-          </div>
-        </div>
-        <div class="nn-adsterra-off" data-nn-adsterra-off hidden>
-          <span>Ads are off on this browser.</span>
-          <button type="button" data-nn-adsterra-settings>Change ad choice</button>
-        </div>
-        <div class="nn-adsterra-placement" data-nn-adsterra-placement hidden>
+        <div class="nn-adsterra-placement" data-nn-adsterra-placement>
           <div class="nn-adsterra-placement-head">
-            <span>Advertisement · adult creatives may appear</span>
-            <button type="button" data-nn-adsterra-settings>Ad settings</button>
+            <span>Sponsored advertisement · adult creatives may appear</span>
           </div>
           <div id="container-b7cb02fa163a7585244e7c2876553cea"></div>
           <p class="nn-adsterra-status" data-nn-adsterra-status role="status" aria-live="polite"></p>
         </div>
       </div>
     </section>
-    <script id="nn-adsterra-consent-loader">
+    <script id="nn-adsterra-auto-loader">
     (() => {
       'use strict';
-      const consentKey = 'nexusnova_advertising_consent_v1';
-      const consentCard = document.querySelector('[data-nn-adsterra-consent]');
-      const offCard = document.querySelector('[data-nn-adsterra-off]');
       const placement = document.querySelector('[data-nn-adsterra-placement]');
       const container = document.getElementById('container-b7cb02fa163a7585244e7c2876553cea');
       const status = document.querySelector('[data-nn-adsterra-status]');
-      if (!consentCard || !offCard || !placement || !container) return;
+      if (!placement || !container || window.__nexusnovaAdsterraState) return;
 
-      const readConsent = () => {
-        try { return localStorage.getItem(consentKey) || ''; } catch (_) { return ''; }
-      };
-      const writeConsent = value => {
-        try { localStorage.setItem(consentKey, value); } catch (_) {}
-      };
-      const loadAd = () => {
-        consentCard.hidden = true;
-        offCard.hidden = true;
-        placement.hidden = false;
-        if (window.__nexusnovaAdsterraState) return;
-        window.__nexusnovaAdsterraState = 'loading';
-        const script = document.createElement('script');
-        script.async = true;
-        script.setAttribute('data-cfasync', 'false');
-        script.src = 'https://pl31903316.profitableratecpm.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
-        script.addEventListener('error', () => {
-          window.__nexusnovaAdsterraState = '';
-          if (status) status.textContent = 'The advertisement could not load right now. Please refresh later.';
-        }, { once: true });
-        container.parentNode.insertBefore(script, container);
-      };
-      const render = () => {
-        const choice = readConsent();
-        consentCard.hidden = choice === 'granted' || choice === 'denied';
-        offCard.hidden = choice !== 'denied';
-        placement.hidden = choice !== 'granted';
-        if (choice === 'granted') loadAd();
-      };
-      consentCard.querySelector('[data-nn-adsterra-allow]')?.addEventListener('click', () => {
-        writeConsent('granted');
-        render();
-      });
-      consentCard.querySelector('[data-nn-adsterra-deny]')?.addEventListener('click', () => {
-        writeConsent('denied');
-        render();
-      });
-      document.querySelectorAll('[data-nn-adsterra-settings]').forEach(button => {
-        button.addEventListener('click', () => {
-          writeConsent('');
-          window.location.reload();
-        });
-      });
-      render();
+      // Honor an explicit browser-level privacy opt-out signal.
+      if (window.navigator?.globalPrivacyControl === true) {
+        if (status) status.textContent = 'Ad loading is disabled because your browser sent a Global Privacy Control signal.';
+        return;
+      }
+
+      window.__nexusnovaAdsterraState = 'loading';
+      const script = document.createElement('script');
+      script.async = true;
+      script.setAttribute('data-cfasync', 'false');
+      script.src = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
+      script.addEventListener('load', () => {
+        window.__nexusnovaAdsterraState = 'loaded';
+      }, { once: true });
+      script.addEventListener('error', () => {
+        window.__nexusnovaAdsterraState = '';
+        if (status) status.textContent = 'The advertisement could not load right now. Please refresh later.';
+      }, { once: true });
+      container.parentNode.insertBefore(script, container);
     })();
     </script>
 
