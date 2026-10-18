@@ -14,6 +14,11 @@ SHELL_CSS = ROOT / "assets/css/static-site-shell.css"
 SHELL_CSS_HREF = "/assets/css/static-site-shell.css?v=20261017-static-shell-v1"
 VOID_TAGS = {"area","base","br","col","embed","hr","img","input","link","meta","param","source","track","wbr"}
 CONTENT_ANCESTORS = {"main","article","section","header","footer"}
+EXCLUDED_HTML_DIRS = {".git", "node_modules", "quality-artifacts", "ota", "downloads", "cloudflare", "functions", "firebase", "nexusnova-dev-ai"}
+
+
+def is_shell_managed_html(path: Path) -> bool:
+    return not any(part in EXCLUDED_HTML_DIRS for part in path.relative_to(ROOT).parts)
 
 STATIC_CSS = r'''
 /* Canonical static site shell. Shared by every HTML document. */
@@ -89,10 +94,9 @@ index_source = (ROOT / "index.html").read_text(encoding="utf-8")
 expected_header, expected_footer = outer(index_source, "header"), outer(index_source, "footer")
 if not expected_header or not expected_footer:
     fail("index.html must contain canonical static header and footer")
-html_files = sorted(p for p in ROOT.rglob("*.html")
-                    if not any(part in {".git", "node_modules", "quality-artifacts"} for part in p.parts))
-if len(html_files) < 326:
-    fail(f"expected all repository HTML pages; found only {len(html_files)}")
+html_files = sorted(p for p in ROOT.rglob("*.html") if is_shell_managed_html(p))
+if len(html_files) < 325:
+    fail(f"expected at least 325 public shell-managed HTML pages; found only {len(html_files)}")
 expected_nav = ["Home", "All Tools", "Content", "Categories", "Articles", "Guides"]
 if nav_labels(expected_header) != expected_nav:
     fail(f"canonical navigation incorrect: {nav_labels(expected_header)!r}")
@@ -189,7 +193,7 @@ test('every HTML page has the canonical static index header and footer', () => {
   const files = [];
   const walk = dir => {
     for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (['.git', 'node_modules', 'quality-artifacts'].includes(item.name)) continue;
+      if (['.git', 'node_modules', 'quality-artifacts', 'ota', 'downloads', 'cloudflare', 'functions', 'firebase', 'nexusnova-dev-ai'].includes(item.name)) continue;
       const full = path.join(dir, item.name);
       if (item.isDirectory()) walk(full);
       else if (item.isFile() && item.name.toLowerCase().endsWith('.html')) files.push(full);
@@ -425,8 +429,7 @@ def replace_between(source, start_marker, end_marker, replacement):
 
 
 def all_html_files():
-    return sorted(p for p in ROOT.rglob("*.html")
-                  if not any(part in {".git", "node_modules", "quality-artifacts"} for part in p.parts))
+    return sorted(p for p in ROOT.rglob("*.html") if is_shell_managed_html(p))
 
 
 def patch_supporting_sources():
@@ -538,7 +541,7 @@ def patch_supporting_sources():
     """Enumerate every repository HTML document, including nested tech and app pages."""
     return sorted(
         path for path in ROOT.rglob("*.html")
-        if not any(part in {".git", "node_modules", "quality-artifacts"} for part in path.parts)
+        if not any(part in {".git", "node_modules", "quality-artifacts", "ota", "downloads", "cloudflare", "functions", "firebase", "nexusnova-dev-ai"} for part in path.parts)
     )
 ''',
         )

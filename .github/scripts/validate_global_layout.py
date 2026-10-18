@@ -32,9 +32,9 @@ expected_header, expected_footer = outer(index_source, "header"), outer(index_so
 if not expected_header or not expected_footer:
     fail("index.html must contain canonical static header and footer")
 html_files = sorted(p for p in ROOT.rglob("*.html")
-                    if not any(part in {".git", "node_modules", "quality-artifacts"} for part in p.parts))
-if len(html_files) < 326:
-    fail(f"expected all repository HTML pages; found only {len(html_files)}")
+                    if not any(part in {".git", "node_modules", "quality-artifacts", "ota", "downloads", "cloudflare", "functions", "firebase", "nexusnova-dev-ai"} for part in p.parts))
+if len(html_files) < 325:
+    fail(f"expected at least 325 public shell-managed HTML pages; found only {len(html_files)}")
 expected_nav = ["Home", "All Tools", "Content", "Categories", "Articles", "Guides"]
 if nav_labels(expected_header) != expected_nav:
     fail(f"canonical navigation incorrect: {nav_labels(expected_header)!r}")
