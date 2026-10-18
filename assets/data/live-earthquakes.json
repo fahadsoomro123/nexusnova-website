@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-18T09:55:27.468Z",
+  "generated_at": "2026-10-18T13:54:22.495Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,49 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-18T09:55:05.000Z",
+  "feed_generated_at": "2026-10-18T13:54:05.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 36,
+  "source_count": 34,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "us6000u35l",
+      "magnitude": 4.5,
+      "place": "Kermadec Islands, New Zealand",
+      "time": "2026-10-18T12:42:22.533Z",
+      "updated": "2026-10-18T12:59:51.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -30.1265,
+        "lon": -177.3838
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u35l",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71537138",
+      "magnitude": 2.87,
+      "place": "61 km E of Cruz Bay, U.S. Virgin Islands",
+      "time": "2026-10-18T11:27:32.920Z",
+      "updated": "2026-10-18T11:37:52.450Z",
+      "depth_km": 18.5,
+      "coordinates": {
+        "lat": 18.2622,
+        "lon": -64.2173
+      },
+      "significance": 127,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71537138",
+      "pakistan_region": false
+    },
     {
       "id": "us6000u34h",
       "magnitude": 3.8,
@@ -140,14 +178,14 @@
       "magnitude": 4.3,
       "place": "2 km W of Pedasí, Panama",
       "time": "2026-10-18T05:00:13.331Z",
-      "updated": "2026-10-18T05:17:40.040Z",
+      "updated": "2026-10-18T12:25:41.495Z",
       "depth_km": 10,
       "coordinates": {
         "lat": 7.5317,
         "lon": -80.0533
       },
-      "significance": 284,
-      "felt": 0,
+      "significance": 285,
+      "felt": 1,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -627,82 +665,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u309",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026ulnsow",
-      "magnitude": 3.5,
-      "place": "24 km WNW of Carrizo Springs, Texas",
-      "time": "2026-10-17T13:30:16.104Z",
-      "updated": "2026-10-17T14:40:22.805Z",
-      "depth_km": 6,
-      "coordinates": {
-        "lat": 28.633,
-        "lon": -100.083
-      },
-      "significance": 188,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026ulnsow",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u300",
-      "magnitude": 4.6,
-      "place": "70 km W of Tambolaka, Indonesia",
-      "time": "2026-10-17T12:46:23.796Z",
-      "updated": "2026-10-18T05:10:57.040Z",
-      "depth_km": 68.9,
-      "coordinates": {
-        "lat": -9.3596,
-        "lon": 118.5983
-      },
-      "significance": 326,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u300",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u2zv",
-      "magnitude": 4.3,
-      "place": "83 km N of Opotiki, New Zealand",
-      "time": "2026-10-17T11:32:25.645Z",
-      "updated": "2026-10-17T12:17:54.040Z",
-      "depth_km": 133.4,
-      "coordinates": {
-        "lat": -37.2587,
-        "lon": 177.3673
-      },
-      "significance": 284,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u2zv",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026uoopfk",
-      "magnitude": 2.5,
-      "place": "47 km N of Petersville, Alaska",
-      "time": "2026-10-17T10:07:45.535Z",
-      "updated": "2026-10-17T10:11:20.322Z",
-      "depth_km": 111.4,
-      "coordinates": {
-        "lat": 62.924,
-        "lon": -150.815
-      },
-      "significance": 96,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026uoopfk",
       "pakistan_region": false
     }
   ]
