@@ -2024,7 +2024,7 @@
       history.replaceState({},'',window.location.pathname);
     }
   }
-  $('footerYear').textContent=new Date().getFullYear();
+  const footerYear=$('footerYear'); if(footerYear) footerYear.textContent=new Date().getFullYear();
   const startupQuery=new URLSearchParams(window.location.search);
   const fullDesignDemo=startupQuery.get('demo')==='full';
   if(fullDesignDemo){
