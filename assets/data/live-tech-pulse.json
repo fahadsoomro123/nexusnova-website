@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-10-19T13:31:09.121790Z",
+  "generated_at": "2026-10-19T22:27:06.559781Z",
   "items": [
     {
       "title": "Stable Channel Update for ChromeOS / ChromeOS Flex",
@@ -21,6 +21,24 @@
       "score": 34
     },
     {
+      "title": "Cutting our inference bill by 68% by being obsessive about optimization",
+      "url": "https://blog.cloudflare.com/obsessive-inference-optimization/",
+      "source": "Cloudflare Blog",
+      "category": "AI",
+      "published": "2026-10-19T19:12:53Z",
+      "summary": "When our AI code reviewer's cost per run doubled, we dug into the token usage to find out why. Learn how we used prompt caching and intelligent model routing to slash our inference bill by 68% while speeding up reviews.",
+      "score": 27
+    },
+    {
+      "title": "Copilot model policy API for enterprise, orgs, and teams",
+      "url": "https://github.blog/changelog/2026-10-19-copilot-model-policy-api-for-enterprise-orgs-and-teams",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-10-19T21:32:18Z",
+      "summary": "You can now use the REST API to retrieve and update Copilot model policies for enterprises, enterprise teams, enterprise apps, and organizations. What’s new GET and PATCH endpoints are now… The post Copilot model policy API for enterprise, orgs, and teams appe",
+      "score": 26
+    },
+    {
       "title": "CodeQL changes for macOS 27, Xcode 27, and Swift 6.4",
       "url": "https://github.blog/changelog/2026-10-19-codeql-changes-for-macos-27-xcode-27-and-swift-6-4",
       "source": "GitHub Changelog",
@@ -28,33 +46,6 @@
       "published": "2026-10-19T10:29:09Z",
       "summary": "Starting with macOS 27 and Xcode 27, Apple no longer includes Intel (x86_64) code in some of the system binaries and libraries that CodeQL relies on to trace builds. As… The post CodeQL changes for macOS 27, Xcode 27, and Swift 6.4 appeared first on The GitHub",
       "score": 24
-    },
-    {
-      "title": "Upcoming deprecation of selected GitHub Copilot models in mid-November",
-      "url": "https://github.blog/changelog/2026-10-15-upcoming-deprecation-of-selected-github-copilot-models-in-mid-november",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-10-15T19:35:13Z",
-      "summary": "We will deprecate the following models across all GitHub Copilot experiences (including Copilot Chat, inline edits, ask and agent modes, and code completions) on November 16th, 2026: Model Deprecation date… The post Upcoming deprecation of selected GitHub Copi",
-      "score": 22
-    },
-    {
-      "title": "HydraFusion updates and new Max option",
-      "url": "https://github.blog/changelog/2026-10-14-hydrafusion-updates-and-new-max-option",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-10-14T20:01:35Z",
-      "summary": "HydraFusion has an updated model pool, improved orchestration workflows, and introduces HydraFusion Max. Both HydraFusion and HydraFusion Max are available across VS Code, the GitHub Copilot app, and GitHub Copilot… The post HydraFusion updates and new Max opt",
-      "score": 22
-    },
-    {
-      "title": "Chrome Dev for Desktop Update",
-      "url": "https://chromereleases.googleblog.com/2026/10/chrome-dev-for-desktop-update_0562111902.html",
-      "source": "Chrome Releases",
-      "category": "Browser",
-      "published": "2026-10-16T15:43:33Z",
-      "summary": "The Dev channel has been updated to 158.0.8106.0 for Windows, Mac and Linux. A partial list of changes is available in the Git log . Interested in switching release channels? Find out how . If you find a new issue, please let us know by filing a bug . The comm",
-      "score": 21
     },
     {
       "title": "New learning paths: curated YouTube playlists for Search fundamentals and Technical SEO",
@@ -66,12 +57,21 @@
       "score": 20
     },
     {
-      "title": "Chrome Dev for Android Update",
-      "url": "https://chromereleases.googleblog.com/2026/10/chrome-dev-for-android-update_0193953929.html",
+      "title": "Some Git over HTTPS may temporarily require authentication",
+      "url": "https://github.blog/changelog/2026-10-19-some-git-over-https-may-temporarily-require-authentication",
+      "source": "GitHub Changelog",
+      "category": "Developer",
+      "published": "2026-10-19T10:37:30Z",
+      "summary": "During periods of unusual traffic, GitHub may temporarily require authentication for some clones and fetches of public repositories over HTTPS to help protect github.com’s availability. If an operation is affected,… The post Some Git over HTTPS may temporarily",
+      "score": 19
+    },
+    {
+      "title": "Chrome Dev for Desktop Update",
+      "url": "https://chromereleases.googleblog.com/2026/10/chrome-dev-for-desktop-update_0562111902.html",
       "source": "Chrome Releases",
       "category": "Browser",
-      "published": "2026-10-16T13:13:32Z",
-      "summary": "Hi everyone! We've just released Chrome Dev 158 (158.0.8106.0) for Android. It's now available on Google Play . You can see a partial list of the changes in the Git log . For details on new features, check out the Chromium blog , and for details on web platfor",
+      "published": "2026-10-16T15:43:33Z",
+      "summary": "The Dev channel has been updated to 158.0.8106.0 for Windows, Mac and Linux. A partial list of changes is available in the Git log . Interested in switching release channels? Find out how . If you find a new issue, please let us know by filing a bug . The comm",
       "score": 19
     }
   ],
@@ -95,13 +95,13 @@
       "score": 34
     },
     {
-      "title": "CodeQL changes for macOS 27, Xcode 27, and Swift 6.4",
-      "url": "https://github.blog/changelog/2026-10-19-codeql-changes-for-macos-27-xcode-27-and-swift-6-4",
-      "source": "GitHub Changelog",
-      "category": "Developer",
-      "published": "2026-10-19T10:29:09Z",
-      "summary": "Starting with macOS 27 and Xcode 27, Apple no longer includes Intel (x86_64) code in some of the system binaries and libraries that CodeQL relies on to trace builds. As… The post CodeQL changes for macOS 27, Xcode 27, and Swift 6.4 appeared first on The GitHub",
-      "score": 24
+      "title": "Cutting our inference bill by 68% by being obsessive about optimization",
+      "url": "https://blog.cloudflare.com/obsessive-inference-optimization/",
+      "source": "Cloudflare Blog",
+      "category": "AI",
+      "published": "2026-10-19T19:12:53Z",
+      "summary": "When our AI code reviewer's cost per run doubled, we dug into the token usage to find out why. Learn how we used prompt caching and intelligent model routing to slash our inference bill by 68% while speeding up reviews.",
+      "score": 27
     }
   ],
   "tool_of_day": {
