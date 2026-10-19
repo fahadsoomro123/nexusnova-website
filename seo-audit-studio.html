@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
-<title>NexusNova Tools | SEO Audit Studio</title>
-  <meta name="description" content="Audit your website with NexusNova Tools SEO Audit Studio. Review technical SEO checks, structured data, issues and mobile and desktop performance diagnostics.">
+<title>NexusNova SEO Audit Studio</title>
+  <meta name="description" content="Audit websites with NexusNova SEO Audit Studio. Review technical SEO checks, structured data, issues and measured mobile and desktop performance diagnostics.">
   <link rel="canonical" href="https://nexusnovatools.com/seo-audit-studio.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NexusNova Tools">
-  <meta property="og:title" content="SEO Audit Studio | NexusNova Tools">
+  <meta property="og:title" content="NexusNova SEO Audit Studio">
   <meta property="og:description" content="Run an evidence-based website SEO audit with a free summary, technical findings and mobile and desktop performance diagnostics.">
   <meta property="og:url" content="https://nexusnovatools.com/seo-audit-studio.html">
   <script type="application/ld+json">
@@ -18,8 +18,8 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "name": "NexusNova Tools SEO Audit Studio",
-        "alternateName": "SEO Audit Studio",
+        "name": "NexusNova SEO Audit Studio",
+        "alternateName": "NexusNova Audit",
         "url": "https://nexusnovatools.com/seo-audit-studio.html",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Any modern browser",
@@ -81,7 +81,7 @@
           {
             "@type": "ListItem",
             "position": 2,
-            "name": "SEO Audit Studio",
+            "name": "NexusNova SEO Audit Studio",
             "item": "https://nexusnovatools.com/seo-audit-studio.html"
           }
         ]
@@ -589,11 +589,11 @@
   <link rel="apple-touch-icon" href="/assets/logo.png?v=20261015-v4">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="NexusNova Tools">
-  <meta property="og:title" content="NexusNova Tools | SEO Audit Studio">
+  <meta property="og:title" content="NexusNova SEO Audit Studio">
   <meta property="og:description" content="Review technical SEO checks, structured data, issues and mobile and desktop performance diagnostics.">
   <meta property="og:image" content="https://nexusnovatools.com/assets/logo.png?v=20261015-v4">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="NexusNova Tools | SEO Audit Studio">
+  <meta name="twitter:title" content="NexusNova SEO Audit Studio">
   <meta name="twitter:description" content="Review technical SEO checks, structured data, issues and mobile and desktop performance diagnostics.">
   <meta name="twitter:image" content="https://nexusnovatools.com/assets/logo.png?v=20261015-v4">
 </head>
@@ -619,7 +619,7 @@
   </header>
 <main id="top" class="container">
   <section class="page-heading">
-    <div><div class="eyebrow">Website intelligence</div><h1>SEO Audit Studio</h1><p>Run a free first-look audit, review your top findings, and request the full technical report when you need deeper evidence and export options.</p></div>
+    <div><div class="eyebrow">Website intelligence</div><h1>NexusNova SEO Audit Studio</h1><p>Run a free first-look audit, review your top findings, and request the full technical report when you need deeper evidence and export options.</p></div>
     <div class="privacy-note"><span class="icon" aria-hidden="true">◎</span> Live checks depend on third-party public analysis services</div>
   </section>
 
@@ -828,15 +828,48 @@
 <script>
 (() => {
   'use strict';
-  // API calls go to the secure Node backend; the page itself remains hosted on GitHub Pages.
-  const API_BASE_URL = 'https://audit-api.nexusnovatools.com';
+  // Isolated NexusNova Audit Worker. No calls to HumanProof routes or credentials.
+  const API_BASE_URL = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
-  function apiFetch(path, options) {
+  const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
+  let auditSessionToken = '';
+  let auditSessionPromise = null;
+  try { auditSessionToken = window.sessionStorage.getItem(AUDIT_SESSION_KEY) || ''; } catch {}
+  async function getAuditSessionToken() {
+    if (auditSessionToken && /^[a-f0-9]{64}$/i.test(auditSessionToken)) return auditSessionToken;
+    if (auditSessionPromise) return auditSessionPromise;
+    auditSessionPromise = (async () => {
+      const response = await window.fetch(API_BASE_URL + '/api/session', {
+        method: 'POST', headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'omit'
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || typeof payload.token !== 'string' || !/^[a-f0-9]{64}$/i.test(payload.token)) {
+        throw new Error('Could not start a secure audit session.');
+      }
+      auditSessionToken = payload.token;
+      try { window.sessionStorage.setItem(AUDIT_SESSION_KEY, auditSessionToken); } catch {}
+      return auditSessionToken;
+    })().finally(() => { auditSessionPromise = null; });
+    return auditSessionPromise;
+  }
+  async function apiFetch(path, options, retried = false) {
     const endpoint = new URL(path, API_BASE_URL);
     if (endpoint.origin !== API_BASE_ORIGIN || !endpoint.pathname.startsWith('/api/')) {
-      return Promise.reject(new Error('Invalid audit API path.'));
+      throw new Error('Invalid audit API path.');
     }
-    return window.fetch(endpoint.href, { ...(options || {}), credentials: 'include' });
+    const init = { ...(options || {}), credentials: 'omit', cache: 'no-store' };
+    const headers = new Headers(init.headers || {});
+    if (endpoint.pathname !== '/api/config' && endpoint.pathname !== '/api/health') {
+      headers.set('Authorization', 'Bearer ' + await getAuditSessionToken());
+    }
+    init.headers = headers;
+    const response = await window.fetch(endpoint.href, init);
+    if (response.status === 401 && !retried && endpoint.pathname !== '/api/session') {
+      auditSessionToken = '';
+      try { window.sessionStorage.removeItem(AUDIT_SESSION_KEY); } catch {}
+      return apiFetch(path, options, true);
+    }
+    return response;
   }
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -1787,7 +1820,7 @@
       if(response.ok && ['failed','cancelled'].includes(payload.status)) throw new Error('Payment was not completed. You can retry checkout.');
       await new Promise(resolve=>setTimeout(resolve,2000));
     }
-    throw new Error('Payment is still pending. The server will unlock the report only after Safepay verifies payment through its Reporter API or a signed webhook; do not pay a second time yet.');
+    throw new Error('Payment is still pending. The server will unlock the report only after provider-side verification through the Safepay Reporter API or a signed Safepay/NOWPayments webhook; do not pay a second time yet.');
   }
   const openPaywall = () => {
     if (!el.paywallModal) return;
