@@ -1933,7 +1933,8 @@
       } catch(error) { setStatus($('paymentContextNotice'),error.message,'error');openPaywall(); }
       history.replaceState({},'',window.location.pathname);
     } else if(query.get('payment')==='cancel') {
-      setStatus($('paymentContextNotice'),'Sandbox checkout was cancelled. The report remains locked; you can retry when ready.');
+      const productionMode = state.config?.environment === 'production';
+      setStatus($('paymentContextNotice'),productionMode?'Checkout was cancelled. The report remains locked; you can retry when ready.':'Sandbox checkout was cancelled. The report remains locked; you can retry when ready.');
       history.replaceState({},'',window.location.pathname);
     }
   }
