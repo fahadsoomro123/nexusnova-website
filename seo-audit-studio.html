@@ -1981,7 +1981,7 @@
         $('cardSandboxTest').hidden=true;
         if(state.config.devSimulatorEnabled) $('cardPaymentStatus').hidden=true;
       } else {
-        $('safepayCheckoutBtn').textContent=productionMode?'Continue to secure Safepay checkout':'Continue to Safepay sandbox checkout';
+        $('safepayCheckoutBtn').textContent=productionMode?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding';
         $('cardSandboxTest').hidden=true;
       }
       $('safepayCheckoutBtn').disabled=!cardCheckoutReady;

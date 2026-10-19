@@ -26,6 +26,7 @@ test('public card checkout stays disabled while Safepay is only configured for s
   assert.match(html,
     /const cardCheckoutReady=productionMode && state\.config\.livePaymentsEnabled===true && state\.config\.provider==='safepay' && state\.config\.safepayConfigured===true;/);
   assert.match(html, /\$\('safepayCheckoutBtn'\)\.disabled=!cardCheckoutReady;/);
+  assert.match(html, /productionMode\?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding'/);
   assert.doesNotMatch(html, /safepayConfigured\s*\|\|\s*true/,
     'an unconfigured provider must never be treated as ready');
 });
