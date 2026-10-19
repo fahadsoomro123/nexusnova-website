@@ -836,6 +836,16 @@
   const API_BASE_URL = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
   const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
+  async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false) {
+    try {
+      return await window.fetch(url, init);
+    } catch (error) {
+      // Retry only opted-in non-payment calls after transient browser/edge transport failures.
+      if (!allowTransportRetry || !(error instanceof TypeError)) throw error;
+      await new Promise(resolve => window.setTimeout(resolve, 300));
+      return window.fetch(url, {...init, cache:'no-store'});
+    }
+  }
   let auditSessionToken = '';
   let auditSessionPromise = null;
   try { auditSessionToken = window.sessionStorage.getItem(AUDIT_SESSION_KEY) || ''; } catch {}
@@ -843,9 +853,9 @@
     if (auditSessionToken && /^[a-f0-9]{64}$/i.test(auditSessionToken)) return auditSessionToken;
     if (auditSessionPromise) return auditSessionPromise;
     auditSessionPromise = (async () => {
-      const response = await window.fetch(API_BASE_URL + '/api/session', {
+      const response = await fetchWithTransportRetry(API_BASE_URL + '/api/session', {
         method: 'POST', headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'omit'
-      });
+      }, true);
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || typeof payload.token !== 'string' || !/^[a-f0-9]{64}$/i.test(payload.token)) {
         throw new Error('Could not start a secure audit session.');
@@ -867,7 +877,11 @@
       headers.set('Authorization', 'Bearer ' + await getAuditSessionToken());
     }
     init.headers = headers;
-    const response = await window.fetch(endpoint.href, init);
+    const retryableTransport = endpoint.pathname === '/api/config' || endpoint.pathname === '/api/health' ||
+      endpoint.pathname === '/api/audits' || endpoint.pathname === '/api/audits/sample' || endpoint.pathname === '/api/audits/latest' ||
+      /^\/api\/audits\/[0-9a-f-]{36}\/(?:preview|full|retry)$/i.test(endpoint.pathname) ||
+      /^\/api\/orders\/[A-Z0-9-]+\/status$/i.test(endpoint.pathname);
+    const response = await fetchWithTransportRetry(endpoint.href, init, retryableTransport);
     if (response.status === 401 && !retried && endpoint.pathname !== '/api/session') {
       auditSessionToken = '';
       try { window.sessionStorage.removeItem(AUDIT_SESSION_KEY); } catch {}

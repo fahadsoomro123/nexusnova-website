@@ -73,6 +73,21 @@ test('footerYear cannot crash startup when the footer year element is omitted', 
     'the footer year is an optional presentation detail and must not halt audit/payment initialization');
 });
 
+test('transient browser transport failures retry only safe audit/session/config requests', () => {
+  assert.ok(html.includes('async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false)'));
+  assert.ok(html.includes('if (!allowTransportRetry || !(error instanceof TypeError)) throw error;'));
+  assert.ok(html.includes('await new Promise(resolve => window.setTimeout(resolve, 300));'));
+  assert.ok(html.includes("const retryableTransport = endpoint.pathname === '/api/config'"));
+  assert.ok(html.includes("endpoint.pathname === '/api/audits' || endpoint.pathname === '/api/audits/sample'"));
+  assert.ok(html.includes('fetchWithTransportRetry(endpoint.href, init, retryableTransport)'));
+  assert.ok(html.includes("fetchWithTransportRetry(API_BASE_URL + '/api/session'"));
+  const whitelistStart = html.indexOf('const retryableTransport =');
+  const whitelistEnd = html.indexOf('const response = await fetchWithTransportRetry(endpoint.href, init, retryableTransport);', whitelistStart);
+  assert.ok(whitelistStart >= 0 && whitelistEnd > whitelistStart);
+  assert.doesNotMatch(html.slice(whitelistStart, whitelistEnd), /payments\/(?:card-session|crypto\/create)/,
+    'payment and invoice creation routes must never be automatically retried');
+});
+
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
   assert.match(html, /const API_BASE_URL = 'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
