@@ -45,6 +45,23 @@ test('crypto option remains visible but checkout needs authorized production con
   assert.match(html, /This network has no verified receiving address and active chain verifier\. Do not transfer funds\./);
 });
 
+test('payment settings cannot stick in loading state and the reviewed-check count uses scoredCount', () => {
+  assert.match(html, /apiFetch\('\/api\/config',\{method:'POST'/,
+    'use the CORS-simple POST fallback instead of the failing browser GET request');
+  assert.match(html, /AbortSignal\.timeout\(8000\)/,
+    'configuration fetch must fail closed instead of loading indefinitely');
+  assert.doesNotMatch(html, /Loading secure checkout settings/);
+  assert.match(html, /Checking payment configuration\.\.\./);
+  assert.match(html, /Checking crypto availability\.\.\./);
+  assert.match(html, /el\.checks\.textContent=report\.checkCount \?\? report\.scoredCount \?\? report\.checks\?\.length \?\? 0;/,
+    'preview does not include a full checks array, so display its measured scoredCount');
+  const initStart = html.indexOf('async function initializePayments() {');
+  const initEnd = html.indexOf('async function handlePaymentReturn()', initStart);
+  assert.ok(initStart >= 0 && initEnd > initStart, 'payment configuration initializer must be present');
+  assert.doesNotMatch(html.slice(initStart, initEnd), /openPaywall|beginCardPayment|prepareCryptoPayment/,
+    'loading payment settings never opens the modal or creates a payment');
+});
+
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
   assert.match(html, /const API_BASE_URL = 'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
