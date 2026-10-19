@@ -62,6 +62,12 @@ test('payment settings cannot stick in loading state and the reviewed-check coun
     'loading payment settings never opens the modal or creates a payment');
 });
 
+test('startup tolerates the optional sample-report button being absent', () => {
+  assert.match(html, /\$\('sampleTopBtn'\)\?\.addEventListener\('click',loadSample\);/,
+    'an omitted optional sample button must not crash payment settings or audit initialization');
+  assert.ok(html.includes('initializePayments().then(()=>'), 'payment setup still initializes after event handlers');
+});
+
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
   assert.match(html, /const API_BASE_URL = 'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,

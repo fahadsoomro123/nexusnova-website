@@ -1872,7 +1872,7 @@
   el.closePaywall.addEventListener('click',closePaywall);
   el.paywallModal.querySelectorAll('[data-close-paywall]').forEach(node=>node.addEventListener('click',closePaywall));
   document.addEventListener('keydown',event=>{if(event.key==='Escape' && el.paywallModal.classList.contains('is-open'))closePaywall();});
-  $('sampleTopBtn').addEventListener('click',loadSample);
+  $('sampleTopBtn')?.addEventListener('click',loadSample);
   document.querySelectorAll('[data-paid-tab]').forEach(button=>{
     button.addEventListener('click',()=>setPaidTab(button.dataset.paidTab,true));
     button.addEventListener('keydown',event=>{
