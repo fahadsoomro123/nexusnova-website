@@ -22,15 +22,18 @@ test('SEO Audit Studio card and crypto checkout controls default to disabled', (
     'API config failure must leave payment actions disabled');
 });
 
-test('card checkout is only enabled for a configured Safepay provider or explicitly enabled local simulator', () => {
+test('public card checkout stays disabled while Safepay is only configured for sandbox', () => {
   assert.match(html,
-    /const cardCheckoutReady=\(state\.config\.provider==='safepay' && state\.config\.safepayConfigured\) \|\| \(state\.config\.provider==='mock' && state\.config\.devSimulatorEnabled\);/);
+    /const cardCheckoutReady=productionMode && state\.config\.livePaymentsEnabled===true && state\.config\.provider==='safepay' && state\.config\.safepayConfigured===true;/);
   assert.match(html, /\$\('safepayCheckoutBtn'\)\.disabled=!cardCheckoutReady;/);
   assert.doesNotMatch(html, /safepayConfigured\s*\|\|\s*true/,
     'an unconfigured provider must never be treated as ready');
 });
 
-test('crypto checkout readiness is bound to the selected network and verified capability', () => {
+test('crypto option remains visible but checkout needs authorized production configuration', () => {
+  assert.match(html, /class="crypto-payment-panel"/);
+  assert.match(html, /if\(config\.environment!=='production' \|\| config\.livePaymentsEnabled!==true\) \{/);
+  assert.match(html, /Crypto checkout waiting for production setup/);
   assert.match(html, /const network=\$\('cryptoNetwork'\)\.value;/,
     'current network selection must be read when deciding readiness');
   assert.match(html,

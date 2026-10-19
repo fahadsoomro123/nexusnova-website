@@ -1919,6 +1919,12 @@
     const button=$('prepareCryptoBtn');
     if(!state.config) { button.disabled=true; return false; }
     const config=state.config;
+    if(config.environment!=='production' || config.livePaymentsEnabled!==true) {
+      button.disabled=true;
+      button.textContent='Crypto checkout waiting for production setup';
+      button.title='Sandbox provider credentials are for testing only. Do not pay through the sandbox.';
+      return false;
+    }
     const network=$('cryptoNetwork').value;
     const hosted=config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true;
     const direct=network==='TRC20'
@@ -1950,13 +1956,13 @@
       state.config=await response.json();
       const productionMode = state.config.environment === 'production';
       const modeEyebrow=document.querySelector('.modal-eyebrow');
-      if(modeEyebrow)modeEyebrow.textContent=productionMode?'NEXUSNOVA SEO AUDIT STUDIO | PRODUCTION CHECKOUT':'NEXUSNOVA SEO AUDIT STUDIO | SANDBOX TEST';
+      if(modeEyebrow)modeEyebrow.textContent=productionMode?'NEXUSNOVA SEO AUDIT STUDIO | PRODUCTION CHECKOUT':'NEXUSNOVA SEO AUDIT STUDIO | PAYMENT SETUP IN PROGRESS';
       const sandboxCheckoutNote = document.querySelector('.sandbox-panel-head p');
       const lockedNote = document.querySelector('.locked-note');
       const modalDisclaimer = document.querySelector('.modal-disclaimer');
-      if (sandboxCheckoutNote) sandboxCheckoutNote.textContent = productionMode ? 'Secure checkout; report access follows server-side payment verification.' : 'Sandbox checkout (no live funds).';
-      if (lockedNote) lockedNote.textContent = productionMode ? 'Payment unlocks the full report only after the provider and backend verify the transaction.' : 'Sandbox/test mode only. No live payment is enabled by this configuration. Mock approvals never charge a card.';
-      if (modalDisclaimer) modalDisclaimer.textContent = productionMode ? 'Your report stays locked until the backend independently verifies the exact transaction. Crypto payment instructions must match the selected network and recipient.' : 'Sandbox/test mode only. Mock approvals are simulations, not payment confirmations. Do not send real funds while the simulator is enabled.';
+      if (sandboxCheckoutNote) sandboxCheckoutNote.textContent = productionMode ? 'Secure checkout; report access follows server-side payment verification.' : 'Online checkout is temporarily unavailable while provider setup remains in sandbox.';
+      if (lockedNote) lockedNote.textContent = productionMode ? 'Payment unlocks the full report only after the provider and backend verify the transaction.' : 'Free audit previews are available. Full reports remain locked until a production payment provider is configured and server verification is enabled.';
+      if (modalDisclaimer) modalDisclaimer.textContent = productionMode ? 'Your report stays locked until the backend independently verifies the exact Safepay transaction or signed crypto payment notification.' : 'Online checkout is not yet enabled. Do not pay through a sandbox checkout; provider setup and server-side verification must be completed first.';
       if(state.config.cryptoProvider==='nowpayments'){
         const networkSelect=$('cryptoNetwork');
         if(networkSelect?.closest('label'))networkSelect.closest('label').hidden=true;
@@ -1969,7 +1975,7 @@
         $('cryptoWalletAddress').textContent='NOWPayments secure hosted invoice';
         $('cryptoWalletNotice').textContent='Choose any cryptocurrency enabled in the merchant checkout. The report unlocks only after a valid signed confirmation for this exact order and USD amount.';
       }
-      const cardCheckoutReady=(state.config.provider==='safepay' && state.config.safepayConfigured) || (state.config.provider==='mock' && state.config.devSimulatorEnabled);
+      const cardCheckoutReady=productionMode && state.config.livePaymentsEnabled===true && state.config.provider==='safepay' && state.config.safepayConfigured===true;
       if(state.config.provider==='mock') {
         $('safepayCheckoutBtn').textContent='Create local test card payment (no charge)';
         $('cardSandboxTest').hidden=true;
@@ -1980,7 +1986,7 @@
       }
       $('safepayCheckoutBtn').disabled=!cardCheckoutReady;
       if(!cardCheckoutReady) {
-        const message=state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
+        const message=(!productionMode || state.config.livePaymentsEnabled!==true)?'Online checkout is temporarily unavailable while payment setup remains in sandbox. No payment will be charged from this page yet.':state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
         setStatus($('cardPaymentStatus'),message,'error');
       }
       if(state.config.devSimulatorEnabled) {
