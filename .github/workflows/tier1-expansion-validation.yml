@@ -5,6 +5,7 @@ on:
     paths:
       - "index.html"
       - "tools.html"
+      - "seo-audit-studio.html"
       - "guides.html"
       - "sitemap.xml"
       - "articles.json"
@@ -13,6 +14,7 @@ on:
       - "assets/js/related-tools.js"
       - "tools/*.html"
       - "tests/western-finance-tools.test.cjs"
+      - "tests/seo-audit-studio-payment-contract.test.cjs"
       - "package.json"
       - "assets/js/tier1-tools.js"
       - "assets/css/tier1-tools.css"
@@ -33,8 +35,10 @@ on:
       - "assets/js/search-core.js"
       - "sitemap.xml"
       - "tools/*.html"
+      - "seo-audit-studio.html"
       - "package.json"
       - "tests/western-finance-tools.test.cjs"
+      - "tests/seo-audit-studio-payment-contract.test.cjs"
       - "tests/test_tier1_expansion.py"
 permissions:
   contents: read
