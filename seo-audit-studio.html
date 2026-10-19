@@ -794,7 +794,7 @@
     <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
     <section class="sandbox-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="sandbox-panel-head"><span class="sandbox-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>Secure payment settings load from the server before checkout is enabled.</p></div></div>
-      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout settings</button>
+      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Checking payment configuration...</button>
       <div id="cardSandboxTest" class="sandbox-sim-box" hidden>
         <p><strong>Local simulator active.</strong> This test action does not charge a card or contact Safepay.</p>
         <button type="button" id="simulateCardBtn" class="secondary-btn">Simulate successful sandbox card payment</button>
@@ -804,7 +804,7 @@
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
       <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>USDT TRC20 or ERC20 · one-time price US$2.99</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose USDT network</label>
-      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Loading secure checkout settings</button></div>
+      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Checking crypto availability...</button></div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
         <div class="wallet-address-head"><span id="cryptoNetworkLabel">USDT TRC20 receiving address</span><button type="button" id="copyWalletBtn" class="copy-btn">Copy</button></div>
         <code id="cryptoWalletAddress" class="wallet-address">Address is not configured.</code>
@@ -1623,7 +1623,7 @@
     if(el.freeRecommendationsPanel) el.freeRecommendationsPanel.style.display='';
     el.high.textContent=recs.filter(r=>r.priority==='High').length;
     el.pass.textContent=report.passCount ?? 0;
-    el.checks.textContent=report.checkCount ?? report.checks?.length ?? 0;
+    el.checks.textContent=report.checkCount ?? report.scoredCount ?? report.checks?.length ?? 0;
     const localPerformance=[report.sources?.performanceProviderMobile,report.sources?.performanceProviderDesktop].includes('local-lighthouse');
     const googlePerformance=[report.sources?.performanceProviderMobile,report.sources?.performanceProviderDesktop].some(provider=>provider==='google-pagespeed');
     el.psiChip.textContent=report.mode==='sample'?'PageSpeed sample':localPerformance?(googlePerformance?'Lighthouse + PageSpeed live':'Local Lighthouse live'):report.sources?.pagespeed?'PageSpeed live':'PageSpeed unavailable';
@@ -1953,7 +1953,7 @@
     $('safepayCheckoutBtn').disabled=true;
     $('prepareCryptoBtn').disabled=true;
     try {
-      const response=await apiFetch('/api/config',{headers:{Accept:'application/json'},cache:'no-store'});
+      const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
       state.config=await response.json();
       const productionMode = state.config.environment === 'production';
       const modeEyebrow=document.querySelector('.modal-eyebrow');
