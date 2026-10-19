@@ -786,14 +786,14 @@
   <section class="paywall-modal" role="dialog" aria-modal="true" aria-labelledby="paywallTitle" aria-describedby="paywallDescription" tabindex="-1">
     <button type="button" class="modal-close" id="closePaywallBtn" aria-label="Close upgrade dialog">×</button>
     <div class="modal-icon" aria-hidden="true">↗</div>
-    <div class="modal-eyebrow">NEXUSNOVA SEO AUDIT STUDIO · SANDBOX</div>
+    <div class="modal-eyebrow">NEXUSNOVA SEO AUDIT STUDIO | CHECKOUT</div>
     <h2 id="paywallTitle">Unlock the full audit report</h2>
     <p id="paywallDescription" class="modal-description">Verified payment unlocks the detailed report for this audit in this browser session.</p>
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
     <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
     <section class="sandbox-card-panel" aria-labelledby="safepayPanelTitle">
-      <div class="sandbox-panel-head"><span class="sandbox-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>Sandbox checkout · no live funds</p></div></div>
-      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn">Continue to Safepay sandbox <span aria-hidden="true">→</span></button>
+      <div class="sandbox-panel-head"><span class="sandbox-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>Secure payment settings load from the server before checkout is enabled.</p></div></div>
+      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout settings</button>
       <div id="cardSandboxTest" class="sandbox-sim-box" hidden>
         <p><strong>Local simulator active.</strong> This test action does not charge a card or contact Safepay.</p>
         <button type="button" id="simulateCardBtn" class="secondary-btn">Simulate successful sandbox card payment</button>
@@ -803,7 +803,7 @@
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
       <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>USDT TRC20 or ERC20 · one-time price US$2.99</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose USDT network</label>
-      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn">Prepare</button></div>
+      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Loading secure checkout settings</button></div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
         <div class="wallet-address-head"><span id="cryptoNetworkLabel">USDT TRC20 receiving address</span><button type="button" id="copyWalletBtn" class="copy-btn">Copy</button></div>
         <code id="cryptoWalletAddress" class="wallet-address">Address is not configured.</code>
@@ -1882,14 +1882,18 @@
   $('checkStatusFilter').addEventListener('change',event=>{state.checkFilters.status=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
   $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
   async function initializePayments() {
+    $('safepayCheckoutBtn').disabled=true;
+    $('prepareCryptoBtn').disabled=true;
     try {
       const response=await apiFetch('/api/config',{headers:{Accept:'application/json'},cache:'no-store'});
       state.config=await response.json();
       const productionMode = state.config.environment === 'production';
+      const modeEyebrow=document.querySelector('.modal-eyebrow');
+      if(modeEyebrow)modeEyebrow.textContent=productionMode?'NEXUSNOVA SEO AUDIT STUDIO | PRODUCTION CHECKOUT':'NEXUSNOVA SEO AUDIT STUDIO | SANDBOX TEST';
       const sandboxCheckoutNote = document.querySelector('.sandbox-panel-head p');
       const lockedNote = document.querySelector('.locked-note');
       const modalDisclaimer = document.querySelector('.modal-disclaimer');
-      if (sandboxCheckoutNote) sandboxCheckoutNote.textContent = productionMode ? 'Secure checkout; report access follows server-side payment verification.' : 'Sandbox checkout — no live funds.';
+      if (sandboxCheckoutNote) sandboxCheckoutNote.textContent = productionMode ? 'Secure checkout; report access follows server-side payment verification.' : 'Sandbox checkout (no live funds).';
       if (lockedNote) lockedNote.textContent = productionMode ? 'Payment unlocks the full report only after the provider and backend verify the transaction.' : 'Sandbox/test mode only. No live payment is enabled by this configuration. Mock approvals never charge a card.';
       if (modalDisclaimer) modalDisclaimer.textContent = productionMode ? 'Your report stays locked until the backend independently verifies the exact transaction. Crypto payment instructions must match the selected network and recipient.' : 'Sandbox/test mode only. Mock approvals are simulations, not payment confirmations. Do not send real funds while the simulator is enabled.';
       if(state.config.cryptoProvider==='nowpayments'){
@@ -1904,6 +1908,7 @@
         $('cryptoWalletAddress').textContent='NOWPayments secure hosted invoice';
         $('cryptoWalletNotice').textContent='Choose any cryptocurrency enabled in the merchant checkout. The report unlocks only after a valid signed confirmation for this exact order and USD amount.';
       }
+      const cardCheckoutReady=(state.config.provider==='safepay' && state.config.safepayConfigured) || (state.config.provider==='mock' && state.config.devSimulatorEnabled);
       if(state.config.provider==='mock') {
         $('safepayCheckoutBtn').textContent='Create local test card payment (no charge)';
         $('cardSandboxTest').hidden=true;
@@ -1911,7 +1916,11 @@
       } else {
         $('safepayCheckoutBtn').textContent=productionMode?'Continue to secure Safepay checkout':'Continue to Safepay sandbox checkout';
         $('cardSandboxTest').hidden=true;
-        if(!state.config.safepayConfigured) setStatus($('cardPaymentStatus'),'Safepay sandbox credentials are not configured on the server. No secrets are requested in this browser.','error');
+      }
+      $('safepayCheckoutBtn').disabled=!cardCheckoutReady;
+      if(!cardCheckoutReady) {
+        const message=state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
+        setStatus($('cardPaymentStatus'),message,'error');
       }
       if(state.config.devSimulatorEnabled) {
         $('cryptoSandboxTest').hidden=false;
@@ -1921,7 +1930,26 @@
         $('cryptoWalletAddress').textContent='No verified address is configured.';
         $('cryptoWalletNotice').textContent='Ask the owner for the official wallet address and exact network. Do not transfer funds until configured.';
       }
-    } catch { /* the API UI remains available to show a clear request error */ }
+      const verifiedTrc20=Boolean(state.config.walletAddresses?.TRC20 && state.config.cryptoCapabilities?.TRC20);
+      const verifiedErc20=Boolean(state.config.walletAddresses?.ERC20 && state.config.cryptoCapabilities?.ERC20);
+      const cryptoCheckoutReady=(state.config.cryptoProvider==='nowpayments' && state.config.nowPaymentsConfigured) || verifiedTrc20 || verifiedErc20 || state.config.devSimulatorEnabled;
+      $('prepareCryptoBtn').disabled=!cryptoCheckoutReady;
+      if(!cryptoCheckoutReady) {
+        $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
+        $('prepareCryptoBtn').title='No verified crypto provider or chain verifier is configured. Do not transfer funds.';
+        $('cryptoWalletNotice').textContent='No verified crypto checkout or chain verifier is configured. Do not transfer funds.';
+      } else if(state.config.devSimulatorEnabled && state.config.cryptoProvider!=='nowpayments' && !verifiedTrc20 && !verifiedErc20) {
+        $('prepareCryptoBtn').textContent='Prepare local test crypto order';
+      } else if(state.config.cryptoProvider!=='nowpayments') {
+        $('prepareCryptoBtn').textContent='Prepare verified USDT transfer';
+      }
+    } catch {
+      $('safepayCheckoutBtn').disabled=true;
+      $('prepareCryptoBtn').disabled=true;
+      $('safepayCheckoutBtn').textContent='Checkout unavailable';
+      $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
+      setStatus($('cardPaymentStatus'),'Secure payment settings could not be loaded. Payment remains disabled; try again later.','error');
+    }
   }
   async function handlePaymentReturn() {
     const query=new URLSearchParams(window.location.search);
@@ -1934,7 +1962,7 @@
       history.replaceState({},'',window.location.pathname);
     } else if(query.get('payment')==='cancel') {
       const productionMode = state.config?.environment === 'production';
-      setStatus($('paymentContextNotice'),productionMode?'Checkout was cancelled. The report remains locked; you can retry when ready.':'Sandbox checkout was cancelled. The report remains locked; you can retry when ready.');
+      setStatus($('paymentContextNotice'),'Checkout was cancelled. The report remains locked; you can retry when ready.');
       history.replaceState({},'',window.location.pathname);
     }
   }
