@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
+const sandboxHtml = fs.readFileSync(path.join(root, 'seo-audit-studio-sandbox.html'), 'utf8');
 
 test('SEO Audit Studio card and crypto checkout controls default to disabled', () => {
   const cardButton = html.match(/<button\b[^>]*\bid="safepayCheckoutBtn"[^>]*>/i)?.[0] || '';
@@ -18,8 +19,26 @@ test('SEO Audit Studio card and crypto checkout controls default to disabled', (
   assert.match(cryptoButton, /\bdisabled\b/, 'crypto checkout must not be initially clickable');
   assert.match(html, /if\(!state\.config\)\s*\{\s*button\.disabled=true;\s*return false;\s*\}/,
     'crypto UI stays closed until server payment config loads');
-  assert.match(html, /Secure payment settings could not be loaded\. Payment remains disabled/,
-    'API config failure must leave payment actions disabled');
+  assert.match(html, /Payment settings could not be fetched\. No payment was started/);
+  assert.match(html, /id="retryPaymentSettingsBtn"[^>]*hidden/);
+  assert.match(html, /\$\('retryPaymentSettingsBtn'\)\?\.addEventListener\('click',\(\)=>initializePayments\(\)\)/,
+    'the user can retry settings without reloading the page');
+});
+
+test('isolated sandbox page can simulate card and crypto report unlocks without live payment providers', () => {
+  assert.ok(sandboxHtml.includes('noindex,nofollow,noarchive'));
+  assert.ok(sandboxHtml.includes('SANDBOX TEST PAGE') && sandboxHtml.includes('NO REAL PAYMENTS'));
+  assert.ok(sandboxHtml.includes("const API_BASE_URL = 'https://nexusnova-audit-studio-simulator.fahadsoomro123.workers.dev';"));
+  assert.ok(!sandboxHtml.includes('https://nexusnova-audit-studio.fahadsoomro123.workers.dev'), 'test page must not share the live database');
+  assert.ok(sandboxHtml.includes("const cardSimulatorReady=!productionMode && state.config.provider==='mock' && state.config.devSimulatorEnabled===true;"));
+  assert.ok(sandboxHtml.includes("await apiPost('/api/dev/card/approve',{orderId:state.cardOrderId});"));
+  assert.ok(sandboxHtml.includes("if(config.devSimulatorEnabled===true && config.environment!=='production' && config.provider==='mock')"));
+  assert.ok(sandboxHtml.includes("await apiPost('/api/dev/crypto/approve',{orderId:state.cryptoOrderId,txid:$('cryptoTxid').value.trim()});"));
+  assert.ok(sandboxHtml.includes("$('cryptoSandboxTest').hidden=!Boolean(payload.devSimulatorEnabled)"));
+  assert.ok(sandboxHtml.includes('Sandbox-only page blocked a real Safepay redirect'));
+  assert.ok(sandboxHtml.includes('Sandbox-only page blocked a real NOWPayments redirect'));
+  assert.ok(sandboxHtml.includes('LOCAL SIMULATOR ENABLED'));
+  assert.ok(!html.includes('const cardSimulatorReady'), 'public production page must keep mock card approval disabled');
 });
 
 test('public card checkout stays disabled while Safepay is only configured for sandbox', () => {
