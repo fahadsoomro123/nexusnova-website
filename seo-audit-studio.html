@@ -804,6 +804,7 @@
         <button type="button" id="simulateCardBtn" class="secondary-btn">Simulate successful sandbox card payment</button>
       </div>
       <div id="cardPaymentStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
+      <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
       <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>USDT TRC20 or ERC20 · one-time price US$2.99</p></div></div>
@@ -1871,6 +1872,7 @@
   document.querySelectorAll('[data-open-paywall]').forEach(button=>button.addEventListener('click',()=>{updateUpgradeLinks();openPaywall();}));
   $('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability);
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
+  $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
   $('simulateCardBtn').addEventListener('click',approveMockCard);
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
   $('submitCryptoTxidBtn').addEventListener('click',submitCryptoTxid);
@@ -1968,11 +1970,15 @@
     return available;
   }
   async function initializePayments() {
+    const retryButton=$('retryPaymentSettingsBtn');
+    if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Checking secure settings?';}
     $('safepayCheckoutBtn').disabled=true;
     $('prepareCryptoBtn').disabled=true;
     try {
       const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
       state.config=await response.json();
+      if(retryButton){retryButton.hidden=true;retryButton.disabled=false;}
+      $('cardPaymentStatus').hidden=true; $('cardPaymentStatus').textContent='';
       const productionMode = state.config.environment === 'production';
       const modeEyebrow=document.querySelector('.modal-eyebrow');
       if(modeEyebrow)modeEyebrow.textContent=productionMode?'NEXUSNOVA SEO AUDIT STUDIO | PRODUCTION CHECKOUT':'NEXUSNOVA SEO AUDIT STUDIO | PAYMENT SETUP IN PROGRESS';
@@ -2018,11 +2024,13 @@
       }
       updateCryptoCheckoutAvailability();
     } catch {
+      state.config=null;
       $('safepayCheckoutBtn').disabled=true;
       $('prepareCryptoBtn').disabled=true;
-      $('safepayCheckoutBtn').textContent='Checkout unavailable';
-      $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
-      setStatus($('cardPaymentStatus'),'Secure payment settings could not be loaded. Payment remains disabled; try again later.','error');
+      $('safepayCheckoutBtn').textContent='Checkout settings unavailable';
+      $('prepareCryptoBtn').textContent='Crypto settings unavailable';
+      setStatus($('cardPaymentStatus'),'Payment settings could not be fetched. No payment was started. Retry the settings request below; checkout stays disabled until settings load.','error');
+      if(retryButton){retryButton.hidden=false;retryButton.disabled=false;retryButton.textContent='Retry payment settings';}
     }
   }
   async function handlePaymentReturn() {
