@@ -1737,7 +1737,7 @@
         $('cryptoWalletNotice').textContent='No wallet address is configured. This order is for local simulation only. Do not transfer any tokens.';
       }
     } catch(error) { setStatus($('cryptoPaymentStatus'),error.message,'error');$('cryptoPaymentDetails').hidden=false; }
-    finally { button.disabled=false; }
+    finally { updateCryptoCheckoutAvailability(); }
   }
   async function submitCryptoTxid() {
     if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare a crypto order first.','error');return; }
@@ -1817,6 +1817,7 @@
     upgradeEmail.href='mailto:nexusnovatools@gmail.com?subject='+encodeURIComponent('NexusNova SEO Audit Full Report Upgrade')+'&body='+encodeURIComponent(message);
   };
   document.querySelectorAll('[data-open-paywall]').forEach(button=>button.addEventListener('click',()=>{updateUpgradeLinks();openPaywall();}));
+  $('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability);
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
   $('simulateCardBtn').addEventListener('click',approveMockCard);
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
@@ -1881,6 +1882,33 @@
   $('checkSearch').addEventListener('input',event=>{state.checkFilters.query=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
   $('checkStatusFilter').addEventListener('change',event=>{state.checkFilters.status=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
   $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
+  function updateCryptoCheckoutAvailability() {
+    const button=$('prepareCryptoBtn');
+    if(!state.config) { button.disabled=true; return false; }
+    const config=state.config;
+    const network=$('cryptoNetwork').value;
+    const hosted=config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true;
+    const direct=network==='TRC20'
+      ? Boolean(config.walletAddresses?.TRC20 && config.cryptoCapabilities?.TRC20)
+      : Boolean(config.walletAddresses?.ERC20 && config.cryptoCapabilities?.ERC20);
+    const simulator=config.devSimulatorEnabled===true;
+    const available=hosted || direct || simulator;
+    button.disabled=!available;
+    if(hosted) {
+      button.textContent='Continue to secure crypto checkout';
+      button.title='Secure hosted invoice; payment is verified server-side.';
+    } else if(direct) {
+      button.textContent='Prepare verified USDT transfer';
+      button.title='This network has both a configured address and an active chain verifier.';
+    } else if(simulator) {
+      button.textContent='Prepare local test crypto order';
+      button.title='Simulation only. Never transfer real funds.';
+    } else {
+      button.textContent=network+' checkout unavailable';
+      button.title='This network has no verified receiving address and active chain verifier. Do not transfer funds.';
+    }
+    return available;
+  }
   async function initializePayments() {
     $('safepayCheckoutBtn').disabled=true;
     $('prepareCryptoBtn').disabled=true;
@@ -1930,19 +1958,7 @@
         $('cryptoWalletAddress').textContent='No verified address is configured.';
         $('cryptoWalletNotice').textContent='Ask the owner for the official wallet address and exact network. Do not transfer funds until configured.';
       }
-      const verifiedTrc20=Boolean(state.config.walletAddresses?.TRC20 && state.config.cryptoCapabilities?.TRC20);
-      const verifiedErc20=Boolean(state.config.walletAddresses?.ERC20 && state.config.cryptoCapabilities?.ERC20);
-      const cryptoCheckoutReady=(state.config.cryptoProvider==='nowpayments' && state.config.nowPaymentsConfigured) || verifiedTrc20 || verifiedErc20 || state.config.devSimulatorEnabled;
-      $('prepareCryptoBtn').disabled=!cryptoCheckoutReady;
-      if(!cryptoCheckoutReady) {
-        $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
-        $('prepareCryptoBtn').title='No verified crypto provider or chain verifier is configured. Do not transfer funds.';
-        $('cryptoWalletNotice').textContent='No verified crypto checkout or chain verifier is configured. Do not transfer funds.';
-      } else if(state.config.devSimulatorEnabled && state.config.cryptoProvider!=='nowpayments' && !verifiedTrc20 && !verifiedErc20) {
-        $('prepareCryptoBtn').textContent='Prepare local test crypto order';
-      } else if(state.config.cryptoProvider!=='nowpayments') {
-        $('prepareCryptoBtn').textContent='Prepare verified USDT transfer';
-      }
+      updateCryptoCheckoutAvailability();
     } catch {
       $('safepayCheckoutBtn').disabled=true;
       $('prepareCryptoBtn').disabled=true;
