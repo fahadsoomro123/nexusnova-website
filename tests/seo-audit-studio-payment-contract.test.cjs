@@ -68,6 +68,11 @@ test('startup tolerates the optional sample-report button being absent', () => {
   assert.ok(html.includes('initializePayments().then(()=>'), 'payment setup still initializes after event handlers');
 });
 
+test('footerYear cannot crash startup when the footer year element is omitted', () => {
+  assert.match(html, /const footerYear=\$\('footerYear'\); if\(footerYear\) footerYear\.textContent=new Date\(\)\.getFullYear\(\);/,
+    'the footer year is an optional presentation detail and must not halt audit/payment initialization');
+});
+
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
   assert.match(html, /const API_BASE_URL = 'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
