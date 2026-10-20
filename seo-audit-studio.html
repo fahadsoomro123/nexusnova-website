@@ -870,7 +870,7 @@
     }
     init.headers = headers;
     const retryableTransport = endpoint.pathname === '/api/config' || endpoint.pathname === '/api/health' ||
-      endpoint.pathname === '/api/audits' || endpoint.pathname === '/api/audits/sample' || endpoint.pathname === '/api/audits/latest' ||
+      endpoint.pathname === '/api/audits' || endpoint.pathname === '/api/audits/latest' ||
       /^\/api\/audits\/[0-9a-f-]{36}\/(?:preview|full|retry)$/i.test(endpoint.pathname) ||
       /^\/api\/orders\/[A-Z0-9-]+\/status$/i.test(endpoint.pathname);
     const response = await fetchWithTransportRetry(endpoint.href, init, retryableTransport);
@@ -1198,8 +1198,6 @@
   const renderSourceDiagnostics = (report) => {
     const src=report.sources || {};
     const errors=src.errors || {};
-    const pageSpeedSetupNote=$('pageSpeedSetupNote');
-    if(pageSpeedSetupNote)pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;
     const mobileOk=src.pagespeedMobile ?? src.pagespeed ?? false;
     const desktopOk=src.pagespeedDesktop ?? src.pagespeed ?? false;
     const problems=[];
@@ -1245,7 +1243,7 @@
       return `<article class="category-card"><div class="category-top"><span class="category-icon${iconTone}" aria-hidden="true">${cat.icon}</span><span class="category-name">${escapeHtml(cat.name)}</span><span class="grade-badge ${tone}" title="${escapeHtml(title)}">${escapeHtml(grade)}</span></div><div class="category-score-row"><span class="category-score ${score==null?'na':''}">${score==null?'N/A':score}</span><span class="category-denom">${escapeHtml(denom)}</span></div><div class="bar-track"><div class="bar-fill ${tone==='na'?'na':tone}" style="width:${score==null?0:Math.max(2,score)}%"></div></div><div class="category-foot"><span>${escapeHtml(desc)}</span><span>${escapeHtml(status)}</span></div></article>`;
     }).join('');
     const measured=categories.filter(c=>categoryScore(report,c.id)!=null).length;
-    const limited=categories.filter(c=>report.mode!=='sample' && report.categoryMeta?.[c.id]?.status==='limited').length;
+    const limited=categories.filter(c=>report.categoryMeta?.[c.id]?.status==='limited').length;
     const notMeasured=categories.length-measured-limited;
     el.categoryNote.textContent=`${measured} measured · ${limited} limited · ${notMeasured} not measured of ${categories.length}${report.overall==null?' · overall grade pending required data':''}`;
   };
@@ -1681,7 +1679,7 @@
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       state.auditId = payload.auditId;
-      state.fullReport = null; state.paid = false; state.cardOrderId = null; state.cryptoOrderId = null; state.filter = 'All';
+      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
       window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
     } catch(error) {
@@ -1719,30 +1717,34 @@
   }
   function requireAuditForPayment() {
     if(state.auditId)return true;
-    setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.','error');
+    setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.');
     return false;
+  }
+  function safepayCheckoutReady() {
+    const c=state.config;
+    return Boolean(c && c.environment==='production' && c.livePaymentsEnabled===true &&
+      c.provider==='safepay' && c.safepayConfigured===true && c.safepayOnboardingConfirmed===true);
   }
   async function beginCardPayment() {
     if(!requireAuditForPayment())return;
-    const button=$('safepayCheckoutBtn'); button.disabled=true;
+    const button=$('safepayCheckoutBtn');
+    if(!safepayCheckoutReady()) {
+      button.disabled=true;
+      button.textContent='Safepay checkout unavailable';
+      setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
+      return;
+    }
+    button.disabled=true;
     try {
       const payload=await apiPost('/api/payments/card-session',{auditId:state.auditId});
-      state.cardOrderId=payload.orderId;
       if(payload.provider==='safepay' && payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
-      $('cardSandboxTest').hidden=false;
-      setStatus($('cardPaymentStatus'),'Local-only mock order created. No card is charged and no money moves. Click the simulator button to test a server-side unlock.');
+      throw new Error('Safepay did not return a secure checkout session. No payment was started.');
     } catch(error) { setStatus($('cardPaymentStatus'),error.message,'error'); }
-    finally { button.disabled=false; }
-  }
-  async function approveMockCard() {
-    if(!state.cardOrderId) { setStatus($('cardPaymentStatus'),'Create a local test card order first.','error');return; }
-    const button=$('simulateCardBtn');button.disabled=true;
-    try {
-      await apiPost('/api/dev/card/approve',{orderId:state.cardOrderId});
-      await unlockReport(state.auditId);
-      setStatus($('cardPaymentStatus'),'Local test payment approved. The full report was fetched from the backend.','success');
-    } catch(error) { setStatus($('cardPaymentStatus'),error.message,'error'); }
-    finally { button.disabled=false; }
+    finally {
+      const ready=safepayCheckoutReady();
+      button.disabled=!ready;
+      button.textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
+    }
   }
   async function prepareCryptoPayment() {
     if(!requireAuditForPayment())return;
@@ -1750,61 +1752,26 @@
     const selectedNetwork=$('cryptoNetwork').value;
     try {
       const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork});
-      if(!payload.orderId)throw new Error('The provider returned no order ID. No report was unlocked.');
+      if(payload.provider!=='nowpayments'||!payload.orderId)throw new Error('Verified crypto checkout is not available. No transfer should be made.');
+      const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';
+      if(payload.network!==selectedNetwork||!expectedCurrency||String(payload.payCurrency||'').toLowerCase()!==expectedCurrency)throw new Error('The provider payment does not match the selected USDT network. Do not transfer funds.');
+      if(typeof payload.walletAddress!=='string'||!payload.walletAddress.trim()||!Number.isFinite(Number(payload.payAmount))||Number(payload.payAmount)<=0)throw new Error('The provider returned incomplete payment details. Do not transfer funds.');
+      if(payload.checkoutUrl)throw new Error('Unexpected hosted-checkout response. No transfer details were displayed. Check the order status before retrying.');
       state.cryptoOrderId=payload.orderId;
       $('cryptoPaymentDetails').hidden=false;
       $('cryptoPaymentStatus').hidden=false;
-      $('cryptoTxid').value='';
-      const txidLabel=document.querySelector('label[for="cryptoTxid"]');
-      if(payload.provider==='nowpayments'){
-        const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';
-        if(payload.network!==selectedNetwork||!expectedCurrency||String(payload.payCurrency||'').toLowerCase()!==expectedCurrency)throw new Error('The provider payment does not match the selected USDT network. Do not transfer funds.');
-        if(typeof payload.walletAddress!=='string'||!payload.walletAddress.trim()||!Number.isFinite(Number(payload.payAmount))||Number(payload.payAmount)<=0)throw new Error('The provider returned incomplete payment details. Do not transfer funds.');
-        if(payload.checkoutUrl)throw new Error('Unexpected hosted-checkout response. No redirect was opened. Check the order status before retrying.');
-        $('cryptoNetworkLabel').textContent='USDT '+payload.network+' receiving address';
-        $('cryptoWalletAddress').textContent=payload.walletAddress;
-        $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||2.99).toFixed(2)+')';
-        if(txidLabel)txidLabel.hidden=true;
-        $('cryptoTxid').hidden=true;
-        $('submitCryptoTxidBtn').hidden=true;
-        $('verifyCryptoBtn').hidden=false;
-        $('verifyCryptoBtn').textContent='Check payment status';
-        $('cryptoSandboxTest').hidden=true;
-        $('cryptoWalletNotice').textContent='Send only the displayed amount on '+payload.network+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this order, network and amount. Do not pay twice while the order is pending.';
-        setStatus($('cryptoPaymentStatus'),'Real NOWPayments transfer details created. Awaiting signed provider confirmation; report remains locked.');
-      }else if(payload.devSimulatorEnabled===true&&payload.simulationOnly===true){
-        $('cryptoNetworkLabel').textContent='Local simulated USDT '+payload.network+' order';
-        $('cryptoWalletAddress').textContent='No real receiving address. Simulation only.';
-        $('cryptoAmount').textContent='US$'+Number(payload.amountUsd||2.99).toFixed(2)+' simulated';
-        if(txidLabel)txidLabel.hidden=true;
-        $('cryptoTxid').hidden=true;
-        $('submitCryptoTxidBtn').hidden=true;
-        $('verifyCryptoBtn').hidden=true;
-        $('cryptoSandboxTest').hidden=false;
-        $('cryptoWalletNotice').textContent='LOCAL SIMULATOR ONLY. No wallet address is supplied. Do not send funds or tokens.';
-        setStatus($('cryptoPaymentStatus'),'Local test order created. Simulated approval does not move money or verify a blockchain transaction.');
-      }else{
-        state.cryptoOrderId=null;
-        throw new Error('The crypto provider returned an unsupported checkout response. No transfer should be made.');
-      }
-    }catch(error){setStatus($('cryptoPaymentStatus'),error.message,'error');$('cryptoPaymentDetails').hidden=false;}
-    finally{updateCryptoCheckoutAvailability();}
-  }
-    async function submitCryptoTxid() {
-    if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare a crypto order first.','error');return; }
-    const txid=$('cryptoTxid').value.trim(); const button=$('submitCryptoTxidBtn');button.disabled=true;
-    try {
-      const payload=await apiPost('/api/payments/crypto/submit',{orderId:state.cryptoOrderId,txid});
-      if(payload.status==='paid') {
-        await unlockReport(state.auditId);
-        setStatus($('cryptoPaymentStatus'),payload.message || 'On-chain payment verified; full report unlocked.','success');
-      } else {
-        setStatus($('cryptoPaymentStatus'),payload.message || 'TXID submitted; report remains locked pending chain verification.');
-      }
-      if(state.config?.devSimulatorEnabled) $('cryptoSandboxTest').hidden=false;
-      else $('verifyCryptoBtn').hidden = state.config?.cryptoCapabilities?.[$('cryptoNetwork').value] !== true;
-    } catch(error) { setStatus($('cryptoPaymentStatus'),error.message,'error'); }
-    finally { button.disabled=false; }
+      $('cryptoNetworkLabel').textContent='USDT '+payload.network+' receiving address';
+      $('cryptoWalletAddress').textContent=payload.walletAddress;
+      $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||2.99).toFixed(2)+')';
+      $('verifyCryptoBtn').hidden=false;
+      $('verifyCryptoBtn').textContent='Check payment status';
+      $('cryptoWalletNotice').textContent='Send only the displayed amount on '+payload.network+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this order, network and amount. Do not pay twice while the order is pending.';
+      setStatus($('cryptoPaymentStatus'),'Payment details created. Awaiting signed provider confirmation; report remains locked.');
+    } catch(error) {
+      state.cryptoOrderId=null;
+      $('cryptoPaymentDetails').hidden=true;
+      setStatus($('cryptoPaymentStatus'),error.message,'error');
+    } finally { updateCryptoCheckoutAvailability(); }
   }
   async function verifyCryptoStatus() {
     if(!state.cryptoOrderId){setStatus($('cryptoPaymentStatus'),'Create a crypto order first.','error');return;}
@@ -1875,11 +1842,8 @@
   $('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability);
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
   $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
-  $('simulateCardBtn').addEventListener('click',approveMockCard);
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
-  $('submitCryptoTxidBtn').addEventListener('click',submitCryptoTxid);
   $('verifyCryptoBtn').addEventListener('click',verifyCryptoStatus);
-  $('simulateCryptoBtn').addEventListener('click',approveMockCrypto);
   $('copyWalletBtn').addEventListener('click',async()=>{
     const address=$('cryptoWalletAddress').textContent;
     if(!address || /not configured|no receiving address/i.test(address)) { setStatus($('cryptoPaymentStatus'),'No receiving address is configured. Do not transfer funds.','error');return; }
@@ -1926,107 +1890,69 @@
       target.scrollIntoView({behavior:'smooth',block:'center'});
     }
   });
-  $('issueSearch').addEventListener('input',event=>{state.issueFilters.query=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport());});
-  $('issueStatusFilter').addEventListener('change',event=>{state.issueFilters.status=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport());});
-  $('issuePriorityFilter').addEventListener('change',event=>{state.issueFilters.priority=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport());});
-  $('issueCategoryFilter').addEventListener('change',event=>{state.issueFilters.category=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport());});
+  $('issueSearch').addEventListener('input',event=>{state.issueFilters.query=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  $('issueStatusFilter').addEventListener('change',event=>{state.issueFilters.status=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  $('issuePriorityFilter').addEventListener('change',event=>{state.issueFilters.priority=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  $('issueCategoryFilter').addEventListener('change',event=>{state.issueFilters.category=event.target.value;renderRecommendations(state.fullReport||state.report||makeEmptyReport(el.url.value));});
   $('clearIssueFilters').addEventListener('click',()=>{
     state.issueFilters={query:'',status:'all',priority:'all',category:'all'};
     $('issueSearch').value='';$('issueStatusFilter').value='all';$('issuePriorityFilter').value='all';$('issueCategoryFilter').value='all';
-    renderRecommendations(state.fullReport||state.report||makeEmptyReport());
+    renderRecommendations(state.fullReport||state.report||makeEmptyReport(el.url.value));
   });
-  $('checkSearch').addEventListener('input',event=>{state.checkFilters.query=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport());});
-  $('checkStatusFilter').addEventListener('change',event=>{state.checkFilters.status=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport());});
-  $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport());});
+  $('checkSearch').addEventListener('input',event=>{state.checkFilters.query=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  $('checkStatusFilter').addEventListener('change',event=>{state.checkFilters.status=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
   function updateCryptoCheckoutAvailability() {
     const button=$('prepareCryptoBtn');
-    if(!state.config){button.disabled=true;return false;}
+    const note=$('cryptoAvailabilityNote');
+    if(!state.config) {
+      button.disabled=true;
+      button.textContent='Crypto checkout unavailable';
+      if(note)note.hidden=false;
+      return false;
+    }
     const config=state.config;
     const network=$('cryptoNetwork').value;
-    const simulator=config.devSimulatorEnabled===true&&config.environment!=='production'&&config.provider==='mock';
-    if(simulator){button.disabled=false;button.textContent='Prepare local test crypto order';button.title='Simulation only. Never transfer real funds.';return true;}
-    if(config.environment!=='production'||config.livePaymentsEnabled!==true){
-      button.disabled=true;button.textContent='Crypto checkout waiting for production setup';
-      button.title='Production provider onboarding and independent live-payment gates must be confirmed first.';return false;
-    }
-    const providerReady=config.cryptoProvider==='nowpayments'&&config.nowPaymentsConfigured===true&&(network==='TRC20'||network==='ERC20');
-    const direct=network==='TRC20'?Boolean(config.walletAddresses?.TRC20&&config.cryptoCapabilities?.TRC20):Boolean(config.walletAddresses?.ERC20&&config.cryptoCapabilities?.ERC20);
-    const available=providerReady||direct;
+    const networkValid=network==='TRC20'||network==='ERC20';
+    const available=config.environment==='production' && config.livePaymentsEnabled===true &&
+      config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true && networkValid;
     button.disabled=!available;
-    if(providerReady){button.textContent='Prepare verified USDT transfer';button.title='Creates a payment for the selected USDT network; only signed provider confirmation unlocks the report.';}
-    else if(direct){button.textContent='Prepare verified USDT transfer';button.title='This network has a configured address and an active chain verifier.';}
-    else{button.textContent=network+' checkout unavailable';button.title='This network is not configured for server-verified checkout. Do not transfer funds.';}
+    button.textContent=available?'Prepare verified USDT transfer':'Crypto checkout unavailable';
+    button.title=available
+      ?'Creates a provider order for the selected USDT network. Only signed provider confirmation unlocks the report.'
+      :'Verified production crypto checkout is not available yet.';
+    if(note)note.hidden=available;
     return available;
   }
   async function initializePayments() {
     const retryButton=$('retryPaymentSettingsBtn');
-    if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Checking secure settings?';}
+    if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Loading payment settings…';}
     $('safepayCheckoutBtn').disabled=true;
     $('prepareCryptoBtn').disabled=true;
     try {
       const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
       state.config=await response.json();
       if(retryButton){retryButton.hidden=true;retryButton.disabled=false;}
-      $('cardPaymentStatus').hidden=true; $('cardPaymentStatus').textContent='';
-      const productionMode = state.config.environment === 'production';
-      const modeEyebrow=document.querySelector('.modal-eyebrow');
-      if(modeEyebrow)modeEyebrow.textContent=productionMode?'NEXUSNOVA SEO AUDIT STUDIO | PRODUCTION CHECKOUT':'NEXUSNOVA SEO AUDIT STUDIO | PAYMENT SETUP IN PROGRESS';
-      const sandboxCheckoutNote = document.querySelector('.payment-panel-head p');
-      const lockedNote = document.querySelector('.locked-note');
-      const modalDisclaimer = document.querySelector('.modal-disclaimer');
-      if (sandboxCheckoutNote) sandboxCheckoutNote.textContent = productionMode ? 'Secure checkout; report access follows server-side payment verification.' : 'Online checkout is temporarily unavailable while provider setup remains in sandbox.';
-      if (lockedNote) lockedNote.textContent = productionMode ? 'Payment unlocks the full report only after the provider and backend verify the transaction.' : 'Free audit previews are available. Full reports remain locked until a production payment provider is configured and server verification is enabled.';
-      if (modalDisclaimer) modalDisclaimer.textContent = productionMode ? 'Your report stays locked until the backend independently verifies the exact Safepay transaction or signed crypto payment notification.' : 'Online checkout is not yet enabled. Do not pay through a sandbox checkout; provider setup and server-side verification must be completed first.';
-      if(state.config.cryptoProvider==='nowpayments'){
-        const txidLabel=document.querySelector('label[for="cryptoTxid"]');
-        if(txidLabel)txidLabel.hidden=true;
-        $('cryptoTxid').hidden=true;
-        $('submitCryptoTxidBtn').hidden=true;
-        $('verifyCryptoBtn').hidden=true;
-        $('cryptoSandboxTest').hidden=true;
-        $('prepareCryptoBtn').textContent='Prepare verified USDT transfer';
-        $('cryptoWalletAddress').textContent='A unique receiving address appears after creating a payment order.';
-        $('cryptoWalletNotice').textContent='Choose USDT TRC20 or ERC20. The exact provider quote, receiving address and network will be shown before transfer. Signed provider confirmation is required to unlock the report.';
-      }
-      const cardCheckoutReady=productionMode && state.config.livePaymentsEnabled===true && state.config.provider==='safepay' && state.config.safepayConfigured===true;
-      if(state.config.provider==='mock') {
-        $('safepayCheckoutBtn').textContent='Create local test card payment (no charge)';
-        $('cardSandboxTest').hidden=true;
-        if(state.config.devSimulatorEnabled) $('cardPaymentStatus').hidden=true;
-      } else {
-        $('safepayCheckoutBtn').textContent=productionMode?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding';
-        $('cardSandboxTest').hidden=true;
-      }
-      $('safepayCheckoutBtn').disabled=!cardCheckoutReady;
-      if(!cardCheckoutReady) {
-        const sandboxOnly=!productionMode;
-        const liveGateClosed=productionMode && state.config.livePaymentsEnabled!==true;
-        const message=sandboxOnly
-          ?'Sandbox mode is active. Safepay checkout is intentionally disabled; no payment has been started.'
-          :liveGateClosed
-            ?'Production checkout is locked until live merchant onboarding and payment verification are confirmed.'
-            :state.config.provider==='safepay'
-              ?'Secure Safepay checkout is not configured. Payment remains disabled.'
-              :'Card checkout is unavailable because the local test simulator is disabled.';
-        // Intentional sandbox and fail-closed production states are informational, not runtime errors.
-        setStatus($('cardPaymentStatus'),message,(sandboxOnly||liveGateClosed)?'':'error');
-      }
-      if(state.config.devSimulatorEnabled) {
-        $('cryptoSandboxTest').hidden=false;
-        $('cryptoWalletNotice').textContent='LOCAL SIMULATOR ENABLED: do not send real funds. TXID submission and simulated confirmation do not verify the blockchain.';
-      }
-      if(!state.config.walletAddresses?.TRC20 && !state.config.walletAddresses?.ERC20 && !state.config.devSimulatorEnabled) {
-        $('cryptoWalletAddress').textContent='No verified address is configured.';
-        $('cryptoWalletNotice').textContent='Ask the owner for the official wallet address and exact network. Do not transfer funds until configured.';
-      }
+      $('cardPaymentStatus').hidden=true;
+      $('cardPaymentStatus').textContent='';
+      const lockedNote=document.querySelector('.locked-note');
+      if(lockedNote)lockedNote.textContent='Full report access is granted after the payment provider confirms the transaction.';
+      $('cryptoWalletAddress').textContent='A verified receiving address will appear when checkout is available.';
+      $('cryptoWalletNotice').textContent='Confirm the selected network and amount before sending funds. Report access requires provider verification.';
+      $('verifyCryptoBtn').hidden=true;
+      const ready=safepayCheckoutReady();
+      $('safepayCheckoutBtn').disabled=!ready;
+      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
+      if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
       updateCryptoCheckoutAvailability();
     } catch {
       state.config=null;
       $('safepayCheckoutBtn').disabled=true;
       $('prepareCryptoBtn').disabled=true;
-      $('safepayCheckoutBtn').textContent='Checkout settings unavailable';
-      $('prepareCryptoBtn').textContent='Crypto settings unavailable';
-      setStatus($('cardPaymentStatus'),'Payment settings could not be fetched. No payment was started. Retry the settings request below; checkout stays disabled until settings load.','error');
+      $('safepayCheckoutBtn').textContent='Secure checkout unavailable';
+      $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
+      const note=$('cryptoAvailabilityNote'); if(note)note.hidden=false;
+      setStatus($('cardPaymentStatus'),'Secure payment settings are unavailable. Your report remains locked; no payment was started.');
       if(retryButton){retryButton.hidden=false;retryButton.disabled=false;retryButton.textContent='Retry payment settings';}
     }
   }
