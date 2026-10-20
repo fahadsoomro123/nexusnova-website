@@ -44,7 +44,7 @@ test('homepage starts with one H1 and has consistent SEO identity metadata', () 
   const headings = mainHeadings(html);
   assert.equal(headings[0]?.tag, 'h1', 'The first content heading must be H1');
   assert.equal(headings.filter((heading) => heading.tag === 'h1').length, 1, 'Homepage should have exactly one H1');
-  assert.equal(headings[0]?.text, 'Stop guessing. Know what to fix.');
+  assert.equal(headings[0]?.text, 'Make your website make sense.');
 
   const title = (html.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i) || [])[1] || '';
   const description = metaContent(html, /<meta\b[^>]*name=["']description["'][^>]*>/i);
