@@ -11,28 +11,33 @@ const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'u
 const promoCss = fs.readFileSync(path.join(root, 'assets/css/seo-audit-promotions.css'), 'utf8');
 test('SEO Audit Studio provides a server-validated code input and separate crypto-price wording', () => {
   assert.ok(page.includes('id="promotionCodeInput"'));
+  assert.ok(page.includes('Get your free full-audit voucher'));
+  assert.ok(page.includes('Enter launch voucher'));
+  assert.ok(page.indexOf('class="nn-promo-panel"') < page.indexOf('class="modal-price-row"'));
   assert.ok(page.includes('id="redeemPromoBtn"'));
   assert.ok(page.includes('id="promotionCodeStatus"'));
   assert.ok(page.includes('id="claimLaunchVoucherBtn"'));
   assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
-  assert.ok(page.includes("promotionRedemptionId:state.promotionRedemptionId"));
+  assert.ok(page.includes("result.freeReport!==true"));
   assert.ok(page.includes('id="cryptoPriceDescription"'));
   assert.ok(page.includes('payload.minimumBufferUsd'));
+  assert.doesNotMatch(page, /apiPost\('\/api\/payments\/card-session',\{auditId:state\.auditId,promotionRedemptionId/);
   assert.ok(promoCss.includes('@media(max-width:600px)'));
   assert.ok(promoCss.includes('#promotionCodeStatus[hidden]'));
 });
 
-test('promotion status and discount claims come only from backend responses', () => {
-  assert.ok(page.includes("if(result.freeReport===true)"));
-  assert.ok(page.includes("window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code)"));
-  assert.ok(page.includes("state.voucherAutoAttemptedAuditId!==state.auditId"));
+test('voucher claim and redemption use only a free full-report entitlement, not payment discounts', () => {
   assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
-  assert.ok(page.includes('result.estimatedDiscountMinor'));
-  assert.ok(page.includes('result.estimatedAmountDueMinor'));
-  assert.ok(page.includes('The server recalculates the final amount'));
-  assert.ok(!/remainingClaims\s*[:=]\s*\d+/.test(page));
-  assert.doesNotMatch(page, /freeReport\s*=\s*true\s*;/, 'free-report access must be conditional on the server response, not locally fabricated');
+  assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
+  assert.ok(page.includes("if(result.freeReport!==true)"));
+  assert.ok(page.includes("state.voucherAutoAttemptedAuditId===state.auditId"));
+  assert.ok(page.includes("window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY)"));
+  assert.ok(!page.includes('estimatedDiscountMinor'));
+  assert.ok(!page.includes('estimatedAmountDueMinor'));
+  assert.ok(!page.includes('The server recalculates the final amount'));
+  assert.doesNotMatch(page, /apiPost\('\/api\/payments\/card-session',\{auditId:state\.auditId,promotionRedemptionId/);
+  assert.doesNotMatch(page, /setInterval|countdown|fakeUserCount/i);
 });
 
 test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
