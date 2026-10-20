@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
 <title>NexusNova SEO Audit Studio</title>
+  <link rel="stylesheet" href="assets/css/seo-audit-promotions.css?v=20261020-v1">
   <meta name="description" content="Audit websites with NexusNova SEO Audit Studio. Review technical SEO checks, structured data, issues and measured mobile and desktop performance diagnostics.">
   <link rel="canonical" href="https://nexusnovatools.com/seo-audit-studio.html">
   <meta property="og:type" content="website">
@@ -797,6 +798,11 @@
     <h2 id="paywallTitle">Unlock the full audit report</h2>
     <p id="paywallDescription" class="modal-description">Verified payment unlocks the detailed report for this audit in this browser session.</p>
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
+    <section class="nn-promo-panel" aria-labelledby="promotionCodeTitle">
+      <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Launch or private promotion code</h3><p>Codes are validated by the secure backend. Discount and eligibility are never decided in the browser.</p></div></div>
+      <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Promotion code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter code"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply code</button></div>
+      <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
+    </section>
     <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="payment-panel-head"><span class="payment-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>One-time payment. Your report unlocks after the provider verifies the transaction.</p></div></div>
@@ -805,7 +811,7 @@
       <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
-      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>Supported cryptocurrencies · one-time price US$2.99</p></div></div>
+      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p id="cryptoPriceDescription">Crypto price is checked separately from the US$2.99 Safepay price.</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose cryptocurrency / network</label>
       <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option><option value="TRX">TRX · Tron</option><option value="BNB">BNB · BNB Smart Chain</option><option value="LTC">Litecoin · LTC</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Run an audit to check the current minimum for each supported cryptocurrency. Use Safepay if no crypto option accepts US$2.99.</div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
