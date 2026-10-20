@@ -16,23 +16,25 @@ test('SEO Audit Studio provides a server-validated code input and separate crypt
   assert.ok(page.includes('id="claimLaunchVoucherBtn"'));
   assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
-  assert.ok(page.includes("promotionRedemptionId:state.promotionRedemptionId"));
+  assert.ok(page.includes("result.freeReport!==true"));
   assert.ok(page.includes('id="cryptoPriceDescription"'));
   assert.ok(page.includes('payload.minimumBufferUsd'));
+  assert.doesNotMatch(page, /apiPost\('\/api\/payments\/card-session',\{auditId:state\.auditId,promotionRedemptionId/);
   assert.ok(promoCss.includes('@media(max-width:600px)'));
   assert.ok(promoCss.includes('#promotionCodeStatus[hidden]'));
 });
 
-test('promotion status and discount claims come only from backend responses', () => {
-  assert.ok(page.includes("if(result.freeReport===true)"));
-  assert.ok(page.includes("window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code)"));
-  assert.ok(page.includes("state.voucherAutoAttemptedAuditId!==state.auditId"));
+test('voucher claim and redemption use only a free full-report entitlement, not payment discounts', () => {
   assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
-  assert.ok(page.includes('result.estimatedDiscountMinor'));
-  assert.ok(page.includes('result.estimatedAmountDueMinor'));
-  assert.ok(page.includes('The server recalculates the final amount'));
-  assert.ok(!/remainingClaims\s*[:=]\s*\d+/.test(page));
-  assert.ok(!/freeReport\s*=\s*true/.test(page));
+  assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
+  assert.ok(page.includes("if(result.freeReport!==true)"));
+  assert.ok(page.includes("state.voucherAutoAttemptedAuditId===state.auditId"));
+  assert.ok(page.includes("window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY)"));
+  assert.ok(!page.includes('estimatedDiscountMinor'));
+  assert.ok(!page.includes('estimatedAmountDueMinor'));
+  assert.ok(!page.includes('The server recalculates the final amount'));
+  assert.doesNotMatch(page, /apiPost\('\/api\/payments\/card-session',\{auditId:state\.auditId,promotionRedemptionId/);
+  assert.doesNotMatch(page, /setInterval|countdown|fakeUserCount/i);
 });
 
 test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
