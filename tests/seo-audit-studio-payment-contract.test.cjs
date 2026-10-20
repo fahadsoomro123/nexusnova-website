@@ -89,10 +89,10 @@ test('production PageSpeed diagnostics do not expose internal secret setup instr
 });
 test('cached PageSpeed scores are visibly labelled and stale fallback discloses age', () => {
   for (const page of [html, sandboxHtml]) {
-    assert.ok(page.includes("provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)'"));
-    assert.ok(page.includes('data?.cacheStale'));
-    assert.ok(page.includes('Google PageSpeed measurement from '));
-    assert.ok(page.includes('six-hour cache; no new result was fabricated'));
+    assert.ok(html.includes("provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)'"));
+    assert.ok(html.includes('data?.cacheStale'));
+    assert.ok(html.includes('Google PageSpeed measurement from '));
+    assert.ok(html.includes('six-hour cache; no new result was fabricated'));
   }
 });
 
@@ -138,7 +138,9 @@ test('transient browser transport failures retry only safe audit/session/config 
 });
 
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
-  assert.match(html, /const API_BASE_URL = 'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
+  assert.ok(html.includes("const REVIEW_ORIGIN = 'https://review.nexusnova-seo-audit-studio-review.pages.dev';"));
+  assert.ok(html.includes("const API_BASE_URL = window.location.origin === REVIEW_ORIGIN"));
+  assert.match(html, /:\s*'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
     'the browser helper must refuse cross-origin or non-API paths');
   assert.match(html, /headers\.set\('Authorization', 'Bearer ' \+ await getAuditSessionToken\(\)\)/,
