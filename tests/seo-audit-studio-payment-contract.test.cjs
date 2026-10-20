@@ -61,7 +61,7 @@ test('crypto checkout requires a ready production provider and clearly reports w
   assert.ok(html.includes("const network=$('cryptoNetwork').value;"));
   assert.ok(html.includes("const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};"));
   assert.ok(html.includes("apiPost('/api/payments/crypto/minimums',{auditId:state.auditId})"));
-  assert.ok(html.includes("option.hidden=!info||info.available!==true;"));
+  assert.ok(html.includes("item.hidden=!info||info.available!==true;"));
   assert.ok(html.includes("$('cryptoNetwork').addEventListener('change',()=>"));
   for (const option of ['TRX','BNB','LTC']) assert.ok(html.includes('value="'+option+'"'), option+' option should be available for preflight filtering');
   assert.ok(!html.includes('devSimulatorEnabled'), 'public checkout must not expose simulator branches');
@@ -69,7 +69,7 @@ test('crypto checkout requires a ready production provider and clearly reports w
 test('NOWPayments UI checks live minimums and validates the selected currency/network before displaying a transfer', () => {
   assert.ok(html.includes("const selectedNetwork=$('cryptoNetwork').value;"));
   assert.ok(html.includes("const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};"));
-  assert.ok(html.includes("String(payload.payCurrency||'').toLowerCase()!==expectedCurrency"));
+  assert.ok(html.includes("String(payload.payCurrency||'').toLowerCase()!==expectedCurrencies[selectedNetwork]"));
   assert.ok(html.includes("String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()"));
   assert.ok(html.includes("$('cryptoWalletAddress').textContent=payload.walletAddress;"));
   assert.ok(html.includes("apiFetch('/api/orders/'+encodeURIComponent(state.cryptoOrderId)+'/status'"));
