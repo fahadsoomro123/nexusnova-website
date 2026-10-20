@@ -16,11 +16,11 @@ test('homepage uses a high-visibility SEO Audit Studio launch hero below navigat
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
   const toolsHeading = html.indexOf('<h2 id="new-tools-title">');
   assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading, 'launch hero belongs directly below the main navigation and before tool discovery');
-  assert.match(html, /Stop guessing\.[\s\S]{0,120}Know what to fix/);
+  assert.match(html, /Make your[\\s\\S]{0,80}website <em>make sense\\.<\\/em>/);
   assert.match(html, /Claim free full-audit voucher/);
   assert.match(html, /id="nnAuditVoucherResult"/);
   assert.match(html, /href="\/seo-audit-studio\.html"/);
-  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261020-v2/);
+  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261020-v3/);
   assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261020-v2/);
 });
 
@@ -39,6 +39,9 @@ test('launch offer and voucher claim are sourced from the audit Worker and sessi
   assert.match(css, /@media\(max-width:520px\)/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
-  assert.match(css, /linear-gradient/);
+  assert.match(css, /--nn-lime:#d8ff43/);
+  assert.match(css, /font-family:Georgia,"Times New Roman",serif/);
+  assert.doesNotMatch(css, /linear-gradient|radial-gradient/);
+  assert.match(css, /nn-audit-report-sheet/);
   assert.match(html, /nn-audit-launch-visual/);
 });
