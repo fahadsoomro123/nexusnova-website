@@ -44,6 +44,24 @@
   const ALLOWED_ORIGINS=new Set(['https://nexusnovatools.com','https://www.nexusnovatools.com',REVIEW_ORIGIN]);
   const SESSION_KEY='nexusnova_audit_session_v1';
   const VOUCHER_KEY='nexusnova_audit_voucher_v1';
+  let voucherServiceReady=false;
+  let voucherAlreadyClaimed=false;
+  try{
+    const existing=window.sessionStorage.getItem(VOUCHER_KEY)||'';
+    if(/^[A-Z0-9-]{8,40}$/.test(existing)){
+      voucherAlreadyClaimed=true;
+      codeNode.textContent=existing;resultBox.hidden=false;
+      if(expiryNode)expiryNode.textContent='Saved in this browser tab for your audit.';
+      claimButton.disabled=true;claimButton.querySelector('span').textContent='Voucher already claimed';
+      cta.textContent='Continue to your audit →';cta.href='/seo-audit-studio.html';
+    }else{
+      claimButton.disabled=true;
+      claimButton.querySelector('span').textContent='Checking voucher availability…';
+    }
+  }catch{
+    claimButton.disabled=true;
+    claimButton.querySelector('span').textContent='Voucher storage unavailable';
+  }
   if(!ALLOWED_ORIGINS.has(window.location.origin))return;
 
   const status=(message,tone='')=>{
@@ -98,12 +116,25 @@
       status('Voucher claimed. Open Audit Studio and run your website audit; the voucher will be applied to that report.','success');
       claimButton.querySelector('span').textContent='Voucher claimed';
     }catch(error){
-      status(error.message||'Could not claim the voucher. Please try again.');
-      claimButton.querySelector('span').textContent='Try claiming your voucher again';
-      claimButton.disabled=false;
+      const networkError=error&&error.message==='Failed to fetch';
+      status(networkError
+        ?(window.location.origin===REVIEW_ORIGIN
+          ?'The isolated voucher service stopped responding. No code was issued; this preview will not contact the production voucher service.'
+          :'The voucher service could not be reached. No code was issued. Please retry shortly.')
+        :(error.message||'Could not claim the voucher. No code was issued.'));
+      claimButton.querySelector('span').textContent=voucherServiceReady?'Try claiming your voucher again':'Voucher service unavailable';
+      claimButton.disabled=!voucherServiceReady;
     }
   }
-  claimButton.addEventListener('click',claimVoucher);
+  claimButton.addEventListener('click',()=>{
+    if(!voucherServiceReady){
+      status(window.location.origin===REVIEW_ORIGIN
+        ?'Voucher claims are not connected to the isolated review service yet. No voucher was issued; this preview will not create a production voucher.'
+        :'Voucher availability has not been confirmed. No code was issued.');
+      return;
+    }
+    claimVoucher();
+  });
   copyButton?.addEventListener('click',async()=>{
     const code=codeNode.textContent.trim();
     if(!code)return;
@@ -118,11 +149,26 @@
     }
   });
   apiGet('/api/promotions/active').then(payload=>{
+    voucherServiceReady=true;
     const campaign=payload&&payload.ok===true?payload.campaign:null;
-    if(!campaign||!campaign.id||Number(campaign.remainingClaims)<=0)return;
+    if(!campaign||!campaign.id||Number(campaign.remainingClaims)<=0){
+      if(!voucherAlreadyClaimed){
+        claimButton.disabled=true;
+        claimButton.querySelector('span').textContent='No voucher available right now';
+        status('There is no active voucher campaign at the moment. You can still open Audit Studio and run the available audit preview.');
+      }
+      return;
+    }
     const label=offerLabel(campaign);
-    if(!label)return;
-    const labelNode=document.createElement('span');labelNode.className='nn-audit-launch-offer-label';labelNode.textContent='LAUNCH VOUCHER';
+    if(!label){
+      if(!voucherAlreadyClaimed){
+        claimButton.disabled=true;
+        claimButton.querySelector('span').textContent='Voucher offer unavailable';
+        status('The audit service did not return a usable voucher offer. No voucher was issued.');
+      }
+      return;
+    }
+    const labelNode=document.createElement('span');labelNode.className='nn-audit-launch-offer-label';labelNode.textContent='LIVE LAUNCH OFFER';
     const detail=document.createElement('strong');detail.className='nn-audit-launch-offer-detail';detail.textContent=label;
     const remaining=document.createElement('span');remaining.textContent=Number(campaign.remainingClaims)+' vouchers available';
     offerBox.append(labelNode,detail,remaining);
@@ -130,14 +176,17 @@
     if(ends){const expiry=document.createElement('span');expiry.textContent='Offer ends '+ends;offerBox.append(expiry);}
     if(campaign.terms&&typeof campaign.terms==='string'){const terms=document.createElement('span');terms.className='nn-audit-launch-terms';terms.textContent=campaign.terms;offerBox.append(terms);}
     offerBox.hidden=false;
-  }).catch(()=>{/* Hide unavailable offers rather than invent claims or deadlines. */});
-  try{
-    const existing=window.sessionStorage.getItem(VOUCHER_KEY)||'';
-    if(/^[A-Z0-9-]{8,40}$/.test(existing)){
-      codeNode.textContent=existing;resultBox.hidden=false;
-      if(expiryNode)expiryNode.textContent='Saved in this browser tab for your audit.';
-      claimButton.disabled=true;claimButton.querySelector('span').textContent='Voucher already claimed';
-      cta.textContent='Continue to your audit →';cta.href='/seo-audit-studio.html';
+    if(!voucherAlreadyClaimed){
+      claimButton.disabled=false;
+      claimButton.querySelector('span').textContent='Claim your free full-audit voucher';
     }
-  }catch{}
+  }).catch(()=>{
+    voucherServiceReady=false;
+    if(voucherAlreadyClaimed)return;
+    claimButton.disabled=true;
+    claimButton.querySelector('span').textContent='Voucher service unavailable';
+    status(window.location.origin===REVIEW_ORIGIN
+      ?'The isolated voucher service is not responding in this preview. No voucher was issued. The preview backend must be restored before voucher claims can be tested.'
+      :'Could not reach the voucher service. No voucher was issued. Please retry when the service is available.');
+  });
 })();
