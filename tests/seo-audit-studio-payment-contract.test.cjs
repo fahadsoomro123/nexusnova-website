@@ -9,22 +9,20 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
 const sandboxHtml = fs.readFileSync(path.join(root, 'seo-audit-studio-sandbox.html'), 'utf8');
 
-test('SEO Audit Studio card and crypto checkout controls default to disabled', () => {
-  const cardButton = html.match(/<button\b[^>]*\bid="safepayCheckoutBtn"[^>]*>/i)?.[0] || '';
-  const cryptoButton = html.match(/<button\b[^>]*\bid="prepareCryptoBtn"[^>]*>/i)?.[0] || '';
+test('SEO Audit Studio checkout controls default to disabled and fail closed when settings are unavailable', () => {
+  const cardButton = html.match(/<button\\b[^>]*\\bid="safepayCheckoutBtn"[^>]*>/i)?.[0] || '';
+  const cryptoButton = html.match(/<button\\b[^>]*\\bid="prepareCryptoBtn"[^>]*>/i)?.[0] || '';
 
   assert.ok(cardButton, 'card checkout button must exist');
   assert.ok(cryptoButton, 'crypto checkout button must exist');
-  assert.match(cardButton, /\bdisabled\b/, 'card checkout must not be initially clickable');
-  assert.match(cryptoButton, /\bdisabled\b/, 'crypto checkout must not be initially clickable');
-  assert.match(html, /if\(!state\.config\)\s*\{\s*button\.disabled=true;\s*return false;\s*\}/,
-    'crypto UI stays closed until server payment config loads');
-  assert.match(html, /Payment settings could not be fetched\. No payment was started/);
+  assert.match(cardButton, /\\bdisabled\\b/, 'card checkout must not be initially clickable');
+  assert.match(cryptoButton, /\\bdisabled\\b/, 'crypto checkout must not be initially clickable');
+  assert.match(html, /if\\(!state\\.config\\)\\s*\\{\\s*button\\.disabled=true;\\s*button\\.textContent='Crypto checkout unavailable';/);
+  assert.match(html, /Secure payment settings are unavailable\\. Your report remains locked; no payment was started\\./);
   assert.match(html, /id="retryPaymentSettingsBtn"[^>]*hidden/);
-  assert.match(html, /\$\('retryPaymentSettingsBtn'\)\?\.addEventListener\('click',\(\)=>initializePayments\(\)\)/,
-    'the user can retry settings without reloading the page');
+  assert.match(html, /\\$\\('retryPaymentSettingsBtn'\\)\\?\\.addEventListener\\('click',\\(\\)=>initializePayments\\(\\)\\)/,
+    'settings can be retried without reloading the page');
 });
-
 test('isolated sandbox page can simulate card and crypto report unlocks without live payment providers', () => {
   assert.ok(sandboxHtml.includes('noindex,nofollow,noarchive'));
   assert.ok(sandboxHtml.includes('SANDBOX TEST PAGE') && sandboxHtml.includes('NO REAL PAYMENTS'));
@@ -41,35 +39,26 @@ test('isolated sandbox page can simulate card and crypto report unlocks without 
   assert.ok(!html.includes('const cardSimulatorReady'), 'public production page must keep mock card approval disabled');
 });
 
-test('public card checkout stays disabled while Safepay is only configured for sandbox', () => {
-  assert.match(html,
-    /const cardCheckoutReady=productionMode && state\.config\.livePaymentsEnabled===true && state\.config\.provider==='safepay' && state\.config\.safepayConfigured===true;/);
-  assert.match(html, /\$\('safepayCheckoutBtn'\)\.disabled=!cardCheckoutReady;/);
-  assert.match(html, /productionMode\?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding'/);
-  assert.doesNotMatch(html, /safepayConfigured\s*\|\|\s*true/,
+test('public card checkout requires verified production readiness and stays disabled after a failed request', () => {
+  assert.match(html, /function safepayCheckoutReady\\(\\)\\s*\\{\\s*const c=state\\.config;\\s*return Boolean\\(c && c\\.environment==='production' && c\\.livePaymentsEnabled===true &&\\s*c\\.provider==='safepay' && c\\.safepayConfigured===true && c\\.safepayOnboardingConfirmed===true\\);/);
+  assert.match(html, /const ready=safepayCheckoutReady\\(\\);\\s*button\\.disabled=!ready;/);
+  assert.match(html, /button\\.textContent=ready\\?'Continue to secure Safepay checkout':'Safepay checkout unavailable';/);
+  assert.match(html, /Secure payment setup is not complete\\. Your report remains locked; no payment was started\\./);
+  assert.match(html, /\\.payment-wide-btn:disabled,.primary-btn:disabled\\{opacity:.52;cursor:not-allowed;/);
+  assert.doesNotMatch(html, /Create local test card payment|Local-only mock order|Sandbox mode is active|DESIGN DEMO ONLY/);
+  assert.doesNotMatch(html, /safepayConfigured\\s*\\|\\|\\s*true/,
     'an unconfigured provider must never be treated as ready');
-  assert.match(html, /const sandboxOnly=!productionMode;/,
-    'sandbox mode is detected separately from a closed production payment gate');
-  assert.match(html, /const liveGateClosed=productionMode && state\.config\.livePaymentsEnabled!==true;/,
-    'a production gate closure must not be mislabeled as sandbox mode');
-  assert.match(html, /Production checkout is locked until live merchant onboarding and payment verification are confirmed\./,
-    'production setup explains why checkout is unavailable');
-  assert.match(html, /setStatus\(\$\('cardPaymentStatus'\),message,\(sandboxOnly\|\|liveGateClosed\)\?'':'error'\);/,
-    'intentional sandbox and fail-closed production states use a neutral status style');
 });
-
-test('crypto option remains visible but checkout needs authorized production configuration', () => {
+test('crypto checkout requires a ready production provider and clearly reports when unavailable', () => {
   assert.match(html, /class="crypto-payment-panel"/);
-  assert.ok(html.includes("if(config.environment!=='production'||config.livePaymentsEnabled!==true){"));
-  assert.ok(html.includes('Crypto checkout waiting for production setup'));
+  assert.match(html, /const available=config\\.environment==='production' && config\\.livePaymentsEnabled===true &&\\s*config\\.cryptoProvider==='nowpayments' && config\\.nowPaymentsConfigured===true && networkValid;/);
+  assert.match(html, /id="cryptoAvailabilityNote" class="payment-status-box"/);
+  assert.match(html, /button\\.textContent=available\\?'Prepare verified USDT transfer':'Crypto checkout unavailable';/);
   assert.ok(html.includes("const network=$('cryptoNetwork').value;"));
-  assert.ok(html.includes("const providerReady=config.cryptoProvider==='nowpayments'&&config.nowPaymentsConfigured===true&&(network==='TRC20'||network==='ERC20');"));
-  assert.ok(html.includes('const available=providerReady||direct;'));
-  assert.ok(html.includes('Prepare verified USDT transfer'));
-  assert.ok(html.includes('This network is not configured for server-verified checkout. Do not transfer funds.'));
+  assert.ok(html.includes("const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';"));
+  assert.ok(!html.includes('devSimulatorEnabled'), 'public checkout must not expose simulator branches');
   assert.ok(html.includes("$('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability)"));
 });
-
 test('NOWPayments UI validates the selected USDT network and exact payment details before displaying a transfer', () => {
   assert.ok(html.includes("const selectedNetwork=$('cryptoNetwork').value;"));
   assert.ok(html.includes("const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';"));
@@ -83,16 +72,16 @@ test('NOWPayments UI validates the selected USDT network and exact payment detai
   assert.ok(html.includes("payload.status==='paid'"));
 });
 
-test('PageSpeed diagnostics describe the Cloudflare secret, hide setup hint when configured, and never instruct .env editing', () => {
+test('production PageSpeed diagnostics do not expose internal secret setup instructions', () => {
+  assert.ok(!html.includes('PAGESPEED_API_KEY'));
+  assert.ok(!html.includes('pageSpeedSetupNote'));
+  assert.ok(!html.includes('server-side .env file'));
+  assert.ok(sandboxHtml.includes('PAGESPEED_API_KEY as a Cloudflare Worker secret'));
+  assert.ok(sandboxHtml.includes('pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;'));
   for (const page of [html, sandboxHtml]) {
-    assert.ok(page.includes('PAGESPEED_API_KEY as a Cloudflare Worker secret'));
-    assert.ok(!page.includes('server-side .env file'));
-    assert.ok(page.includes('pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;'));
-    assert.ok(page.includes('Google PageSpeed quota was exceeded on the keyless shared quota'));
-    assert.ok(page.includes('Google PageSpeed quota was exceeded for the configured project'));
+    assert.ok(page.includes('Google PageSpeed could not return measurements') || page.includes('Google PageSpeed quota was exceeded for the configured project') || page.includes('Google PageSpeed quota limited'));
   }
 });
-
 test('cached PageSpeed scores are visibly labelled and stale fallback discloses age', () => {
   for (const page of [html, sandboxHtml]) {
     assert.ok(page.includes("provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)'"));
@@ -102,29 +91,27 @@ test('cached PageSpeed scores are visibly labelled and stale fallback discloses 
   }
 });
 
-test('payment settings cannot stick in loading state and the reviewed-check count uses scoredCount', () => {
-  assert.match(html, /apiFetch\('\/api\/config',\{method:'POST'/,
-    'use the CORS-simple POST fallback instead of the failing browser GET request');
-  assert.match(html, /AbortSignal\.timeout\(8000\)/,
+test('payment settings fail closed and the reviewed-check count uses measured checks', () => {
+  assert.match(html, /apiFetch\\('\\/api\\/config',\\{method:'POST'/,
+    'use the CORS-simple POST fallback');
+  assert.match(html, /AbortSignal\\.timeout\\(8000\\)/,
     'configuration fetch must fail closed instead of loading indefinitely');
-  assert.doesNotMatch(html, /Loading secure checkout settings/);
-  assert.match(html, /Checking payment configuration\.\.\./);
-  assert.match(html, /Checking crypto availability\.\.\./);
-  assert.match(html, /el\.checks\.textContent=report\.checkCount \?\? report\.scoredCount \?\? report\.checks\?\.length \?\? 0;/,
-    'preview does not include a full checks array, so display its measured scoredCount');
+  assert.match(html, /Loading secure checkout…/);
+  assert.match(html, /Crypto checkout unavailable/);
+  assert.match(html, /el\\.checks\\.textContent=report\\.checkCount \\?\\? report\\.scoredCount \\?\\? report\\.checks\\?\\.length \\?\\? 0;/);
   const initStart = html.indexOf('async function initializePayments() {');
   const initEnd = html.indexOf('async function handlePaymentReturn()', initStart);
   assert.ok(initStart >= 0 && initEnd > initStart, 'payment configuration initializer must be present');
   assert.doesNotMatch(html.slice(initStart, initEnd), /openPaywall|beginCardPayment|prepareCryptoPayment/,
     'loading payment settings never opens the modal or creates a payment');
 });
-
-test('startup tolerates the optional sample-report button being absent', () => {
-  assert.match(html, /\$\('sampleTopBtn'\)\?\.addEventListener\('click',loadSample\);/,
-    'an omitted optional sample button must not crash payment settings or audit initialization');
+test('production page has no sample-report or design-demo route and shows no fake scores before an audit', () => {
+  assert.match(html, /id="auditReportSection" aria-labelledby="reportHeading" hidden/);
+  assert.match(html, /const makeEmptyReport = \\(url=''/);
+  assert.doesNotMatch(html, /makeSampleReport|sampleTopBtn|loadSample|demo=full|DESIGN DEMO ONLY/);
+  assert.doesNotMatch(html, /overall:78,grade:'C\+'/);
   assert.ok(html.includes('initializePayments().then(()=>'), 'payment setup still initializes after event handlers');
 });
-
 test('footerYear cannot crash startup when the footer year element is omitted', () => {
   assert.match(html, /const footerYear=\$\('footerYear'\); if\(footerYear\) footerYear\.textContent=new Date\(\)\.getFullYear\(\);/,
     'the footer year is an optional presentation detail and must not halt audit/payment initialization');
@@ -135,7 +122,8 @@ test('transient browser transport failures retry only safe audit/session/config 
   assert.ok(html.includes('if (!allowTransportRetry || !(error instanceof TypeError)) throw error;'));
   assert.ok(html.includes('await new Promise(resolve => window.setTimeout(resolve, 300));'));
   assert.ok(html.includes("const retryableTransport = endpoint.pathname === '/api/config'"));
-  assert.ok(html.includes("endpoint.pathname === '/api/audits' || endpoint.pathname === '/api/audits/sample'"));
+  assert.ok(html.includes("endpoint.pathname === '/api/audits'"));
+  assert.ok(!html.includes("endpoint.pathname === '/api/audits/sample'"));
   assert.ok(html.includes('fetchWithTransportRetry(endpoint.href, init, retryableTransport)'));
   assert.ok(html.includes("fetchWithTransportRetry(API_BASE_URL + '/api/session'"));
   const whitelistStart = html.indexOf('const retryableTransport =');
