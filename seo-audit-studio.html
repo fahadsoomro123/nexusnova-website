@@ -1679,7 +1679,7 @@
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       state.auditId = payload.auditId;
-      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; state.filter = 'All';
+      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
       window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
     } catch(error) {
@@ -1777,6 +1777,7 @@
       setStatus($('cryptoPaymentStatus'),'Payment details created. Awaiting signed provider confirmation; report remains locked.');
     } catch(error) {
       state.cryptoOrderId=null;
+      $('cryptoNetwork').disabled=false;
       $('cryptoPaymentDetails').hidden=true;
       setStatus($('cryptoPaymentStatus'),error.message,'error');
     } finally { updateCryptoCheckoutAvailability(); }
@@ -1922,8 +1923,7 @@
       updateCryptoCheckoutAvailability();
       return state.cryptoMinimums.some(option=>option.available===true);
     }
-    if(!state.config||state.config.environment!=='production'||state.config.livePaymentsEnabled!==true||
-       state.config.cryptoProvider!=='nowpayments'||state.config.nowPaymentsConfigured!==true) {
+    if(!state.config||state.config.environment!=='production'||state.config.cryptoProvider!=='nowpayments') {
       state.cryptoMinimumsLoaded=false;
       $('cryptoAvailabilityNote').hidden=false;
       $('cryptoAvailabilityNote').textContent='Crypto checkout is unavailable. Use Safepay to pay US$2.99.';
@@ -1952,8 +1952,14 @@
         .sort((a,b)=>Number(a.minimumUsd)-Number(b.minimumUsd));
       if(eligible.length) {
         const current=eligible.find(option=>option.network===$('cryptoNetwork').value);
-        $('cryptoNetwork').value=(current||eligible[0]).network;
-        note.hidden=true;
+        const selected=current||eligible[0];
+        $('cryptoNetwork').value=selected.network;
+        if(state.config.nowPaymentsConfigured===true&&state.config.livePaymentsEnabled===true) {
+          note.hidden=true;
+        } else {
+          note.hidden=false;
+          note.textContent='This network accepts US$2.99, but live crypto checkout is not enabled yet. Use Safepay for this payment.';
+        }
         return true;
       }
       const currentMinimums=state.cryptoMinimums.filter(option=>Number.isFinite(Number(option.minimumUsd)))
