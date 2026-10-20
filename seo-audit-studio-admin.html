@@ -243,13 +243,13 @@
   $('disconnectBtn').addEventListener('click',disconnect);
   $('refreshBtn').addEventListener('click',refreshAll);
   $('ownerAuditForm').addEventListener('submit',async event=>{
-    event.preventDefault();const button=$('ownerAuditBtn');button.disabled=true;button.textContent='Running audit…';
+    event.preventDefault();const submitButton=$('ownerAuditBtn');submitButton.disabled=true;submitButton.textContent='Running audit…';
     try{const r=await api('/api/admin/audits',{method:'POST',body:JSON.stringify({url:$('ownerAuditUrl').value.trim()})});
       state.lastOwnerAuditId=r.auditId;const out=$('auditOutput');out.replaceChildren(text('h3','Owner audit created · '+r.auditId),notice('Owner-only free report was generated and entitled by the server.','good'),text('div',r.preview?.url||$('ownerAuditUrl').value,'meta'));
       out.append(button('View full report',()=>showFullReport(r.auditId)));
       setGlobal('Owner audit succeeded: '+r.auditId+'.','good');await refreshAll();
     }catch(error){setGlobal(error.message||'Owner audit failed.','error');}
-    finally{button.disabled=false;button.textContent='Run free owner audit';}
+    finally{submitButton.disabled=false;submitButton.textContent='Run free owner audit';}
   });
   $('offerType').addEventListener('change',()=>{
     const type=$('offerType').value,field=$('offerValue'),help=$('offerHelp');
@@ -273,7 +273,7 @@
     event.preventDefault();const campaignId=$('codeCampaign').value;
     if(!campaignId){setGlobal('Select a campaign first.','error');return;}
     const expires=$('codeExpiry').value?Math.floor(new Date($('codeExpiry').value).getTime()/1000):null;
-    const button=$('issueCodeBtn');button.disabled=true;
+    const submitButton=$('issueCodeBtn');submitButton.disabled=true;
     try{
       const r=await api('/api/admin/promotions/campaigns/'+encodeURIComponent(campaignId)+'/codes',{method:'POST',body:JSON.stringify({maxUses:Number($('codeMaxUses').value),perUserLimit:Number($('codePerUser').value),expiresAt:expires,targetSessionRef:$('targetSessionRef').value.trim()||null})});
       const root=$('newCodeOutput');root.hidden=false;root.replaceChildren(text('div','Copy this code now. It will not be revealed in full again.','notice good'));
@@ -281,7 +281,7 @@
       box.append(button('Copy code',async()=>{try{await navigator.clipboard.writeText(r.code);setGlobal('Code copied. Keep it private.','good');}catch{setGlobal('Clipboard is unavailable. Select the code text and copy it manually.','error');}}));
       root.append(box);setGlobal('Voucher generated. The database stores only a hash; retain the full code securely.','good');$('targetSessionRef').value='';$('codeExpiry').value='';await refreshAll();
     }catch(error){setGlobal(error.message||'Code could not be generated.','error');}
-    finally{button.disabled=false;}
+    finally{submitButton.disabled=false;}
   });
   $('campaignStarts').value=new Date(Date.now()+3600000).toISOString().slice(0,16);
   $('campaignEnds').value=new Date(Date.now()+7*86400000).toISOString().slice(0,16);
