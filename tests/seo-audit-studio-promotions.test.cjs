@@ -13,6 +13,8 @@ test('SEO Audit Studio provides a server-validated code input and separate crypt
   assert.ok(page.includes('id="promotionCodeInput"'));
   assert.ok(page.includes('id="redeemPromoBtn"'));
   assert.ok(page.includes('id="promotionCodeStatus"'));
+  assert.ok(page.includes('id="claimLaunchVoucherBtn"'));
+  assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
   assert.ok(page.includes("promotionRedemptionId:state.promotionRedemptionId"));
   assert.ok(page.includes('id="cryptoPriceDescription"'));
@@ -23,11 +25,27 @@ test('SEO Audit Studio provides a server-validated code input and separate crypt
 
 test('promotion status and discount claims come only from backend responses', () => {
   assert.ok(page.includes("if(result.freeReport===true)"));
+  assert.ok(page.includes("window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code)"));
+  assert.ok(page.includes("state.voucherAutoAttemptedAuditId!==state.auditId"));
+  assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes('result.estimatedDiscountMinor'));
   assert.ok(page.includes('result.estimatedAmountDueMinor'));
   assert.ok(page.includes('The server recalculates the final amount'));
   assert.ok(!/remainingClaims\s*[:=]\s*\d+/.test(page));
   assert.ok(!/freeReport\s*=\s*true/.test(page));
+});
+
+test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
+  assert.ok(page.includes('async function applySavedVoucherForCurrentAudit()'));
+  assert.ok(page.includes('await applySavedVoucherForCurrentAudit();'));
+  assert.ok(page.includes("code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||''"));
+  const runStart = page.indexOf('const runAudit = async');
+  const restoreStart = page.indexOf('const restoreLatestAudit = async');
+  assert.ok(runStart >= 0 && restoreStart >= 0);
+  assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', runStart) > runStart);
+  assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', restoreStart) > restoreStart);
+  assert.ok(page.includes("if(state.paid)"));
+  assert.ok(page.includes("claimButton.textContent='Full audit unlocked'"));
 });
 
 test('owner console is noindex and holds its token only in runtime memory', () => {
@@ -41,9 +59,10 @@ test('owner console is noindex and holds its token only in runtime memory', () =
   assert.ok(admin.includes('/api/admin/promotions/campaigns'));
   assert.ok(admin.includes('/api/admin/promotions/codes/'));
   assert.ok(admin.includes('/api/admin/promotions/redeem') === false);
-  assert.ok(admin.includes('option value="percent"'));
-  assert.ok(admin.includes('option value="fixed"'));
-  assert.ok(admin.includes('option value="free_report"'));
+  assert.ok(admin.includes('<option value="free_report" selected>Free full technical report (launch voucher)</option>'));
+  assert.doesNotMatch(admin, /option value="percent"|option value="fixed"/);
+  assert.match(admin, /id="offerValue" type="number" min="100" max="100" step="1" value="100" required disabled/);
+  assert.match(admin, /Payment discounts are not enabled/);
   assert.ok(admin.includes("status:'draft'") || admin.includes("status:\"draft\"") || admin.includes('Draft by default'));
 });
 
