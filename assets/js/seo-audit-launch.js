@@ -5,6 +5,9 @@
   const cta = document.getElementById('nnAuditLaunchCta');
   if (!offerBox || !cta) return;
 
+  const allowedOrigins = new Set(['https://nexusnovatools.com', 'https://www.nexusnovatools.com']);
+  if (!allowedOrigins.has(window.location.origin)) return;
+
   const api = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev/api/promotions/active';
   const text = (tag, className, value) => {
     const node = document.createElement(tag);
