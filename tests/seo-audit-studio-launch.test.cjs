@@ -25,6 +25,7 @@ test('homepage presents SEO Audit Studio launch CTA before the existing first se
 
 test('limited-time offer details require a backend-confirmed campaign and actual remaining claims', () => {
   assert.match(js, /\/api\/promotions\/active/);
+  assert.match(js, /allowedOrigins\.has\(window\.location\.origin\)/, 'remote Worker fetch is restricted to the two allowed production origins');
   assert.match(js, /payload\.ok === true/);
   assert.match(js, /campaign\.remainingClaims/);
   assert.match(js, /offerBox\.hidden = false/);
