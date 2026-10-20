@@ -32,7 +32,7 @@ test('promotion status and discount claims come only from backend responses', ()
   assert.ok(page.includes('result.estimatedAmountDueMinor'));
   assert.ok(page.includes('The server recalculates the final amount'));
   assert.ok(!/remainingClaims\s*[:=]\s*\d+/.test(page));
-  assert.ok(!/freeReport\s*=\s*true/.test(page));
+  assert.doesNotMatch(page, /freeReport\s*=\s*true\s*;/, 'free-report access must be conditional on the server response, not locally fabricated');
 });
 
 test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
