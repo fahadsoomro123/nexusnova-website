@@ -658,7 +658,7 @@
     </div>
 
     <div class="source-diagnostics" id="sourceDiagnostics" hidden role="status" aria-live="polite">
-      <div><strong id="sourceDiagnosticsTitle">Some audit sources are unavailable</strong><p id="sourceDiagnosticsText">Missing measurements are not estimated or fabricated.</p><div class="mini-note">Optional: add a Google PageSpeed API key to the server-side .env file to improve quota reliability. Never put it in browser HTML.</div></div>
+      <div><strong id="sourceDiagnosticsTitle">Some audit sources are unavailable</strong><p id="sourceDiagnosticsText">Missing measurements are not estimated or fabricated.</p><div class="mini-note" id="pageSpeedSetupNote">Google PageSpeed Insights is requested from the server for mobile and desktop. For reliable production quota, configure PAGESPEED_API_KEY as a Cloudflare Worker secret. Never put API keys in browser HTML.</div></div>
       <button type="button" class="secondary-btn" id="retryMeasurementsBtn" hidden>Retry missing measurements</button>
     </div>
 
@@ -1205,7 +1205,8 @@
   const summarizeSourceError = (value) => {
     const text=String(value || '').trim();
     if (!text) return 'No result returned.';
-    if (/quota|queries per day|daily limit|resource_exhausted/i.test(text)) return 'Google PageSpeed daily quota was exceeded. No live metrics were substituted. Configure or verify the API key on the server, or retry after quota reset.';
+    if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text) && /configure PAGESPEED_API_KEY/i.test(text)) return 'Google PageSpeed quota was exceeded on the keyless shared quota. Configure PAGESPEED_API_KEY as a Cloudflare Worker secret to use your own project quota, then retry.';
+    if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text)) return 'Google PageSpeed quota was exceeded for the configured project. Check its Google Cloud API quota and restrictions, then retry. No live metrics were substituted.';
     if (/api.?key.*invalid|invalid api key|keyInvalid/i.test(text)) return 'Google PageSpeed API key is invalid. Verify the server-side key and confirm the API is enabled for its Google Cloud project.';
     if (/quota cooldown active/i.test(text)) return text;
     if (/timed out/i.test(text)) return 'The source request timed out. Retry later; unavailable measurements remain unscored.';
@@ -1214,6 +1215,8 @@
   const renderSourceDiagnostics = (report) => {
     const src=report.sources || {};
     const errors=src.errors || {};
+    const pageSpeedSetupNote=$('pageSpeedSetupNote');
+    if(pageSpeedSetupNote)pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;
     const mobileOk=src.pagespeedMobile ?? src.pagespeed ?? false;
     const desktopOk=src.pagespeedDesktop ?? src.pagespeed ?? false;
     const problems=[];
@@ -1306,9 +1309,9 @@
       const error=report.sources?.errors?.[errorKey]||'';
       const quota=/quota|queries per day|daily limit|resource_exhausted/i.test(error);
       const provider=report.sources?.[providerKey];
-      const source=report.mode==='sample'?'Illustrative sample':score!=null?(provider==='local-lighthouse'?'Local Chrome Lighthouse':provider==='google-pagespeed'?'Google PageSpeed Insights':'Lighthouse lab'):quota?'Quota limited':'Not measured';
+      const source=report.mode==='sample'?'Illustrative sample':score!=null?(provider==='local-lighthouse'?'Local Chrome Lighthouse':provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)':provider==='google-pagespeed'?'Google PageSpeed Insights':'Lighthouse lab'):quota?'Quota limited':'Not measured';
       const scoreStatus=score==null?'Not measured':score>=90?'Good':score>=50?'Needs improvement':'Poor';
-      const note=score==null?(quota?'Google daily quota was exceeded. Local Lighthouse can supply a separately labelled lab run. No performance score was invented.':summarizeSourceError(error||'This device strategy could not be measured in the current audit.')):score>=90?'Strong lab score for this run. Continue monitoring real-user experience.':score>=50?'This run shows opportunities to improve loading or responsiveness.':'Prioritize the largest loading and main-thread bottlenecks for this device.';
+      const note=score==null?(quota?'Google daily quota was exceeded. Local Lighthouse can supply a separately labelled lab run. No performance score was invented.':summarizeSourceError(error||'This device strategy could not be measured in the current audit.')):data?.cacheStale?'The live request failed; displaying a real Google PageSpeed measurement from '+Math.round((data.cacheAgeSeconds||0)/60)+' minutes ago. '+summarizeSourceError(data.cacheWarning||'Google PageSpeed quota was exceeded.') :data?.cacheHit?'Reused a real Google PageSpeed result from the six-hour cache; no new result was fabricated.':score>=90?'Strong lab score for this run. Continue monitoring real-user experience.':score>=50?'This run shows opportunities to improve loading or responsiveness.':'Prioritize the largest loading and main-thread bottlenecks for this device.';
       const metrics=metricHtml('Largest Contentful Paint',data?.lcp,'lcp')+metricHtml('Cumulative Layout Shift',data?.cls,'cls')+metricHtml('Total Blocking Time',data?.tbt,'tbt');
       return '<article class="perf-col"><div class="perf-head"><span class="perf-title"><span class="icon" aria-hidden="true">'+(kind==='phone'?'▯':'▣')+'</span>'+name+' performance</span><span class="device-tag">'+escapeHtml(source)+'</span></div>'+
         '<div class="perf-score-row"><span class="perf-score '+tone+'">'+(score==null?'N/A':score)+'</span><div class="perf-meter" role="img" aria-label="Lighthouse performance score '+(score==null?'not measured':score+' out of 100')+'"><span class="perf-pointer" style="left:'+point+'%"></span></div>'+
@@ -1768,32 +1771,50 @@
   async function prepareCryptoPayment() {
     if(!requireAuditForPayment())return;
     const button=$('prepareCryptoBtn');button.disabled=true;
+    const selectedNetwork=$('cryptoNetwork').value;
     try {
-      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:$('cryptoNetwork').value});
+      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork});
+      if(!payload.orderId)throw new Error('The provider returned no order ID. No report was unlocked.');
       state.cryptoOrderId=payload.orderId;
-      if(payload.provider==='nowpayments' && payload.checkoutUrl){
-        const checkout=new URL(payload.checkoutUrl);
-        if(checkout.protocol!=='https:' || !(checkout.hostname==='nowpayments.io' || checkout.hostname.endsWith('.nowpayments.io'))) throw new Error('The crypto provider returned an unexpected checkout destination.');
-        window.location.assign(checkout.href);
-        return;
-      }
       $('cryptoPaymentDetails').hidden=false;
-      $('cryptoNetworkLabel').textContent=`USDT ${payload.network} receiving address`;
-      $('cryptoWalletAddress').textContent=payload.walletAddress || 'No receiving address configured (local simulation only).';
-      $('cryptoAmount').textContent='US$2.99';
-      $('cryptoTxid').value=''; $('cryptoSandboxTest').hidden=true; $('cryptoPaymentStatus').hidden=true;
-      $('verifyCryptoBtn').hidden = Boolean(payload.devSimulatorEnabled) || state.config?.cryptoCapabilities?.[payload.network] !== true;
-      if(payload.walletAddress && payload.devSimulatorEnabled) {
-        $('cryptoWalletNotice').textContent='LOCAL SIMULATOR ENABLED: do not send real funds. TXID submission and simulated confirmation will not verify the blockchain.';
-      } else if(payload.walletAddress) {
-        $('cryptoWalletNotice').textContent='Confirm this exact network and recipient before transferring. TXID submission does not by itself prove payment; it remains locked pending verification.';
-      } else {
-        $('cryptoWalletNotice').textContent='No wallet address is configured. This order is for local simulation only. Do not transfer any tokens.';
+      $('cryptoPaymentStatus').hidden=false;
+      $('cryptoTxid').value='';
+      const txidLabel=document.querySelector('label[for="cryptoTxid"]');
+      if(payload.provider==='nowpayments'){
+        const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';
+        if(payload.network!==selectedNetwork||!expectedCurrency||String(payload.payCurrency||'').toLowerCase()!==expectedCurrency)throw new Error('The provider payment does not match the selected USDT network. Do not transfer funds.');
+        if(typeof payload.walletAddress!=='string'||!payload.walletAddress.trim()||!Number.isFinite(Number(payload.payAmount))||Number(payload.payAmount)<=0)throw new Error('The provider returned incomplete payment details. Do not transfer funds.');
+        if(payload.checkoutUrl)throw new Error('Unexpected hosted-checkout response. No redirect was opened. Check the order status before retrying.');
+        $('cryptoNetworkLabel').textContent='USDT '+payload.network+' receiving address';
+        $('cryptoWalletAddress').textContent=payload.walletAddress;
+        $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||2.99).toFixed(2)+')';
+        if(txidLabel)txidLabel.hidden=true;
+        $('cryptoTxid').hidden=true;
+        $('submitCryptoTxidBtn').hidden=true;
+        $('verifyCryptoBtn').hidden=false;
+        $('verifyCryptoBtn').textContent='Check payment status';
+        $('cryptoSandboxTest').hidden=true;
+        $('cryptoWalletNotice').textContent='Send only the displayed amount on '+payload.network+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this order, network and amount. Do not pay twice while the order is pending.';
+        setStatus($('cryptoPaymentStatus'),'Real NOWPayments transfer details created. Awaiting signed provider confirmation; report remains locked.');
+      }else if(payload.devSimulatorEnabled===true&&payload.simulationOnly===true){
+        $('cryptoNetworkLabel').textContent='Local simulated USDT '+payload.network+' order';
+        $('cryptoWalletAddress').textContent='No real receiving address. Simulation only.';
+        $('cryptoAmount').textContent='US$'+Number(payload.amountUsd||2.99).toFixed(2)+' simulated';
+        if(txidLabel)txidLabel.hidden=true;
+        $('cryptoTxid').hidden=true;
+        $('submitCryptoTxidBtn').hidden=true;
+        $('verifyCryptoBtn').hidden=true;
+        $('cryptoSandboxTest').hidden=false;
+        $('cryptoWalletNotice').textContent='LOCAL SIMULATOR ONLY. No wallet address is supplied. Do not send funds or tokens.';
+        setStatus($('cryptoPaymentStatus'),'Local test order created. Simulated approval does not move money or verify a blockchain transaction.');
+      }else{
+        state.cryptoOrderId=null;
+        throw new Error('The crypto provider returned an unsupported checkout response. No transfer should be made.');
       }
-    } catch(error) { setStatus($('cryptoPaymentStatus'),error.message,'error');$('cryptoPaymentDetails').hidden=false; }
-    finally { updateCryptoCheckoutAvailability(); }
+    }catch(error){setStatus($('cryptoPaymentStatus'),error.message,'error');$('cryptoPaymentDetails').hidden=false;}
+    finally{updateCryptoCheckoutAvailability();}
   }
-  async function submitCryptoTxid() {
+    async function submitCryptoTxid() {
     if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare a crypto order first.','error');return; }
     const txid=$('cryptoTxid').value.trim(); const button=$('submitCryptoTxidBtn');button.disabled=true;
     try {
@@ -1810,20 +1831,24 @@
     finally { button.disabled=false; }
   }
   async function verifyCryptoStatus() {
-    if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare a crypto order and submit its TXID first.','error');return; }
-    const button=$('verifyCryptoBtn'); button.disabled=true; const original=button.textContent; button.textContent='Checking verified chain data…';
-    try {
-      const payload=await apiPost('/api/payments/crypto/verify',{orderId:state.cryptoOrderId});
-      if(payload.status==='paid' && payload.verified) {
-        await unlockReport(state.auditId);
-        setStatus($('cryptoPaymentStatus'),'On-chain payment verified. The full report is unlocked.','success');
-      } else {
-        setStatus($('cryptoPaymentStatus'),payload.message || 'The transaction is not final yet. The report remains locked.');
+    if(!state.cryptoOrderId){setStatus($('cryptoPaymentStatus'),'Create a crypto order first.','error');return;}
+    const button=$('verifyCryptoBtn');button.disabled=true;const original=button.textContent;button.textContent='Checking provider status...';
+    try{
+      const response=await apiFetch('/api/orders/'+encodeURIComponent(state.cryptoOrderId)+'/status',{headers:{Accept:'application/json'},cache:'no-store'});
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(payload.error||'Could not retrieve the order status.');
+      if(payload.status==='paid'){
+        await unlockReport(payload.auditId||state.auditId);
+        setStatus($('cryptoPaymentStatus'),'Signed provider confirmation verified by the backend. Full report unlocked.','success');
+      }else if(['failed','cancelled'].includes(payload.status)){
+        setStatus($('cryptoPaymentStatus'),'Provider order is '+payload.status+'. No report was unlocked. Check the provider status before creating another order.','error');
+      }else{
+        setStatus($('cryptoPaymentStatus'),'Payment is still '+String(payload.status||'pending')+'. Report access stays locked until NOWPayments sends a valid signed IPN matching the order, amount and selected network. Do not pay again while pending.');
       }
-    } catch(error) { setStatus($('cryptoPaymentStatus'),error.message || 'Could not verify the transaction yet.','error'); }
-    finally { button.disabled=false; button.textContent=original; }
+    }catch(error){setStatus($('cryptoPaymentStatus'),error.message||'Could not check the server-verified status yet.','error');}
+    finally{button.disabled=false;button.textContent=original;}
   }
-  async function approveMockCrypto() {
+    async function approveMockCrypto() {
     if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare and submit the test TXID first.','error');return; }
     const button=$('simulateCryptoBtn');button.disabled=true;
     try {
@@ -1939,35 +1964,22 @@
   $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeSampleReport());});
   function updateCryptoCheckoutAvailability() {
     const button=$('prepareCryptoBtn');
-    if(!state.config) { button.disabled=true; return false; }
+    if(!state.config){button.disabled=true;return false;}
     const config=state.config;
-    if(config.environment!=='production' || config.livePaymentsEnabled!==true) {
-      button.disabled=true;
-      button.textContent='Crypto checkout waiting for production setup';
-      button.title='Sandbox provider credentials are for testing only. Do not pay through the sandbox.';
-      return false;
-    }
     const network=$('cryptoNetwork').value;
-    const hosted=config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true;
-    const direct=network==='TRC20'
-      ? Boolean(config.walletAddresses?.TRC20 && config.cryptoCapabilities?.TRC20)
-      : Boolean(config.walletAddresses?.ERC20 && config.cryptoCapabilities?.ERC20);
-    const simulator=config.devSimulatorEnabled===true;
-    const available=hosted || direct || simulator;
-    button.disabled=!available;
-    if(hosted) {
-      button.textContent='Continue to secure crypto checkout';
-      button.title='Secure hosted invoice; payment is verified server-side.';
-    } else if(direct) {
-      button.textContent='Prepare verified USDT transfer';
-      button.title='This network has both a configured address and an active chain verifier.';
-    } else if(simulator) {
-      button.textContent='Prepare local test crypto order';
-      button.title='Simulation only. Never transfer real funds.';
-    } else {
-      button.textContent=network+' checkout unavailable';
-      button.title='This network has no verified receiving address and active chain verifier. Do not transfer funds.';
+    const simulator=config.devSimulatorEnabled===true&&config.environment!=='production'&&config.provider==='mock';
+    if(simulator){button.disabled=false;button.textContent='Prepare local test crypto order';button.title='Simulation only. Never transfer real funds.';return true;}
+    if(config.environment!=='production'||config.livePaymentsEnabled!==true){
+      button.disabled=true;button.textContent='Crypto checkout waiting for production setup';
+      button.title='Production provider onboarding and independent live-payment gates must be confirmed first.';return false;
     }
+    const providerReady=config.cryptoProvider==='nowpayments'&&config.nowPaymentsConfigured===true&&(network==='TRC20'||network==='ERC20');
+    const direct=network==='TRC20'?Boolean(config.walletAddresses?.TRC20&&config.cryptoCapabilities?.TRC20):Boolean(config.walletAddresses?.ERC20&&config.cryptoCapabilities?.ERC20);
+    const available=providerReady||direct;
+    button.disabled=!available;
+    if(providerReady){button.textContent='Prepare verified USDT transfer';button.title='Creates a payment for the selected USDT network; only signed provider confirmation unlocks the report.';}
+    else if(direct){button.textContent='Prepare verified USDT transfer';button.title='This network has a configured address and an active chain verifier.';}
+    else{button.textContent=network+' checkout unavailable';button.title='This network is not configured for server-verified checkout. Do not transfer funds.';}
     return available;
   }
   async function initializePayments() {
@@ -1990,16 +2002,15 @@
       if (lockedNote) lockedNote.textContent = productionMode ? 'Payment unlocks the full report only after the provider and backend verify the transaction.' : 'Free audit previews are available. Full reports remain locked until a production payment provider is configured and server verification is enabled.';
       if (modalDisclaimer) modalDisclaimer.textContent = productionMode ? 'Your report stays locked until the backend independently verifies the exact Safepay transaction or signed crypto payment notification.' : 'Online checkout is not yet enabled. Do not pay through a sandbox checkout; provider setup and server-side verification must be completed first.';
       if(state.config.cryptoProvider==='nowpayments'){
-        const networkSelect=$('cryptoNetwork');
-        if(networkSelect?.closest('label'))networkSelect.closest('label').hidden=true;
-        const txidInput=$('cryptoTxid');
-        if(txidInput?.closest('label'))txidInput.closest('label').hidden=true;
+        const txidLabel=document.querySelector('label[for="cryptoTxid"]');
+        if(txidLabel)txidLabel.hidden=true;
+        $('cryptoTxid').hidden=true;
         $('submitCryptoTxidBtn').hidden=true;
         $('verifyCryptoBtn').hidden=true;
         $('cryptoSandboxTest').hidden=true;
-        $('prepareCryptoBtn').textContent='Continue to secure crypto checkout';
-        $('cryptoWalletAddress').textContent='NOWPayments secure hosted invoice';
-        $('cryptoWalletNotice').textContent='Choose any cryptocurrency enabled in the merchant checkout. The report unlocks only after a valid signed confirmation for this exact order and USD amount.';
+        $('prepareCryptoBtn').textContent='Prepare verified USDT transfer';
+        $('cryptoWalletAddress').textContent='A unique receiving address appears after creating a payment order.';
+        $('cryptoWalletNotice').textContent='Choose USDT TRC20 or ERC20. The exact provider quote, receiving address and network will be shown before transfer. Signed provider confirmation is required to unlock the report.';
       }
       const cardCheckoutReady=productionMode && state.config.livePaymentsEnabled===true && state.config.provider==='safepay' && state.config.safepayConfigured===true;
       if(state.config.provider==='mock') {
@@ -2012,8 +2023,10 @@
       }
       $('safepayCheckoutBtn').disabled=!cardCheckoutReady;
       if(!cardCheckoutReady) {
-        const message=(!productionMode || state.config.livePaymentsEnabled!==true)?'Online checkout is temporarily unavailable while payment setup remains in sandbox. No payment will be charged from this page yet.':state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
-        setStatus($('cardPaymentStatus'),message,'error');
+        const sandboxOnly=!productionMode || state.config.livePaymentsEnabled!==true;
+        const message=sandboxOnly?'Sandbox mode is active. Safepay checkout is intentionally disabled; no payment has been started.':state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
+        // Sandbox checkout being intentionally off is informational, not a runtime error.
+        setStatus($('cardPaymentStatus'),message,sandboxOnly?'':'error');
       }
       if(state.config.devSimulatorEnabled) {
         $('cryptoSandboxTest').hidden=false;
