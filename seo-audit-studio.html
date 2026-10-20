@@ -601,6 +601,7 @@
 
 
 
+
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
 </head>
 <body>
@@ -1846,7 +1847,7 @@
   el.closePaywall.addEventListener('click',closePaywall);
   el.paywallModal.querySelectorAll('[data-close-paywall]').forEach(node=>node.addEventListener('click',closePaywall));
   document.addEventListener('keydown',event=>{if(event.key==='Escape' && el.paywallModal.classList.contains('is-open'))closePaywall();});
-  
+
   document.querySelectorAll('[data-paid-tab]').forEach(button=>{
     button.addEventListener('click',()=>setPaidTab(button.dataset.paidTab,true));
     button.addEventListener('keydown',event=>{
