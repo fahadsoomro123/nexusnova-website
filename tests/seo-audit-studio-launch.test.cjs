@@ -27,6 +27,8 @@ test('limited-time offer details require a backend-confirmed campaign and actual
   assert.match(js, /\/api\/promotions\/active/);
   assert.match(js, /allowedOrigins\.has\(window\.location\.origin\)/, 'remote Worker fetch is restricted to the two allowed production origins');
   assert.match(js, /payload\.ok === true/);
+  assert.match(js, /campaign\.terms/);
+  assert.match(js, /Use your voucher code at checkout in Audit Studio/);
   assert.match(js, /campaign\.remainingClaims/);
   assert.match(js, /offerBox\.hidden = false/);
   assert.match(js, /Number\(campaign\.remainingClaims\) \+ ' claims remaining'/);
