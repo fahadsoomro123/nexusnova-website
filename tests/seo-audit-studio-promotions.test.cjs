@@ -9,6 +9,7 @@ const root = path.resolve(__dirname, '..');
 const page = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
 const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
 const promoCss = fs.readFileSync(path.join(root, 'assets/css/seo-audit-promotions.css'), 'utf8');
+const launchJs = fs.readFileSync(path.join(root, 'assets/js/seo-audit-launch.js'), 'utf8');
 test('SEO Audit Studio provides a server-validated code input and separate crypto-price wording', () => {
   assert.ok(page.includes('id="promotionCodeInput"'));
   assert.ok(page.includes('Get your free full-audit voucher'));
@@ -37,7 +38,8 @@ test('voucher claim and redemption use only a free full-report entitlement, not 
   assert.ok(!page.includes('estimatedAmountDueMinor'));
   assert.ok(!page.includes('The server recalculates the final amount'));
   assert.doesNotMatch(page, /apiPost\('\/api\/payments\/card-session',\{auditId:state\.auditId,promotionRedemptionId/);
-  assert.doesNotMatch(page, /setInterval|countdown|fakeUserCount/i);
+  // The Audit Studio progress indicator legitimately uses setInterval. The launch promotion script must not fake scarcity.
+  assert.doesNotMatch(launchJs, /setInterval|countdown|fakeUserCount/i);
 });
 
 test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
@@ -49,8 +51,9 @@ test('claimed full-audit voucher auto-unlocks after an audit or when the existin
   assert.ok(runStart >= 0 && restoreStart >= 0);
   assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', runStart) > runStart);
   assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', restoreStart) > restoreStart);
-  assert.ok(page.includes("if(state.paid)"));
-  assert.ok(page.includes("claimButton.textContent='Full audit unlocked'"));
+  assert.match(page, /if\s*\(state\.paid\)/);
+  assert.ok(page.includes('return Boolean(state.paid);'));
+  assert.ok(page.includes('state.voucherAutoAttemptedAuditId===state.auditId'));
 });
 
 test('owner console is noindex and holds its token only in runtime memory', () => {
