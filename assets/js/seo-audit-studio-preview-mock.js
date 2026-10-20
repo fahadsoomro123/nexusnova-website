@@ -113,7 +113,10 @@
     return {audit_id:a.auditId,id:a.auditId,url:a.url,session_ref:'review-session',created_at:a.created_at,expires_at:a.expires_at,has_entitlement:!!a.unlocked,status:a.unlocked?'unlocked':'locked'};
   }
   function mockCampaign(s){
-    return {id:'nexusnova-launch-preview-demo',name:'NexusNova Launch Pass (Preview Demo)',status:'active',offer_type:'free_report',offer_value:100,starts_at:Math.floor(Date.now()/1000)-60,ends_at:Math.floor(Date.now()/1000)+604800,total_limit:500,per_user_limit:1,claimed_count:Object.keys(s.audits||{}).length,terms:'Review preview only. Synthetic audit data; no real voucher or payment is created.'};
+    var saved=(s.campaigns||[]).find(function(c){return c.id==='nexusnova-launch-preview-demo';});
+    if(saved)return saved;
+    var now=Math.floor(Date.now()/1000);
+    return {id:'nexusnova-launch-preview-demo',name:'NexusNova Launch Pass (Preview Demo)',status:'active',offer_type:'free_report',offer_value:100,starts_at:now-60,ends_at:now+604800,total_limit:500,per_user_limit:1,claimed_count:s.voucher?1:0,created_at:now,updated_at:now,terms:'Review preview only. Synthetic audit data; no real voucher or payment is created.'};
   }
   async function handleApi(url,method,headers,body){
     var s=load(),path=url.pathname,tokenValue=currentSession(s,headers);
@@ -127,11 +130,14 @@
       return respond({ok:true,token:s.sessionToken,expiresAt:iso(1)},201);
     }
     if(path==='/api/promotions/active'&&(method==='GET'||method==='POST')){
-      var campaign=mockCampaign(s);
-      return respond({ok:true,campaign:{id:campaign.id,name:campaign.name,offerType:'free_report',offerValue:100,endsAt:new Date(campaign.ends_at*1000).toISOString(),remainingClaims:Math.max(0,500-campaign.claimed_count),terms:campaign.terms}},200);
+      var campaign=mockCampaign(s),now=Math.floor(Date.now()/1000);
+      if(campaign.status!=='active'||Number(campaign.starts_at)>now||Number(campaign.ends_at)<=now||Number(campaign.claimed_count)>=Number(campaign.total_limit))return respond({ok:true,campaign:null},200);
+      return respond({ok:true,campaign:{id:campaign.id,name:campaign.name,offerType:campaign.offer_type,offerValue:campaign.offer_value,endsAt:new Date(campaign.ends_at*1000).toISOString(),remainingClaims:Math.max(0,Number(campaign.total_limit)-Number(campaign.claimed_count)),terms:campaign.terms}},200);
     }
     if(path==='/api/promotions/claim'&&method==='POST'){
       if(!tokenValue)return respond({ok:false,error:'Start a preview session first, then claim your demo voucher.'},401);
+      var eligibleCampaign=mockCampaign(s),claimNow=Math.floor(Date.now()/1000);
+      if(eligibleCampaign.status!=='active'||Number(eligibleCampaign.starts_at)>claimNow||Number(eligibleCampaign.ends_at)<=claimNow||Number(eligibleCampaign.claimed_count)>=Number(eligibleCampaign.total_limit))return respond({ok:false,error:'The demo launch voucher is not currently available.'},409);
       if(!s.voucher){
         s.voucher={code:'NN-REVIEW-'+tokenValue.slice(0,16).toUpperCase(),sessionToken:tokenValue,expiresAt:Date.now()+7*86400000,used:false,claimedAt:Date.now()};
         save(s);
@@ -188,10 +194,12 @@
     }
     if(path==='/api/payments/card-session'&&method==='POST')return respond({ok:false,error:'Preview mode only: no card or Safepay payment can be started.'},503);
     if(path==='/api/payments/crypto/create'&&method==='POST')return respond({ok:false,error:'Preview mode only: crypto payments are disabled.'},503);
-    if(path==='/api/admin/promotions'||path==='/api/admin/audits'){
+    if((path==='/api/admin/promotions'||path==='/api/admin/audits')&&method==='GET'){
       if(headers.get('X-Owner-Admin-Token')!==OWNER_DEMO_TOKEN)return respond({ok:false,error:'Use the prefilled preview-only demo token. This is not a production credential.'},401);
       if(path==='/api/admin/promotions'){
-        return respond({ok:true,campaigns:[mockCampaign(s)],codes:(s.voucher?[{id:'review-code-1',campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+s.voucher.code.slice(-6),status:s.voucher.used?'used':'active',max_uses:1,uses_count:s.voucher.used?1:0,per_user_limit:1,expires_at:Math.floor(s.voucher.expiresAt/1000)}]:[]),redemptions:(s.redemptions||[]).map(function(x){return {id:x.id,campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+x.code.slice(-6),status:'free',created_at:x.created_at};})},200);
+        var campaignList=[mockCampaign(s)].concat((s.campaigns||[]).filter(function(c){return c.id!=='nexusnova-launch-preview-demo';}));
+        var codeList=(s.voucher?[{id:'review-code-1',campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+s.voucher.code.slice(-6),status:s.voucher.used?'used':'active',max_uses:1,uses_count:s.voucher.used?1:0,per_user_limit:1,expires_at:Math.floor(s.voucher.expiresAt/1000)}]:[]).concat((s.issuedCodes||[]).map(function(c){return {id:c.id,campaign_id:c.campaign_id,code_preview:c.code_preview,status:c.status,max_uses:c.max_uses,uses_count:0,per_user_limit:c.per_user_limit,expires_at:c.expires_at};}));
+        return respond({ok:true,campaigns:campaignList,codes:codeList,redemptions:(s.redemptions||[]).map(function(x){return {id:x.id,campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+x.code.slice(-6),status:'free',created_at:x.created_at};})},200);
       }
       var audits=Object.values(s.audits||{}).map(auditSummary);
       return respond({ok:true,audits:audits},200);
