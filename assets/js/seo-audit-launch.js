@@ -1,4 +1,4 @@
-/* Data-driven launch voucher and offer display for NexusNova SEO Audit Studio. No fake countdowns; availability and expiry come from the backend. */
+/* Data-driven launch voucher and offer display for NexusNova SEO Audit Studio. Offer availability and expiry must come from the backend. */
 (() => {
   'use strict';
   const claimButton=document.getElementById('nnAuditClaimVoucher');
