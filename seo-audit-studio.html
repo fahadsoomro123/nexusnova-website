@@ -1672,6 +1672,7 @@
       if(!payload.audit)return;
       state.auditId=payload.audit.auditId; renderReport(payload.audit);
       if(payload.unlocked) await unlockReport(payload.audit.auditId);
+      else await applySavedVoucherForCurrentAudit();
     } catch { /* A previous session is optional for the initial UI. */ }
   };
   const setProgress=(pct,title,detail)=>{el.progressFill.style.width=pct+'%';el.progressPercent.textContent=pct+'%';if(title)el.progressTitle.textContent=title;if(detail)el.progressDetail.textContent=detail;};
@@ -1700,7 +1701,10 @@
       if($('redeemPromoBtn')) $('redeemPromoBtn').textContent='Apply code';
       state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
-      window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
+      window.setTimeout(async()=>{
+        renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
+        await applySavedVoucherForCurrentAudit();
+      },200);
     } catch(error) {
       clearInterval(state.progressTimer); el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
       el.error.textContent = error.name === 'AbortError' ? 'Audit timed out. Please try again; the external audit services may be rate-limited.' : (error.message || 'Audit failed.');
@@ -1784,6 +1788,23 @@
     } finally {
       button.disabled=false;button.textContent=state.promotionRedemptionId?'Code applied':'Apply code';
     }
+  }
+  async function applySavedVoucherForCurrentAudit() {
+    if(!state.auditId||state.paid)return false;
+    let code='';
+    try{code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+    if(!/^[A-Z0-9-]{8,40}$/.test(code))return false;
+    const input=$('promotionCodeInput');
+    if(!input)return false;
+    input.value=code;
+    setStatus($('promotionCodeStatus'),'Your launch voucher is being verified for this audit…');
+    await applyPromotionCode();
+    if(state.paid) {
+      const claimButton=$('claimLaunchVoucherBtn');
+      if(claimButton){claimButton.disabled=true;claimButton.textContent='Full audit unlocked';}
+      return true;
+    }
+    return false;
   }
   function requireAuditForPayment() {
     if(state.auditId)return true;
