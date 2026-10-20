@@ -949,7 +949,7 @@
   const el = {
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
-  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, previousFocus: null };
+  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, accessType: null, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, previousFocus: null };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -1651,7 +1651,7 @@
   const renderPremiumUnlocked = (report) => {
     document.body.classList.add('report-is-paid');
     const topNotice=document.querySelector('.top-note');
-    if(topNotice)topNotice.innerHTML='<span class="green-dot"></span> Paid report unlocked · Verified access';
+    if(topNotice){const source=state.accessType==='owner'?'Owner report unlocked · Free access':state.accessType==='promo'?'Promotion unlocked · Full report access':'Paid report unlocked · Verified access';topNotice.textContent=source;}
     if (el.premiumGate) el.premiumGate.classList.add('is-unlocked');
     if (el.premiumContent) { el.premiumContent.removeAttribute('inert'); el.premiumContent.setAttribute('aria-hidden','false'); }
     state.report=report;
@@ -1699,7 +1699,7 @@
     el.measurement.textContent=`${report.sources?.content?'Website content measured':'Website content unavailable'} · ${report.sources?.pagespeedMobile?'Mobile PageSpeed measured':'Mobile PageSpeed unavailable'} · ${report.sources?.pagespeedDesktop?'Desktop PageSpeed measured':'Desktop PageSpeed unavailable'}`;
     el.footerSource.textContent=`Sources: ${report.sources?.content?'Website content ✓':'Website content unavailable'} · ${report.sources?.pagespeedMobile?'Mobile PageSpeed ✓':'Mobile PageSpeed unavailable'} · ${report.sources?.pagespeedDesktop?'Desktop PageSpeed ✓':'Desktop PageSpeed unavailable'}.`;
     renderSourceDiagnostics(report); renderCategories(report); renderFreeRecommendations(report);
-    state.paid = false; state.fullReport = null; renderPremiumLocked();
+    state.paid = false; state.fullReport = null; state.accessType = null; renderPremiumLocked();
   };
   const unlockReport = async (auditId) => {
     const targetId = auditId || state.auditId;
@@ -1707,7 +1707,7 @@
     const response = await apiFetch('/api/audits/'+encodeURIComponent(targetId)+'/full',{headers:{Accept:'application/json'},cache:'no-store'});
     const payload = await response.json().catch(()=>({}));
     if (!response.ok) throw new Error(payload.error || `Full report is not available (${response.status}).`);
-    state.auditId=targetId; state.fullReport=payload; state.paid=true;
+    state.auditId=targetId; state.fullReport=payload; state.paid=true; state.accessType=state.accessType||'paid';
     renderPremiumUnlocked(payload);
     el.measurement.textContent += ' · Full report unlocked for this session';
     closePaywall();
@@ -1719,7 +1719,7 @@
       const payload=await response.json();
       if(!payload.audit)return;
       state.auditId=payload.audit.auditId; renderReport(payload.audit);
-      if(payload.unlocked) await unlockReport(payload.audit.auditId);
+      if(payload.unlocked){state.accessType=payload.accessType||'paid';await unlockReport(payload.audit.auditId);}
     } catch { /* A previous session is optional for the initial UI. */ }
   };
   const setProgress=(pct,title,detail)=>{el.progressFill.style.width=pct+'%';el.progressPercent.textContent=pct+'%';if(title)el.progressTitle.textContent=title;if(detail)el.progressDetail.textContent=detail;};
@@ -1742,7 +1742,7 @@
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       state.auditId = payload.auditId;
-      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
+      state.fullReport = null; state.paid = false; state.accessType = null; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
       window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
     } catch(error) {
@@ -1854,7 +1854,7 @@
       if(!response.ok)throw new Error(payload.error||'Could not retrieve the order status.');
       if(payload.status==='paid'){
         await unlockReport(payload.auditId||state.auditId);
-        setStatus($('cryptoPaymentStatus'),'Signed provider confirmation verified by the backend. Full report unlocked.','success');
+        state.accessType='paid';setStatus($('cryptoPaymentStatus'),'Signed provider confirmation verified by the backend. Full report unlocked.','success');
       }else if(['failed','cancelled'].includes(payload.status)){
         setStatus($('cryptoPaymentStatus'),'Provider order is '+payload.status+'. No report was unlocked. Check the provider status before creating another order.','error');
       }else{
@@ -1867,7 +1867,7 @@
     for(let attempt=0;attempt<30;attempt++) {
       const response=await apiFetch('/api/orders/'+encodeURIComponent(orderId)+'/status',{headers:{Accept:'application/json'},cache:'no-store'});
       const payload=await response.json().catch(()=>({}));
-      if(response.ok && payload.status==='paid') { state.auditId=payload.auditId; await unlockReport(payload.auditId); return true; }
+      if(response.ok && payload.status==='paid') { state.auditId=payload.auditId; state.accessType='paid'; await unlockReport(payload.auditId); return true; }
       if(response.ok && ['failed','cancelled'].includes(payload.status)) throw new Error('Payment was not completed. You can retry checkout.');
       await new Promise(resolve=>setTimeout(resolve,2000));
     }
@@ -1986,10 +1986,10 @@
       updateCryptoCheckoutAvailability();
       return state.cryptoMinimums.some(option=>option.available===true);
     }
-    if(!state.config||state.config.environment!=='production'||state.config.cryptoProvider!=='nowpayments') {
+    if(!state.config||state.config.environment!=='production'||state.config.cryptoProvider!=='nowpayments'||state.config.cryptoPricingEnabled!==true||Number(state.config.cryptoPrice)<=0) {
       state.cryptoMinimumsLoaded=false;
       $('cryptoAvailabilityNote').hidden=false;
-      $('cryptoAvailabilityNote').textContent='Crypto checkout is unavailable. Use Safepay to pay US$2.99.';
+      $('cryptoAvailabilityNote').textContent='Crypto checkout is paused until a separate crypto price is configured and checked against current network minimums. Safepay remains US$2.99.';
       updateCryptoCheckoutAvailability();
       return false;
     }
@@ -2011,7 +2011,7 @@
         item.disabled=!info||info.available!==true;
         item.hidden=!info||info.available!==true;
       }
-      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number(option.minimumUsd)<=Number(payload.priceUsd||2.99))
+      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number(option.minimumUsd)<=Number(payload.priceUsd||state.config.cryptoPrice||0))
         .sort((a,b)=>Number(a.minimumUsd)-Number(b.minimumUsd));
       if(eligible.length) {
         const current=eligible.find(option=>option.network===$('cryptoNetwork').value);
@@ -2021,13 +2021,13 @@
           note.hidden=true;
         } else {
           note.hidden=false;
-          note.textContent='This network accepts US$2.99, but live crypto checkout is not enabled yet. Use Safepay for this payment.';
+          note.textContent='This network minimum is within the configured US
         }
         return true;
       }
       const currentMinimums=state.cryptoMinimums.filter(option=>Number.isFinite(Number(option.minimumUsd)))
         .map(option=>option.label+': minimum US$'+Number(option.minimumUsd).toFixed(2)).join(' · ');
-      note.textContent='No supported crypto network currently accepts US$'+Number(payload.priceUsd||2.99).toFixed(2)+'. '+currentMinimums+'. Use Safepay for this report.';
+      note.textContent='No supported network minimum fits the configured crypto price of US$'+Number(payload.priceUsd||0).toFixed(2)+'. '+currentMinimums+'. Safepay remains US$2.99.';
       return false;
     } catch {
       state.cryptoMinimumsLoaded=false;
@@ -2057,7 +2057,109 @@
     button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
     button.title=available
       ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
-      :'Crypto checkout requires a verified provider minimum no higher than US$2.99.';
+      :'Crypto checkout needs an explicitly configured crypto price and a verified provider minimum no higher than that price.';
+    if(note&&available)note.hidden=true;
+    else if(note)note.hidden=false;
+    return available;
+  }
+  async function initializePayments() {
+    const retryButton=$('retryPaymentSettingsBtn');
+    if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Loading payment settings…';}
+    $('safepayCheckoutBtn').disabled=true;
+    $('prepareCryptoBtn').disabled=true;
+    try {
+      state.cryptoMinimums=[];
+      state.cryptoMinimumsLoaded=false;
+      state.cryptoMinimumsAuditId=null;
+      const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
+      state.config=await response.json();
+      if(retryButton){retryButton.hidden=true;retryButton.disabled=false;}
+      $('cardPaymentStatus').hidden=true;
+      $('cardPaymentStatus').textContent='';
+      const lockedNote=document.querySelector('.locked-note');
+      if(lockedNote)lockedNote.textContent='Full report access is granted after the payment provider confirms the transaction.';
+      $('cryptoWalletAddress').textContent='A verified receiving address will appear when checkout is available.';
+      const cryptoDescription=$('cryptoPricingDescription');if(cryptoDescription)cryptoDescription.textContent=state.config.cryptoPricingEnabled===true&&Number(state.config.cryptoPrice)>0?'Separate crypto price: US$'+Number(state.config.cryptoPrice).toFixed(2)+'. The current minimum is checked before an order can be opened. Safepay remains US$2.99.':'Crypto checkout is temporarily paused while a separate crypto price is configured. Safepay remains US$2.99.';
+      if($('ownerAccessStatus') && state.config.ownerAccessConfigured!==true) $('ownerAccessStatus').textContent='Owner controls are not configured yet. Add the AUDIT_OWNER_ACCESS_TOKEN secret to this dedicated Cloudflare Worker before using these controls.';
+      $('cryptoWalletNotice').textContent='Confirm the selected currency and amount before sending funds. Report access requires provider verification.';
+      $('cryptoNetwork').disabled=false;
+      $('cryptoPaymentDetails').hidden=true;
+      $('cryptoPaymentStatus').hidden=true;
+      $('verifyCryptoBtn').hidden=true;
+      const ready=safepayCheckoutReady();
+      $('safepayCheckoutBtn').disabled=!ready;
+      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
+      if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
+      updateCryptoCheckoutAvailability();
+    } catch {
+      state.config=null;
+      $('safepayCheckoutBtn').disabled=true;
+      $('prepareCryptoBtn').disabled=true;
+      $('safepayCheckoutBtn').textContent='Secure checkout unavailable';
+      $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
+      const note=$('cryptoAvailabilityNote'); if(note)note.hidden=false;
+      setStatus($('cardPaymentStatus'),'Secure payment settings are unavailable. Your report remains locked; no payment was started.');
+      if(retryButton){retryButton.hidden=false;retryButton.disabled=false;retryButton.textContent='Retry payment settings';}
+    }
+  }
+  async function handlePaymentReturn() {
+    const query=new URLSearchParams(window.location.search);
+    const orderId=query.get('orderId');
+    if(query.get('payment')==='return' && orderId) {
+      try {
+        setStatus($('paymentContextNotice'),'Safepay returned to the site. Verifying payment directly with Safepay; the report stays locked until the server confirms it.');
+        await pollOrder(orderId);
+      } catch(error) { setStatus($('paymentContextNotice'),error.message,'error');openPaywall(); }
+      history.replaceState({},'',window.location.pathname);
+    } else if(query.get('payment')==='cancel') {
+      const productionMode = state.config?.environment === 'production';
+      setStatus($('paymentContextNotice'),'Checkout was cancelled. The report remains locked; you can retry when ready.');
+      history.replaceState({},'',window.location.pathname);
+    }
+  }
+  const footerYear=$('footerYear'); if(footerYear) footerYear.textContent=new Date().getFullYear();
+  initializePayments().then(()=>restoreLatestAudit().then(()=>handlePaymentReturn()));
+})();
+</script>
+</body>
+</html>
++Number(payload.priceUsd).toFixed(2)+' crypto price, but live crypto checkout is not enabled yet. Safepay remains US$2.99.';
+        }
+        return true;
+      }
+      const currentMinimums=state.cryptoMinimums.filter(option=>Number.isFinite(Number(option.minimumUsd)))
+        .map(option=>option.label+': minimum US$'+Number(option.minimumUsd).toFixed(2)).join(' · ');
+      note.textContent='No supported network minimum fits the configured crypto price of US$'+Number(payload.priceUsd||0).toFixed(2)+'. '+currentMinimums+'. Safepay remains US$2.99.';
+      return false;
+    } catch {
+      state.cryptoMinimumsLoaded=false;
+      note.textContent='Crypto minimums could not be verified right now. Do not transfer funds; use Safepay instead.';
+      return false;
+    } finally {
+      state.cryptoMinimumsLoading=false;
+      updateCryptoCheckoutAvailability();
+    }
+  }
+  function updateCryptoCheckoutAvailability() {
+    const button=$('prepareCryptoBtn');
+    const note=$('cryptoAvailabilityNote');
+    if(!state.config) {
+      button.disabled=true;
+      button.textContent='Crypto checkout unavailable';
+      if(note)note.hidden=false;
+      return false;
+    }
+    const config=state.config;
+    const network=$('cryptoNetwork').value;
+    const option=state.cryptoMinimums.find(item=>item.network===network);
+    const available=config.environment==='production' && config.livePaymentsEnabled===true &&
+      config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true &&
+      state.cryptoMinimumsLoaded===true && state.cryptoMinimumsAuditId===state.auditId && option?.available===true;
+    button.disabled=!available||Boolean(state.cryptoOrderId)||state.cryptoMinimumsLoading;
+    button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
+    button.title=available
+      ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
+      :'Crypto checkout needs an explicitly configured crypto price and a verified provider minimum no higher than that price.';
     if(note&&available)note.hidden=true;
     else if(note)note.hidden=false;
     return available;
