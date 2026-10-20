@@ -14,7 +14,8 @@ test('homepage presents SEO Audit Studio launch CTA before the existing first se
   const header = html.indexOf('</header>');
   const main = html.indexOf('<main class="nn-main">');
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
-  assert.ok(header >= 0 && banner > header && banner < main, 'launch banner must be immediately visible after site navigation');
+  const h1 = html.indexOf('<h1 id="new-tools-title">');
+  assert.ok(header >= 0 && main > header && banner > main && banner < h1, 'launch banner must be first content after navigation and before the homepage H1');
   assert.match(html, /NEW LAUNCH[\s\S]{0,150}EARLY ACCESS/);
   assert.match(html, /Run Your Free Audit/);
   assert.match(html, /href="seo-audit-studio\.html"/);
