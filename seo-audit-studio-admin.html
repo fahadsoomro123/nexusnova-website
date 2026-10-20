@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#111827">
+  <title>SEO Audit Studio | Owner Console</title>
+  <style>
+    :root{color-scheme:light;--ink:#172235;--muted:#64748b;--line:#dbe3ee;--soft:#f6f8fc;--brand:#5b21b6;--good:#176b41;--bad:#9f2735}
+    *{box-sizing:border-box}body{margin:0;background:#f6f8fc;color:var(--ink);font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:1120px;margin:0 auto;padding:28px 16px 64px}header{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:20px}
+    h1{font-size:24px;line-height:1.2;letter-spacing:-.04em;margin:0}h2{font-size:15px;margin:0 0 12px}h3{font-size:12px;margin:0 0 5px}
+    p{margin:5px 0;color:var(--muted);font-size:12px}.eyebrow{font:800 9px/1.3 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.12em;color:#6d28d9;margin-bottom:7px}
+    a{color:#5b21b6}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;min-height:36px;padding:7px 11px;font-size:11px;font-weight:800}
+    button.primary{background:var(--brand);color:#fff;border-color:var(--brand)}button.danger{color:var(--bad);border-color:#efc4c8}button:disabled{opacity:.5;cursor:not-allowed}
+    input,select,textarea{width:100%;min-width:0;border:1px solid #cfd8e5;border-radius:8px;background:#fff;color:#243247;padding:9px 10px;font-size:12px}label{display:grid;gap:5px;color:#526177;font-size:10px;font-weight:800}
+    textarea{min-height:70px;resize:vertical}.stack{display:grid;gap:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .panel{padding:17px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 5px 18px rgba(23,34,53,.035);margin-bottom:14px;min-width:0}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.muted{color:var(--muted)}.small{font-size:10px}.notice{padding:10px 12px;border:1px solid #dce4ef;border-radius:9px;background:#f8fafc;color:#526177;font-size:11px;line-height:1.5;white-space:pre-wrap}.notice.good{background:#effbf4;color:var(--good);border-color:#bfebd0}.notice.error{background:#fff3f3;color:var(--bad);border-color:#f2c9cd}
+    .list{display:grid;gap:9px}.item{padding:12px;border:1px solid #e1e7f0;border-radius:10px;background:#fbfcfe;min-width:0}.item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.meta{font-size:10px;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}.pill{display:inline-block;padding:3px 6px;border-radius:6px;background:#eef2f7;color:#475569;font:800 8px/1.3 ui-monospace,monospace;text-transform:uppercase}.pill.active,.pill.free,.pill.used{background:#e8f8ee;color:#176b41}.pill.paused,.pill.draft,.pill.reserved{background:#fff6df;color:#8a5b05}.pill.revoked,.pill.expired{background:#fff0f0;color:#9f2735}
+    .code{font:800 13px/1.4 ui-monospace,monospace;letter-spacing:.05em;word-break:break-all}.codebox{padding:12px;border:1px dashed #b6c4d8;background:#f8faff;border-radius:9px;margin-top:10px}.output{max-height:460px;overflow:auto;padding:12px;border:1px solid #dce4ef;border-radius:9px;background:#111827;color:#e5e7eb;font:10px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+    #console[hidden],#ownerApp[hidden]{display:none!important}.field-note{font-weight:500;color:#718096;font-size:9px}.inline{display:flex;align-items:center;gap:8px}.inline input{width:auto}.top-links{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:800}
+    @media(max-width:700px){main{padding:20px 12px 44px}header{flex-direction:column}.panel{padding:13px}.grid,.three{grid-template-columns:1fr}.item-head{flex-direction:column}.top-links{gap:8px}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><div class="eyebrow">NexusNova · Private administration</div><h1>SEO Audit Studio Owner Console</h1><p>Owner-only reports, campaign setup, one-time voucher issuance and redemption history.</p></div>
+    <nav class="top-links"><a href="seo-audit-studio.html">Open Audit Studio ↗</a><a href="index.html">Website home ↗</a></nav>
+  </header>
+  <section class="panel" id="loginPanel">
+    <h2>Secure owner authentication</h2>
+    <p>Enter the Worker secret configured as <code>AUDIT_OWNER_ADMIN_TOKEN</code>. It is sent only in an HTTPS request header and held in this page's memory while the console is open. It is not saved in browser storage.</p>
+    <form id="loginForm" class="stack">
+      <label>Owner admin token<input id="ownerTokenInput" type="password" autocomplete="current-password" minlength="32" required placeholder="Paste the secret from your password manager"></label>
+      <div class="actions"><button class="primary" id="connectBtn" type="submit">Connect securely</button></div>
+      <div id="loginStatus" class="notice" role="status" aria-live="polite">Authentication is required before any owner data can be requested.</div>
+    </form>
+  </section>
+  <div id="console" hidden>
+    <div class="panel row">
+      <div><h2>Owner session</h2><p>Authenticated through the isolated SEO Audit Studio Worker. No Safepay or HumanProof session is reused.</p></div>
+      <div class="actions"><button id="refreshBtn" type="button">Refresh owner data</button><button id="disconnectBtn" type="button">Disconnect</button></div>
+      <div id="globalStatus" class="notice" role="status" aria-live="polite" style="width:100%">Connected. No public campaign is activated automatically.</div>
+    </div>
+
+    <section class="panel">
+      <h2>Run a private free audit</h2>
+      <p>Use this to audit your site or any public HTTPS website. The report is unlocked by a server-side owner entitlement, not by a frontend flag. Private/local/IP-literal destinations remain blocked by the Worker.</p>
+      <form id="ownerAuditForm" class="stack">
+        <label>Website URL<input id="ownerAuditUrl" type="url" required placeholder="https://nexusnovatools.com"></label>
+        <div class="actions"><button class="primary" id="ownerAuditBtn" type="submit">Run free owner audit</button></div>
+      </form>
+      <div id="auditOutput" class="stack" style="margin-top:12px"></div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>Create a launch campaign</h2><p>Every new campaign starts as <strong>Draft</strong>. It cannot advertise or redeem until you explicitly activate it.</p></div><span class="pill draft">Draft by default</span></div>
+      <form id="campaignForm" class="stack">
+        <label>Campaign name<input id="campaignName" required minlength="3" maxlength="120" placeholder="SEO Audit Studio early access"></label>
+        <div class="three">
+          <label>Offer type<select id="offerType"><option value="percent">Percentage discount</option><option value="fixed">Fixed discount (USD)</option><option value="free_report">100% free full report</option></select></label>
+          <label>Offer value<input id="offerValue" type="number" min="1" max="100" step="1" value="20" required><span id="offerHelp" class="field-note">Enter a whole percentage from 1 to 100.</span></label>
+          <label>Total eligible claims<input id="campaignLimit" type="number" min="1" max="1000000" value="20" step="1" required></label>
+        </div>
+        <div class="three">
+          <label>Campaign starts (your local time)<input id="campaignStarts" type="datetime-local" required></label>
+          <label>Campaign ends (your local time)<input id="campaignEnds" type="datetime-local" required></label>
+          <label>Max claims per session<input id="campaignPerUser" type="number" min="1" max="100" value="1" step="1" required></label>
+        </div>
+        <label>Offer terms for visitors<textarea id="campaignTerms" maxlength="500" placeholder="Eligibility, included report type, limitations and expiry terms."></textarea></label>
+        <div class="notice">Nothing is activated here automatically. Review the final offer and claim limit before using the separate Activate button on a draft campaign. Activation makes the offer publicly redeemable while it is valid.</div>
+        <div class="actions"><button class="primary" id="createCampaignBtn" type="submit">Create draft campaign</button></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>Campaigns and voucher codes</h2><p>Codes are shown in full only once when generated; storage keeps a SHA-256 hash and short preview.</p></div><span class="pill">Owner-controlled</span></div>
+      <div id="campaignList" class="list"><div class="notice">Load owner data to view campaigns.</div></div>
+      <form id="codeForm" class="stack" style="margin-top:17px">
+        <h3>Issue a private or limited-use code</h3>
+        <label>Campaign<select id="codeCampaign" required><option value="">Select a campaign</option></select></label>
+        <div class="three">
+          <label>Maximum redemptions<input id="codeMaxUses" type="number" min="1" step="1" value="1" required></label>
+          <label>Claims per session<input id="codePerUser" type="number" min="1" step="1" value="1" required></label>
+          <label>Code expiry (optional local time)<input id="codeExpiry" type="datetime-local"></label>
+        </div>
+        <label>Restrict to a session reference prefix (optional)<input id="targetSessionRef" maxlength="16" pattern="[a-fA-F0-9]{6,16}" placeholder="Select a user reference from the history below"><span class="field-note">Use the hexadecimal user reference shown in audit/redemption history. Leave empty for a general code.</span></label>
+        <div class="actions"><button class="primary" id="issueCodeBtn" type="submit">Generate code</button></div>
+        <div id="newCodeOutput" hidden></div>
+      </form>
+      <div style="margin-top:17px"><h3>Existing codes</h3><div id="codeList" class="list"><div class="notice">No data loaded.</div></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><div><h2>Audit history and private access</h2><p>Open any unexpired report with owner authentication, or unlock it for its existing session using a private server-side entitlement.</p></div></div>
+      <div id="auditHistory" class="list"><div class="notice">No history loaded.</div></div>
+    </section>
+
+    <section class="panel">
+      <h2>Redemption history</h2><p>Session references are truncated; full session tokens are not returned by these owner endpoints.</p>
+      <div id="redemptionHistory" class="list"><div class="notice">No redemptions loaded.</div></div>
+    </section>
+  </div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const API='https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
+  const $=id=>document.getElementById(id);
+  const state={token:'',campaigns:[],codes:[],redemptions:[],audits:[]};
+  const text=(tag,value,className='')=>{const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value??'');return node;};
+  const button=(label,handler,kind='')=>{const node=text('button',label,kind);node.type='button';node.addEventListener('click',handler);return node;};
+  const notice=(message,tone='')=>text('div',message,'notice'+(tone?' '+tone:''));
+  const dateTime=seconds=>{if(!seconds)return 'Not set';const d=new Date(Number(seconds)*1000);return Number.isNaN(d.getTime())?'Invalid date':d.toLocaleString();};
+  const money=cents=>'US$'+(Number(cents||0)/100).toFixed(2);
+  async function api(path,options={}) {
+    if(!state.token) throw new Error('Connect using the owner token first.');
+    const headers=new Headers(options.headers||{});
+    headers.set('X-Owner-Admin-Token',state.token);
+    headers.set('Accept','application/json');
+    if(options.body!==undefined)headers.set('Content-Type','application/json');
+    const response=await fetch(API+path,{...options,headers,mode:'cors',credentials:'omit',cache:'no-store',redirect:'error'});
+    const body=await response.json().catch(()=>({}));
+    if(response.status===401){disconnect();throw new Error('Owner token was rejected. Connect again.');}
+    if(!response.ok)throw new Error(body.error||('Request failed (HTTP '+response.status+').'));
+    return body;
+  }
+  function setGlobal(message,tone=''){const target=$('globalStatus');target.className='notice'+(tone?' '+tone:'');target.textContent=message;}
+  function disconnect(){
+    state.token='';state.campaigns=[];state.codes=[];state.redemptions=[];state.audits=[];
+    $('console').hidden=true;$('loginPanel').hidden=false;$('ownerTokenInput').value='';
+    $('loginStatus').textContent='Disconnected. The token was cleared from page memory.';
+  }
+  async function refreshAll(){
+    setGlobal('Loading owner data…');
+    try{
+      const [promo,audit]=await Promise.all([api('/api/admin/promotions'),api('/api/admin/audits')]);
+      state.campaigns=promo.campaigns||[];state.codes=promo.codes||[];state.redemptions=promo.redemptions||[];state.audits=audit.audits||[];
+      renderAll();setGlobal('Owner data refreshed. No campaign was activated by this request.','good');
+    }catch(error){setGlobal(error.message||'Could not load owner data.','error');}
+  }
+  function renderAll(){renderCampaigns();renderCodes();renderAuditHistory();renderRedemptions();renderCampaignSelect();}
+  function renderCampaignSelect(){
+    const select=$('codeCampaign'),current=select.value;select.replaceChildren(new Option('Select a campaign',''));
+    state.campaigns.forEach(c=>select.add(new Option(c.name+' · '+c.status+' · '+c.claimed_count+'/'+c.total_limit,c.id)));
+    if(state.campaigns.some(c=>c.id===current))select.value=current;
+  }
+  function offerDescription(c){return c.offer_type==='percent'?String(c.offer_value)+'% off':c.offer_type==='fixed'?money(c.offer_value)+' off':'Free full report (100% off)';}
+  function renderCampaigns(){
+    const root=$('campaignList');root.replaceChildren();
+    if(!state.campaigns.length){root.append(notice('No campaigns yet. Create a draft above; public offers stay hidden until explicitly activated.'));return;}
+    state.campaigns.forEach(c=>{
+      const item=text('article','','item'),head=text('div','','item-head'),left=text('div'),right=text('span',c.status,'pill '+c.status);
+      left.append(text('h3',c.name),text('div',offerDescription(c),'meta'),text('div','Claims: '+c.claimed_count+' / '+c.total_limit+' · Per session: '+c.per_user_limit,'meta'),
+        text('div','Starts: '+dateTime(c.starts_at)+' · Ends: '+dateTime(c.ends_at),'meta'));
+      if(c.terms)left.append(text('div','Terms: '+c.terms,'meta'));
+      head.append(left,right);item.append(head);
+      const actions=text('div','','actions');
+      if(c.status!=='active'&&c.status!=='ended')actions.append(button('Activate',async()=>{
+        const remaining=Number(c.total_limit)-Number(c.claimed_count);
+        if(!confirm('Activate this public campaign?\nOffer: '+offerDescription(c)+'\nRemaining claims: '+remaining+'\nEnd: '+dateTime(c.ends_at)+'\n\nThis makes the campaign publicly redeemable until expiry or exhaustion.'))return;
+        try{await api('/api/admin/promotions/campaigns/'+encodeURIComponent(c.id)+'/status',{method:'POST',body:JSON.stringify({status:'active'})});await refreshAll();}
+        catch(e){setGlobal(e.message,'error');}
+      },'primary'));
+      if(c.status==='active')actions.append(button('Pause campaign',async()=>{
+        if(!confirm('Pause this campaign? Existing already-created orders are not cancelled.'))return;
+        try{await api('/api/admin/promotions/campaigns/'+encodeURIComponent(c.id)+'/status',{method:'POST',body:JSON.stringify({status:'paused'})});await refreshAll();}
+        catch(e){setGlobal(e.message,'error');}
+      },'danger'));
+      item.append(actions);root.append(item);
+    });
+  }
+  function renderCodes(){
+    const root=$('codeList');root.replaceChildren();
+    if(!state.codes.length){root.append(notice('No codes issued.'));return;}
+    state.codes.forEach(c=>{
+      const item=text('article','','item'),head=text('div','','item-head'),left=text('div');
+      left.append(text('h3',c.code_preview+' · '+c.status,'code'),text('div','Uses: '+c.uses_count+' / '+c.max_uses+' · Per session: '+c.per_user_limit,'meta'),
+        text('div','Expiry: '+dateTime(c.expires_at)+' · Target user: '+(c.target_session_ref||'Any eligible user'),'meta'));
+      head.append(left,text('span',c.status,'pill '+c.status));item.append(head);
+      if(c.status==='active')item.append(button('Deactivate code',async()=>{
+        if(!confirm('Deactivate this code immediately?'))return;
+        try{await api('/api/admin/promotions/codes/'+encodeURIComponent(c.id)+'/deactivate',{method:'POST',body:'{}'});await refreshAll();}
+        catch(e){setGlobal(e.message,'error');}
+      },'danger'));
+      root.append(item);
+    });
+  }
+  function renderAuditHistory(){
+    const root=$('auditHistory');root.replaceChildren();
+    if(!state.audits.length){root.append(notice('No audit history.'));return;}
+    state.audits.forEach(a=>{
+      const item=text('article','','item'),head=text('div','','item-head'),left=text('div');
+      left.append(text('h3',a.url),text('div','User reference: '+a.user_ref+' · Created: '+dateTime(a.created_at)+' · Expires: '+dateTime(a.expires_at),'meta'));
+      head.append(left,text('span',a.audit_id.slice(0,8),'pill'));item.append(head);
+      const actions=text('div','','actions');
+      actions.append(button('View full report',()=>showFullReport(a.audit_id)));
+      actions.append(button('Unlock for this session',async()=>{
+        if(!confirm('Grant a permanent owner entitlement for this existing audit session until its audit expires?'))return;
+        try{const r=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/unlock',{method:'POST',body:'{}'});setGlobal('Owner entitlement recorded for audit '+r.auditId+'.','good');}
+        catch(e){setGlobal(e.message,'error');}
+      }));
+      root.append(item);item.append(actions);
+    });
+  }
+  async function showFullReport(auditId){
+    try{
+      const report=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/full');
+      const out=$('auditOutput');out.replaceChildren(text('h3','Full report · '+auditId));
+      const pre=text('pre',JSON.stringify(report,null,2),'output');out.append(pre);
+      out.append(button('Download report JSON',()=>{
+        const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexusnova-audit-'+auditId+'.json';a.click();URL.revokeObjectURL(url);
+      }));
+      out.scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){setGlobal(e.message,'error');}
+  }
+  function renderRedemptions(){
+    const root=$('redemptionHistory');root.replaceChildren();
+    if(!state.redemptions.length){root.append(notice('No redemption records yet.'));return;}
+    state.redemptions.forEach(r=>{
+      const item=text('article','','item'),head=text('div','','item-head'),left=text('div');
+      left.append(text('h3',(r.code_preview||'Code')+' · '+offerDescription({offer_type:r.offer_type,offer_value:r.offer_value})),
+        text('div','Status: '+r.status+' · User reference: '+r.user_ref+' · Audit: '+r.audit_id,'meta'),
+        text('div','Discount: '+money(r.discount_minor)+' · Amount due: '+money(r.amount_due_minor)+' · Created: '+dateTime(r.created_at),'meta'),
+        text('div','Order: '+(r.order_id||'No payment order linked'),'meta'));
+      head.append(left,text('span',r.status,'pill '+r.status));item.append(head);root.append(item);
+    });
+  }
+  $('loginForm').addEventListener('submit',async event=>{
+    event.preventDefault();const value=$('ownerTokenInput').value;
+    if(value.length<32){$('loginStatus').className='notice error';$('loginStatus').textContent='Token must be at least 32 characters. It is never stored in browser storage.';return;}
+    $('connectBtn').disabled=true;state.token=value;$('ownerTokenInput').value='';$('loginStatus').textContent='Checking owner credentials…';
+    try{
+      await api('/api/admin/promotions');$('loginPanel').hidden=true;$('console').hidden=false;await refreshAll();
+    }catch(error){state.token='';$('loginStatus').className='notice error';$('loginStatus').textContent=error.message||'Authentication failed.';}
+    finally{$('connectBtn').disabled=false;}
+  });
+  $('disconnectBtn').addEventListener('click',disconnect);
+  $('refreshBtn').addEventListener('click',refreshAll);
+  $('ownerAuditForm').addEventListener('submit',async event=>{
+    event.preventDefault();const button=$('ownerAuditBtn');button.disabled=true;button.textContent='Running audit…';
+    try{const r=await api('/api/admin/audits',{method:'POST',body:JSON.stringify({url:$('ownerAuditUrl').value.trim()})});
+      state.lastOwnerAuditId=r.auditId;const out=$('auditOutput');out.replaceChildren(text('h3','Owner audit created · '+r.auditId),notice('Owner-only free report was generated and entitled by the server.','good'),text('div',r.preview?.url||$('ownerAuditUrl').value,'meta'));
+      out.append(button('View full report',()=>showFullReport(r.auditId)));
+      setGlobal('Owner audit succeeded: '+r.auditId+'.','good');await refreshAll();
+    }catch(error){setGlobal(error.message||'Owner audit failed.','error');}
+    finally{button.disabled=false;button.textContent='Run free owner audit';}
+  });
+  $('offerType').addEventListener('change',()=>{
+    const type=$('offerType').value,field=$('offerValue'),help=$('offerHelp');
+    if(type==='free_report'){field.value='100';field.disabled=true;field.min='100';field.max='100';help.textContent='Free-report access is 100% off.';}
+    else if(type==='fixed'){field.disabled=false;field.min='1';field.max='1000000';field.value='2.99';field.step='0.01';help.textContent='Enter a USD amount; it is converted to cents on submit.';}
+    else{field.disabled=false;field.min='1';field.max='100';field.value='20';field.step='1';help.textContent='Enter a whole percentage from 1 to 100.';}
+  });
+  $('campaignForm').addEventListener('submit',async event=>{
+    event.preventDefault();const type=$('offerType').value;
+    const rawValue=Number($('offerValue').value),offerValue=type==='fixed'?Math.round(rawValue*100):rawValue;
+    const startsAt=Math.floor(new Date($('campaignStarts').value).getTime()/1000),endsAt=Math.floor(new Date($('campaignEnds').value).getTime()/1000);
+    if(!Number.isFinite(startsAt)||!Number.isFinite(endsAt)||endsAt<=startsAt){setGlobal('Campaign start and end dates are invalid.','error');return;}
+    const button=$('createCampaignBtn');button.disabled=true;
+    try{
+      const r=await api('/api/admin/promotions/campaigns',{method:'POST',body:JSON.stringify({name:$('campaignName').value.trim(),offerType:type,offerValue,startsAt,endsAt,totalLimit:Number($('campaignLimit').value),perUserLimit:Number($('campaignPerUser').value),terms:$('campaignTerms').value.trim()})});
+      setGlobal('Draft created: '+r.campaign.id+'. It remains private/inactive until you explicitly activate it.','good');$('campaignForm').reset();await refreshAll();
+    }catch(error){setGlobal(error.message||'Campaign could not be created.','error');}
+    finally{button.disabled=false;}
+  });
+  $('codeForm').addEventListener('submit',async event=>{
+    event.preventDefault();const campaignId=$('codeCampaign').value;
+    if(!campaignId){setGlobal('Select a campaign first.','error');return;}
+    const expires=$('codeExpiry').value?Math.floor(new Date($('codeExpiry').value).getTime()/1000):null;
+    const button=$('issueCodeBtn');button.disabled=true;
+    try{
+      const r=await api('/api/admin/promotions/campaigns/'+encodeURIComponent(campaignId)+'/codes',{method:'POST',body:JSON.stringify({maxUses:Number($('codeMaxUses').value),perUserLimit:Number($('codePerUser').value),expiresAt:expires,targetSessionRef:$('targetSessionRef').value.trim()||null})});
+      const root=$('newCodeOutput');root.hidden=false;root.replaceChildren(text('div','Copy this code now. It will not be revealed in full again.','notice good'));
+      const box=text('div','','codebox');box.append(text('div',r.code,'code'),text('div','Max uses: '+r.maxUses+' · Per session: '+r.perUserLimit+' · Expires: '+dateTime(r.expiresAt),'meta'));
+      box.append(button('Copy code',async()=>{try{await navigator.clipboard.writeText(r.code);setGlobal('Code copied. Keep it private.','good');}catch{setGlobal('Clipboard is unavailable. Select the code text and copy it manually.','error');}}));
+      root.append(box);setGlobal('Voucher generated. The database stores only a hash; retain the full code securely.','good');$('targetSessionRef').value='';$('codeExpiry').value='';await refreshAll();
+    }catch(error){setGlobal(error.message||'Code could not be generated.','error');}
+    finally{button.disabled=false;}
+  });
+  $('campaignStarts').value=new Date(Date.now()+3600000).toISOString().slice(0,16);
+  $('campaignEnds').value=new Date(Date.now()+7*86400000).toISOString().slice(0,16);
+})();
+</script>
+</body>
+</html>
