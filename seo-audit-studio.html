@@ -1833,7 +1833,7 @@
       $('cryptoPaymentStatus').hidden=false;
       $('cryptoNetworkLabel').textContent=selectedOption.label+' receiving address';
       $('cryptoWalletAddress').textContent=payload.walletAddress;
-      $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||2.99).toFixed(2)+')';
+      $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||state.config?.cryptoPrice||0).toFixed(2)+')';
       $('verifyCryptoBtn').hidden=false;
       $('verifyCryptoBtn').textContent='Check payment status';
       $('cryptoWalletNotice').textContent='Send only the displayed amount using '+selectedOption.label+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this exact order, currency and amount. Do not pay twice while the order is pending.';
@@ -2062,6 +2062,89 @@
     else if(note)note.hidden=false;
     return available;
   }
+  async function ownerApi(path,method='GET',body) {
+    const token=$('ownerAccessToken').value.trim();
+    if(token.length<40)throw new Error('Enter the private owner token configured in Cloudflare. The token must contain at least 40 characters.');
+    const headers=new Headers({Accept:'application/json','X-Audit-Owner-Token':token});
+    const init={method,headers,cache:'no-store'};
+    if(body!==undefined){headers.set('Content-Type','application/json');init.body=JSON.stringify(body);}
+    const response=await apiFetch(path,init);
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload.error||'Owner request failed ('+response.status+').');
+    return payload;
+  }
+  async function ownerUnlockReport() {
+    if(!requireAuditForPayment())return;
+    const button=$('ownerFreeUnlockBtn');button.disabled=true;
+    try{
+      await ownerApi('/api/owner/free-unlock','POST',{auditId:state.auditId});
+      state.accessType='owner';
+      await unlockReport(state.auditId);
+      setStatus($('ownerAccessStatus'),'Full report unlocked through owner access. No payment or API token was consumed.');
+    }catch(error){setStatus($('ownerAccessStatus'),error.message,'error');}
+    finally{button.disabled=false;}
+  }
+  async function redeemPromo() {
+    if(!requireAuditForPayment()){setStatus($('promoRedemptionStatus'),'Run the audit first, then redeem your voucher for that report.','error');return;}
+    const code=$('promoCodeInput').value.trim().toUpperCase();
+    const button=$('redeemPromoBtn');button.disabled=true;
+    try{
+      const payload=await apiPost('/api/promos/redeem',{auditId:state.auditId,code});
+      state.accessType='promo';
+      await unlockReport(payload.auditId||state.auditId);
+      setStatus($('promoRedemptionStatus'),payload.alreadyRedeemed?'This voucher was already redeemed for this report. Full report unlocked.':'Voucher accepted. Full report unlocked for this audit.','success');
+    }catch(error){setStatus($('promoRedemptionStatus'),error.message,'error');}
+    finally{button.disabled=false;}
+  }
+  async function refreshOwnerPromos() {
+    const container=$('ownerPromoList');container.replaceChildren();
+    try{
+      const payload=await ownerApi('/api/owner/promos','GET');
+      if(!payload.promos?.length){container.textContent='No promotional offers have been created yet.';return;}
+      payload.promos.forEach(item=>{
+        const card=document.createElement('div');card.className='owner-promo-item';
+        const copy=document.createElement('div');
+        const title=document.createElement('strong');title.textContent=String(item.label||'NexusNova offer');
+        const meta=document.createElement('small');meta.textContent=String(item.used_count)+' / '+String(item.max_uses)+' redemptions · expires '+new Date(Number(item.expires_at)*1000).toLocaleDateString()+' · '+(Number(item.active)===1?'Active':'Disabled');
+        copy.append(title,meta);card.append(copy);
+        if(Number(item.active)===1){
+          const disable=document.createElement('button');disable.type='button';disable.className='secondary-btn';disable.textContent='Turn off';
+          disable.addEventListener('click',async()=>{
+            disable.disabled=true;
+            try{await ownerApi('/api/owner/promos/'+encodeURIComponent(item.id)+'/disable','POST',{});setStatus($('ownerAccessStatus'),'Offer disabled. New redemptions are blocked.','success');await refreshOwnerPromos();}
+            catch(error){setStatus($('ownerAccessStatus'),error.message,'error');disable.disabled=false;}
+          });
+          card.append(disable);
+        }
+        container.append(card);
+      });
+    }catch(error){container.textContent=error.message;setStatus($('ownerAccessStatus'),error.message,'error');}
+  }
+  async function createPromo() {
+    const button=$('createPromoBtn');button.disabled=true;
+    try{
+      const label=$('ownerPromoLabel').value.trim()||'Free full-report offer';
+      const maxUses=Number($('ownerPromoMaxUses').value),expiresInDays=Number($('ownerPromoDays').value);
+      const payload=await ownerApi('/api/owner/promos','POST',{label,maxUses,expiresInDays});
+      $('ownerPromoGeneratedCode').textContent=payload.code;
+      $('ownerPromoGeneratedWrap').hidden=false;
+      setStatus($('ownerAccessStatus'),'Offer created. Copy the code now and share it with the intended users. It expires in '+expiresInDays+' day(s) or when its use limit is reached.','success');
+      await refreshOwnerPromos();
+    }catch(error){setStatus($('ownerAccessStatus'),error.message,'error');}
+    finally{button.disabled=false;}
+  }
+  $('ownerFreeUnlockBtn').addEventListener('click',ownerUnlockReport);
+  $('refreshOwnerPromosBtn').addEventListener('click',refreshOwnerPromos);
+  $('createPromoBtn').addEventListener('click',createPromo);
+  $('redeemPromoBtn').addEventListener('click',redeemPromo);
+  $('promoCodeInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();redeemPromo();}});
+  $('ownerAccessToken').addEventListener('change',()=>{if($('ownerAccessToken').value.trim().length>=40)setStatus($('ownerAccessStatus'),'Owner token entered for this tab only. Refresh offers or unlock the current report.');});
+  $('copyPromoCodeBtn').addEventListener('click',async()=>{
+    const code=$('ownerPromoGeneratedCode').textContent;
+    if(!code)return;
+    try{await navigator.clipboard.writeText(code);setStatus($('ownerAccessStatus'),'Voucher copied. The raw code will not be shown again after this page is refreshed.','success');}
+    catch{setStatus($('ownerAccessStatus'),'Clipboard access was blocked. Select and copy the visible voucher code manually.');}
+  });
   async function initializePayments() {
     const retryButton=$('retryPaymentSettingsBtn');
     if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Loading payment settings…';}
