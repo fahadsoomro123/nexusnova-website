@@ -16,7 +16,7 @@ test('homepage uses a high-visibility SEO Audit Studio launch hero below navigat
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
   const toolsHeading = html.indexOf('<h2 id="new-tools-title">');
   assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading, 'launch hero belongs directly below the main navigation and before tool discovery');
-  assert.match(html, /Make your[\\s\\S]{0,80}website <em>make sense\\.<\\/em>/);
+  assert.ok(html.includes('Make your<br>website <em>make sense.</em>'));
   assert.match(html, /Claim your free full-audit voucher/);
   assert.match(html, /id="nnAuditVoucherResult"/);
   assert.match(html, /href="\/seo-audit-studio\.html"/);
