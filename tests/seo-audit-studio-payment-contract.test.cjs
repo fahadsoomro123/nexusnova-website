@@ -48,10 +48,14 @@ test('public card checkout stays disabled while Safepay is only configured for s
   assert.match(html, /productionMode\?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding'/);
   assert.doesNotMatch(html, /safepayConfigured\s*\|\|\s*true/,
     'an unconfigured provider must never be treated as ready');
-  assert.match(html, /const sandboxOnly=!productionMode \|\| state\.config\.livePaymentsEnabled!==true;/,
-    'intentionally disabled sandbox checkout is detected separately from production setup errors');
-  assert.match(html, /setStatus\(\$\('cardPaymentStatus'\),message,sandboxOnly\?'':'error'\);/,
-    'sandbox checkout notice uses a neutral status style instead of a red error');
+  assert.match(html, /const sandboxOnly=!productionMode;/,
+    'sandbox mode is detected separately from a closed production payment gate');
+  assert.match(html, /const liveGateClosed=productionMode && state\.config\.livePaymentsEnabled!==true;/,
+    'a production gate closure must not be mislabeled as sandbox mode');
+  assert.match(html, /Production checkout is locked until live merchant onboarding and payment verification are confirmed\./,
+    'production setup explains why checkout is unavailable');
+  assert.match(html, /setStatus\(\$\('cardPaymentStatus'\),message,\(sandboxOnly\|\|liveGateClosed\)\?'':'error'\);/,
+    'intentional sandbox and fail-closed production states use a neutral status style');
 });
 
 test('crypto option remains visible but checkout needs authorized production configuration', () => {
