@@ -140,7 +140,7 @@ test('transient browser transport failures retry only safe audit/session/config 
 test('cross-origin requests use a dedicated isolated Worker and session-scoped bearer authentication', () => {
   assert.ok(html.includes("const REVIEW_ORIGIN = 'https://review.nexusnova-seo-audit-studio-review.pages.dev';"));
   assert.ok(html.includes("const API_BASE_URL = window.location.origin === REVIEW_ORIGIN"));
-  assert.ok(html.includes(":'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';"));
+  assert.match(html, /:\s*'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
     'the browser helper must refuse cross-origin or non-API paths');
   assert.match(html, /headers\.set\('Authorization', 'Bearer ' \+ await getAuditSessionToken\(\)\)/,
