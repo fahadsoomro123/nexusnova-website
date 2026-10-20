@@ -2024,10 +2024,17 @@
       }
       $('safepayCheckoutBtn').disabled=!cardCheckoutReady;
       if(!cardCheckoutReady) {
-        const sandboxOnly=!productionMode || state.config.livePaymentsEnabled!==true;
-        const message=sandboxOnly?'Sandbox mode is active. Safepay checkout is intentionally disabled; no payment has been started.':state.config.provider==='safepay'?'Secure Safepay checkout is not configured. Payment remains disabled.':'Card checkout is unavailable because the local test simulator is disabled.';
-        // Sandbox checkout being intentionally off is informational, not a runtime error.
-        setStatus($('cardPaymentStatus'),message,sandboxOnly?'':'error');
+        const sandboxOnly=!productionMode;
+        const liveGateClosed=productionMode && state.config.livePaymentsEnabled!==true;
+        const message=sandboxOnly
+          ?'Sandbox mode is active. Safepay checkout is intentionally disabled; no payment has been started.'
+          :liveGateClosed
+            ?'Production checkout is locked until live merchant onboarding and payment verification are confirmed.'
+            :state.config.provider==='safepay'
+              ?'Secure Safepay checkout is not configured. Payment remains disabled.'
+              :'Card checkout is unavailable because the local test simulator is disabled.';
+        // Intentional sandbox and fail-closed production states are informational, not runtime errors.
+        setStatus($('cardPaymentStatus'),message,(sandboxOnly||liveGateClosed)?'':'error');
       }
       if(state.config.devSimulatorEnabled) {
         $('cryptoSandboxTest').hidden=false;
