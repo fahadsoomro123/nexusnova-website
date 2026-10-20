@@ -29,7 +29,6 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          npm ci
           node --check assets/js/seo-audit-studio-preview-mock.js
           node --check assets/js/seo-audit-launch.js
           npm test
