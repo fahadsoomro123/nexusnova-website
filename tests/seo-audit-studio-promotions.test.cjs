@@ -59,9 +59,10 @@ test('owner console is noindex and holds its token only in runtime memory', () =
   assert.ok(admin.includes('/api/admin/promotions/campaigns'));
   assert.ok(admin.includes('/api/admin/promotions/codes/'));
   assert.ok(admin.includes('/api/admin/promotions/redeem') === false);
-  assert.ok(admin.includes('option value="percent"'));
-  assert.ok(admin.includes('option value="fixed"'));
-  assert.ok(admin.includes('option value="free_report"'));
+  assert.ok(admin.includes('<option value="free_report" selected>Free full technical report (launch voucher)</option>'));
+  assert.doesNotMatch(admin, /option value="percent"|option value="fixed"/);
+  assert.match(admin, /id="offerValue" type="number" min="100" max="100" step="1" value="100" required disabled/);
+  assert.match(admin, /Payment discounts are not enabled/);
   assert.ok(admin.includes("status:'draft'") || admin.includes("status:\"draft\"") || admin.includes('Draft by default'));
 });
 
