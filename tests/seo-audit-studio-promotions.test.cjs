@@ -35,6 +35,19 @@ test('promotion status and discount claims come only from backend responses', ()
   assert.ok(!/freeReport\s*=\s*true/.test(page));
 });
 
+test('claimed full-audit voucher auto-unlocks after an audit or when the existing preview is restored', () => {
+  assert.ok(page.includes('async function applySavedVoucherForCurrentAudit()'));
+  assert.ok(page.includes('await applySavedVoucherForCurrentAudit();'));
+  assert.ok(page.includes("code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||''"));
+  const runStart = page.indexOf('const runAudit = async');
+  const restoreStart = page.indexOf('const restoreLatestAudit = async');
+  assert.ok(runStart >= 0 && restoreStart >= 0);
+  assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', runStart) > runStart);
+  assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', restoreStart) > restoreStart);
+  assert.ok(page.includes("if(state.paid)"));
+  assert.ok(page.includes("claimButton.textContent='Full audit unlocked'"));
+});
+
 test('owner console is noindex and holds its token only in runtime memory', () => {
   assert.match(admin, /name="robots" content="noindex,nofollow,noarchive"/);
   assert.ok(admin.includes("const state={token:''"));
