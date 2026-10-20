@@ -805,9 +805,9 @@
       <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
-      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>USDT TRC20 or ERC20 · one-time price US$2.99</p></div></div>
-      <label class="payment-form-label" for="cryptoNetwork">Choose USDT network</label>
-      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Secure crypto checkout is currently unavailable. Do not transfer funds until the verified order shows the correct network, amount and receiving address.</div>
+      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>Supported cryptocurrencies · one-time price US$2.99</p></div></div>
+      <label class="payment-form-label" for="cryptoNetwork">Choose cryptocurrency / network</label>
+      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option><option value="TRX">TRX · Tron</option><option value="BNB">BNB · BNB Smart Chain</option><option value="LTC">Litecoin · LTC</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Run an audit to check the current minimum for each supported cryptocurrency. Use Safepay if no crypto option accepts US$2.99.</div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
         <div class="wallet-address-head"><span id="cryptoNetworkLabel">USDT TRC20 receiving address</span><button type="button" id="copyWalletBtn" class="copy-btn">Copy</button></div>
         <code id="cryptoWalletAddress" class="wallet-address">Address is not configured.</code>
@@ -887,7 +887,7 @@
   const el = {
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
-  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, previousFocus: null };
+  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, previousFocus: null };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -1680,7 +1680,7 @@
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       state.auditId = payload.auditId;
-      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.filter = 'All';
+      state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
       window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
     } catch(error) {
@@ -1749,27 +1749,36 @@
   }
   async function prepareCryptoPayment() {
     if(!requireAuditForPayment())return;
+    if(state.cryptoOrderId) {
+      setStatus($('cryptoPaymentStatus'),'A crypto order already exists. Check its status before creating another payment.');
+      return;
+    }
+    if(!state.cryptoMinimumsLoaded||state.cryptoMinimumsAuditId!==state.auditId)await loadCryptoMinimums();
     const button=$('prepareCryptoBtn');button.disabled=true;
     const selectedNetwork=$('cryptoNetwork').value;
     try {
+      const selectedOption=state.cryptoMinimums.find(option=>option.network===selectedNetwork&&option.available===true);
+      if(!selectedOption)throw new Error('This cryptocurrency does not accept the US$2.99 report price. Choose an available option or pay with Safepay.');
       const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork});
       if(payload.provider!=='nowpayments'||!payload.orderId)throw new Error('Verified crypto checkout is not available. No transfer should be made.');
-      const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';
-      if(payload.network!==selectedNetwork||!expectedCurrency||String(payload.payCurrency||'').toLowerCase()!==expectedCurrency)throw new Error('The provider payment does not match the selected USDT network. Do not transfer funds.');
+      const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};
+      if(payload.network!==selectedNetwork||String(payload.payCurrency||'').toLowerCase()!==expectedCurrencies[selectedNetwork])throw new Error('The provider payment does not match the selected currency/network. Do not transfer funds.');
       if(typeof payload.walletAddress!=='string'||!payload.walletAddress.trim()||!Number.isFinite(Number(payload.payAmount))||Number(payload.payAmount)<=0)throw new Error('The provider returned incomplete payment details. Do not transfer funds.');
       if(payload.checkoutUrl)throw new Error('Unexpected hosted-checkout response. No transfer details were displayed. Check the order status before retrying.');
       state.cryptoOrderId=payload.orderId;
+      $('cryptoNetwork').disabled=true;
       $('cryptoPaymentDetails').hidden=false;
       $('cryptoPaymentStatus').hidden=false;
-      $('cryptoNetworkLabel').textContent='USDT '+payload.network+' receiving address';
+      $('cryptoNetworkLabel').textContent=selectedOption.label+' receiving address';
       $('cryptoWalletAddress').textContent=payload.walletAddress;
       $('cryptoAmount').textContent=String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()+' (quote: US$'+Number(payload.amountUsd||2.99).toFixed(2)+')';
       $('verifyCryptoBtn').hidden=false;
       $('verifyCryptoBtn').textContent='Check payment status';
-      $('cryptoWalletNotice').textContent='Send only the displayed amount on '+payload.network+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this order, network and amount. Do not pay twice while the order is pending.';
+      $('cryptoWalletNotice').textContent='Send only the displayed amount using '+selectedOption.label+'. Report access unlocks only after the server verifies a signed NOWPayments notification for this exact order, currency and amount. Do not pay twice while the order is pending.';
       setStatus($('cryptoPaymentStatus'),'Payment details created. Awaiting signed provider confirmation; report remains locked.');
     } catch(error) {
       state.cryptoOrderId=null;
+      $('cryptoNetwork').disabled=false;
       $('cryptoPaymentDetails').hidden=true;
       setStatus($('cryptoPaymentStatus'),error.message,'error');
     } finally { updateCryptoCheckoutAvailability(); }
@@ -1806,8 +1815,13 @@
     if (!el.paywallModal) return;
     state.previousFocus = document.activeElement;
     el.paywallModal.classList.add('is-open'); el.paywallModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('modal-open');
-    if(!state.auditId) setStatus($('paymentContextNotice'),'Run an audit before starting a payment.','error');
-    else setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. Verified payment unlocks only this report.`);
+    if(!state.auditId) {
+      setStatus($('paymentContextNotice'),'Run an audit before starting a payment.','error');
+      $('cryptoAvailabilityNote').textContent='Run an audit to check current crypto minimums. Safepay remains available when payment settings are verified.';
+    } else {
+      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. Verified payment unlocks only this report.`);
+      void loadCryptoMinimums();
+    }
     window.setTimeout(() => el.closePaywall?.focus(), 0);
   };
   const closePaywall = () => {
@@ -1821,7 +1835,7 @@
   };
   const makeCryptoMessage = () => {
     const url = state.report?.url || el.url.value || 'URL not run yet';
-    return `Hello NexusNova Support, I need verified USDT/Web3 payment instructions for the US$2.99 SEO Audit report. Confirm the network and receiving address before I transfer. Audited URL: ${url}`;
+    return `Hello NexusNova Support, I need verified crypto payment instructions for the US$2.99 SEO Audit report. Confirm the minimum, currency, network and receiving address before I transfer. Audited URL: ${url}`;
   };
   const upgradeWhatsApp = $('upgradeWhatsApp'), upgradeEmail = $('upgradeEmail');
   const updateUpgradeLinks = () => {
@@ -1830,7 +1844,10 @@
     upgradeEmail.href='mailto:nexusnovatools@gmail.com?subject='+encodeURIComponent('NexusNova SEO Audit Full Report Upgrade')+'&body='+encodeURIComponent(message);
   };
   document.querySelectorAll('[data-open-paywall]').forEach(button=>button.addEventListener('click',()=>{updateUpgradeLinks();openPaywall();}));
-  $('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability);
+  $('cryptoNetwork').addEventListener('change',()=>{
+    $('cryptoPaymentDetails').hidden=true;
+    updateCryptoCheckoutAvailability();
+  });
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
   $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
@@ -1893,6 +1910,72 @@
   $('checkSearch').addEventListener('input',event=>{state.checkFilters.query=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
   $('checkStatusFilter').addEventListener('change',event=>{state.checkFilters.status=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
   $('checkCategoryFilter').addEventListener('change',event=>{state.checkFilters.category=event.target.value;renderFullChecklist(state.fullReport||state.report||makeEmptyReport(el.url.value));});
+  async function loadCryptoMinimums(force=false) {
+    if(!state.auditId) {
+      state.cryptoMinimumsLoaded=false;
+      state.cryptoMinimumsAuditId=null;
+      $('cryptoAvailabilityNote').hidden=false;
+      $('cryptoAvailabilityNote').textContent='Run an audit to check current crypto minimums. Safepay remains available when payment settings are verified.';
+      updateCryptoCheckoutAvailability();
+      return false;
+    }
+    if(state.cryptoMinimumsLoading)return false;
+    if(!force&&state.cryptoMinimumsLoaded&&state.cryptoMinimumsAuditId===state.auditId) {
+      updateCryptoCheckoutAvailability();
+      return state.cryptoMinimums.some(option=>option.available===true);
+    }
+    if(!state.config||state.config.environment!=='production'||state.config.cryptoProvider!=='nowpayments') {
+      state.cryptoMinimumsLoaded=false;
+      $('cryptoAvailabilityNote').hidden=false;
+      $('cryptoAvailabilityNote').textContent='Crypto checkout is unavailable. Use Safepay to pay US$2.99.';
+      updateCryptoCheckoutAvailability();
+      return false;
+    }
+    state.cryptoMinimumsLoading=true;
+    const button=$('prepareCryptoBtn');
+    button.disabled=true;
+    button.textContent='Checking current minimums…';
+    const note=$('cryptoAvailabilityNote');
+    note.hidden=false;
+    note.textContent='Checking current provider minimums. Do not transfer funds unless a verified order is shown.';
+    try {
+      const payload=await apiPost('/api/payments/crypto/minimums',{auditId:state.auditId});
+      if(payload.ok!==true||!Array.isArray(payload.options))throw new Error('Crypto minimums could not be verified.');
+      state.cryptoMinimums=payload.options;
+      state.cryptoMinimumsLoaded=true;
+      state.cryptoMinimumsAuditId=state.auditId;
+      for(const item of $('cryptoNetwork').options) {
+        const info=state.cryptoMinimums.find(option=>option.network===item.value);
+        item.disabled=!info||info.available!==true;
+        item.hidden=!info||info.available!==true;
+      }
+      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number(option.minimumUsd)<=Number(payload.priceUsd||2.99))
+        .sort((a,b)=>Number(a.minimumUsd)-Number(b.minimumUsd));
+      if(eligible.length) {
+        const current=eligible.find(option=>option.network===$('cryptoNetwork').value);
+        const selected=current||eligible[0];
+        $('cryptoNetwork').value=selected.network;
+        if(state.config.nowPaymentsConfigured===true&&state.config.livePaymentsEnabled===true) {
+          note.hidden=true;
+        } else {
+          note.hidden=false;
+          note.textContent='This network accepts US$2.99, but live crypto checkout is not enabled yet. Use Safepay for this payment.';
+        }
+        return true;
+      }
+      const currentMinimums=state.cryptoMinimums.filter(option=>Number.isFinite(Number(option.minimumUsd)))
+        .map(option=>option.label+': minimum US$'+Number(option.minimumUsd).toFixed(2)).join(' · ');
+      note.textContent='No supported crypto network currently accepts US$'+Number(payload.priceUsd||2.99).toFixed(2)+'. '+currentMinimums+'. Use Safepay for this report.';
+      return false;
+    } catch {
+      state.cryptoMinimumsLoaded=false;
+      note.textContent='Crypto minimums could not be verified right now. Do not transfer funds; use Safepay instead.';
+      return false;
+    } finally {
+      state.cryptoMinimumsLoading=false;
+      updateCryptoCheckoutAvailability();
+    }
+  }
   function updateCryptoCheckoutAvailability() {
     const button=$('prepareCryptoBtn');
     const note=$('cryptoAvailabilityNote');
@@ -1904,15 +1987,17 @@
     }
     const config=state.config;
     const network=$('cryptoNetwork').value;
-    const networkValid=network==='TRC20'||network==='ERC20';
+    const option=state.cryptoMinimums.find(item=>item.network===network);
     const available=config.environment==='production' && config.livePaymentsEnabled===true &&
-      config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true && networkValid;
-    button.disabled=!available;
-    button.textContent=available?'Prepare verified USDT transfer':'Crypto checkout unavailable';
+      config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true &&
+      state.cryptoMinimumsLoaded===true && state.cryptoMinimumsAuditId===state.auditId && option?.available===true;
+    button.disabled=!available||Boolean(state.cryptoOrderId)||state.cryptoMinimumsLoading;
+    button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
     button.title=available
-      ?'Creates a provider order for the selected USDT network. Only signed provider confirmation unlocks the report.'
-      :'Verified production crypto checkout is not available yet.';
-    if(note)note.hidden=available;
+      ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
+      :'Crypto checkout requires a verified provider minimum no higher than US$2.99.';
+    if(note&&available)note.hidden=true;
+    else if(note)note.hidden=false;
     return available;
   }
   async function initializePayments() {
@@ -1921,6 +2006,9 @@
     $('safepayCheckoutBtn').disabled=true;
     $('prepareCryptoBtn').disabled=true;
     try {
+      state.cryptoMinimums=[];
+      state.cryptoMinimumsLoaded=false;
+      state.cryptoMinimumsAuditId=null;
       const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
       state.config=await response.json();
       if(retryButton){retryButton.hidden=true;retryButton.disabled=false;}
@@ -1929,7 +2017,10 @@
       const lockedNote=document.querySelector('.locked-note');
       if(lockedNote)lockedNote.textContent='Full report access is granted after the payment provider confirms the transaction.';
       $('cryptoWalletAddress').textContent='A verified receiving address will appear when checkout is available.';
-      $('cryptoWalletNotice').textContent='Confirm the selected network and amount before sending funds. Report access requires provider verification.';
+      $('cryptoWalletNotice').textContent='Confirm the selected currency and amount before sending funds. Report access requires provider verification.';
+      $('cryptoNetwork').disabled=false;
+      $('cryptoPaymentDetails').hidden=true;
+      $('cryptoPaymentStatus').hidden=true;
       $('verifyCryptoBtn').hidden=true;
       const ready=safepayCheckoutReady();
       $('safepayCheckoutBtn').disabled=!ready;

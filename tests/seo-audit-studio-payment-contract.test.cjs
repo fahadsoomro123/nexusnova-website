@@ -55,18 +55,21 @@ test('public card checkout requires verified production readiness and stays disa
 test('crypto checkout requires a ready production provider and clearly reports when unavailable', () => {
   assert.ok(html.includes('class="crypto-payment-panel"'));
   assert.ok(html.includes("const available=config.environment==='production' && config.livePaymentsEnabled===true"));
-  assert.ok(html.includes("config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true && networkValid;"));
+  assert.ok(html.includes("state.cryptoMinimumsLoaded===true && state.cryptoMinimumsAuditId===state.auditId && option?.available===true;"));
   assert.ok(html.includes('id="cryptoAvailabilityNote" class="payment-status-box"'));
-  assert.ok(html.includes("button.textContent=available?'Prepare verified USDT transfer':'Crypto checkout unavailable';"));
+  assert.ok(html.includes("button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';"));
   assert.ok(html.includes("const network=$('cryptoNetwork').value;"));
-  assert.ok(html.includes("const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';"));
+  assert.ok(html.includes("const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};"));
+  assert.ok(html.includes("apiPost('/api/payments/crypto/minimums',{auditId:state.auditId})"));
+  assert.ok(html.includes("item.hidden=!info||info.available!==true;"));
+  assert.ok(html.includes("$('cryptoNetwork').addEventListener('change',()=>"));
+  for (const option of ['TRX','BNB','LTC']) assert.ok(html.includes('value="'+option+'"'), option+' option should be available for preflight filtering');
   assert.ok(!html.includes('devSimulatorEnabled'), 'public checkout must not expose simulator branches');
-  assert.ok(html.includes("$('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability)"));
 });
-test('NOWPayments UI validates the selected USDT network and exact payment details before displaying a transfer', () => {
+test('NOWPayments UI checks live minimums and validates the selected currency/network before displaying a transfer', () => {
   assert.ok(html.includes("const selectedNetwork=$('cryptoNetwork').value;"));
-  assert.ok(html.includes("const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';"));
-  assert.ok(html.includes("String(payload.payCurrency||'').toLowerCase()!==expectedCurrency"));
+  assert.ok(html.includes("const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};"));
+  assert.ok(html.includes("String(payload.payCurrency||'').toLowerCase()!==expectedCurrencies[selectedNetwork]"));
   assert.ok(html.includes("String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()"));
   assert.ok(html.includes("$('cryptoWalletAddress').textContent=payload.walletAddress;"));
   assert.ok(html.includes("apiFetch('/api/orders/'+encodeURIComponent(state.cryptoOrderId)+'/status'"));
@@ -105,12 +108,13 @@ test('payment settings fail closed and the reviewed-check count uses measured ch
   assert.doesNotMatch(html.slice(initStart, initEnd), /openPaywall|beginCardPayment|prepareCryptoPayment/,
     'loading payment settings never opens the modal or creates a payment');
 });
-test('production page has no sample-report or design-demo route and shows no fake scores before an audit', () => {
+test('production page loads the shared analytics bootstrap, has no public demo route and shows no fake scores before an audit', () => {
   assert.ok(html.includes('id="auditReportSection" aria-labelledby="reportHeading" hidden'));
   assert.ok(html.includes("const makeEmptyReport = (url='') =>"));
   assert.doesNotMatch(html, /makeSampleReport|sampleTopBtn|loadSample|demo=full|DESIGN DEMO ONLY/);
   assert.doesNotMatch(html, /overall:78,grade:'C\+'/);
   assert.ok(html.includes('initializePayments().then(()=>'), 'payment setup still initializes after event handlers');
+  assert.ok(html.includes('assets/js/analytics.js?v=20261016-related-content-v1'), 'SEO Audit Studio must participate in the shared site shell/analytics bootstrap');
 });
 test('footerYear cannot crash startup when the footer year element is omitted', () => {
   assert.match(html, /const footerYear=\$\('footerYear'\); if\(footerYear\) footerYear\.textContent=new Date\(\)\.getFullYear\(\);/,
