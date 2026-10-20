@@ -29,7 +29,7 @@ test('launch offer and voucher claim are sourced from the audit Worker and sessi
   assert.match(js, /\/api\/promotions\/claim/);
   assert.match(js, /nexusnova_audit_session_v1/);
   assert.match(js, /nexusnova_audit_voucher_v1/);
-  assert.match(js, /allowedOrigins\.has\(window\.location\.origin\)/);
+  assert.match(js, /ALLOWED_ORIGINS\.has\(window\.location\.origin\)/);
   assert.match(js, /payload\.ok===true/);
   assert.match(js, /campaign\.terms/);
   assert.match(js, /campaign\.remainingClaims/);
