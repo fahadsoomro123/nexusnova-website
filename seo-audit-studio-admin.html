@@ -83,8 +83,8 @@
       <form id="campaignForm" class="stack">
         <label>Campaign name<input id="campaignName" required minlength="3" maxlength="120" placeholder="SEO Audit Studio early access"></label>
         <div class="three">
-          <label>Offer type<select id="offerType"><option value="percent">Percentage discount</option><option value="fixed">Fixed discount (USD)</option><option value="free_report">100% free full report</option></select></label>
-          <label>Offer value<input id="offerValue" type="number" min="1" max="100" step="1" value="20" required><span id="offerHelp" class="field-note">Enter a whole percentage from 1 to 100.</span></label>
+          <label>Offer type<select id="offerType"><option value="free_report" selected>Free full technical report (launch voucher)</option></select><span class="field-note">Launch vouchers unlock the full report directly. Payment discounts are not enabled.</span></label>
+          <label>Offer value<input id="offerValue" type="number" min="100" max="100" step="1" value="100" required disabled><span id="offerHelp" class="field-note">Fixed at 100% because this campaign grants a free full report.</span></label>
           <label>Total eligible claims<input id="campaignLimit" type="number" min="1" max="1000000" value="20" step="1" required></label>
         </div>
         <div class="three">
