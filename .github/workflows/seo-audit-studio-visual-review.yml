@@ -1,0 +1,81 @@
+name: SEO Audit Studio Visual Review Preview
+
+on:
+  push:
+    branches:
+      - preview/seo-audit-studio-approval
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-audit-studio-visual-review
+  cancel-in-progress: true
+
+jobs:
+  publish-visual-preview:
+    name: Publish full-root noindex visual preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out review branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy exact branch files to isolated Cloudflare Pages
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -Ee -o pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Missing repository secrets CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          fi
+          API="https://api.cloudflare.com/client/v4"
+          PROJECT="nexusnova-seo-audit-studio-review"
+          BRANCH="review"
+          PROJECT_URL="$API/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT"
+          project_status="$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$PROJECT_URL")"
+          if [[ "$(jq -r '.success // false' <<< "$project_status")" != "true" ]]; then
+            body="$(jq -nc --arg name "$PROJECT" '{name:$name,production_branch:"main"}')"
+            created="$(curl -sS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects" --data "$body")"
+            jq -e '.success == true' <<< "$created" >/dev/null || { echo "::error::Could not create isolated Pages project."; jq -r '.errors[]?.message' <<< "$created"; exit 1; }
+          fi
+          preview_dir=".preview-dist"
+          rm -rf "$preview_dir"
+          mkdir -p "$preview_dir"
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.review-backend/' \
+            --exclude='.preview-dist/' \
+            --exclude='node_modules/' \
+            --exclude='tests/' \
+            --exclude='test/' \
+            --exclude='docs/' \
+            --exclude='cloudflare/' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='*.md' \
+            --exclude='*.py' \
+            --exclude='*.sh' \
+            --exclude='*.cjs' \
+            --exclude='*.mjs' \
+            --exclude='*.log' \
+            . "$preview_dir/"
+          npx --yes wrangler@4.151.2 pages deploy "$preview_dir" --project-name "$PROJECT" --branch "$BRANCH"
+          {
+            echo "## NexusNova visual review preview"
+            echo
+            echo "- **Homepage:** https://review.nexusnova-seo-audit-studio-review.pages.dev/"
+            echo "- **SEO Audit Studio UI:** https://review.nexusnova-seo-audit-studio-review.pages.dev/seo-audit-studio.html"
+            echo "- **Owner Console UI:** https://review.nexusnova-seo-audit-studio-review.pages.dev/seo-audit-studio-admin.html"
+            echo "- CSS, images, scripts and root-relative site assets are served from the real site root."
+            echo "- This job publishes static files only; the isolated mock backend is handled by the separate review workflow."
+            echo "- Indexing is blocked with the preview branch _headers file."
+          } >> "$GITHUB_STEP_SUMMARY"
