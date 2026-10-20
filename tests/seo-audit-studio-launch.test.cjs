@@ -21,7 +21,8 @@ test('homepage uses the flagship SEO Audit Studio hero before tool discovery', (
   assert.match(html, /id="nnAuditHomeForm"/);
   assert.match(html, /id="nnAuditLaunchUrl"/);
   assert.match(html, /Open audit/);
-  assert.match(html, /Claim your free full-audit voucher/);
+  assert.match(html, /id="nnAuditClaimVoucher"/);
+  assert.match(js, /Claim your free full-audit voucher/);
   assert.match(html, /id="nnAuditVoucherResult"/);
   assert.match(html, /href="\/seo-audit-studio\.html"/);
   assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v3/);
