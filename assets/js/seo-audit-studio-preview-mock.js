@@ -179,15 +179,33 @@
       if(!tokenValue)return respond({ok:false,error:'Preview session expired.'},401);
       var redeemCode=String(body.code||'').trim().toUpperCase(),target=(s.audits||{})[String(body.auditId||'')];
       if(!target||target.sessionToken!==tokenValue)return respond({ok:false,error:'Audit not found in this preview session.'},404);
-      if(!s.voucher||s.voucher.sessionToken!==tokenValue||s.voucher.code!==redeemCode)return respond({ok:false,error:'That demo voucher is not valid for this session.'},409);
-      if(s.voucher.used&&s.voucher.redeemedAuditId!==target.auditId)return respond({ok:false,error:'This demo voucher has already been used.'},409);
-      s.voucher.used=true;s.voucher.redeemedAuditId=target.auditId;target.unlocked=true;
+      var redeemable=null,nowSeconds=Math.floor(Date.now()/1000);
+      if(s.voucher&&s.voucher.sessionToken===tokenValue&&s.voucher.code===redeemCode){
+        if(s.voucher.used&&s.voucher.redeemedAuditId!==target.auditId)return respond({ok:false,error:'This demo voucher has already been used.'},409);
+        s.voucher.used=true;s.voucher.redeemedAuditId=target.auditId;
+        redeemable={id:'review-code-1',code:redeemCode,campaign_id:'nexusnova-launch-preview-demo',uses_count:1,max_uses:1,per_user_limit:1};
+      }else{
+        var issued=(s.issuedCodes||[]).find(function(c){return c.code===redeemCode;});
+        var campaigns=s.campaigns||[mockCampaign(s)];
+        var campaign=issued&&campaigns.find(function(c){return c.id===issued.campaign_id;});
+        if(!issued||issued.status!=='active'||!campaign||campaign.status!=='active'||campaign.offer_type!=='free_report'||Number(issued.expires_at)<=nowSeconds)
+          return respond({ok:false,error:'That launch voucher is invalid, expired, paused, or not eligible for a free full report.'},409);
+        issued.usedBy=issued.usedBy||[];
+        if(issued.uses_count>=issued.max_uses||issued.usedBy.some(function(u){return u.sessionToken===tokenValue&&u.auditId!==target.auditId;}))
+          return respond({ok:false,error:'This voucher has reached its use limit.'},409);
+        if(issued.per_user_limit<=1&&issued.usedBy.some(function(u){return u.sessionToken===tokenValue;}))
+          return respond({ok:false,error:'This voucher has already been used by this browser session.'},409);
+        issued.uses_count++;
+        issued.usedBy.push({sessionToken:tokenValue,auditId:target.auditId});
+        redeemable=issued;
+      }
+      target.unlocked=true;
       s.redemptions=s.redemptions||[];
       var redId='review-redemption-'+uuid();
       if(!s.redemptions.some(function(x){return x.auditId===target.auditId&&x.code===redeemCode;}))
-        s.redemptions.push({id:redId,auditId:target.auditId,code:redeemCode,sessionToken:tokenValue,status:'free',created_at:Math.floor(Date.now()/1000)});
+        s.redemptions.push({id:redId,auditId:target.auditId,code:redeemCode,codeId:redeemable.id,campaignId:redeemable.campaign_id,sessionToken:tokenValue,status:'free',created_at:nowSeconds});
       save(s);
-      return respond({ok:true,freeReport:true,auditId:target.auditId,redemptionId:redId,previewSimulation:true},200);
+      return respond({ok:true,freeReport:true,offerType:'free_report',offerValue:100,auditId:target.auditId,redemptionId:redId,previewSimulation:true},200);
     }
     if(path==='/api/payments/crypto/minimums'&&(method==='GET'||method==='POST')){
       return respond({ok:true,priceUsd:2.99,minimumBufferUsd:1.00,options:[{network:'TRC20',label:'USDT (TRC20)',available:false,minimumUsd:10.00},{network:'ERC20',label:'USDT (ERC20)',available:false,minimumUsd:15.00}]});
@@ -198,7 +216,7 @@
       if(headers.get('X-Owner-Admin-Token')!==OWNER_DEMO_TOKEN)return respond({ok:false,error:'Use the prefilled preview-only demo token. This is not a production credential.'},401);
       if(path==='/api/admin/promotions'){
         var campaignList=[mockCampaign(s)].concat((s.campaigns||[]).filter(function(c){return c.id!=='nexusnova-launch-preview-demo';}));
-        var codeList=(s.voucher?[{id:'review-code-1',campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+s.voucher.code.slice(-6),status:s.voucher.used?'used':'active',max_uses:1,uses_count:s.voucher.used?1:0,per_user_limit:1,expires_at:Math.floor(s.voucher.expiresAt/1000)}]:[]).concat((s.issuedCodes||[]).map(function(c){return {id:c.id,campaign_id:c.campaign_id,code_preview:c.code_preview,status:c.status,max_uses:c.max_uses,uses_count:0,per_user_limit:c.per_user_limit,expires_at:c.expires_at};}));
+        var codeList=(s.voucher?[{id:'review-code-1',campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+s.voucher.code.slice(-6),status:s.voucher.used?'used':'active',max_uses:1,uses_count:s.voucher.used?1:0,per_user_limit:1,expires_at:Math.floor(s.voucher.expiresAt/1000)}]:[]).concat((s.issuedCodes||[]).map(function(c){return {id:c.id,campaign_id:c.campaign_id,code_preview:c.code_preview,status:c.status,max_uses:c.max_uses,uses_count:Number(c.uses_count||0),per_user_limit:c.per_user_limit,expires_at:c.expires_at};}));
         return respond({ok:true,campaigns:campaignList,codes:codeList,redemptions:(s.redemptions||[]).map(function(x){return {id:x.id,campaign_id:'nexusnova-launch-preview-demo',code_preview:'...'+x.code.slice(-6),status:'free',created_at:x.created_at};})},200);
       }
       var audits=Object.values(s.audits||{}).map(auditSummary);
@@ -237,8 +255,11 @@
     var codeRoute=path.match(/^\/api\/admin\/promotions\/campaigns\/([^/]+)\/codes$/);
     if(codeRoute&&method==='POST'){
       if(headers.get('X-Owner-Admin-Token')!==OWNER_DEMO_TOKEN)return respond({ok:false,error:'Preview demo token required.'},401);
+      var campaignId=decodeURIComponent(codeRoute[1]),codeCampaign=(s.campaigns||[]).find(function(c){return c.id===campaignId;});
+      if(!codeCampaign)return respond({ok:false,error:'Preview campaign not found.'},404);
+      if(codeCampaign.offer_type!=='free_report')return respond({ok:false,error:'Only free full-report vouchers can be issued in this preview.'},400);
       var createdCode='NN-DEMO-'+uuid().replace(/-/g,'').slice(0,16).toUpperCase();
-      s.issuedCodes=s.issuedCodes||[];s.issuedCodes.push({id:'review-code-'+uuid(),campaign_id:decodeURIComponent(codeRoute[1]),code:createdCode,status:'active',code_preview:'...'+createdCode.slice(-6),max_uses:Number(body.maxUses||1),per_user_limit:Number(body.perUserLimit||1),expires_at:Number(body.expiresAt||Math.floor(Date.now()/1000)+604800)});
+      s.issuedCodes=s.issuedCodes||[];s.issuedCodes.push({id:'review-code-'+uuid(),campaign_id:campaignId,code:createdCode,status:'active',code_preview:'...'+createdCode.slice(-6),max_uses:Number(body.maxUses||1),uses_count:0,per_user_limit:Number(body.perUserLimit||1),expires_at:Number(body.expiresAt||Math.floor(Date.now()/1000)+604800),usedBy:[]});
       save(s);return respond({ok:true,code:createdCode,expiresAt:s.issuedCodes[s.issuedCodes.length-1].expires_at*1000},201);
     }
     var deactivateCode=path.match(/^\/api\/admin\/promotions\/codes\/([^/]+)\/deactivate$/);
