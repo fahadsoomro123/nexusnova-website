@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
 <title>NexusNova SEO Audit Studio</title>
@@ -606,6 +607,7 @@
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
 </head>
 <body>
+<div id="nn-review-preview-banner" role="status" style="padding:9px 14px;background:#fff7df;border-bottom:1px solid #f0d58a;color:#754c00;text-align:center;font:800 11px/1.45 ui-sans-serif,system-ui,sans-serif;letter-spacing:.04em">REVIEW PREVIEW · SANDBOX ONLY · NO REAL PAYMENTS</div>
 <header class="nn-header">
     <div class="nn-shell nn-header-row">
       <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
@@ -833,7 +835,7 @@
 (() => {
   'use strict';
   // Isolated NexusNova Audit Worker. No calls to HumanProof routes or credentials.
-  const API_BASE_URL = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
+  const API_BASE_URL = 'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
   const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
   async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false) {
@@ -1766,26 +1768,47 @@
     return Boolean(c && c.environment==='production' && c.livePaymentsEnabled===true &&
       c.provider==='safepay' && c.safepayConfigured===true && c.safepayOnboardingConfirmed===true);
   }
+  function reviewSimulatorReady() {
+    const c=state.config;
+    return Boolean(c && c.environment!=='production' && c.provider==='mock' && c.devSimulatorEnabled===true);
+  }
   async function beginCardPayment() {
     if(!requireAuditForPayment())return;
     const button=$('safepayCheckoutBtn');
-    if(!safepayCheckoutReady()) {
+    const simulatorReady=reviewSimulatorReady();
+    if(!safepayCheckoutReady()&&!simulatorReady) {
       button.disabled=true;
-      button.textContent='Safepay checkout unavailable';
-      setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
+      button.textContent='Checkout unavailable';
+      setStatus($('cardPaymentStatus'),'Secure checkout is not configured. No payment was started.','error');
       return;
     }
     button.disabled=true;
     try {
       const payload=await apiPost('/api/payments/card-session',{auditId:state.auditId,promotionRedemptionId:state.promotionRedemptionId});
-      if(payload.freeReport===true) { await unlockReport(payload.auditId||state.auditId); return; }
-      if(payload.provider==='safepay' && payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
-      throw new Error('Safepay did not return a secure checkout session. No payment was started.');
-    } catch(error) { setStatus($('cardPaymentStatus'),error.message,'error'); }
-    finally {
-      const ready=safepayCheckoutReady();
+      if(payload.freeReport===true) {
+        await unlockReport(payload.auditId||state.auditId);
+        setStatus($('cardPaymentStatus'),'The backend verified a free-report entitlement. No payment was made.','success');
+        return;
+      }
+      if(simulatorReady && payload.provider==='mock' && payload.simulatorEnabled===true) {
+        state.cardOrderId=payload.orderId;
+        await apiPost('/api/dev/card/approve',{orderId:payload.orderId});
+        await unlockReport(state.auditId);
+        setStatus($('cardPaymentStatus'),'Sandbox simulation passed. The backend approved a mock order; no provider was contacted and no money moved.','success');
+        return;
+      }
+      if(payload.provider==='safepay'&&payload.checkoutUrl&&safepayCheckoutReady()) {
+        window.location.assign(payload.checkoutUrl);
+        return;
+      }
+      throw new Error('No safe preview checkout was returned. No payment was started.');
+    } catch(error) {
+      setStatus($('cardPaymentStatus'),error.message||'Checkout failed. No payment was started.','error');
+    } finally {
+      const ready=safepayCheckoutReady()||reviewSimulatorReady();
       button.disabled=!ready;
-      button.textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
+      button.textContent=safepayCheckoutReady()?'Continue to secure Safepay checkout':
+        reviewSimulatorReady()?'Simulate card checkout (no charge)':'Checkout unavailable';
     }
   }
   async function prepareCryptoPayment() {
@@ -2068,10 +2091,12 @@
       $('cryptoPaymentStatus').hidden=true;
       $('verifyCryptoBtn').hidden=true;
       const ready=safepayCheckoutReady();
-      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(state.config.cryptoPrice||state.config.price||2.99).toFixed(2)+' per full report. Live provider minimum and safety buffer will be checked before an order is created.';
-      $('safepayCheckoutBtn').disabled=!ready;
-      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
-      if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
+      const simulatorReady=reviewSimulatorReady();
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Crypto checkout is disabled in this preview. No wallet transfer or real payment can be made.';
+      $('safepayCheckoutBtn').disabled=!(ready||simulatorReady);
+      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':simulatorReady?'Simulate card checkout (no charge)':'Checkout unavailable';
+      if(simulatorReady) setStatus($('cardPaymentStatus'),'SANDBOX ONLY. This button simulates a successful order with the backend. It cannot charge a card or contact Safepay.','');
+      else if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
       updateCryptoCheckoutAvailability();
     } catch {
       state.config=null;
