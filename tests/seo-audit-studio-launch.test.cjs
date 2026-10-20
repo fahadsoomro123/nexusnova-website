@@ -14,8 +14,8 @@ test('homepage uses a high-visibility SEO Audit Studio launch hero below navigat
   const header = html.indexOf('</header>');
   const main = html.indexOf('<main class="nn-main">');
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
-  const h1 = html.indexOf('<h1 id="new-tools-title">');
-  assert.ok(header >= 0 && main > header && banner > main && banner < h1, 'launch hero belongs directly below the main navigation and before tool discovery');
+  const toolsHeading = html.indexOf('<h2 id="new-tools-title">');
+  assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading, 'launch hero belongs directly below the main navigation and before tool discovery');
   assert.match(html, /Stop guessing\.[\s\S]{0,120}Know what to fix/);
   assert.match(html, /Claim free full-audit voucher/);
   assert.match(html, /id="nnAuditVoucherResult"/);
@@ -34,7 +34,7 @@ test('launch offer and voucher claim are sourced from the audit Worker and sessi
   assert.match(js, /campaign\.terms/);
   assert.match(js, /campaign\.remainingClaims/);
   assert.match(js, /credentials:'omit'/);
-  assert.match(js, /No fake countdowns/);
+  assert.match(js, /availability and expiry must come from the backend/);
   assert.doesNotMatch(js, /setInterval|countdown|fakeUserCount|remainingClaims\s*[:=]\s*\d+/i);
   assert.match(css, /@media\(max-width:520px\)/);
   assert.match(css, /:focus-visible/);
