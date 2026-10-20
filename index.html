@@ -417,6 +417,14 @@
       /* GLOBAL EMPTY-GRID-CELL FIX */
     .nn-master-tool-grid,.nn-pakistan-highlight-grid,.nn-category-grid,.nn-article-grid,.nn-guide-grid{gap:8px;background:transparent;border:0}
     .nn-master-tool,.nn-pakistan-highlight-card,.nn-cat-card,.nn-article-card,.nn-guide-card{border:1px solid var(--nn-line)}
+    .nn-audit-studio-banner{padding:18px 0 6px}
+    .nn-audit-studio-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border:1px solid #c8d9f2;border-radius:18px;background:linear-gradient(108deg,#f4f8ff 0%,#fff 68%);box-shadow:0 12px 28px rgba(15,23,42,.055)}
+    .nn-audit-studio-kicker{margin:0 0 6px;color:#2563eb;font:800 10px/1.4 var(--nn-mono);letter-spacing:.09em;text-transform:uppercase}
+    .nn-audit-studio-inner h2{margin:0;color:var(--nn-text);font-size:clamp(21px,2.6vw,30px);line-height:1.12;letter-spacing:-.03em}
+    .nn-audit-studio-inner p:not(.nn-audit-studio-kicker){max-width:710px;margin:8px 0 0;color:var(--nn-muted);font-size:13px;line-height:1.6}
+    .nn-audit-studio-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:44px;padding:0 17px;border:1px solid #1d4ed8;border-radius:11px;background:#1d4ed8;color:#fff;font-size:12px;font-weight:900;white-space:nowrap}
+    .nn-audit-studio-link:hover{background:#1e40af;border-color:#1e40af}
+    @media(max-width:720px){.nn-audit-studio-banner{padding:12px 0 2px}.nn-audit-studio-inner{align-items:stretch;flex-direction:column;padding:18px;gap:15px}.nn-audit-studio-link{width:100%;box-sizing:border-box}}
   </style>
 <link rel="stylesheet" href="assets/css/footer-social.css?v=20261015-v4" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="assets/css/footer-social.css?v=20261015-v4"></noscript>
@@ -546,7 +554,14 @@
     </div>
   </header>
 
-  <main class="nn-main">    <section class="nn-step" aria-labelledby="new-tools-title">
+  <main class="nn-main">
+    <section class="nn-audit-studio-banner" aria-labelledby="nn-audit-studio-title">
+      <div class="nn-shell"><div class="nn-audit-studio-inner">
+        <div><p class="nn-audit-studio-kicker">Featured tool · NexusNova SEO Audit Studio</p><h2 id="nn-audit-studio-title">Find SEO issues before visitors do.</h2><p>Run a technical website audit, check structured data and PageSpeed signals, review a free preview, and unlock the detailed report when you need it.</p></div>
+        <a class="nn-audit-studio-link" href="/seo-audit-studio.html">Open SEO Audit Studio <span aria-hidden="true">→</span></a>
+      </div></div>
+    </section>
+    <section class="nn-step" aria-labelledby="new-tools-title">
       <div class="nn-shell">
         <div class="nn-step-head"><div><span class="nn-step-label">New utilities</span><h1 id="new-tools-title">Local & USA quick tools</h1><p class="nn-step-copy">Six focused utilities built for one-click results on mobile and desktop.</p></div></div>
         <div class="nn-pakistan-highlight-grid">
