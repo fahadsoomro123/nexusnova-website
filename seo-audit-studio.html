@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
 <title>NexusNova SEO Audit Studio</title>
-  <link rel="stylesheet" href="assets/css/seo-audit-promotions.css?v=20261020-v1">
+  <link rel="stylesheet" href="assets/css/seo-audit-promotions.css?v=20261020-v2">
   <meta name="description" content="Audit websites with NexusNova SEO Audit Studio. Review technical SEO checks, structured data, issues and measured mobile and desktop performance diagnostics.">
   <link rel="canonical" href="https://nexusnovatools.com/seo-audit-studio.html">
   <meta property="og:type" content="website">
@@ -607,7 +606,6 @@
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
 </head>
 <body>
-<div id="nn-review-preview-banner" role="status" style="padding:9px 14px;background:#fff7df;border-bottom:1px solid #f0d58a;color:#754c00;text-align:center;font:800 11px/1.45 ui-sans-serif,system-ui,sans-serif;letter-spacing:.04em">REVIEW PREVIEW · SANDBOX ONLY · NO REAL PAYMENTS</div>
 <header class="nn-header">
     <div class="nn-shell nn-header-row">
       <a class="nn-brand" href="/" aria-label="NexusNova Tools home">
@@ -804,6 +802,10 @@
       <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Launch or private promotion code</h3><p>Codes are validated by the secure backend. Discount and eligibility are never decided in the browser.</p></div></div>
       <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Promotion code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter code"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply code</button></div>
       <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
+      <div class="nn-launch-voucher-row">
+        <div><strong>New here? Claim your free full-audit voucher.</strong><p>One launch voucher for this browser session. We verify it with the backend before unlocking your report.</p></div>
+        <button type="button" id="claimLaunchVoucherBtn" class="secondary-btn">Claim free voucher</button>
+      </div>
     </section>
     <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
@@ -835,9 +837,13 @@
 (() => {
   'use strict';
   // Isolated NexusNova Audit Worker. No calls to HumanProof routes or credentials.
-  const API_BASE_URL = 'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev';
+  const REVIEW_ORIGIN = 'https://review.nexusnova-seo-audit-studio-review.pages.dev';
+  const API_BASE_URL = window.location.origin === REVIEW_ORIGIN
+    ? 'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
+    : 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
   const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
+  const AUDIT_VOUCHER_KEY = 'nexusnova_audit_voucher_v1';
   async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false) {
     try {
       return await window.fetch(url, init);
@@ -895,7 +901,7 @@
   const el = {
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
-  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, promotionRedemptionId: null, promotionOfferType: null, promotionOfferValue: null, previousFocus: null };
+  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, promotionRedemptionId: null, promotionOfferType: null, promotionOfferValue: null, voucherAutoAttemptedAuditId: null, previousFocus: null };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -1725,6 +1731,26 @@
     if(!response.ok) throw new Error(payload.error || `Request failed (${response.status}).`);
     return payload;
   }
+  async function claimLaunchVoucherFromStudio() {
+    const button=$('claimLaunchVoucherBtn'),input=$('promotionCodeInput'),status=$('promotionCodeStatus');
+    if(!button)return;
+    button.disabled=true;button.textContent='Checking voucher…';
+    try {
+      const result=await apiPost('/api/promotions/claim',{});
+      if(result.ok!==true||typeof result.code!=='string')throw new Error(result.error||'Free launch vouchers are temporarily unavailable.');
+      try{window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code);}catch{}
+      if(input)input.value=result.code;
+      setStatus(status,'Launch voucher ready. '+(result.alreadyClaimed?'Your existing voucher was restored. ':'')+
+        (state.auditId?'Checking it against this audit…':'Run your audit, then open “Unlock Full Audit” and the voucher will be applied automatically.'),'success');
+      if(state.auditId) await applyPromotionCode();
+      button.textContent='Voucher saved';
+    } catch(error) {
+      setStatus(status,error.message||'Could not claim a launch voucher. No access was changed.','error');
+      button.textContent='Try again';
+      button.disabled=false;
+    }
+  }
+
   function setStatus(node, text, tone='') {
     if(!node)return; node.hidden=false; node.className='payment-status-box'+(tone?' '+tone:''); node.textContent=text;
   }
@@ -1738,8 +1764,9 @@
       const result=await apiPost('/api/promotions/redeem',{auditId:state.auditId,code});
       if(result.freeReport===true) {
         state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
-        setStatus(status,'Verified free-report code accepted. Unlocking the full report…','success');
+        setStatus(status,'Verified free-report voucher accepted. Unlocking the full report…','success');
         await unlockReport(state.auditId);
+        try{window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY);}catch{}
         return;
       }
       state.promotionRedemptionId=result.redemptionId;
@@ -1768,47 +1795,26 @@
     return Boolean(c && c.environment==='production' && c.livePaymentsEnabled===true &&
       c.provider==='safepay' && c.safepayConfigured===true && c.safepayOnboardingConfirmed===true);
   }
-  function reviewSimulatorReady() {
-    const c=state.config;
-    return Boolean(c && c.environment!=='production' && c.provider==='mock' && c.devSimulatorEnabled===true);
-  }
   async function beginCardPayment() {
     if(!requireAuditForPayment())return;
     const button=$('safepayCheckoutBtn');
-    const simulatorReady=reviewSimulatorReady();
-    if(!safepayCheckoutReady()&&!simulatorReady) {
+    if(!safepayCheckoutReady()) {
       button.disabled=true;
-      button.textContent='Checkout unavailable';
-      setStatus($('cardPaymentStatus'),'Secure checkout is not configured. No payment was started.','error');
+      button.textContent='Safepay checkout unavailable';
+      setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
       return;
     }
     button.disabled=true;
     try {
       const payload=await apiPost('/api/payments/card-session',{auditId:state.auditId,promotionRedemptionId:state.promotionRedemptionId});
-      if(payload.freeReport===true) {
-        await unlockReport(payload.auditId||state.auditId);
-        setStatus($('cardPaymentStatus'),'The backend verified a free-report entitlement. No payment was made.','success');
-        return;
-      }
-      if(simulatorReady && payload.provider==='mock' && payload.simulatorEnabled===true) {
-        state.cardOrderId=payload.orderId;
-        await apiPost('/api/dev/card/approve',{orderId:payload.orderId});
-        await unlockReport(state.auditId);
-        setStatus($('cardPaymentStatus'),'Sandbox simulation passed. The backend approved a mock order; no provider was contacted and no money moved.','success');
-        return;
-      }
-      if(payload.provider==='safepay'&&payload.checkoutUrl&&safepayCheckoutReady()) {
-        window.location.assign(payload.checkoutUrl);
-        return;
-      }
-      throw new Error('No safe preview checkout was returned. No payment was started.');
-    } catch(error) {
-      setStatus($('cardPaymentStatus'),error.message||'Checkout failed. No payment was started.','error');
-    } finally {
-      const ready=safepayCheckoutReady()||reviewSimulatorReady();
+      if(payload.freeReport===true) { await unlockReport(payload.auditId||state.auditId); return; }
+      if(payload.provider==='safepay' && payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
+      throw new Error('Safepay did not return a secure checkout session. No payment was started.');
+    } catch(error) { setStatus($('cardPaymentStatus'),error.message,'error'); }
+    finally {
+      const ready=safepayCheckoutReady();
       button.disabled=!ready;
-      button.textContent=safepayCheckoutReady()?'Continue to secure Safepay checkout':
-        reviewSimulatorReady()?'Simulate card checkout (no charge)':'Checkout unavailable';
+      button.textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
     }
   }
   async function prepareCryptoPayment() {
@@ -1884,8 +1890,17 @@
       setStatus($('paymentContextNotice'),'Run an audit before starting a payment.','error');
       $('cryptoAvailabilityNote').textContent='Run an audit to check current crypto minimums. Safepay remains available when payment settings are verified.';
     } else {
-      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. Verified payment unlocks only this report.`);
-      void loadCryptoMinimums();
+      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. A verified voucher or payment unlocks only this report.`);
+      let savedVoucher='';
+      try{savedVoucher=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+      if(savedVoucher&&/^[A-Z0-9-]{8,40}$/.test(savedVoucher)&&state.voucherAutoAttemptedAuditId!==state.auditId&&!state.paid){
+        state.voucherAutoAttemptedAuditId=state.auditId;
+        $('promotionCodeInput').value=savedVoucher;
+        setStatus($('promotionCodeStatus'),'Launch voucher found. Verifying it for this audit…');
+        void applyPromotionCode();
+      }else{
+        void loadCryptoMinimums();
+      }
     }
     window.setTimeout(() => el.closePaywall?.focus(), 0);
   };
@@ -1914,6 +1929,7 @@
     updateCryptoCheckoutAvailability();
   });
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
+   $('claimLaunchVoucherBtn')?.addEventListener('click',claimLaunchVoucherFromStudio);
    $('redeemPromoBtn')?.addEventListener('click',applyPromotionCode);
    $('promotionCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();applyPromotionCode();}});
   $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
@@ -2091,12 +2107,10 @@
       $('cryptoPaymentStatus').hidden=true;
       $('verifyCryptoBtn').hidden=true;
       const ready=safepayCheckoutReady();
-      const simulatorReady=reviewSimulatorReady();
-      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Crypto checkout is disabled in this preview. No wallet transfer or real payment can be made.';
-      $('safepayCheckoutBtn').disabled=!(ready||simulatorReady);
-      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':simulatorReady?'Simulate card checkout (no charge)':'Checkout unavailable';
-      if(simulatorReady) setStatus($('cardPaymentStatus'),'SANDBOX ONLY. This button simulates a successful order with the backend. It cannot charge a card or contact Safepay.','');
-      else if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(state.config.cryptoPrice||state.config.price||2.99).toFixed(2)+' per full report. Live provider minimum and safety buffer will be checked before an order is created.';
+      $('safepayCheckoutBtn').disabled=!ready;
+      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
+      if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
       updateCryptoCheckoutAvailability();
     } catch {
       state.config=null;
