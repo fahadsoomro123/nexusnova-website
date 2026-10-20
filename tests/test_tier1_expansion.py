@@ -31,7 +31,7 @@ hub=(ROOT/"guides.html").read_text(encoding="utf-8-sig")
 sitemap=(ROOT/"sitemap.xml").read_text(encoding="utf-8")
 tool_routes=re.findall(r'url:"([^"]+)", type:"tool"',core)
 guide_routes=re.findall(r'url:"([^"]+)", type:"guide"',core)
-assert len(tool_routes)==108,"search index must expose 108 tool records"
+assert len(tool_routes)==109,"search index must expose 109 tool records"
 assert len(guide_routes)==14,"search index must expose 14 guide records"
 dataset_size_match=re.search(r'DATASET_SIZE=(\d+)',core)
 assert dataset_size_match,"search dataset size constant is missing"
@@ -39,8 +39,8 @@ category_routes=re.findall(r'type:"category"',core)
 article_routes=re.findall(r'type:"article"',core)
 actual_total=len(tool_routes)+len(category_routes)+len(article_routes)+len(guide_routes)
 assert int(dataset_size_match.group(1))==actual_total,"search dataset size must match synchronized records"
-assert "NexusNova Tools — 108 Free Online Browser Tools" in home,"homepage metadata must match the 108 indexed tools"
-assert len(re.findall(r'data-tool-card',directory))>=108,"directory must include all tool cards"
+assert "NexusNova Tools — 109 Free Online Browser Tools" in home,"homepage metadata must match the 109 indexed tools"
+assert len(re.findall(r'data-tool-card',directory)) >=109,"directory must include all tool cards"
 assert len(re.findall(r'data-guide-card',hub))>=14,"guide hub must expose all guide cards"
 for rel in tool_routes:
  f=ROOT/rel; assert f.exists(),f"search route missing from repository: {rel}"
@@ -76,5 +76,5 @@ for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool sear
 assert "v=20261015-v4" in home,"homepage assets need the current cache version"
 assert "assets/css/humanproof-home.css?v=20261015-v4" in home,"homepage hero stylesheet must use its current cache version"
 assert "v=20261015-v4" in directory,"directory assets must be cache-busted for the live refresh"
-print("PASS: 108 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache-busted assets.")
+print("PASS: 109 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache-busted assets.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")
