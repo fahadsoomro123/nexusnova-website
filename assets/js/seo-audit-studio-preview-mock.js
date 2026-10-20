@@ -6,7 +6,7 @@
   if(window.location.hostname!=='review.nexusnova-seo-audit-studio-review.pages.dev')return;
   var REVIEW_HOST='review.nexusnova-seo-audit-studio-review.pages.dev';
   var REVIEW_WORKER_HOST='nexusnova-audit-studio-review.fahadsoomro123.workers.dev';
-  var OWNER_DEMO_TOKEN='NN-REVIEW-DEMO-OWNER-2026';
+  var OWNER_DEMO_TOKEN='NN-REVIEW-DEMO-OWNER-TOKEN-2026-ONLY';
   var STATE_KEY='nn_review_mock_state_v1';
   var SESSION_KEY='nexusnova_audit_session_v1';
   var originalFetch=window.fetch.bind(window);
