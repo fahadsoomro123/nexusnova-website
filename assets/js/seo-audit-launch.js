@@ -9,6 +9,31 @@
   const expiryNode=document.getElementById('nnAuditVoucherExpiry');
   const statusNode=document.getElementById('nnAuditVoucherStatus');
   const copyButton=document.getElementById('nnAuditCopyVoucher');
+  const homeForm=document.getElementById('nnAuditHomeForm');
+  const homeUrl=document.getElementById('nnAuditLaunchUrl');
+  const homeError=document.getElementById('nnAuditHomeError');
+  if(homeForm&&homeUrl){
+    homeForm.addEventListener('submit',event=>{
+      event.preventDefault();
+      if(homeError){homeError.hidden=true;homeError.textContent='';}
+      const raw=homeUrl.value.trim();
+      try{
+        if(!raw)throw new Error('Enter the website URL you want to check.');
+        const candidate=/^https?:\\/\\//i.test(raw)?raw:'https://'+raw;
+        const parsed=new URL(candidate);
+        if(!['http:','https:'].includes(parsed.protocol)||!parsed.hostname||parsed.username||parsed.password)throw new Error('Enter a valid website URL starting with https:// or http://.');
+        if(!parsed.hostname.includes('.')&&parsed.hostname!=='localhost')throw new Error('Enter a complete website domain, such as example.com.');
+        parsed.hash='';
+        homeUrl.value=parsed.href;
+        const target=new URL('/seo-audit-studio.html',window.location.origin);
+        target.searchParams.set('url',parsed.href);
+        window.location.href=target.pathname+target.search;
+      }catch(error){
+        if(homeError){homeError.textContent=error.message||'Enter a valid website URL.';homeError.hidden=false;}
+        homeUrl.focus();
+      }
+    });
+  }
   if(!claimButton||!offerBox||!cta||!resultBox||!codeNode||!statusNode)return;
 
   const REVIEW_ORIGIN='https://review.nexusnova-seo-audit-studio-review.pages.dev';

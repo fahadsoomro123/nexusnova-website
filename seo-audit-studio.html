@@ -635,7 +635,22 @@
     <label class="form-label" id="audit-label" for="urlInput">Enter the website URL you want to audit</label>
     <form id="auditForm" novalidate>
       <div class="url-row">
-        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp"></div>
+        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp">
+        <script>
+        (() => {
+          const raw = new URLSearchParams(window.location.search).get('url') || '';
+          const input = document.getElementById('urlInput');
+          if (!raw || !input) return;
+          try {
+            const target = new URL(raw);
+            if (!['http:', 'https:'].includes(target.protocol) || !target.hostname || target.username || target.password) return;
+            input.value = target.href;
+            const clean = new URL(window.location.href);
+            clean.searchParams.delete('url');
+            window.history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
+          } catch (_) {}
+        })();
+        </script></div>
         <button id="runBtn" class="primary-btn" type="submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="4"/></svg> Run SEO Audit</button>
       </div>
     </form>
