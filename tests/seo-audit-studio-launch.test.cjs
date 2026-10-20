@@ -24,7 +24,7 @@ test('homepage uses a high-visibility SEO Audit Studio launch hero below navigat
   assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261020-v2/);
 });
 
-test('launch offer and voucher claim are sourced from the audit Worker and session-scoped', () => {
+test('launch offer and voucher claim are sourced from the audit Worker and the hero uses the new clean product layout', () => {
   assert.match(js, /\/api\/promotions\/active/);
   assert.match(js, /\/api\/promotions\/claim/);
   assert.match(js, /nexusnova_audit_session_v1/);
@@ -38,10 +38,11 @@ test('launch offer and voucher claim are sourced from the audit Worker and sessi
   assert.doesNotMatch(js, /setInterval|countdown|fakeUserCount|remainingClaims\s*[:=]\s*\d+/i);
   assert.match(css, /@media\(max-width:560px\)/);
   assert.match(css, /:focus-visible/);
-  assert.match(css, /prefers-reduced-motion/);
-  assert.match(css, /--nn-lime:#d8ff43/);
-  assert.match(css, /font-family:Georgia,"Times New Roman",serif/);
-  assert.doesNotMatch(css, /linear-gradient|radial-gradient/);
+  assert.match(css, /--audit-accent:#5b32d6/);
+  assert.match(css, /--audit-lime:#dfff4f/);
   assert.match(css, /nn-audit-report-sheet/);
+  assert.match(css, /background:#fff/);
+  assert.doesNotMatch(css, /linear-gradient|radial-gradient/);
+  assert.doesNotMatch(css, /--nn-paper:#f3f1e8|--nn-blue:#3532d0/);
   assert.match(html, /nn-audit-launch-art/);
 });
