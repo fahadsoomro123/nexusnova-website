@@ -2,7 +2,7 @@
 
 /**
  * NexusNova Deep Client-Side Search Core
- * 108 tools + 9 categories + 100 articles + 14 guides = 231 records.
+ * 109 tools + 9 categories + 100 articles + 14 guides = 232 records.
  * Local-only, dependency-free, network-free search.
  */
 
@@ -321,6 +321,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
   { title:"Loan Payoff Calculator", url:"tools/loan-payoff-calculator.html", type:"tool", category:"Money & Records", tags:["loan payoff calculator","loan payback calculator","loan repayment calculator","loan calculator online","early loan payoff","loan amortization calculator","loan payoff with extra payments","personal loan payoff","car loan payoff","remaining loan balance","calculate loan interest"] },
   { title:"Stock Profit Calculator", url:"tools/stock-profit-calculator.html", type:"tool", category:"Money & Records", tags:["stock profit calculator","share profit calculator","stock return calculator","calculate stock gains","stock trading profit","investment return calculator","share price profit loss","brokerage fees","stock break even price","dividend return","fractional shares"] },
   { title:"Crypto Profit Calculator", url:"tools/crypto-profit-calculator.html", type:"tool", category:"Money & Records", tags:["crypto profit calculator","cryptocurrency profit calculator","bitcoin profit calculator","crypto trade calculator","crypto P&L calculator","crypto trading fees","crypto ROI","break even crypto price","entry price exit price","spot trade profit","crypto gain loss","transaction fee calculator"] },
+  { title:"SEO Audit Studio", url:"seo-audit-studio.html", type:"tool", category:"Developer & Data", tags:["seo audit studio","technical seo audit","website seo checker","website health report","page speed insights","mobile performance","desktop performance","core web vitals","structured data audit","meta tags","search visibility","seo score","website audit","nexusnova"] },
   { title:"A Practical AI Prompt Workflow for Midjourney Images and Sora Video", url:"guides/ai-prompt-workflows-2026.html", type:"guide", category:"AI Workflows", tags:["A Practical AI Prompt Workflow for Midjourney Images and Sora Video","AI Workflows","AI Prompt Enhancer","Build clearer image and video prompts by specifying the subject, framing, light, action and continuity, then test revisions systematically."] },
   { title:"Short-Form Video Hooks in 2026: Build a Useful TikTok or Reels Opening", url:"guides/short-form-hooks-2026.html", type:"guide", category:"Creator Workflows", tags:["Short-Form Video Hooks in 2026: Build a Useful TikTok or Reels Opening","Creator Workflows","TikTok & Reels Hook Generator","Write stronger short-form openings with a clear promise, visible evidence, a compact script structure and platform-aware testing."] },
   { title:"How to Set a Freelance Hourly Rate and Quote Remote Projects", url:"guides/freelance-pricing-remote-work.html", type:"guide", category:"Remote Work", tags:["How to Set a Freelance Hourly Rate and Quote Remote Projects","Remote Work","Freelance Rate Calculator","Build a sustainable freelance rate from realistic billable capacity, overhead, reserves, project scope, contingency and delivery risk."] },
@@ -329,7 +330,7 @@ const NEXUSNOVA_SEARCH_DATA = Object.freeze([
 ]);
 
 const NEXUSNOVA_EXPECTED_COUNTS = Object.freeze({
-  tool:108,
+  tool:109,
   category:9,
   article:100,
   guide:14
@@ -903,9 +904,9 @@ class NexusNovaSearchCore{
   }
 }
 
-NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({tool:108,category:9,article:100,guide:14});
+NexusNovaSearchCore.DATASET_COUNTS=Object.freeze({tool:109,category:9,article:100,guide:14});
 
-NexusNovaSearchCore.DATASET_SIZE=231;
+NexusNovaSearchCore.DATASET_SIZE=232;
 
 if(typeof window!=='undefined'){
   window.NexusNovaSearchCore=NexusNovaSearchCore;
