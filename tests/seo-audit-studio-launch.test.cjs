@@ -36,7 +36,7 @@ test('launch offer and voucher claim are sourced from the audit Worker and sessi
   assert.match(js, /credentials:'omit'/);
   assert.match(js, /availability and expiry must come from the backend/);
   assert.doesNotMatch(js, /setInterval|countdown|fakeUserCount|remainingClaims\s*[:=]\s*\d+/i);
-  assert.match(css, /@media\(max-width:520px\)/);
+  assert.match(css, /@media\(max-width:560px\)/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /--nn-lime:#d8ff43/);
