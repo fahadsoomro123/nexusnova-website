@@ -20,7 +20,7 @@ test('homepage uses a high-visibility SEO Audit Studio launch hero below navigat
   assert.match(html, /Claim your free full-audit voucher/);
   assert.match(html, /id="nnAuditVoucherResult"/);
   assert.match(html, /href="\/seo-audit-studio\.html"/);
-  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261020-v3/);
+  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v1/);
   assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261020-v2/);
 });
 
