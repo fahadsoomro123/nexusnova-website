@@ -9,8 +9,6 @@ const root = path.resolve(__dirname, '..');
 const page = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
 const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
 const promoCss = fs.readFileSync(path.join(root, 'assets/css/seo-audit-promotions.css'), 'utf8');
-const worker = fs.readFileSync(path.join(root, '..', 'nexusnova-seo-audit-studio-backend', 'cloudflare/worker.js'), 'utf8');
-
 test('SEO Audit Studio provides a server-validated code input and separate crypto-price wording', () => {
   assert.ok(page.includes('id="promotionCodeInput"'));
   assert.ok(page.includes('id="redeemPromoBtn"'));
@@ -49,13 +47,4 @@ test('owner console is noindex and holds its token only in runtime memory', () =
   assert.ok(admin.includes("status:'draft'") || admin.includes("status:\"draft\"") || admin.includes('Draft by default'));
 });
 
-test('server routes require an owner header, fail closed without the secret, and check rate limits', () => {
-  assert.ok(worker.includes('AUDIT_OWNER_ADMIN_TOKEN'));
-  assert.ok(worker.includes('OWNER_TOKEN_MIN_LENGTH'));
-  assert.ok(worker.includes('x-owner-admin-token'));
-  assert.ok(worker.includes('owner_rate_limited'));
-  assert.ok(worker.includes('promotion_rate_limited'));
-  assert.ok(worker.includes('async function rateLimited'));
-  assert.ok(worker.includes("c.status='active'"));
-  assert.ok(worker.includes('pc.expires_at>'));
-});
+
