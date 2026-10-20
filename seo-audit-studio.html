@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
 <title>NexusNova SEO Audit Studio</title>
+  <link rel="stylesheet" href="assets/css/seo-audit-promotions.css?v=20261020-v2">
   <meta name="description" content="Audit websites with NexusNova SEO Audit Studio. Review technical SEO checks, structured data, issues and measured mobile and desktop performance diagnostics.">
   <link rel="canonical" href="https://nexusnovatools.com/seo-audit-studio.html">
   <meta property="og:type" content="website">
@@ -634,7 +635,22 @@
     <label class="form-label" id="audit-label" for="urlInput">Enter the website URL you want to audit</label>
     <form id="auditForm" novalidate>
       <div class="url-row">
-        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp"></div>
+        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp">
+        <script>
+        (() => {
+          const raw = new URLSearchParams(window.location.search).get('url') || '';
+          const input = document.getElementById('urlInput');
+          if (!raw || !input) return;
+          try {
+            const target = new URL(raw);
+            if (!['http:', 'https:'].includes(target.protocol) || !target.hostname || target.username || target.password) return;
+            input.value = target.href;
+            const clean = new URL(window.location.href);
+            clean.searchParams.delete('url');
+            window.history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
+          } catch (_) {}
+        })();
+        </script></div>
         <button id="runBtn" class="primary-btn" type="submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="4"/></svg> Run SEO Audit</button>
       </div>
     </form>
@@ -795,9 +811,19 @@
     <div class="modal-icon" aria-hidden="true">↗</div>
     <div class="modal-eyebrow">NEXUSNOVA SEO AUDIT STUDIO | FULL REPORT</div>
     <h2 id="paywallTitle">Unlock the full audit report</h2>
-    <p id="paywallDescription" class="modal-description">Verified payment unlocks the detailed report for this audit in this browser session.</p>
+    <p id="paywallDescription" class="modal-description">Your audit preview is free. Claim a launch voucher to unlock the complete technical report at no cost, or use the one-time payment option below.</p>
+    
+    <section class="nn-promo-panel" aria-labelledby="promotionCodeTitle">
+      <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Get your free full-audit voucher</h3><p>Enter the voucher from the homepage or claim one here. The backend verifies it, then unlocks every technical finding and checklist without a payment.</p></div></div>
+      <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Launch voucher code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter launch voucher"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply voucher</button></div>
+      <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
+      <div class="nn-launch-voucher-row">
+        <div><strong>New here? Claim your free full-audit voucher.</strong><p>One launch voucher for this browser session. We verify it with the backend before unlocking your report.</p></div>
+        <button type="button" id="claimLaunchVoucherBtn" class="secondary-btn">Claim free voucher</button>
+      </div>
+    </section>
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
-    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
+    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">A verified launch voucher unlocks your full report free. Payment is a separate alternative.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="payment-panel-head"><span class="payment-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>One-time payment. Your report unlocks after the provider verifies the transaction.</p></div></div>
       <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout…</button>
@@ -805,7 +831,7 @@
       <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
-      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>Supported cryptocurrencies · one-time price US$2.99</p></div></div>
+      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p id="cryptoPriceDescription">Crypto price is checked separately from the US$2.99 Safepay price.</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose cryptocurrency / network</label>
       <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option><option value="TRX">TRX · Tron</option><option value="BNB">BNB · BNB Smart Chain</option><option value="LTC">Litecoin · LTC</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Run an audit to check the current minimum for each supported cryptocurrency. Use Safepay if no crypto option accepts US$2.99.</div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
@@ -827,9 +853,13 @@
 (() => {
   'use strict';
   // Isolated NexusNova Audit Worker. No calls to HumanProof routes or credentials.
-  const API_BASE_URL = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
+  const REVIEW_ORIGIN = 'https://review.nexusnova-seo-audit-studio-review.pages.dev';
+  const API_BASE_URL = window.location.origin === REVIEW_ORIGIN
+    ? 'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
+    : 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
   const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
+  const AUDIT_VOUCHER_KEY = 'nexusnova_audit_voucher_v1';
   async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false) {
     try {
       return await window.fetch(url, init);
@@ -887,7 +917,7 @@
   const el = {
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
-  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, previousFocus: null };
+  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, promotionRedemptionId: null, promotionOfferType: null, promotionOfferValue: null, voucherAutoAttemptedAuditId: null, previousFocus: null };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -1658,6 +1688,7 @@
       if(!payload.audit)return;
       state.auditId=payload.audit.auditId; renderReport(payload.audit);
       if(payload.unlocked) await unlockReport(payload.audit.auditId);
+      else await applySavedVoucherForCurrentAudit();
     } catch { /* A previous session is optional for the initial UI. */ }
   };
   const setProgress=(pct,title,detail)=>{el.progressFill.style.width=pct+'%';el.progressPercent.textContent=pct+'%';if(title)el.progressTitle.textContent=title;if(detail)el.progressDetail.textContent=detail;};
@@ -1680,9 +1711,16 @@
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       state.auditId = payload.auditId;
+      state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
+      if($('promotionCodeInput')) $('promotionCodeInput').value='';
+      if($('promotionCodeStatus')) $('promotionCodeStatus').hidden=true;
+      if($('redeemPromoBtn')) $('redeemPromoBtn').textContent='Apply code';
       state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
       setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
-      window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
+      window.setTimeout(async()=>{
+        renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
+        await applySavedVoucherForCurrentAudit();
+      },200);
     } catch(error) {
       clearInterval(state.progressTimer); el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
       el.error.textContent = error.name === 'AbortError' ? 'Audit timed out. Please try again; the external audit services may be rate-limited.' : (error.message || 'Audit failed.');
@@ -1713,8 +1751,63 @@
     if(!response.ok) throw new Error(payload.error || `Request failed (${response.status}).`);
     return payload;
   }
+  async function claimLaunchVoucherFromStudio() {
+    const button=$('claimLaunchVoucherBtn'),input=$('promotionCodeInput'),status=$('promotionCodeStatus');
+    if(!button)return;
+    button.disabled=true;button.textContent='Checking voucher…';
+    try {
+      const result=await apiPost('/api/promotions/claim',{});
+      if(result.ok!==true||typeof result.code!=='string')throw new Error(result.error||'Free launch vouchers are temporarily unavailable.');
+      try{window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code);}catch{}
+      if(input)input.value=result.code;
+      setStatus(status,'Launch voucher ready. '+(result.alreadyClaimed?'Your existing voucher was restored. ':'')+
+        (state.auditId?'Checking it against this audit…':'Run your audit, then open “Unlock Full Audit” and the voucher will be applied automatically.'),'success');
+      if(state.auditId) await applyPromotionCode();
+      button.textContent='Voucher saved';
+    } catch(error) {
+      setStatus(status,error.message||'Could not claim a launch voucher. No access was changed.','error');
+      button.textContent='Try again';
+      button.disabled=false;
+    }
+  }
+
   function setStatus(node, text, tone='') {
     if(!node)return; node.hidden=false; node.className='payment-status-box'+(tone?' '+tone:''); node.textContent=text;
+  }
+  async function applyPromotionCode() {
+    const input=$('promotionCodeInput'),button=$('redeemPromoBtn'),status=$('promotionCodeStatus');
+    if(!state.auditId){setStatus(status,'Run your audit first. The voucher will unlock the full report for that audit.','error');return;}
+    const code=String(input?.value||'').trim().toUpperCase();
+    if(!code){setStatus(status,'Enter your launch voucher code.','error');input?.focus();return;}
+    button.disabled=true;button.textContent='Verifying voucher…';
+    try {
+      const result=await apiPost('/api/promotions/redeem',{auditId:state.auditId,code});
+      if(result.freeReport!==true)throw new Error(result.error||'This voucher does not grant a free full technical report.');
+      state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
+      setStatus(status,'Voucher verified. Your complete technical audit is unlocking now…','success');
+      await unlockReport(state.auditId);
+      try{window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY);}catch{}
+      const claimButton=$('claimLaunchVoucherBtn');
+      if(claimButton){claimButton.disabled=true;claimButton.textContent='Full audit unlocked';}
+    } catch(error) {
+      setStatus(status,error.message||'Voucher could not be verified. No access was changed.','error');
+    } finally {
+      button.disabled=Boolean(state.paid);
+      button.textContent=state.paid?'Voucher redeemed':'Apply voucher';
+    }
+  }
+  async function applySavedVoucherForCurrentAudit() {
+    if(!state.auditId||state.paid||state.voucherAutoAttemptedAuditId===state.auditId)return false;
+    let code='';
+    try{code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+    if(!/^[A-Z0-9-]{8,40}$/.test(code))return false;
+    const input=$('promotionCodeInput');
+    if(!input)return false;
+    state.voucherAutoAttemptedAuditId=state.auditId;
+    input.value=code;
+    setStatus($('promotionCodeStatus'),'Your launch voucher is being verified for this audit…');
+    await applyPromotionCode();
+    return Boolean(state.paid);
   }
   function requireAuditForPayment() {
     if(state.auditId)return true;
@@ -1759,7 +1852,8 @@
     try {
       const selectedOption=state.cryptoMinimums.find(option=>option.network===selectedNetwork&&option.available===true);
       if(!selectedOption)throw new Error('This cryptocurrency does not accept the US$2.99 report price. Choose an available option or pay with Safepay.');
-      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork});
+      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork,promotionRedemptionId:state.promotionRedemptionId});
+      if(payload.freeReport===true) { await unlockReport(payload.auditId||state.auditId); return; }
       if(payload.provider!=='nowpayments'||!payload.orderId)throw new Error('Verified crypto checkout is not available. No transfer should be made.');
       const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};
       if(payload.network!==selectedNetwork||String(payload.payCurrency||'').toLowerCase()!==expectedCurrencies[selectedNetwork])throw new Error('The provider payment does not match the selected currency/network. Do not transfer funds.');
@@ -1819,8 +1913,17 @@
       setStatus($('paymentContextNotice'),'Run an audit before starting a payment.','error');
       $('cryptoAvailabilityNote').textContent='Run an audit to check current crypto minimums. Safepay remains available when payment settings are verified.';
     } else {
-      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. Verified payment unlocks only this report.`);
-      void loadCryptoMinimums();
+      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. A verified voucher or payment unlocks only this report.`);
+      let savedVoucher='';
+      try{savedVoucher=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+      if(savedVoucher&&/^[A-Z0-9-]{8,40}$/.test(savedVoucher)&&state.voucherAutoAttemptedAuditId!==state.auditId&&!state.paid){
+        state.voucherAutoAttemptedAuditId=state.auditId;
+        $('promotionCodeInput').value=savedVoucher;
+        setStatus($('promotionCodeStatus'),'Launch voucher found. Verifying it for this audit…');
+        void applyPromotionCode();
+      }else{
+        void loadCryptoMinimums();
+      }
     }
     window.setTimeout(() => el.closePaywall?.focus(), 0);
   };
@@ -1849,6 +1952,9 @@
     updateCryptoCheckoutAvailability();
   });
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
+   $('claimLaunchVoucherBtn')?.addEventListener('click',claimLaunchVoucherFromStudio);
+   $('redeemPromoBtn')?.addEventListener('click',applyPromotionCode);
+   $('promotionCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();applyPromotionCode();}});
   $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
   $('verifyCryptoBtn').addEventListener('click',verifyCryptoStatus);
@@ -1942,6 +2048,7 @@
       const payload=await apiPost('/api/payments/crypto/minimums',{auditId:state.auditId});
       if(payload.ok!==true||!Array.isArray(payload.options))throw new Error('Crypto minimums could not be verified.');
       state.cryptoMinimums=payload.options;
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(payload.priceUsd||state.config?.cryptoPrice||2.99).toFixed(2)+' per full report. Current provider minimum plus a US$'+Number(payload.minimumBufferUsd||1).toFixed(2)+' safety buffer must be satisfied.';
       state.cryptoMinimumsLoaded=true;
       state.cryptoMinimumsAuditId=state.auditId;
       for(const item of $('cryptoNetwork').options) {
@@ -1949,7 +2056,7 @@
         item.disabled=!info||info.available!==true;
         item.hidden=!info||info.available!==true;
       }
-      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number(option.minimumUsd)<=Number(payload.priceUsd||2.99))
+      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number.isFinite(Number(option.minimumUsd)))
         .sort((a,b)=>Number(a.minimumUsd)-Number(b.minimumUsd));
       if(eligible.length) {
         const current=eligible.find(option=>option.network===$('cryptoNetwork').value);
@@ -1995,7 +2102,7 @@
     button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
     button.title=available
       ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
-      :'Crypto checkout requires a verified provider minimum no higher than US$2.99.';
+      :'Crypto checkout needs a verified provider minimum plus the configured safety buffer below the current crypto price.';
     if(note&&available)note.hidden=true;
     else if(note)note.hidden=false;
     return available;
@@ -2023,6 +2130,7 @@
       $('cryptoPaymentStatus').hidden=true;
       $('verifyCryptoBtn').hidden=true;
       const ready=safepayCheckoutReady();
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(state.config.cryptoPrice||state.config.price||2.99).toFixed(2)+' per full report. Live provider minimum and safety buffer will be checked before an order is created.';
       $('safepayCheckoutBtn').disabled=!ready;
       $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
       if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
