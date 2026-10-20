@@ -25,7 +25,7 @@ test('promotion status and discount claims come only from backend responses', ()
   assert.ok(page.includes("if(result.freeReport===true)"));
   assert.ok(page.includes('result.estimatedDiscountMinor'));
   assert.ok(page.includes('result.estimatedAmountDueMinor'));
-  assert.ok(page.includes('the server recalculates the final amount'));
+  assert.ok(page.includes('The server recalculates the final amount'));
   assert.ok(!/remainingClaims\s*[:=]\s*\d+/.test(page));
   assert.ok(!/freeReport\s*=\s*true/.test(page));
 });
