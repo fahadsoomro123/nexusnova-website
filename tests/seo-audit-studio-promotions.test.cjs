@@ -13,6 +13,8 @@ test('SEO Audit Studio provides a server-validated code input and separate crypt
   assert.ok(page.includes('id="promotionCodeInput"'));
   assert.ok(page.includes('id="redeemPromoBtn"'));
   assert.ok(page.includes('id="promotionCodeStatus"'));
+  assert.ok(page.includes('id="claimLaunchVoucherBtn"'));
+  assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes("apiPost('/api/promotions/redeem',{auditId:state.auditId,code})"));
   assert.ok(page.includes("promotionRedemptionId:state.promotionRedemptionId"));
   assert.ok(page.includes('id="cryptoPriceDescription"'));
@@ -23,6 +25,9 @@ test('SEO Audit Studio provides a server-validated code input and separate crypt
 
 test('promotion status and discount claims come only from backend responses', () => {
   assert.ok(page.includes("if(result.freeReport===true)"));
+  assert.ok(page.includes("window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code)"));
+  assert.ok(page.includes("state.voucherAutoAttemptedAuditId!==state.auditId"));
+  assert.ok(page.includes("apiPost('/api/promotions/claim',{})"));
   assert.ok(page.includes('result.estimatedDiscountMinor'));
   assert.ok(page.includes('result.estimatedAmountDueMinor'));
   assert.ok(page.includes('The server recalculates the final amount'));
