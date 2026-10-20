@@ -800,7 +800,7 @@
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
     <section class="nn-promo-panel" aria-labelledby="promotionCodeTitle">
       <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Launch or private promotion code</h3><p>Codes are validated by the secure backend. Discount and eligibility are never decided in the browser.</p></div></div>
-      <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Promotion code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter code"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply code</button></div>
+      <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Launch voucher code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter code"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply code</button></div>
       <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
       <div class="nn-launch-voucher-row">
         <div><strong>New here? Claim your free full-audit voucher.</strong><p>One launch voucher for this browser session. We verify it with the backend before unlocking your report.</p></div>
@@ -1760,51 +1760,38 @@
   }
   async function applyPromotionCode() {
     const input=$('promotionCodeInput'),button=$('redeemPromoBtn'),status=$('promotionCodeStatus');
-    if(!state.auditId){setStatus(status,'Run an audit first, then apply the code to that report.','error');return;}
+    if(!state.auditId){setStatus(status,'Run your audit first. The voucher will unlock the full report for that audit.','error');return;}
     const code=String(input?.value||'').trim().toUpperCase();
-    if(!code){setStatus(status,'Enter a promotion code.','error');input?.focus();return;}
-    button.disabled=true;button.textContent='Checking code…';
+    if(!code){setStatus(status,'Enter your launch voucher code.','error');input?.focus();return;}
+    button.disabled=true;button.textContent='Verifying voucher…';
     try {
       const result=await apiPost('/api/promotions/redeem',{auditId:state.auditId,code});
-      if(result.freeReport===true) {
-        state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
-        setStatus(status,'Verified free-report voucher accepted. Unlocking the full report…','success');
-        await unlockReport(state.auditId);
-        try{window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY);}catch{}
-        return;
-      }
-      state.promotionRedemptionId=result.redemptionId;
-      state.promotionOfferType=result.offerType;
-      state.promotionOfferValue=result.offerValue;
-      const discounted=(Number(result.estimatedDiscountMinor||0)/100).toFixed(2);
-      const due=(Number(result.estimatedAmountDueMinor||0)/100).toFixed(2);
-      const offer=result.offerType==='percent'?String(result.offerValue)+'% off':
-        result.offerType==='fixed'?'US$'+(Number(result.offerValue||0)/100).toFixed(2)+' off':'promotion';
-      setStatus(status,'Code reserved: '+offer+'. Safepay estimate: US$'+due+' after US$'+discounted+' off. The server recalculates the final amount for your selected provider. The claim counts toward the offer limit.','success');
-      $('safepayCheckoutBtn').textContent='Continue with applied code';
-      updateCryptoCheckoutAvailability();
+      if(result.freeReport!==true)throw new Error(result.error||'This voucher does not grant a free full technical report.');
+      state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
+      setStatus(status,'Voucher verified. Your complete technical audit is unlocking now…','success');
+      await unlockReport(state.auditId);
+      try{window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY);}catch{}
+      const claimButton=$('claimLaunchVoucherBtn');
+      if(claimButton){claimButton.disabled=true;claimButton.textContent='Full audit unlocked';}
     } catch(error) {
-      setStatus(status,error.message||'Promotion could not be applied. No discount was assumed.','error');
+      setStatus(status,error.message||'Voucher could not be verified. No access was changed.','error');
     } finally {
-      button.disabled=false;button.textContent=state.promotionRedemptionId?'Code applied':'Apply code';
+      button.disabled=Boolean(state.paid);
+      button.textContent=state.paid?'Voucher redeemed':'Apply voucher';
     }
   }
   async function applySavedVoucherForCurrentAudit() {
-    if(!state.auditId||state.paid)return false;
+    if(!state.auditId||state.paid||state.voucherAutoAttemptedAuditId===state.auditId)return false;
     let code='';
     try{code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
     if(!/^[A-Z0-9-]{8,40}$/.test(code))return false;
     const input=$('promotionCodeInput');
     if(!input)return false;
+    state.voucherAutoAttemptedAuditId=state.auditId;
     input.value=code;
     setStatus($('promotionCodeStatus'),'Your launch voucher is being verified for this audit…');
     await applyPromotionCode();
-    if(state.paid) {
-      const claimButton=$('claimLaunchVoucherBtn');
-      if(claimButton){claimButton.disabled=true;claimButton.textContent='Full audit unlocked';}
-      return true;
-    }
-    return false;
+    return Boolean(state.paid);
   }
   function requireAuditForPayment() {
     if(state.auditId)return true;
@@ -1827,8 +1814,7 @@
     }
     button.disabled=true;
     try {
-      const payload=await apiPost('/api/payments/card-session',{auditId:state.auditId,promotionRedemptionId:state.promotionRedemptionId});
-      if(payload.freeReport===true) { await unlockReport(payload.auditId||state.auditId); return; }
+      const payload=await apiPost('/api/payments/card-session',{auditId:state.auditId});
       if(payload.provider==='safepay' && payload.checkoutUrl) { window.location.assign(payload.checkoutUrl); return; }
       throw new Error('Safepay did not return a secure checkout session. No payment was started.');
     } catch(error) { setStatus($('cardPaymentStatus'),error.message,'error'); }
