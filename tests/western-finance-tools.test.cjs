@@ -121,7 +121,7 @@ test('all five finance pages recommend the other finance tools in their dynamic 
 
 test('search dataset exposes consistent tool, category, article and guide totals', () => {
   const counts = SearchCore.DATASET_COUNTS;
-  assert.equal(counts.tool, 108);
+  assert.equal(counts.tool, 109);
   assert.equal(counts.category, 9);
   assert.ok(counts.article >= 34);
   assert.equal(counts.guide, 14);
