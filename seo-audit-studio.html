@@ -799,14 +799,14 @@
     <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="payment-panel-head"><span class="payment-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>One-time payment. Your report unlocks after the provider verifies the transaction.</p></div></div>
-      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Checking payment configuration...</button>
+      <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout…</button>
       <div id="cardPaymentStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
       <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
       <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>USDT TRC20 or ERC20 · one-time price US$2.99</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose USDT network</label>
-      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Checking crypto availability...</button></div>
+      <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Secure crypto checkout is currently unavailable. Do not transfer funds until the verified order shows the correct network, amount and receiving address.</div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
         <div class="wallet-address-head"><span id="cryptoNetworkLabel">USDT TRC20 receiving address</span><button type="button" id="copyWalletBtn" class="copy-btn">Copy</button></div>
         <code id="cryptoWalletAddress" class="wallet-address">Address is not configured.</code>
@@ -1790,16 +1790,6 @@
       }
     }catch(error){setStatus($('cryptoPaymentStatus'),error.message||'Could not check the server-verified status yet.','error');}
     finally{button.disabled=false;button.textContent=original;}
-  }
-    async function approveMockCrypto() {
-    if(!state.cryptoOrderId) { setStatus($('cryptoPaymentStatus'),'Prepare and submit the test TXID first.','error');return; }
-    const button=$('simulateCryptoBtn');button.disabled=true;
-    try {
-      const payload=await apiPost('/api/dev/crypto/approve',{orderId:state.cryptoOrderId,txid:$('cryptoTxid').value.trim()});
-      await unlockReport(state.auditId);
-      setStatus($('cryptoPaymentStatus'),payload.warning || 'Local simulated confirmation recorded; report unlocked.','success');
-    } catch(error) { setStatus($('cryptoPaymentStatus'),error.message,'error'); }
-    finally { button.disabled=false; }
   }
   async function pollOrder(orderId) {
     for(let attempt=0;attempt<30;attempt++) {
