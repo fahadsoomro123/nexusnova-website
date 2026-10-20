@@ -48,20 +48,54 @@ test('public card checkout stays disabled while Safepay is only configured for s
   assert.match(html, /productionMode\?'Continue to secure Safepay checkout':'Safepay checkout pending production onboarding'/);
   assert.doesNotMatch(html, /safepayConfigured\s*\|\|\s*true/,
     'an unconfigured provider must never be treated as ready');
+  assert.match(html, /const sandboxOnly=!productionMode \|\| state\.config\.livePaymentsEnabled!==true;/,
+    'intentionally disabled sandbox checkout is detected separately from production setup errors');
+  assert.match(html, /setStatus\(\$\('cardPaymentStatus'\),message,sandboxOnly\?'':'error'\);/,
+    'sandbox checkout notice uses a neutral status style instead of a red error');
 });
 
 test('crypto option remains visible but checkout needs authorized production configuration', () => {
   assert.match(html, /class="crypto-payment-panel"/);
-  assert.match(html, /if\(config\.environment!=='production' \|\| config\.livePaymentsEnabled!==true\) \{/);
-  assert.match(html, /Crypto checkout waiting for production setup/);
-  assert.match(html, /const network=\$\('cryptoNetwork'\)\.value;/,
-    'current network selection must be read when deciding readiness');
-  assert.match(html,
-    /const direct=network==='TRC20'\s*\?\s*Boolean\(config\.walletAddresses\?\.TRC20 && config\.cryptoCapabilities\?\.TRC20\)\s*:\s*Boolean\(config\.walletAddresses\?\.ERC20 && config\.cryptoCapabilities\?\.ERC20\);/);
-  assert.match(html, /const available=hosted \|\| direct \|\| simulator;/);
-  assert.match(html, /\$\('cryptoNetwork'\)\.addEventListener\('change',updateCryptoCheckoutAvailability\)/,
-    'changing network must recalculate whether checkout is available');
-  assert.match(html, /This network has no verified receiving address and active chain verifier\. Do not transfer funds\./);
+  assert.ok(html.includes("if(config.environment!=='production'||config.livePaymentsEnabled!==true){"));
+  assert.ok(html.includes('Crypto checkout waiting for production setup'));
+  assert.ok(html.includes("const network=$('cryptoNetwork').value;"));
+  assert.ok(html.includes("const providerReady=config.cryptoProvider==='nowpayments'&&config.nowPaymentsConfigured===true&&(network==='TRC20'||network==='ERC20');"));
+  assert.ok(html.includes('const available=providerReady||direct;'));
+  assert.ok(html.includes('Prepare verified USDT transfer'));
+  assert.ok(html.includes('This network is not configured for server-verified checkout. Do not transfer funds.'));
+  assert.ok(html.includes("$('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability)"));
+});
+
+test('NOWPayments UI validates the selected USDT network and exact payment details before displaying a transfer', () => {
+  assert.ok(html.includes("const selectedNetwork=$('cryptoNetwork').value;"));
+  assert.ok(html.includes("const expectedCurrency=selectedNetwork==='TRC20'?'usdttrc20':selectedNetwork==='ERC20'?'usdterc20':'';"));
+  assert.ok(html.includes("String(payload.payCurrency||'').toLowerCase()!==expectedCurrency"));
+  assert.ok(html.includes("String(payload.payAmount)+' '+String(payload.payCurrency).toUpperCase()"));
+  assert.ok(html.includes("$('cryptoWalletAddress').textContent=payload.walletAddress;"));
+  assert.ok(html.includes("apiFetch('/api/orders/'+encodeURIComponent(state.cryptoOrderId)+'/status'"));
+  assert.ok(!html.includes("apiPost('/api/payments/crypto/verify'"));
+  assert.ok(!html.includes('window.location.assign(checkout.href)'));
+  assert.ok(html.includes('valid signed IPN matching the order, amount and selected network'));
+  assert.ok(html.includes("payload.status==='paid'"));
+});
+
+test('PageSpeed diagnostics describe the Cloudflare secret, hide setup hint when configured, and never instruct .env editing', () => {
+  for (const page of [html, sandboxHtml]) {
+    assert.ok(page.includes('PAGESPEED_API_KEY as a Cloudflare Worker secret'));
+    assert.ok(!page.includes('server-side .env file'));
+    assert.ok(page.includes('pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;'));
+    assert.ok(page.includes('Google PageSpeed quota was exceeded on the keyless shared quota'));
+    assert.ok(page.includes('Google PageSpeed quota was exceeded for the configured project'));
+  }
+});
+
+test('cached PageSpeed scores are visibly labelled and stale fallback discloses age', () => {
+  for (const page of [html, sandboxHtml]) {
+    assert.ok(page.includes("provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)'"));
+    assert.ok(page.includes('data?.cacheStale'));
+    assert.ok(page.includes('Google PageSpeed measurement from '));
+    assert.ok(page.includes('six-hour cache; no new result was fabricated'));
+  }
 });
 
 test('payment settings cannot stick in loading state and the reviewed-check count uses scoredCount', () => {

@@ -661,7 +661,7 @@
     </div>
 
     <div class="source-diagnostics" id="sourceDiagnostics" hidden role="status" aria-live="polite">
-      <div><strong id="sourceDiagnosticsTitle">Some audit sources are unavailable</strong><p id="sourceDiagnosticsText">Missing measurements are not estimated or fabricated.</p><div class="mini-note">Optional: add a Google PageSpeed API key to the server-side .env file to improve quota reliability. Never put it in browser HTML.</div></div>
+      <div><strong id="sourceDiagnosticsTitle">Some audit sources are unavailable</strong><p id="sourceDiagnosticsText">Missing measurements are not estimated or fabricated.</p><div class="mini-note" id="pageSpeedSetupNote">Google PageSpeed Insights is requested from the server for mobile and desktop. For reliable production quota, configure PAGESPEED_API_KEY as a Cloudflare Worker secret. Never put API keys in browser HTML.</div></div>
       <button type="button" class="secondary-btn" id="retryMeasurementsBtn" hidden>Retry missing measurements</button>
     </div>
 
@@ -1208,7 +1208,8 @@
   const summarizeSourceError = (value) => {
     const text=String(value || '').trim();
     if (!text) return 'No result returned.';
-    if (/quota|queries per day|daily limit|resource_exhausted/i.test(text)) return 'Google PageSpeed daily quota was exceeded. No live metrics were substituted. Configure or verify the API key on the server, or retry after quota reset.';
+    if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text) && /configure PAGESPEED_API_KEY/i.test(text)) return 'Google PageSpeed quota was exceeded on the keyless shared quota. Configure PAGESPEED_API_KEY as a Cloudflare Worker secret to use your own project quota, then retry.';
+    if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text)) return 'Google PageSpeed quota was exceeded for the configured project. Check its Google Cloud API quota and restrictions, then retry. No live metrics were substituted.';
     if (/api.?key.*invalid|invalid api key|keyInvalid/i.test(text)) return 'Google PageSpeed API key is invalid. Verify the server-side key and confirm the API is enabled for its Google Cloud project.';
     if (/quota cooldown active/i.test(text)) return text;
     if (/timed out/i.test(text)) return 'The source request timed out. Retry later; unavailable measurements remain unscored.';
@@ -1217,6 +1218,8 @@
   const renderSourceDiagnostics = (report) => {
     const src=report.sources || {};
     const errors=src.errors || {};
+    const pageSpeedSetupNote=$('pageSpeedSetupNote');
+    if(pageSpeedSetupNote)pageSpeedSetupNote.hidden=src.pageSpeedConfigured===true;
     const mobileOk=src.pagespeedMobile ?? src.pagespeed ?? false;
     const desktopOk=src.pagespeedDesktop ?? src.pagespeed ?? false;
     const problems=[];
@@ -1309,9 +1312,9 @@
       const error=report.sources?.errors?.[errorKey]||'';
       const quota=/quota|queries per day|daily limit|resource_exhausted/i.test(error);
       const provider=report.sources?.[providerKey];
-      const source=report.mode==='sample'?'Illustrative sample':score!=null?(provider==='local-lighthouse'?'Local Chrome Lighthouse':provider==='google-pagespeed'?'Google PageSpeed Insights':'Lighthouse lab'):quota?'Quota limited':'Not measured';
+      const source=report.mode==='sample'?'Illustrative sample':score!=null?(provider==='local-lighthouse'?'Local Chrome Lighthouse':provider==='google-pagespeed-cache'?'Google PageSpeed Insights (cached)':provider==='google-pagespeed'?'Google PageSpeed Insights':'Lighthouse lab'):quota?'Quota limited':'Not measured';
       const scoreStatus=score==null?'Not measured':score>=90?'Good':score>=50?'Needs improvement':'Poor';
-      const note=score==null?(quota?'Google daily quota was exceeded. Local Lighthouse can supply a separately labelled lab run. No performance score was invented.':summarizeSourceError(error||'This device strategy could not be measured in the current audit.')):score>=90?'Strong lab score for this run. Continue monitoring real-user experience.':score>=50?'This run shows opportunities to improve loading or responsiveness.':'Prioritize the largest loading and main-thread bottlenecks for this device.';
+      const note=score==null?(quota?'Google daily quota was exceeded. Local Lighthouse can supply a separately labelled lab run. No performance score was invented.':summarizeSourceError(error||'This device strategy could not be measured in the current audit.')):data?.cacheStale?'The live request failed; displaying a real Google PageSpeed measurement from '+Math.round((data.cacheAgeSeconds||0)/60)+' minutes ago. '+summarizeSourceError(data.cacheWarning||'Google PageSpeed quota was exceeded.') :data?.cacheHit?'Reused a real Google PageSpeed result from the six-hour cache; no new result was fabricated.':score>=90?'Strong lab score for this run. Continue monitoring real-user experience.':score>=50?'This run shows opportunities to improve loading or responsiveness.':'Prioritize the largest loading and main-thread bottlenecks for this device.';
       const metrics=metricHtml('Largest Contentful Paint',data?.lcp,'lcp')+metricHtml('Cumulative Layout Shift',data?.cls,'cls')+metricHtml('Total Blocking Time',data?.tbt,'tbt');
       return '<article class="perf-col"><div class="perf-head"><span class="perf-title"><span class="icon" aria-hidden="true">'+(kind==='phone'?'▯':'▣')+'</span>'+name+' performance</span><span class="device-tag">'+escapeHtml(source)+'</span></div>'+
         '<div class="perf-score-row"><span class="perf-score '+tone+'">'+(score==null?'N/A':score)+'</span><div class="perf-meter" role="img" aria-label="Lighthouse performance score '+(score==null?'not measured':score+' out of 100')+'"><span class="perf-pointer" style="left:'+point+'%"></span></div>'+
