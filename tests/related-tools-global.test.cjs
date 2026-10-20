@@ -223,7 +223,7 @@ test('category pages and categories directory dynamically mount Featured Utiliti
   }
 });
 
-test('global shared loader reaches all 108 indexed tool pages without hand-editing every page', () => {
+test('global shared loader reaches all 109 indexed tool pages without hand-editing every page', () => {
   const core = fs.readFileSync(path.join(ROOT, 'assets/js/search-core.js'), 'utf8');
   const searchCore = core;
   const articlesIndex = fs.readFileSync(path.join(ROOT, 'articles.html'), 'utf8');
@@ -240,7 +240,7 @@ test('global shared loader reaches all 108 indexed tool pages without hand-editi
     result[entry.type] = (result[entry.type] || 0) + 1;
     return result;
   }, {});
-  assert.equal(counts.tool, 108);
+  assert.equal(counts.tool, 109);
   assert.equal(counts.category, 9);
   assert.ok(counts.article >= 45);
   assert.equal(counts.guide, 14);
