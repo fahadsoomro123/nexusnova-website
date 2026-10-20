@@ -21,11 +21,21 @@ jobs:
     steps:
       - name: Check out the review website branch
         uses: actions/checkout@v4
+      - name: Require read-only access to the private backend repository
+        shell: bash
+        env:
+          BACKEND_REPO_READ_TOKEN: ${{ secrets.BACKEND_REPO_READ_TOKEN }}
+        run: |
+          if [[ -z "$BACKEND_REPO_READ_TOKEN" ]]; then
+            echo "::error::Add BACKEND_REPO_READ_TOKEN as a GitHub Actions secret in nexusnova-website. It must have read-only Contents access to the private backend repository."
+            exit 1
+          fi
       - name: Check out the exact backend PR commit
         uses: actions/checkout@v4
         with:
           repository: fahadsoomro123/nexusnova-seo-audit-studio-backend
           ref: 175e9a83b995563d0afc328c31c2ff5f3a34e017
+          token: ${{ secrets.BACKEND_REPO_READ_TOKEN }}
           path: .review-backend
       - name: Set up Node.js
         uses: actions/setup-node@v4
