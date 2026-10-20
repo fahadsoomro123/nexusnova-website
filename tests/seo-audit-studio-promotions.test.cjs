@@ -11,6 +11,9 @@ const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'u
 const promoCss = fs.readFileSync(path.join(root, 'assets/css/seo-audit-promotions.css'), 'utf8');
 test('SEO Audit Studio provides a server-validated code input and separate crypto-price wording', () => {
   assert.ok(page.includes('id="promotionCodeInput"'));
+  assert.ok(page.includes('Get your free full-audit voucher'));
+  assert.ok(page.includes('Enter launch voucher'));
+  assert.ok(page.indexOf('class="nn-promo-panel"') < page.indexOf('class="modal-price-row"'));
   assert.ok(page.includes('id="redeemPromoBtn"'));
   assert.ok(page.includes('id="promotionCodeStatus"'));
   assert.ok(page.includes('id="claimLaunchVoucherBtn"'));
