@@ -127,8 +127,8 @@ if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBad
     problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
-if len(routes) != 108 or len({url for _, url in routes}) != 108:
-    problems.append(f"expected 108 unique indexed tool routes; found {len(routes)}")
+if len(routes) != 109 or len({url for _, url in routes}) != 108:
+    problems.append(f"expected 109 unique indexed tool routes; found {len(routes)}")
 expected = set()
 for page in sorted((ROOT / "articles").glob("*.html")):
     source = page.read_text(encoding="utf-8-sig", errors="replace")
@@ -225,11 +225,11 @@ test('dynamic header and footer repair loaders are gone', () => {
   assert.match(read('assets/js/nn-inner-shell.js'), /related-tools-bootstrap\.js/);
 });
 
-test('108 indexed tool routes resolve to unique HTML files', () => {
+test('109 indexed tool routes resolve to unique HTML files', () => {
   const core = read('assets/js/search-core.js');
   const routes = [...core.matchAll(/\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"/g)].map(match => match[2]);
-  assert.equal(routes.length, 108);
-  assert.equal(new Set(routes).size, 108);
+  assert.equal(routes.length, 109);
+  assert.equal(new Set(routes).size, 109);
   for (const route of routes) assert.ok(fs.existsSync(path.join(root, route.replace(/^\/+/, ''))), 'missing indexed tool route ' + route);
 });
 
