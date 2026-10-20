@@ -51,7 +51,8 @@ test('claimed full-audit voucher auto-unlocks after an audit or when the existin
   assert.ok(runStart >= 0 && restoreStart >= 0);
   assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', runStart) > runStart);
   assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', restoreStart) > restoreStart);
-  assert.match(page, /if\s*\(state\.paid\)/);
+  assert.match(page, /if\s*\(!state\.auditId\|\|state\.paid\|\|state\.voucherAutoAttemptedAuditId===state\.auditId\)return false;/);
+  assert.ok(page.includes("claimButton.textContent='Full audit unlocked'"));
   assert.ok(page.includes('return Boolean(state.paid);'));
   assert.ok(page.includes('state.voucherAutoAttemptedAuditId===state.auditId'));
 });
