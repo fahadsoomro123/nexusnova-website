@@ -19,7 +19,7 @@
       const raw=homeUrl.value.trim();
       try{
         if(!raw)throw new Error('Enter the website URL you want to check.');
-        const candidate=/^https?:\\/\\//i.test(raw)?raw:'https://'+raw;
+        const candidate=/^https?:/i.test(raw)?raw:'https://'+raw;
         const parsed=new URL(candidate);
         if(!['http:','https:'].includes(parsed.protocol)||!parsed.hostname||parsed.username||parsed.password)throw new Error('Enter a valid website URL starting with https:// or http://.');
         if(!parsed.hostname.includes('.')&&parsed.hostname!=='localhost')throw new Error('Enter a complete website domain, such as example.com.');
