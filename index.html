@@ -549,18 +549,40 @@
   </header>
 
   <main class="nn-main">
-    <section class="nn-audit-launch nn-shell" aria-label="SEO Audit Studio new launch">
-      <div class="nn-audit-launch-mark" aria-hidden="true">NN</div>
-      <div class="nn-audit-launch-copy">
-        <div class="nn-audit-launch-kicker">NEW LAUNCH <span aria-hidden="true">·</span> EARLY ACCESS</div>
-        <p class="nn-audit-launch-title">NexusNova SEO Audit Studio</p>
-        <p class="nn-audit-launch-description">Run a free first-look audit, inspect your top findings, and unlock the complete technical report only when you need it.</p>
+    <section class="nn-audit-launch nn-shell" aria-labelledby="nn-audit-launch-title">
+      <div class="nn-audit-launch-content">
+        <div class="nn-audit-launch-kicker"><span class="nn-audit-launch-pulse" aria-hidden="true"></span> NEW LAUNCH <span aria-hidden="true">/</span> EARLY ACCESS</div>
+        <h2 class="nn-audit-launch-title" id="nn-audit-launch-title">Stop guessing.<br><span>Know what to fix.</span></h2>
+        <p class="nn-audit-launch-description">Scan your website for real SEO issues, get a clear action plan, then unlock the complete technical report with your launch voucher.</p>
+        <div class="nn-audit-launch-benefits" aria-label="Audit features">
+          <span><span aria-hidden="true">✓</span> Technical SEO</span>
+          <span><span aria-hidden="true">✓</span> Mobile &amp; desktop</span>
+          <span><span aria-hidden="true">✓</span> Prioritized fixes</span>
+        </div>
         <div id="nnAuditLaunchOffer" class="nn-audit-launch-offer" hidden aria-live="polite"></div>
+        <div class="nn-audit-launch-actions">
+          <button type="button" id="nnAuditClaimVoucher" class="nn-audit-launch-button"><span>Claim free full-audit voucher</span><span class="nn-audit-launch-arrow" aria-hidden="true">↗</span></button>
+          <a id="nnAuditLaunchCta" href="/seo-audit-studio.html" class="nn-audit-launch-secondary">Explore Audit Studio <span aria-hidden="true">→</span></a>
+        </div>
+        <div id="nnAuditVoucherResult" class="nn-audit-voucher-result" hidden aria-live="polite">
+          <div><span class="nn-audit-voucher-label">YOUR LAUNCH VOUCHER</span><strong id="nnAuditVoucherCode"></strong><small id="nnAuditVoucherExpiry">Saved in this browser tab for your audit.</small></div>
+          <button type="button" id="nnAuditCopyVoucher" class="nn-audit-voucher-copy">Copy code</button>
+        </div>
+        <p id="nnAuditVoucherStatus" class="nn-audit-voucher-status" role="status" aria-live="polite" hidden></p>
+        <p class="nn-audit-launch-note">No fake countdowns. Voucher availability is confirmed by the audit service.</p>
       </div>
-      <div class="nn-audit-launch-action">
-        <a id="nnAuditLaunchCta" href="seo-audit-studio.html" class="nn-audit-launch-button">Run Your Free Audit <span aria-hidden="true">→</span></a>
-        <span class="nn-audit-launch-note">No fake countdowns. Any limited-time offer is shown only when the backend confirms it.</span>
-      </div>
+      <aside class="nn-audit-launch-visual" aria-label="SEO Audit Studio features preview">
+        <div class="nn-audit-visual-orb nn-audit-visual-orb-one" aria-hidden="true"></div>
+        <div class="nn-audit-visual-orb nn-audit-visual-orb-two" aria-hidden="true"></div>
+        <div class="nn-audit-visual-top"><span><i aria-hidden="true"></i> AUDIT STUDIO</span><span class="nn-audit-visual-chip">PREVIEW</span></div>
+        <div class="nn-audit-visual-site"><span class="nn-audit-visual-site-icon" aria-hidden="true">N</span><div><strong>Your website</strong><small>Technical health overview</small></div><span class="nn-audit-visual-scan" aria-hidden="true">↗</span></div>
+        <div class="nn-audit-visual-checks">
+          <div class="nn-audit-visual-check"><span class="nn-audit-check-icon nn-audit-check-purple" aria-hidden="true">⌕</span><span><strong>On-page SEO</strong><small>Titles, metadata &amp; headings</small></span><span class="nn-audit-check-arrow" aria-hidden="true">→</span></div>
+          <div class="nn-audit-visual-check"><span class="nn-audit-check-icon nn-audit-check-blue" aria-hidden="true">◷</span><span><strong>Performance</strong><small>Mobile &amp; desktop checks</small></span><span class="nn-audit-check-arrow" aria-hidden="true">→</span></div>
+          <div class="nn-audit-visual-check"><span class="nn-audit-check-icon nn-audit-check-green" aria-hidden="true">✓</span><span><strong>Action plan</strong><small>Fix the highest-impact issues</small></span><span class="nn-audit-check-arrow" aria-hidden="true">→</span></div>
+        </div>
+        <div class="nn-audit-visual-foot"><span class="nn-audit-visual-live-dot" aria-hidden="true"></span> Evidence first. Clear next steps.</div>
+      </aside>
     </section>
     <section class="nn-step" aria-labelledby="new-tools-title">
       <div class="nn-shell">
