@@ -2021,7 +2021,7 @@
           note.hidden=true;
         } else {
           note.hidden=false;
-          note.textContent='This network minimum is within the configured US
+          note.textContent='This network minimum is within the configured US$'+Number(payload.priceUsd).toFixed(2)+' crypto price, but live crypto checkout is not enabled yet. Safepay remains US$2.99.';
         }
         return true;
       }
@@ -2164,106 +2164,6 @@
       $('cryptoWalletAddress').textContent='A verified receiving address will appear when checkout is available.';
       const cryptoDescription=$('cryptoPricingDescription');if(cryptoDescription)cryptoDescription.textContent=state.config.cryptoPricingEnabled===true&&Number(state.config.cryptoPrice)>0?'Separate crypto price: US$'+Number(state.config.cryptoPrice).toFixed(2)+'. The current minimum is checked before an order can be opened. Safepay remains US$2.99.':'Crypto checkout is temporarily paused while a separate crypto price is configured. Safepay remains US$2.99.';
       if($('ownerAccessStatus') && state.config.ownerAccessConfigured!==true) $('ownerAccessStatus').textContent='Owner controls are not configured yet. Add the AUDIT_OWNER_ACCESS_TOKEN secret to this dedicated Cloudflare Worker before using these controls.';
-      $('cryptoWalletNotice').textContent='Confirm the selected currency and amount before sending funds. Report access requires provider verification.';
-      $('cryptoNetwork').disabled=false;
-      $('cryptoPaymentDetails').hidden=true;
-      $('cryptoPaymentStatus').hidden=true;
-      $('verifyCryptoBtn').hidden=true;
-      const ready=safepayCheckoutReady();
-      $('safepayCheckoutBtn').disabled=!ready;
-      $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
-      if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
-      updateCryptoCheckoutAvailability();
-    } catch {
-      state.config=null;
-      $('safepayCheckoutBtn').disabled=true;
-      $('prepareCryptoBtn').disabled=true;
-      $('safepayCheckoutBtn').textContent='Secure checkout unavailable';
-      $('prepareCryptoBtn').textContent='Crypto checkout unavailable';
-      const note=$('cryptoAvailabilityNote'); if(note)note.hidden=false;
-      setStatus($('cardPaymentStatus'),'Secure payment settings are unavailable. Your report remains locked; no payment was started.');
-      if(retryButton){retryButton.hidden=false;retryButton.disabled=false;retryButton.textContent='Retry payment settings';}
-    }
-  }
-  async function handlePaymentReturn() {
-    const query=new URLSearchParams(window.location.search);
-    const orderId=query.get('orderId');
-    if(query.get('payment')==='return' && orderId) {
-      try {
-        setStatus($('paymentContextNotice'),'Safepay returned to the site. Verifying payment directly with Safepay; the report stays locked until the server confirms it.');
-        await pollOrder(orderId);
-      } catch(error) { setStatus($('paymentContextNotice'),error.message,'error');openPaywall(); }
-      history.replaceState({},'',window.location.pathname);
-    } else if(query.get('payment')==='cancel') {
-      const productionMode = state.config?.environment === 'production';
-      setStatus($('paymentContextNotice'),'Checkout was cancelled. The report remains locked; you can retry when ready.');
-      history.replaceState({},'',window.location.pathname);
-    }
-  }
-  const footerYear=$('footerYear'); if(footerYear) footerYear.textContent=new Date().getFullYear();
-  initializePayments().then(()=>restoreLatestAudit().then(()=>handlePaymentReturn()));
-})();
-</script>
-</body>
-</html>
-+Number(payload.priceUsd).toFixed(2)+' crypto price, but live crypto checkout is not enabled yet. Safepay remains US$2.99.';
-        }
-        return true;
-      }
-      const currentMinimums=state.cryptoMinimums.filter(option=>Number.isFinite(Number(option.minimumUsd)))
-        .map(option=>option.label+': minimum US$'+Number(option.minimumUsd).toFixed(2)).join(' · ');
-      note.textContent='No supported network minimum fits the configured crypto price of US$'+Number(payload.priceUsd||0).toFixed(2)+'. '+currentMinimums+'. Safepay remains US$2.99.';
-      return false;
-    } catch {
-      state.cryptoMinimumsLoaded=false;
-      note.textContent='Crypto minimums could not be verified right now. Do not transfer funds; use Safepay instead.';
-      return false;
-    } finally {
-      state.cryptoMinimumsLoading=false;
-      updateCryptoCheckoutAvailability();
-    }
-  }
-  function updateCryptoCheckoutAvailability() {
-    const button=$('prepareCryptoBtn');
-    const note=$('cryptoAvailabilityNote');
-    if(!state.config) {
-      button.disabled=true;
-      button.textContent='Crypto checkout unavailable';
-      if(note)note.hidden=false;
-      return false;
-    }
-    const config=state.config;
-    const network=$('cryptoNetwork').value;
-    const option=state.cryptoMinimums.find(item=>item.network===network);
-    const available=config.environment==='production' && config.livePaymentsEnabled===true &&
-      config.cryptoProvider==='nowpayments' && config.nowPaymentsConfigured===true &&
-      state.cryptoMinimumsLoaded===true && state.cryptoMinimumsAuditId===state.auditId && option?.available===true;
-    button.disabled=!available||Boolean(state.cryptoOrderId)||state.cryptoMinimumsLoading;
-    button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
-    button.title=available
-      ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
-      :'Crypto checkout needs an explicitly configured crypto price and a verified provider minimum no higher than that price.';
-    if(note&&available)note.hidden=true;
-    else if(note)note.hidden=false;
-    return available;
-  }
-  async function initializePayments() {
-    const retryButton=$('retryPaymentSettingsBtn');
-    if(retryButton){retryButton.hidden=true;retryButton.disabled=true;retryButton.textContent='Loading payment settings…';}
-    $('safepayCheckoutBtn').disabled=true;
-    $('prepareCryptoBtn').disabled=true;
-    try {
-      state.cryptoMinimums=[];
-      state.cryptoMinimumsLoaded=false;
-      state.cryptoMinimumsAuditId=null;
-      const response=await apiFetch('/api/config',{method:'POST',headers:{Accept:'application/json'},cache:'no-store',signal:AbortSignal.timeout(8000)});
-      state.config=await response.json();
-      if(retryButton){retryButton.hidden=true;retryButton.disabled=false;}
-      $('cardPaymentStatus').hidden=true;
-      $('cardPaymentStatus').textContent='';
-      const lockedNote=document.querySelector('.locked-note');
-      if(lockedNote)lockedNote.textContent='Full report access is granted after the payment provider confirms the transaction.';
-      $('cryptoWalletAddress').textContent='A verified receiving address will appear when checkout is available.';
       $('cryptoWalletNotice').textContent='Confirm the selected currency and amount before sending funds. Report access requires provider verification.';
       $('cryptoNetwork').disabled=false;
       $('cryptoPaymentDetails').hidden=true;
