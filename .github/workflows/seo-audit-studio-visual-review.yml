@@ -25,6 +25,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Validate preview JavaScript and run site regressions
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npm ci
+          node --check assets/js/seo-audit-studio-preview-mock.js
+          node --check assets/js/seo-audit-launch.js
+          npm test
       - name: Deploy exact branch files to isolated Cloudflare Pages
         shell: bash
         env:
