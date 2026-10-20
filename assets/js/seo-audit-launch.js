@@ -48,8 +48,10 @@
       );
       const ends = displayDate(campaign.endsAt);
       if (ends) offerBox.append(text('span', '', 'Offer ends ' + ends));
+      if (campaign.terms && typeof campaign.terms === 'string') offerBox.append(text('span', 'nn-audit-launch-terms', campaign.terms));
+      offerBox.append(text('span', 'nn-audit-launch-terms', 'Use your voucher code at checkout in Audit Studio.'));
       offerBox.hidden = false;
-      cta.href = 'seo-audit-studio.html?campaign=' + encodeURIComponent(campaign.id);
+      cta.href = 'seo-audit-studio.html';
     })
     .catch(() => {
       // Intentionally fail closed. An unavailable promotions service must not create offer claims.
