@@ -275,7 +275,7 @@
     var banner=document.createElement('div');
     banner.id='nn-review-demo-banner';
     banner.setAttribute('role','note');
-    banner.textContent='REVIEW PREVIEW · SAMPLE DATA ONLY · REAL PAYMENTS DISABLED';
+    banner.textContent='LIVE-SOURCE AUDIT PREVIEW · DEMO VOUCHERS · PAYMENTS DISABLED';
     banner.style.cssText='position:relative;z-index:10000;display:block;width:100%;box-sizing:border-box;padding:8px 12px;background:#17263d;color:#f4efe5;border-bottom:1px solid #d8c29a;text-align:center;font:800 10px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.09em';
     document.body.prepend(banner);
     var style=document.createElement('style');
