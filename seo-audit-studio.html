@@ -1236,11 +1236,11 @@
     }
     return [...map.values()];
   };
-  const scoreCategory = (checks, category) => {
+  const scoreCategory = (checks, category, minimumChecks = 3) => {
     const items=checks.filter(c=>c.category===category && ['pass','warn','fail'].includes(c.status));
-    // A category score from one or two checks overstates confidence, especially when
-    // a Reader extract cannot expose raw HTML metadata. Require at least three scored checks.
-    if (items.length < 3) return null;
+    // Raw HTML has verifiable category-level signals. A normalized Reader extract
+    // is weaker evidence, so it still needs three scored checks before it is graded.
+    if (items.length < minimumChecks) return null;
     const points={pass:100,warn:58,fail:18};
     return Math.round(items.reduce((s,c)=>s+points[c.status],0)/items.length);
   };
@@ -1268,6 +1268,7 @@
     liveChecks.push(...mobileChecks,...desktopChecks);
     const checks=dedupeChecks(liveChecks);
     const metrics={mobile:extractMetrics(psiMobile),desktop:extractMetrics(psiDesktop)};
+    const minimumHtmlCategoryChecks=parsed?.meta?.contentMode==='html'?2:3;
     const hasPsi=Boolean(psiMobile?.lighthouseResult || psiDesktop?.lighthouseResult);
     const hasContent=Boolean(content && content.mode!=='unavailable');
     const hasRawHtml=Boolean(content && content.mode==='html');
@@ -1280,13 +1281,13 @@
         sources:{pagespeed:false,content:false,contentLabel:'Unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || 'Website content could not be retrieved.'}}};
     }
     const scores={
-      onPage: scoreCategory(checks,'On-Page SEO') ?? (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')),
-      geo: scoreCategory(checks,'GEO readiness'),
-      links: scoreCategory(checks,'Links'),
-      usability: scoreCategory(checks,'Usability') ?? ((psiScore(psiMobile,'accessibility')!=null || psiScore(psiDesktop,'accessibility')!=null) ? Math.round(((psiScore(psiMobile,'accessibility') ?? psiScore(psiDesktop,'accessibility'))*0.7 + (Math.max(psiScore(psiMobile,'best-practices') ?? 0,psiScore(psiDesktop,'best-practices') ?? 0))*0.3)) : null),
+      onPage: scoreCategory(checks,'On-Page SEO',minimumHtmlCategoryChecks) ?? (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')),
+      geo: scoreCategory(checks,'GEO readiness',minimumHtmlCategoryChecks),
+      links: scoreCategory(checks,'Links',minimumHtmlCategoryChecks),
+      usability: scoreCategory(checks,'Usability',minimumHtmlCategoryChecks) ?? ((psiScore(psiMobile,'accessibility')!=null || psiScore(psiDesktop,'accessibility')!=null) ? Math.round(((psiScore(psiMobile,'accessibility') ?? psiScore(psiDesktop,'accessibility'))*0.7 + (Math.max(psiScore(psiMobile,'best-practices') ?? 0,psiScore(psiDesktop,'best-practices') ?? 0))*0.3)) : null),
       performance: metrics.mobile.score ?? metrics.desktop.score,
-      social: scoreCategory(checks,'Social'),
-      local: scoreCategory(checks,'Local SEO')
+      social: scoreCategory(checks,'Social',minimumHtmlCategoryChecks),
+      local: scoreCategory(checks,'Local SEO',minimumHtmlCategoryChecks)
     };
     // For categories not exposed by a source, keep them unmeasured rather than manufacture live scores.
     const scored=Object.values(scores).filter(v=>v!=null);
