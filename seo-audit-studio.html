@@ -952,6 +952,25 @@
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
   const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, promotionRedemptionId: null, promotionOfferType: null, promotionOfferValue: null, voucherAutoAttemptedAuditId: null, previousFocus: null };
+  const hasCompleteReportEvidence = (report) => Boolean(
+    report && report.mode === 'live' && Number.isFinite(report.overall) &&
+    report.sources?.content === true &&
+    report.sources?.pagespeedMobile === 'google-pagespeed' &&
+    report.sources?.pagespeedDesktop === 'google-pagespeed'
+  );
+  const updatePaidActionAvailability = (report) => {
+    if (!report) return false;
+    const ready = hasCompleteReportEvidence(report);
+    document.querySelectorAll('[data-open-paywall]').forEach(button => {
+      if (!button.dataset.defaultLabelHtml) button.dataset.defaultLabelHtml = button.innerHTML;
+      button.disabled = !ready;
+      button.setAttribute('aria-disabled', String(!ready));
+      button.title = ready ? 'Unlock the full report for this measured audit.' : 'Checkout is disabled until raw website HTML and both mobile and desktop PageSpeed measurements are available.';
+      button.classList.toggle('report-unavailable', !ready);
+      button.innerHTML = ready ? button.dataset.defaultLabelHtml : 'Full report unavailable · data required';
+    });
+    return ready;
+  };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -1748,6 +1767,7 @@
   };
   const renderReport = (report) => {
     state.report=report;
+    updatePaidActionAvailability(report);
     const reportSection=$('auditReportSection'); if(reportSection)reportSection.hidden=false;
     if (report.auditId || report.id) state.auditId = report.auditId || report.id;
     if (typeof updateUpgradeLinks === 'function') updateUpgradeLinks();
@@ -1797,7 +1817,6 @@
     closePaywall();
   };
   const restoreLatestAudit = async () => {
-    if(window.location.origin===REVIEW_ORIGIN)return;
     try {
       const response=await apiFetch('/api/audits/latest',{headers:{Accept:'application/json'},cache:'no-store'});
       if(!response.ok)return;
@@ -1820,65 +1839,6 @@
     try{url=safeUrl(rawUrl);}catch(err){el.error.textContent=err.message;el.error.style.display='block';el.url.focus();return;}
     el.error.style.display='none';state.inProgress=true;el.run.disabled=true;el.refresh.disabled=true;el.progress.style.display='block';setProgress(4,'Preparing audit…','Submitting the website URL for analysis');startProgress();
     try {
-      const isReviewPreview = window.location.origin === REVIEW_ORIGIN;
-      if(isReviewPreview){
-        const controller=new AbortController();
-        let requestTimedOut=false;
-        const timeout=window.setTimeout(()=>{requestTimedOut=true;controller.abort();},60000);
-        setProgress(10,'Fetching live website evidence','Reading the requested page and requesting mobile and desktop PageSpeed measurements. No sample report is used.');
-        let content,mobile,desktop;
-        try{
-          const results=await Promise.all([
-            fetchPageContent(url,controller.signal).catch(error=>({text:'',mode:'unavailable',source:'Page content unavailable',error:error.message||'Content request failed.'})),
-            fetchPageSpeed(url,'mobile',controller.signal).catch(error=>({error:error.message||'Mobile PageSpeed request failed.'})),
-            fetchPageSpeed(url,'desktop',controller.signal).catch(error=>({error:error.message||'Desktop PageSpeed request failed.'}))
-          ]);
-          if(requestTimedOut)throw new Error('Live audit sources did not finish within 60 seconds. No sample results were substituted.');
-          content=results[0];mobile=results[1];desktop=results[2];
-        }finally{window.clearTimeout(timeout);}
-        const report=calculateReport({url,content,psiMobile:mobile,psiDesktop:desktop});
-        report.auditId='live-preview-'+Date.now().toString(36);
-        report.id=report.auditId;
-        report.checkCount=report.checks?.length||0;
-        report.recommendationCount=report.recommendations?.length||0;
-        const hasContent=Boolean(content&&content.mode!=='unavailable');
-        const hasMobile=Boolean(mobile?.lighthouseResult);
-        const hasDesktop=Boolean(desktop?.lighthouseResult);
-        report.sources={
-          ...(report.sources||{}),
-          pagespeed:hasMobile||hasDesktop,
-          pagespeedMobile:hasMobile,
-          pagespeedDesktop:hasDesktop,
-          performanceProviderMobile:hasMobile?'google-pagespeed':null,
-          performanceProviderDesktop:hasDesktop?'google-pagespeed':null,
-          content:hasContent,
-          contentLabel:content?.source||'Unavailable',
-          errors:{
-            ...(report.sources?.errors||{}),
-            content:content?.error||null,
-            psiMobile:mobile?.error||null,
-            psiDesktop:desktop?.error||null
-          }
-        };
-        report.overallCoverage=Math.round(([Boolean(content&&content.mode==='html'),hasMobile,hasDesktop].filter(Boolean).length/3)*100);
-        report.previewNotice='Live-source preview. Findings are derived only from returned page content and/or provider Lighthouse data. Unavailable sources remain unmeasured; no synthetic scores or findings are substituted.';
-        state.auditId=report.auditId;
-        state.fullReport=null;state.paid=false;state.cryptoOrderId=null;state.cryptoMinimums=[];state.cryptoMinimumsLoaded=false;state.cryptoMinimumsAuditId=null;state.filter='All';
-        state.voucherAutoAttemptedAuditId=report.auditId;
-        if($('promotionCodeInput'))$('promotionCodeInput').value='';
-        if($('promotionCodeStatus'))$('promotionCodeStatus').hidden=true;
-        if($('redeemPromoBtn'))$('redeemPromoBtn').textContent='Apply voucher';
-        clearInterval(state.progressTimer);state.progressTimer=null;
-        setProgress(94,'Rendering measured results','Only source data returned for this URL is included.');
-        renderReport(report);
-        el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;
-        setProgress(4,'Preparing audit…','Checking URL and preparing requests');
-        if(!hasContent&&!hasMobile&&!hasDesktop){
-          el.error.textContent='No live source returned usable data for this URL. No example findings or scores were inserted. Review the source diagnostics below.';
-          el.error.style.display='block';
-        }
-        return;
-      }
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 240000);
       let response;
@@ -1899,16 +1859,20 @@
       setProgress(94,'Rendering audit preview','The audit response arrived. Preparing the report view.');
       renderReport(payload.preview);
       el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
-      // Voucher redemption must not hold the audit preview spinner open.
-      void applySavedVoucherForCurrentAudit().catch(error => {
-        setStatus($('promotionCodeStatus'), error.message || 'The audit loaded, but the saved voucher could not be checked.', 'error');
-      });
+      // Only complete, measured reports are eligible for voucher redemption or payment unlock.
+      if (hasCompleteReportEvidence(payload.preview)) {
+        void applySavedVoucherForCurrentAudit().catch(error => {
+          setStatus($('promotionCodeStatus'), error.message || 'The audit loaded, but the saved voucher could not be checked.', 'error');
+        });
+      } else {
+        setStatus($('promotionCodeStatus'), 'Voucher redemption is paused because required source measurements are missing. Retry the missing measurements before unlocking a report.', 'error');
+      }
     } catch(error) {
       clearInterval(state.progressTimer); state.progressTimer=null; el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
       el.error.textContent = error.name === 'AbortError'
         ? 'Audit timed out. Please try again; the audit service did not complete the request.'
         : (error.message === 'Failed to fetch' && window.location.origin === REVIEW_ORIGIN
-          ? 'The isolated Audit Studio service is not deployed. Its Cloudflare Worker deployment stopped at D1 authentication, so no audit data was produced.'
+          ? 'The isolated audit Worker did not return a response. No sample audit was substituted. The review Worker must be deployed and its D1/PageSpeed configuration completed.'
           : (error.message === 'Failed to fetch'
             ? 'The audit service did not return a response. No report was generated.'
             : (error.message || 'Audit failed.')));
@@ -1968,6 +1932,10 @@
   }
   async function applyPromotionCode() {
     const input=$('promotionCodeInput'),button=$('redeemPromoBtn'),status=$('promotionCodeStatus');
+    if (!hasCompleteReportEvidence(state.report)) {
+      setStatus(status, 'Voucher redemption is paused until this audit has complete source measurements. No full report has been unlocked.', 'error');
+      return;
+    }
     if(!state.auditId){setStatus(status,'Run your audit first. The voucher will unlock the full report for that audit.','error');return;}
     const code=String(input?.value||'').trim().toUpperCase();
     if(!code){setStatus(status,'Enter your launch voucher code.','error');input?.focus();return;}
@@ -2002,9 +1970,16 @@
     return Boolean(state.paid);
   }
   function requireAuditForPayment() {
-    if(state.auditId)return true;
-    setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.');
-    return false;
+    if(!state.auditId){
+      setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.','error');
+      return false;
+    }
+    if(!hasCompleteReportEvidence(state.report)){
+      setStatus($('paymentContextNotice'),'This audit is incomplete. Checkout is disabled until raw HTML and both mobile and desktop PageSpeed measurements are available. No payment order will be created.','error');
+      openPaywall();
+      return false;
+    }
+    return true;
   }
   function safepayCheckoutReady() {
     const c=state.config;
@@ -2099,6 +2074,18 @@
   }
   const openPaywall = () => {
     if (!el.paywallModal) return;
+    if (state.report && !hasCompleteReportEvidence(state.report)) {
+      const sources = state.report.sources || {};
+      const missing = [];
+      if (sources.content !== true) missing.push('raw website HTML');
+      if (sources.pagespeedMobile !== 'google-pagespeed') missing.push('mobile PageSpeed');
+      if (sources.pagespeedDesktop !== 'google-pagespeed') missing.push('desktop PageSpeed');
+      el.sourceDiagnostics.hidden = false;
+      el.sourceDiagnosticsTitle.textContent = 'Full report is not ready yet';
+      el.sourceDiagnosticsText.textContent = 'Checkout is disabled until all required audit sources return usable data. Missing: ' + (missing.join(', ') || 'a valid overall grade') + '. No payment or full-report unlock will be started for this partial audit.';
+      el.sourceDiagnostics.scrollIntoView?.({behavior:'smooth',block:'center'});
+      return;
+    }
     state.previousFocus = document.activeElement;
     el.paywallModal.classList.add('is-open'); el.paywallModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('modal-open');
     if(!state.auditId) {
