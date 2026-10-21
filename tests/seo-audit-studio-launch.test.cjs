@@ -78,6 +78,17 @@ test('review preview cannot install a DOM observer that freezes the report view'
 });
 
 
+test('partial audit evidence cannot receive a misleading perfect score', () => {
+  assert.match(auditHtml, /if \(items\.length < 3\) return null/);
+  assert.match(auditHtml, /const hasRawHtml=Boolean\(content && content\.mode==='html'\)/);
+  assert.match(auditHtml, /const allCoreSourcesMeasured=hasRawHtml&&hasMobile&&hasDesktop/);
+  assert.match(auditHtml, /const overall=allCoreSourcesMeasured&&scored\.length \? Math\.round/);
+  assert.match(auditHtml, /const hasMobile=Boolean\(psiMobile\?\.lighthouseResult\)/);
+  assert.match(auditHtml, /const hasDesktop=Boolean\(psiDesktop\?\.lighthouseResult\)/);
+  assert.match(auditHtml, /Google PageSpeed returned HTTP 429/);
+  assert.match(auditHtml, /Reader extract · partial/);
+});
+
 test('review preview audit uses live source functions instead of a synthetic audit API response', () => {
   assert.match(auditHtml, /fetchPageContent\(url,controller\.signal\)/);
   assert.match(auditHtml, /fetchPageSpeed\(url,'mobile',controller\.signal\)/);
