@@ -1787,7 +1787,7 @@
     el.grade.textContent=score==null?'N/A':(report.grade || gradeFor(score));
     el.grade.style.color=score==null?'#8793a3':score>=80?'#2479e8':score>=60?'#b78118':'#cf4d54';
     el.gradeHeading.textContent=score==null?'Overall grade pending performance data':score>=90?'Your page is in strong shape':score>=80?'Your page is performing well':score>=65?'Your page could be better':'Your page needs attention';
-    el.gradeDescription.textContent=score==null?'No overall A–F grade is issued until website content and both mobile and desktop performance results are available. Review source diagnostics below.':score>=85?'Keep these strengths and review the remaining high-impact recommendations.':'Focus on high-priority issues first, then work through medium and low priority improvements.';
+    el.gradeDescription.textContent=score==null?'No overall A–F grade is issued until website content and both mobile and desktop performance results are available. Review source diagnostics below.':(report.overallScoreReason || (score>=85?'Keep these strengths and review the remaining high-impact recommendations.':'Focus on high-priority issues first, then work through medium and low priority improvements.'));
     const recs=report.recommendations||[];
     const previewCount=Math.min(3,recs.length), totalCount=report.recommendationCount ?? recs.length;
     el.recCountInline.textContent=totalCount>previewCount?`${previewCount} of ${totalCount} flagged findings shown · full list locked`:`${previewCount} free preview finding${previewCount===1?'':'s'} · full list locked`;

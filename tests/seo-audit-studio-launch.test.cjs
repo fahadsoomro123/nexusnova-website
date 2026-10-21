@@ -134,6 +134,7 @@ test('review audit and voucher API calls pass through to the isolated Worker, ne
   assert.match(auditHtml, /const hasCompleteReportEvidence = \(report\) => Boolean/);
   assert.match(auditHtml, /if \(state\.report && !hasCompleteReportEvidence\(state\.report\)\)/);
   assert.match(auditHtml, /Full report unavailable · data required/);
+  assert.match(auditHtml, /report\.overallScoreReason\s*\|\|/);
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
