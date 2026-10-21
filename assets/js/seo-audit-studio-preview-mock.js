@@ -1,6 +1,6 @@
-/* NexusNova review-preview API simulator.
-   This file is copied only into the isolated review Pages branch. It never ships from main.
-   All audits/reports below are synthetic demo data. No website is crawled and no payment runs. */
+/* NexusNova isolated review UI helper.
+   Real audit, session, promotion, and sandbox-payment API requests go to the isolated Cloudflare Worker.
+   This script adds the visible review banner only; it must never synthesize an audit result. */
 (function(){
   'use strict';
   if(window.location.hostname!=='review.nexusnova-seo-audit-studio-review.pages.dev')return;
@@ -306,7 +306,10 @@
     try{parsed=new URL(rawUrl,window.location.href);}catch(e){return originalFetch(input,init);}
     // This route is a real Cloudflare Pages Function, not one of the simulated APIs.
     if(parsed.origin===window.location.origin&&parsed.pathname==='/api/page-source')return originalFetch(input,init);
-    if(!((parsed.hostname===REVIEW_HOST||parsed.hostname===REVIEW_WORKER_HOST)&&parsed.pathname.startsWith('/api/')))return originalFetch(input,init);
+    // All isolated Worker API calls use the real backend, including sessions, audits and vouchers.
+    // Never intercept Worker-host requests with the former synthetic report simulator.
+    if(parsed.hostname===REVIEW_WORKER_HOST&&parsed.pathname.startsWith('/api/'))return originalFetch(input,init);
+    if(!(parsed.hostname===REVIEW_HOST&&parsed.pathname.startsWith('/api/')))return originalFetch(input,init);
     var method=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
     var headers=new Headers((init&&init.headers)||(input instanceof Request?input.headers:undefined));
     var bodyText=init&&typeof init.body==='string'?init.body:'';
