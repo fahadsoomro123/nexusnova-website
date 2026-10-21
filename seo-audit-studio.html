@@ -1723,7 +1723,13 @@
       },200);
     } catch(error) {
       clearInterval(state.progressTimer); el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
-      el.error.textContent = error.name === 'AbortError' ? 'Audit timed out. Please try again; the external audit services may be rate-limited.' : (error.message || 'Audit failed.');
+      el.error.textContent = error.name === 'AbortError'
+        ? 'Audit timed out. Please try again; the audit service did not complete the request.'
+        : (error.message === 'Failed to fetch' && window.location.origin === REVIEW_ORIGIN
+          ? 'The isolated Audit Studio service is not deployed. Its Cloudflare Worker deployment stopped at D1 authentication, so no audit data was produced.'
+          : (error.message === 'Failed to fetch'
+            ? 'The audit service did not return a response. No report was generated.'
+            : (error.message || 'Audit failed.')));
       el.error.style.display='block'; setProgress(4,'Preparing audit…','Checking URL and preparing requests');
     }
   };
