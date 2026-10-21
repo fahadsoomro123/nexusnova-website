@@ -77,8 +77,9 @@ test('review preview MutationObserver cannot create a self-triggering DOM mutati
   assert.match(mock, /if\(pill\.className!==['"]source-pill partial['"]\)pill\.className=/);
   assert.match(mock, /if\(desc&&desc\.textContent!==description\)desc\.textContent=description/);
   assert.match(mock, /if\(top&&document\.body\.classList\.contains\('report-is-paid'\)&&top\.textContent!==topText\)top\.textContent=topText/);
-  assert.match(mock, /observer\.observe\(document\.body,\{subtree:true,attributes:true,attributeFilter:\[['"]hidden['"],['"]class['"]\]\}\)/);
-  assert.doesNotMatch(mock, /observer\.observe\(document\.body,\{childList:true,subtree:true,attributes:true/);
+  assert.match(mock, /observer\.observe\(reportSection,\{attributes:true,attributeFilter:\[['"]hidden['"]\]\}\)/);
+  assert.match(mock, /observer\.observe\(document\.body,\{attributes:true,attributeFilter:\[['"]class['"]\]\}\)/);
+  assert.doesNotMatch(mock, /observer\.observe\(document\.body,\{(?:childList|subtree):true/);
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
