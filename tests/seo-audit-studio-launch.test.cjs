@@ -63,8 +63,8 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(css, /--audit-blue:#3157b7/);
   assert.match(css, /nn-audit-workspace-layout/);
   assert.match(css, /nn-audit-report-card/);
-  assert.match(css, /radial-gradient\\\(circle at 91% 6%/);
-  assert.match(css, /linear-gradient\\\(125deg,#142239/);
+  assert.match(css, /radial-gradient\(circle at 91% 6%/);
+  assert.match(css, /linear-gradient\(125deg,#142239/);
   assert.match(css, /background:#f7f2e8/);
   assert.doesNotMatch(css, /--audit-lime|#dfff00|acid-lime/i);
   assert.match(js, /showOfferUnavailable/);
