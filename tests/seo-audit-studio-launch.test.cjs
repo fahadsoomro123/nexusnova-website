@@ -121,21 +121,23 @@ test('partial audit evidence cannot receive a misleading overall score', () => {
   assert.match(auditHtml, /Reader extract · partial/);
 });
 
-test('review preview audit uses live source functions instead of a synthetic audit API response', () => {
-  assert.match(auditHtml, /fetchPageContent\(url,controller\.signal\)/);
-  assert.match(auditHtml, /fetchPageSpeed\(url,'mobile',controller\.signal\)/);
-  assert.match(auditHtml, /fetchPageSpeed\(url,'desktop',controller\.signal\)/);
-  assert.match(auditHtml, /calculateReport\(\{url,content,psiMobile:mobile,psiDesktop:desktop\}\)/);
-  assert.match(auditHtml, /No example findings or scores were inserted/);
-  assert.match(auditHtml, /if\(window\.location\.origin===REVIEW_ORIGIN\)return/);
-  const reviewPath = auditHtml.indexOf('if(isReviewPreview){', auditHtml.indexOf('const runAudit = async'));
-  const backendAuditCall = auditHtml.indexOf("response = await apiFetch('/api/audits'", reviewPath);
-  assert.ok(reviewPath > 0 && backendAuditCall > reviewPath,
-    'the review page must use its real-source branch before the backend-only production path');
+test('review audit and voucher API calls pass through to the isolated Worker, never the synthetic report stub', () => {
+  const runStart = auditHtml.indexOf('const runAudit = async');
+  const runEnd = auditHtml.indexOf('if (el.retryMeasurements)', runStart);
+  const runBody = auditHtml.slice(runStart, runEnd);
+  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
+  assert.match(auditHtml, /nexusnova-audit-studio-review\.fahadsoomro123\.workers\.dev/);
+  assert.match(runBody, /apiFetch\('\/api\/audits'/);
+  assert.doesNotMatch(runBody, /fetchPageContent\(|fetchPageSpeed\(/);
+  assert.match(mock, /parsed\.hostname===REVIEW_WORKER_HOST&&parsed\.pathname\.startsWith\('\/api\/'\)\)return originalFetch/);
+  assert.doesNotMatch(mock, /if\(!\(\(parsed\.hostname===REVIEW_HOST\|\|parsed\.hostname===REVIEW_WORKER_HOST\)/);
+  assert.match(auditHtml, /const hasCompleteReportEvidence = \(report\) => Boolean/);
+  assert.match(auditHtml, /if \(state\.report && !hasCompleteReportEvidence\(state\.report\)\)/);
+  assert.match(auditHtml, /Full report unavailable · data required/);
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo6') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo7') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /setTimeout\(\(\)=>\{requestTimedOut=true;controller\.abort\(\);\},60000\)/);
