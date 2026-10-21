@@ -106,6 +106,13 @@ echo "::endgroup::"
 
 echo "::group::Deploy isolated mock-only review Worker"
 npx --yes wrangler@4.151.2 deploy --config "$WRANGLER_CONFIG"
+pagespeed_key="${PAGESPEED_API_KEY:-}"
+if [[ -n "$pagespeed_key" ]]; then
+  printf '%s' "$pagespeed_key" | npx --yes wrangler@4.151.2 secret put PAGESPEED_API_KEY --config "$WRANGLER_CONFIG"
+  echo "Private PageSpeed project key configured in isolated Worker (value not logged)."
+else
+  echo "::warning::PAGESPEED_API_KEY is not configured; PageSpeed measurements will stay unavailable and paid unlock will remain disabled."
+fi
 preview_token="$AUDIT_PREVIEW_OWNER_TOKEN"
 if [[ -n "$preview_token" ]]; then
   token_length="$(printf '%s' "$preview_token" | wc -c | tr -d ' ')"
