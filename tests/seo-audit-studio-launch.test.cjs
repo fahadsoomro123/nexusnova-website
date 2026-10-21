@@ -11,24 +11,24 @@ const css = fs.readFileSync(path.join(root, 'assets/css/seo-audit-launch.css'), 
 const js = fs.readFileSync(path.join(root, 'assets/js/seo-audit-launch.js'), 'utf8');
 const auditHtml = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
 
-test('homepage presents a realistic audit software workspace before tool discovery', () => {
+test('homepage introduces a realistic SEO audit workspace before tool discovery', () => {
   const header = html.indexOf('</header>');
   const main = html.indexOf('<main class="nn-main">');
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
   const toolsHeading = html.indexOf('<h2 id="new-tools-title">');
   assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading);
-  assert.match(html, /Find the issue\.<br><span>Fix the right thing\.<\/span>/);
+  assert.match(html, /See what search engines see\./);
+  assert.match(html, /class="nn-audit-workspace"/);
+  assert.match(html, /class="nn-audit-sidebar"/);
+  assert.match(html, /class="nn-audit-mini-metrics"/);
+  assert.match(html, /Your report will appear here/);
+  assert.match(html, /Run an audit to populate findings, evidence and affected URLs\./);
   assert.match(html, /id="nnAuditHomeForm"/);
   assert.match(html, /id="nnAuditLaunchUrl"/);
-  assert.match(html, /Continue to audit/);
-  assert.match(html, /class="nn-audit-app"/);
-  assert.match(html, /class="nn-audit-app-sidebar"/);
-  assert.match(html, /class="nn-audit-metrics"/);
-  assert.match(html, /class="nn-audit-issues-table"/);
-  assert.match(html, /AFFECTED URLS/);
-  assert.match(html, /Illustrative rows only · not findings for your website/);
-  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v4/);
+  assert.match(html, /id="nnAuditClaimVoucher"/);
+  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v5/);
   assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261021-v2/);
+  assert.doesNotMatch(html, /Missing page title|Meta description review|Image alt-text review/);
 });
 
 test('homepage URL handoff validates HTTP(S) URLs and Audit Studio prefills without auto-running', () => {
@@ -56,12 +56,12 @@ test('voucher claims require backend confirmation and fail closed on preview con
   assert.doesNotMatch(js, /setInterval|countdown|fakeUserCount|remainingClaims\s*[:=]\s*\d+/i);
 });
 
-test('real dashboard interface is responsive, accessible and avoids fake live metrics', () => {
+test('real workspace styling is responsive and accessible with no novelty gradients', () => {
   assert.match(css, /@media\(max-width:600px\)/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
-  assert.match(css, /--audit-blue:#3157c8/);
-  assert.match(css, /nn-audit-app-sidebar/);
-  assert.match(css, /nn-audit-issues-table/);
+  assert.match(css, /--audit-blue:#3157b7/);
+  assert.match(css, /nn-audit-workspace-layout/);
+  assert.match(css, /nn-audit-report-card/);
   assert.doesNotMatch(css, /linear-gradient|radial-gradient|--audit-lime/);
 });
