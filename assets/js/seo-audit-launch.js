@@ -69,6 +69,20 @@
     statusNode.className='nn-audit-voucher-status'+(tone?' '+tone:'');
     statusNode.textContent=message;
   };
+  const showOfferUnavailable=(heading,detail)=>{
+    offerBox.replaceChildren();
+    const label=document.createElement('span');
+    label.className='nn-audit-launch-offer-label';
+    label.textContent='NEXUSNOVA | LAUNCH PRIVILEGE';
+    const title=document.createElement('strong');
+    title.className='nn-audit-launch-offer-detail';
+    title.textContent=heading;
+    const explanation=document.createElement('span');
+    explanation.className='nn-audit-launch-offer-availability';
+    explanation.textContent=detail;
+    offerBox.append(label,title,explanation);
+    offerBox.hidden=false;
+  };
   const offerLabel=(campaign)=>{
     const type=String(campaign.offerType||''),value=Number(campaign.offerValue);
     if(type==='free_report')return 'FREE full technical report';
@@ -153,6 +167,7 @@
     const campaign=payload&&payload.ok===true?payload.campaign:null;
     if(!campaign||!campaign.id||Number(campaign.remainingClaims)<=0){
       if(!voucherAlreadyClaimed){
+        showOfferUnavailable('No active launch campaign is confirmed.','No voucher was issued. Offers will appear here when the audit service confirms an active campaign.');
         claimButton.disabled=true;
         claimButton.querySelector('span').textContent='No voucher available right now';
         status('There is no active voucher campaign at the moment. You can still open Audit Studio and run the available audit preview.');
@@ -162,18 +177,19 @@
     const label=offerLabel(campaign);
     if(!label){
       if(!voucherAlreadyClaimed){
+        showOfferUnavailable('Launch offer details are unavailable.','The backend did not return a valid offer. No voucher was issued.');
         claimButton.disabled=true;
         claimButton.querySelector('span').textContent='Voucher offer unavailable';
         status('The audit service did not return a usable voucher offer. No voucher was issued.');
       }
       return;
     }
-    const labelNode=document.createElement('span');labelNode.className='nn-audit-launch-offer-label';labelNode.textContent='LIVE LAUNCH OFFER';
+    const labelNode=document.createElement('span');labelNode.className='nn-audit-launch-offer-label';labelNode.textContent='NEXUSNOVA | LAUNCH PRIVILEGE';
     const detail=document.createElement('strong');detail.className='nn-audit-launch-offer-detail';detail.textContent=label;
-    const remaining=document.createElement('span');remaining.textContent=Number(campaign.remainingClaims)+' vouchers available';
+    const remaining=document.createElement('span');remaining.className='nn-audit-launch-offer-availability';remaining.textContent=Number(campaign.remainingClaims)+' vouchers available';
     offerBox.append(labelNode,detail,remaining);
     const ends=displayDate(campaign.endsAt);
-    if(ends){const expiry=document.createElement('span');expiry.textContent='Offer ends '+ends;offerBox.append(expiry);}
+    if(ends){const expiry=document.createElement('span');expiry.className='nn-audit-launch-offer-expiry';expiry.textContent='Offer ends '+ends;offerBox.append(expiry);}
     if(campaign.terms&&typeof campaign.terms==='string'){const terms=document.createElement('span');terms.className='nn-audit-launch-terms';terms.textContent=campaign.terms;offerBox.append(terms);}
     offerBox.hidden=false;
     if(!voucherAlreadyClaimed){
@@ -183,6 +199,7 @@
   }).catch(()=>{
     voucherServiceReady=false;
     if(voucherAlreadyClaimed)return;
+    showOfferUnavailable('Launch offers are temporarily unavailable.','The isolated voucher service is not responding in this preview. No voucher was issued.');
     claimButton.disabled=true;
     claimButton.querySelector('span').textContent='Voucher service unavailable';
     status(window.location.origin===REVIEW_ORIGIN
