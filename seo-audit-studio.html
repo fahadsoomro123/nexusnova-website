@@ -1008,45 +1008,59 @@
     return parsed.href;
   };
   const nowText = () => new Date().toLocaleString(undefined, {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  const timeoutFetch = async (url, options = {}, timeoutMs = 22000) => {
+  const timeoutFetch = async (url, options = {}, timeoutMs = 22000, callerSignal) => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let timedOut=false;
+    const abortFromCaller=()=>controller.abort();
+    if(callerSignal){
+      if(callerSignal.aborted)controller.abort();
+      else callerSignal.addEventListener('abort',abortFromCaller,{once:true});
+    }
+    const timeout = setTimeout(() => {timedOut=true;controller.abort();}, timeoutMs);
     try {
       const response = await fetch(url, {...options, signal:controller.signal, cache:'no-store'});
       if (!response.ok) throw new Error('Request failed (' + response.status + ').');
       return response;
-    } finally { clearTimeout(timeout); }
+    } catch(error) {
+      if(timedOut)throw new Error('Source request timed out after '+Math.round(timeoutMs/1000)+' seconds.');
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+      callerSignal?.removeEventListener('abort',abortFromCaller);
+    }
   };
-  const fetchPageSpeed = async (url, strategy) => {
+  const fetchPageSpeed = async (url, strategy, signal) => {
     const query = new URLSearchParams({url, strategy});
     ['performance','seo','accessibility','best-practices'].forEach(c => query.append('category', c));
     const endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' + query.toString();
-    const response = await timeoutFetch(endpoint, {headers:{Accept:'application/json'}}, 55000);
+    const response = await timeoutFetch(endpoint, {headers:{Accept:'application/json'}}, 55000, signal);
     const json = await response.json();
     if (!json.lighthouseResult) throw new Error(json.error?.message || 'No Lighthouse result returned.');
     return json;
   };
-  const fetchPageContent = async (url) => {
-    // This public CORS relay is only a best-effort browser-side path; it can be unavailable or rate-limited.
+  const fetchPageContent = async (url, signal) => {
+    // Fetch the requested page through public read-only content relays. Never synthesize HTML findings.
     const relay = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
     try {
-      const response = await timeoutFetch(relay, {headers:{Accept:'text/html,text/plain;q=0.9,*/*;q=0.8'}}, 18000);
+      const response = await timeoutFetch(relay, {headers:{Accept:'text/html,text/plain;q=0.9,*/*;q=0.8'}}, 18000, signal);
       const text = await response.text();
-      if (text.length < 80 || !(/<html|<!doctype|<head|<title/i.test(text))) throw new Error('Relay did not return recognizable HTML.');
-      return {text,mode:'html',source:'Page HTML via public relay'};
+      if (text.length < 80 || !(/<html|<!doctype|<head|<title/i.test(text))) throw new Error('Content relay did not return recognizable HTML.');
+      return {text,mode:'html',source:'Live page HTML via public relay'};
     } catch (relayError) {
+      if(signal?.aborted)throw relayError;
       const readerUrl = 'https://r.jina.ai/' + url;
       try {
-        const response = await timeoutFetch(readerUrl, {headers:{Accept:'text/plain'}}, 22000);
+        const response = await timeoutFetch(readerUrl, {headers:{Accept:'text/plain'}}, 22000, signal);
         const text = await response.text();
         if (text.length < 50) throw new Error('Reader returned too little content.');
-        return {text,mode:'markdown',source:'Reader extract (partial signals)'};
+        return {text,mode:'markdown',source:'Live reader extract (partial signals)'};
       } catch (readerError) {
+        if(signal?.aborted)throw readerError;
         return {text:'',mode:'unavailable',source:'Page content not available',error:readerError.message || relayError.message};
       }
     }
   };
-  const result = (category,title,status,priority,message,fix,evidence='') => ({category,title,status,priority,message,fix,evidence});
+    const result = (category,title,status,priority,message,fix,evidence='') => ({category,title,status,priority,message,fix,evidence});
   const checkFromAudit = (audit, categoryHint) => {
     const score = typeof audit.score === 'number' ? audit.score : null;
     const status = score === 1 ? 'pass' : score === 0 ? 'fail' : score != null && score < 1 ? 'warn' : 'info';
@@ -1715,6 +1729,7 @@
     closePaywall();
   };
   const restoreLatestAudit = async () => {
+    if(window.location.origin===REVIEW_ORIGIN)return;
     try {
       const response=await apiFetch('/api/audits/latest',{headers:{Accept:'application/json'},cache:'no-store'});
       if(!response.ok)return;
@@ -1737,19 +1752,70 @@
     try{url=safeUrl(rawUrl);}catch(err){el.error.textContent=err.message;el.error.style.display='block';el.url.focus();return;}
     el.error.style.display='none';state.inProgress=true;el.run.disabled=true;el.refresh.disabled=true;el.progress.style.display='block';setProgress(4,'Preparing audit…','Submitting the website URL for analysis');startProgress();
     try {
-      const controller = new AbortController();
       const isReviewPreview = window.location.origin === REVIEW_ORIGIN;
-      const requestTimeoutMs = isReviewPreview ? 12000 : 240000;
-      let requestTimedOut = false;
-      const timeout = window.setTimeout(() => { requestTimedOut = true; controller.abort(); }, requestTimeoutMs);
+      if(isReviewPreview){
+        const controller=new AbortController();
+        let requestTimedOut=false;
+        const timeout=window.setTimeout(()=>{requestTimedOut=true;controller.abort();},60000);
+        setProgress(10,'Fetching live website evidence','Reading the requested page and requesting mobile and desktop PageSpeed measurements. No sample report is used.');
+        let content,mobile,desktop;
+        try{
+          const results=await Promise.all([
+            fetchPageContent(url,controller.signal).catch(error=>({text:'',mode:'unavailable',source:'Page content unavailable',error:error.message||'Content request failed.'})),
+            fetchPageSpeed(url,'mobile',controller.signal).catch(error=>({error:error.message||'Mobile PageSpeed request failed.'})),
+            fetchPageSpeed(url,'desktop',controller.signal).catch(error=>({error:error.message||'Desktop PageSpeed request failed.'}))
+          ]);
+          if(requestTimedOut)throw new Error('Live audit sources did not finish within 60 seconds. No sample results were substituted.');
+          content=results[0];mobile=results[1];desktop=results[2];
+        }finally{window.clearTimeout(timeout);}
+        const report=calculateReport({url,content,psiMobile:mobile,psiDesktop:desktop});
+        report.auditId='live-preview-'+Date.now().toString(36);
+        report.id=report.auditId;
+        report.checkCount=report.checks?.length||0;
+        report.recommendationCount=report.recommendations?.length||0;
+        const hasContent=Boolean(content&&content.mode!=='unavailable');
+        const hasMobile=Boolean(mobile?.lighthouseResult);
+        const hasDesktop=Boolean(desktop?.lighthouseResult);
+        report.sources={
+          ...(report.sources||{}),
+          pagespeed:hasMobile||hasDesktop,
+          pagespeedMobile:hasMobile,
+          pagespeedDesktop:hasDesktop,
+          performanceProviderMobile:hasMobile?'google-pagespeed':null,
+          performanceProviderDesktop:hasDesktop?'google-pagespeed':null,
+          content:hasContent,
+          contentLabel:content?.source||'Unavailable',
+          errors:{
+            ...(report.sources?.errors||{}),
+            content:content?.error||null,
+            psiMobile:mobile?.error||null,
+            psiDesktop:desktop?.error||null
+          }
+        };
+        report.overallCoverage=Math.round(([hasContent,hasMobile,hasDesktop].filter(Boolean).length/3)*100);
+        report.previewNotice='Live-source preview. Findings are derived only from returned page content and/or provider Lighthouse data. Unavailable sources remain unmeasured; no synthetic scores or findings are substituted.';
+        state.auditId=report.auditId;
+        state.fullReport=null;state.paid=false;state.cryptoOrderId=null;state.cryptoMinimums=[];state.cryptoMinimumsLoaded=false;state.cryptoMinimumsAuditId=null;state.filter='All';
+        state.voucherAutoAttemptedAuditId=report.auditId;
+        if($('promotionCodeInput'))$('promotionCodeInput').value='';
+        if($('promotionCodeStatus'))$('promotionCodeStatus').hidden=true;
+        if($('redeemPromoBtn'))$('redeemPromoBtn').textContent='Apply voucher';
+        clearInterval(state.progressTimer);state.progressTimer=null;
+        setProgress(94,'Rendering measured results','Only source data returned for this URL is included.');
+        renderReport(report);
+        el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;
+        setProgress(4,'Preparing audit…','Checking URL and preparing requests');
+        if(!hasContent&&!hasMobile&&!hasDesktop){
+          el.error.textContent='No live source returned usable data for this URL. No example findings or scores were inserted. Review the source diagnostics below.';
+          el.error.style.display='block';
+        }
+        return;
+      }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 240000);
       let response;
       try { response = await apiFetch('/api/audits', { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({url}), signal:controller.signal, cache:'no-store' }); }
-      catch (error) {
-        if (requestTimedOut) throw new Error(isReviewPreview
-          ? 'Audit preview did not return a response within 12 seconds. The loading state has been stopped; please retry.'
-          : 'Audit request timed out. The loading state has been stopped; please retry.');
-        throw error;
-      } finally { window.clearTimeout(timeout); }
+      finally { clearTimeout(timeout); }
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
       if(payload.ok!==true || typeof payload.auditId!=='string' || !payload.preview || typeof payload.preview.url!=='string') {
@@ -1785,6 +1851,10 @@
     if (!state.auditId) return;
     const button=el.retryMeasurements; const original=button.textContent; button.disabled=true; button.textContent='Retrying sources…';
     try {
+      if(window.location.origin===REVIEW_ORIGIN){
+        await runAudit(el.url.value);
+        return;
+      }
       const payload=await apiPost('/api/audits/'+encodeURIComponent(state.auditId)+'/retry',{});
       state.auditId=payload.auditId; state.fullReport=null; state.paid=false;
       renderReport(payload.preview);
