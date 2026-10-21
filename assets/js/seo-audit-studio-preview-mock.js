@@ -282,21 +282,34 @@
     style.textContent='#nn-review-demo-banner~*{scroll-margin-top:8px}.nn-review-demo-note{padding:10px 12px;margin:10px 0;border:1px solid #c4b5fd;border-radius:10px;background:#f5f3ff;color:#4c1d95;font:700 11px/1.5 system-ui,sans-serif}';
     document.head.appendChild(style);
     var markReport=function(){
+      // This callback observes the same document it annotates. Every write must be
+      // idempotent, or text-node mutations can keep the MutationObserver firing forever.
       var report=document.getElementById('auditReportSection');
       if(report&&!report.hidden){
         var pill=document.getElementById('sourcePill');
-        if(pill){pill.textContent='Preview simulation · sample data';pill.className='source-pill partial';}
+        if(pill){
+          if(pill.textContent!=='Preview simulation · sample data')pill.textContent='Preview simulation · sample data';
+          if(pill.className!=='source-pill partial')pill.className='source-pill partial';
+        }
         var desc=document.getElementById('sourceDescription');
-        if(desc)desc.textContent='Synthetic sample only. No live website crawl, PageSpeed query, or external audit source was used.';
+        var description='Synthetic sample only. No live website crawl, PageSpeed query, or external audit source was used.';
+        if(desc&&desc.textContent!==description)desc.textContent=description;
         var top=document.querySelector('.top-note');
-        if(top&&document.body.classList.contains('report-is-paid'))top.textContent='Preview voucher accepted · sample full report unlocked';
+        var topText='Preview voucher accepted · sample full report unlocked';
+        if(top&&document.body.classList.contains('report-is-paid')&&top.textContent!==topText)top.textContent=topText;
       }
       var help=document.getElementById('cardPaymentStatus');
-      if(help&&stateLooksLikeReview()) {help.hidden=false;help.textContent='Review mode: no real card, Safepay or crypto payment can be started.';}
+      var helpText='Review mode: no real card, Safepay or crypto payment can be started.';
+      if(help&&stateLooksLikeReview()){
+        if(help.hidden)help.hidden=false;
+        if(help.textContent!==helpText)help.textContent=helpText;
+      }
     };
     function stateLooksLikeReview(){return document.body.classList.contains('report-is-paid')||!!document.getElementById('paywallModal');}
     var observer=new MutationObserver(markReport);
-    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class']});
+    // Only lifecycle attributes matter here. Watching childList meant our own
+    // textContent writes generated more records and could wedge mobile browsers.
+    observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
     markReport();
     var tokenInput=document.getElementById('ownerTokenInput');
     if(tokenInput){
