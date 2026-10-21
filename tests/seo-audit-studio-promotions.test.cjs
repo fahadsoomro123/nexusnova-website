@@ -49,7 +49,8 @@ test('claimed full-audit voucher auto-unlocks after an audit or when the existin
   const runStart = page.indexOf('const runAudit = async');
   const restoreStart = page.indexOf('const restoreLatestAudit = async');
   assert.ok(runStart >= 0 && restoreStart >= 0);
-  assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', runStart) > runStart);
+  assert.ok(page.indexOf('void applySavedVoucherForCurrentAudit().catch', runStart) > runStart,
+    'saved voucher checking must run in the background so it cannot keep the audit preview spinner open');
   assert.ok(page.indexOf('await applySavedVoucherForCurrentAudit();', restoreStart) > restoreStart);
   assert.match(page, /if\s*\(!state\.auditId\|\|state\.paid\|\|state\.voucherAutoAttemptedAuditId===state\.auditId\)return false;/);
   assert.ok(page.includes("claimButton.textContent='Full audit unlocked'"));
