@@ -34,17 +34,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fahadsoomro123/nexusnova-seo-audit-studio-backend
-          ref: 34b7906b5b66cb806a758ce60be2a8a85247dbea
+          ref: 3c00bb1a077c6a64be8728baa118c9a53b853e76
           token: ${{ secrets.BACKEND_REPO_READ_TOKEN }}
           path: .review-backend
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install and test the exact isolated audit Worker
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd .review-backend
+          npm ci
+          npm test
       - name: Deploy preview Worker, isolated database, and static Pages preview
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           AUDIT_PREVIEW_OWNER_TOKEN: ${{ secrets.AUDIT_PREVIEW_OWNER_TOKEN }}
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: bash .github/scripts/deploy-seo-audit-studio-review-preview.sh
