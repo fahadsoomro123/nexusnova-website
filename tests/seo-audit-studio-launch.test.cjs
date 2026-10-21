@@ -70,3 +70,14 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(js, /showOfferUnavailable/);
   assert.match(js, /NEXUSNOVA \| LAUNCH PRIVILEGE/);
 });
+
+test('review preview audit requests have bounded waits and always release the loading UI', () => {
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo2') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
+  assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
+  assert.match(auditHtml, /const requestTimeoutMs = isReviewPreview \? 12000 : 240000/);
+  assert.match(auditHtml, /payload\.ok!==true \|\| typeof payload\.auditId!=='string' \|\| !payload\.preview/);
+  assert.match(auditHtml, /clearInterval\(state\.progressTimer\); state\.progressTimer = null;/);
+  assert.match(auditHtml, /Voucher redemption must not hold the audit preview spinner open/);
+  assert.doesNotMatch(auditHtml, /window\.setTimeout\(async\(\)=>\{\s*renderReport\(payload\.preview\)/);
+});
