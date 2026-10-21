@@ -307,9 +307,11 @@
     };
     function stateLooksLikeReview(){return document.body.classList.contains('report-is-paid')||!!document.getElementById('paywallModal');}
     var observer=new MutationObserver(markReport);
-    // Only lifecycle attributes matter here. Watching childList meant our own
-    // textContent writes generated more records and could wedge mobile browsers.
-    observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['hidden','class']});
+    // Observe only the two lifecycle signals we need. Never watch the full body:
+    // the report is large and contains many unrelated class/hidden changes.
+    var reportSection=document.getElementById('auditReportSection');
+    if(reportSection)observer.observe(reportSection,{attributes:true,attributeFilter:['hidden']});
+    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
     markReport();
     var tokenInput=document.getElementById('ownerTokenInput');
     if(tokenInput){
