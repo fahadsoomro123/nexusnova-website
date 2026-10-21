@@ -97,6 +97,26 @@ jobs:
           fi
           echo "Verified: same-origin endpoint returned real HTML from https://example.com/."
           echo "::endgroup::"
+          echo "::group::Verify NexusNova website source"
+          target_smoke_url='https://review.nexusnova-seo-audit-studio-review.pages.dev/api/page-source?url=https%3A%2F%2Fnexusnovatools.com%2F'
+          target_smoke_ok=false
+          target_smoke_response=''
+          for attempt in 1 2 3 4 5; do
+            target_smoke_response="$(curl -sS --max-time 18 -H 'Referer: https://review.nexusnova-seo-audit-studio-review.pages.dev/seo-audit-studio.html' "$target_smoke_url" || true)"
+            if jq -e '.ok == true and (.html | type == "string") and (.html | test("<html|<!doctype"; "i")) and (.finalUrl | contains("nexusnovatools.com")) and (.html | test("NexusNova|nexusnova"; "i"))' <<< "$target_smoke_response" >/dev/null 2>&1; then
+              target_smoke_ok=true
+              break
+            fi
+            echo "NexusNova source smoke attempt $attempt did not pass: $(jq -r '.error // "target response was not valid NexusNova HTML"' <<< "$target_smoke_response" 2>/dev/null || echo 'no JSON response')"
+            sleep 3
+          done
+          if [[ "$target_smoke_ok" != true ]]; then
+            echo "::error::The Pages Function did not return recognizable raw HTML for nexusnovatools.com."
+            jq -c . <<< "$target_smoke_response" || true
+            exit 1
+          fi
+          echo "Verified: raw HTML fetched from the real nexusnovatools.com site."
+          echo "::endgroup::"
           {
             echo "## NexusNova visual review preview"
             echo
