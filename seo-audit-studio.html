@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f7fb">
 <title>NexusNova SEO Audit Studio</title>
+  <link rel="stylesheet" href="assets/css/seo-audit-promotions.css?v=20261020-v2">
   <meta name="description" content="Audit websites with NexusNova SEO Audit Studio. Review technical SEO checks, structured data, issues and measured mobile and desktop performance diagnostics.">
   <link rel="canonical" href="https://nexusnovatools.com/seo-audit-studio.html">
   <meta property="og:type" content="website">
@@ -634,7 +635,22 @@
     <label class="form-label" id="audit-label" for="urlInput">Enter the website URL you want to audit</label>
     <form id="auditForm" novalidate>
       <div class="url-row">
-        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp"></div>
+        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp">
+        <script>
+        (() => {
+          const raw = new URLSearchParams(window.location.search).get('url') || '';
+          const input = document.getElementById('urlInput');
+          if (!raw || !input) return;
+          try {
+            const target = new URL(raw);
+            if (!['http:', 'https:'].includes(target.protocol) || !target.hostname || target.username || target.password) return;
+            input.value = target.href;
+            const clean = new URL(window.location.href);
+            clean.searchParams.delete('url');
+            window.history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
+          } catch (_) {}
+        })();
+        </script></div>
         <button id="runBtn" class="primary-btn" type="submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="4"/></svg> Run SEO Audit</button>
       </div>
     </form>
@@ -795,9 +811,19 @@
     <div class="modal-icon" aria-hidden="true">↗</div>
     <div class="modal-eyebrow">NEXUSNOVA SEO AUDIT STUDIO | FULL REPORT</div>
     <h2 id="paywallTitle">Unlock the full audit report</h2>
-    <p id="paywallDescription" class="modal-description">Verified payment unlocks the detailed report for this audit in this browser session.</p>
+    <p id="paywallDescription" class="modal-description">Your audit preview is free. Claim a launch voucher to unlock the complete technical report at no cost, or use the one-time payment option below.</p>
+    
+    <section class="nn-promo-panel" aria-labelledby="promotionCodeTitle">
+      <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Get your free full-audit voucher</h3><p>Enter the voucher from the homepage or claim one here. The backend verifies it, then unlocks every technical finding and checklist without a payment.</p></div></div>
+      <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Launch voucher code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter launch voucher"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply voucher</button></div>
+      <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
+      <div class="nn-launch-voucher-row">
+        <div><strong>New here? Claim your free full-audit voucher.</strong><p>One launch voucher for this browser session. We verify it with the backend before unlocking your report.</p></div>
+        <button type="button" id="claimLaunchVoucherBtn" class="secondary-btn">Claim free voucher</button>
+      </div>
+    </section>
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
-    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">Run an audit first. Payment unlocks the full report for that audit only.</div>
+    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">A verified launch voucher unlocks your full report free. Payment is a separate alternative.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="payment-panel-head"><span class="payment-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>One-time payment. Your report unlocks after the provider verifies the transaction.</p></div></div>
       <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout…</button>
@@ -805,7 +831,7 @@
       <button type="button" id="retryPaymentSettingsBtn" class="secondary-btn" hidden>Retry payment settings</button>
     </section>
     <section class="crypto-payment-panel" aria-labelledby="cryptoPaymentTitle">
-      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p>Supported cryptocurrencies · one-time price US$2.99</p></div></div>
+      <div class="crypto-panel-head"><span class="crypto-mark" aria-hidden="true">₮</span><div class="crypto-panel-copy"><strong id="cryptoPaymentTitle">Crypto / Web3 payment</strong><p id="cryptoPriceDescription">Crypto price is checked separately from the US$2.99 Safepay price.</p></div></div>
       <label class="payment-form-label" for="cryptoNetwork">Choose cryptocurrency / network</label>
       <div class="crypto-prepare-row"><select id="cryptoNetwork" class="payment-select"><option value="TRC20">USDT · TRC20 (Tron)</option><option value="ERC20">USDT · ERC20 (Ethereum)</option><option value="TRX">TRX · Tron</option><option value="BNB">BNB · BNB Smart Chain</option><option value="LTC">Litecoin · LTC</option></select><button type="button" id="prepareCryptoBtn" class="secondary-btn" disabled>Crypto checkout unavailable</button></div><div id="cryptoAvailabilityNote" class="payment-status-box" role="status">Run an audit to check the current minimum for each supported cryptocurrency. Use Safepay if no crypto option accepts US$2.99.</div>
       <div id="cryptoPaymentDetails" class="crypto-details" hidden>
@@ -823,13 +849,18 @@
   </section>
 </div>
 <script defer src="assets/js/analytics.js?v=20261016-related-content-v1"></script>
+<script src="/assets/js/seo-audit-studio-preview-mock.js?v=20261021-demo7"></script>
 <script>
 (() => {
   'use strict';
   // Isolated NexusNova Audit Worker. No calls to HumanProof routes or credentials.
-  const API_BASE_URL = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
+  const REVIEW_ORIGIN = 'https://review.nexusnova-seo-audit-studio-review.pages.dev';
+  const API_BASE_URL = window.location.origin === REVIEW_ORIGIN
+    ? 'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
+    : 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const API_BASE_ORIGIN = new URL(API_BASE_URL).origin;
   const AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1';
+  const AUDIT_VOUCHER_KEY = 'nexusnova_audit_voucher_v1';
   async function fetchWithTransportRetry(url, init = {}, allowTransportRetry = false) {
     try {
       return await window.fetch(url, init);
@@ -843,16 +874,49 @@
   let auditSessionToken = '';
   let auditSessionPromise = null;
   try { auditSessionToken = window.sessionStorage.getItem(AUDIT_SESSION_KEY) || ''; } catch {}
-  async function getAuditSessionToken() {
+  async function requestAuditSession(callerSignal) {
+    const isReviewPreview = window.location.origin === REVIEW_ORIGIN;
+    const timeoutMs = isReviewPreview ? 8000 : 20000;
+    const maxAttempts = isReviewPreview ? 1 : 2;
+    let lastError;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const controller = new AbortController();
+      let timedOut = false;
+      const abortFromCaller = () => controller.abort();
+      if (callerSignal) {
+        if (callerSignal.aborted) controller.abort();
+        else callerSignal.addEventListener('abort', abortFromCaller, {once:true});
+      }
+      const timer = window.setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+      try {
+        return await window.fetch(API_BASE_URL + '/api/session', {
+          method:'POST', headers:{Accept:'application/json'}, cache:'no-store',
+          credentials:'omit', signal:controller.signal
+        });
+      } catch (error) {
+        if (timedOut) {
+          throw new Error(isReviewPreview
+            ? 'Audit preview session did not respond within 8 seconds. The preview request was stopped instead of hanging.'
+            : 'Audit session request timed out. Please retry.');
+        }
+        lastError = error;
+        if (callerSignal?.aborted || attempt + 1 >= maxAttempts || !(error instanceof TypeError)) throw error;
+        await new Promise(resolve => window.setTimeout(resolve, 300));
+      } finally {
+        window.clearTimeout(timer);
+        callerSignal?.removeEventListener('abort', abortFromCaller);
+      }
+    }
+    throw lastError || new Error('Could not start a secure audit session.');
+  }
+  async function getAuditSessionToken(callerSignal) {
     if (auditSessionToken && /^[a-f0-9]{64}$/i.test(auditSessionToken)) return auditSessionToken;
     if (auditSessionPromise) return auditSessionPromise;
     auditSessionPromise = (async () => {
-      const response = await fetchWithTransportRetry(API_BASE_URL + '/api/session', {
-        method: 'POST', headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'omit'
-      }, true);
+      const response = await requestAuditSession(callerSignal);
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || typeof payload.token !== 'string' || !/^[a-f0-9]{64}$/i.test(payload.token)) {
-        throw new Error('Could not start a secure audit session.');
+        throw new Error(payload.error || 'Could not start a secure audit session.');
       }
       auditSessionToken = payload.token;
       try { window.sessionStorage.setItem(AUDIT_SESSION_KEY, auditSessionToken); } catch {}
@@ -868,7 +932,7 @@
     const init = { ...(options || {}), credentials: 'omit', cache: 'no-store' };
     const headers = new Headers(init.headers || {});
     if (endpoint.pathname !== '/api/config' && endpoint.pathname !== '/api/health') {
-      headers.set('Authorization', 'Bearer ' + await getAuditSessionToken());
+      headers.set('Authorization', 'Bearer ' + await getAuditSessionToken(init.signal));
     }
     init.headers = headers;
     const retryableTransport = endpoint.pathname === '/api/config' || endpoint.pathname === '/api/health' ||
@@ -887,7 +951,26 @@
   const el = {
     form: $('auditForm'), url: $('urlInput'), run: $('runBtn'), error: $('formError'), progress: $('progressPanel'), progressTitle: $('progressTitle'), progressDetail: $('progressDetail'), progressFill: $('progressFill'), progressPercent: $('progressPercent'), reportHeading: $('reportHeading'), reportUrl: $('reportUrl'), sourcePill: $('sourcePill'), reportDate: $('reportDate'), sourceDescription: $('sourceDescription'), refresh: $('refreshBtn'), export: $('exportBtn'), print: $('printBtn'), ring: $('gradeRing'), grade: $('overallGrade'), gradeHeading: $('gradeHeading'), gradeDescription: $('gradeDescription'), recCountInline: $('recCountInline'), high: $('highCount'), pass: $('passCount'), checks: $('checksCount'), psiChip: $('psiSourceChip'), htmlChip: $('htmlSourceChip'), measurement: $('measurementState'), categoryGrid: $('categoryGrid'), categoryNote: $('categoryNote'), performance: $('performancePanel'), performanceNote: $('performanceNote'), recommendationNote: $('recommendationNote'), recommendationList: $('recommendationList'), freeRecommendations: $('freeRecommendationList'), paywallModal: $('paywallModal'), closePaywall: $('closePaywallBtn'), allFilter: $('allFilterCount'), footerSource: $('footerSource'), premiumGate: $('premiumGate'), premiumContent: $('premiumReportContent'), sourceDiagnostics: $('sourceDiagnostics'), sourceDiagnosticsTitle: $('sourceDiagnosticsTitle'), sourceDiagnosticsText: $('sourceDiagnosticsText'), retryMeasurements: $('retryMeasurementsBtn'), freeRecommendationsHeading: $('freeRecommendationsHeading'), freeRecommendationsPanel: $('freeRecommendationsPanel'), freeRecommendationCount: $('freeRecommendationCount'), fullChecklistList: $('fullChecklistList'), fullChecklistCount: $('fullChecklistCount')
   };
-  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, previousFocus: null };
+  const state = { report: null, filter: 'All', issueFilters: {query:'',status:'all',priority:'all',category:'all'}, checkFilters: {query:'',status:'all',category:'all'}, paidTab:'overview', progressTimer: null, inProgress: false, auditId: null, fullReport: null, paid: false, config: null, cardOrderId: null, cryptoOrderId: null, cryptoMinimums: [], cryptoMinimumsLoaded: false, cryptoMinimumsAuditId: null, cryptoMinimumsLoading: false, promotionRedemptionId: null, promotionOfferType: null, promotionOfferValue: null, voucherAutoAttemptedAuditId: null, previousFocus: null };
+  const hasCompleteReportEvidence = (report) => Boolean(
+    report && report.mode === 'live' && Number.isFinite(report.overall) &&
+    report.sources?.content === true &&
+    report.sources?.pagespeedMobile === 'google-pagespeed' &&
+    report.sources?.pagespeedDesktop === 'google-pagespeed'
+  );
+  const updatePaidActionAvailability = (report) => {
+    if (!report) return false;
+    const ready = hasCompleteReportEvidence(report);
+    document.querySelectorAll('[data-open-paywall]').forEach(button => {
+      if (!button.dataset.defaultLabelHtml) button.dataset.defaultLabelHtml = button.innerHTML;
+      button.disabled = !ready;
+      button.setAttribute('aria-disabled', String(!ready));
+      button.title = ready ? 'Unlock the full report for this measured audit.' : 'Checkout is disabled until raw website HTML and both mobile and desktop PageSpeed measurements are available.';
+      button.classList.toggle('report-unavailable', !ready);
+      button.innerHTML = ready ? button.dataset.defaultLabelHtml : 'Full report unavailable · data required';
+    });
+    return ready;
+  };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
@@ -944,45 +1027,94 @@
     return parsed.href;
   };
   const nowText = () => new Date().toLocaleString(undefined, {year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  const timeoutFetch = async (url, options = {}, timeoutMs = 22000) => {
+  const timeoutFetch = async (url, options = {}, timeoutMs = 22000, callerSignal) => {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let timedOut=false;
+    const abortFromCaller=()=>controller.abort();
+    if(callerSignal){
+      if(callerSignal.aborted)controller.abort();
+      else callerSignal.addEventListener('abort',abortFromCaller,{once:true});
+    }
+    const timeout = setTimeout(() => {timedOut=true;controller.abort();}, timeoutMs);
     try {
       const response = await fetch(url, {...options, signal:controller.signal, cache:'no-store'});
       if (!response.ok) throw new Error('Request failed (' + response.status + ').');
       return response;
-    } finally { clearTimeout(timeout); }
+    } catch(error) {
+      if(timedOut)throw new Error('Source request timed out after '+Math.round(timeoutMs/1000)+' seconds.');
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+      callerSignal?.removeEventListener('abort',abortFromCaller);
+    }
   };
-  const fetchPageSpeed = async (url, strategy) => {
+  const fetchPageSpeed = async (url, strategy, signal) => {
     const query = new URLSearchParams({url, strategy});
     ['performance','seo','accessibility','best-practices'].forEach(c => query.append('category', c));
     const endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?' + query.toString();
-    const response = await timeoutFetch(endpoint, {headers:{Accept:'application/json'}}, 55000);
+    const response = await timeoutFetch(endpoint, {headers:{Accept:'application/json'}}, 55000, signal);
     const json = await response.json();
     if (!json.lighthouseResult) throw new Error(json.error?.message || 'No Lighthouse result returned.');
     return json;
   };
-  const fetchPageContent = async (url) => {
-    // This public CORS relay is only a best-effort browser-side path; it can be unavailable or rate-limited.
+  const fetchPageContent = async (url, signal) => {
+    // Prefer first-party raw HTML from the isolated Pages Function. That avoids
+    // public CORS relays normalizing the page into Markdown and losing audit evidence.
+    const endpoint = new URL('/api/page-source', window.location.origin);
+    endpoint.searchParams.set('url', url);
+    let edgeError = null;
+    try {
+      const response = await timeoutFetch(endpoint.href, {
+        headers:{Accept:'application/json'},
+        credentials:'same-origin'
+      }, 16000, signal);
+      const payload = await response.json().catch(()=>({}));
+      if (!response.ok || payload.ok !== true || typeof payload.html !== 'string') {
+        throw new Error(payload.error || 'Isolated raw HTML endpoint returned an invalid response.');
+      }
+      if (payload.html.length < 80 || !(/<html|<!doctype|<head|<title/i.test(payload.html))) {
+        throw new Error('Isolated raw HTML endpoint returned unrecognizable HTML.');
+      }
+      return {
+        text:payload.html,
+        mode:'html',
+        source:'Raw HTML via isolated Cloudflare Pages Function',
+        finalUrl:payload.finalUrl || url,
+        httpStatus:payload.httpStatus || null
+      };
+    } catch (error) {
+      edgeError = error;
+      if (signal?.aborted) throw error;
+    }
+
+    // Controlled fallbacks remain read-only. Their normalized output is explicitly
+    // labelled partial and can never be confused with raw source HTML.
     const relay = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
     try {
-      const response = await timeoutFetch(relay, {headers:{Accept:'text/html,text/plain;q=0.9,*/*;q=0.8'}}, 18000);
+      const response = await timeoutFetch(relay, {headers:{Accept:'text/html,text/plain;q=0.9,*/*;q=0.8'}}, 18000, signal);
       const text = await response.text();
-      if (text.length < 80 || !(/<html|<!doctype|<head|<title/i.test(text))) throw new Error('Relay did not return recognizable HTML.');
-      return {text,mode:'html',source:'Page HTML via public relay'};
+      if (text.length < 80 || !(/<html|<!doctype|<head|<title/i.test(text))) throw new Error('Content relay did not return recognizable HTML.');
+      return {text,mode:'html',source:'Live page HTML via public relay'};
     } catch (relayError) {
+      if (signal?.aborted) throw relayError;
       const readerUrl = 'https://r.jina.ai/' + url;
       try {
-        const response = await timeoutFetch(readerUrl, {headers:{Accept:'text/plain'}}, 22000);
+        const response = await timeoutFetch(readerUrl, {headers:{Accept:'text/plain'}}, 22000, signal);
         const text = await response.text();
         if (text.length < 50) throw new Error('Reader returned too little content.');
-        return {text,mode:'markdown',source:'Reader extract (partial signals)'};
+        return {text,mode:'markdown',source:'Live reader extract (partial signals)',error:'Raw HTML endpoint: '+(edgeError?.message||'unavailable')+'; raw HTML relay: '+relayError.message};
       } catch (readerError) {
-        return {text:'',mode:'unavailable',source:'Page content not available',error:readerError.message || relayError.message};
+        if (signal?.aborted) throw readerError;
+        return {
+          text:'',
+          mode:'unavailable',
+          source:'Page content not available',
+          error:[edgeError?.message,relayError.message,readerError.message].filter(Boolean).join(' | ') || 'All source fetches failed.'
+        };
       }
     }
   };
-  const result = (category,title,status,priority,message,fix,evidence='') => ({category,title,status,priority,message,fix,evidence});
+    const result = (category,title,status,priority,message,fix,evidence='') => ({category,title,status,priority,message,fix,evidence});
   const checkFromAudit = (audit, categoryHint) => {
     const score = typeof audit.score === 'number' ? audit.score : null;
     const status = score === 1 ? 'pass' : score === 0 ? 'fail' : score != null && score < 1 ? 'warn' : 'info';
@@ -1123,9 +1255,11 @@
     }
     return [...map.values()];
   };
-  const scoreCategory = (checks, category) => {
+  const scoreCategory = (checks, category, minimumChecks = 3) => {
     const items=checks.filter(c=>c.category===category && ['pass','warn','fail'].includes(c.status));
-    if (!items.length) return null;
+    // Raw HTML has verifiable category-level signals. A normalized Reader extract
+    // is weaker evidence, so it still needs three scored checks before it is graded.
+    if (items.length < minimumChecks) return null;
     const points={pass:100,warn:58,fail:18};
     return Math.round(items.reduce((s,c)=>s+points[c.status],0)/items.length);
   };
@@ -1153,29 +1287,55 @@
     liveChecks.push(...mobileChecks,...desktopChecks);
     const checks=dedupeChecks(liveChecks);
     const metrics={mobile:extractMetrics(psiMobile),desktop:extractMetrics(psiDesktop)};
+    // Evidence thresholds prevent category presence checks from being mistaken for full audits.
+    const requiredHtmlChecks={onPage:6,geo:4,links:4,usability:4,social:4,local:3};
+    const categoryCheckCount=(category)=>checks.filter(c=>c.category===category&&['pass','warn','fail'].includes(c.status)).length;
+    const categoryMinimum=(id)=>requiredHtmlChecks[id]||4;
     const hasPsi=Boolean(psiMobile?.lighthouseResult || psiDesktop?.lighthouseResult);
     const hasContent=Boolean(content && content.mode!=='unavailable');
+    const hasRawHtml=Boolean(content && content.mode==='html');
+    const hasMobile=Boolean(psiMobile?.lighthouseResult);
+    const hasDesktop=Boolean(psiDesktop?.lighthouseResult);
+    const allCoreSourcesMeasured=hasRawHtml&&hasMobile&&hasDesktop;
     if (!hasPsi && !hasContent) {
       return {...makeEmptyReport(url), mode:'unavailable', timestamp:new Date().toISOString(),
         fallbackReason:'The website could not be measured from the available sources.',
         sources:{pagespeed:false,content:false,contentLabel:'Unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || 'Website content could not be retrieved.'}}};
     }
+    const mobileAccessibility=psiScore(psiMobile,'accessibility'),desktopAccessibility=psiScore(psiDesktop,'accessibility');
+    const mobileBestPractices=psiScore(psiMobile,'best-practices'),desktopBestPractices=psiScore(psiDesktop,'best-practices');
+    const accessibilityScore=mobileAccessibility ?? desktopAccessibility;
+    const bestPracticesScore=mobileBestPractices ?? desktopBestPractices;
+    const usabilityProviderScore=accessibilityScore!=null&&bestPracticesScore!=null
+      ? Math.round(accessibilityScore*0.7+bestPracticesScore*0.3)
+      : (accessibilityScore ?? bestPracticesScore);
     const scores={
-      onPage: scoreCategory(checks,'On-Page SEO') ?? (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')),
-      geo: scoreCategory(checks,'GEO readiness'),
-      links: scoreCategory(checks,'Links'),
-      usability: scoreCategory(checks,'Usability') ?? ((psiScore(psiMobile,'accessibility')!=null || psiScore(psiDesktop,'accessibility')!=null) ? Math.round(((psiScore(psiMobile,'accessibility') ?? psiScore(psiDesktop,'accessibility'))*0.7 + (Math.max(psiScore(psiMobile,'best-practices') ?? 0,psiScore(psiDesktop,'best-practices') ?? 0))*0.3)) : null),
+      onPage: (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')) ?? scoreCategory(checks,'On-Page SEO',categoryMinimum('onPage')),
+      geo: scoreCategory(checks,'GEO readiness',categoryMinimum('geo')),
+      links: scoreCategory(checks,'Links',categoryMinimum('links')),
+      usability: scoreCategory(checks,'Usability',categoryMinimum('usability')) ?? usabilityProviderScore,
       performance: metrics.mobile.score ?? metrics.desktop.score,
-      social: scoreCategory(checks,'Social'),
-      local: scoreCategory(checks,'Local SEO')
+      social: scoreCategory(checks,'Social',categoryMinimum('social')),
+      local: scoreCategory(checks,'Local SEO',categoryMinimum('local'))
+    };
+    const categoryMeta={
+      onPage:{status:scores.onPage!=null?'measured':categoryCheckCount('On-Page SEO')?'limited':'unavailable',scoredChecks:categoryCheckCount('On-Page SEO'),requiredChecks:requiredHtmlChecks.onPage},
+      geo:{status:scores.geo!=null?'measured':categoryCheckCount('GEO readiness')?'limited':'unavailable',scoredChecks:categoryCheckCount('GEO readiness'),requiredChecks:requiredHtmlChecks.geo},
+      links:{status:scores.links!=null?'measured':categoryCheckCount('Links')?'limited':'unavailable',scoredChecks:categoryCheckCount('Links'),requiredChecks:requiredHtmlChecks.links},
+      usability:{status:scores.usability!=null?'measured':categoryCheckCount('Usability')?'limited':'unavailable',scoredChecks:categoryCheckCount('Usability'),requiredChecks:requiredHtmlChecks.usability},
+      performance:{status:scores.performance!=null?'measured':'unavailable',scoredChecks:scores.performance!=null?1:0,requiredChecks:1},
+      social:{status:scores.social!=null?'measured':categoryCheckCount('Social')?'limited':'unavailable',scoredChecks:categoryCheckCount('Social'),requiredChecks:requiredHtmlChecks.social},
+      local:{status:scores.local!=null?'measured':categoryCheckCount('Local SEO')?'limited':'unavailable',scoredChecks:categoryCheckCount('Local SEO'),requiredChecks:requiredHtmlChecks.local}
     };
     // For categories not exposed by a source, keep them unmeasured rather than manufacture live scores.
     const scored=Object.values(scores).filter(v=>v!=null);
-    const overall=scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
+    // Never award an overall grade unless original HTML and both mobile + desktop
+    // Lighthouse runs returned usable data. Partial evidence is not an A+ score.
+    const overall=allCoreSourcesMeasured&&scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
     const recs=checks.filter(c=>c.status==='fail'||c.status==='warn').map(c=>({...c,priority:recPriority(c)}));
     const sortedRecs=recs.sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-({High:0,Medium:1,Low:2}[b.priority])) || ({fail:0,warn:1}[a.status]-({fail:0,warn:1}[b.status])));
     const passCount=checks.filter(c=>c.status==='pass').length;
-    return {url,mode:hasPsi&&hasContent?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,sources:{pagespeed:hasPsi,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:null,psiDesktop:null,content:content?.error || null}},fallbackReason:null};
+    return {url,mode:allCoreSourcesMeasured?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,categoryMeta,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,overallCoverage:Math.round(([hasRawHtml,hasMobile,hasDesktop].filter(Boolean).length/3)*100),sources:{pagespeed:hasPsi,pagespeedMobile:hasMobile,pagespeedDesktop:hasDesktop,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || null}},fallbackReason:null};
   };
   const makeEmptyReport = (url='') => ({
     url,mode:'unavailable',timestamp:null,overall:null,grade:'N/A',
@@ -1190,6 +1350,7 @@
   const summarizeSourceError = (value) => {
     const text=String(value || '').trim();
     if (!text) return 'No result returned.';
+    if (/\b429\b|too many requests/i.test(text)) return 'Google PageSpeed returned HTTP 429 (rate limit or quota response). Mobile/desktop performance remains unmeasured; retry later. No score is inferred.';
     if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text)) return 'Google PageSpeed could not return measurements for this request. Retry later; unavailable scores remain unscored.';
     if (/api.?key.*invalid|invalid api key|keyInvalid/i.test(text)) return 'Google PageSpeed could not validate its provider configuration. Performance measurements remain unavailable; please retry later.';
     if (/quota cooldown active/i.test(text)) return text;
@@ -1606,6 +1767,7 @@
   };
   const renderReport = (report) => {
     state.report=report;
+    updatePaidActionAvailability(report);
     const reportSection=$('auditReportSection'); if(reportSection)reportSection.hidden=false;
     if (report.auditId || report.id) state.auditId = report.auditId || report.id;
     if (typeof updateUpgradeLinks === 'function') updateUpgradeLinks();
@@ -1613,15 +1775,19 @@
     el.reportHeading.textContent='Audit Results for '+host;
     el.reportUrl.textContent=report.url;
     el.sourcePill.className='source-pill '+(report.mode==='live'?'live':'partial');
-    el.sourcePill.textContent=report.sources?.content?(report.mode==='live'?'Live HTML analysis':'Live HTML analysis · partial'):'Partial audit · source unavailable';
+    el.sourcePill.textContent=report.meta?.contentMode==='markdown'
+      ?'Reader extract · partial'
+      :report.sources?.content?(report.mode==='live'?'Live HTML analysis':'Live HTML analysis · partial'):'Partial audit · source unavailable';
     el.reportDate.textContent=`Report generated ${nowText()}`;
-    el.sourceDescription.textContent=report.sources?.content?(report.overall==null?'Website content was measured; some required performance data is unavailable.':'Website content and required performance sources returned measurements.'):'The website content could not be measured. Scores have not been substituted.';
+    el.sourceDescription.textContent=report.meta?.contentMode==='markdown'
+      ?'A normalized Reader extract was available, but raw HTML checks and required performance measurements are incomplete. Overall grade withheld.'
+      :report.sources?.content?(report.overall==null?'Website content was measured; some required performance data is unavailable.':'Website content and required performance sources returned measurements.'):'The website content could not be measured. Scores have not been substituted.';
     const score=report.overall;
     el.ring.style.setProperty('--score',score==null?0:score);
     el.grade.textContent=score==null?'N/A':(report.grade || gradeFor(score));
     el.grade.style.color=score==null?'#8793a3':score>=80?'#2479e8':score>=60?'#b78118':'#cf4d54';
     el.gradeHeading.textContent=score==null?'Overall grade pending performance data':score>=90?'Your page is in strong shape':score>=80?'Your page is performing well':score>=65?'Your page could be better':'Your page needs attention';
-    el.gradeDescription.textContent=score==null?'No overall A–F grade is issued until website content and both mobile and desktop performance results are available. Review source diagnostics below.':score>=85?'Keep these strengths and review the remaining high-impact recommendations.':'Focus on high-priority issues first, then work through medium and low priority improvements.';
+    el.gradeDescription.textContent=score==null?'No overall A–F grade is issued until website content and both mobile and desktop performance results are available. Review source diagnostics below.':(report.overallScoreReason || (score>=85?'Keep these strengths and review the remaining high-impact recommendations.':'Focus on high-priority issues first, then work through medium and low priority improvements.'));
     const recs=report.recommendations||[];
     const previewCount=Math.min(3,recs.length), totalCount=report.recommendationCount ?? recs.length;
     el.recCountInline.textContent=totalCount>previewCount?`${previewCount} of ${totalCount} flagged findings shown · full list locked`:`${previewCount} free preview finding${previewCount===1?'':'s'} · full list locked`;
@@ -1658,6 +1824,7 @@
       if(!payload.audit)return;
       state.auditId=payload.audit.auditId; renderReport(payload.audit);
       if(payload.unlocked) await unlockReport(payload.audit.auditId);
+      else await applySavedVoucherForCurrentAudit();
     } catch { /* A previous session is optional for the initial UI. */ }
   };
   const setProgress=(pct,title,detail)=>{el.progressFill.style.width=pct+'%';el.progressPercent.textContent=pct+'%';if(title)el.progressTitle.textContent=title;if(detail)el.progressDetail.textContent=detail;};
@@ -1679,13 +1846,36 @@
       finally { clearTimeout(timeout); }
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
+      if(payload.ok!==true || typeof payload.auditId!=='string' || !payload.preview || typeof payload.preview.url!=='string') {
+        throw new Error('Audit service returned an incomplete report. No findings were displayed.');
+      }
       state.auditId = payload.auditId;
+      state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
+      if($('promotionCodeInput')) $('promotionCodeInput').value='';
+      if($('promotionCodeStatus')) $('promotionCodeStatus').hidden=true;
+      if($('redeemPromoBtn')) $('redeemPromoBtn').textContent='Apply code';
       state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
-      setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
-      window.setTimeout(()=>{renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');},200);
+      clearInterval(state.progressTimer); state.progressTimer = null;
+      setProgress(94,'Rendering audit preview','The audit response arrived. Preparing the report view.');
+      renderReport(payload.preview);
+      el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
+      // Only complete, measured reports are eligible for voucher redemption or payment unlock.
+      if (hasCompleteReportEvidence(payload.preview)) {
+        void applySavedVoucherForCurrentAudit().catch(error => {
+          setStatus($('promotionCodeStatus'), error.message || 'The audit loaded, but the saved voucher could not be checked.', 'error');
+        });
+      } else {
+        setStatus($('promotionCodeStatus'), 'Voucher redemption is paused because required source measurements are missing. Retry the missing measurements before unlocking a report.', 'error');
+      }
     } catch(error) {
-      clearInterval(state.progressTimer); el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
-      el.error.textContent = error.name === 'AbortError' ? 'Audit timed out. Please try again; the external audit services may be rate-limited.' : (error.message || 'Audit failed.');
+      clearInterval(state.progressTimer); state.progressTimer=null; el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
+      el.error.textContent = error.name === 'AbortError'
+        ? 'Audit timed out. Please try again; the audit service did not complete the request.'
+        : (error.message === 'Failed to fetch' && window.location.origin === REVIEW_ORIGIN
+          ? 'The isolated audit Worker did not return a response. No sample audit was substituted. The review Worker must be deployed and its D1/PageSpeed configuration completed.'
+          : (error.message === 'Failed to fetch'
+            ? 'The audit service did not return a response. No report was generated.'
+            : (error.message || 'Audit failed.')));
       el.error.style.display='block'; setProgress(4,'Preparing audit…','Checking URL and preparing requests');
     }
   };
@@ -1693,6 +1883,10 @@
     if (!state.auditId) return;
     const button=el.retryMeasurements; const original=button.textContent; button.disabled=true; button.textContent='Retrying sources…';
     try {
+      if(window.location.origin===REVIEW_ORIGIN){
+        await runAudit(el.url.value);
+        return;
+      }
       const payload=await apiPost('/api/audits/'+encodeURIComponent(state.auditId)+'/retry',{});
       state.auditId=payload.auditId; state.fullReport=null; state.paid=false;
       renderReport(payload.preview);
@@ -1713,13 +1907,79 @@
     if(!response.ok) throw new Error(payload.error || `Request failed (${response.status}).`);
     return payload;
   }
+  async function claimLaunchVoucherFromStudio() {
+    const button=$('claimLaunchVoucherBtn'),input=$('promotionCodeInput'),status=$('promotionCodeStatus');
+    if(!button)return;
+    button.disabled=true;button.textContent='Checking voucher…';
+    try {
+      const result=await apiPost('/api/promotions/claim',{});
+      if(result.ok!==true||typeof result.code!=='string')throw new Error(result.error||'Free launch vouchers are temporarily unavailable.');
+      try{window.sessionStorage.setItem(AUDIT_VOUCHER_KEY,result.code);}catch{}
+      if(input)input.value=result.code;
+      setStatus(status,'Launch voucher ready. '+(result.alreadyClaimed?'Your existing voucher was restored. ':'')+
+        (state.auditId?'Checking it against this audit…':'Run your audit, then open “Unlock Full Audit” and the voucher will be applied automatically.'),'success');
+      if(state.auditId) await applyPromotionCode();
+      button.textContent='Voucher saved';
+    } catch(error) {
+      setStatus(status,error.message||'Could not claim a launch voucher. No access was changed.','error');
+      button.textContent='Try again';
+      button.disabled=false;
+    }
+  }
+
   function setStatus(node, text, tone='') {
     if(!node)return; node.hidden=false; node.className='payment-status-box'+(tone?' '+tone:''); node.textContent=text;
   }
+  async function applyPromotionCode() {
+    const input=$('promotionCodeInput'),button=$('redeemPromoBtn'),status=$('promotionCodeStatus');
+    if (!hasCompleteReportEvidence(state.report)) {
+      setStatus(status, 'Voucher redemption is paused until this audit has complete source measurements. No full report has been unlocked.', 'error');
+      return;
+    }
+    if(!state.auditId){setStatus(status,'Run your audit first. The voucher will unlock the full report for that audit.','error');return;}
+    const code=String(input?.value||'').trim().toUpperCase();
+    if(!code){setStatus(status,'Enter your launch voucher code.','error');input?.focus();return;}
+    button.disabled=true;button.textContent='Verifying voucher…';
+    try {
+      const result=await apiPost('/api/promotions/redeem',{auditId:state.auditId,code});
+      if(result.freeReport!==true)throw new Error(result.error||'This voucher does not grant a free full technical report.');
+      state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
+      setStatus(status,'Voucher verified. Your complete technical audit is unlocking now…','success');
+      await unlockReport(state.auditId);
+      try{window.sessionStorage.removeItem(AUDIT_VOUCHER_KEY);}catch{}
+      const claimButton=$('claimLaunchVoucherBtn');
+      if(claimButton){claimButton.disabled=true;claimButton.textContent='Full audit unlocked';}
+    } catch(error) {
+      setStatus(status,error.message||'Voucher could not be verified. No access was changed.','error');
+    } finally {
+      button.disabled=Boolean(state.paid);
+      button.textContent=state.paid?'Voucher redeemed':'Apply voucher';
+    }
+  }
+  async function applySavedVoucherForCurrentAudit() {
+    if(!state.auditId||state.paid||state.voucherAutoAttemptedAuditId===state.auditId)return false;
+    let code='';
+    try{code=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+    if(!/^[A-Z0-9-]{8,40}$/.test(code))return false;
+    const input=$('promotionCodeInput');
+    if(!input)return false;
+    state.voucherAutoAttemptedAuditId=state.auditId;
+    input.value=code;
+    setStatus($('promotionCodeStatus'),'Your launch voucher is being verified for this audit…');
+    await applyPromotionCode();
+    return Boolean(state.paid);
+  }
   function requireAuditForPayment() {
-    if(state.auditId)return true;
-    setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.');
-    return false;
+    if(!state.auditId){
+      setStatus($('paymentContextNotice'),'Run an audit first. Payment unlocks the full report for that URL.','error');
+      return false;
+    }
+    if(!hasCompleteReportEvidence(state.report)){
+      setStatus($('paymentContextNotice'),'This audit is incomplete. Checkout is disabled until raw HTML and both mobile and desktop PageSpeed measurements are available. No payment order will be created.','error');
+      openPaywall();
+      return false;
+    }
+    return true;
   }
   function safepayCheckoutReady() {
     const c=state.config;
@@ -1759,7 +2019,8 @@
     try {
       const selectedOption=state.cryptoMinimums.find(option=>option.network===selectedNetwork&&option.available===true);
       if(!selectedOption)throw new Error('This cryptocurrency does not accept the US$2.99 report price. Choose an available option or pay with Safepay.');
-      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork});
+      const payload=await apiPost('/api/payments/crypto/create',{auditId:state.auditId,network:selectedNetwork,promotionRedemptionId:state.promotionRedemptionId});
+      if(payload.freeReport===true) { await unlockReport(payload.auditId||state.auditId); return; }
       if(payload.provider!=='nowpayments'||!payload.orderId)throw new Error('Verified crypto checkout is not available. No transfer should be made.');
       const expectedCurrencies={TRC20:'usdttrc20',ERC20:'usdterc20',TRX:'trx',BNB:'bnbbsc',LTC:'ltc'};
       if(payload.network!==selectedNetwork||String(payload.payCurrency||'').toLowerCase()!==expectedCurrencies[selectedNetwork])throw new Error('The provider payment does not match the selected currency/network. Do not transfer funds.');
@@ -1813,14 +2074,35 @@
   }
   const openPaywall = () => {
     if (!el.paywallModal) return;
+    if (state.report && !hasCompleteReportEvidence(state.report)) {
+      const sources = state.report.sources || {};
+      const missing = [];
+      if (sources.content !== true) missing.push('raw website HTML');
+      if (sources.pagespeedMobile !== 'google-pagespeed') missing.push('mobile PageSpeed');
+      if (sources.pagespeedDesktop !== 'google-pagespeed') missing.push('desktop PageSpeed');
+      el.sourceDiagnostics.hidden = false;
+      el.sourceDiagnosticsTitle.textContent = 'Full report is not ready yet';
+      el.sourceDiagnosticsText.textContent = 'Checkout is disabled until all required audit sources return usable data. Missing: ' + (missing.join(', ') || 'a valid overall grade') + '. No payment or full-report unlock will be started for this partial audit.';
+      el.sourceDiagnostics.scrollIntoView?.({behavior:'smooth',block:'center'});
+      return;
+    }
     state.previousFocus = document.activeElement;
     el.paywallModal.classList.add('is-open'); el.paywallModal.setAttribute('aria-hidden', 'false'); document.body.classList.add('modal-open');
     if(!state.auditId) {
       setStatus($('paymentContextNotice'),'Run an audit before starting a payment.','error');
       $('cryptoAvailabilityNote').textContent='Run an audit to check current crypto minimums. Safepay remains available when payment settings are verified.';
     } else {
-      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. Verified payment unlocks only this report.`);
-      void loadCryptoMinimums();
+      setStatus($('paymentContextNotice'),`Report selected: ${state.report?.url || 'current audit'}. A verified voucher or payment unlocks only this report.`);
+      let savedVoucher='';
+      try{savedVoucher=window.sessionStorage.getItem(AUDIT_VOUCHER_KEY)||'';}catch{}
+      if(savedVoucher&&/^[A-Z0-9-]{8,40}$/.test(savedVoucher)&&state.voucherAutoAttemptedAuditId!==state.auditId&&!state.paid){
+        state.voucherAutoAttemptedAuditId=state.auditId;
+        $('promotionCodeInput').value=savedVoucher;
+        setStatus($('promotionCodeStatus'),'Launch voucher found. Verifying it for this audit…');
+        void applyPromotionCode();
+      }else{
+        void loadCryptoMinimums();
+      }
     }
     window.setTimeout(() => el.closePaywall?.focus(), 0);
   };
@@ -1849,6 +2131,9 @@
     updateCryptoCheckoutAvailability();
   });
   $('safepayCheckoutBtn').addEventListener('click',beginCardPayment);
+   $('claimLaunchVoucherBtn')?.addEventListener('click',claimLaunchVoucherFromStudio);
+   $('redeemPromoBtn')?.addEventListener('click',applyPromotionCode);
+   $('promotionCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();applyPromotionCode();}});
   $('retryPaymentSettingsBtn')?.addEventListener('click',()=>initializePayments());
   $('prepareCryptoBtn').addEventListener('click',prepareCryptoPayment);
   $('verifyCryptoBtn').addEventListener('click',verifyCryptoStatus);
@@ -1942,6 +2227,7 @@
       const payload=await apiPost('/api/payments/crypto/minimums',{auditId:state.auditId});
       if(payload.ok!==true||!Array.isArray(payload.options))throw new Error('Crypto minimums could not be verified.');
       state.cryptoMinimums=payload.options;
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(payload.priceUsd||state.config?.cryptoPrice||2.99).toFixed(2)+' per full report. Current provider minimum plus a US$'+Number(payload.minimumBufferUsd||1).toFixed(2)+' safety buffer must be satisfied.';
       state.cryptoMinimumsLoaded=true;
       state.cryptoMinimumsAuditId=state.auditId;
       for(const item of $('cryptoNetwork').options) {
@@ -1949,7 +2235,7 @@
         item.disabled=!info||info.available!==true;
         item.hidden=!info||info.available!==true;
       }
-      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number(option.minimumUsd)<=Number(payload.priceUsd||2.99))
+      const eligible=state.cryptoMinimums.filter(option=>option.available===true&&Number.isFinite(Number(option.minimumUsd)))
         .sort((a,b)=>Number(a.minimumUsd)-Number(b.minimumUsd));
       if(eligible.length) {
         const current=eligible.find(option=>option.network===$('cryptoNetwork').value);
@@ -1995,7 +2281,7 @@
     button.textContent=state.cryptoMinimumsLoading?'Checking current minimums…':state.cryptoOrderId?'Crypto order pending':available?'Prepare verified crypto payment':'Crypto checkout unavailable';
     button.title=available
       ?'Creates a verified provider order for this currency. Only signed provider confirmation unlocks the report.'
-      :'Crypto checkout requires a verified provider minimum no higher than US$2.99.';
+      :'Crypto checkout needs a verified provider minimum plus the configured safety buffer below the current crypto price.';
     if(note&&available)note.hidden=true;
     else if(note)note.hidden=false;
     return available;
@@ -2023,6 +2309,7 @@
       $('cryptoPaymentStatus').hidden=true;
       $('verifyCryptoBtn').hidden=true;
       const ready=safepayCheckoutReady();
+      if($('cryptoPriceDescription')) $('cryptoPriceDescription').textContent='Separate crypto price: US$'+Number(state.config.cryptoPrice||state.config.price||2.99).toFixed(2)+' per full report. Live provider minimum and safety buffer will be checked before an order is created.';
       $('safepayCheckoutBtn').disabled=!ready;
       $('safepayCheckoutBtn').textContent=ready?'Continue to secure Safepay checkout':'Safepay checkout unavailable';
       if(!ready) setStatus($('cardPaymentStatus'),'Secure payment setup is not complete. Your report remains locked; no payment was started.');
