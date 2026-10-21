@@ -96,8 +96,10 @@ test('raw HTML source endpoint is isolated, bounded, and validates its targets',
   assert.match(mock, /parsed\.origin===window\.location\.origin&&parsed\.pathname==='\/api\/page-source'\)return originalFetch/);
 });
 
-test('partial audit evidence cannot receive a misleading perfect score', () => {
-  assert.match(auditHtml, /if \(items\.length < 3\) return null/);
+test('partial audit evidence cannot receive a misleading overall score', () => {
+  assert.match(auditHtml, /if \(items\.length < minimumChecks\) return null/);
+  assert.match(auditHtml, /const minimumHtmlCategoryChecks=parsed\?\.meta\?\.contentMode==='html'\?2:3/);
+  assert.match(auditHtml, /const overall=allCoreSourcesMeasured&&scored\.length \? Math\.round/);
   assert.match(auditHtml, /const hasRawHtml=Boolean\(content && content\.mode==='html'\)/);
   assert.match(auditHtml, /const allCoreSourcesMeasured=hasRawHtml&&hasMobile&&hasDesktop/);
   assert.match(auditHtml, /const overall=allCoreSourcesMeasured&&scored\.length \? Math\.round/);
