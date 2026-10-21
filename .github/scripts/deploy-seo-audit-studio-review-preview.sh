@@ -201,9 +201,9 @@ echo "::endgroup::"
   echo "- **Owner Console:** $PAGE_ORIGIN/seo-audit-studio-admin.html"
   echo "- **Review Worker:** $WORKER_ORIGIN"
   echo "- **Payments:** sandbox/mock only; no real card or crypto transfer is enabled."
-  echo "- **Database:** separate D1 database `$DB_NAME`; production D1 is not used."
+  echo "- **Database:** separate D1 database \`$DB_NAME\`; production D1 is not used."
   if [[ -z "$preview_token" ]]; then
-    echo "- **Owner Console:** configure Actions secret `AUDIT_PREVIEW_OWNER_TOKEN` (32-256 random characters) and rerun the workflow to enable authenticated owner actions."
+    echo "- **Owner Console:** configure Actions secret \`AUDIT_PREVIEW_OWNER_TOKEN\` (32-256 random characters) and rerun the workflow to enable authenticated owner actions."
   else
     echo "- **Owner Console:** separate preview token was configured as a Worker secret."
   fi
