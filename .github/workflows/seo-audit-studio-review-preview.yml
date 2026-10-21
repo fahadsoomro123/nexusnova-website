@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fahadsoomro123/nexusnova-seo-audit-studio-backend
-          ref: 4a71b858269811f6d772dd3dd4ba6953aa345c09
+          ref: c1781fefcff6c9bf4fd3a65f4db6bb980983dad7
           token: ${{ secrets.BACKEND_REPO_READ_TOKEN }}
           path: .review-backend
       - name: Set up Node.js
