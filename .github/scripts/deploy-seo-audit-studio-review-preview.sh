@@ -99,7 +99,7 @@ cat > "$WRANGLER_CONFIG" <<JSON
 JSON
 
 echo "::group::Apply migrations to the isolated review database"
-npx --yes wrangler@4.151.2 d1 migrations apply "$DB_NAME" --remote --config "$WRANGLER_CONFIG" --yes
+npx --yes wrangler@4.151.2 d1 migrations apply "$DB_NAME" --remote --config "$WRANGLER_CONFIG"
 echo "::endgroup::"
 
 echo "::group::Seed mock-only promotion test codes"
