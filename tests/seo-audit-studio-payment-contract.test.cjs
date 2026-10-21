@@ -129,7 +129,9 @@ test('transient browser transport failures retry only safe audit/session/config 
   assert.ok(html.includes("endpoint.pathname === '/api/audits'"));
   assert.ok(!html.includes("endpoint.pathname === '/api/audits/sample'"));
   assert.ok(html.includes('fetchWithTransportRetry(endpoint.href, init, retryableTransport)'));
-  assert.ok(html.includes("fetchWithTransportRetry(API_BASE_URL + '/api/session'"));
+  assert.ok(html.includes("async function requestAuditSession(callerSignal)"));
+  assert.ok(html.includes("window.fetch(API_BASE_URL + '/api/session'"));
+  assert.ok(html.includes("const timeoutMs = isReviewPreview ? 8000 : 20000"));
   const whitelistStart = html.indexOf('const retryableTransport =');
   const whitelistEnd = html.indexOf('const response = await fetchWithTransportRetry(endpoint.href, init, retryableTransport);', whitelistStart);
   assert.ok(whitelistStart >= 0 && whitelistEnd > whitelistStart);
@@ -143,7 +145,7 @@ test('cross-origin requests use a dedicated isolated Worker and session-scoped b
   assert.match(html, /:\s*'https:\/\/nexusnova-audit-studio\.fahadsoomro123\.workers\.dev';/);
   assert.match(html, /endpoint\.origin !== API_BASE_ORIGIN \|\| !endpoint\.pathname\.startsWith\('\/api\/'\)/,
     'the browser helper must refuse cross-origin or non-API paths');
-  assert.match(html, /headers\.set\('Authorization', 'Bearer ' \+ await getAuditSessionToken\(\)\)/,
+  assert.match(html, /headers\.set\('Authorization', 'Bearer ' \+ await getAuditSessionToken\(init\.signal\)\)/,
     'sensitive API requests must use their own bearer session rather than third-party cookies');
   assert.match(html, /credentials: 'omit'/, 'cross-site cookies are not used');
   assert.match(html, /AUDIT_SESSION_KEY = 'nexusnova_audit_session_v1'/,
