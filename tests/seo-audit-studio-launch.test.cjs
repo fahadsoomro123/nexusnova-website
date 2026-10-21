@@ -82,7 +82,7 @@ test('review preview MutationObserver cannot create a self-triggering DOM mutati
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo2') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo3') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /const requestTimeoutMs = isReviewPreview \? 12000 : 240000/);
