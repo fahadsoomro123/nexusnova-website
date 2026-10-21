@@ -26,8 +26,8 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   assert.match(html, /id="nnAuditHomeForm"/);
   assert.match(html, /id="nnAuditLaunchUrl"/);
   assert.match(html, /id="nnAuditClaimVoucher"/);
-  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v5/);
-  assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261021-v2/);
+  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261021-v6/);
+  assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261021-v3/);
   assert.doesNotMatch(html, /Missing page title|Meta description review|Image alt-text review/);
 });
 
@@ -56,12 +56,17 @@ test('voucher claims require backend confirmation and fail closed on preview con
   assert.doesNotMatch(js, /setInterval|countdown|fakeUserCount|remainingClaims\s*[:=]\s*\d+/i);
 });
 
-test('real workspace styling is responsive and accessible with no novelty gradients', () => {
+test('real workspace styling is responsive and accessible with a restrained premium offer', () => {
   assert.match(css, /@media\(max-width:600px\)/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /--audit-blue:#3157b7/);
   assert.match(css, /nn-audit-workspace-layout/);
   assert.match(css, /nn-audit-report-card/);
-  assert.doesNotMatch(css, /linear-gradient|radial-gradient|--audit-lime/);
+  assert.match(css, /radial-gradient\\\(circle at 91% 6%/);
+  assert.match(css, /linear-gradient\\\(125deg,#142239/);
+  assert.match(css, /background:#f7f2e8/);
+  assert.doesNotMatch(css, /--audit-lime|#dfff00|acid-lime/i);
+  assert.match(js, /showOfferUnavailable/);
+  assert.match(js, /NEXUSNOVA \\| LAUNCH PRIVILEGE/);
 });
