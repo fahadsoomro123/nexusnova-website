@@ -143,6 +143,7 @@ test('review preview audit requests have bounded waits and always release the lo
   assert.match(auditHtml, /const timeout = setTimeout\(\(\) => controller\.abort\(\), 240000\)/);
   assert.match(auditHtml, /payload\.ok!==true \|\| typeof payload\.auditId!=='string' \|\| !payload\.preview/);
   assert.match(auditHtml, /clearInterval\(state\.progressTimer\); state\.progressTimer = null;/);
-  assert.match(auditHtml, /Voucher redemption must not hold the audit preview spinner open/);
+  assert.match(auditHtml, /Voucher redemption is paused because required source measurements are missing/);
+  assert.match(auditHtml, /if \(hasCompleteReportEvidence\(payload\.preview\)\)/);
   assert.doesNotMatch(auditHtml, /window\.setTimeout\(async\(\)=>\{\s*renderReport\(payload\.preview\)/);
 });
