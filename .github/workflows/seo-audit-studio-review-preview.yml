@@ -130,3 +130,26 @@ jobs:
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: bash .github/scripts/deploy-seo-audit-studio-review-preview-v2.sh
+      - name: Smoke-test deployed preview health, PageSpeed and owner authentication
+        shell: bash
+        env:
+          AUDIT_PREVIEW_OWNER_TOKEN: ${{ secrets.AUDIT_PREVIEW_OWNER_TOKEN }}
+          REVIEW_WORKER_ORIGIN: https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev
+          REVIEW_PAGE_ORIGIN: https://review.nexusnova-seo-audit-studio-review.pages.dev
+        run: |
+          set -Eeuo pipefail
+          health_status="$(curl -sS -o "$RUNNER_TEMP/audit-health.json" -w '%{http_code}' "$REVIEW_WORKER_ORIGIN/api/health")"
+          [[ "$health_status" == "200" ]] || { echo "::error::Review Worker health HTTP $health_status"; exit 1; }
+          jq -e '.ok == true and .database == true and .environment == "sandbox"' "$RUNNER_TEMP/audit-health.json" >/dev/null
+          config_status="$(curl -sS -o "$RUNNER_TEMP/audit-config.json" -w '%{http_code}' "$REVIEW_WORKER_ORIGIN/api/config")"
+          [[ "$config_status" == "200" ]] || { echo "::error::Review Worker config HTTP $config_status"; exit 1; }
+          jq -e '.ok == true and .environment == "sandbox" and .productionMode == false and .livePaymentsEnabled == false and .provider == "mock" and .pageSpeedConfigured == true and .pageSpeedMode == "service-account-oauth"' "$RUNNER_TEMP/audit-config.json" >/dev/null
+          [[ -n "$AUDIT_PREVIEW_OWNER_TOKEN" ]] || { echo "::error::Owner preview token is missing"; exit 1; }
+          owner_status="$(curl -sS -o "$RUNNER_TEMP/audit-owner.json" -w '%{http_code}' -H "X-Owner-Admin-Token: $AUDIT_PREVIEW_OWNER_TOKEN" "$REVIEW_WORKER_ORIGIN/api/admin/promotions")"
+          [[ "$owner_status" == "200" ]] || { echo "::error::Authenticated owner route HTTP $owner_status"; exit 1; }
+          jq -e '.ok == true' "$RUNNER_TEMP/audit-owner.json" >/dev/null
+          homepage_status="$(curl -sS -L -o /dev/null -w '%{http_code}' "$REVIEW_PAGE_ORIGIN/")"
+          audit_status="$(curl -sS -L -o /dev/null -w '%{http_code}' "$REVIEW_PAGE_ORIGIN/seo-audit-studio.html")"
+          [[ "$homepage_status" == "200" && "$audit_status" == "200" ]] || { echo "::error::Review Pages smoke test failed: homepage=$homepage_status audit=$audit_status"; exit 1; }
+          echo "Review smoke tests passed: health=$health_status config=$config_status owner=$owner_status homepage=$homepage_status audit=$audit_status"
+          echo "Verified mode: sandbox/mock; service-account PageSpeed configured; production payments disabled."
