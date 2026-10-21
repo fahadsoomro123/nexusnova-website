@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-21T20:39:33.486Z",
+  "generated_at": "2026-10-21T23:42:05.356Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,31 +16,68 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-21T20:38:51.000Z",
+  "feed_generated_at": "2026-10-21T23:41:13.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 40,
-  "pakistan_region_events": [
+  "source_count": 39,
+  "pakistan_region_events": [],
+  "worldwide_events": [
     {
-      "id": "us6000u3r1",
-      "magnitude": 4.6,
-      "place": "115 km NNE of Barishal, Pakistan",
-      "time": "2026-10-20T23:16:43.934Z",
-      "updated": "2026-10-21T00:00:03.040Z",
-      "depth_km": 65.6,
+      "id": "us6000u3yp",
+      "magnitude": 5,
+      "place": "Reykjanes Ridge",
+      "time": "2026-10-21T21:58:48.618Z",
+      "updated": "2026-10-21T22:12:21.040Z",
+      "depth_km": 10,
       "coordinates": {
-        "lat": 37.3012,
-        "lon": 75.121
+        "lat": 56.863,
+        "lon": -34.1306
       },
-      "significance": 326,
+      "significance": 385,
       "felt": 0,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3r1",
-      "pakistan_region": true
-    }
-  ],
-  "worldwide_events": [
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3yp",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u3yj",
+      "magnitude": 5.3,
+      "place": "Reykjanes Ridge",
+      "time": "2026-10-21T21:38:55.441Z",
+      "updated": "2026-10-21T21:51:49.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 56.8137,
+        "lon": -34.1689
+      },
+      "significance": 432,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3yj",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u3y1",
+      "magnitude": 4.9,
+      "place": "68 km NNW of Khorixas, Namibia",
+      "time": "2026-10-21T20:34:50.454Z",
+      "updated": "2026-10-21T21:39:58.099Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -19.7855,
+        "lon": 14.7284
+      },
+      "significance": 370,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3y1",
+      "pakistan_region": false
+    },
     {
       "id": "aka2026uwtlhl",
       "magnitude": 2.6,
@@ -96,6 +133,25 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026uthiey",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u3xx",
+      "magnitude": 5,
+      "place": "198 km WNW of Port-Olry, Vanuatu",
+      "time": "2026-10-21T18:41:04.974Z",
+      "updated": "2026-10-21T21:22:44.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -14.1796,
+        "lon": 165.4616
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3xx",
       "pakistan_region": false
     },
     {
@@ -289,6 +345,25 @@
       "pakistan_region": false
     },
     {
+      "id": "tx2026usvyyw",
+      "magnitude": 2.5,
+      "place": "50 km NW of Toyah, Texas",
+      "time": "2026-10-21T13:10:41.449Z",
+      "updated": "2026-10-21T20:39:34.482Z",
+      "depth_km": 6.5,
+      "coordinates": {
+        "lat": 31.657,
+        "lon": -104.142
+      },
+      "significance": 96,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026usvyyw",
+      "pakistan_region": false
+    },
+    {
       "id": "tx2026usvdxs",
       "magnitude": 3.8,
       "place": "49 km NW of Toyah, Texas",
@@ -441,22 +516,22 @@
       "pakistan_region": false
     },
     {
-      "id": "us6000u3t9",
+      "id": "tx2026usnxjf",
       "magnitude": 2.5,
-      "place": "58 km S of Whites City, New Mexico",
-      "time": "2026-10-21T09:07:11.345Z",
-      "updated": "2026-10-21T09:58:51.040Z",
-      "depth_km": 9,
+      "place": "57 km S of Whites City, New Mexico",
+      "time": "2026-10-21T09:07:11.429Z",
+      "updated": "2026-10-21T21:33:32.269Z",
+      "depth_km": 6.1,
       "coordinates": {
-        "lat": 31.6496,
-        "lon": -104.4247
+        "lat": 31.662,
+        "lon": -104.406
       },
       "significance": 96,
       "felt": 0,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3t9",
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026usnxjf",
       "pakistan_region": false
     },
     {
@@ -685,120 +760,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71537338",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026uvdppt",
-      "magnitude": 3.3,
-      "place": "180 km W of Nikolski, Alaska",
-      "time": "2026-10-20T23:35:40.405Z",
-      "updated": "2026-10-21T16:20:14.604Z",
-      "depth_km": 16.8,
-      "coordinates": {
-        "lat": 53.187,
-        "lon": -171.52
-      },
-      "significance": 168,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026uvdppt",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u3r3",
-      "magnitude": 4.9,
-      "place": "south of the Fiji Islands",
-      "time": "2026-10-20T23:24:27.101Z",
-      "updated": "2026-10-21T00:21:38.040Z",
-      "depth_km": 529.8,
-      "coordinates": {
-        "lat": -25.502,
-        "lon": 179.592
-      },
-      "significance": 369,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3r3",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u3r1",
-      "magnitude": 4.6,
-      "place": "115 km NNE of Barishal, Pakistan",
-      "time": "2026-10-20T23:16:43.934Z",
-      "updated": "2026-10-21T00:00:03.040Z",
-      "depth_km": 65.6,
-      "coordinates": {
-        "lat": 37.3012,
-        "lon": 75.121
-      },
-      "significance": 326,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3r1",
-      "pakistan_region": true
-    },
-    {
-      "id": "us6000u3qu",
-      "magnitude": 4.3,
-      "place": "6 km SE of Pitaloza Arriba, Panama",
-      "time": "2026-10-20T22:51:44.847Z",
-      "updated": "2026-10-21T12:21:57.722Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 7.597,
-        "lon": -80.6274
-      },
-      "significance": 285,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u3qu",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026uvcbqu",
-      "magnitude": 2.7,
-      "place": "27 km W of Salamatof, Alaska",
-      "time": "2026-10-20T22:49:46.159Z",
-      "updated": "2026-10-21T05:30:08.864Z",
-      "depth_km": 80.3,
-      "coordinates": {
-        "lat": 60.65,
-        "lon": -151.825
-      },
-      "significance": 112,
-      "felt": 1,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026uvcbqu",
-      "pakistan_region": false
-    },
-    {
-      "id": "tx2026urpjmn",
-      "magnitude": 2.5,
-      "place": "19 km ESE of Pearsall, Texas",
-      "time": "2026-10-20T20:46:52.389Z",
-      "updated": "2026-10-21T07:54:22.024Z",
-      "depth_km": 8.5,
-      "coordinates": {
-        "lat": 28.823,
-        "lon": -98.911
-      },
-      "significance": 96,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/tx2026urpjmn",
       "pakistan_region": false
     }
   ]
