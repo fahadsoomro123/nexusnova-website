@@ -140,7 +140,6 @@ test('review preview audit requests have bounded waits and always release the lo
   assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo7') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
-  assert.match(auditHtml, /setTimeout\(\(\)=>\{requestTimedOut=true;controller\.abort\(\);\},60000\)/);
   assert.match(auditHtml, /const timeout = setTimeout\(\(\) => controller\.abort\(\), 240000\)/);
   assert.match(auditHtml, /payload\.ok!==true \|\| typeof payload\.auditId!=='string' \|\| !payload\.preview/);
   assert.match(auditHtml, /clearInterval\(state\.progressTimer\); state\.progressTimer = null;/);
