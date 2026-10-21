@@ -71,6 +71,16 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(js, /NEXUSNOVA \| LAUNCH PRIVILEGE/);
 });
 
+test('review preview MutationObserver cannot create a self-triggering DOM mutation loop', () => {
+  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
+  assert.match(mock, /if\(pill\.textContent!==['"]Preview simulation · sample data['"]\)pill\.textContent=/);
+  assert.match(mock, /if\(pill\.className!==['"]source-pill partial['"]\)pill\.className=/);
+  assert.match(mock, /if\(desc&&desc\.textContent!==description\)desc\.textContent=description/);
+  assert.match(mock, /if\(top&&document\.body\.classList\.contains\('report-is-paid'\)&&top\.textContent!==topText\)top\.textContent=topText/);
+  assert.match(mock, /observer\.observe\(document\.body,\{subtree:true,attributes:true,attributeFilter:\[['"]hidden['"],['"]class['"]\]\}\)/);
+  assert.doesNotMatch(mock, /observer\.observe\(document\.body,\{childList:true,subtree:true,attributes:true/);
+});
+
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
   assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo2') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
