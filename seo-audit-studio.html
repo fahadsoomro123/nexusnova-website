@@ -1268,7 +1268,10 @@
     liveChecks.push(...mobileChecks,...desktopChecks);
     const checks=dedupeChecks(liveChecks);
     const metrics={mobile:extractMetrics(psiMobile),desktop:extractMetrics(psiDesktop)};
-    const minimumHtmlCategoryChecks=parsed?.meta?.contentMode==='html'?2:3;
+    // Evidence thresholds prevent category presence checks from being mistaken for full audits.
+    const requiredHtmlChecks={onPage:6,geo:4,links:4,usability:4,social:4,local:3};
+    const categoryCheckCount=(category)=>checks.filter(c=>c.category===category&&['pass','warn','fail'].includes(c.status)).length;
+    const categoryMinimum=(id)=>requiredHtmlChecks[id]||4;
     const hasPsi=Boolean(psiMobile?.lighthouseResult || psiDesktop?.lighthouseResult);
     const hasContent=Boolean(content && content.mode!=='unavailable');
     const hasRawHtml=Boolean(content && content.mode==='html');
@@ -1280,14 +1283,30 @@
         fallbackReason:'The website could not be measured from the available sources.',
         sources:{pagespeed:false,content:false,contentLabel:'Unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || 'Website content could not be retrieved.'}}};
     }
+    const mobileAccessibility=psiScore(psiMobile,'accessibility'),desktopAccessibility=psiScore(psiDesktop,'accessibility');
+    const mobileBestPractices=psiScore(psiMobile,'best-practices'),desktopBestPractices=psiScore(psiDesktop,'best-practices');
+    const accessibilityScore=mobileAccessibility ?? desktopAccessibility;
+    const bestPracticesScore=mobileBestPractices ?? desktopBestPractices;
+    const usabilityProviderScore=accessibilityScore!=null&&bestPracticesScore!=null
+      ? Math.round(accessibilityScore*0.7+bestPracticesScore*0.3)
+      : (accessibilityScore ?? bestPracticesScore);
     const scores={
-      onPage: scoreCategory(checks,'On-Page SEO',minimumHtmlCategoryChecks) ?? (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')),
-      geo: scoreCategory(checks,'GEO readiness',minimumHtmlCategoryChecks),
-      links: scoreCategory(checks,'Links',minimumHtmlCategoryChecks),
-      usability: scoreCategory(checks,'Usability',minimumHtmlCategoryChecks) ?? ((psiScore(psiMobile,'accessibility')!=null || psiScore(psiDesktop,'accessibility')!=null) ? Math.round(((psiScore(psiMobile,'accessibility') ?? psiScore(psiDesktop,'accessibility'))*0.7 + (Math.max(psiScore(psiMobile,'best-practices') ?? 0,psiScore(psiDesktop,'best-practices') ?? 0))*0.3)) : null),
+      onPage: (psiScore(psiMobile,'seo') ?? psiScore(psiDesktop,'seo')) ?? scoreCategory(checks,'On-Page SEO',categoryMinimum('onPage')),
+      geo: scoreCategory(checks,'GEO readiness',categoryMinimum('geo')),
+      links: scoreCategory(checks,'Links',categoryMinimum('links')),
+      usability: scoreCategory(checks,'Usability',categoryMinimum('usability')) ?? usabilityProviderScore,
       performance: metrics.mobile.score ?? metrics.desktop.score,
-      social: scoreCategory(checks,'Social',minimumHtmlCategoryChecks),
-      local: scoreCategory(checks,'Local SEO',minimumHtmlCategoryChecks)
+      social: scoreCategory(checks,'Social',categoryMinimum('social')),
+      local: scoreCategory(checks,'Local SEO',categoryMinimum('local'))
+    };
+    const categoryMeta={
+      onPage:{status:scores.onPage!=null?'measured':categoryCheckCount('On-Page SEO')?'limited':'unavailable',scoredChecks:categoryCheckCount('On-Page SEO'),requiredChecks:requiredHtmlChecks.onPage},
+      geo:{status:scores.geo!=null?'measured':categoryCheckCount('GEO readiness')?'limited':'unavailable',scoredChecks:categoryCheckCount('GEO readiness'),requiredChecks:requiredHtmlChecks.geo},
+      links:{status:scores.links!=null?'measured':categoryCheckCount('Links')?'limited':'unavailable',scoredChecks:categoryCheckCount('Links'),requiredChecks:requiredHtmlChecks.links},
+      usability:{status:scores.usability!=null?'measured':categoryCheckCount('Usability')?'limited':'unavailable',scoredChecks:categoryCheckCount('Usability'),requiredChecks:requiredHtmlChecks.usability},
+      performance:{status:scores.performance!=null?'measured':'unavailable',scoredChecks:scores.performance!=null?1:0,requiredChecks:1},
+      social:{status:scores.social!=null?'measured':categoryCheckCount('Social')?'limited':'unavailable',scoredChecks:categoryCheckCount('Social'),requiredChecks:requiredHtmlChecks.social},
+      local:{status:scores.local!=null?'measured':categoryCheckCount('Local SEO')?'limited':'unavailable',scoredChecks:categoryCheckCount('Local SEO'),requiredChecks:requiredHtmlChecks.local}
     };
     // For categories not exposed by a source, keep them unmeasured rather than manufacture live scores.
     const scored=Object.values(scores).filter(v=>v!=null);
@@ -1297,7 +1316,7 @@
     const recs=checks.filter(c=>c.status==='fail'||c.status==='warn').map(c=>({...c,priority:recPriority(c)}));
     const sortedRecs=recs.sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-({High:0,Medium:1,Low:2}[b.priority])) || ({fail:0,warn:1}[a.status]-({fail:0,warn:1}[b.status])));
     const passCount=checks.filter(c=>c.status==='pass').length;
-    return {url,mode:allCoreSourcesMeasured?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,overallCoverage:Math.round(([hasRawHtml,hasMobile,hasDesktop].filter(Boolean).length/3)*100),sources:{pagespeed:hasPsi,pagespeedMobile:hasMobile,pagespeedDesktop:hasDesktop,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || null}},fallbackReason:null};
+    return {url,mode:allCoreSourcesMeasured?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,categoryMeta,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,overallCoverage:Math.round(([hasRawHtml,hasMobile,hasDesktop].filter(Boolean).length/3)*100),sources:{pagespeed:hasPsi,pagespeedMobile:hasMobile,pagespeedDesktop:hasDesktop,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || null}},fallbackReason:null};
   };
   const makeEmptyReport = (url='') => ({
     url,mode:'unavailable',timestamp:null,overall:null,grade:'N/A',
