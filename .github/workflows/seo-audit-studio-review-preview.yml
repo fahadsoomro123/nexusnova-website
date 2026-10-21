@@ -55,4 +55,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           AUDIT_PREVIEW_OWNER_TOKEN: ${{ secrets.AUDIT_PREVIEW_OWNER_TOKEN }}
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
-        run: bash .github/scripts/deploy-seo-audit-studio-review-preview.sh
+        run: bash .github/scripts/deploy-seo-audit-studio-review-preview-v2.sh
