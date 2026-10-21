@@ -1,0 +1,21 @@
+/* SEO Audit Studio private-promotion controls. */
+.nn-promo-panel{margin:13px 0 15px;padding:13px;border:1px solid #dce6f4;border-radius:12px;background:linear-gradient(145deg,#fbfdff,#f7faff)}
+.nn-promo-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.nn-promo-head h3{margin:0;color:#2c3d54;font-size:12px;font-weight:850;line-height:1.4}
+.nn-promo-head p{margin:4px 0 0;color:#7b899d;font-size:10px;line-height:1.55}
+.nn-promo-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.nn-promo-controls .payment-input{min-width:0;text-transform:uppercase;letter-spacing:.08em}
+.nn-promo-controls .secondary-btn{min-height:39px;white-space:nowrap}
+#promotionCodeStatus[hidden]{display:none!important}
+#promotionCodeStatus.success{border-color:#bde5ce;background:#f0fbf4;color:#176b41}
+@media(max-width:600px){.nn-promo-panel{padding:11px}.nn-promo-controls{grid-template-columns:minmax(0,1fr)}.nn-promo-controls .secondary-btn{width:100%}}
+
+/* One-click free launch voucher, paired with the server-validated code field. */
+.nn-launch-voucher-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;padding:13px;border:1px solid #d8ccff;border-radius:12px;background:linear-gradient(110deg,#f5f3ff,#f8fbff)}
+.nn-launch-voucher-row>div{min-width:0}
+.nn-launch-voucher-row strong{display:block;color:#3b286f;font-size:12px;font-weight:900;line-height:1.4}
+.nn-launch-voucher-row p{margin:4px 0 0;color:#64748b;font-size:10px;line-height:1.5}
+.nn-launch-voucher-row .secondary-btn{flex:0 0 auto;border-color:#7c3aed;background:#fff;color:#5b21b6;font-weight:850}
+.nn-launch-voucher-row .secondary-btn:hover{background:#f3e8ff}
+#promotionCodeStatus.success{border-color:#bde5ce;background:#f0fbf4;color:#176b41}
+@media(max-width:600px){.nn-launch-voucher-row{align-items:stretch;flex-direction:column}.nn-launch-voucher-row .secondary-btn{width:100%}}
