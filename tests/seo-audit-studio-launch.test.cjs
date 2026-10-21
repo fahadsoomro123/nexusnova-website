@@ -68,5 +68,5 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(css, /background:#f7f2e8/);
   assert.doesNotMatch(css, /--audit-lime|#dfff00|acid-lime/i);
   assert.match(js, /showOfferUnavailable/);
-  assert.match(js, /NEXUSNOVA \\| LAUNCH PRIVILEGE/);
+  assert.match(js, /NEXUSNOVA \| LAUNCH PRIVILEGE/);
 });
