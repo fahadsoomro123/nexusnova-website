@@ -85,14 +85,18 @@ test('review preview audit uses live source functions instead of a synthetic aud
   assert.match(auditHtml, /calculateReport\(\{url,content,psiMobile:mobile,psiDesktop:desktop\}\)/);
   assert.match(auditHtml, /No example findings or scores were inserted/);
   assert.match(auditHtml, /if\(window\.location\.origin===REVIEW_ORIGIN\)return/);
-  assert.doesNotMatch(auditHtml, /const payload=await apiPost\('\/api\/audits\/['"]\+encodeURIComponent\(state\.auditId\)\+'\/retry'/);
+  const reviewPath = auditHtml.indexOf('if(isReviewPreview){', auditHtml.indexOf('const runAudit = async'));
+  const backendAuditCall = auditHtml.indexOf("response = await apiFetch('/api/audits'", reviewPath);
+  assert.ok(reviewPath > 0 && backendAuditCall > reviewPath,
+    'the review page must use its real-source branch before the backend-only production path');
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
   assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo4') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
-  assert.match(auditHtml, /const requestTimeoutMs = isReviewPreview \? 12000 : 240000/);
+  assert.match(auditHtml, /setTimeout\(\(\)=>\{requestTimedOut=true;controller\.abort\(\);\},60000\)/);
+  assert.match(auditHtml, /const timeout = setTimeout\(\(\) => controller\.abort\(\), 240000\)/);
   assert.match(auditHtml, /payload\.ok!==true \|\| typeof payload\.auditId!=='string' \|\| !payload\.preview/);
   assert.match(auditHtml, /clearInterval\(state\.progressTimer\); state\.progressTimer = null;/);
   assert.match(auditHtml, /Voucher redemption must not hold the audit preview spinner open/);
