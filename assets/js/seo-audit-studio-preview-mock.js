@@ -132,7 +132,7 @@
     if(path==='/api/promotions/active'&&(method==='GET'||method==='POST')){
       var campaign=mockCampaign(s),now=Math.floor(Date.now()/1000);
       if(campaign.status!=='active'||Number(campaign.starts_at)>now||Number(campaign.ends_at)<=now||Number(campaign.claimed_count)>=Number(campaign.total_limit))return respond({ok:true,campaign:null},200);
-      return respond({ok:true,campaign:{id:campaign.id,name:campaign.name,offerType:campaign.offer_type,offerValue:campaign.offer_value,endsAt:new Date(campaign.ends_at*1000).toISOString(),remainingClaims:Math.max(0,Number(campaign.total_limit)-Number(campaign.claimed_count)),terms:campaign.terms}},200);
+      return respond({ok:true,previewSimulation:true,campaign:{id:campaign.id,name:campaign.name,offerType:campaign.offer_type,offerValue:campaign.offer_value,endsAt:new Date(campaign.ends_at*1000).toISOString(),remainingClaims:Math.max(0,Number(campaign.total_limit)-Number(campaign.claimed_count)),terms:campaign.terms}},200);
     }
     if(path==='/api/promotions/claim'&&method==='POST'){
       if(!tokenValue)return respond({ok:false,error:'Start a preview session first, then claim your demo voucher.'},401);
@@ -141,10 +141,10 @@
       if(!s.voucher){
         s.voucher={code:'NN-REVIEW-'+tokenValue.slice(0,16).toUpperCase(),sessionToken:tokenValue,expiresAt:Date.now()+7*86400000,used:false,claimedAt:Date.now()};
         save(s);
-        return respond({ok:true,code:s.voucher.code,expiresAt:s.voucher.expiresAt,alreadyClaimed:false},201);
+        return respond({ok:true,code:s.voucher.code,expiresAt:s.voucher.expiresAt,alreadyClaimed:false,previewSimulation:true},201);
       }
       if(s.voucher.sessionToken!==tokenValue)return respond({ok:false,error:'This demo voucher belongs to a different preview session.'},403);
-      return respond({ok:true,code:s.voucher.code,expiresAt:s.voucher.expiresAt,alreadyClaimed:true},200);
+      return respond({ok:true,code:s.voucher.code,expiresAt:s.voucher.expiresAt,alreadyClaimed:true,previewSimulation:true},200);
     }
     if(path==='/api/audits'&&method==='POST'){
       if(!tokenValue)return respond({ok:false,error:'Preview session expired. Reload the page and try again.'},401);
@@ -276,7 +276,7 @@
     banner.id='nn-review-demo-banner';
     banner.setAttribute('role','note');
     banner.textContent='REVIEW PREVIEW · SAMPLE DATA ONLY · REAL PAYMENTS DISABLED';
-    banner.style.cssText='position:relative;z-index:10000;display:block;width:100%;box-sizing:border-box;padding:8px 12px;background:#24104f;color:#fff;text-align:center;font:800 11px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.07em';
+    banner.style.cssText='position:relative;z-index:10000;display:block;width:100%;box-sizing:border-box;padding:8px 12px;background:#17263d;color:#f4efe5;border-bottom:1px solid #d8c29a;text-align:center;font:800 10px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.09em';
     document.body.prepend(banner);
     var style=document.createElement('style');
     style.textContent='#nn-review-demo-banner~*{scroll-margin-top:8px}.nn-review-demo-note{padding:10px 12px;margin:10px 0;border:1px solid #c4b5fd;border-radius:10px;background:#f5f3ff;color:#4c1d95;font:700 11px/1.5 system-ui,sans-serif}';
