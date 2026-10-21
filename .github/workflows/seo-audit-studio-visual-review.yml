@@ -59,6 +59,7 @@ jobs:
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
+            --exclude='functions/' \
             --exclude='.review-backend/' \
             --exclude='.preview-dist/' \
             --exclude='node_modules/' \
@@ -76,6 +77,26 @@ jobs:
             --exclude='*.log' \
             . "$preview_dir/"
           npx --yes wrangler@4.151.2 pages deploy "$preview_dir" --project-name "$PROJECT" --branch "$BRANCH"
+          echo "::group::Verify the deployed raw HTML source endpoint"
+          smoke_url='https://review.nexusnova-seo-audit-studio-review.pages.dev/api/page-source?url=https%3A%2F%2Fexample.com%2F'
+          smoke_ok=false
+          smoke_response=''
+          for attempt in 1 2 3 4 5; do
+            smoke_response="$(curl -sS --max-time 18 -H 'Referer: https://review.nexusnova-seo-audit-studio-review.pages.dev/seo-audit-studio.html' "$smoke_url" || true)"
+            if jq -e '.ok == true and (.html | type == "string") and (.html | test("<html|<!doctype"; "i")) and (.finalUrl | startswith("https://example.com"))' <<< "$smoke_response" >/dev/null 2>&1; then
+              smoke_ok=true
+              break
+            fi
+            echo "Raw HTML smoke attempt $attempt did not pass: $(jq -r '.error // "endpoint not ready or response was not HTML"' <<< "$smoke_response" 2>/dev/null || echo 'no JSON response')"
+            sleep 3
+          done
+          if [[ "$smoke_ok" != true ]]; then
+            echo "::error::The deployed Pages Function did not return real HTML from example.com."
+            jq -c . <<< "$smoke_response" || true
+            exit 1
+          fi
+          echo "Verified: same-origin endpoint returned real HTML from https://example.com/."
+          echo "::endgroup::"
           {
             echo "## NexusNova visual review preview"
             echo
