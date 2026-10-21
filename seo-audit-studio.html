@@ -849,11 +849,7 @@
   </section>
 </div>
 <script defer src="assets/js/analytics.js?v=20261016-related-content-v1"></script>
-<script>
-  if (location.hostname === 'review.nexusnova-seo-audit-studio-review.pages.dev') {
-    document.write('<script src="/assets/js/seo-audit-studio-preview-mock.js?v=20261021-demo1"><\/script>');
-  }
-</script>
+<script src="/assets/js/seo-audit-studio-preview-mock.js?v=20261021-demo2"></script>
 <script>
 (() => {
   'use strict';
@@ -878,16 +874,49 @@
   let auditSessionToken = '';
   let auditSessionPromise = null;
   try { auditSessionToken = window.sessionStorage.getItem(AUDIT_SESSION_KEY) || ''; } catch {}
-  async function getAuditSessionToken() {
+  async function requestAuditSession(callerSignal) {
+    const isReviewPreview = window.location.origin === REVIEW_ORIGIN;
+    const timeoutMs = isReviewPreview ? 8000 : 20000;
+    const maxAttempts = isReviewPreview ? 1 : 2;
+    let lastError;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const controller = new AbortController();
+      let timedOut = false;
+      const abortFromCaller = () => controller.abort();
+      if (callerSignal) {
+        if (callerSignal.aborted) controller.abort();
+        else callerSignal.addEventListener('abort', abortFromCaller, {once:true});
+      }
+      const timer = window.setTimeout(() => { timedOut = true; controller.abort(); }, timeoutMs);
+      try {
+        return await window.fetch(API_BASE_URL + '/api/session', {
+          method:'POST', headers:{Accept:'application/json'}, cache:'no-store',
+          credentials:'omit', signal:controller.signal
+        });
+      } catch (error) {
+        if (timedOut) {
+          throw new Error(isReviewPreview
+            ? 'Audit preview session did not respond within 8 seconds. The preview request was stopped instead of hanging.'
+            : 'Audit session request timed out. Please retry.');
+        }
+        lastError = error;
+        if (callerSignal?.aborted || attempt + 1 >= maxAttempts || !(error instanceof TypeError)) throw error;
+        await new Promise(resolve => window.setTimeout(resolve, 300));
+      } finally {
+        window.clearTimeout(timer);
+        callerSignal?.removeEventListener('abort', abortFromCaller);
+      }
+    }
+    throw lastError || new Error('Could not start a secure audit session.');
+  }
+  async function getAuditSessionToken(callerSignal) {
     if (auditSessionToken && /^[a-f0-9]{64}$/i.test(auditSessionToken)) return auditSessionToken;
     if (auditSessionPromise) return auditSessionPromise;
     auditSessionPromise = (async () => {
-      const response = await fetchWithTransportRetry(API_BASE_URL + '/api/session', {
-        method: 'POST', headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'omit'
-      }, true);
+      const response = await requestAuditSession(callerSignal);
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || typeof payload.token !== 'string' || !/^[a-f0-9]{64}$/i.test(payload.token)) {
-        throw new Error('Could not start a secure audit session.');
+        throw new Error(payload.error || 'Could not start a secure audit session.');
       }
       auditSessionToken = payload.token;
       try { window.sessionStorage.setItem(AUDIT_SESSION_KEY, auditSessionToken); } catch {}
@@ -903,7 +932,7 @@
     const init = { ...(options || {}), credentials: 'omit', cache: 'no-store' };
     const headers = new Headers(init.headers || {});
     if (endpoint.pathname !== '/api/config' && endpoint.pathname !== '/api/health') {
-      headers.set('Authorization', 'Bearer ' + await getAuditSessionToken());
+      headers.set('Authorization', 'Bearer ' + await getAuditSessionToken(init.signal));
     }
     init.headers = headers;
     const retryableTransport = endpoint.pathname === '/api/config' || endpoint.pathname === '/api/health' ||
@@ -1709,25 +1738,39 @@
     el.error.style.display='none';state.inProgress=true;el.run.disabled=true;el.refresh.disabled=true;el.progress.style.display='block';setProgress(4,'Preparing audit…','Submitting the website URL for analysis');startProgress();
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 240000);
+      const isReviewPreview = window.location.origin === REVIEW_ORIGIN;
+      const requestTimeoutMs = isReviewPreview ? 12000 : 240000;
+      let requestTimedOut = false;
+      const timeout = window.setTimeout(() => { requestTimedOut = true; controller.abort(); }, requestTimeoutMs);
       let response;
       try { response = await apiFetch('/api/audits', { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify({url}), signal:controller.signal, cache:'no-store' }); }
-      finally { clearTimeout(timeout); }
+      catch (error) {
+        if (requestTimedOut) throw new Error(isReviewPreview
+          ? 'Audit preview did not return a response within 12 seconds. The loading state has been stopped; please retry.'
+          : 'Audit request timed out. The loading state has been stopped; please retry.');
+        throw error;
+      } finally { window.clearTimeout(timeout); }
       const payload = await response.json().catch(()=>({}));
       if(!response.ok) throw new Error(payload.error || `Audit request failed (${response.status}).`);
+      if(payload.ok!==true || typeof payload.auditId!=='string' || !payload.preview || typeof payload.preview.url!=='string') {
+        throw new Error('Audit service returned an incomplete report. No findings were displayed.');
+      }
       state.auditId = payload.auditId;
       state.promotionRedemptionId=null;state.promotionOfferType=null;state.promotionOfferValue=null;
       if($('promotionCodeInput')) $('promotionCodeInput').value='';
       if($('promotionCodeStatus')) $('promotionCodeStatus').hidden=true;
       if($('redeemPromoBtn')) $('redeemPromoBtn').textContent='Apply code';
       state.fullReport = null; state.paid = false; state.cryptoOrderId = null; state.cryptoMinimums = []; state.cryptoMinimumsLoaded = false; state.cryptoMinimumsAuditId = null; $('cryptoNetwork').disabled=false; state.filter = 'All';
-      setProgress(94,'Finalizing preview','The backend stored the full report privately and returned only the free summary.');
-      window.setTimeout(async()=>{
-        renderReport(payload.preview);el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
-        await applySavedVoucherForCurrentAudit();
-      },200);
+      clearInterval(state.progressTimer); state.progressTimer = null;
+      setProgress(94,'Rendering audit preview','The audit response arrived. Preparing the report view.');
+      renderReport(payload.preview);
+      el.progress.style.display='none';state.inProgress=false;el.run.disabled=false;el.refresh.disabled=false;setProgress(4,'Preparing audit…','Checking URL and preparing requests');
+      // Voucher redemption must not hold the audit preview spinner open.
+      void applySavedVoucherForCurrentAudit().catch(error => {
+        setStatus($('promotionCodeStatus'), error.message || 'The audit loaded, but the saved voucher could not be checked.', 'error');
+      });
     } catch(error) {
-      clearInterval(state.progressTimer); el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
+      clearInterval(state.progressTimer); state.progressTimer=null; el.progress.style.display='none'; state.inProgress=false; el.run.disabled=false; el.refresh.disabled=false;
       el.error.textContent = error.name === 'AbortError'
         ? 'Audit timed out. Please try again; the audit service did not complete the request.'
         : (error.message === 'Failed to fetch' && window.location.origin === REVIEW_ORIGIN
