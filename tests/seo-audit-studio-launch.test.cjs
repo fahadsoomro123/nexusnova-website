@@ -15,7 +15,7 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   const header = html.indexOf('</header>');
   const main = html.indexOf('<main class="nn-main">');
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
-  const toolsHeading = html.indexOf('<h2 id="new-tools-title">');
+  const toolsHeading = Math.max(html.indexOf('<h1 id="new-tools-title">'), html.indexOf('<h2 id="new-tools-title">'));
   assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading);
   assert.match(html, /See what search engines see\./);
   assert.match(html, /class="nn-audit-workspace"/);
