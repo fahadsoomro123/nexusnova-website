@@ -304,6 +304,8 @@
     var rawUrl=typeof input==='string'||input instanceof URL?String(input):(input&&input.url?input.url:'');
     var parsed;
     try{parsed=new URL(rawUrl,window.location.href);}catch(e){return originalFetch(input,init);}
+    // This route is a real Cloudflare Pages Function, not one of the simulated APIs.
+    if(parsed.origin===window.location.origin&&parsed.pathname==='/api/page-source')return originalFetch(input,init);
     if(!((parsed.hostname===REVIEW_HOST||parsed.hostname===REVIEW_WORKER_HOST)&&parsed.pathname.startsWith('/api/')))return originalFetch(input,init);
     var method=String((init&&init.method)||(input&&input.method)||'GET').toUpperCase();
     var headers=new Headers((init&&init.headers)||(input instanceof Request?input.headers:undefined));
