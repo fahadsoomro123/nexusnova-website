@@ -100,9 +100,9 @@ test('category scores require real evidence coverage', () => {
   assert.match(auditHtml, /requiredHtmlChecks=\{onPage:6,geo:4,links:4,usability:4,social:4,local:3\}/);
   assert.match(auditHtml, /geo: scoreCategory\(checks,'GEO readiness',categoryMinimum\('geo'\)\)/);
   assert.match(auditHtml, /links: scoreCategory\(checks,'Links',categoryMinimum\('links'\)\)/);
-  assert.match(auditHtml, /usability: scoreCategory\(checks,'Usability',categoryMinimum\('usability'\) \?\? usabilityProviderScore/);
+  assert.match(auditHtml, /usability: scoreCategory\(checks,'Usability',categoryMinimum\('usability'\)\) \?\? usabilityProviderScore/);
   assert.match(auditHtml, /categoryMeta=\{/);
-  assert.match(auditHtml, /categoryMeta\}\);/);
+  assert.match(auditHtml, /categories:scores,categoryMeta,checks/);
   assert.match(auditHtml, /status:scores\.geo!=null\?'measured':categoryCheckCount\('GEO readiness'\)\?'limited':'unavailable'/);
   assert.match(auditHtml, /status:scores\.links!=null\?'measured':categoryCheckCount\('Links'\)\?'limited':'unavailable'/);
   assert.match(auditHtml, /status:scores\.social!=null\?'measured':categoryCheckCount\('Social'\)\?'limited':'unavailable'/);
@@ -110,7 +110,7 @@ test('category scores require real evidence coverage', () => {
 
 test('partial audit evidence cannot receive a misleading overall score', () => {
   assert.match(auditHtml, /if \(items\.length < minimumChecks\) return null/);
-  assert.match(auditHtml, /const minimumHtmlCategoryChecks=parsed\?\.meta\?\.contentMode==='html'\?2:3/);
+  assert.match(auditHtml, /requiredHtmlChecks=\{onPage:6,geo:4,links:4,usability:4,social:4,local:3\}/);
   assert.match(auditHtml, /const overall=allCoreSourcesMeasured&&scored\.length \? Math\.round/);
   assert.match(auditHtml, /const hasRawHtml=Boolean\(content && content\.mode==='html'\)/);
   assert.match(auditHtml, /const allCoreSourcesMeasured=hasRawHtml&&hasMobile&&hasDesktop/);
