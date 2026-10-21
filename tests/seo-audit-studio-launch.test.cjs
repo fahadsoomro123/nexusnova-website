@@ -71,31 +71,22 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(js, /NEXUSNOVA \| LAUNCH PRIVILEGE/);
 });
 
-test('review preview cannot install a DOM observer that freezes the report view', () => {
-  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
-  assert.doesNotMatch(mock, /new MutationObserver/);
-  assert.doesNotMatch(mock, /observer\.observe\(document\.body/);
-  assert.match(mock, /LIVE-SOURCE AUDIT PREVIEW · DEMO VOUCHERS · PAYMENTS DISABLED/);
-  assert.doesNotMatch(mock, /SAMPLE DATA ONLY/);
+test('production audit page does not load review-only mocks or browser source relays', () => {
+  assert.doesNotMatch(auditHtml, /seo-audit-studio-preview-mock\.js/);
+  assert.doesNotMatch(auditHtml, /api\/page-source|api-page-source|allorigins\.win|r\.jina\.ai/);
+  assert.match(auditHtml, /nexusnova-audit-studio\.fahadsoomro123\.workers\.dev/);
+  assert.match(auditHtml, /const runAudit = async/);
 });
 
 
-test('raw HTML source endpoint is isolated, bounded, and validates its targets', () => {
-  const fn = fs.readFileSync(path.join(root, 'functions/api/page-source.js'), 'utf8');
-  assert.match(fn, /export async function onRequestGet/);
-  assert.match(fn, /function isAllowedPageOrigin\(url\)/);
-  assert.match(fn, /nexusnovatools\.com/);
-  assert.match(fn, /www\.nexusnovatools\.com/);
-  assert.match(fn, /function isDisallowedHost/);
-  assert.match(fn, /target\.protocol !== "https:" && target\.protocol !== "http:"/);
-  assert.match(fn, /REDIRECT_LIMIT = 3/);
-  assert.match(fn, /MAX_HTML_BYTES = 1_500_000/);
-  assert.match(fn, /AbortSignal\.timeout\(SOURCE_TIMEOUT_MS\)/);
-  assert.match(fn, /The target website returned HTTP /);
-  assert.match(auditHtml, /api-page-source|api\/page-source/);
-  assert.match(auditHtml, /Raw HTML via isolated Cloudflare Pages Function/);
-  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
-  assert.match(mock, /parsed\.origin===window\.location\.origin&&parsed\.pathname==='\/api\/page-source'\)return originalFetch/);
+test('production audit source retrieval is server-side and has no public browser relay', () => {
+  const runStart = auditHtml.indexOf('const runAudit = async');
+  const runEnd = auditHtml.indexOf('if (el.retryMeasurements)', runStart);
+  const runBody = auditHtml.slice(runStart, runEnd);
+  assert.match(auditHtml, /nexusnova-audit-studio\.fahadsoomro123\.workers\.dev/);
+  assert.match(runBody, /apiFetch\('\/api\/audits'/);
+  assert.doesNotMatch(runBody, /fetchPageContent\(|fetchPageSpeed\(/);
+  assert.doesNotMatch(auditHtml, /api\/page-source|api-page-source|allorigins\.win|r\.jina\.ai/);
 });
 
 test('category scores require real evidence coverage', () => {
@@ -119,28 +110,26 @@ test('partial audit evidence cannot receive a misleading overall score', () => {
   assert.match(auditHtml, /const overall=allCoreSourcesMeasured&&scored\.length \? Math\.round/);
   assert.match(auditHtml, /const hasMobile=Boolean\(psiMobile\?\.lighthouseResult\)/);
   assert.match(auditHtml, /const hasDesktop=Boolean\(psiDesktop\?\.lighthouseResult\)/);
-  assert.match(auditHtml, /Google PageSpeed returned HTTP 429/);
-  assert.match(auditHtml, /Reader extract · partial/);
 });
 
-test('review audit and voucher API calls pass through to the isolated Worker, never the synthetic report stub', () => {
+test('production audit and voucher requests are served only by the correct Worker', () => {
   const runStart = auditHtml.indexOf('const runAudit = async');
   const runEnd = auditHtml.indexOf('if (el.retryMeasurements)', runStart);
   const runBody = auditHtml.slice(runStart, runEnd);
-  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
+  assert.match(auditHtml, /const API_BASE_URL = window\.location\.origin === REVIEW_ORIGIN/);
   assert.match(auditHtml, /nexusnova-audit-studio-review\.fahadsoomro123\.workers\.dev/);
+  assert.match(auditHtml, /nexusnova-audit-studio\.fahadsoomro123\.workers\.dev/);
   assert.match(runBody, /apiFetch\('\/api\/audits'/);
   assert.doesNotMatch(runBody, /fetchPageContent\(|fetchPageSpeed\(/);
-  assert.match(mock, /parsed\.hostname===REVIEW_WORKER_HOST&&parsed\.pathname\.startsWith\('\/api\/'\)\)return originalFetch/);
-  assert.doesNotMatch(mock, /if\(!\(\(parsed\.hostname===REVIEW_HOST\|\|parsed\.hostname===REVIEW_WORKER_HOST\)/);
+  assert.doesNotMatch(auditHtml, /seo-audit-studio-preview-mock\.js|api\/page-source|allorigins\.win|r\.jina\.ai/);
   assert.match(auditHtml, /const hasCompleteReportEvidence = \(report\) => Boolean/);
   assert.match(auditHtml, /if \(state\.report && !hasCompleteReportEvidence\(state\.report\)\)/);
   assert.match(auditHtml, /Full report unavailable · data required/);
   assert.match(auditHtml, /report\.overallScoreReason\s*\|\|/);
 });
 
-test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo7') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+test('production audit requests have bounded waits and always release the loading UI', () => {
+  assert.doesNotMatch(auditHtml, /seo-audit-studio-preview-mock\.js/);
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /const timeout = setTimeout\(\(\) => controller\.abort\(\), 240000\)/);
