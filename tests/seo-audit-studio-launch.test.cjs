@@ -75,6 +75,8 @@ test('review preview cannot install a DOM observer that freezes the report view'
   const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
   assert.doesNotMatch(mock, /new MutationObserver/);
   assert.doesNotMatch(mock, /observer\.observe\(document\.body/);
+  assert.match(mock, /LIVE-SOURCE AUDIT PREVIEW · DEMO VOUCHERS · PAYMENTS DISABLED/);
+  assert.doesNotMatch(mock, /SAMPLE DATA ONLY/);
 });
 
 
@@ -103,7 +105,7 @@ test('review preview audit uses live source functions instead of a synthetic aud
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo4') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo5') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /setTimeout\(\(\)=>\{requestTimedOut=true;controller\.abort\(\);\},60000\)/);
