@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fahadsoomro123/nexusnova-seo-audit-studio-backend
-          ref: afb5dbfb3e6b5cf3101afeb1e322dcb2d29bb3d8
+          ref: 4a71b858269811f6d772dd3dd4ba6953aa345c09
           token: ${{ secrets.BACKEND_REPO_READ_TOKEN }}
           path: .review-backend
       - name: Set up Node.js
@@ -49,6 +49,7 @@ jobs:
           npm ci
           npm test
       - name: Diagnose PageSpeed OAuth using the existing Google service account
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         continue-on-error: true
         env:
@@ -127,4 +128,5 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           AUDIT_PREVIEW_OWNER_TOKEN: ${{ secrets.AUDIT_PREVIEW_OWNER_TOKEN }}
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: bash .github/scripts/deploy-seo-audit-studio-review-preview-v2.sh
