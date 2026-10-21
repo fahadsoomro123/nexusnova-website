@@ -1203,7 +1203,9 @@
   };
   const scoreCategory = (checks, category) => {
     const items=checks.filter(c=>c.category===category && ['pass','warn','fail'].includes(c.status));
-    if (!items.length) return null;
+    // A category score from one or two checks overstates confidence, especially when
+    // a Reader extract cannot expose raw HTML metadata. Require at least three scored checks.
+    if (items.length < 3) return null;
     const points={pass:100,warn:58,fail:18};
     return Math.round(items.reduce((s,c)=>s+points[c.status],0)/items.length);
   };
@@ -1233,6 +1235,10 @@
     const metrics={mobile:extractMetrics(psiMobile),desktop:extractMetrics(psiDesktop)};
     const hasPsi=Boolean(psiMobile?.lighthouseResult || psiDesktop?.lighthouseResult);
     const hasContent=Boolean(content && content.mode!=='unavailable');
+    const hasRawHtml=Boolean(content && content.mode==='html');
+    const hasMobile=Boolean(psiMobile?.lighthouseResult);
+    const hasDesktop=Boolean(psiDesktop?.lighthouseResult);
+    const allCoreSourcesMeasured=hasRawHtml&&hasMobile&&hasDesktop;
     if (!hasPsi && !hasContent) {
       return {...makeEmptyReport(url), mode:'unavailable', timestamp:new Date().toISOString(),
         fallbackReason:'The website could not be measured from the available sources.',
@@ -1249,11 +1255,13 @@
     };
     // For categories not exposed by a source, keep them unmeasured rather than manufacture live scores.
     const scored=Object.values(scores).filter(v=>v!=null);
-    const overall=scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
+    // Never award an overall grade unless original HTML and both mobile + desktop
+    // Lighthouse runs returned usable data. Partial evidence is not an A+ score.
+    const overall=allCoreSourcesMeasured&&scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
     const recs=checks.filter(c=>c.status==='fail'||c.status==='warn').map(c=>({...c,priority:recPriority(c)}));
     const sortedRecs=recs.sort((a,b)=>({High:0,Medium:1,Low:2}[a.priority]-({High:0,Medium:1,Low:2}[b.priority])) || ({fail:0,warn:1}[a.status]-({fail:0,warn:1}[b.status])));
     const passCount=checks.filter(c=>c.status==='pass').length;
-    return {url,mode:hasPsi&&hasContent?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,sources:{pagespeed:hasPsi,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:null,psiDesktop:null,content:content?.error || null}},fallbackReason:null};
+    return {url,mode:allCoreSourcesMeasured?'live':'partial',timestamp:new Date().toISOString(),overall,grade:gradeFor(overall),categories:scores,checks,recommendations:sortedRecs,metrics,meta:parsed?.meta || null,passCount,scoredCount:scored.length,overallCoverage:Math.round(([hasRawHtml,hasMobile,hasDesktop].filter(Boolean).length/3)*100),sources:{pagespeed:hasPsi,pagespeedMobile:hasMobile,pagespeedDesktop:hasDesktop,content:hasContent,contentLabel:content?.source || 'Page content unavailable',errors:{psiMobile:psiMobile?.error || null,psiDesktop:psiDesktop?.error || null,content:content?.error || null}},fallbackReason:null};
   };
   const makeEmptyReport = (url='') => ({
     url,mode:'unavailable',timestamp:null,overall:null,grade:'N/A',
@@ -1268,6 +1276,7 @@
   const summarizeSourceError = (value) => {
     const text=String(value || '').trim();
     if (!text) return 'No result returned.';
+    if (/\b429\b|too many requests/i.test(text)) return 'Google PageSpeed returned HTTP 429 (rate limit or quota response). Mobile/desktop performance remains unmeasured; retry later. No score is inferred.';
     if (/quota|queries per day|daily limit|resource_exhausted|ratelimitexceeded/i.test(text)) return 'Google PageSpeed could not return measurements for this request. Retry later; unavailable scores remain unscored.';
     if (/api.?key.*invalid|invalid api key|keyInvalid/i.test(text)) return 'Google PageSpeed could not validate its provider configuration. Performance measurements remain unavailable; please retry later.';
     if (/quota cooldown active/i.test(text)) return text;
@@ -1691,9 +1700,13 @@
     el.reportHeading.textContent='Audit Results for '+host;
     el.reportUrl.textContent=report.url;
     el.sourcePill.className='source-pill '+(report.mode==='live'?'live':'partial');
-    el.sourcePill.textContent=report.sources?.content?(report.mode==='live'?'Live HTML analysis':'Live HTML analysis · partial'):'Partial audit · source unavailable';
+    el.sourcePill.textContent=report.meta?.contentMode==='markdown'
+      ?'Reader extract · partial'
+      :report.sources?.content?(report.mode==='live'?'Live HTML analysis':'Live HTML analysis · partial'):'Partial audit · source unavailable';
     el.reportDate.textContent=`Report generated ${nowText()}`;
-    el.sourceDescription.textContent=report.sources?.content?(report.overall==null?'Website content was measured; some required performance data is unavailable.':'Website content and required performance sources returned measurements.'):'The website content could not be measured. Scores have not been substituted.';
+    el.sourceDescription.textContent=report.meta?.contentMode==='markdown'
+      ?'A normalized Reader extract was available, but raw HTML checks and required performance measurements are incomplete. Overall grade withheld.'
+      :report.sources?.content?(report.overall==null?'Website content was measured; some required performance data is unavailable.':'Website content and required performance sources returned measurements.'):'The website content could not be measured. Scores have not been substituted.';
     const score=report.overall;
     el.ring.style.setProperty('--score',score==null?0:score);
     el.grade.textContent=score==null?'N/A':(report.grade || gradeFor(score));
@@ -1792,7 +1805,7 @@
             psiDesktop:desktop?.error||null
           }
         };
-        report.overallCoverage=Math.round(([hasContent,hasMobile,hasDesktop].filter(Boolean).length/3)*100);
+        report.overallCoverage=Math.round(([Boolean(content&&content.mode==='html'),hasMobile,hasDesktop].filter(Boolean).length/3)*100);
         report.previewNotice='Live-source preview. Findings are derived only from returned page content and/or provider Lighthouse data. Unavailable sources remain unmeasured; no synthetic scores or findings are substituted.';
         state.auditId=report.auditId;
         state.fullReport=null;state.paid=false;state.cryptoOrderId=null;state.cryptoMinimums=[];state.cryptoMinimumsLoaded=false;state.cryptoMinimumsAuditId=null;state.filter='All';
