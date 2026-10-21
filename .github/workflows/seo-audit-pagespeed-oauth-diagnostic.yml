@@ -1,0 +1,105 @@
+name: PageSpeed OAuth Credential Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-pagespeed-oauth:
+    name: Test existing Google service account against PageSpeed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate OAuth and run real PageSpeed checks without logging credentials
+        shell: bash
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -Eeuo pipefail
+          node --input-type=module <<'NODE'
+          import {createSign} from 'node:crypto';
+
+          const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+          if (!raw) {
+            console.log('credential_present=false');
+            process.exit(2);
+          }
+
+          let sa;
+          try { sa = JSON.parse(raw); } catch {
+            console.log('credential_json_valid=false');
+            process.exit(2);
+          }
+          if (!sa.client_email || !sa.private_key) {
+            console.log('credential_fields_valid=false');
+            process.exit(2);
+          }
+
+          const b64url = (v) => Buffer.from(typeof v === 'string' ? v : JSON.stringify(v))
+            .toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const aud = sa.token_uri || 'https://oauth2.googleapis.com/token';
+          const head = b64url({alg:'RS256',typ:'JWT'});
+          const body = b64url({iss:sa.client_email,scope:'openid',aud,iat:now,exp:now+3600});
+          const data = head + '.' + body;
+          const signer = createSign('RSA-SHA256');
+          signer.update(data);
+          signer.end();
+          const assertion = data + '.' + signer.sign(sa.private_key).toString('base64url');
+
+          const form = new URLSearchParams({
+            grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            assertion
+          });
+          const auth = await fetch(aud, {
+            method:'POST',
+            headers:{'content-type':'application/x-www-form-urlencoded'},
+            body:form,
+            signal:AbortSignal.timeout(20000)
+          });
+          const authBody = await auth.json().catch(()=>({}));
+          console.log('credential_present=true');
+          console.log('oauth_http=' + auth.status);
+          if (!auth.ok || !authBody.access_token) {
+            console.log('oauth_error=' + String(authBody.error || 'token_exchange_failed'));
+            console.log('oauth_error_description=' + String(authBody.error_description || '').slice(0,240));
+            process.exit(3);
+          }
+
+          let failures = 0;
+          for (const strategy of ['mobile','desktop']) {
+            const url = new URL('https://www.googleapis.com/pagespeedonline/v5/runPagespeed');
+            url.searchParams.set('url','https://nexusnovatools.com/');
+            url.searchParams.set('strategy',strategy);
+            url.searchParams.set('category','performance');
+            let r;
+            try {
+              r = await fetch(url, {
+                headers:{authorization:'Bearer '+authBody.access_token,accept:'application/json'},
+                signal:AbortSignal.timeout(90000)
+              });
+            } catch (e) {
+              failures++;
+              console.log(strategy+'_network_error=' + String(e.name || 'request_failed'));
+              continue;
+            }
+            const b = await r.json().catch(()=>({}));
+            if (!r.ok || !b.lighthouseResult?.categories?.performance) {
+              failures++;
+              console.log(strategy+'_http=' + r.status);
+              console.log(strategy+'_api_error=' + String(b.error?.message || b.error?.status || 'no_lighthouse_result').slice(0,240));
+              continue;
+            }
+            const lh = b.lighthouseResult;
+            const score = Math.round(lh.categories.performance.score*100);
+            console.log(strategy+'_http=' + r.status);
+            console.log(strategy+'_performance_score=' + score);
+            console.log(strategy+'_lcp=' + String(lh.audits?.['largest-contentful-paint']?.displayValue || 'N/A'));
+            console.log(strategy+'_cls=' + String(lh.audits?.['cumulative-layout-shift']?.displayValue || 'N/A'));
+            console.log(strategy+'_tbt=' + String(lh.audits?.['total-blocking-time']?.displayValue || 'N/A'));
+          }
+          if (failures) process.exit(4);
+          console.log('pagespeed_oauth_live_test=passed');
+          NODE
