@@ -1039,7 +1039,37 @@
     return json;
   };
   const fetchPageContent = async (url, signal) => {
-    // Fetch the requested page through public read-only content relays. Never synthesize HTML findings.
+    // Prefer first-party raw HTML from the isolated Pages Function. That avoids
+    // public CORS relays normalizing the page into Markdown and losing audit evidence.
+    const endpoint = new URL('/api/page-source', window.location.origin);
+    endpoint.searchParams.set('url', url);
+    let edgeError = null;
+    try {
+      const response = await timeoutFetch(endpoint.href, {
+        headers:{Accept:'application/json'},
+        credentials:'same-origin'
+      }, 16000, signal);
+      const payload = await response.json().catch(()=>({}));
+      if (!response.ok || payload.ok !== true || typeof payload.html !== 'string') {
+        throw new Error(payload.error || 'Isolated raw HTML endpoint returned an invalid response.');
+      }
+      if (payload.html.length < 80 || !(/<html|<!doctype|<head|<title/i.test(payload.html))) {
+        throw new Error('Isolated raw HTML endpoint returned unrecognizable HTML.');
+      }
+      return {
+        text:payload.html,
+        mode:'html',
+        source:'Raw HTML via isolated Cloudflare Pages Function',
+        finalUrl:payload.finalUrl || url,
+        httpStatus:payload.httpStatus || null
+      };
+    } catch (error) {
+      edgeError = error;
+      if (signal?.aborted) throw error;
+    }
+
+    // Controlled fallbacks remain read-only. Their normalized output is explicitly
+    // labelled partial and can never be confused with raw source HTML.
     const relay = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
     try {
       const response = await timeoutFetch(relay, {headers:{Accept:'text/html,text/plain;q=0.9,*/*;q=0.8'}}, 18000, signal);
@@ -1047,16 +1077,21 @@
       if (text.length < 80 || !(/<html|<!doctype|<head|<title/i.test(text))) throw new Error('Content relay did not return recognizable HTML.');
       return {text,mode:'html',source:'Live page HTML via public relay'};
     } catch (relayError) {
-      if(signal?.aborted)throw relayError;
+      if (signal?.aborted) throw relayError;
       const readerUrl = 'https://r.jina.ai/' + url;
       try {
         const response = await timeoutFetch(readerUrl, {headers:{Accept:'text/plain'}}, 22000, signal);
         const text = await response.text();
         if (text.length < 50) throw new Error('Reader returned too little content.');
-        return {text,mode:'markdown',source:'Live reader extract (partial signals)'};
+        return {text,mode:'markdown',source:'Live reader extract (partial signals)',error:'Raw HTML endpoint: '+(edgeError?.message||'unavailable')+'; raw HTML relay: '+relayError.message};
       } catch (readerError) {
-        if(signal?.aborted)throw readerError;
-        return {text:'',mode:'unavailable',source:'Page content not available',error:readerError.message || relayError.message};
+        if (signal?.aborted) throw readerError;
+        return {
+          text:'',
+          mode:'unavailable',
+          source:'Page content not available',
+          error:[edgeError?.message,relayError.message,readerError.message].filter(Boolean).join(' | ') || 'All source fetches failed.'
+        };
       }
     }
   };
