@@ -71,19 +71,25 @@ test('real workspace styling is responsive and accessible with a restrained prem
   assert.match(js, /NEXUSNOVA \| LAUNCH PRIVILEGE/);
 });
 
-test('review preview MutationObserver cannot create a self-triggering DOM mutation loop', () => {
+test('review preview cannot install a DOM observer that freezes the report view', () => {
   const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
-  assert.match(mock, /if\(pill\.textContent!==['"]Preview simulation · sample data['"]\)pill\.textContent=/);
-  assert.match(mock, /if\(pill\.className!==['"]source-pill partial['"]\)pill\.className=/);
-  assert.match(mock, /if\(desc&&desc\.textContent!==description\)desc\.textContent=description/);
-  assert.match(mock, /if\(top&&document\.body\.classList\.contains\('report-is-paid'\)&&top\.textContent!==topText\)top\.textContent=topText/);
-  assert.match(mock, /observer\.observe\(reportSection,\{attributes:true,attributeFilter:\[['"]hidden['"]\]\}\)/);
-  assert.match(mock, /observer\.observe\(document\.body,\{attributes:true,attributeFilter:\[['"]class['"]\]\}\)/);
-  assert.doesNotMatch(mock, /observer\.observe\(document\.body,\{(?:childList|subtree):true/);
+  assert.doesNotMatch(mock, /new MutationObserver/);
+  assert.doesNotMatch(mock, /observer\.observe\(document\.body/);
+});
+
+
+test('review preview audit uses live source functions instead of a synthetic audit API response', () => {
+  assert.match(auditHtml, /fetchPageContent\(url,controller\.signal\)/);
+  assert.match(auditHtml, /fetchPageSpeed\(url,'mobile',controller\.signal\)/);
+  assert.match(auditHtml, /fetchPageSpeed\(url,'desktop',controller\.signal\)/);
+  assert.match(auditHtml, /calculateReport\(\{url,content,psiMobile:mobile,psiDesktop:desktop\}\)/);
+  assert.match(auditHtml, /No example findings or scores were inserted/);
+  assert.match(auditHtml, /if\(window\.location\.origin===REVIEW_ORIGIN\)return/);
+  assert.doesNotMatch(auditHtml, /const payload=await apiPost\('\/api\/audits\/['"]\+encodeURIComponent\(state\.auditId\)\+'\/retry'/);
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo3') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo4') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /const requestTimeoutMs = isReviewPreview \? 12000 : 240000/);
