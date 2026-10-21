@@ -183,3 +183,114 @@
   .nn-audit-product-footer>i{width:10px}
 }
 @media(prefers-reduced-motion:reduce){.nn-audit-launch *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* A premium, real-world launch-offer treatment. No fake urgency or fabricated stock. */
+.nn-audit-launch .nn-audit-launch-offer{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  justify-items:start;
+  gap:9px;
+  margin:19px 0 0;
+  padding:21px 22px 19px;
+  overflow:hidden;
+  border:1px solid #344964;
+  border-radius:10px;
+  background:
+    radial-gradient(circle at 91% 6%,rgba(214,192,151,.13),transparent 33%),
+    linear-gradient(125deg,#142239 0%,#1d304b 58%,#263d59 100%);
+  color:#e5edf7;
+  box-shadow:0 12px 27px rgba(20,34,57,.16);
+}
+.nn-audit-launch .nn-audit-launch-offer:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:-45px;
+  bottom:-105px;
+  width:210px;
+  height:210px;
+  border:1px solid rgba(222,209,183,.18);
+  border-radius:50%;
+  box-shadow:0 0 0 13px rgba(222,209,183,.035),0 0 0 28px rgba(222,209,183,.025);
+  pointer-events:none;
+}
+.nn-audit-launch .nn-audit-launch-offer-label{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  width:fit-content;
+  max-width:100%;
+  padding:6px 9px;
+  border:1px solid rgba(224,204,168,.32);
+  border-radius:999px;
+  background:rgba(226,207,174,.08);
+  color:#e7d4ad;
+  font:800 8px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.1em;
+}
+.nn-audit-launch .nn-audit-launch-offer-label:before{
+  content:"";
+  width:5px;
+  height:5px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:#d8c29a;
+  box-shadow:0 0 0 3px rgba(216,194,154,.12);
+}
+.nn-audit-launch .nn-audit-launch-offer-detail{
+  display:block;
+  max-width:500px;
+  margin:1px 0 0;
+  color:#fff;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(20px,2.1vw,27px);
+  font-weight:600;
+  letter-spacing:-.035em;
+  line-height:1.18;
+}
+.nn-audit-launch .nn-audit-launch-offer-availability,
+.nn-audit-launch .nn-audit-launch-offer-expiry{
+  display:inline-flex;
+  align-items:center;
+  width:fit-content;
+  max-width:100%;
+  padding:6px 9px;
+  border:1px solid rgba(206,220,238,.17);
+  border-radius:4px;
+  background:rgba(255,255,255,.055);
+  color:#d5e0ee;
+  font-size:10px;
+  line-height:1.5;
+}
+.nn-audit-launch .nn-audit-launch-terms{
+  display:block;
+  max-width:490px;
+  margin-top:2px;
+  color:#b8c7d9;
+  font-size:10px;
+  line-height:1.65;
+}
+.nn-audit-launch .nn-audit-launch-button{
+  border-color:#d8c29a;
+  background:#f7f2e8;
+  color:#1d304b;
+  box-shadow:0 4px 10px rgba(20,34,57,.1);
+}
+.nn-audit-launch .nn-audit-launch-button:hover:not(:disabled){
+  border-color:#f1e5cb;
+  background:#fffaf0;
+  color:#142239;
+}
+.nn-audit-launch .nn-audit-launch-button:disabled{
+  border-color:#d4dce6;
+  background:#f4f6f8;
+  color:#657287;
+  box-shadow:none;
+}
+@media(max-width:600px){
+  .nn-audit-launch .nn-audit-launch-offer{padding:18px 16px}
+  .nn-audit-launch .nn-audit-launch-offer-detail{font-size:22px}
+}
