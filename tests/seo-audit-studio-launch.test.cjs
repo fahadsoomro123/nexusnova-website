@@ -80,6 +80,22 @@ test('review preview cannot install a DOM observer that freezes the report view'
 });
 
 
+test('raw HTML source endpoint is isolated, bounded, and validates its targets', () => {
+  const fn = fs.readFileSync(path.join(root, 'functions/api/page-source.js'), 'utf8');
+  assert.match(fn, /export async function onRequestGet/);
+  assert.match(fn, /requestUrl\.origin !== REVIEW_ORIGIN/);
+  assert.match(fn, /function isDisallowedHost/);
+  assert.match(fn, /target\.protocol !== "https:" && target\.protocol !== "http:"/);
+  assert.match(fn, /REDIRECT_LIMIT = 3/);
+  assert.match(fn, /MAX_HTML_BYTES = 1_500_000/);
+  assert.match(fn, /AbortSignal\.timeout\(SOURCE_TIMEOUT_MS\)/);
+  assert.match(fn, /The target website returned HTTP /);
+  assert.match(auditHtml, /api-page-source|api\/page-source/);
+  assert.match(auditHtml, /Raw HTML via isolated Cloudflare Pages Function/);
+  const mock = fs.readFileSync(path.join(root, 'assets/js/seo-audit-studio-preview-mock.js'), 'utf8');
+  assert.match(mock, /parsed\.origin===window\.location\.origin&&parsed\.pathname==='\/api\/page-source'\)return originalFetch/);
+});
+
 test('partial audit evidence cannot receive a misleading perfect score', () => {
   assert.match(auditHtml, /if \(items\.length < 3\) return null/);
   assert.match(auditHtml, /const hasRawHtml=Boolean\(content && content\.mode==='html'\)/);
@@ -105,7 +121,7 @@ test('review preview audit uses live source functions instead of a synthetic aud
 });
 
 test('review preview audit requests have bounded waits and always release the loading UI', () => {
-  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo5') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
+  assert.ok(auditHtml.indexOf('seo-audit-studio-preview-mock.js?v=20261021-demo6') < auditHtml.indexOf('// Isolated NexusNova Audit Worker'));
   assert.match(auditHtml, /async function requestAuditSession\(callerSignal\)/);
   assert.match(auditHtml, /const timeoutMs = isReviewPreview \? 8000 : 20000/);
   assert.match(auditHtml, /setTimeout\(\(\)=>\{requestTimedOut=true;controller\.abort\(\);\},60000\)/);
