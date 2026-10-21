@@ -281,38 +281,9 @@
     var style=document.createElement('style');
     style.textContent='#nn-review-demo-banner~*{scroll-margin-top:8px}.nn-review-demo-note{padding:10px 12px;margin:10px 0;border:1px solid #c4b5fd;border-radius:10px;background:#f5f3ff;color:#4c1d95;font:700 11px/1.5 system-ui,sans-serif}';
     document.head.appendChild(style);
-    var markReport=function(){
-      // This callback observes the same document it annotates. Every write must be
-      // idempotent, or text-node mutations can keep the MutationObserver firing forever.
-      var report=document.getElementById('auditReportSection');
-      if(report&&!report.hidden){
-        var pill=document.getElementById('sourcePill');
-        if(pill){
-          if(pill.textContent!=='Preview simulation · sample data')pill.textContent='Preview simulation · sample data';
-          if(pill.className!=='source-pill partial')pill.className='source-pill partial';
-        }
-        var desc=document.getElementById('sourceDescription');
-        var description='Synthetic sample only. No live website crawl, PageSpeed query, or external audit source was used.';
-        if(desc&&desc.textContent!==description)desc.textContent=description;
-        var top=document.querySelector('.top-note');
-        var topText='Preview voucher accepted · sample full report unlocked';
-        if(top&&document.body.classList.contains('report-is-paid')&&top.textContent!==topText)top.textContent=topText;
-      }
-      var help=document.getElementById('cardPaymentStatus');
-      var helpText='Review mode: no real card, Safepay or crypto payment can be started.';
-      if(help&&stateLooksLikeReview()){
-        if(help.hidden)help.hidden=false;
-        if(help.textContent!==helpText)help.textContent=helpText;
-      }
-    };
-    function stateLooksLikeReview(){return document.body.classList.contains('report-is-paid')||!!document.getElementById('paywallModal');}
-    var observer=new MutationObserver(markReport);
-    // Observe only the two lifecycle signals we need. Never watch the full body:
-    // the report is large and contains many unrelated class/hidden changes.
-    var reportSection=document.getElementById('auditReportSection');
-    if(reportSection)observer.observe(reportSection,{attributes:true,attributeFilter:['hidden']});
-    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
-    markReport();
+    // Intentionally no MutationObserver here. The audit page owns its report DOM
+    // and labels; observing/mutating that same tree made Android browsers unresponsive.
+
     var tokenInput=document.getElementById('ownerTokenInput');
     if(tokenInput){
       tokenInput.value=OWNER_DEMO_TOKEN;
