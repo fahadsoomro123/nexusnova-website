@@ -127,8 +127,12 @@
       resultBox.hidden=false;
       cta.textContent='Start your audit with this voucher →';
       cta.href='/seo-audit-studio.html';
-      status('Voucher claimed. Open Audit Studio and run your website audit; the voucher will be applied to that report.','success');
-      claimButton.querySelector('span').textContent='Voucher claimed';
+      const reviewDemo=payload.previewSimulation===true;
+      status(reviewDemo
+        ?'Demo voucher claimed for this review preview only. It is not a real voucher; audit findings and report unlocks are simulated.'
+        :'Voucher claimed. Open Audit Studio and run your website audit; the voucher will be applied to that report.','success');
+      claimButton.querySelector('span').textContent=reviewDemo?'Demo voucher claimed':'Voucher claimed';
+      if(reviewDemo)cta.textContent='Open demo Audit Studio →';
     }catch(error){
       const networkError=error&&error.message==='Failed to fetch';
       status(networkError
