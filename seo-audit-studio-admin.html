@@ -157,7 +157,7 @@
     if(options.body!==undefined)headers.set('Content-Type','application/json');
     const response=await fetch(API+path,{...options,headers,mode:'cors',credentials:'omit',cache:'no-store',redirect:'error'});
     const body=await response.json().catch(()=>({}));
-    if(response.status===401){disconnect();throw new Error('Owner token was rejected. Connect again.');}
+    if(response.status===401){disconnect();throw new Error('Owner token was rejected. This may be an outdated access file from an older review deployment. Download the access artifact from the latest successful review Worker run, then connect again.');}
     if(!response.ok)throw new Error(body.error||('Request failed (HTTP '+response.status+').'));
     return body;
   }
