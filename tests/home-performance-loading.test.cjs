@@ -135,3 +135,23 @@ test('the visible homepage HumanProof scan loads only after explicit click or ke
   assert.ok(script.includes("load.addEventListener('keydown',event=>"), 'keyboard activation must remain supported');
   assert.ok(script.includes("CLICK TO LOAD 3D HUMAN SCAN"), 'the loader announces the explicit action after initialization');
 });
+
+test('live production audit uses authenticated PageSpeed evidence and bounded transient retries', () => {
+  const workflow = fs.readFileSync('.github/workflows/live-production-audit.yml', 'utf8');
+  for (const token of [
+    'PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}',
+    'GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}',
+    "scopes=['openid']",
+    "('category','performance')",
+    "('category','seo')",
+    'delay=30 * (2 ** attempt)',
+    'socket.gaierror',
+    'attempts=4',
+    'PageSpeed live lab evidence incomplete for: '
+  ]) assert.ok(workflow.includes(token), token);
+  assert.ok(
+    !workflow.includes("'category': 'performance' if strategy == 'mobile' else 'seo'"),
+    'both mobile and desktop requests must include the performance category'
+  );
+  assert.ok(workflow.includes('if failed:'), 'incomplete live lab evidence must fail the audit gate');
+});
