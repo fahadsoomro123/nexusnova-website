@@ -1979,19 +1979,46 @@
   <script type="module" src="assets/js/humanproof-hero-360.js?v=20261015-v4"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    (function () {
+      'use strict';
+      var yearNodes = document.querySelectorAll('[data-year]');
+      yearNodes.forEach(function (node) {
+        node.textContent = String(new Date().getFullYear());
+      });
+
+      var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');
+      var lazySearchInput = document.querySelector('[data-nexusnova-search-input]');
+      if (!lazySearchRoot || !lazySearchInput) return;
+
+      var homepageSearchInitialized = false;
+      function initializeOnSearchIntent() {
+        if (homepageSearchInitialized) return;
+        homepageSearchInitialized = true;
+        lazySearchRoot.removeEventListener('pointerdown', initializeOnSearchIntent);
+        lazySearchRoot.removeEventListener('focusin', initializeOnSearchIntent);
+        initializeHomepageSearch();
+      }
+
+      lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });
+      lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });
+
+      // Preserve Ctrl/Cmd+K without building the catalog during initial page load.
+      document.addEventListener('keydown', function (event) {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !homepageSearchInitialized) {
+          event.preventDefault();
+          lazySearchInput.focus();
+          lazySearchInput.select();
+        }
+      }, true);
+
+    function initializeHomepageSearch() {
       'use strict';
 
       var root = document.querySelector('[data-nexusnova-search-root]');
       var form = document.querySelector('[data-nexusnova-search]');
       var input = document.querySelector('[data-nexusnova-search-input]');
       var panel = document.getElementById('nn-search-suggestions');
-      var yearNodes = document.querySelectorAll('[data-year]');
       var directoryNodes = Array.prototype.slice.call(document.querySelectorAll('[data-master-tool]'));
-
-      yearNodes.forEach(function (node) {
-        node.textContent = String(new Date().getFullYear());
-      });
 
       if (!root || !form || !input || !panel) {
         return;
@@ -2385,8 +2412,8 @@
       });
 
       clearPanel();
-    });
-  </script>
+    }
+    })();
 </body>
 </html>
 
