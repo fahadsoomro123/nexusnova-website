@@ -189,9 +189,11 @@ test('local Lighthouse server mirrors production gzip compression and cache head
 
 test('homepage search builds its fallback index only after search intent, without breaking keyboard access', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
-  const start = homepage.indexOf('(function () {', homepage.lastIndexOf('<body>'));
-  const end = homepage.indexOf('</script>', start);
-  assert.ok(start >= 0 && end > start, 'homepage search bootstrap must exist');
+  const marker = "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');";
+  const markerIndex = homepage.indexOf(marker);
+  const start = homepage.lastIndexOf('<script', markerIndex);
+  const end = homepage.indexOf('</script>', markerIndex);
+  assert.ok(markerIndex >= 0 && start >= 0 && end > markerIndex, 'homepage search bootstrap must exist');
   const script = homepage.slice(start, end);
   for (const token of [
     "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');",
