@@ -21,7 +21,15 @@
     .panel{padding:17px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 5px 18px rgba(23,34,53,.035);margin-bottom:14px;min-width:0}
     .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.muted{color:var(--muted)}.small{font-size:10px}.notice{padding:10px 12px;border:1px solid #dce4ef;border-radius:9px;background:#f8fafc;color:#526177;font-size:11px;line-height:1.5;white-space:pre-wrap}.notice.good{background:#effbf4;color:var(--good);border-color:#bfebd0}.notice.error{background:#fff3f3;color:var(--bad);border-color:#f2c9cd}
     .list{display:grid;gap:9px}.item{padding:12px;border:1px solid #e1e7f0;border-radius:10px;background:#fbfcfe;min-width:0}.item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.meta{font-size:10px;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}.pill{display:inline-block;padding:3px 6px;border-radius:6px;background:#eef2f7;color:#475569;font:800 8px/1.3 ui-monospace,monospace;text-transform:uppercase}.pill.active,.pill.free,.pill.used{background:#e8f8ee;color:#176b41}.pill.paused,.pill.draft,.pill.reserved{background:#fff6df;color:#8a5b05}.pill.revoked,.pill.expired{background:#fff0f0;color:#9f2735}
-    .code{font:800 13px/1.4 ui-monospace,monospace;letter-spacing:.05em;word-break:break-all}.codebox{padding:12px;border:1px dashed #b6c4d8;background:#f8faff;border-radius:9px;margin-top:10px}.output{max-height:460px;overflow:auto;padding:12px;border:1px solid #dce4ef;border-radius:9px;background:#111827;color:#e5e7eb;font:10px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+    .code{font:800 13px/1.4 ui-monospace,monospace;letter-spacing:.05em;word-break:break-all}.codebox{padding:12px;border:1px dashed #b6c4d8;background:#f8faff;border-radius:9px;margin-top:10px}
+    .report-shell{display:grid;gap:12px;min-width:0}.report-hero{padding:15px;border:1px solid #dbe3ee;border-radius:12px;background:linear-gradient(135deg,#fff,#f5f3ff)}.report-hero h3{font-size:17px;line-height:1.35;margin:0 0 5px;overflow-wrap:anywhere}.report-kicker{font:800 9px/1.4 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:#6d28d9}.report-url{font-size:11px;color:#526177;overflow-wrap:anywhere}
+    .report-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}.report-stat{padding:11px;border:1px solid #dbe3ee;border-radius:10px;background:#fff;min-width:0}.report-stat-label{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.05em}.report-stat-value{display:block;font-size:21px;line-height:1.3;font-weight:900;letter-spacing:-.035em;overflow-wrap:anywhere}.report-stat-note{font-size:10px;line-height:1.45;color:#64748b}
+    .report-section{padding:13px;border:1px solid #dbe3ee;border-radius:11px;background:#fff;min-width:0}.report-section>h4{font-size:13px;margin:0 0 10px}.report-section-intro{font-size:11px;color:#64748b;margin:0 0 10px}.report-category-list,.report-check-list{display:grid;gap:9px}.report-category{padding:10px;border:1px solid #e3e9f2;border-radius:9px;background:#fbfcff;min-width:0}.report-category-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.report-category-title{font-size:11px;font-weight:850}.report-category-score{font-size:12px;font-weight:900;white-space:nowrap}.report-bar{height:7px;background:#e8edf5;border-radius:99px;overflow:hidden;margin:8px 0 6px}.report-bar-fill{height:100%;background:#6d28d9;border-radius:99px}.report-category-meta{font-size:9px;line-height:1.5;color:#64748b;overflow-wrap:anywhere}
+    .report-badge{display:inline-block;padding:3px 7px;border-radius:6px;background:#edf2f7;color:#475569;font-size:9px;font-weight:850;text-transform:uppercase}.report-badge.measured,.report-badge.pass,.report-badge.good{background:#e8f8ee;color:#176b41}.report-badge.limited,.report-badge.warn,.report-badge.medium{background:#fff6df;color:#8a5b05}.report-badge.fail,.report-badge.high,.report-badge.critical{background:#fff0f0;color:#9f2735}
+    .report-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.report-metric-panel{padding:11px;border:1px solid #e3e9f2;border-radius:9px;min-width:0}.report-metric-panel h5{font-size:11px;margin:0 0 8px}.report-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.report-metric{padding:8px;background:#f7f9fc;border-radius:7px;min-width:0}.report-metric-label{font-size:9px;color:#64748b}.report-metric-value{display:block;font-size:13px;font-weight:850;overflow-wrap:anywhere}
+    .report-check{padding:11px;border:1px solid #e3e9f2;border-radius:9px;background:#fbfcff;min-width:0}.report-check-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.report-check h5{font-size:11px;line-height:1.45;margin:0 0 4px;overflow-wrap:anywhere}.report-check-meta{font-size:9px;color:#64748b;line-height:1.5;margin-bottom:7px}.report-check p{font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;color:#334155}.report-check p strong{color:#172235}.report-metadata{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}.report-metadata-item{padding:9px;background:#f7f9fc;border-radius:8px;min-width:0}.report-metadata-label{font-size:9px;font-weight:850;color:#64748b;text-transform:uppercase}.report-metadata-value{font-size:10px;color:#172235;overflow-wrap:anywhere;margin-top:3px}.report-empty{font-size:11px;color:#64748b;padding:10px;background:#f7f9fc;border-radius:8px}
+    .report-download{display:flex;justify-content:flex-end}.report-download button{width:100%;min-height:40px}
+    @media(max-width:700px){.report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.report-metric-grid{grid-template-columns:1fr}.report-hero{padding:12px}.report-stat-value{font-size:19px}.report-category-head,.report-check-top{align-items:flex-start}}
     #console[hidden],#ownerApp[hidden]{display:none!important}.field-note{font-weight:500;color:#718096;font-size:9px}.inline{display:flex;align-items:center;gap:8px}.inline input{width:auto}.top-links{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:800}
     @media(max-width:700px){main{padding:20px 12px 44px}header{flex-direction:column}.panel{padding:13px}.grid,.three{grid-template-columns:1fr}.item-head{flex-direction:column}.top-links{gap:8px}}
   </style>
@@ -231,16 +239,175 @@
       root.append(item);item.append(actions);
     });
   }
+  function reportDisplayValue(value,fallback='Not available'){
+    if(value===null||value===undefined||value==='')return fallback;
+    if(typeof value==='boolean')return value?'Yes':'No';
+    if(Array.isArray(value))return value.length?value.map(v=>reportDisplayValue(v,'')).filter(Boolean).join(', '):fallback;
+    if(typeof value==='object')return reportDisplayValue(value.display??value.label??value.value,fallback);
+    return String(value);
+  }
+  function reportLabel(value){
+    return String(value||'').replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ').replace(/\\s+/g,' ').trim().replace(/\\b[a-z]/g,c=>c.toUpperCase());
+  }
+  function reportElement(tag,value,className=''){return text(tag,value,className);}
+  function reportSection(title,description=''){
+    const section=reportElement('section','report-section');
+    section.className='report-section';
+    section.append(reportElement('h4',title));
+    if(description)section.append(reportElement('p',description,'report-section-intro'));
+    return section;
+  }
+  function reportBadge(label,tone=''){
+    const safeTone=String(tone||'').toLowerCase().replace(/[^a-z0-9_-]/g,'');
+    return reportElement('span',reportDisplayValue(label,'Not measured'),'report-badge'+(safeTone?' '+safeTone:''));
+  }
+  function renderAuditReport(report,auditId){
+    const out=$('auditOutput');out.replaceChildren();
+    const shell=reportElement('div','','report-shell');out.append(shell);
+
+    const hero=reportElement('div','','report-hero');
+    hero.append(reportElement('div','NEXUSNOVA · FULL AUDIT REPORT','report-kicker'));
+    hero.append(reportElement('h3',report.meta?.title||'Website audit report'));
+    hero.append(reportElement('div',report.url||'URL unavailable','report-url'));
+    hero.append(reportElement('div','Audit ID: '+auditId+' · Generated: '+(report.timestamp?new Date(report.timestamp).toLocaleString():'Time unavailable'),'report-category-meta'));
+    const assessment=report.overallStatus==='measured'?'Overall score measured':report.overallStatus==='limited'?'Limited assessment · overall grade withheld':reportDisplayValue(report.overallStatus,'Assessment status unavailable');
+    hero.append(reportBadge(assessment,report.overallStatus==='measured'?'measured':'limited'));
+    if(report.overallStatus!=='measured'&&(report.overallScoreReason||report.fallbackReason)){
+      hero.append(reportElement('p',[report.overallScoreReason,report.fallbackReason].filter(Boolean).join(' '),'report-section-intro'));
+    }
+    shell.append(hero);
+
+    const stats=reportElement('div','','report-stats');
+    const statDefs=[
+      ['Overall score',typeof report.overall==='number'?report.overall+'/100':'N/A','Only shown when measurement coverage supports an overall grade'],
+      ['Grade',report.grade||'N/A','Overall site assessment'],
+      ['Coverage',Number.isFinite(Number(report.overallCoverage))?Number(report.overallCoverage)+'%':'Not available','HTML + mobile and desktop measurements'],
+      ['Passing checks',report.passCount??0,'Checks marked pass'],
+      ['Scored checks',report.scoredCount??(Array.isArray(report.checks)?report.checks.length:0),'Pass, warning and failure checks'],
+      ['Measured categories',report.overallCategoriesUsed??0,'Categories with a numeric score']
+    ];
+    statDefs.forEach(([label,value,note])=>{
+      const card=reportElement('div','','report-stat');
+      card.append(reportElement('div',label,'report-stat-label'),reportElement('strong',String(value),'report-stat-value'),reportElement('div',note,'report-stat-note'));
+      stats.append(card);
+    });
+    shell.append(stats);
+
+    const categories=report.categories&&typeof report.categories==='object'?report.categories:{};
+    const categoryMeta=report.categoryMeta&&typeof report.categoryMeta==='object'?report.categoryMeta:{};
+    const categoryNames={onPage:'On-page SEO',usability:'Usability',links:'Links',geo:'Generative / geographic optimization',social:'Social',local:'Local SEO',content:'Content',technical:'Technical SEO',performance:'Performance'};
+    const categorySection=reportSection('Category scores','A category is marked “Not measured” when its required evidence was not available. No missing score is treated as zero.');
+    const categoryList=reportElement('div','','report-category-list');
+    const entries=Object.entries(categories);
+    if(!entries.length)categoryList.append(reportElement('div','No category results were included.','report-empty'));
+    entries.forEach(([key,value])=>{
+      const meta=categoryMeta[key]||{},measured=typeof value==='number'&&Number.isFinite(value),score=measured?Math.max(0,Math.min(100,value)):null;
+      const item=reportElement('div','','report-category'),head=reportElement('div','','report-category-head'),left=reportElement('div',categoryNames[key]||reportLabel(key),'report-category-title');
+      head.append(left,reportElement('div',measured?score+'/100':'Not measured','report-category-score'));
+      item.append(head);
+      if(measured){const bar=reportElement('div','','report-bar'),fill=reportElement('div','','report-bar-fill');fill.style.width=score+'%';bar.append(fill);item.append(bar);}
+      const state=meta.status|| (measured?'measured':'not_measured');
+      item.append(reportBadge(reportLabel(state),state));
+      item.append(reportElement('div',[
+        Number.isFinite(Number(meta.measuredChecks))?'Checks measured: '+meta.measuredChecks:null,
+        Number.isFinite(Number(meta.requiredChecks))?'Required: '+meta.requiredChecks:null,
+        meta.source?'Evidence: '+meta.source:null
+      ].filter(Boolean).join(' · '),'report-category-meta'));
+      categoryList.append(item);
+    });
+    categorySection.append(categoryList);shell.append(categorySection);
+
+    const metrics=report.metrics&&typeof report.metrics==='object'?report.metrics:{};
+    const metricNames={score:'Performance score',lcp:'Largest Contentful Paint (LCP)',cls:'Cumulative Layout Shift (CLS)',tbt:'Total Blocking Time (TBT)',fcp:'First Contentful Paint (FCP)',speedIndex:'Speed Index',tti:'Time to Interactive'};
+    const metricSection=reportSection('Mobile and desktop performance','Performance metrics come from Google PageSpeed when available; unavailable values remain explicitly marked.');
+    const metricGrid=reportElement('div','','report-metric-grid');
+    ['mobile','desktop'].forEach(strategy=>{
+      const data=metrics[strategy]||{},panel=reportElement('div','','report-metric-panel');
+      panel.append(reportElement('h5',strategy==='mobile'?'Mobile measurements':'Desktop measurements'));
+      const grid=reportElement('div','','report-metrics');
+      const names=Object.keys(metricNames).filter(key=>key==='score'||data[key]!==undefined);
+      names.forEach(key=>{
+        const cell=reportElement('div','','report-metric'),value=key==='score'&&typeof data[key]==='number'?data[key]+'/100':reportDisplayValue(data[key]);
+        cell.append(reportElement('div',metricNames[key],'report-metric-label'),reportElement('strong',value,'report-metric-value'));grid.append(cell);
+      });
+      panel.append(grid);metricGrid.append(panel);
+    });
+    metricSection.append(metricGrid);shell.append(metricSection);
+
+    const recommendations=Array.isArray(report.recommendations)?report.recommendations:[];
+    const recSection=reportSection('Prioritized recommendations',recommendations.length+' findings need attention based on the audit checks.');
+    const recList=reportElement('div','','report-check-list');
+    if(!recommendations.length)recList.append(reportElement('div','No warning or failure recommendations were returned.','report-empty'));
+    recommendations.forEach((item,index)=>{
+      const card=reportElement('article','','report-check'),top=reportElement('div','','report-check-top'),left=reportElement('div');
+      left.append(reportElement('h5',(index+1)+'. '+(item.title||item.name||'Recommendation')));
+      const meta=[item.category?reportLabel(item.category):null,item.priority?'Priority: '+reportLabel(item.priority):null].filter(Boolean).join(' · ');
+      left.append(reportElement('div',meta,'report-check-meta'));
+      top.append(left,reportBadge(item.status||'recommendation',item.status||''));card.append(top);
+      if(item.detail||item.description||item.message)card.append(reportElement('p',item.detail||item.description||item.message));
+      if(item.recommendation||item.action)card.append(reportElement('p','Recommended action: '+(item.recommendation||item.action)));
+      if(item.evidence)card.append(reportElement('p','Evidence: '+reportDisplayValue(item.evidence)));
+      recList.append(card);
+    });
+    recSection.append(recList);shell.append(recSection);
+
+    const checks=Array.isArray(report.checks)?report.checks:[];
+    const checkSection=reportSection('All audit checks',checks.length+' individual checks returned by the audit engine.');
+    const checkList=reportElement('div','','report-check-list');
+    if(!checks.length)checkList.append(reportElement('div','No individual check details were returned.','report-empty'));
+    checks.forEach((item,index)=>{
+      const card=reportElement('article','','report-check'),top=reportElement('div','','report-check-top'),left=reportElement('div');
+      left.append(reportElement('h5',(index+1)+'. '+(item.title||item.name||'Audit check')));
+      const meta=[item.category?reportLabel(item.category):null,item.priority?'Priority: '+reportLabel(item.priority):null].filter(Boolean).join(' · ');
+      left.append(reportElement('div',meta,'report-check-meta'));
+      top.append(left,reportBadge(item.status||'unknown',item.status||''));card.append(top);
+      if(item.detail||item.description||item.message)card.append(reportElement('p',item.detail||item.description||item.message));
+      if(item.recommendation||item.action)card.append(reportElement('p','Recommended action: '+(item.recommendation||item.action)));
+      if(item.evidence!==undefined&&item.evidence!==null&&item.evidence!=='')card.append(reportElement('p','Evidence: '+reportDisplayValue(item.evidence)));
+      checkList.append(card);
+    });
+    checkSection.append(checkList);shell.append(checkSection);
+
+    const meta=report.meta&&typeof report.meta==='object'?report.meta:{},http=report.http&&typeof report.http==='object'?report.http:{},sources=report.sources&&typeof report.sources==='object'?report.sources:{};
+    const metaSection=reportSection('Website and measurement details','Technical metadata and data sources used to produce this report.');
+    const metadata=reportElement('div','','report-metadata');
+    const metadataPairs=[
+      ['Page title',meta.title],['Meta description',meta.description],['Canonical URL',meta.canonical],['Language',meta.lang],['Viewport',meta.viewport],
+      ['Internal links',meta.internalLinks],['External links',meta.externalLinks],['Images',meta.imageCount],['JSON-LD blocks',meta.jsonLd],
+      ['Schema types',meta.schemaTypes],['HTTP status',http.status],['Content type',http.contentType],['Fetched bytes',http.bytes],
+      ['HTML source',sources.contentLabel||sources.content],['Mobile PageSpeed',sources.pagespeedMobile],['Desktop PageSpeed',sources.pagespeedDesktop]
+    ];
+    metadataPairs.forEach(([label,value])=>{
+      if(value===undefined||value===null||value==='')return;
+      const cell=reportElement('div','','report-metadata-item');
+      cell.append(reportElement('div',label,'report-metadata-label'),reportElement('div',reportDisplayValue(value),'report-metadata-value'));metadata.append(cell);
+    });
+    metaSection.append(metadata);
+    if(sources.errors&&Object.values(sources.errors).some(Boolean)){
+      const errors=reportSection('Measurement limitations');
+      const list=reportElement('div','','report-check-list');
+      Object.entries(sources.errors).filter(([,value])=>value).forEach(([key,value])=>{
+        const card=reportElement('div','','report-check');
+        card.append(reportElement('h5',reportLabel(key)),reportElement('p',reportDisplayValue(value)));list.append(card);
+      });
+      errors.append(list);shell.append(errors);
+    }
+    if(report.fallbackReason)metaSection.append(reportElement('p','Fallback note: '+report.fallbackReason,'report-section-intro'));
+    shell.append(metaSection);
+
+    const download=reportElement('div','','report-download');
+    download.append(button('Download raw report JSON',()=>{
+      const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexusnova-audit-'+auditId+'.json';a.click();URL.revokeObjectURL(url);
+    },'primary'));
+    shell.append(download);
+    out.scrollIntoView({behavior:'smooth',block:'start'});
+  }
   async function showFullReport(auditId){
     try{
       const report=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/full');
-      const out=$('auditOutput');out.replaceChildren(text('h3','Full report · '+auditId));
-      const pre=text('pre',JSON.stringify(report,null,2),'output');out.append(pre);
-      out.append(button('Download report JSON',()=>{
-        const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});
-        const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nexusnova-audit-'+auditId+'.json';a.click();URL.revokeObjectURL(url);
-      }));
-      out.scrollIntoView({behavior:'smooth',block:'start'});
+      if(!report||typeof report!=='object'||Array.isArray(report))throw new Error('The full report response was not valid report data.');
+      renderAuditReport(report,auditId);
     }catch(e){setGlobal(e.message,'error');}
   }
   function renderRedemptions(){
