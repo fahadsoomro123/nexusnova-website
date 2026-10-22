@@ -674,7 +674,7 @@
       const placement = document.querySelector('[data-nn-adsterra-placement]');
       const container = document.getElementById('container-b7cb02fa163a7585244e7c2876553cea');
       const status = document.querySelector('[data-nn-adsterra-status]');
-      if (!placement || !container || window.__nexusnovaAdsterraState) return;
+      if (!placement || !container || ['loading', 'loaded', 'retrying'].includes(window.__nexusnovaAdsterraState)) return;
 
       // Honor an explicit browser-level privacy opt-out signal.
       if (window.navigator?.globalPrivacyControl === true) {
@@ -682,19 +682,71 @@
         return;
       }
 
-      window.__nexusnovaAdsterraState = 'loading';
-      const script = document.createElement('script');
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      script.src = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
-      script.addEventListener('load', () => {
-        window.__nexusnovaAdsterraState = 'loaded';
-      }, { once: true });
-      script.addEventListener('error', () => {
-        window.__nexusnovaAdsterraState = '';
-        if (status) status.textContent = 'The advertisement could not load right now. Please refresh later.';
-      }, { once: true });
-      container.parentNode.insertBefore(script, container);
+      const scriptUrl = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
+      const maxAttempts = 3;
+      let attempts = 0;
+      let retryTimer = 0;
+
+      const loadAdsterra = () => {
+        if (['loaded', 'loading'].includes(window.__nexusnovaAdsterraState)) return;
+        attempts += 1;
+        window.__nexusnovaAdsterraState = 'loading';
+
+        const script = document.createElement('script');
+        script.async = true;
+        script.setAttribute('data-cfasync', 'false');
+        script.dataset.nexusnovaAdsterra = '';
+        script.src = scriptUrl;
+
+        script.addEventListener('load', () => {
+          window.__nexusnovaAdsterraState = 'loaded';
+          if (status) status.textContent = '';
+        }, { once: true });
+
+        script.addEventListener('error', () => {
+          script.remove();
+          if (attempts < maxAttempts) {
+            window.__nexusnovaAdsterraState = 'retrying';
+            if (status) status.textContent = 'Ad network temporarily unavailable. Retrying (' + attempts + '/' + (maxAttempts - 1) + ')…';
+            retryTimer = window.setTimeout(() => {
+              window.__nexusnovaAdsterraState = '';
+              retryTimer = 0;
+              loadAdsterra();
+            }, attempts * 1000);
+            return;
+          }
+          window.__nexusnovaAdsterraState = 'failed';
+          if (status) status.textContent = 'The external ad network is unavailable right now. The website tools remain available.';
+        }, { once: true });
+
+        container.parentNode.insertBefore(script, container);
+      };
+
+      const scheduleAdLoad = () => {
+        if (window.__nexusnovaAdsterraState === 'loaded' || retryTimer) return;
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadAdsterra, { timeout: 1500 });
+        } else {
+          window.setTimeout(loadAdsterra, 300);
+        }
+      };
+
+      // The slot is below the featured content; do not fetch advertising code
+      // until a visitor scrolls near it. This saves work on visits that never
+      // reach the placement while still preloading before it enters view.
+      if (typeof window.IntersectionObserver === 'function') {
+        const observer = new IntersectionObserver(entries => {
+          if (entries.some(entry => entry.isIntersecting)) {
+            observer.disconnect();
+            scheduleAdLoad();
+          }
+        }, { rootMargin: '600px 0px', threshold: 0.01 });
+        observer.observe(placement);
+      } else if (document.readyState === 'complete') {
+        scheduleAdLoad();
+      } else {
+        window.addEventListener('load', scheduleAdLoad, { once: true });
+      }
     })();
     </script>
 
