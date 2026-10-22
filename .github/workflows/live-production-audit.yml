@@ -224,6 +224,65 @@ jobs:
                           lighthouse=data.get('lighthouseResult') or {}
                           audits=lighthouse.get('audits') or {}
                           categories=lighthouse.get('categories') or {}
+                          diagnostic_ids=(
+                              'largest-contentful-paint-element',
+                              'lcp-discovery-insight',
+                              'lcp-breakdown-insight',
+                              'render-blocking-resources',
+                              'unused-javascript',
+                              'unused-css-rules',
+                              'uses-optimized-images',
+                              'uses-responsive-images',
+                              'modern-image-formats',
+                              'font-display',
+                              'server-response-time',
+                              'third-party-summary',
+                              'long-tasks',
+                              'mainthread-work-breakdown',
+                              'total-byte-weight',
+                              'network-requests',
+                              'network-dependency-tree-insight',
+                              'uses-rel-preload',
+                              'prioritize-lcp-image',
+                          )
+
+                          def safe_url(value):
+                              if not isinstance(value,str):
+                                  return value
+                              try:
+                                  from urllib.parse import urlsplit, urlunsplit
+                                  parts=urlsplit(value)
+                                  if parts.scheme and parts.netloc:
+                                      return urlunsplit((parts.scheme,parts.netloc,parts.path,'',''))
+                              except Exception:
+                                  pass
+                              return value[:200]
+
+                          def brief_item(item):
+                              result={}
+                              for field in ('url','label','request','wastedBytes','wastedMs','totalBytes','transferSize','blockingTime','duration','entity','groupLabel','nodeLabel','type','name','resourceType','score','displayValue','cacheLifetimeMs','totalByteLength','rendererMainThreadTime','mainThreadTime'):
+                                  if field in item and item[field] is not None:
+                                      result[field]=safe_url(item[field]) if field=='url' else item[field]
+                              node=item.get('node')
+                              if isinstance(node,dict):
+                                  result['node']={k:node[k] for k in ('nodeLabel','snippet','path','type','selector') if node.get(k) is not None}
+                              return result
+
+                          diagnostics={}
+                          for audit_id in diagnostic_ids:
+                              audit=audits.get(audit_id)
+                              if not isinstance(audit,dict):
+                                  continue
+                              details=audit.get('details') or {}
+                              items=details.get('items') or []
+                              brief_items=[brief_item(item) for item in items[:5] if isinstance(item,dict)]
+                              diagnostics[audit_id]={
+                                  'title':audit.get('title'),
+                                  'score':audit.get('score'),
+                                  'display_value':audit.get('displayValue'),
+                                  'numeric_value':audit.get('numericValue'),
+                                  'items':brief_items,
+                              }
                           score=(categories.get('performance') or {}).get('score')
                           out['strategies'][strategy]={
                               'available':True,
@@ -236,6 +295,7 @@ jobs:
                               'lab_lcp_ms':(audits.get('largest-contentful-paint') or {}).get('numericValue'),
                               'lab_cls':(audits.get('cumulative-layout-shift') or {}).get('numericValue'),
                               'lab_tbt_ms':(audits.get('total-blocking-time') or {}).get('numericValue'),
+                              'diagnostics':diagnostics,
                           }
                           break
                       except urllib.error.HTTPError as exc:
