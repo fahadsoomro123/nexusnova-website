@@ -152,7 +152,7 @@ test('production GA4 verifier checks Realtime page_view events', () => {
   for (const token of [
     'Wait for the matching Pages deployment before live browser checks',
     deployShaToken,
-    "('/', 'assets/js/main.js?v=20261015-v4&lcpAds=20261022-v1')",
+    "('/', 'assets/js/main.js?v=20261015-v4&lcpAds=20261022-v2')",
     "GA4_QA_VERSION: '20261015-v4'",
     "('/tools.html', 'assets/js/analytics.js?v=20261015-v4')",
     "('/categories.html', 'assets/js/analytics.js?v=20261015-v4')",
