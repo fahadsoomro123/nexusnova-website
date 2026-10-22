@@ -51,14 +51,24 @@ class HomepageCriticalPathRegressionTests(unittest.TestCase):
 
     def test_existing_hero_assets_are_discovered_in_the_initial_document(self):
         html = (ROOT / "index.html").read_text(encoding="utf-8")
-        self.assertIn('assets/css/humanproof-home.css?v=20261015-v4" data-humanproof-loader', html)
-        self.assertIn('assets/js/humanproof-home.js?v=20261015-v4" data-humanproof-loader defer', html)
+        self.assertIn('assets/css/humanproof-home.css?v=20261022-user-triggered-3d-v1" data-humanproof-loader', html)
+        self.assertIn('assets/js/humanproof-home.js?v=20261022-user-triggered-3d-v1" data-humanproof-loader defer', html)
         self.assertIn('assets/logo.png', html)
 
-    def test_decorative_3d_work_waits_for_browser_idle_time(self):
+    def test_decorative_3d_work_waits_for_explicit_user_action(self):
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
         script = (ROOT / "assets" / "js" / "humanproof-home.js").read_text(encoding="utf-8")
-        self.assertIn("window.requestIdleCallback(startV20,{timeout:1800})", script)
-        self.assertIn("window.setTimeout(startV20,700)", script)
+        hero_script = (ROOT / "assets" / "js" / "humanproof-hero-360.js").read_text(encoding="utf-8")
+        self.assertIn("data-hp-v20-load", script)
+        self.assertIn("loading.addEventListener('click'", script)
+        self.assertIn("void initV20()", script)
+        self.assertNotIn("window.requestIdleCallback(startV20", script)
+        self.assertNotIn("window.setTimeout(startV20,700)", script)
+        self.assertNotIn("three.js@master/", script)
+        self.assertNotIn("data-hp-360-autostart", html)
+        self.assertIn('Click to load 3D human scan…', html)
+        self.assertIn("load.addEventListener('click',start,{once:true})", hero_script)
+        self.assertIn("load.addEventListener('keydown',event=>", hero_script)
 
 
 class HomepageConsentCriticalPathRegressionTests(unittest.TestCase):

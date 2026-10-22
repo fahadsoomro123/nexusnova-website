@@ -57,7 +57,7 @@ jobs:
           base = 'https://nexusnovatools.com'
           deploy_sha = os.environ['DEPLOY_SHA']
           pages = [
-              ('/', 'assets/js/main.js?v=20261015-v4'),
+              ('/', 'assets/js/main.js?v=20261015-v4&lcpAds=20261022-v2'),
               ('/tools.html', 'assets/js/analytics.js?v=20261015-v4'),
               ('/categories.html', 'assets/js/analytics.js?v=20261015-v4'),
               ('/guides.html', 'assets/js/analytics.js?v=20261015-v4'),

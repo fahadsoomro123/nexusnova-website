@@ -112,3 +112,122 @@ test('homepage Lighthouse workflow compares AdSense locally without changing pro
   assert.ok(workflow.indexOf('Run representative Lighthouse audits') < workflow.indexOf('Diagnose homepage AdSense contribution'))
   assert.ok(workflow.indexOf('Diagnose homepage AdSense contribution') < workflow.indexOf('Enforce lab performance budgets'))
 });
+
+
+test('homepage defers the decorative WebGL runtime and model until explicit user intent', () => {
+  const script = fs.readFileSync('assets/js/humanproof-home.js', 'utf8');
+  assert.ok(script.includes('data-hp-v20-load'), '3D scan must expose an explicit load control');
+  assert.ok(script.includes("loading.addEventListener('click'"), 'only a user click should start the 3D scan');
+  assert.ok(script.includes('void initV20()'), 'the existing interactive scan remains available after activation');
+  assert.ok(!script.includes('window.requestIdleCallback(startV20'), 'idle time alone must not initialize WebGL');
+  assert.ok(!script.includes('window.setTimeout(startV20,700)'), 'fallback timers must not auto-start the heavy model');
+  assert.ok(script.includes('LeePerrySmith/LeePerrySmith.glb'), 'the model remains available');
+  assert.ok(!script.includes('three.js@master/'), 'external model source must be pinned to a stable release');
+});
+
+
+test('the visible homepage HumanProof scan loads only after explicit click or keyboard activation', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const script = fs.readFileSync('assets/js/humanproof-hero-360.js', 'utf8');
+  assert.ok(!homepage.includes('data-hp-360-autostart'), 'the homepage must not auto-start the main 3D scan when it enters view');
+  assert.ok(homepage.includes('id="nnHumanProof360Load">Click to load 3D human scan…</div>'), 'the initial state must explain that the scan is user-triggered');
+  assert.ok(script.includes("load.addEventListener('click',start,{once:true})"), 'a deliberate click must remain supported');
+  assert.ok(script.includes("load.addEventListener('keydown',event=>"), 'keyboard activation must remain supported');
+  assert.ok(script.includes("CLICK TO LOAD 3D HUMAN SCAN"), 'the loader announces the explicit action after initialization');
+});
+
+test('live production audit uses authenticated PageSpeed evidence and bounded transient retries', () => {
+  const workflow = fs.readFileSync('.github/workflows/live-production-audit.yml', 'utf8');
+  for (const token of [
+    'PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}',
+    'GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}',
+    "scopes=['openid']",
+    "('category','performance')",
+    "('category','seo')",
+    'delay=30 * (2 ** attempt)',
+    'socket.gaierror',
+    'attempts=4',
+    'PageSpeed live lab evidence incomplete for: '
+  ]) assert.ok(workflow.includes(token), token);
+  assert.ok(
+    !workflow.includes("'category': 'performance' if strategy == 'mobile' else 'seo'"),
+    'both mobile and desktop requests must include the performance category'
+  );
+  assert.ok(workflow.includes('if failed:'), 'incomplete live lab evidence must fail the audit gate');
+});
+
+test('live PageSpeed evidence includes bounded, redacted LCP and blocking diagnostics', () => {
+  const workflow = fs.readFileSync('.github/workflows/live-production-audit.yml', 'utf8');
+  for (const token of [
+    "'largest-contentful-paint-element'",
+    "'lcp-discovery-insight'",
+    "'lcp-breakdown-insight'",
+    "'render-blocking-resources'",
+    "'unused-javascript'",
+    "'unused-css-rules'",
+    "'uses-optimized-images'",
+    "'third-party-summary'",
+    "'diagnostics':diagnostics",
+    "urlunsplit((parts.scheme,parts.netloc,parts.path,'',''))",
+    'items[:5]'
+  ]) assert.ok(workflow.includes(token), token);
+});
+
+test('local Lighthouse server mirrors production gzip compression and cache headers', () => {
+  const workflow = fs.readFileSync('.github/workflows/site-performance-audit.yml', 'utf8');
+  for (const token of [
+    'Start production-like compressed local website server',
+    "protocol_version = 'HTTP/1.1'",
+    'gzip.compress(source.read(), compresslevel=6, mtime=0)',
+    "self.send_header('Content-Encoding', 'gzip')",
+    "self.send_header('Cache-Control', 'max-age=600')",
+    'python3 /tmp/nexusnova-static-server.py',
+    'Production-like local response verified: gzip compression and max-age=600 cache header.'
+  ]) assert.ok(workflow.includes(token), token);
+  assert.ok(!workflow.includes('python3 -m http.server 8000'), 'do not benchmark uncompressed HTML against compressed GitHub Pages production');
+});
+
+test('homepage search builds its fallback index only after search intent, without breaking keyboard access', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const marker = "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');";
+  const markerIndex = homepage.indexOf(marker);
+  const start = homepage.lastIndexOf('<script', markerIndex);
+  const end = homepage.indexOf('</script>', markerIndex);
+  assert.ok(markerIndex >= 0 && start >= 0 && end > markerIndex, 'homepage search bootstrap must exist');
+  const script = homepage.slice(start, end);
+  for (const token of [
+    "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');",
+    "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
+    "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });",
+    "function initializeHomepageSearch()",
+    'new window.NexusNovaSearchCore()',
+    "input.addEventListener('input', runQuery)",
+    "event.key.toLowerCase() === 'k'",
+    'yearNodes.forEach(function (node)'
+  ]) assert.ok(script.includes(token), token);
+  assert.ok(!script.includes("document.addEventListener('DOMContentLoaded', function ()"), 'homepage search index must not initialize on DOMContentLoaded');
+});
+
+test('homepage downloads the deep search index only on first search intent and resumes queued input', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const marker = "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');";
+  const markerIndex = homepage.indexOf(marker);
+  const scriptStart = homepage.lastIndexOf('<script', markerIndex);
+  const scriptEnd = homepage.indexOf('</script>', markerIndex);
+  assert.ok(markerIndex >= 0 && scriptStart >= 0 && scriptEnd > markerIndex, 'homepage search bootstrap must exist');
+  const bootstrap = homepage.slice(scriptStart, scriptEnd);
+  assert.ok(!homepage.includes('<script src="assets/js/search-core.js?v=20261015-v4" defer></script>'),
+    'search-core must not be downloaded on every homepage visit');
+  assert.ok(!homepage.includes('<link rel="preload" href="assets/js/search-core.js?v=20261015-v4" as="script">'),
+    'search-core must not be preloaded before the visitor uses search');
+  for (const token of [
+    "searchCoreScript.src = '/assets/js/search-core.js?v=20261015-v4'",
+    'searchCoreScript.async = true',
+    'searchCoreScript.onload = initializeHomepageSearch',
+    'searchCoreScript.onerror = initializeHomepageSearch',
+    'if (typeof window.NexusNovaSearchCore === \'function\')',
+    'if (input.value.trim()) runQuery();',
+    "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
+    "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });"
+  ]) assert.ok(bootstrap.includes(token), token);
+});

@@ -36,35 +36,49 @@ jobs:
           python - <<'PY'
           import json
           import re
+          import socket
+          import time
           import urllib.error
           import urllib.request
           from pathlib import Path
 
           HOME='https://nexusnovatools.com/'
           INDEX='https://nexusnovatools.com/index.html'
-          UA='NexusNovaProductionAudit/1.1'
+          UA='NexusNovaProductionAudit/1.2'
 
-          def request(url):
+          def request(url, attempts=4):
               req=urllib.request.Request(url, headers={
                   'User-Agent': UA,
-                  'Cache-Control': 'no-cache',
+                  'Cache-Control': 'no-cache, no-store, max-age=0',
                   'Accept': 'text/html,*/*;q=0.8',
               })
-              try:
-                  with urllib.request.urlopen(req, timeout=25) as resp:
+              for attempt in range(attempts):
+                  try:
+                      with urllib.request.urlopen(req, timeout=25) as resp:
+                          return {
+                              'status': resp.status,
+                              'url': resp.geturl(),
+                              'headers': {k.lower(): v for k,v in resp.headers.items()},
+                              'body': resp.read().decode('utf-8','replace'),
+                          }
+                  except urllib.error.HTTPError as exc:
                       return {
-                          'status': resp.status,
-                          'url': resp.geturl(),
-                          'headers': {k.lower(): v for k,v in resp.headers.items()},
-                          'body': resp.read().decode('utf-8','replace'),
+                          'status': exc.code,
+                          'url': exc.geturl(),
+                          'headers': {k.lower(): v for k,v in exc.headers.items()},
+                          'body': exc.read().decode('utf-8','replace'),
                       }
-              except urllib.error.HTTPError as exc:
-                  return {
-                      'status': exc.code,
-                      'url': exc.geturl(),
-                      'headers': {k.lower(): v for k,v in exc.headers.items()},
-                      'body': exc.read().decode('utf-8','replace'),
-                  }
+                  except (urllib.error.URLError, TimeoutError, socket.gaierror) as exc:
+                      reason=getattr(exc,'reason',exc)
+                      if attempt + 1 < attempts:
+                          delay=min(2 ** (attempt + 1), 12)
+                          print(f'Host request failed ({type(reason).__name__}); retry {attempt+1}/{attempts-1} in {delay}s.')
+                          time.sleep(delay)
+                          continue
+                      return {
+                          'status': 0, 'url': url, 'headers': {}, 'body': '',
+                          'network_error': f'{type(reason).__name__}: {str(reason)[:180]}',
+                      }
 
           home=request(HOME)
           index=request(INDEX)
@@ -109,11 +123,16 @@ jobs:
                   'canonical':index_canonical_value,
                   'client_redirect_marker':client_redirect_marker,
               },
+              'network_errors': {
+                  'home': home.get('network_error'),
+                  'index_html': index.get('network_error'),
+              },
               'security_headers': security,
               'required_checks': required,
               'host_advisories': host_advisories,
               'hosting_context': 'Public site is served through GitHub Pages with a custom domain. Repository HTML cannot create HSTS or a true server-side /index.html -> / redirect; those require an edge/proxy or different host configuration.',
               'notes': [
+                  'Network errors are retried with a bounded delay; unresolved errors remain failures.',
                   'Missing host-managed headers are reported as advisories, not disguised as application-code failures.',
                   'CSP/X-Frame-Options are not globally required because widget-pakistan-today.html is intentionally embeddable.',
                   'The canonical root remains a required SEO signal. A client-side /index.html consolidation marker is also reported when deployed.',
@@ -126,59 +145,207 @@ jobs:
               raise SystemExit('Live production required check(s) failed: '+', '.join(failed))
           PY
 
+      - name: Install Google auth for PageSpeed API fallback
+        if: always()
+        shell: bash
+        run: python -m pip install --disable-pip-version-check --quiet google-auth
+
       - name: Query PageSpeed for field and lab evidence
         if: always()
         shell: bash
+        env:
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           python - <<'PY'
           import json
+          import os
+          import time
+          import urllib.error
           import urllib.parse
           import urllib.request
           from pathlib import Path
+          from google.auth.transport.requests import Request
+          from google.oauth2 import service_account
 
           target='https://nexusnovatools.com/'
           out={'target':target,'source':'Google PageSpeed Insights API v5','strategies':{}}
-          for strategy in ('mobile','desktop'):
-              url='https://www.googleapis.com/pagespeedonline/v5/runPagespeed?'+urllib.parse.urlencode({
-                  'url':target,
-                  'strategy':strategy,
-                  'category': 'performance' if strategy == 'mobile' else 'seo',
-              })
-              try:
-                  req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.1'})
-                  with urllib.request.urlopen(req,timeout=90) as resp:
-                      data=json.loads(resp.read().decode('utf-8'))
-                  field=data.get('loadingExperience') or {}
-                  origin=data.get('originLoadingExperience') or {}
-                  field_source='url' if field.get('metrics') else ('origin' if origin.get('metrics') else 'none')
-                  selected=field if field.get('metrics') else origin
-                  metrics=selected.get('metrics') or {}
-                  def pct(key):
-                      item=metrics.get(key) or {}
-                      return item.get('percentile')
-                  lighthouse=data.get('lighthouseResult') or {}
-                  audits=lighthouse.get('audits') or {}
-                  categories=lighthouse.get('categories') or {}
-                  out['strategies'][strategy]={
-                      'available':True,
-                      'field_source':field_source,
-                      'field_overall_category':selected.get('overall_category'),
-                      'field_lcp_ms':pct('LARGEST_CONTENTFUL_PAINT_MS'),
-                      'field_inp_ms':pct('INTERACTION_TO_NEXT_PAINT'),
-                      'field_cls':(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE')/100 if isinstance(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE'),(int,float)) else None),
-                      'lab_performance_score':round((categories.get('performance') or {}).get('score',0)*100) if (categories.get('performance') or {}).get('score') is not None else None,
-                      'lab_lcp_ms':(audits.get('largest-contentful-paint') or {}).get('numericValue'),
-                      'lab_cls':(audits.get('cumulative-layout-shift') or {}).get('numericValue'),
-                      'lab_tbt_ms':(audits.get('total-blocking-time') or {}).get('numericValue'),
-                  }
-              except Exception as exc:
+          api_key=os.environ.get('PAGESPEED_API_KEY','').strip()
+          auth_headers={}
+          auth_mode='project-key' if api_key else 'not-configured'
+
+          try:
+              if not api_key:
+                  raw=os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON','').strip()
+                  if not raw:
+                      raise RuntimeError('No PageSpeed API key or Google service-account JSON is configured in Actions secrets.')
+                  account=json.loads(raw)
+                  credentials=service_account.Credentials.from_service_account_info(account,scopes=['openid'])
+                  credentials.refresh(Request())
+                  if not credentials.token:
+                      raise RuntimeError('Google OAuth token exchange returned no access token.')
+                  auth_headers={'Authorization':'Bearer '+credentials.token}
+                  auth_mode='service-account-oauth'
+              out['auth_mode']=auth_mode
+          except Exception as exc:
+              out['auth_mode']='unavailable'
+              out['credential_error']=f'{type(exc).__name__}: {str(exc)[:180]}'
+              for strategy in ('mobile','desktop'):
                   out['strategies'][strategy]={
                       'available':False,
-                      'error':f'{type(exc).__name__}: {exc}',
+                      'error':'PageSpeed authentication could not be initialized.',
                       'field_source':'unavailable',
                   }
+
+          if out['auth_mode'] != 'unavailable':
+              for strategy in ('mobile','desktop'):
+                  params=[
+                      ('url',target),
+                      ('strategy',strategy),
+                      ('category','performance'),
+                      ('category','seo'),
+                  ]
+                  if api_key:
+                      params.append(('key',api_key))
+                  url='https://www.googleapis.com/pagespeedonline/v5/runPagespeed?'+urllib.parse.urlencode(params)
+                  for attempt in range(3):
+                      try:
+                          req=urllib.request.Request(url,headers={'User-Agent':'NexusNovaProductionAudit/1.2','Accept':'application/json',**auth_headers})
+                          with urllib.request.urlopen(req,timeout=90) as resp:
+                              data=json.loads(resp.read().decode('utf-8'))
+                          field=data.get('loadingExperience') or {}
+                          origin=data.get('originLoadingExperience') or {}
+                          field_source='url' if field.get('metrics') else ('origin' if origin.get('metrics') else 'none')
+                          selected=field if field.get('metrics') else origin
+                          metrics=selected.get('metrics') or {}
+                          def pct(key):
+                              item=metrics.get(key) or {}
+                              return item.get('percentile')
+                          lighthouse=data.get('lighthouseResult') or {}
+                          audits=lighthouse.get('audits') or {}
+                          categories=lighthouse.get('categories') or {}
+                          diagnostic_ids=(
+                              'largest-contentful-paint-element',
+                              'lcp-discovery-insight',
+                              'lcp-breakdown-insight',
+                              'render-blocking-resources',
+                              'unused-javascript',
+                              'unused-css-rules',
+                              'uses-optimized-images',
+                              'uses-responsive-images',
+                              'modern-image-formats',
+                              'font-display',
+                              'server-response-time',
+                              'third-party-summary',
+                              'long-tasks',
+                              'mainthread-work-breakdown',
+                              'total-byte-weight',
+                              'network-requests',
+                              'network-dependency-tree-insight',
+                              'uses-rel-preload',
+                              'prioritize-lcp-image',
+                          )
+
+                          def safe_url(value):
+                              if not isinstance(value,str):
+                                  return value
+                              try:
+                                  from urllib.parse import urlsplit, urlunsplit
+                                  parts=urlsplit(value)
+                                  if parts.scheme and parts.netloc:
+                                      return urlunsplit((parts.scheme,parts.netloc,parts.path,'',''))
+                              except Exception:
+                                  pass
+                              return value[:200]
+
+                          def brief_item(item):
+                              result={}
+                              for field in ('url','label','request','wastedBytes','wastedMs','totalBytes','transferSize','blockingTime','duration','entity','groupLabel','nodeLabel','type','name','resourceType','score','displayValue','cacheLifetimeMs','totalByteLength','rendererMainThreadTime','mainThreadTime'):
+                                  if field in item and item[field] is not None:
+                                      result[field]=safe_url(item[field]) if field=='url' else item[field]
+                              node=item.get('node')
+                              if isinstance(node,dict):
+                                  result['node']={k:node[k] for k in ('nodeLabel','snippet','path','type','selector') if node.get(k) is not None}
+                              return result
+
+                          diagnostics={}
+                          for audit_id in diagnostic_ids:
+                              audit=audits.get(audit_id)
+                              if not isinstance(audit,dict):
+                                  continue
+                              details=audit.get('details') or {}
+                              items=details.get('items') or []
+                              brief_items=[brief_item(item) for item in items[:5] if isinstance(item,dict)]
+                              diagnostics[audit_id]={
+                                  'title':audit.get('title'),
+                                  'score':audit.get('score'),
+                                  'display_value':audit.get('displayValue'),
+                                  'numeric_value':audit.get('numericValue'),
+                                  'items':brief_items,
+                              }
+                          score=(categories.get('performance') or {}).get('score')
+                          out['strategies'][strategy]={
+                              'available':True,
+                              'field_source':field_source,
+                              'field_overall_category':selected.get('overall_category'),
+                              'field_lcp_ms':pct('LARGEST_CONTENTFUL_PAINT_MS'),
+                              'field_inp_ms':pct('INTERACTION_TO_NEXT_PAINT'),
+                              'field_cls':(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE')/100 if isinstance(pct('CUMULATIVE_LAYOUT_SHIFT_SCORE'),(int,float)) else None),
+                              'lab_performance_score':round(score*100) if isinstance(score,(int,float)) else None,
+                              'lab_lcp_ms':(audits.get('largest-contentful-paint') or {}).get('numericValue'),
+                              'lab_cls':(audits.get('cumulative-layout-shift') or {}).get('numericValue'),
+                              'lab_tbt_ms':(audits.get('total-blocking-time') or {}).get('numericValue'),
+                              'diagnostics':diagnostics,
+                          }
+                          break
+                      except urllib.error.HTTPError as exc:
+                          if exc.code == 429 and attempt < 2:
+                              delay=30 * (2 ** attempt)
+                              print(f'PageSpeed {strategy} rate-limited (HTTP 429); retrying after {delay}s, attempt {attempt+2}/3.')
+                              time.sleep(delay)
+                              continue
+                          detail=''
+                          try:
+                              body=json.loads(exc.read().decode('utf-8','replace'))
+                              detail=str((body.get('error') or {}).get('message',''))[:160]
+                          except Exception:
+                              detail=''
+                          out['strategies'][strategy]={
+                              'available':False,
+                              'error':f'HTTPError: HTTP {exc.code}' + (': '+detail if detail else ''),
+                              'field_source':'unavailable',
+                          }
+                          break
+                      except (urllib.error.URLError, TimeoutError) as exc:
+                          if attempt < 2:
+                              delay=min(3 * (2 ** attempt),12)
+                              print(f'PageSpeed {strategy} network failure; retrying in {delay}s, attempt {attempt+2}/3.')
+                              time.sleep(delay)
+                              continue
+                          reason=getattr(exc,'reason',exc)
+                          out['strategies'][strategy]={
+                              'available':False,
+                              'error':f'{type(reason).__name__}: {str(reason)[:160]}',
+                              'field_source':'unavailable',
+                          }
+                          break
+                      except Exception as exc:
+                          out['strategies'][strategy]={
+                              'available':False,
+                              'error':f'{type(exc).__name__}: {str(exc)[:160]}',
+                              'field_source':'unavailable',
+                          }
+                          break
+
           Path('pagespeed-evidence.json').write_text(json.dumps(out,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(out,indent=2))
+          required_metrics=('lab_performance_score','lab_lcp_ms','lab_cls','lab_tbt_ms')
+          failed=[
+              strategy for strategy,result in out['strategies'].items()
+              if not result.get('available') or any(result.get(field) is None for field in required_metrics)
+          ]
+          if failed:
+              raise SystemExit('PageSpeed live lab evidence incomplete for: '+', '.join(failed))
           PY
 
       - name: Publish evidence summary

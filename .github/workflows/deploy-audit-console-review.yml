@@ -1,0 +1,95 @@
+name: Deploy SEO Audit Studio review site
+
+on:
+  push:
+    branches:
+      - feature/production-audit-vouchers-owner-console
+    paths:
+      - "seo-audit-studio-admin.html"
+      - "_headers"
+      - "_redirects"
+      - "assets/**"
+      - ".github/workflows/deploy-audit-console-review.yml"
+      - "tests/seo-audit-studio-launch.test.cjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexusnova-audit-console-review-site
+  cancel-in-progress: true
+
+jobs:
+  deploy-review-site:
+    name: Test and deploy isolated review Pages site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the website branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run complete website tests
+        run: npm test
+
+      - name: Check JavaScript syntax and source quality
+        run: npm run check
+
+      - name: Parse the Owner Console inline JavaScript
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html = fs.readFileSync('seo-audit-studio-admin.html', 'utf8');
+          const start = html.indexOf('<script>');
+          const end = html.indexOf('</script>', start);
+          if (start < 0 || end < 0) throw new Error('Owner Console inline script was not found.');
+          new Function(html.slice(start + '<script>'.length, end));
+          console.log('Owner Console inline JavaScript syntax passed.');
+          NODE
+
+      - name: Deploy the static site to the review-only Cloudflare Pages project
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: "939503aa0d877dcd4708e2f107dbf668"
+          CF_PAGES_PROJECT: "nexusnova-seo-audit-studio-review"
+          REVIEW_SITE: "https://review.nexusnova-seo-audit-studio-review.pages.dev"
+        run: |
+          set -Eeuo pipefail
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is unavailable; no review or production site was changed."
+            exit 1
+          fi
+
+          rm -rf review-dist
+          mkdir -p review-dist
+
+          # Stage only public website files needed by the static review site.
+          find . -maxdepth 1 -type f -name '*.html' -exec cp -- '{}' review-dist/ \;
+          for path in _headers _redirects robots.txt sitemap.xml manifest.json site.webmanifest ads.txt app-ads.txt; do
+            if [[ -f "$path" ]]; then cp -- "$path" review-dist/; fi
+          done
+          for dir in assets data images fonts content; do
+            if [[ -d "$dir" ]]; then cp -a -- "$dir" review-dist/; fi
+          done
+
+          test -f review-dist/seo-audit-studio-admin.html
+          test -f review-dist/_headers
+          npx --yes wrangler@4 pages deploy review-dist --project-name "$CF_PAGES_PROJECT" --branch review
+
+          echo "::group::Verify deployed review Owner Console"
+          curl --fail --silent --show-error --retry 8 --retry-delay 4 --retry-all-errors \
+            "$REVIEW_SITE/seo-audit-studio-admin" \
+            --dump-header "$RUNNER_TEMP/review-owner-headers.txt" \
+            --output "$RUNNER_TEMP/review-owner-console.html"
+          grep -q 'function renderAuditReport' "$RUNNER_TEMP/review-owner-console.html"
+          grep -q 'Category scores' "$RUNNER_TEMP/review-owner-console.html"
+          grep -q 'Prioritized recommendations' "$RUNNER_TEMP/review-owner-console.html"
+          grep -qi 'no-store' "$RUNNER_TEMP/review-owner-headers.txt"
+          echo "Review Owner Console HTTP response, readable report renderer, recommendations, and no-store header verified."
+          echo "::endgroup::"

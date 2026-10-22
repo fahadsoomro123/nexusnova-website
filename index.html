@@ -83,18 +83,16 @@
   <meta name="twitter:description" content="Use 109 free online browser tools for PDFs, images, calculations and everyday tasks, plus Pakistan-first calculators and practical guides from NexusNova Tools.">
   <meta name="twitter:image" content="https://nexusnovatools.com/assets/logo.png?v=20261015-v4">
 
-  <link rel="preload" href="assets/js/search-core.js?v=20261015-v4" as="script">
-  <script src="assets/js/search-core.js?v=20261015-v4" defer></script>
   <script>(()=>{const signal=`${location.hash} ${location.search}`;const inTelegram=/tgWebAppData|tgWebAppVersion|tgWebAppPlatform/.test(signal)||!!window.TelegramWebviewProxy||!!window.TelegramWebview;if(!inTelegram)return;const sdk=document.createElement('script');sdk.src='assets/js/vendor/telegram-web-app.js?v=20261015-v4';sdk.async=true;sdk.onload=()=>{const bridge=document.createElement('script');bridge.src='assets/js/telegram-webapp.js?v=20261015-v4';bridge.async=false;document.head.appendChild(bridge)};document.head.appendChild(sdk)})();</script>
   <!-- GA4 regional basic-pageview default + explicit detailed opt-in: 20261015-cookie-consent-v1 -->
-<script src="assets/js/main.js?v=20261015-v4" defer></script>
+<script src="assets/js/main.js?v=20261015-v4&lcpAds=20261022-v2" defer></script>
   <link rel="stylesheet" href="assets/css/humanproof-hero-360.css?v=20261015-v4" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="assets/css/humanproof-hero-360.css?v=20261015-v4"></noscript>
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css?v=20261015-v4">
   <!-- Critical-path HumanProof hero: load its existing styling and markup before first paint,
        rather than waiting for the delayed shared footer/runtime loader. -->
-  <link rel="stylesheet" href="assets/css/humanproof-home.css?v=20261015-v4" data-humanproof-loader>
-  <script src="assets/js/humanproof-home.js?v=20261015-v4" data-humanproof-loader defer></script>
+  <link rel="stylesheet" href="assets/css/humanproof-home.css?v=20261022-user-triggered-3d-v1" data-humanproof-loader>
+  <script src="assets/js/humanproof-home.js?v=20261022-user-triggered-3d-v1" data-humanproof-loader defer></script>
 
   <style>
     :root{
@@ -476,6 +474,8 @@
 
 
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
+  <link rel="stylesheet" href="assets/css/seo-audit-launch.css?v=20261021-v6">
+  <script src="assets/js/seo-audit-launch.js?v=20261021-v3" defer></script>
 </head>
 <body>
   <div class="nn-consent" id="nexusnova-analytics-consent" data-nexusnova-consent role="region" aria-label="Privacy and analytics choices">
@@ -546,9 +546,106 @@
     </div>
   </header>
 
-  <main class="nn-main">    <section class="nn-step" aria-labelledby="new-tools-title">
+  <main class="nn-main">
+
+<section class="nn-audit-launch nn-shell" aria-labelledby="nn-audit-launch-title">
+      <div class="nn-audit-productbar">
+        <div class="nn-audit-product-brand">
+          <span class="nn-audit-product-logo" aria-hidden="true">N</span>
+          <span class="nn-audit-product-wordmark"><strong>NexusNova</strong><small>SEO AUDIT STUDIO</small></span>
+        </div>
+        <div class="nn-audit-product-meta"><span class="nn-audit-status-dot" aria-hidden="true"></span> Technical SEO workspace <span class="nn-audit-meta-divider">/</span> Evidence-based reports</div>
+      </div>
+
+      <div class="nn-audit-launch-grid">
+        <div class="nn-audit-launch-content">
+          <p class="nn-audit-launch-eyebrow"><span>WEBSITE DIAGNOSTICS</span><i aria-hidden="true"></i><span>BUILT FOR ACTION</span></p>
+          <h1 class="nn-audit-launch-title" id="nn-audit-launch-title">See what search engines see.</h1>
+          <p class="nn-audit-launch-description">Get a clearer view of your website’s technical SEO, crawlability, structured data and measured performance. Every finding belongs in a workflow you can actually use.</p>
+
+          <div class="nn-audit-value-list" aria-label="What makes Audit Studio useful">
+            <div><span class="nn-audit-value-check" aria-hidden="true">✓</span><div><strong>Evidence before scores</strong><small>See what was checked and what could not be measured.</small></div></div>
+            <div><span class="nn-audit-value-check" aria-hidden="true">✓</span><div><strong>Priorities, not a wall of warnings</strong><small>Find the issues that deserve attention first.</small></div></div>
+            <div><span class="nn-audit-value-check" aria-hidden="true">✓</span><div><strong>Clear next steps</strong><small>Understand the finding and what to investigate next.</small></div></div>
+          </div>
+
+          <div id="nnAuditLaunchOffer" class="nn-audit-launch-offer" hidden aria-live="polite"></div>
+          <div class="nn-audit-launch-actions">
+            <button type="button" id="nnAuditClaimVoucher" class="nn-audit-launch-button" disabled><span>Checking voucher availability…</span><span class="nn-audit-launch-arrow" aria-hidden="true">↗</span></button>
+            <a id="nnAuditLaunchCta" href="/seo-audit-studio.html" class="nn-audit-launch-secondary">Explore all audit checks <span aria-hidden="true">→</span></a>
+          </div>
+          <div id="nnAuditVoucherResult" class="nn-audit-voucher-result" hidden aria-live="polite">
+            <div><span class="nn-audit-voucher-label">YOUR VOUCHER CODE</span><strong id="nnAuditVoucherCode"></strong><small id="nnAuditVoucherExpiry">Saved in this browser tab for your audit.</small></div>
+            <button type="button" id="nnAuditCopyVoucher" class="nn-audit-voucher-copy">Copy code</button>
+          </div>
+          <p id="nnAuditVoucherStatus" class="nn-audit-voucher-status" role="status" aria-live="polite" hidden></p>
+          <p class="nn-audit-launch-note">Voucher terms and availability are confirmed by the audit service. No code is shown until it is issued by the backend.</p>
+        </div>
+
+        <aside class="nn-audit-workspace" aria-label="Audit Studio new audit workspace">
+          <div class="nn-audit-windowbar">
+            <div class="nn-audit-window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span class="nn-audit-window-title">SEO Audit Studio <b>/</b> New audit</span>
+            <span class="nn-audit-window-privacy"><i aria-hidden="true"></i> NEW AUDIT</span>
+          </div>
+          <div class="nn-audit-workspace-layout">
+            <nav class="nn-audit-sidebar" aria-label="Audit navigation preview">
+              <div class="nn-audit-sidebar-project">
+                <span class="nn-audit-sidebar-mark" aria-hidden="true">N</span>
+                <span><strong>Audit Studio</strong><small>Workspace</small></span>
+              </div>
+              <div class="nn-audit-sidebar-label">REPORT</div>
+              <div class="nn-audit-sidebar-link active"><span aria-hidden="true">▦</span> Overview</div>
+              <div class="nn-audit-sidebar-link"><span aria-hidden="true">≡</span> Findings</div>
+              <div class="nn-audit-sidebar-link"><span aria-hidden="true">◷</span> Performance</div>
+              <div class="nn-audit-sidebar-link"><span aria-hidden="true">☷</span> Checklist</div>
+              <div class="nn-audit-sidebar-bottom"><span class="nn-audit-sidebar-status"></span><span><strong>Ready for a URL</strong><small>No scan is running</small></span></div>
+            </nav>
+
+            <div class="nn-audit-workspace-main">
+              <div class="nn-audit-workspace-heading">
+                <div><p>WORKSPACE <span>/</span> OVERVIEW</p><h2>Start a website audit</h2><small>Enter a public URL to prepare your report.</small></div>
+                <span class="nn-audit-state-pill">NOT RUN</span>
+              </div>
+
+              <form id="nnAuditHomeForm" class="nn-audit-url-form" novalidate>
+                <label for="nnAuditLaunchUrl">Website address</label>
+                <div class="nn-audit-url-row">
+                  <span class="nn-audit-url-prefix" aria-hidden="true">↗</span>
+                  <input id="nnAuditLaunchUrl" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" aria-describedby="nnAuditHomeHelp nnAuditHomeError">
+                  <button type="submit">Continue <span aria-hidden="true">→</span></button>
+                </div>
+                <p id="nnAuditHomeError" class="nn-audit-home-error" role="status" aria-live="polite" hidden></p>
+                <p id="nnAuditHomeHelp" class="nn-audit-home-help">Homepage or a specific page. Audit Studio opens with this URL ready.</p>
+              </form>
+
+              <div class="nn-audit-mini-metrics">
+                <div><span>URLS CHECKED</span><strong>—</strong><small>After crawl</small></div>
+                <div><span>ISSUES FOUND</span><strong>—</strong><small>After checks</small></div>
+                <div><span>PERFORMANCE</span><strong>—</strong><small>When measured</small></div>
+              </div>
+
+              <div class="nn-audit-report-card">
+                <div class="nn-audit-report-card-head"><div><span>ISSUE EXPLORER</span><strong>Findings by priority</strong></div><span>WAITING FOR AUDIT</span></div>
+                <div class="nn-audit-table-head"><span>SEVERITY</span><span>FINDING</span><span>STATUS</span></div>
+                <div class="nn-audit-empty-state">
+                  <span class="nn-audit-empty-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <strong>Your report will appear here</strong>
+                  <p>Run an audit to populate findings, evidence and affected URLs.</p>
+                </div>
+              </div>
+              <div class="nn-audit-check-areas"><span>AREAS COVERED BY THE AUDIT</span><div><i>✓</i> On-page SEO</div><div><i>✓</i> Crawl signals</div><div><i>✓</i> Structured data</div><div><i>✓</i> Performance</div></div>
+            </div>
+          </div>
+          <div class="nn-audit-workspace-footer"><span><i aria-hidden="true"></i> Ready when you are</span><span>Scores appear only when evidence is available.</span></div>
+        </aside>
+      </div>
+      <div class="nn-audit-product-footer"><span><b>01</b> Enter a URL</span><i aria-hidden="true"></i><span><b>02</b> Review evidence</span><i aria-hidden="true"></i><span><b>03</b> Prioritise fixes</span></div>
+    </section>
+
+    <section class="nn-step" aria-labelledby="new-tools-title">
       <div class="nn-shell">
-        <div class="nn-step-head"><div><span class="nn-step-label">New utilities</span><h1 id="new-tools-title">Local & USA quick tools</h1><p class="nn-step-copy">Six focused utilities built for one-click results on mobile and desktop.</p></div></div>
+        <div class="nn-step-head"><div><span class="nn-step-label">New utilities</span><h2 id="new-tools-title">Local & USA quick tools</h2><p class="nn-step-copy">Six focused utilities built for one-click results on mobile and desktop.</p></div></div>
         <div class="nn-pakistan-highlight-grid">
           <a class="nn-pakistan-highlight-card" href="tools/quote-card-maker.html"><span class="nn-pakistan-highlight-label">Pakistan / Asia</span><h3>Quote Card Maker</h3><p>Turn Roman Urdu, Urdu or English text into an HD share card.</p></a>
           <a class="nn-pakistan-highlight-card" href="tools/gold-calculator-pakistan.html"><span class="nn-pakistan-highlight-label">Pakistan</span><h3>Gold & Jewellery Calculator</h3><p>Calculate karat-adjusted gold value, making charges and total.</p></a>
@@ -577,7 +674,7 @@
       const placement = document.querySelector('[data-nn-adsterra-placement]');
       const container = document.getElementById('container-b7cb02fa163a7585244e7c2876553cea');
       const status = document.querySelector('[data-nn-adsterra-status]');
-      if (!placement || !container || window.__nexusnovaAdsterraState) return;
+      if (!placement || !container || ['loading', 'loaded', 'retrying'].includes(window.__nexusnovaAdsterraState)) return;
 
       // Honor an explicit browser-level privacy opt-out signal.
       if (window.navigator?.globalPrivacyControl === true) {
@@ -585,19 +682,71 @@
         return;
       }
 
-      window.__nexusnovaAdsterraState = 'loading';
-      const script = document.createElement('script');
-      script.async = true;
-      script.setAttribute('data-cfasync', 'false');
-      script.src = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
-      script.addEventListener('load', () => {
-        window.__nexusnovaAdsterraState = 'loaded';
-      }, { once: true });
-      script.addEventListener('error', () => {
-        window.__nexusnovaAdsterraState = '';
-        if (status) status.textContent = 'The advertisement could not load right now. Please refresh later.';
-      }, { once: true });
-      container.parentNode.insertBefore(script, container);
+      const scriptUrl = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
+      const maxAttempts = 3;
+      let attempts = 0;
+      let retryTimer = 0;
+
+      const loadAdsterra = () => {
+        if (['loaded', 'loading'].includes(window.__nexusnovaAdsterraState)) return;
+        attempts += 1;
+        window.__nexusnovaAdsterraState = 'loading';
+
+        const script = document.createElement('script');
+        script.async = true;
+        script.setAttribute('data-cfasync', 'false');
+        script.dataset.nexusnovaAdsterra = '';
+        script.src = scriptUrl;
+
+        script.addEventListener('load', () => {
+          window.__nexusnovaAdsterraState = 'loaded';
+          if (status) status.textContent = '';
+        }, { once: true });
+
+        script.addEventListener('error', () => {
+          script.remove();
+          if (attempts < maxAttempts) {
+            window.__nexusnovaAdsterraState = 'retrying';
+            if (status) status.textContent = 'Ad network temporarily unavailable. Retrying (' + attempts + '/' + (maxAttempts - 1) + ')…';
+            retryTimer = window.setTimeout(() => {
+              window.__nexusnovaAdsterraState = '';
+              retryTimer = 0;
+              loadAdsterra();
+            }, attempts * 1000);
+            return;
+          }
+          window.__nexusnovaAdsterraState = 'failed';
+          if (status) status.textContent = 'The external ad network is unavailable right now. The website tools remain available.';
+        }, { once: true });
+
+        container.parentNode.insertBefore(script, container);
+      };
+
+      const scheduleAdLoad = () => {
+        if (window.__nexusnovaAdsterraState === 'loaded' || retryTimer) return;
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadAdsterra, { timeout: 1500 });
+        } else {
+          window.setTimeout(loadAdsterra, 300);
+        }
+      };
+
+      // The slot is below the featured content; do not fetch advertising code
+      // until a visitor scrolls near it. This saves work on visits that never
+      // reach the placement while still preloading before it enters view.
+      if (typeof window.IntersectionObserver === 'function') {
+        const observer = new IntersectionObserver(entries => {
+          if (entries.some(entry => entry.isIntersecting)) {
+            observer.disconnect();
+            scheduleAdLoad();
+          }
+        }, { rootMargin: '600px 0px', threshold: 0.01 });
+        observer.observe(placement);
+      } else if (document.readyState === 'complete') {
+        scheduleAdLoad();
+      } else {
+        window.addEventListener('load', scheduleAdLoad, { once: true });
+      }
     })();
     </script>
 
@@ -737,10 +886,10 @@
 
             </div>
             <div class="nn-humanproof-stage" aria-label="Interactive 360 degree HumanProof head">
-              <div class="nn-proof-360-holder" data-hp-360-holder data-hp-360-autostart>
+              <div class="nn-proof-360-holder" data-hp-360-holder>
                 <div class="nn-proof-360-viewer">
                   <canvas id="nnHumanProof360" aria-hidden="true"></canvas>
-                  <div class="nn-proof-360-load" id="nnHumanProof360Load">Loading 360° human scan…</div>
+                  <div class="nn-proof-360-load" id="nnHumanProof360Load">Click to load 3D human scan…</div>
                   <div class="nn-proof-360-scan" aria-hidden="true"></div>
                   <span class="nn-proof-360-status">LIVE HUMAN SIGNAL</span>
                   <span class="nn-proof-360-meta">360° rotation</span>
@@ -1880,19 +2029,55 @@
   <script type="module" src="assets/js/humanproof-hero-360.js?v=20261015-v4"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    (function () {
+      'use strict';
+      var yearNodes = document.querySelectorAll('[data-year]');
+      yearNodes.forEach(function (node) {
+        node.textContent = String(new Date().getFullYear());
+      });
+
+      var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');
+      var lazySearchInput = document.querySelector('[data-nexusnova-search-input]');
+      if (!lazySearchRoot || !lazySearchInput) return;
+
+      var homepageSearchInitialized = false;
+      function initializeOnSearchIntent() {
+        if (homepageSearchInitialized) return;
+        homepageSearchInitialized = true;
+        lazySearchRoot.removeEventListener('pointerdown', initializeOnSearchIntent);
+        lazySearchRoot.removeEventListener('focusin', initializeOnSearchIntent);
+        if (typeof window.NexusNovaSearchCore === 'function') {
+          initializeHomepageSearch();
+          return;
+        }
+        var searchCoreScript = document.createElement('script');
+        searchCoreScript.src = '/assets/js/search-core.js?v=20261015-v4';
+        searchCoreScript.async = true;
+        searchCoreScript.onload = initializeHomepageSearch;
+        searchCoreScript.onerror = initializeHomepageSearch;
+        document.head.appendChild(searchCoreScript);
+      }
+
+      lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });
+      lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });
+
+      // Preserve Ctrl/Cmd+K without building the catalog during initial page load.
+      document.addEventListener('keydown', function (event) {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !homepageSearchInitialized) {
+          event.preventDefault();
+          lazySearchInput.focus();
+          lazySearchInput.select();
+        }
+      }, true);
+
+    function initializeHomepageSearch() {
       'use strict';
 
       var root = document.querySelector('[data-nexusnova-search-root]');
       var form = document.querySelector('[data-nexusnova-search]');
       var input = document.querySelector('[data-nexusnova-search-input]');
       var panel = document.getElementById('nn-search-suggestions');
-      var yearNodes = document.querySelectorAll('[data-year]');
       var directoryNodes = Array.prototype.slice.call(document.querySelectorAll('[data-master-tool]'));
-
-      yearNodes.forEach(function (node) {
-        node.textContent = String(new Date().getFullYear());
-      });
 
       if (!root || !form || !input || !panel) {
         return;
@@ -2286,7 +2471,9 @@
       });
 
       clearPanel();
-    });
+      if (input.value.trim()) runQuery();
+    }
+    })();
   </script>
 </body>
 </html>

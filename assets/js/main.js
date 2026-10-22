@@ -53,15 +53,55 @@
   }
 
   // Load AdSense on public, indexable pages only and after consent defaults.
-  // Defer the homepage request until the load event + an idle callback so the
-  // first render/LCP is not competing with the heavy advertising runtime.
-  // Inner pages retain their current early async injection behavior.
+  // On the homepage, wait until Largest Contentful Paint has stopped updating,
+  // the load event has fired, and the main thread reaches idle. This avoids
+  // waking the advertising runtime during first-render/LCP work. A bounded
+  // fallback preserves ad loading on browsers without LCP PerformanceObserver.
+  // Inner pages retain their existing async injection behavior.
   const adsenseScriptSelector='script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]';
   const isLocalAuditHost=/^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
   const robotsDirective=document.querySelector('meta[name="robots"]')?.getAttribute('content')||'';
   const isNoindexPage=/\bnoindex\b/i.test(robotsDirective);
   const restrictedPage=/^\/(?:404\.html|account\.html|account-deletion\.html|register\.html|app\.html)$/i.test(location.pathname);
   const isHomepage=location.pathname==='/'||/\/index\.html$/.test(location.pathname);
+  const scheduleAfterLargestContentfulPaint=(task,options={})=>{
+    const delay=Number.isFinite(options.delay)?options.delay:2500;
+    const fallbackDelay=Number.isFinite(options.fallbackDelay)?options.fallbackDelay:7000;
+    const idleTimeout=Number.isFinite(options.idleTimeout)?options.idleTimeout:1500;
+    let scheduled=false;
+    let lcpSettled=false;
+    let pageLoaded=document.readyState==='complete';
+    let observer=null;
+    let quietTimer=0;
+    let fallbackTimer=0;
+    const scheduleIfReady=()=>{
+      if(scheduled||!lcpSettled||!pageLoaded)return;
+      scheduled=true;
+      window.clearTimeout(quietTimer);
+      window.clearTimeout(fallbackTimer);
+      if(observer){observer.disconnect();observer=null;}
+      window.setTimeout(()=>{
+        if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(task,{timeout:idleTimeout});
+        else window.setTimeout(task,250);
+      },delay);
+    };
+    const markLcpSettled=()=>{
+      window.clearTimeout(quietTimer);
+      quietTimer=window.setTimeout(()=>{lcpSettled=true;scheduleIfReady();},1200);
+    };
+    if(!pageLoaded)window.addEventListener('load',()=>{pageLoaded=true;scheduleIfReady();},{once:true});
+    fallbackTimer=window.setTimeout(()=>{lcpSettled=true;scheduleIfReady();},fallbackDelay);
+    try{
+      if(typeof window.PerformanceObserver==='function'){
+        observer=new window.PerformanceObserver(list=>{
+          if(list.getEntries().length)markLcpSettled();
+        });
+        observer.observe({type:'largest-contentful-paint',buffered:true});
+      }
+    }catch(_){
+      if(observer){observer.disconnect();observer=null;}
+    }
+  };
   const insertAdsenseScript=()=>{
     if(isLocalAuditHost||isNoindexPage||restrictedPage||document.querySelector(adsenseScriptSelector))return;
     const adsenseScript=document.createElement('script');
@@ -72,30 +112,40 @@
     document.head.appendChild(adsenseScript);
   };
   if(isHomepage&&!isLocalAuditHost&&!isNoindexPage&&!restrictedPage&&!document.querySelector(adsenseScriptSelector)){
-    const scheduleAfterLoad=()=>{
-      if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(insertAdsenseScript,{timeout:4000});
-      else window.setTimeout(insertAdsenseScript,1500);
-    };
-    if(document.readyState==='complete')scheduleAfterLoad();
-    else window.addEventListener('load',scheduleAfterLoad,{once:true});
+    scheduleAfterLargestContentfulPaint(insertAdsenseScript,{delay:2500,fallbackDelay:7000,idleTimeout:1500});
   }else{
     insertAdsenseScript();
   }
 
   const isProductionAnalyticsHost=/^(?:www\.)?nexusnovatools\.com$/i.test(location.hostname);
-  if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){
-    window.gtag('js',new Date());
-    const analyticsScript=document.createElement('script');
-    analyticsScript.async=true;
-    analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
-    analyticsScript.dataset.nexusnovaGa4='';
-    analyticsScript.onload=()=>window.gtag('config',measurementId,{
-      send_page_view:true,
-      allow_google_signals:false,
-      allow_ad_personalization_signals:false,
-      ads_data_redaction:true
-    });
-    document.head.appendChild(analyticsScript);
+  const initializeGa4=()=>{
+    if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){
+      // Queue GA4 configuration before injection. gtag's dataLayer stub retains
+      // the page_view and any early events until the async library is ready.
+      window.gtag('js',new Date());
+      window.gtag('config',measurementId,{
+        send_page_view:true,
+        allow_google_signals:false,
+        allow_ad_personalization_signals:false,
+        ads_data_redaction:true
+      });
+      const analyticsScript=document.createElement('script');
+      analyticsScript.async=true;
+      analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
+      analyticsScript.dataset.nexusnovaGa4='';
+      analyticsScript.onerror=()=>{
+        analyticsScript.dataset.nexusnovaGa4Failed='true';
+      };
+      document.head.appendChild(analyticsScript);
+    }
+  };
+  if(isProductionAnalyticsHost&&isHomepage){
+    // Homepage GA4 is queued only after first content has settled, then loaded
+    // during idle time. This moves network and script evaluation off the LCP
+    // critical path while retaining consent defaults and the queued page_view.
+    scheduleAfterLargestContentfulPaint(initializeGa4,{delay:500,fallbackDelay:4000,idleTimeout:1500});
+  }else{
+    initializeGa4();
   }
 
   window.__nexusnovaLoadAnalytics=choice=>{

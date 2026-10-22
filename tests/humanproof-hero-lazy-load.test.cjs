@@ -33,3 +33,13 @@ test('manual-load mode and the approved placeholder remain available', () => {
   assert.match(source, /scene\.add\(new THREE\.AmbientLight/);
   assert.match(source, /LeePerrySmith\.glb/);
 });
+
+
+test('homepage 3D scan uses the default explicit-load mode rather than automatic playback', () => {
+  const homepage = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.doesNotMatch(homepage, /data-hp-360-autostart/);
+  assert.match(homepage, /id="nnHumanProof360Load">Click to load 3D human scan…<\/div>/);
+  assert.match(source, /CLICK TO LOAD 3D HUMAN SCAN/);
+  assert.match(source, /load\.addEventListener\('click',start,\{once:true\}\)/);
+  assert.match(source, /load\.addEventListener\('keydown'/);
+});
