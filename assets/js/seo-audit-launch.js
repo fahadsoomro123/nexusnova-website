@@ -12,6 +12,15 @@
   const homeForm=document.getElementById('nnAuditHomeForm');
   const homeUrl=document.getElementById('nnAuditLaunchUrl');
   const homeError=document.getElementById('nnAuditHomeError');
+  const claimPanel=document.getElementById('nnAuditClaimPanel');
+  const claimForm=document.getElementById('nnAuditClaimForm');
+  const claimRequirementsNode=document.getElementById('nnAuditClaimRequirements');
+  const proofUrlInput=document.getElementById('nnAuditProofUrl');
+  const proofNoteInput=document.getElementById('nnAuditProofNote');
+  const termsAcceptedInput=document.getElementById('nnAuditTermsAccepted');
+  const submitClaimButton=document.getElementById('nnAuditSubmitClaim');
+  const checkClaimButton=document.getElementById('nnAuditCheckClaim');
+  const claimReviewStatus=document.getElementById('nnAuditClaimReviewStatus');
   if(homeForm&&homeUrl){
     homeForm.addEventListener('submit',event=>{
       event.preventDefault();
@@ -44,8 +53,12 @@
   const ALLOWED_ORIGINS=new Set(['https://nexusnovatools.com','https://www.nexusnovatools.com',REVIEW_ORIGIN]);
   const SESSION_KEY='nexusnova_audit_session_v1';
   const VOUCHER_KEY='nexusnova_audit_voucher_v1';
+  const CLAIM_KEY='nexusnova_voucher_claim_request_v1';
   let voucherServiceReady=false;
   let voucherAlreadyClaimed=false;
+  let activeCampaign=null;
+  let pendingClaimId='';
+  try{const savedClaim=window.sessionStorage.getItem(CLAIM_KEY)||'';if(/^[0-9a-f-]{36}$/i.test(savedClaim))pendingClaimId=savedClaim;}catch{}
   try{
     const existing=window.sessionStorage.getItem(VOUCHER_KEY)||'';
     if(/^[A-Z0-9-]{8,40}$/.test(existing)){
@@ -112,46 +125,165 @@
     if(!response.ok)throw new Error(payload.error||'The launch offer could not be checked.');
     return payload;
   }
-  async function claimVoucher(){
+  const claimStatus=(message,tone='')=>{
+    if(!claimReviewStatus)return;
+    claimReviewStatus.hidden=false;
+    claimReviewStatus.textContent=message;
+    if(tone)claimReviewStatus.dataset.tone=tone;else delete claimReviewStatus.dataset.tone;
+  };
+  function renderClaimRequirements(items){
+    if(!claimRequirementsNode)return;
+    claimRequirementsNode.replaceChildren();
+    (Array.isArray(items)?items:[]).forEach(item=>{
+      if(!item||typeof item.id!=='string'||typeof item.label!=='string')return;
+      const li=document.createElement('li'),label=document.createElement('label'),check=document.createElement('input'),span=document.createElement('span');
+      check.type='checkbox';check.name='completedRequirements';check.value=item.id;check.required=true;
+      span.textContent=item.label;
+      label.className='nn-audit-claim-step';label.append(check,span);li.append(label);claimRequirementsNode.append(li);
+    });
+  }
+  function clearPendingClaim(){
+    pendingClaimId='';
+    try{window.sessionStorage.removeItem(CLAIM_KEY);}catch{}
+  }
+  function showVoucherCode(payload){
+    if(typeof payload.code!=='string'||!/^NN-[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}$/.test(payload.code))throw new Error('The approved voucher response was invalid.');
+    voucherAlreadyClaimed=true;
+    try{window.sessionStorage.setItem(VOUCHER_KEY,payload.code);}catch{}
+    codeNode.textContent=payload.code;
+    const ends=displayDate(payload.expiresAt);
+    if(expiryNode)expiryNode.textContent=ends?'Owner-approved. Valid until '+ends+'. Saved in this browser tab.':'Owner-approved. Saved in this browser tab for your audit.';
+    resultBox.hidden=false;
+    cta.textContent='Start your audit with this voucher →';
+    cta.href='/seo-audit-studio.html';
     claimButton.disabled=true;
-    claimButton.querySelector('span').textContent='Checking your voucher…';
+    claimButton.querySelector('span').textContent='Voucher approved';
+    if(claimForm)claimForm.hidden=true;
+    if(checkClaimButton)checkClaimButton.hidden=true;
+    claimStatus('Your post was verified by the owner. Your voucher is now unlocked. Apply it in Audit Studio for this browser session.','success');
+    status('Voucher unlocked after owner verification.','success');
+    clearPendingClaim();
+  }
+  async function checkClaimStatus(){
+    if(!pendingClaimId)return;
+    if(checkClaimButton)checkClaimButton.disabled=true;
     try{
       const token=await getSessionToken();
-      const response=await fetch(API_BASE_URL+'/api/promotions/claim',{method:'POST',mode:'cors',credentials:'omit',cache:'no-store',headers:{Accept:'application/json',Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});
+      const response=await fetch(API_BASE_URL+'/api/promotions/claim-status?claimId='+encodeURIComponent(pendingClaimId),{
+        method:'GET',mode:'cors',credentials:'omit',cache:'no-store',
+        headers:{Accept:'application/json',Authorization:'Bearer '+token}
+      });
       const payload=await response.json().catch(()=>({}));
-      if(!response.ok||payload.ok!==true||typeof payload.code!=='string')throw new Error(payload.error||'Free launch vouchers are temporarily unavailable. You can still run a free audit preview.');
-      try{window.sessionStorage.setItem(VOUCHER_KEY,payload.code);}catch{}
-      codeNode.textContent=payload.code;
-      const ends=displayDate(payload.expiresAt);
-      if(expiryNode)expiryNode.textContent=ends?'Valid until '+ends+'. Saved in this browser tab.':'Saved in this browser tab for your audit.';
-      resultBox.hidden=false;
-      cta.textContent='Start your audit with this voucher →';
-      cta.href='/seo-audit-studio.html';
-      const reviewDemo=payload.previewSimulation===true;
-      status(reviewDemo
-        ?'Demo voucher claimed for this review preview only. It is not a real voucher; audit findings and report unlocks are simulated.'
-        :'Voucher claimed. Open Audit Studio and run your website audit; the voucher will be applied to that report.','success');
-      claimButton.querySelector('span').textContent=reviewDemo?'Demo voucher claimed':'Voucher claimed';
-      if(reviewDemo)cta.textContent='Open demo Audit Studio →';
+      if(!response.ok||payload.ok!==true)throw new Error(payload.error||'Could not check verification status.');
+      if(payload.status==='approved'&&typeof payload.code==='string'){
+        showVoucherCode(payload);
+      }else if(payload.status==='approved'){
+        claimStatus(payload.message||'The request was approved, but no active voucher is available. Contact the site owner.','error');
+      }else if(payload.status==='rejected'){
+        claimStatus(payload.reviewNote||'The submitted proof was not approved. Review the required steps and submit new proof.','error');
+        clearPendingClaim();
+        if(claimForm)claimForm.hidden=false;
+        if(submitClaimButton)submitClaimButton.disabled=false;
+        if(checkClaimButton)checkClaimButton.hidden=true;
+        claimButton.disabled=false;
+        claimButton.querySelector('span').textContent='Review and resubmit proof';
+      }else if(payload.status==='expired'){
+        claimStatus('This verification request expired before approval. No voucher was issued. Submit proof again if the campaign is still active.','error');
+        clearPendingClaim();
+        if(claimForm)claimForm.hidden=false;
+        if(checkClaimButton)checkClaimButton.hidden=true;
+        if(submitClaimButton)submitClaimButton.disabled=false;
+        claimButton.disabled=false;
+        claimButton.querySelector('span').textContent='Submit proof for verification';
+      }else if(payload.status==='pending'){
+        claimStatus(payload.message||'Your request is waiting for owner verification. No voucher code has been issued yet.');
+        if(checkClaimButton)checkClaimButton.hidden=false;
+      }else{
+        claimStatus('The verification service returned an unknown request status. No voucher code was issued.','error');
+      }
     }catch(error){
-      const networkError=error&&error.message==='Failed to fetch';
-      status(networkError
-        ?(window.location.origin===REVIEW_ORIGIN
-          ?'The isolated voucher service stopped responding. No code was issued; this preview will not contact the production voucher service.'
-          :'The voucher service could not be reached. No code was issued. Please retry shortly.')
-        :(error.message||'Could not claim the voucher. No code was issued.'));
-      claimButton.querySelector('span').textContent=voucherServiceReady?'Try claiming your voucher again':'Voucher service unavailable';
-      claimButton.disabled=!voucherServiceReady;
+      claimStatus(error.message||'Verification status is temporarily unavailable. No voucher was issued.','error');
+    }finally{
+      if(checkClaimButton)checkClaimButton.disabled=false;
     }
   }
+  async function submitClaimRequest(event){
+    event.preventDefault();
+    if(!voucherServiceReady||!activeCampaign||activeCampaign.claimEnabled!==true){
+      claimStatus('The owner has not configured voucher verification for this campaign. No code was issued.','error');return;
+    }
+    const requirements=[...claimRequirementsNode.querySelectorAll('input[name="completedRequirements"]')];
+    const completedRequirements=requirements.filter(item=>item.checked).map(item=>item.value);
+    if(requirements.length===0||completedRequirements.length!==requirements.length){
+      claimStatus('Complete every required step before you submit your public post proof.','error');return;
+    }
+    const proofUrl=proofUrlInput.value.trim();
+    let parsed;
+    try{parsed=new URL(proofUrl);}catch{claimStatus('Enter the public post/proof URL.','error');proofUrlInput.focus();return;}
+    if(parsed.protocol!=='https:'||parsed.username||parsed.password||!parsed.hostname.includes('.')){
+      claimStatus('Use a public HTTPS post/proof URL without credentials.','error');proofUrlInput.focus();return;
+    }
+    if(!termsAcceptedInput.checked){claimStatus('Confirm that you completed the steps and agree to these voucher terms.','error');return;}
+    submitClaimButton.disabled=true;
+    claimButton.disabled=true;
+    try{
+      const token=await getSessionToken();
+      const response=await fetch(API_BASE_URL+'/api/promotions/claim',{
+        method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
+        headers:{Accept:'application/json',Authorization:'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          campaignId:activeCampaign.id,
+          completedRequirements,
+          proofUrl:parsed.href,
+          proofNote:proofNoteInput.value.trim(),
+          termsAccepted:termsAcceptedInput.checked
+        })
+      });
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||payload.ok!==true)throw new Error(payload.error||'Could not submit voucher verification. No code was issued.');
+      if(typeof payload.code==='string'){
+        showVoucherCode(payload);
+        return;
+      }
+      if(payload.status!=='pending'||typeof payload.claimId!=='string')throw new Error('The verification service returned an invalid request state. No code was issued.');
+      pendingClaimId=payload.claimId;
+      try{window.sessionStorage.setItem(CLAIM_KEY,pendingClaimId);}catch{}
+      claimForm.hidden=true;
+      checkClaimButton.hidden=false;
+      claimButton.querySelector('span').textContent='Verification pending';
+      claimButton.disabled=true;
+      claimStatus('Proof submitted. Your voucher stays locked until the owner opens your public post, checks every required step, and approves this request.','success');
+      status('Proof submitted for owner verification. No voucher code has been issued yet.');
+    }catch(error){
+      claimStatus(error.message||'Could not submit proof. No voucher code was issued.','error');
+      submitClaimButton.disabled=false;
+      claimButton.disabled=false;
+      claimButton.querySelector('span').textContent='Try submitting proof again';
+    }
+  }
+  if(claimForm)claimForm.addEventListener('submit',submitClaimRequest);
+  if(checkClaimButton)checkClaimButton.addEventListener('click',checkClaimStatus);
   claimButton.addEventListener('click',()=>{
-    if(!voucherServiceReady){
+    if(!voucherServiceReady||!activeCampaign){
       status(window.location.origin===REVIEW_ORIGIN
-        ?'Voucher claims are not connected to the isolated review service yet. No voucher was issued; this preview will not create a production voucher.'
+        ?'The isolated voucher service is unavailable. No voucher was issued.'
         :'Voucher availability has not been confirmed. No code was issued.');
       return;
     }
-    claimVoucher();
+    if(activeCampaign.claimEnabled!==true){
+      status(activeCampaign.disabledReason||'Voucher verification steps and public-post review have not been configured. No code can be issued.','error');
+      claimButton.disabled=true;
+      return;
+    }
+    if(claimPanel)claimPanel.hidden=false;
+    if(claimForm)claimForm.hidden=Boolean(pendingClaimId);
+    if(pendingClaimId){
+      if(checkClaimButton)checkClaimButton.hidden=false;
+      void checkClaimStatus();
+    }else{
+      claimPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
+      if(proofUrlInput)proofUrlInput.focus({preventScroll:true});
+    }
   });
   copyButton?.addEventListener('click',async()=>{
     const code=codeNode.textContent.trim();
@@ -178,6 +310,9 @@
       }
       return;
     }
+    activeCampaign=campaign;
+    const requirements=Array.isArray(campaign.claimRequirements)?campaign.claimRequirements:[];
+    renderClaimRequirements(requirements);
     const label=offerLabel(campaign);
     if(!label){
       if(!voucherAlreadyClaimed){
@@ -197,8 +332,21 @@
     if(campaign.terms&&typeof campaign.terms==='string'){const terms=document.createElement('span');terms.className='nn-audit-launch-terms';terms.textContent=campaign.terms;offerBox.append(terms);}
     offerBox.hidden=false;
     if(!voucherAlreadyClaimed){
-      claimButton.disabled=false;
-      claimButton.querySelector('span').textContent='Claim your free full-audit voucher';
+      claimButton.disabled=campaign.claimEnabled!==true;
+      claimButton.querySelector('span').textContent=campaign.claimEnabled===true?'Complete steps & submit proof':'Voucher verification not configured';
+      if(campaign.claimEnabled!==true){
+        if(claimPanel)claimPanel.hidden=false;
+        if(claimForm)claimForm.hidden=true;
+        claimStatus(campaign.disabledReason||'The owner has not configured the required steps and post verification. No code can be issued yet.','error');
+        status('Voucher claims are paused until the owner configures the requirements and proof-review rules. No voucher was issued.','error');
+      }else if(pendingClaimId){
+        if(claimPanel)claimPanel.hidden=false;
+        if(claimForm)claimForm.hidden=true;
+        if(checkClaimButton)checkClaimButton.hidden=false;
+        claimButton.disabled=true;
+        claimButton.querySelector('span').textContent='Verification pending';
+        void checkClaimStatus();
+      }
     }
   }).catch(()=>{
     voucherServiceReady=false;

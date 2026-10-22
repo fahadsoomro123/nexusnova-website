@@ -475,7 +475,7 @@
 
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
   <link rel="stylesheet" href="assets/css/seo-audit-launch.css?v=20261023-v1">
-  <script src="assets/js/seo-audit-launch.js?v=20261021-v3" defer></script>
+  <script src="assets/js/seo-audit-launch.js?v=20261023-claim-verify-v1" defer></script>
 </head>
 <body>
   <div class="nn-consent" id="nexusnova-analytics-consent" data-nexusnova-consent role="region" aria-label="Privacy and analytics choices">
@@ -572,9 +572,27 @@
             <button type="button" id="nnAuditCopyVoucher" class="nn-audit-voucher-copy">Copy code</button>
           </div>
           <p id="nnAuditVoucherStatus" class="nn-audit-voucher-status" role="status" aria-live="polite" hidden></p>
+          <section id="nnAuditClaimPanel" class="nn-audit-claim-panel" hidden aria-labelledby="nnAuditClaimTitle">
+            <div class="nn-audit-claim-heading">
+              <h2 id="nnAuditClaimTitle">Complete the steps to claim your voucher</h2>
+              <p>The voucher stays locked until your proof is checked by the NexusNova owner.</p>
+            </div>
+            <ol id="nnAuditClaimRequirements" class="nn-audit-claim-requirements"></ol>
+            <form id="nnAuditClaimForm" class="nn-audit-claim-form">
+              <label for="nnAuditProofUrl">Public post / proof URL <span>Required</span></label>
+              <input id="nnAuditProofUrl" name="proofUrl" type="url" inputmode="url" maxlength="1000" autocomplete="url" placeholder="https://…" required>
+              <p class="nn-audit-claim-hint">Use a link the owner can open to verify the post. Private links, screenshots without a viewable source, and non-HTTPS links cannot be verified.</p>
+              <label for="nnAuditProofNote">Additional verification details <span>Optional</span></label>
+              <textarea id="nnAuditProofNote" name="proofNote" rows="2" maxlength="500" placeholder="Any context that helps verify your post"></textarea>
+              <label class="nn-audit-claim-consent"><input id="nnAuditTermsAccepted" name="termsAccepted" type="checkbox" required><span>I have completed every required step above and agree to the displayed voucher terms.</span></label>
+              <button id="nnAuditSubmitClaim" class="nn-audit-claim-submit" type="submit">Submit proof for verification</button>
+            </form>
+            <div id="nnAuditClaimReviewStatus" class="nn-audit-claim-review-status" role="status" aria-live="polite" hidden></div>
+            <button id="nnAuditCheckClaim" class="nn-audit-claim-check" type="button" hidden>Check verification status</button>
+          </section>
           <details class="nn-audit-voucher-terms">
             <summary>Voucher terms</summary>
-            <p>One single-use report voucher per browser session while the verified campaign has capacity. It expires with the campaign.</p>
+            <p>Voucher eligibility is defined by the active campaign's displayed terms and required steps. Complete each step, submit a public HTTPS post/proof URL, and accept the terms. The voucher remains locked until the NexusNova owner manually verifies the post and approves the request. A checklist, form submission or screenshot alone does not issue a voucher. Approved codes are single-use, session-bound and expire with the campaign.</p>
           </details>
         </div>
 

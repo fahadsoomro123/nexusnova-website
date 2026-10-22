@@ -16,7 +16,11 @@ const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 test('voucher is issued only by the active backend campaign and public copy stays concise', () => {
   assert.match(home, /class="nn-audit-voucher-terms"/);
   assert.match(home, /<summary>Voucher terms<\/summary>/);
-  assert.match(home, /One single-use report voucher per browser session/);
+  assert.match(home, /the active campaign's displayed terms and required steps/i);
+  assert.match(home, /id="nnAuditClaimPanel"/);
+  assert.match(home, /id="nnAuditProofUrl"/);
+  assert.match(home, /id="nnAuditTermsAccepted"/);
+  assert.match(home, /manually verifies the post and approves the request/i);
   assert.doesNotMatch(home, /Sharing is optional|twitter\.com\/intent\/tweet|facebook\.com\/sharer\/sharer\.php|Share on X|Share on Facebook/);
   assert.doesNotMatch(home, /Only server-issued vouchers are displayed|nn-audit-launch-note/);
   assert.match(launchJs, /\/api\/promotions\/active/);
@@ -57,7 +61,10 @@ test('saved vouchers are applied to the current audit once, not blindly unlocked
 
 test('Owner Console is noindex, token stays in memory, and campaign offers are free-report only', () => {
   assert.match(admin, /name="robots" content="noindex,nofollow,noarchive"/);
-  assert.match(admin, /const state=\{token:'',campaigns:\[\],codes:\[\],redemptions:\[\],audits:\[\]\}/);
+  assert.match(admin, /const state=\{token:'',campaigns:\[\],codes:\[\],redemptions:\[\],claimRequests:\[\],audits:\[\]\}/);
+  assert.match(admin, /id="campaignClaimRequirements"/);
+  assert.match(admin, /id="claimReviewList"/);
+  assert.match(admin, /Approve and issue voucher/);
   assert.match(admin, /headers\.set\('X-Owner-Admin-Token',state\.token\)/);
   assert.match(admin, /state\.token=''/);
   assert.doesNotMatch(admin, /localStorage|sessionStorage|document\.cookie/);
