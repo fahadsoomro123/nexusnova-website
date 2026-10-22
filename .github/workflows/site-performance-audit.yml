@@ -2,7 +2,7 @@ name: NexusNova Site Performance Audit
 
 on:
   push:
-    branches: [main, feature/production-audit-vouchers-owner-console]
+    branches: [main]
     paths:
       - '.github/workflows/site-performance-audit.yml'
       - '**/*.html'
