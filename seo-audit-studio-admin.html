@@ -303,7 +303,8 @@
     entries.forEach(([key,value])=>{
       const meta=categoryMeta[key]||{},measured=typeof value==='number'&&Number.isFinite(value),score=measured?Math.max(0,Math.min(100,value)):null;
       const item=reportElement('div','','report-category'),head=reportElement('div','','report-category-head'),left=reportElement('div',categoryNames[key]||reportLabel(key),'report-category-title');
-      head.append(left,reportElement('div',measured?score+'/100':'Not measured','report-category-score'));
+      const scoreLabel=meta.status==='not_applicable'?'Not applicable':measured?score+'/100':'Not measured';
+      head.append(left,reportElement('div',scoreLabel,'report-category-score'));
       item.append(head);
       if(measured){const bar=reportElement('div','','report-bar'),fill=reportElement('div','','report-bar-fill');fill.style.width=score+'%';bar.append(fill);item.append(bar);}
       const state=meta.status|| (measured?'measured':'not_measured');
@@ -351,7 +352,7 @@
     });
     recSection.append(recList);shell.append(recSection);
 
-    const checks=Array.isArray(report.checks)?report.checks:[];
+    const checks=Array.isArray(report.checks)?report.checks.filter(item=>item.category!=='Audit scoring'):[];
     const checkSection=reportSection('All audit checks',checks.length+' individual checks returned by the audit engine.');
     const checkList=reportElement('div','','report-check-list');
     if(!checks.length)checkList.append(reportElement('div','No individual check details were returned.','report-empty'));
