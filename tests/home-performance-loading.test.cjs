@@ -112,3 +112,15 @@ test('homepage Lighthouse workflow compares AdSense locally without changing pro
   assert.ok(workflow.indexOf('Run representative Lighthouse audits') < workflow.indexOf('Diagnose homepage AdSense contribution'))
   assert.ok(workflow.indexOf('Diagnose homepage AdSense contribution') < workflow.indexOf('Enforce lab performance budgets'))
 });
+
+
+test('homepage defers the decorative WebGL runtime and model until explicit user intent', () => {
+  const script = fs.readFileSync('assets/js/humanproof-home.js', 'utf8');
+  assert.ok(script.includes('data-hp-v20-load'), '3D scan must expose an explicit load control');
+  assert.ok(script.includes("loading.addEventListener('click'"), 'only a user click should start the 3D scan');
+  assert.ok(script.includes('void initV20()'), 'the existing interactive scan remains available after activation');
+  assert.ok(!script.includes('window.requestIdleCallback(startV20'), 'idle time alone must not initialize WebGL');
+  assert.ok(!script.includes('window.setTimeout(startV20,700)'), 'fallback timers must not auto-start the heavy model');
+  assert.ok(script.includes('LeePerrySmith/LeePerrySmith.glb'), 'the model remains available');
+  assert.ok(!script.includes('three.js@master/'), 'external model source must be pinned to a stable release');
+});
