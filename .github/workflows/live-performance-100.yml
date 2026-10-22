@@ -44,7 +44,8 @@ jobs:
           node --check assets/js/main.js
           node --test tests/homepage-adsense-defer.test.cjs
           grep -Fq "const measurementId='G-YLPFKWSS12';" assets/js/main.js
-          grep -Fq "window.requestIdleCallback(insertAdsenseScript,{timeout:4000})" assets/js/main.js
+          grep -Fq "const scheduleAfterLargestContentfulPaint=(task,options={})=>" assets/js/main.js
+          grep -Fq "scheduleAfterLargestContentfulPaint(insertAdsenseScript,{delay:2500,fallbackDelay:7000,idleTimeout:1500})" assets/js/main.js
           ! grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
 
   live-lighthouse:
@@ -68,7 +69,8 @@ jobs:
           grep -Fq "window.__nexusnovaLoadAnalytics=choice=>{" assets/js/main.js
           grep -Fq "const adsenseScriptSelector=" assets/js/main.js
           grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" assets/js/main.js
-          grep -Fq "window.requestIdleCallback(insertAdsenseScript,{timeout:4000})" assets/js/main.js
+          grep -Fq "const scheduleAfterLargestContentfulPaint=(task,options={})=>" assets/js/main.js
+          grep -Fq "scheduleAfterLargestContentfulPaint(insertAdsenseScript,{delay:2500,fallbackDelay:7000,idleTimeout:1500})" assets/js/main.js
           ! grep -Fq "adsbygoogle.js?client=ca-pub-5070673529890078" index.html
           ! grep -Fq "mountChoices" assets/js/main.js
           node --test tests/homepage-adsense-defer.test.cjs
