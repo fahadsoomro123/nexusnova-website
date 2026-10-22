@@ -185,7 +185,12 @@ test('Owner Console renders full audit reports as readable sections instead of a
   assert.match(admin, /Website and measurement details/);
   assert.match(admin, /Download raw report JSON/);
   assert.match(admin, /report\.checks\)\?report\.checks\.filter\(item=>item\.category!=='Audit scoring'\)/);
-  assert.match(admin, /meta\.status==='not_applicable'\?'Not applicable'/);
+  assert.match(admin, /const notApplicable=state==='not_applicable'/);
+  assert.match(admin, /reportBadge\(notApplicable\?'Not applicable':reportLabel\(state\),state\)/);
+  assert.match(admin, /status==='pass'\?'Guidance'/);
+  assert.match(admin, /status==='info'\?'Interpretation \/ applicability'/);
+  assert.match(admin, /PageSpeed opportunities/);
+  assert.match(admin, /PageSpeed diagnostics/);
   assert.match(admin, /Source coverage/);
   assert.match(admin, /Category coverage/);
   assert.match(admin, /item\\.fix\\|\\|item\\.recommendation\\|\\|item\\.action/);
