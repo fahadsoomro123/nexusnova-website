@@ -296,6 +296,25 @@
 
 .nn-audit-workspace-layout-simple{grid-template-columns:minmax(0,1fr)!important;min-height:0}
 
+.nn-audit-launch .nn-audit-claim-panel{margin-top:14px;padding:16px;border:1px solid rgba(216,194,154,.42);border-radius:8px;background:#fff;color:#25354d}
+.nn-audit-launch .nn-audit-claim-heading h2{margin:0;color:#18263b;font:700 18px/1.25 Georgia,"Times New Roman",serif}
+.nn-audit-launch .nn-audit-claim-heading p{margin:6px 0 12px;color:#5e6e82;font-size:11px;line-height:1.55}
+.nn-audit-launch .nn-audit-claim-requirements{display:grid;gap:8px;margin:0 0 14px;padding:0;list-style:none;counter-reset:claim-step}
+.nn-audit-launch .nn-audit-claim-requirements li{display:grid;grid-template-columns:20px minmax(0,1fr);gap:8px;align-items:start;color:#25354d;font-size:12px;line-height:1.5}
+.nn-audit-launch .nn-audit-claim-requirements li:before{counter-increment:claim-step;content:counter(claim-step);display:grid;place-items:center;width:20px;height:20px;border:1px solid #cfd8e3;border-radius:50%;color:#53647a;font-size:10px;font-weight:800}
+.nn-audit-launch .nn-audit-claim-form{display:grid;gap:7px}
+.nn-audit-launch .nn-audit-claim-form>label{display:block;margin-top:5px;color:#25354d;font-size:11px;font-weight:800}
+.nn-audit-launch .nn-audit-claim-form>label span{color:#6b788a;font-weight:600}
+.nn-audit-launch .nn-audit-claim-form input[type=url],.nn-audit-launch .nn-audit-claim-form textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:5px;padding:10px;background:#fff;color:#17243b;font:12px/1.4 system-ui,sans-serif}
+.nn-audit-launch .nn-audit-claim-form textarea{resize:vertical}
+.nn-audit-launch .nn-audit-claim-hint{margin:0;color:#6a788b;font-size:10px;line-height:1.5}
+.nn-audit-launch .nn-audit-claim-consent{display:grid;grid-template-columns:17px minmax(0,1fr);gap:8px;align-items:start;margin:9px 0;color:#34465f;font-size:11px;line-height:1.5}
+.nn-audit-launch .nn-audit-claim-consent input{margin:2px 0 0}
+.nn-audit-launch .nn-audit-claim-submit,.nn-audit-launch .nn-audit-claim-check{width:100%;min-height:40px;border:1px solid #d8c29a;border-radius:5px;background:#f7f2e8;color:#1d304b;font-size:11px;font-weight:850;cursor:pointer}
+.nn-audit-launch .nn-audit-claim-submit:disabled,.nn-audit-launch .nn-audit-claim-check:disabled{opacity:.55;cursor:not-allowed}
+.nn-audit-launch .nn-audit-claim-review-status{margin-top:10px;padding:10px;border:1px solid #d8e0eb;border-radius:5px;background:#f5f8fc;color:#3d5069;font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+.nn-audit-launch .nn-audit-claim-review-status[data-tone="error"]{border-color:#efc4c8;background:#fff2f2;color:#9c2d38}
+.nn-audit-launch .nn-audit-claim-review-status[data-tone="success"]{border-color:#b6e1c3;background:#effbf4;color:#1e6440}
 .nn-audit-launch .nn-audit-voucher-terms{margin-top:10px;padding-top:9px;border-top:1px solid var(--audit-line);color:var(--audit-muted);font-size:11px;line-height:1.55}
 .nn-audit-launch .nn-audit-voucher-terms summary{cursor:pointer;color:var(--audit-ink);font-weight:750}
 .nn-audit-launch .nn-audit-voucher-terms p{margin:7px 0}

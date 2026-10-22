@@ -100,8 +100,9 @@
           <label>Campaign ends (your local time)<input id="campaignEnds" type="datetime-local" required></label>
           <label>Max claims per session<input id="campaignPerUser" type="number" min="1" max="100" value="1" step="1" required></label>
         </div>
-        <label>Offer terms for visitors<textarea id="campaignTerms" maxlength="500" placeholder="Eligibility, included report type, limitations and expiry terms."></textarea></label>
-        <div class="notice">Nothing is activated here automatically. Review the final offer and claim limit before using the separate Activate button on a draft campaign. Activation makes the offer publicly redeemable while it is valid.</div>
+        <label>Offer terms for visitors<textarea id="campaignTerms" required minlength="10" maxlength="500" placeholder="Eligibility, included report, single-use limit, verification and expiry terms."></textarea><span class="field-note">These terms are shown to the visitor and must be accepted before proof submission.</span></label>
+        <label>Required completion steps (one step per line)<textarea id="campaignClaimRequirements" required minlength="5" maxlength="1800" rows="4" placeholder="Enter each exact condition the visitor must complete on its own line."></textarea><span class="field-note">Add 1–8 distinct steps. Every step appears as a checklist; the voucher stays locked until the public post/proof is reviewed and approved by the owner.</span></label>
+        <div class="notice">Campaigns start as drafts. A campaign cannot activate unless visitor terms, required steps and public-post verification are configured. Completing the checklist alone never issues a voucher.</div>
         <div class="actions"><button class="primary" id="createCampaignBtn" type="submit">Create draft campaign</button></div>
       </form>
     </section>
@@ -125,6 +126,11 @@
     </section>
 
     <section class="panel">
+      <div class="row"><div><h2>Voucher claim verification</h2><p>Open the visitor's public post, confirm each required campaign step and approve only after the proof is verified. Codes are not issued on submission or checklist completion.</p></div><span class="pill">Owner review required</span></div>
+      <div id="claimReviewList" class="list"><div class="notice">Load owner data to view pending verification requests.</div></div>
+    </section>
+
+    <section class="panel">
       <div class="row"><div><h2>Audit history and private access</h2><p>Open any unexpired report with owner authentication, or unlock it for its existing session using a private server-side entitlement.</p></div></div>
       <div id="auditHistory" class="list"><div class="notice">No history loaded.</div></div>
     </section>
@@ -143,7 +149,7 @@
     ?'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
     :'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const $=id=>document.getElementById(id);
-  const state={token:'',campaigns:[],codes:[],redemptions:[],audits:[]};
+  const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[]};
   const text=(tag,value,className='')=>{const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value??'');return node;};
   const button=(label,handler,kind='')=>{const node=text('button',label,kind);node.type='button';node.addEventListener('click',handler);return node;};
   const notice=(message,tone='')=>text('div',message,'notice'+(tone?' '+tone:''));
@@ -163,7 +169,7 @@
   }
   function setGlobal(message,tone=''){const target=$('globalStatus');target.className='notice'+(tone?' '+tone:'');target.textContent=message;}
   function disconnect(){
-    state.token='';state.campaigns=[];state.codes=[];state.redemptions=[];state.audits=[];
+    state.token='';state.campaigns=[];state.codes=[];state.redemptions=[];state.claimRequests=[];state.audits=[];
     $('console').hidden=true;$('loginPanel').hidden=false;$('ownerTokenInput').value='';
     $('loginStatus').textContent='Disconnected. The token was cleared from page memory.';
   }
@@ -171,11 +177,11 @@
     setGlobal('Loading owner data…');
     try{
       const [promo,audit]=await Promise.all([api('/api/admin/promotions'),api('/api/admin/audits')]);
-      state.campaigns=promo.campaigns||[];state.codes=promo.codes||[];state.redemptions=promo.redemptions||[];state.audits=audit.audits||[];
+      state.campaigns=promo.campaigns||[];state.codes=promo.codes||[];state.redemptions=promo.redemptions||[];state.claimRequests=promo.claimRequests||[];state.audits=audit.audits||[];
       renderAll();setGlobal('Owner data refreshed. No campaign was activated by this request.','good');
     }catch(error){setGlobal(error.message||'Could not load owner data.','error');}
   }
-  function renderAll(){renderCampaigns();renderCodes();renderAuditHistory();renderRedemptions();renderCampaignSelect();}
+  function renderAll(){renderCampaigns();renderCodes();renderClaimRequests();renderAuditHistory();renderRedemptions();renderCampaignSelect();}
   function renderCampaignSelect(){
     const select=$('codeCampaign'),current=select.value;select.replaceChildren(new Option('Select a campaign',''));
     state.campaigns.forEach(c=>select.add(new Option(c.name+' · '+c.status+' · '+c.claimed_count+'/'+c.total_limit,c.id)));
@@ -189,7 +195,14 @@
       const item=text('article','','item'),head=text('div','','item-head'),left=text('div'),right=text('span',c.status,'pill '+c.status);
       left.append(text('h3',c.name),text('div',offerDescription(c),'meta'),text('div','Claims: '+c.claimed_count+' / '+c.total_limit+' · Per session: '+c.per_user_limit,'meta'),
         text('div','Starts: '+dateTime(c.starts_at)+' · Ends: '+dateTime(c.ends_at),'meta'));
-      if(c.terms)left.append(text('div','Terms: '+c.terms,'meta'));
+      if(c.terms)left.append(text('div','Visitor terms: '+c.terms,'meta'));
+      let requirements=[];try{requirements=JSON.parse(c.claim_requirements_json||'[]');}catch{}
+      if(Array.isArray(requirements)&&requirements.length){
+        left.append(text('div','Required steps: '+requirements.map((value,index)=>(index+1)+'. '+value).join(' | '),'meta'));
+        left.append(text('div',Number(c.require_post_proof)===1?'Public post/proof + owner approval required':'Post verification is not configured','meta'));
+      }else{
+        left.append(text('div','Voucher claims disabled: required steps and post verification have not been configured.','meta'));
+      }
       head.append(left,right);item.append(head);
       const actions=text('div','','actions');
       if(c.status!=='active'&&c.status!=='ended')actions.append(button('Activate',async()=>{
@@ -203,8 +216,43 @@
         try{await api('/api/admin/promotions/campaigns/'+encodeURIComponent(c.id)+'/status',{method:'POST',body:JSON.stringify({status:'paused'})});await refreshAll();}
         catch(e){setGlobal(e.message,'error');}
       },'danger'));
-      item.append(actions);root.append(item);
+      item.append(actions);
+      if(c.status!=='active'&&c.status!=='ended')addVerificationEditor(item,c);
+      root.append(item);
     });
+  }
+  function addVerificationEditor(item,c){
+    const form=text('form','','stack');
+    form.hidden=true;
+    const termsLabel=text('label','Visitor-facing voucher terms');
+    const terms=text('textarea');terms.rows=3;terms.required=true;terms.minLength=10;terms.maxLength=500;
+    terms.placeholder='Eligibility, report included, verification, single-use limits and expiry.';terms.value=c.terms||'';
+    termsLabel.append(terms);
+    const stepsLabel=text('label','Required verification steps (one per line)');
+    const steps=text('textarea');steps.rows=4;steps.required=true;steps.maxLength=1800;
+    steps.placeholder='Enter each exact requirement on its own line.';
+    try{const values=JSON.parse(c.claim_requirements_json||'[]');steps.value=Array.isArray(values)?values.join('\n'):'';}catch{steps.value='';}
+    stepsLabel.append(steps);
+    const explanation=notice('A public post/proof URL is always required. This campaign must be paused or still a draft before its terms can be changed. Visitors receive a voucher only after manual owner verification.');
+    const save=button('Save verification requirements',async()=>{
+      const claimRequirements=steps.value.split(/\r?\n/).map(value=>value.trim()).filter(Boolean);
+      if(terms.value.trim().length<10||claimRequirements.length<1||claimRequirements.length>8||claimRequirements.some(value=>value.length<5||value.length>220)){
+        setGlobal('Provide visitor terms of 10–500 characters and 1–8 distinct verification steps (5–220 characters each).','error');return;
+      }
+      save.disabled=true;
+      try{
+        await api('/api/admin/promotions/campaigns/'+encodeURIComponent(c.id)+'/verification',{
+          method:'POST',body:JSON.stringify({terms:terms.value.trim(),claimRequirements})
+        });
+        setGlobal('Voucher verification requirements saved. Activate only after reviewing the visitor-facing terms.','good');
+        await refreshAll();
+      }catch(error){setGlobal(error.message||'Verification requirements could not be saved.','error');}
+      finally{save.disabled=false;}
+    },'primary');
+    const toggle=button('Configure verification',()=>{form.hidden=!form.hidden;});
+    const actions=text('div','','actions');actions.append(toggle);
+    form.append(termsLabel,stepsLabel,explanation,save);
+    item.append(actions,form);
   }
   function renderCodes(){
     const root=$('codeList');root.replaceChildren();
@@ -220,6 +268,62 @@
         catch(e){setGlobal(e.message,'error');}
       },'danger'));
       root.append(item);
+    });
+  }
+  function renderClaimRequests(){
+    const root=$('claimReviewList');root.replaceChildren();
+    const pending=state.claimRequests.filter(request=>request.status==='pending');
+    if(!pending.length){root.append(notice('No pending voucher claims. A voucher is issued only after a post and every required step are verified.'));return;}
+    pending.forEach(request=>{
+      const item=text('article','','item'),head=text('div','','item-head'),details=text('div'),actions=text('div','','actions');
+      head.append(details,text('span','Pending verification','pill reserved'));
+      details.append(text('h3',request.campaign_name||'Voucher claim request'));
+      details.append(text('div','Claim ID: '+request.id,'meta'));
+      details.append(text('div','User reference: '+request.user_ref+' · Submitted: '+dateTime(request.created_at)+' · Expires: '+dateTime(request.expires_at),'meta'));
+      let requirements=[];try{requirements=JSON.parse(request.requirements_snapshot_json||'[]');}catch{}
+      details.append(text('div','Required steps to verify:','meta'));
+      if(Array.isArray(requirements)&&requirements.length){
+        const list=text('ol','','claim-proof-steps');
+        requirements.forEach(value=>list.append(text('li',value)));
+        details.append(list);
+      }else details.append(notice('No requirement snapshot was found. Do not approve this request.','error'));
+      details.append(text('div','Terms accepted: '+(Number(request.terms_accepted)===1?'Yes':'No'),'meta'));
+      details.append(text('div','Terms shown to visitor: '+(request.terms_snapshot||'Missing terms'),'meta'));
+      const proofLabel=text('div','Visitor-submitted public post / proof URL:','meta');
+      details.append(proofLabel);
+      try{
+        const parsed=new URL(String(request.proof_url||''));
+        if(parsed.protocol==='https:'&&!parsed.username&&!parsed.password){
+          const link=document.createElement('a');
+          link.href=parsed.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=parsed.href;
+          link.style.display='block';link.style.overflowWrap='anywhere';link.style.margin='6px 0 10px';
+          details.append(link);
+        }else details.append(notice('Proof URL is not a valid public HTTPS link. Reject this request.','error'));
+      }catch{details.append(notice('Proof URL is invalid. Reject this request.','error'));}
+      if(request.proof_note)details.append(text('div','Visitor note: '+request.proof_note,'meta'));
+      actions.append(button('Approve and issue voucher',async()=>{
+        const checklist=Array.isArray(requirements)?requirements.join('\n • '):'';
+        if(!confirm('Confirm you opened the public post and verified EVERY requirement below before issuing a voucher?\n\n• '+checklist+'\n\nApproval immediately issues a single-use code to the submitting browser session.'))return;
+        try{
+          const result=await api('/api/admin/promotions/claims/'+encodeURIComponent(request.id)+'/review',{
+            method:'POST',body:JSON.stringify({status:'approved',note:'Public post and every configured campaign requirement were manually verified by the owner.'})
+          });
+          setGlobal(result.message||'Voucher approved after manual proof verification.','good');
+          await refreshAll();
+        }catch(error){setGlobal(error.message||'Voucher claim could not be approved.','error');}
+      },'primary'));
+      actions.append(button('Reject proof',async()=>{
+        const note=prompt('Explain why this proof did not meet the campaign requirements.','The public post or one or more required steps could not be verified.');
+        if(note===null)return;
+        try{
+          await api('/api/admin/promotions/claims/'+encodeURIComponent(request.id)+'/review',{
+            method:'POST',body:JSON.stringify({status:'rejected',note})
+          });
+          setGlobal('Claim rejected. No voucher was issued.','good');
+          await refreshAll();
+        }catch(error){setGlobal(error.message||'Voucher claim could not be rejected.','error');}
+      },'danger'));
+      item.append(head,details,actions);root.append(item);
     });
   }
   function renderAuditHistory(){
@@ -483,7 +587,9 @@
     if(!Number.isFinite(startsAt)||!Number.isFinite(endsAt)||endsAt<=startsAt){setGlobal('Campaign start and end dates are invalid.','error');return;}
     const button=$('createCampaignBtn');button.disabled=true;
     try{
-      const r=await api('/api/admin/promotions/campaigns',{method:'POST',body:JSON.stringify({name:$('campaignName').value.trim(),offerType:type,offerValue,startsAt,endsAt,totalLimit:Number($('campaignLimit').value),perUserLimit:Number($('campaignPerUser').value),terms:$('campaignTerms').value.trim()})});
+      const claimRequirements=$('campaignClaimRequirements').value.split(/\r?\n/).map(value=>value.trim()).filter(Boolean);
+      if(claimRequirements.length<1||claimRequirements.length>8||claimRequirements.some(value=>value.length<5||value.length>220)){setGlobal('Enter 1–8 distinct verification steps, one per line. Each step must be 5–220 characters.','error');return;}
+      const r=await api('/api/admin/promotions/campaigns',{method:'POST',body:JSON.stringify({name:$('campaignName').value.trim(),offerType:type,offerValue,startsAt,endsAt,totalLimit:Number($('campaignLimit').value),perUserLimit:Number($('campaignPerUser').value),terms:$('campaignTerms').value.trim(),claimRequirements})});
       setGlobal('Draft created: '+r.campaign.id+'. It remains private/inactive until you explicitly activate it.','good');$('campaignForm').reset();await refreshAll();
     }catch(error){setGlobal(error.message||'Campaign could not be created.','error');}
     finally{button.disabled=false;}
