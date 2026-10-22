@@ -63,7 +63,7 @@ jobs:
           cat /tmp/nexusnova-polish-site.log
           exit 1
 
-      - name: Audit all 108 tools and 100 articles
+      - name: Audit all 109 tools and 100 articles
         env:
           GITHUB_SHA: ${{ github.sha }}
         run: python .github/scripts/sitewide_visual_logic_audit.py

@@ -75,7 +75,7 @@ jobs:
           const source = fs.readFileSync('assets/js/search-core.js', 'utf8');
           const tools = [...source.matchAll(/\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"([^"]+)",\s*type:"tool"/g)]
             .map(m => m[1]).filter((v,i,a)=>a.indexOf(v)===i).sort();
-          if (tools.length !== 108) throw new Error(`Expected 108 unique tool records, found ${tools.length}`);
+          if (tools.length !== 109) throw new Error(`Expected 109 unique tool records, found ${tools.length}`);
           function get(path) { return new Promise((resolve,reject)=>{ const req=http.get(BASE+'/'+path.replace(/^\//,''),{headers:{'user-agent':'NexusNova-fast-ci-audit/1.0'}},res=>{let b='';res.setEncoding('utf8');res.on('data',c=>b+=c);res.on('end',()=>resolve({status:res.statusCode||0,body:b}));}); req.setTimeout(5000,()=>req.destroy(new Error('timeout'))); req.on('error',reject); }); }
           function assertDom(path,html){
             if(!/^<!doctype html/i.test(html.trim())) throw new Error(`${path}: missing doctype`);
@@ -127,7 +127,7 @@ jobs:
             echo 'No production changes were required after verification.'
             exit 0
           fi
-          git commit -m 'fix: complete 108-tool production and search overhaul'
+          git commit -m 'fix: complete 109-tool production and search overhaul'
           # Scheduled content feeds can update disjoint files while this job is
           # verifying the site. Rebase the verified changes on the latest main
           # head before pushing instead of losing the release to a stale ref.
