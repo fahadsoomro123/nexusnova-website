@@ -15,18 +15,27 @@ test('homepage no longer starts the AdSense runtime directly in head HTML', () =
   assert.equal(homepage.includes(adsenseUrl), false);
 });
 
+test('homepage cache-busts the updated main bootstrap without changing the shared version token', () => {
+  assert.ok(homepage.includes('assets/js/main.js?v=20261015-v4&lcpAds=20261022-v1'));
+});
+
 test('shared runtime retains the configured AdSense client on dynamic loading', () => {
   assert.ok(runtime.includes("adsenseScript.src='" + adsenseUrl + "'"));
   assert.ok(runtime.includes("adsenseScript.async=true;"));
   assert.ok(runtime.includes("adsenseScript.dataset.nexusnovaAdsense=''"));
 });
 
-test('homepage AdSense request is scheduled after load and idle with a bounded fallback', () => {
+test('homepage AdSense waits for settled LCP, load, and idle with a bounded fallback', () => {
   assert.ok(runtime.includes("const isHomepage=location.pathname==='/'||/\\/index\\.html$/.test(location.pathname);"));
-  assert.ok(runtime.includes("window.addEventListener('load',scheduleAfterLoad,{once:true})"));
-  assert.ok(runtime.includes("window.requestIdleCallback(insertAdsenseScript,{timeout:4000})"));
-  assert.ok(runtime.includes("window.setTimeout(insertAdsenseScript,1500)"));
-  assert.ok(runtime.includes("else{\n    insertAdsenseScript();\n  }"));
+  assert.ok(runtime.includes('const scheduleAfterLargestContentfulPaint=(task,options={})=>{'));
+  assert.ok(runtime.includes("observer.observe({type:'largest-contentful-paint',buffered:true})"));
+  assert.ok(runtime.includes('quietTimer=window.setTimeout(()=>{lcpSettled=true;scheduleIfReady();},1200)'));
+  assert.ok(runtime.includes("window.addEventListener('load',()=>{pageLoaded=true;scheduleIfReady();},{once:true})"));
+  assert.ok(runtime.includes('scheduleAfterLargestContentfulPaint(insertAdsenseScript,{delay:2500,fallbackDelay:7000,idleTimeout:1500})'));
+  assert.ok(runtime.includes("window.requestIdleCallback(task,{timeout:idleTimeout})"));
+  assert.ok(runtime.includes('window.setTimeout(()=>{lcpSettled=true;scheduleIfReady();},fallbackDelay)'));
+  assert.ok(!runtime.includes("window.requestIdleCallback(insertAdsenseScript,{timeout:4000})"));
+  assert.ok(runtime.includes("else{\n    insertAdsenseScript();\n  }"), 'non-homepage ad behavior remains unchanged');
 });
 
 test('GA4 measurement ID and consent updater remain untouched', () => {
