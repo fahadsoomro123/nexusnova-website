@@ -21,7 +21,7 @@ test('voucher is issued only by the active server campaign and optional sharing 
   assert.match(home, /Only server-issued vouchers are displayed/);
   assert.match(launchJs, /\/api\/promotions\/active/);
   assert.match(launchJs, /\/api\/promotions\/claim/);
-  assert.match(launchJs, /payload\.ok===true/);
+  assert.match(launchJs, /payload\\.ok!==true/);
   assert.match(launchJs, /typeof payload\.code==='string'/);
   assert.match(launchJs, /No code was issued/);
   assert.doesNotMatch(launchJs, /setInterval|countdown|fakeUserCount|verifiedFollow|shareVerified/i);
@@ -74,6 +74,6 @@ test('promotion controls remain mobile-safe and never imply a successful fake ch
   assert.match(promoCss, /#promotionCodeStatus\[hidden\]/);
   assert.match(launchCss, /nn-audit-voucher-terms/);
   assert.match(launchCss, /nn-audit-share-link/);
-  assert.match(page, /full report unlock/i);
+  assert.match(page, /Unlocked only after server-side payment verification or a valid voucher/i);
   assert.match(page, /only after server-side payment verification or a valid voucher/i);
 });
