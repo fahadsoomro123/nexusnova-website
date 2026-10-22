@@ -55,12 +55,12 @@ jobs:
           set -euo pipefail
           installed=false
           for attempt in 1 2; do
-            if python -m playwright install --with-deps --only-shell chromium; then
+            if python -m playwright install --only-shell chromium; then
               installed=true
               break
             fi
             if [[ "$attempt" -eq 1 ]]; then
-              echo "Chromium setup failed once; retrying after 5 seconds."
+              echo "Chromium download failed once; retrying after 5 seconds."
               sleep 5
             fi
           done
@@ -68,7 +68,9 @@ jobs:
             echo "Chromium installation failed after two attempts."
             exit 1
           fi
-          python - <<'PY'
+
+          smoke_test() {
+            python - <<'PY'
           from playwright.sync_api import sync_playwright
 
           with sync_playwright() as playwright:
@@ -76,7 +78,15 @@ jobs:
               print(f"PASS: Chromium headless shell launched; version={browser.version}")
               browser.close()
           PY
+          }
 
+          if smoke_test; then
+            exit 0
+          fi
+
+          echo "Cached Chromium could not launch with the runner's current libraries; installing OS dependencies and retrying."
+          python -m playwright install-deps chromium
+          smoke_test
       - name: Start local site
         run: |
           python -m http.server 8000 --bind 127.0.0.1 >/tmp/nexusnova-responsive-http.log 2>&1 &

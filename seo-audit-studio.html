@@ -546,10 +546,6 @@
 @media(max-width:720px){.topbar{height:auto;min-height:66px}.top-inner{flex-wrap:wrap;gap:8px;padding:10px 12px}.site-brand-logo{width:88px;max-height:31px}.site-brand-copy strong{font-size:8px}.site-brand-copy small{font-size:6px}.top-inner .nav-label{padding-left:9px;font-size:10px}.site-nav{order:5;flex:1 1 100%;overflow-x:auto;gap:15px;padding:4px 0 2px;scrollbar-width:thin}.site-nav a,.site-nav a:nth-child(n){display:inline-block;font-size:10px}.top-inner .top-spacer{flex:1}.nn-global-footer{padding:22px 16px 13px}.nn-footer-main{grid-template-columns:1fr;gap:21px}.nn-footer-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nn-footer-bottom{align-items:flex-start;flex-direction:column;gap:6px}}
 @media(prefers-reduced-motion:reduce){.site-nav a,.site-brand{transition:none}}
 
-.audit-notes h2{font-size:13px;margin:0 0 8px;color:#4e5d72}
-.audit-notes details+details{margin-top:7px}
-.audit-notes summary{cursor:pointer;font-weight:700;color:#4e5d72}
-.audit-notes details p{margin:5px 0 0;line-height:1.6}
 </style>
   <meta name="theme-color" content="#ffffff">
   <link rel="icon" href="/assets/favicon.svg?v=20261015-v4" type="image/svg+xml">
@@ -743,21 +739,9 @@
     </section>
   </section>
 
-
-  <section class="disclaimer audit-notes" aria-labelledby="auditNotesTitle">
-    <h2 id="auditNotesTitle">Audit notes and common questions</h2>
-    <details>
-      <summary>Why can a category show N/A?</summary>
-      <p>N/A means the audit did not return enough relevant evidence to score that category. It is not a pass. Local SEO may not apply when no real local-business signals are found.</p>
-    </details>
-    <details>
-      <summary>Do scores guarantee rankings or AdSense approval?</summary>
-      <p>No. The report measures observable page checks and Google PageSpeed lab results. It does not guarantee rankings, traffic or AdSense approval.</p>
-    </details>
-    <details>
-      <summary>When is the full report unlocked?</summary>
-      <p>Only after the backend confirms a valid voucher or successful payment for this audit. Missing source data stays unscored.</p>
-    </details>
+  <section class="disclaimer" aria-labelledby="auditEvidenceTitle">
+    <h2 id="auditEvidenceTitle">Why is some data unavailable?</h2>
+    <p>Scores need usable source evidence. If a provider returns no data, that check stays unscored.</p>
   </section>
 
 </main>

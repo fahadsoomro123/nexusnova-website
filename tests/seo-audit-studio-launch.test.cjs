@@ -30,20 +30,20 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
 });
 
 
-test('voucher terms stay inside the existing box and social sharing is optional', () => {
+test('voucher terms stay concise and voucher claims remain backend-controlled', () => {
   assert.match(html, /class="nn-audit-voucher-terms"/);
+  assert.match(html, /<summary>Voucher terms<\/summary>/);
   assert.match(html, /One single-use report voucher per browser session/);
-  assert.match(html, /Sharing is optional and does not change voucher eligibility/);
-  assert.match(html, /twitter\.com\/intent\/tweet/);
-  assert.match(html, /facebook\.com\/sharer\/sharer\.php/);
+  assert.doesNotMatch(html, /twitter\.com\/intent\/tweet|facebook\.com\/sharer\/sharer\.php|Sharing is optional|Share on X|Share on Facebook/);
   assert.match(js, /\/api\/promotions\/claim/);
 });
 
-test('Audit Studio shows concise source, score and unlock limitations', () => {
-  assert.match(auditHtml, /Audit notes and common questions/);
-  assert.match(auditHtml, /Why can a category show N\/A/);
-  assert.match(auditHtml, /Google PageSpeed lab results/);
-  assert.match(auditHtml, /valid voucher or successful payment/);
+test('Audit Studio tool page keeps only essential evidence and unlock text', () => {
+  assert.match(auditHtml, /Unavailable checks are unscored/);
+  assert.match(auditHtml, /actual website and provider measurements/);
+  assert.match(auditHtml, /Why is some data unavailable\?/);
+  assert.match(auditHtml, /Scores need usable source evidence/);
+  assert.doesNotMatch(auditHtml, /Audit notes and common questions|Why can a category show N\/A|Do scores guarantee rankings|When is the full report unlocked/);
 });
 
 test('homepage URL handoff validates HTTP(S) URLs and Audit Studio prefills without auto-running', () => {

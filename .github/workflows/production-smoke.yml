@@ -150,8 +150,8 @@ jobs:
           TOOL_PATTERN = re.compile(r'\{\s*title:"(?:[^"\\]|\\.)*",\s*url:"([^"]+)",\s*type:"tool"')
           tools = [m.group(1).split("#", 1)[0].split("?", 1)[0] for m in TOOL_PATTERN.finditer(CORE)]
           tools = list(dict.fromkeys(tools))
-          if len(tools) != 108:
-              raise SystemExit(f"SOURCE_TOOL_INDEX_FAIL expected=108 actual={len(tools)}")
+          if len(tools) != 109:
+              raise SystemExit(f"SOURCE_TOOL_INDEX_FAIL expected=109 actual={len(tools)}")
 
           namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
           source_sitemap = ET.parse("sitemap.xml").getroot()

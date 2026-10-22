@@ -218,8 +218,8 @@ OUTPUT_CHECK_JS = r"""
 def load_routes() -> tuple[list[str], list[str]]:
     core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8")
     tools = TOOL_PATTERN.findall(core)
-    if len(tools) != 108 or len(set(tools)) != 108:
-        raise SystemExit(f"ROUTE_INVENTORY_FAIL expected 108 unique tool paths, found {len(tools)} records/{len(set(tools))} unique")
+    if len(tools) != 109 or len(set(tools)) != 109:
+        raise SystemExit(f"ROUTE_INVENTORY_FAIL expected 109 unique tool paths, found {len(tools)} records/{len(set(tools))} unique")
     missing_tools = [path for path in tools if not (ROOT / path.split("?", 1)[0].split("#", 1)[0]).is_file()]
     if missing_tools:
         raise SystemExit("TOOL_SOURCE_MISSING: " + ", ".join(missing_tools[:30]))
