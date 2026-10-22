@@ -16,7 +16,7 @@ test('homepage no longer starts the AdSense runtime directly in head HTML', () =
 });
 
 test('homepage cache-busts the updated main bootstrap without changing the shared version token', () => {
-  assert.ok(homepage.includes('assets/js/main.js?v=20261015-v4&lcpAds=20261022-v1'));
+  assert.ok(homepage.includes('assets/js/main.js?v=20261015-v4&lcpAds=20261022-v2'));
 });
 
 test('shared runtime retains the configured AdSense client on dynamic loading', () => {
@@ -52,4 +52,15 @@ test('GA4 measurement ID and consent updater remain untouched', () => {
   assert.ok(homepage.includes('data-consent-allow'));
   assert.ok(homepage.includes('data-consent-basic'));
   assert.ok(homepage.includes('data-consent-off'));
+});
+
+test('homepage GA4 config is queued, then the analytics runtime loads after LCP and idle', () => {
+  assert.ok(runtime.includes("const initializeGa4=()=>{"));
+  assert.ok(runtime.includes("window.gtag('js',new Date());"));
+  assert.ok(runtime.includes("window.gtag('config',measurementId,{"));
+  assert.ok(runtime.includes('scheduleAfterLargestContentfulPaint(initializeGa4,{delay:500,fallbackDelay:4000,idleTimeout:1500})'));
+  assert.ok(runtime.indexOf("window.gtag('config',measurementId,{") < runtime.indexOf("analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='"), 'config must queue before async script injection');
+  assert.ok(runtime.includes("if(isProductionAnalyticsHost&&isHomepage){"), 'only the homepage defers GA4');
+  assert.ok(runtime.includes('analyticsScript.dataset.nexusnovaGa4='), 'the singleton marker remains on the injected runtime');
+  assert.ok(runtime.includes('ads_data_redaction:true'), 'measurement privacy settings remain enabled');
 });
