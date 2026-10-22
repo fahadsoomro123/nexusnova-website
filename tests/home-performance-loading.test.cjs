@@ -186,3 +186,22 @@ test('local Lighthouse server mirrors production gzip compression and cache head
   ]) assert.ok(workflow.includes(token), token);
   assert.ok(!workflow.includes('python3 -m http.server 8000'), 'do not benchmark uncompressed HTML against compressed GitHub Pages production');
 });
+
+test('homepage search builds its fallback index only after search intent, without breaking keyboard access', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const start = homepage.indexOf('(function () {', homepage.lastIndexOf('<body>'));
+  const end = homepage.indexOf('</script>', start);
+  assert.ok(start >= 0 && end > start, 'homepage search bootstrap must exist');
+  const script = homepage.slice(start, end);
+  for (const token of [
+    "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');",
+    "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
+    "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });",
+    "function initializeHomepageSearch()",
+    'new window.NexusNovaSearchCore()',
+    "input.addEventListener('input', runQuery)",
+    "event.key.toLowerCase() === 'k'",
+    'yearNodes.forEach(function (node)'
+  ]) assert.ok(script.includes(token), token);
+  assert.ok(!script.includes("document.addEventListener('DOMContentLoaded', function ()"), 'homepage search index must not initialize on DOMContentLoaded');
+});
