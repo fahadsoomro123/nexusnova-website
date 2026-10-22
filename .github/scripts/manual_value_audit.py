@@ -141,6 +141,12 @@ def has_faq_section(headings: list[str]) -> bool:
     return any('?' in h for h in headings)
 
 
+def tool_content_target(path: str) -> int:
+    # SEO Audit Studio is an interactive product workspace, not an editorial guide.
+    # Keep its visible copy concise and limited to the method, evidence, limits and access rules.
+    return 300 if path == 'seo-audit-studio.html' else 600
+
+
 def is_noindex(text: str) -> bool:
     return bool(re.search(r'<meta\s+name=["\']robots["\'][^>]*content=["\'][^"\']*noindex', text, re.I))
 
@@ -390,9 +396,10 @@ def main() -> None:
             if not page['functional']:
                 findings.append({'severity':'blocker','type':'nonfunctional_tool_surface','path':path,'detail':page['function_evidence']})
             signals = sum(bool(page[name]) for name in ('method','example','limits'))
-            # 600 words is this project's requested editorial target, not a Google-published minimum.
-            if wc < 600:
-                findings.append({'severity':'warning','type':'tool_content_below_target','path':path,'detail':f'{wc} visible main-content words; project target is at least 600 plus page-specific examples and limitations'})
+            # The focused Audit Studio interface uses a concise product-copy budget; other tools keep the editorial target.
+            target_words = tool_content_target(path)
+            if wc < target_words:
+                findings.append({'severity':'warning','type':'tool_content_below_target','path':path,'detail':f'{wc} visible main-content words; project target is at least {target_words} plus page-specific examples and limitations'})
             if not page['faq']:
                 findings.append({'severity':'warning','type':'tool_faq_missing','path':path,'detail':'No visible FAQ/questions heading or question heading found'})
             # Retain the existing severe checks for pages that are unusually sparse and lack useful context.

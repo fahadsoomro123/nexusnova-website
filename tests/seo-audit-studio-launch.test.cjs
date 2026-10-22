@@ -29,6 +29,23 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   assert.doesNotMatch(html, /Missing page title|Meta description review|Image alt-text review/);
 });
 
+
+test('voucher terms stay inside the existing box and social sharing is optional', () => {
+  assert.match(html, /class="nn-audit-voucher-terms"/);
+  assert.match(html, /One single-use report voucher per browser session/);
+  assert.match(html, /Sharing is optional and does not change voucher eligibility/);
+  assert.match(html, /twitter\.com\/intent\/tweet/);
+  assert.match(html, /facebook\.com\/sharer\/sharer\.php/);
+  assert.match(js, /\/api\/promotions\/claim/);
+});
+
+test('Audit Studio shows concise source, score and unlock limitations', () => {
+  assert.match(auditHtml, /Audit notes and common questions/);
+  assert.match(auditHtml, /Why can a category show N\/A/);
+  assert.match(auditHtml, /Google PageSpeed lab results/);
+  assert.match(auditHtml, /valid voucher or successful payment/);
+});
+
 test('homepage URL handoff validates HTTP(S) URLs and Audit Studio prefills without auto-running', () => {
   assert.match(js, /nnAuditHomeForm/);
   assert.match(js, /new URL\(candidate\)/);

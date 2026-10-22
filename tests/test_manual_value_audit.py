@@ -16,6 +16,10 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class SharedEditorialBoilerplateTests(unittest.TestCase):
+    def test_focused_audit_workspace_has_a_concise_content_budget(self):
+        self.assertEqual(AUDIT.tool_content_target("seo-audit-studio.html"), 300)
+        self.assertEqual(AUDIT.tool_content_target("calculator.html"), 600)
+
     def test_exact_shared_safety_copy_is_excluded_from_uniqueness_signal(self):
         reusable = (
             "Copying an example unchanged: illustrative figures explain the method; "
