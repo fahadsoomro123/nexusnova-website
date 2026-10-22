@@ -5,11 +5,10 @@ These are release-blocking product and engineering requirements. They apply to t
 ## Product UI
 - Keep the public SEO Audit Studio page minimal. Show only the product name, URL field, run-audit action, necessary progress/error/source/coverage states, real findings, essential limitations, and accurate payment/voucher instructions. Remove redundant marketing copy, decorative fake dashboards, filler paragraphs and duplicate FAQs.
 - Never prefill the target with `https://example.com`; a sample must never be presented as a live audit.
-- Preserve the existing voucher section/box in place, but replace the old **Claim voucher** controls with a share-post URL field and a **Verify & unlock voucher** action. Do not add a second separate voucher section.
-- State the condition plainly: a free full-report voucher is issued only after the user shares NexusNova on a supported social platform and submits the share/post URL for verification.
-- Do not claim social verification is complete just because a link was pasted, redirects, returns HTTP 200, or has matching metadata. Verify the platform post and that it genuinely references the canonical NexusNova website using a trustworthy provider API/OAuth verification or similarly reliable public evidence.
-- If a social platform blocks verification, requires login, removes access, or returns ambiguous evidence, fail closed: show **Could not verify this share** / **Verification unavailable** and issue no voucher. Never manually assume success and never generate a placeholder voucher.
-- Only report remaining voucher counts, offer terms and expiry supplied by an active backend campaign. A claimed share is not a redeemed voucher; tie redemption to the authenticated session/audit and enforce single-use rules server-side.
+- Preserve the existing voucher section/box in place. Show only backend-confirmed campaign status, terms/expiry, voucher code and necessary status/error messages.
+- Social sharing is optional. Provide clear X and Facebook share links, but do not make follows, likes, reposts or shares a condition for a voucher. Do not create engagement-for-reward gates.
+- Never claim a social post or follow was verified unless the platform itself confirms it. Share-link clicks do not prove a post was published and do not issue a voucher.
+- Only report remaining voucher counts, offer terms and expiry supplied by an active backend campaign. Keep claim and redemption session-bound and single-use on the server.
 
 ## Audit truthfulness and evidence
 - Never invent scores, grades, metrics, findings, source names, URLs, dates, counts, payment status, vouchers or provider responses.
@@ -20,13 +19,13 @@ These are release-blocking product and engineering requirements. They apply to t
 
 ## API reliability and security
 - Use bounded request timeouts, bounded retries only for safe/idempotent calls, cancellation on timeout, clear actionable errors, and a guaranteed reset of loading/disabled UI. Never retry payment creation or voucher issuance blindly in a way that could duplicate a transaction.
-- Validate all input on the server. Block localhost, private/link-local IPs, IP literals and internal hostnames; defend against DNS rebinding and redirects to unapproved/private destinations for every user-controlled outbound fetch, including social links.
+- Validate all input on the server. Block localhost, private/link-local IPs, IP literals and internal hostnames; defend against DNS rebinding and redirects to unapproved/private destinations for every user-controlled outbound fetch.
 - Enforce HTTPS/origin allowlists, session expiry and bearer authentication, rate limits, database uniqueness/atomic counters and least-privilege access. Secrets must stay in platform secret storage, never in browser bundles, HTML, client logs or error responses.
 - Parse external responses defensively. Redact tokens, authorization headers, API keys, personal data and query-string secrets. Expose a stable, sanitized error code/message rather than a raw upstream stack trace.
 - Provider outage, quota errors, malformed payloads and missing credentials must fail closed and be visible as unavailable/partial, not be silently transformed into a success. Add tests for timeout, malformed JSON, 4xx/5xx, rate-limit, missing secret, duplicate submit, expired session and upstream denial.
 
 ## Vouchers, promotions and payment integrity
-- Voucher issuance must only follow verified social-share evidence and an active, non-exhausted backend campaign. Enforce allowed platforms/hosts, canonical target URL checks, anti-abuse/rate limits, unique claim records and single-use, session-bound redemption. Store only the minimum evidence needed; avoid unnecessary personal data.
+- Voucher issuance must follow only an active, non-exhausted backend campaign and server-enforced claim/session limits. Optional social-share links are promotional UI only and never change voucher eligibility.
 - Never trust browser-reported `verified`, client-side storage, an uploaded screenshot alone, an arbitrary URL, a payment redirect or a client-side button.
 - A full report unlock requires a valid server-side entitlement, verified voucher redemption, or the payment provider's authenticated/signed confirmation matching the exact order, audit/session, amount, currency, environment and successful terminal state.
 - SafePay live card configuration must be verified before enabling checkout. Keep NOWPayments/crypto closed until real live API/IPN credentials and required legal/compliance/provider approvals are independently verified. Never bypass the existing crypto compliance gate to make the UI appear complete.
@@ -34,14 +33,14 @@ These are release-blocking product and engineering requirements. They apply to t
 
 ## Database and migration safety
 - Review D1 schema changes before deployment. Migrations must be additive, repeatable/safe for the release process, tested against a clean DB and a representative existing DB snapshot, and must preserve existing campaign/claim/entitlement records.
-- Add an explicit migration for social-share verification/claim evidence and idempotency if existing schema cannot securely support it. Never mark an existing claim verified merely because old code issued a voucher.
+- Add explicit migrations only when the reviewed release needs schema changes. Never mark an existing claim as more verified than the stored evidence supports.
 - Do not run production migrations or rotate production secrets until source, configuration and rollback paths pass review.
 
 ## Release, verification and rollback
 - Keep website and backend changes in their respective repositories. Website UI goes through a reviewed PR into `nexusnova-website/main`; Worker/D1 changes go through a separate reviewed PR into `nexusnova-seo-audit-studio-backend/main`.
 - Never merge with unexplained failed checks, unresolved critical/high findings, broken responsive/accessibility states, or untested payment/voucher paths. Do not weaken general site-quality thresholds to conceal a failure. For the intentionally minimal Audit Studio page, make only a narrow, tested audit-rule exception tied to that route if needed; keep all functional/security/value checks active.
-- Required checks: full automated suite, syntax/static checks, dependency audit, Wrangler dry run, API integration tests, negative/fail-closed cases, mobile/desktop responsive tests, production health/config/offer checks, genuine audit on a controlled URL, social verification positive and negative cases, voucher expiry/limits/redeem, Owner Console auth, and payment lock/unlock contracts.
-- Deploy the website and Worker independently, in the documented order. Confirm the exact deployed commit/assets using content hashes, not only HTTP 200 or a green workflow. Smoke test live audit/source attribution, share verification, voucher claim/redeem, full-report entitlement, SafePay readiness and disabled crypto gate.
+- Required checks: full automated suite, syntax/static checks, dependency audit, Wrangler dry run, API integration tests, negative/fail-closed cases, mobile/desktop responsive tests, production health/config/offer checks, genuine audit on a controlled URL, optional share-link rendering, voucher expiry/limits/redeem, Owner Console auth, and payment lock/unlock contracts.
+- Deploy the website and Worker independently, in the documented order. Confirm the exact deployed commit/assets using content hashes, not only HTTP 200 or a green workflow. Smoke test live audit/source attribution, optional share links, voucher claim/redeem, full-report entitlement, SafePay readiness and disabled crypto gate.
 - If post-deployment smoke checks fail, stop rollout and use the documented rollback. Report what is live versus unverified honestly.
 - No “error-free”, “perfect” or “fully live” claims without corresponding evidence. External providers can fail; the product must handle failures truthfully and safely.
 
@@ -51,4 +50,4 @@ These are release-blocking product and engineering requirements. They apply to t
 - Backend main: `4bb7176c0c5660ad824e34b88f058784a056e64e`. Local release branch `release/audit-studio-production-20261022` passed 103 tests, `npm audit --omit=dev` (0 vulnerabilities), and Wrangler production dry run. This is not proof of deployment.
 - Live API health/config/active-promotion endpoints returned HTTP 200. Live PageSpeed audit returned valid measured mobile/desktop sources but also showed a desktop CLS finding (0.13); report that truthfully.
 - Public config currently reports SafePay production/onboarding configured, but NOWPayments is not configured and crypto compliance is false. Keep crypto closed.
-- Social-share verification is a new requested feature and is NOT implemented yet. Do not issue vouchers before the verification route, security tests and D1 support are in place.
+- Optional X/Facebook share links are present in the old voucher box. Voucher eligibility does not depend on social follows/shares and the UI makes no claim that a platform post was verified.
