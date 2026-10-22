@@ -172,3 +172,17 @@ test('live PageSpeed evidence includes bounded, redacted LCP and blocking diagno
     'items[:5]'
   ]) assert.ok(workflow.includes(token), token);
 });
+
+test('local Lighthouse server mirrors production gzip compression and cache headers', () => {
+  const workflow = fs.readFileSync('.github/workflows/site-performance-audit.yml', 'utf8');
+  for (const token of [
+    'Start production-like compressed local website server',
+    "protocol_version = 'HTTP/1.1'",
+    'gzip.compress(source.read(), compresslevel=6, mtime=0)',
+    "self.send_header('Content-Encoding', 'gzip')",
+    "self.send_header('Cache-Control', 'max-age=600')",
+    'python3 /tmp/nexusnova-static-server.py',
+    'Production-like local response verified: gzip compression and max-age=600 cache header.'
+  ]) assert.ok(workflow.includes(token), token);
+  assert.ok(!workflow.includes('python3 -m http.server 8000'), 'do not benchmark uncompressed HTML against compressed GitHub Pages production');
+});
