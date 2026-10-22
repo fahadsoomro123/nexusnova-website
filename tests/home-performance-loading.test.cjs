@@ -155,3 +155,20 @@ test('live production audit uses authenticated PageSpeed evidence and bounded tr
   );
   assert.ok(workflow.includes('if failed:'), 'incomplete live lab evidence must fail the audit gate');
 });
+
+test('live PageSpeed evidence includes bounded, redacted LCP and blocking diagnostics', () => {
+  const workflow = fs.readFileSync('.github/workflows/live-production-audit.yml', 'utf8');
+  for (const token of [
+    "'largest-contentful-paint-element'",
+    "'lcp-discovery-insight'",
+    "'lcp-breakdown-insight'",
+    "'render-blocking-resources'",
+    "'unused-javascript'",
+    "'unused-css-rules'",
+    "'uses-optimized-images'",
+    "'third-party-summary'",
+    "'diagnostics':diagnostics",
+    "urlunsplit((parts.scheme,parts.netloc,parts.path,'',''))",
+    'items[:5]'
+  ]) assert.ok(workflow.includes(token), token);
+});
