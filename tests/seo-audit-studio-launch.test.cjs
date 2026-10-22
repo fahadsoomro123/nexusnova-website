@@ -159,12 +159,12 @@ test('Owner Console clean and .html routes are both marked noindex and no-store'
 
 test('Owner Console renders full audit reports as readable sections instead of a raw JSON code block', () => {
   const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
-  assert.match(admin, /function renderAuditReport\\(report,auditId\\)/);
+  assert.match(admin, /function renderAuditReport\(report,auditId\)/);
   assert.match(admin, /Category scores/);
   assert.match(admin, /Mobile and desktop performance/);
   assert.match(admin, /Prioritized recommendations/);
   assert.match(admin, /All audit checks/);
   assert.match(admin, /Website and measurement details/);
   assert.match(admin, /Download raw report JSON/);
-  assert.doesNotMatch(admin, /text\\('pre',JSON\\.stringify\\(report,null,2\\),'output'\\)/);
+  assert.doesNotMatch(admin, /text\('pre',JSON\.stringify\(report,null,2\),'output'\)/);
 });
