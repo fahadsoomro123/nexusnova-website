@@ -150,3 +150,9 @@ test('production Owner Console is noindex and routes to the real production Work
   assert.match(admin, /Owner token was rejected/);
   assert.doesNotMatch(admin, /localStorage\.(?:setItem|getItem)\([^\n]*(?:token|secret)/i);
 });
+
+test('Owner Console clean and .html routes are both marked noindex and no-store', () => {
+  const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+  assert.match(headers, /\/seo-audit-studio-admin\r?\n  X-Robots-Tag: noindex, nofollow, noarchive\r?\n  Cache-Control: no-store/);
+  assert.match(headers, /\/seo-audit-studio-admin\.html\r?\n  X-Robots-Tag: noindex, nofollow, noarchive\r?\n  Cache-Control: no-store/);
+});
