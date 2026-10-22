@@ -118,19 +118,34 @@
   }
 
   const isProductionAnalyticsHost=/^(?:www\.)?nexusnovatools\.com$/i.test(location.hostname);
-  if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){
-    window.gtag('js',new Date());
-    const analyticsScript=document.createElement('script');
-    analyticsScript.async=true;
-    analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
-    analyticsScript.dataset.nexusnovaGa4='';
-    analyticsScript.onload=()=>window.gtag('config',measurementId,{
-      send_page_view:true,
-      allow_google_signals:false,
-      allow_ad_personalization_signals:false,
-      ads_data_redaction:true
-    });
-    document.head.appendChild(analyticsScript);
+  const initializeGa4=()=>{
+    if(isProductionAnalyticsHost&&!document.querySelector('script[data-nexusnova-ga4]')){
+      // Queue GA4 configuration before injection. gtag's dataLayer stub retains
+      // the page_view and any early events until the async library is ready.
+      window.gtag('js',new Date());
+      window.gtag('config',measurementId,{
+        send_page_view:true,
+        allow_google_signals:false,
+        allow_ad_personalization_signals:false,
+        ads_data_redaction:true
+      });
+      const analyticsScript=document.createElement('script');
+      analyticsScript.async=true;
+      analyticsScript.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);
+      analyticsScript.dataset.nexusnovaGa4='';
+      analyticsScript.onerror=()=>{
+        analyticsScript.dataset.nexusnovaGa4Failed='true';
+      };
+      document.head.appendChild(analyticsScript);
+    }
+  };
+  if(isProductionAnalyticsHost&&isHomepage){
+    // Homepage GA4 is queued only after first content has settled, then loaded
+    // during idle time. This moves network and script evaluation off the LCP
+    // critical path while retaining consent defaults and the queued page_view.
+    scheduleAfterLargestContentfulPaint(initializeGa4,{delay:500,fallbackDelay:4000,idleTimeout:1500});
+  }else{
+    initializeGa4();
   }
 
   window.__nexusnovaLoadAnalytics=choice=>{
