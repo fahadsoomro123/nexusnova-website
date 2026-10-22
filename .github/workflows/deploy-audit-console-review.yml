@@ -33,16 +33,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Run complete website tests
         run: npm test
 
       - name: Check JavaScript syntax and source quality
         run: npm run check
+
+      - name: Parse the Owner Console inline JavaScript
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html = fs.readFileSync('seo-audit-studio-admin.html', 'utf8');
+          const start = html.indexOf('<script>');
+          const end = html.indexOf('</script>', start);
+          if (start < 0 || end < 0) throw new Error('Owner Console inline script was not found.');
+          new Function(html.slice(start + '<script>'.length, end));
+          console.log('Owner Console inline JavaScript syntax passed.');
+          NODE
 
       - name: Deploy the static site to the review-only Cloudflare Pages project
         shell: bash
