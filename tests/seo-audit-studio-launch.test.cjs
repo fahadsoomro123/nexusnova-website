@@ -41,6 +41,8 @@ test('voucher terms stay concise and voucher claims remain backend-controlled', 
 test('Audit Studio tool page keeps only essential evidence and unlock text', () => {
   assert.match(auditHtml, /Unavailable checks are unscored/);
   assert.match(auditHtml, /actual website and provider measurements/);
+  assert.match(auditHtml, /Why is some data unavailable\?/);
+  assert.match(auditHtml, /Scores need usable source evidence/);
   assert.doesNotMatch(auditHtml, /Audit notes and common questions|Why can a category show N\/A|Do scores guarantee rankings|When is the full report unlocked/);
 });
 
