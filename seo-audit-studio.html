@@ -972,6 +972,8 @@
   };
   const categories = [
     {id:'onPage',name:'On-Page SEO',icon:'⌕',tone:'',desc:'Metadata, headings and crawl signals'},
+    {id:'technical',name:'Technical SEO',icon:'⚙',tone:'amber',desc:'HTTP status, HTTPS, content type and indexability'},
+    {id:'content',name:'Content',icon:'▤',tone:'green',desc:'HTML content depth and heading signals'},
     {id:'geo',name:'GEO readiness',icon:'✳',tone:'purple',desc:'Schema and machine-readable content'},
     {id:'links',name:'Links',icon:'↗',tone:'green',desc:'Link structure and anchor clarity'},
     {id:'usability',name:'Usability',icon:'▣',tone:'amber',desc:'Mobile layout and accessibility'},
@@ -1281,7 +1283,9 @@
     if (!src.content && !mobileOk && !desktopOk && report.fallbackReason) problems.push(report.fallbackReason);
     const paidView=document.body.classList.contains('report-is-paid');
     const hasRequiredMeasurements=Boolean(src.content && mobileOk && desktopOk && report.overall!=null);
-    const show=paidView ? !hasRequiredMeasurements : (problems.length>0 || report.overall==null || (report.overallCoverage!=null && report.overallCoverage<90));
+    const sourceCoverage=report.sourceCoverage ?? report.overallCoverage;
+    const hasLimitedCategories=Number.isFinite(report.categoryCoverage) && report.categoryCoverage<100;
+    const show=paidView ? !hasRequiredMeasurements : (problems.length>0 || report.overall==null || (sourceCoverage!=null && sourceCoverage<90) || hasLimitedCategories);
     el.sourceDiagnostics.hidden=!show;
     if (!show) {
       el.sourceDiagnostics.hidden = true;
@@ -1291,35 +1295,38 @@
       return;
     }
     el.sourceDiagnostics.hidden = false;
-    el.sourceDiagnosticsTitle.textContent=report.overall==null?'Partial audit: overall grade withheld':'Limited category coverage';
+    el.sourceDiagnosticsTitle.textContent=report.overall==null?'Partial audit: overall grade withheld':hasLimitedCategories?'Limited category coverage':'Source coverage incomplete';
     const reason=report.overall==null ? 'No overall A–F grade is issued until website content and both mobile and desktop performance measurements are available. ' : '';
-    el.sourceDiagnosticsText.textContent=reason+problems.join(' | ');
+    const categoryNote=hasLimitedCategories?'Applicable category coverage: '+report.categoryCoverage+'%. Not-applicable categories are excluded. ':'';
+    el.sourceDiagnosticsText.textContent=reason+categoryNote+problems.join(' | ');
     el.retryMeasurements.hidden=!Boolean(report.auditId || report.id);
   };
   const categoryScore = (report,id) => {
     const meta=report.categoryMeta?.[id];
-    if (meta && ['limited','unavailable','not_measured'].includes(meta.status)) return null;
+    if (meta && ['limited','unavailable','not_measured','not_applicable'].includes(meta.status)) return null;
     return report.categories?.[id] ?? null;
   };
   const renderCategories = (report) => {
     el.categoryGrid.innerHTML=categories.map(cat=>{
       const meta=report.categoryMeta?.[cat.id] || {};
       const score=categoryScore(report,cat.id), grade=score==null?'N/A':gradeFor(score), tone=scoreTone(score);
-      const status=score!=null?'Measured':meta.status==='limited'?'Limited assessment':'Not measured';
+      const status=score!=null?'Measured':meta.status==='not_applicable'?'Not applicable':meta.status==='limited'?'Limited assessment':'Not measured';
       const iconTone=cat.tone?' '+cat.tone:'';
       let desc=cat.desc;
       if(score==null && meta.status==='limited') desc=`Limited evidence: ${meta.scoredChecks ?? meta.measuredChecks ?? 0} scored checks; ${meta.requiredChecks ?? 'more'} required`;
+      else if(score==null && meta.status==='not_applicable') desc='No local-business evidence found; excluded from applicable-category coverage';
       else if(score==null && cat.id==='performance') desc='Mobile and desktop Lighthouse measurements are unavailable';
       else if(score==null && cat.id==='local') desc='Local business evidence is insufficient or not applicable';
       else if(score==null && meta.status==='unavailable') desc='No reliable source measurement available';
-      const denom=score==null?(meta.status==='limited'?'limited evidence':'not measured'):'/ 100';
-      const title=score==null?(meta.status==='limited'?`Limited assessment: ${meta.scoredChecks ?? 0}/${meta.requiredChecks ?? '?'} scored checks`:'Not measured'):`Evidence-based score ${score} out of 100`;
+      const denom=score==null?(meta.status==='limited'?'limited evidence':meta.status==='not_applicable'?'not applicable':'not measured'):'/ 100';
+      const title=score==null?(meta.status==='limited'?`Limited assessment: ${meta.scoredChecks ?? 0}/${meta.requiredChecks ?? '?'} scored checks`:meta.status==='not_applicable'?'Not applicable to this page':'Not measured'):`Evidence-based score ${score} out of 100`;
       return `<article class="category-card"><div class="category-top"><span class="category-icon${iconTone}" aria-hidden="true">${cat.icon}</span><span class="category-name">${escapeHtml(cat.name)}</span><span class="grade-badge ${tone}" title="${escapeHtml(title)}">${escapeHtml(grade)}</span></div><div class="category-score-row"><span class="category-score ${score==null?'na':''}">${score==null?'N/A':score}</span><span class="category-denom">${escapeHtml(denom)}</span></div><div class="bar-track"><div class="bar-fill ${tone==='na'?'na':tone}" style="width:${score==null?0:Math.max(2,score)}%"></div></div><div class="category-foot"><span>${escapeHtml(desc)}</span><span>${escapeHtml(status)}</span></div></article>`;
     }).join('');
     const measured=categories.filter(c=>categoryScore(report,c.id)!=null).length;
     const limited=categories.filter(c=>report.categoryMeta?.[c.id]?.status==='limited').length;
-    const notMeasured=categories.length-measured-limited;
-    el.categoryNote.textContent=`${measured} measured · ${limited} limited · ${notMeasured} not measured of ${categories.length}${report.overall==null?' · overall grade pending required data':''}`;
+    const notApplicable=categories.filter(c=>report.categoryMeta?.[c.id]?.status==='not_applicable').length;
+    const notMeasured=categories.length-measured-limited-notApplicable;
+    el.categoryNote.textContent=`${measured} measured · ${limited} limited · ${notMeasured} not measured · ${notApplicable} not applicable of ${categories.length}${report.overall==null?' · overall grade pending required data':''}`;
   };
   const metricGuides={
     lcp:{label:'Largest Contentful Paint',good:2500,poor:4000,threshold:'Good ≤ 2.5 s · Poor > 4.0 s',href:'https://web.dev/articles/lcp',unit:'ms'},
@@ -1591,7 +1598,8 @@
     const recTotal=recs.length;
     const ratio=(value,total)=>total>0?Math.round(value/total*100):0;
     const categoryScores=categories.map(cat=>({cat,score:categoryScore(report,cat.id)}));
-    const measuredCategories=categoryScores.filter(item=>item.score!=null).length;
+    const applicableCategoryScores=categoryScores.filter(item=>report.categoryMeta?.[item.cat.id]?.status!=='not_applicable');
+    const measuredCategories=applicableCategoryScores.filter(item=>item.score!=null).length;
     let hostname='this website';
     try{hostname=new URL(report.url).hostname;}catch{}
     const title=score==null?'Performance grade unavailable':score>=90?'Excellent foundations':score>=80?'Healthy foundation':score>=65?'Targeted improvements recommended':'High-impact fixes should come first';
@@ -1607,9 +1615,12 @@
     const statCard=(tone,icon,label,value,foot)=>`<article class="exec-kpi-card ${tone}"><div class="exec-kpi-top"><span class="exec-kpi-icon" aria-hidden="true">${icon}</span><span class="exec-kpi-label">${label}</span></div><div class="exec-kpi-value">${value}</div><div class="exec-kpi-foot">${foot}</div></article>`;
     const priorityRow=(name,count,tone)=>`<div class="exec-priority-row"><span class="exec-priority-name ${tone}"><i class="exec-priority-dot" aria-hidden="true"></i>${name}</span><span class="exec-priority-track" aria-hidden="true"><span class="exec-priority-fill ${tone}" style="display:block;width:${ratio(count,Math.max(1,recTotal))}%"></span></span><strong class="exec-priority-count">${count}</strong></div>`;
     const categoryRows=categoryScores.map(({cat,score:categoryValue})=>{
+      const categoryStatus=report.categoryMeta?.[cat.id]?.status;
+      const notApplicable=categoryStatus==='not_applicable';
       const tone=categoryValue==null?'na':categoryValue>=80?'':categoryValue>=60?'warn':'bad';
       const value=categoryValue==null?'N/A':String(Math.round(categoryValue));
-      return `<div class="exec-category-row"><span class="exec-category-label" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</span><strong class="exec-category-value ${tone==='na'?'na':''}">${value}${categoryValue==null?'':'/100'}</strong><span class="exec-category-track" aria-label="${escapeHtml(cat.name)} ${categoryValue==null?'not measured':value+' out of 100'}"><span class="exec-category-fill ${tone}" style="display:block;width:${categoryValue==null?0:Math.max(2,categoryValue)}%"></span></span></div>`;
+      const label=notApplicable?'not applicable':categoryValue==null?'not measured':value+' out of 100';
+      return `<div class="exec-category-row"><span class="exec-category-label" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</span><strong class="exec-category-value ${tone==='na'?'na':''}">${value}${categoryValue==null?'':'/100'}</strong><span class="exec-category-track" aria-label="${escapeHtml(cat.name)} ${label}"><span class="exec-category-fill ${tone}" style="display:block;width:${categoryValue==null?0:Math.max(2,categoryValue)}%"></span></span></div>`;
     }).join('');
     const stackTotal=Math.max(1,recTotal);
     target.innerHTML=`
@@ -1635,8 +1646,8 @@
           <div class="exec-data-note"><strong>Impact guide:</strong> priority bars show the finding labels returned by the audit; quantitative savings are shown separately only when the source reports them.</div>
         </article>
         <article class="exec-insight-card">
-          <div class="exec-insight-head"><div><div class="exec-insight-title">Category health</div><div class="exec-insight-subtitle">A compact view of every audited category.</div></div><span class="exec-count-badge">${measuredCategories}/${categories.length} scored</span></div>
-          <div class="exec-coverage-score"><strong>${measuredCategories} of ${categories.length}</strong><span>categories scored</span></div>
+          <div class="exec-insight-head"><div><div class="exec-insight-title">Category health</div><div class="exec-insight-subtitle">A compact view of every audited category.</div></div><span class="exec-count-badge">${measuredCategories}/${applicableCategoryScores.length} scored</span></div>
+          <div class="exec-coverage-score"><strong>${measuredCategories} of ${applicableCategoryScores.length}</strong><span>applicable categories scored</span></div>
           <div class="exec-category-list">${categoryRows}</div>
           <div class="exec-data-note"><strong>Sources used:</strong> ${escapeHtml(uniqueProviders.length?uniqueProviders.join(' · '):'No external performance provider returned data')}. Missing scores stay unmeasured, not estimated.</div>
         </article>
