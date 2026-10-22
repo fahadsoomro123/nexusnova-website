@@ -247,12 +247,11 @@
     return String(value);
   }
   function reportLabel(value){
-    return String(value||'').replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ').replace(/\\s+/g,' ').trim().replace(/\\b[a-z]/g,c=>c.toUpperCase());
+    return String(value||'').replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().replace(/\b[a-z]/g,c=>c.toUpperCase());
   }
   function reportElement(tag,value,className=''){return text(tag,value,className);}
   function reportSection(title,description=''){
-    const section=reportElement('section','report-section');
-    section.className='report-section';
+    const section=reportElement('section','','report-section');
     section.append(reportElement('h4',title));
     if(description)section.append(reportElement('p',description,'report-section-intro'));
     return section;
