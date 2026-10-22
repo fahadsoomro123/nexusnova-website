@@ -14,81 +14,44 @@
   <meta property="og:description" content="Run an evidence-based website SEO audit with a free summary, technical findings and mobile and desktop performance diagnostics.">
   <meta property="og:url" content="https://nexusnovatools.com/seo-audit-studio.html">
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebApplication",
-        "name": "NexusNova SEO Audit Studio",
-        "alternateName": "NexusNova Audit",
-        "url": "https://nexusnovatools.com/seo-audit-studio.html",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Any modern browser",
-        "isAccessibleForFree": true,
-        "offers": {
-          "@type": "Offer",
-          "price": "2.99",
-          "priceCurrency": "USD",
-          "description": "One-time full technical report unlock after the payment provider and backend verify the transaction"
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "NexusNova SEO Audit Studio",
+      "alternateName": "NexusNova Audit",
+      "url": "https://nexusnovatools.com/seo-audit-studio.html",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any modern browser",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "2.99",
+        "priceCurrency": "USD",
+        "description": "One-time full technical report unlock after the payment provider and backend verify the transaction"
+      },
+      "description": "Audit a website's on-page SEO, technical signals, structured data, usability, links, GEO signals and mobile and desktop performance, with a free summary and a server-verified full-report unlock."
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://nexusnovatools.com/"
         },
-        "description": "Audit a website's on-page SEO, technical signals, structured data, usability, links, GEO signals and mobile and desktop performance, with a free summary and a server-verified full-report unlock."
-      },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "What does SEO Audit Studio check?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "SEO Audit Studio checks page metadata, headings, links, structured data, crawl-related signals, usability and available mobile and desktop performance measurements. Checks that cannot be verified are shown as limited or unavailable rather than treated as passes."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What is included in the free preview?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "The free preview shows an overall grade when the required evidence is available, seven summary categories and up to three high-priority findings. Missing measurements are not invented."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How does the full report unlock?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "The full report is unlocked only after the backend verifies the exact payment and matching order with the provider. A checkout redirect, screenshot or client-side button alone does not prove payment."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Does an SEO audit guarantee higher search rankings?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. An audit identifies observable issues and improvement opportunities. Search rankings also depend on content quality, competition, indexing, links, user intent and search engine systems; no audit can guarantee a ranking or AdSense approval."
-            }
-          }
-        ]
-      },
-      {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Home",
-            "item": "https://nexusnovatools.com/"
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "NexusNova SEO Audit Studio",
-            "item": "https://nexusnovatools.com/seo-audit-studio.html"
-          }
-        ]
-      }
-    ]
-  }
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "NexusNova SEO Audit Studio",
+          "item": "https://nexusnovatools.com/seo-audit-studio.html"
+        }
+      ]
+    }
+  ]
+}
   </script>
   <link rel="stylesheet" href="assets/css/site.css?v=20261015-v4">
 <link rel="stylesheet" href="assets/css/nn-inner-shell.css?v=20261015-v4">
@@ -582,6 +545,11 @@
 @media(max-width:840px){.site-nav a:nth-child(n+4){display:none}.top-inner{gap:9px}.top-inner .nav-label{padding-left:9px;font-size:10px}}
 @media(max-width:720px){.topbar{height:auto;min-height:66px}.top-inner{flex-wrap:wrap;gap:8px;padding:10px 12px}.site-brand-logo{width:88px;max-height:31px}.site-brand-copy strong{font-size:8px}.site-brand-copy small{font-size:6px}.top-inner .nav-label{padding-left:9px;font-size:10px}.site-nav{order:5;flex:1 1 100%;overflow-x:auto;gap:15px;padding:4px 0 2px;scrollbar-width:thin}.site-nav a,.site-nav a:nth-child(n){display:inline-block;font-size:10px}.top-inner .top-spacer{flex:1}.nn-global-footer{padding:22px 16px 13px}.nn-footer-main{grid-template-columns:1fr;gap:21px}.nn-footer-trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nn-footer-bottom{align-items:flex-start;flex-direction:column;gap:6px}}
 @media(prefers-reduced-motion:reduce){.site-nav a,.site-brand{transition:none}}
+
+.audit-notes h2{font-size:13px;margin:0 0 8px;color:#4e5d72}
+.audit-notes details+details{margin-top:7px}
+.audit-notes summary{cursor:pointer;font-weight:700;color:#4e5d72}
+.audit-notes details p{margin:5px 0 0;line-height:1.6}
 </style>
   <meta name="theme-color" content="#ffffff">
   <link rel="icon" href="/assets/favicon.svg?v=20261015-v4" type="image/svg+xml">
@@ -627,15 +595,15 @@
   </header>
 <main id="top" class="container">
   <section class="page-heading">
-    <div><div class="eyebrow">Website intelligence</div><h1>NexusNova SEO Audit Studio</h1><p>Run a free first-look audit, review your top findings, and request the full technical report when you need deeper evidence and export options.</p></div>
-    <div class="privacy-note"><span class="icon" aria-hidden="true">◎</span> Live checks depend on third-party public analysis services</div>
+    <div><h1>NexusNova SEO Audit Studio</h1><p>Measured technical SEO checks and mobile/desktop performance.</p></div>
+    <div class="privacy-note">Unavailable checks stay unscored.</div>
   </section>
 
   <section class="audit-box" aria-labelledby="audit-label">
     <label class="form-label" id="audit-label" for="urlInput">Enter the website URL you want to audit</label>
     <form id="auditForm" novalidate>
       <div class="url-row">
-        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" value="https://example.com" aria-describedby="urlHelp">
+        <div class="url-wrap"><svg class="url-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.5"/><path d="m16.5 16.5 4.2 4.2"/></svg><input class="url-input" id="urlInput" name="url" type="text" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="https://example.com" aria-describedby="urlHelp">
         <script>
         (() => {
           const raw = new URLSearchParams(window.location.search).get('url') || '';
@@ -654,23 +622,23 @@
         <button id="runBtn" class="primary-btn" type="submit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"/><circle cx="12" cy="12" r="4"/></svg> Run SEO Audit</button>
       </div>
     </form>
-    <div class="form-bottom"><span id="urlHelp">Free preview includes the overall grade, category summaries and top findings. The full report includes detailed measurements and exports.</span></div>
+    <div class="form-bottom"><span id="urlHelp">Free summary. Full report: $2.99 or valid voucher.</span></div>
     <div id="formError" class="form-error" role="alert"></div>
     <div id="progressPanel" class="progress-panel" aria-live="polite">
       <div class="progress-head"><span><span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span> <span id="progressTitle">Preparing audit…</span></span><span id="progressPercent">4%</span></div>
       <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-      <div class="progress-meta"><span id="progressDetail">Checking URL and preparing requests</span><span>Timing depends on public APIs</span></div>
+      <div class="progress-meta"><span id="progressDetail">Checking website</span><span>Waiting for live measurements</span></div>
     </div>
   </section>
 
   <section id="auditReportSection" aria-labelledby="reportHeading" hidden>
     <div class="report-header">
-      <div class="report-title-block"><h2 id="reportHeading">Audit Results for example.com</h2><div class="report-url" id="reportUrl">https://example.com</div><div class="report-meta"><span id="sourcePill" class="source-pill partial">Audit pending</span><span id="reportDate">Run an audit to view results</span><span id="sourceDescription">Measured findings will appear here after the audit.</span></div></div>
+      <div class="report-title-block"><h2 id="reportHeading">Audit results</h2><div class="report-url" id="reportUrl"></div><div class="report-meta"><span id="sourcePill" class="source-pill partial">Not run</span><span id="reportDate"></span><span id="sourceDescription"></span></div></div>
       <div class="report-actions"><button class="secondary-btn" id="refreshBtn" type="button" title="Run the audit again">↻ Re-run audit</button><button class="secondary-btn paid-action" id="exportBtn" type="button" title="Full report export requires an upgrade">🔒 Export JSON</button><button class="secondary-btn paid-action" id="printBtn" type="button" title="PDF export requires an upgrade">🔒 Save PDF / Print</button></div>
     </div>
 
     <div class="panel summary-panel" id="summaryPanel">
-      <div class="grade-side"><div class="grade-ring" id="gradeRing" style="--score:72"><div class="grade-inner"><div id="overallGrade" class="grade-letter">N/A</div><div class="grade-caption">Overall grade</div></div></div><div class="grade-summary"><h3 id="gradeHeading">Your page could be better</h3><p id="gradeDescription">A few focused improvements could make this site easier to crawl, understand and use.</p><div class="recommendation-count"><strong id="recCountInline">8 recommendations</strong><span> · ordered by priority</span></div></div></div>
+      <div class="grade-side"><div class="grade-ring" id="gradeRing" style="--score:0"><div class="grade-inner"><div id="overallGrade" class="grade-letter">N/A</div><div class="grade-caption">Overall grade</div></div></div><div class="grade-summary"><h3 id="gradeHeading">Audit not run</h3><p id="gradeDescription"></p><div class="recommendation-count"><strong id="recCountInline">0 findings</strong><span> · ordered by priority</span></div></div></div>
       <div class="summary-right"><div class="summary-stats"><div class="stat"><div class="stat-label">High priority</div><div class="stat-value red" id="highCount">0</div><div class="stat-sub">Address first</div></div><div class="stat"><div class="stat-label">Passed checks</div><div class="stat-value green" id="passCount">0</div><div class="stat-sub">Positive signals</div></div><div class="stat"><div class="stat-label">Checks reviewed</div><div class="stat-value blue" id="checksCount">0</div><div class="stat-sub">Across categories</div></div></div><div class="summary-detail"><div class="source-lines"><span>Data sources:</span><span class="source-chip" id="psiSourceChip">PageSpeed</span><span class="source-chip" id="htmlSourceChip">Page content</span></div><span id="measurementState">Awaiting audit</span></div></div>
     </div>
 
@@ -679,14 +647,14 @@
       <button type="button" class="secondary-btn" id="retryMeasurementsBtn" hidden>Retry missing measurements</button>
     </div>
 
-    <div class="section-title-row" id="categoryBreakdownHeading"><div><h2>Category breakdown</h2><p>Scores summarize the checks available for this URL.</p></div><span class="section-side-note" id="categoryNote">7 audit categories</span></div>
+    <div class="section-title-row" id="categoryBreakdownHeading"><div><h2>Category breakdown</h2><p>Based on measured checks for this URL.</p></div><span class="section-side-note" id="categoryNote">7 audit categories</span></div>
     <div class="category-grid" id="categoryGrid" aria-live="polite"></div>
 
     <div class="section-title-row free-section-heading" id="freeRecommendationsHeading"><div><h2>Free recommendations preview</h2><p>Start with the top actionable findings available in this audit.</p></div><span class="section-side-note" id="freeRecommendationCount">Up to 3 recommendations</span></div>
     <section class="panel recommendation-panel free-recommendation-panel" id="freeRecommendationsPanel" aria-labelledby="freeRecommendationsTitle">
-      <div class="recommendation-header"><div><h2 id="freeRecommendationsTitle">Your first fixes</h2><p>Each preview item includes the issue and a practical next step.</p></div><span class="free-plan-pill">FREE PREVIEW</span></div>
+      <div class="recommendation-header"><div><h2 id="freeRecommendationsTitle">Top findings</h2></div><span class="free-plan-pill">FREE PREVIEW</span></div>
       <div class="free-rec-list" id="freeRecommendationList" aria-live="polite"></div>
-      <div class="free-upgrade-strip"><div><strong>Need the full picture?</strong><span>Unlock every prioritized finding, mobile and desktop diagnostics, detailed evidence, and report exports.</span></div><button type="button" class="primary-btn" data-open-paywall>Unlock Full Audit · $2.99</button></div>
+      <div class="free-upgrade-strip"><div><strong>Full report</strong><span>All findings, evidence, mobile/desktop metrics and exports.</span></div><button type="button" class="primary-btn" data-open-paywall>Unlock · $2.99</button></div>
     </section>
 
     <section class="premium-gate" id="premiumGate" aria-label="Full audit report preview, locked">
@@ -694,9 +662,8 @@
     <section class="executive-summary panel" id="executiveSummary" aria-labelledby="executiveSummaryTitle">
       <div class="executive-summary-head">
         <div>
-          <div class="executive-kicker"><span class="executive-kicker-dot"></span> PREMIUM AUDIT INTELLIGENCE</div>
           <h2 id="executiveSummaryTitle">Executive Summary</h2>
-          <p id="executiveSummaryIntro">A decision-ready view of site health, open issues, and the most useful next actions.</p>
+
         </div>
         <div class="executive-report-status" id="executiveReportStatus"><span aria-hidden="true">✓</span> Verified report</div>
       </div>
@@ -711,20 +678,20 @@
     </nav>
 
     <section class="paid-view-panel paid-overview-view" id="paidPanelOverview" role="tabpanel" aria-labelledby="tabOverview" data-paid-panel="overview">
-      <div class="overview-actions-head"><div><div class="overview-kicker">YOUR NEXT MOVES</div><h2>Recommended next actions</h2><p>The highest-priority fixes first, with duplicate mobile/desktop opportunities combined.</p></div><button class="secondary-btn overview-view-all" type="button" data-paid-go="findings">Explore all findings <span aria-hidden="true">→</span></button></div>
+      <div class="overview-actions-head"><div><h2>Recommended next actions</h2></div><button class="secondary-btn overview-view-all" type="button" data-paid-go="findings">View findings <span aria-hidden="true">→</span></button></div>
       <div class="overview-action-grid" id="overviewActionList" aria-live="polite"><div class="overview-empty">Your prioritized findings will appear here after the report loads.</div></div>
-      <div class="overview-footer-note"><span class="overview-note-icon" aria-hidden="true">i</span><span><strong>How to read this report.</strong> Priority is a qualitative audit triage, not a promise of ranking gains. Performance timings are repeatable lab measurements; real-user field metrics require separate field data.</span></div>
+      <div class="overview-footer-note"><span>Lab data is not real-user field data and does not guarantee rankings.</span></div>
     </section>
 
     <section class="paid-view-panel" id="paidPanelPerformance" role="tabpanel" aria-labelledby="tabPerformance" data-paid-panel="performance" hidden>
-      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">01 / MEASURED EXPERIENCE</div><h2>Performance lab</h2><p>Mobile and desktop are measured separately. Each metric includes its status, reference threshold, and official guidance.</p></div><div class="performance-heading-meta"><span class="findings-total-pill" id="performanceNote">Source follows each device score</span><span class="measurement-mode-pill"><span aria-hidden="true">◉</span> LAB DATA</span></div></div>
+      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">01 / MEASURED EXPERIENCE</div><h2>Performance lab</h2></div><div class="performance-heading-meta"><span class="findings-total-pill" id="performanceNote">Source follows each device score</span><span class="measurement-mode-pill"><span aria-hidden="true">◉</span> LAB DATA</span></div></div>
       <div class="performance-legend"><span><i class="legend-good"></i> Good</span><span><i class="legend-mid"></i> Needs improvement</span><span><i class="legend-poor"></i> Poor</span><span class="performance-legend-note">Scores: 90–100 good · 50–89 needs improvement · 0–49 poor</span></div>
       <div class="panel performance-panel" id="performancePanel"></div>
-      <div class="performance-footnote"><strong>Lab vs. field:</strong> LCP and CLS here are lab readings; Total Blocking Time (TBT) is a lab responsiveness diagnostic, not the field Interaction to Next Paint (INP). Re-run under comparable conditions before judging whether a change helped.</div>
+      <div class="performance-footnote">Lab metrics are not real-user field data. Compare runs under similar conditions.</div>
     </section>
 
     <section class="paid-view-panel" id="paidPanelFindings" role="tabpanel" aria-labelledby="tabFindings" data-paid-panel="findings" hidden>
-      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">02 / DECISION QUEUE</div><h2>Issues &amp; fixes</h2><p>Search findings, filter by severity and topic, then expand one issue for its evidence and steps.</p></div><span class="findings-total-pill" id="recommendationNote">Findings</span></div>
+      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">02 / DECISION QUEUE</div><h2>Issues &amp; fixes</h2></div><span class="findings-total-pill" id="recommendationNote">Findings</span></div>
       <section class="panel recommendation-panel premium-issue-explorer" aria-labelledby="recommendationsTitle">
         <div class="issue-toolbar">
           <label class="issue-search"><span class="sr-only">Search findings</span><span aria-hidden="true">⌕</span><input id="issueSearch" type="search" placeholder="Search title, evidence or recommendation…" autocomplete="off"></label>
@@ -739,7 +706,7 @@
     </section>
 
     <section class="paid-view-panel" id="paidPanelChecklist" role="tabpanel" aria-labelledby="tabChecklist" data-paid-panel="checklist" hidden>
-      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">03 / COMPLETE EVIDENCE</div><h2>Technical checklist</h2><p>A compact view grouped by category. Expand any check for its evidence, interpretation and recommended action.</p></div><span class="findings-total-pill" id="fullChecklistCount">All checks</span></div>
+      <div class="paid-section-heading"><div><div class="paid-section-eyebrow">03 / COMPLETE EVIDENCE</div><h2>Technical checklist</h2></div><span class="findings-total-pill" id="fullChecklistCount">All checks</span></div>
       <section class="panel full-checks-panel" aria-labelledby="fullChecklistTitle">
         <div class="checklist-toolbar">
           <label class="issue-search"><span class="sr-only">Search technical checks</span><span aria-hidden="true">⌕</span><input id="checkSearch" type="search" placeholder="Search checks or evidence…" autocomplete="off"></label>
@@ -751,8 +718,8 @@
       </section>
     </section>
 
-    <div class="report-footer"><span id="footerSource">Report generated by NexusNova Tools.</span><span>Scores are diagnostic indicators, not a ranking guarantee.</span></div>
-    <div class="disclaimer"><strong>Measurement note:</strong> Scores are based on available website and performance measurements. Unavailable categories remain unscored. GEO is a readiness heuristic for crawlability, structured data and content clarity, not a measure of AI-search rankings or citations.</div>
+    <div class="report-footer"><span id="footerSource">Report source: actual website and provider measurements.</span></div>
+    <div class="disclaimer">Unavailable checks are unscored. GEO is a readiness heuristic, not an AI-search ranking metric.</div>
       </div>
       <div class="premium-shade" aria-hidden="true"></div>
       <div class="premium-overlay">
@@ -760,7 +727,7 @@
           <div class="lock-mark" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10" width="15" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
           <div class="locked-eyebrow">FULL REPORT • PREMIUM</div>
           <h2>Unlock the complete SEO audit</h2>
-          <p class="locked-intro">Go beyond the free preview with mobile and desktop performance diagnostics, the full prioritized action plan, technical evidence, and export options.</p>
+          <p class="locked-intro">Full findings, verified evidence, device metrics and exports.</p>
           <div class="locked-price"><span class="price-currency">USD</span><strong>$2.99</strong><span class="price-period">one-time<br>per report</span></div>
           <div class="locked-includes">
             <span><i>✓</i> All technical recommendations</span>
@@ -769,21 +736,29 @@
             <span><i>✓</i> PDF/print and JSON export options</span>
           </div>
           <button type="button" class="primary-btn locked-cta" data-open-paywall>Unlock Full Audit Report <span aria-hidden="true">→</span></button>
-          <div class="locked-trust"><span>●</span> Clear pricing · No card details requested on this page</div>
-          <p class="locked-note">Full report access is granted only after the backend verifies the matching payment with the provider.</p>
+          <div class="locked-trust"><span>●</span> One-time price. Payment is handled by the provider.</div>
+          <p class="locked-note">Unlocked only after server-side payment verification or a valid voucher.</p>
         </div>
       </div>
     </section>
   </section>
-  <section class="panel" id="seo-audit-faq" aria-labelledby="seo-audit-faq-title" style="margin-top:24px;padding:22px">
-  <h2 id="seo-audit-faq-title" style="margin:0 0 14px;font-size:19px;color:#243146">Frequently Asked Questions</h2>
-  <div style="display:grid;gap:14px">
-    <div><h3 style="margin:0 0 4px;font-size:13px;color:#354257">What does SEO Audit Studio check?</h3><p style="margin:0;color:#667386;font-size:12px">It checks metadata, headings, links, structured data, crawl-related signals, usability and available mobile and desktop performance measurements. Unavailable checks are labelled limited or unavailable, not passed.</p></div>
-    <div><h3 style="margin:0 0 4px;font-size:13px;color:#354257">What is included in the free preview?</h3><p style="margin:0;color:#667386;font-size:12px">The preview includes an overall grade only when the required evidence is available, seven summary categories and up to three key findings. Missing measurements are not made up.</p></div>
-    <div><h3 style="margin:0 0 4px;font-size:13px;color:#354257">How does the full report unlock?</h3><p style="margin:0;color:#667386;font-size:12px">The backend must verify the matching order and successful payment with the provider before unlocking the report. A redirect or client-side button alone cannot unlock it.</p></div>
-    <div><h3 style="margin:0 0 4px;font-size:13px;color:#354257">Does an SEO audit guarantee higher rankings?</h3><p style="margin:0;color:#667386;font-size:12px">No. An audit identifies observable issues and opportunities, but search rankings depend on content, competition, indexing and other factors. It cannot guarantee rankings or AdSense approval.</p></div>
-  </div>
-</section>
+
+
+  <section class="disclaimer audit-notes" aria-labelledby="auditNotesTitle">
+    <h2 id="auditNotesTitle">Audit notes and common questions</h2>
+    <details>
+      <summary>Why can a category show N/A?</summary>
+      <p>N/A means the audit did not return enough relevant evidence to score that category. It is not a pass. Local SEO may not apply when no real local-business signals are found.</p>
+    </details>
+    <details>
+      <summary>Do scores guarantee rankings or AdSense approval?</summary>
+      <p>No. The report measures observable page checks and Google PageSpeed lab results. It does not guarantee rankings, traffic or AdSense approval.</p>
+    </details>
+    <details>
+      <summary>When is the full report unlocked?</summary>
+      <p>Only after the backend confirms a valid voucher or successful payment for this audit. Missing source data stays unscored.</p>
+    </details>
+  </section>
 
 </main>
 <footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/"><picture><source type="image/webp" srcset="/assets/logo-2x.webp?v=20261015-v4 2x, /assets/logo-3x.webp?v=20261015-v4 3x"><img src="/assets/logo.png?v=20261015-v4" alt="NexusNova Tools Logo" width="1040" height="345" class="nn-footer-brand-logo"></picture><span class="nn-footer-brand-copy"><span class="nn-footer-brand-name">NEXUSNOVA TOOLS</span><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
@@ -811,19 +786,19 @@
     <div class="modal-icon" aria-hidden="true">↗</div>
     <div class="modal-eyebrow">NEXUSNOVA SEO AUDIT STUDIO | FULL REPORT</div>
     <h2 id="paywallTitle">Unlock the full audit report</h2>
-    <p id="paywallDescription" class="modal-description">Your audit preview is free. Claim a launch voucher to unlock the complete technical report at no cost, or use the one-time payment option below.</p>
-    
+    <p id="paywallDescription" class="modal-description">Free summary. Full report: $2.99 once or a valid voucher.</p>
+
     <section class="nn-promo-panel" aria-labelledby="promotionCodeTitle">
-      <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Get your free full-audit voucher</h3><p>Enter the voucher from the homepage or claim one here. The backend verifies it, then unlocks every technical finding and checklist without a payment.</p></div></div>
+      <div class="nn-promo-head"><div><h3 id="promotionCodeTitle">Voucher</h3><p>Enter a code or claim an available voucher.</p></div></div>
       <div class="nn-promo-controls"><label class="sr-only" for="promotionCodeInput">Launch voucher code</label><input id="promotionCodeInput" class="payment-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" placeholder="Enter launch voucher"><button type="button" id="redeemPromoBtn" class="secondary-btn">Apply voucher</button></div>
       <div id="promotionCodeStatus" class="payment-status-box" role="status" aria-live="polite" hidden></div>
       <div class="nn-launch-voucher-row">
-        <div><strong>New here? Claim your free full-audit voucher.</strong><p>One launch voucher for this browser session. We verify it with the backend before unlocking your report.</p></div>
+        <div><strong>Claim voucher</strong><p>One claim per browser session. Eligibility is checked by the backend.</p></div>
         <button type="button" id="claimLaunchVoucherBtn" class="secondary-btn">Claim free voucher</button>
       </div>
     </section>
     <div class="modal-price-row"><div><span class="modal-price-label">Professional Plan · One-time payment</span><strong>US$2.99</strong><span class="modal-price-sub">per audit report / per URL</span></div><span class="modal-price-badge">No subscription</span></div>
-    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">A verified launch voucher unlocks your full report free. Payment is a separate alternative.</div>
+    <div id="paymentContextNotice" class="payment-status-box" role="status" aria-live="polite">A valid voucher or verified payment unlocks this report.</div>
     <section class="payment-card-panel" aria-labelledby="safepayPanelTitle">
       <div class="payment-panel-head"><span class="payment-provider-mark" aria-hidden="true">S</span><div><strong id="safepayPanelTitle">Card / wallet via Safepay</strong><p>One-time payment. Your report unlocks after the provider verifies the transaction.</p></div></div>
       <button type="button" id="safepayCheckoutBtn" class="primary-btn payment-wide-btn" disabled>Loading secure checkout…</button>

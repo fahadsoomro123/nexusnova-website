@@ -294,3 +294,12 @@
   .nn-audit-launch .nn-audit-launch-offer{padding:18px 16px}
   .nn-audit-launch .nn-audit-launch-offer-detail{font-size:22px}
 }
+
+.nn-audit-workspace-layout-simple{grid-template-columns:minmax(0,1fr)!important;min-height:0}
+
+.nn-audit-launch .nn-audit-voucher-terms{margin-top:10px;padding-top:9px;border-top:1px solid var(--audit-line);color:var(--audit-muted);font-size:11px;line-height:1.55}
+.nn-audit-launch .nn-audit-voucher-terms summary{cursor:pointer;color:var(--audit-ink);font-weight:750}
+.nn-audit-launch .nn-audit-voucher-terms p{margin:7px 0}
+.nn-audit-launch .nn-audit-share-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.nn-audit-launch .nn-audit-share-link{display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;border:1px solid var(--audit-line);border-radius:6px;background:#fff;color:var(--audit-blue);font-weight:750;text-decoration:none}
+.nn-audit-launch .nn-audit-share-link:hover{background:var(--audit-blue-soft);text-decoration:none}
