@@ -101,6 +101,17 @@ test('category scores require real evidence coverage', () => {
   assert.match(auditHtml, /status:scores\.social!=null\?'measured':categoryCheckCount\('Social'\)\?'limited':'unavailable'/);
 });
 
+
+test('public audit UI displays all backend categories and excludes not-applicable categories from scoring denominators', () => {
+  assert.match(auditHtml, /\{id:'technical',name:'Technical SEO'/);
+  assert.match(auditHtml, /\{id:'content',name:'Content'/);
+  assert.match(auditHtml, /'not_applicable'\]\.includes\(meta\.status\)/);
+  assert.match(auditHtml, /meta\.status==='not_applicable'\?'Not applicable'/);
+  assert.match(auditHtml, /const notApplicable=categories\.filter\(c=>report\.categoryMeta\?\.\[c\.id\]\?\.status==='not_applicable'\)\.length/);
+  assert.match(auditHtml, /applicableCategoryScores=categoryScores\.filter\(item=>report\.categoryMeta\?\.\[item\.cat\.id\]\?\.status!=='not_applicable'\)/);
+  assert.match(auditHtml, /Applicable category coverage:/);
+});
+
 test('partial audit evidence cannot receive a misleading overall score', () => {
   assert.match(auditHtml, /if \(items\.length < minimumChecks\) return null/);
   assert.match(auditHtml, /requiredHtmlChecks=\{onPage:6,geo:4,links:4,usability:4,social:4,local:3\}/);
