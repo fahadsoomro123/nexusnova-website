@@ -124,3 +124,14 @@ test('homepage defers the decorative WebGL runtime and model until explicit user
   assert.ok(script.includes('LeePerrySmith/LeePerrySmith.glb'), 'the model remains available');
   assert.ok(!script.includes('three.js@master/'), 'external model source must be pinned to a stable release');
 });
+
+
+test('the visible homepage HumanProof scan loads only after explicit click or keyboard activation', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const script = fs.readFileSync('assets/js/humanproof-hero-360.js', 'utf8');
+  assert.ok(!homepage.includes('data-hp-360-autostart'), 'the homepage must not auto-start the main 3D scan when it enters view');
+  assert.ok(homepage.includes('id="nnHumanProof360Load">Click to load 3D human scan…</div>'), 'the initial state must explain that the scan is user-triggered');
+  assert.ok(script.includes("load.addEventListener('click',start,{once:true})"), 'a deliberate click must remain supported');
+  assert.ok(script.includes("load.addEventListener('keydown',event=>"), 'keyboard activation must remain supported');
+  assert.ok(script.includes("CLICK TO LOAD 3D HUMAN SCAN"), 'the loader announces the explicit action after initialization');
+});
