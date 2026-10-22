@@ -151,6 +151,13 @@ test('production audit requests have bounded waits and always release the loadin
   assert.doesNotMatch(auditHtml, /window\.setTimeout\(async\(\)=>\{\s*renderReport\(payload\.preview\)/);
 });
 
+test('Owner Console explains stale review-token rejection and points to the newest access artifact', () => {
+  const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
+  assert.match(admin, /Owner token was rejected/);
+  assert.match(admin, /outdated access file from an older review deployment/);
+  assert.match(admin, /latest successful review Worker run/);
+});
+
 test('production Owner Console is noindex and routes to the real production Worker', () => {
   const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
   assert.match(admin, /<meta name="robots" content="noindex,nofollow,noarchive">/);
