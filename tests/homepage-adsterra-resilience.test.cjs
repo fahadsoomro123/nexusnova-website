@@ -10,9 +10,10 @@ const homepage = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 function getAdsterraLoader() {
   const start = homepage.indexOf('<script id="nn-adsterra-auto-loader">');
-  const close = homepage.indexOf('</script>', start);
-  assert.ok(start >= 0 && close > start, 'homepage Adsterra loader must exist');
-  return homepage.slice(start, close);
+  const openEnd = homepage.indexOf('>', start);
+  const close = homepage.indexOf('</script>', openEnd);
+  assert.ok(start >= 0 && openEnd > start && close > openEnd, 'homepage Adsterra loader must exist');
+  return homepage.slice(openEnd + 1, close);
 }
 
 test('Adsterra preserves GPC privacy opt-out and does not change the publisher placement', () => {
