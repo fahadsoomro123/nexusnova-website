@@ -76,10 +76,50 @@ jobs:
           print('Static site map + SEO audit has zero severe findings and zero warnings.')
           PY
 
-      - name: Install browser quality dependencies
+      - name: Install pinned Playwright Python package
+        timeout-minutes: 3
+        run: python -m pip install --disable-pip-version-check --retries 4 --timeout 30 "playwright==1.64.0"
+
+      - name: Install and smoke-test headless Chromium
+        timeout-minutes: 8
+        env:
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '30000'
         run: |
-          python -m pip install --disable-pip-version-check playwright
-          python -m playwright install --with-deps chromium
+          set -euo pipefail
+          installed=false
+          for attempt in 1 2; do
+            if python -m playwright install --only-shell chromium; then
+              installed=true
+              break
+            fi
+            if [[ "$attempt" -eq 1 ]]; then
+              echo "Chromium download failed once; retrying after 5 seconds."
+              sleep 5
+            fi
+          done
+          if [[ "$installed" != true ]]; then
+            echo "Chromium installation failed after two attempts."
+            exit 1
+          fi
+
+          smoke_test() {
+            python - <<'PY'
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as playwright:
+              browser = playwright.chromium.launch(headless=True)
+              print(f"PASS: Chromium headless shell launched; version={browser.version}")
+              browser.close()
+          PY
+          }
+
+          if smoke_test; then
+            exit 0
+          fi
+
+          echo "Cached Chromium could not launch with the runner's current libraries; installing OS dependencies and retrying."
+          python -m playwright install-deps chromium
+          smoke_test
 
       - name: Disable third-party ad and analytics downloads in local audit copy
         shell: bash
