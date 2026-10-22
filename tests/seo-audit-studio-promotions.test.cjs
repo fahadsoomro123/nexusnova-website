@@ -22,7 +22,7 @@ test('voucher is issued only by the active server campaign and optional sharing 
   assert.match(launchJs, /\/api\/promotions\/active/);
   assert.match(launchJs, /\/api\/promotions\/claim/);
   assert.match(launchJs, /payload.ok!==true/);
-  assert.match(launchJs, /typeof payload\.code==='string'/);
+  assert.match(launchJs, /typeof payload\.code!=='string'/);
   assert.match(launchJs, /No code was issued/);
   assert.doesNotMatch(launchJs, /setInterval|countdown|fakeUserCount|verifiedFollow|shareVerified/i);
 });
