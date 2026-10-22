@@ -303,12 +303,13 @@
     entries.forEach(([key,value])=>{
       const meta=categoryMeta[key]||{},measured=typeof value==='number'&&Number.isFinite(value),score=measured?Math.max(0,Math.min(100,value)):null;
       const item=reportElement('div','','report-category'),head=reportElement('div','','report-category-head'),left=reportElement('div',categoryNames[key]||reportLabel(key),'report-category-title');
-      const scoreLabel=meta.status==='not_applicable'?'Not applicable':measured?score+'/100':'Not measured';
+      const state=meta.status||(measured?'measured':'not_measured');
+      const notApplicable=state==='not_applicable';
+      const scoreLabel=notApplicable?'Not applicable':state==='limited'?'Limited assessment':measured?score+'/100':'Not measured';
       head.append(left,reportElement('div',scoreLabel,'report-category-score'));
       item.append(head);
       if(measured){const bar=reportElement('div','','report-bar'),fill=reportElement('div','','report-bar-fill');fill.style.width=score+'%';bar.append(fill);item.append(bar);}
-      const state=meta.status|| (measured?'measured':'not_measured');
-      item.append(reportBadge(reportLabel(state),state));
+      item.append(reportBadge(notApplicable?'Not applicable':reportLabel(state),state));
       item.append(reportElement('div',[
         Number.isFinite(Number(meta.measuredChecks))?'Checks measured: '+meta.measuredChecks:null,
         Number.isFinite(Number(meta.requiredChecks))?'Required: '+meta.requiredChecks:null,
@@ -331,7 +332,31 @@
         const cell=reportElement('div','','report-metric'),value=key==='score'&&typeof data[key]==='number'?data[key]+'/100':reportDisplayValue(data[key]);
         cell.append(reportElement('div',metricNames[key],'report-metric-label'),reportElement('strong',value,'report-metric-value'));grid.append(cell);
       });
-      panel.append(grid);metricGrid.append(panel);
+      panel.append(grid);
+      const evidenceBlock=reportElement('div','','report-check-list');
+      const appendEvidenceGroup=(title,entries,kind)=>{
+        const group=reportElement('section','','report-check');
+        group.append(reportElement('h5',title));
+        if(!Array.isArray(entries)){
+          group.append(reportElement('p',kind+' details were not captured in this stored report version. Rerun the audit to collect provider evidence.','report-check-meta'));
+        }else if(!entries.length){
+          group.append(reportElement('p','Google PageSpeed returned no applicable '+kind.toLowerCase()+' items for this device strategy.','report-check-meta'));
+        }else{
+          entries.slice(0,6).forEach(entry=>{
+            group.append(reportElement('p',entry.title||entry.id||title,'report-check-meta'));
+            const summary=[entry.displayValue,entry.estimatedSavingsMs?'Estimated savings: '+entry.estimatedSavingsMs+' ms':null,entry.estimatedSavingsBytes?'Estimated savings: '+entry.estimatedSavingsBytes+' bytes':null].filter(Boolean).join(' · ');
+            if(summary)group.append(reportElement('p',summary));
+            (Array.isArray(entry.items)?entry.items:[]).slice(0,3).forEach(row=>{
+              const detail=[row.label,row.resource,row.durationMs?row.durationMs+' ms duration':null,row.blockingMs?row.blockingMs+' ms blocking':null,row.wastedMs?row.wastedMs+' ms wasted':null,row.wastedBytes?row.wastedBytes+' bytes wasted':null,row.transferBytes?row.transferBytes+' bytes transferred':null].filter(Boolean).join(' · ');
+              if(detail)group.append(reportElement('p',detail,'report-check-meta'));
+            });
+          });
+        }
+        evidenceBlock.append(group);
+      };
+      appendEvidenceGroup('PageSpeed opportunities',data.opportunities,'Opportunity');
+      appendEvidenceGroup('PageSpeed diagnostics',data.diagnostics,'Diagnostic');
+      panel.append(evidenceBlock);metricGrid.append(panel);
     });
     metricSection.append(metricGrid);shell.append(metricSection);
 
@@ -363,7 +388,9 @@
       left.append(reportElement('div',meta,'report-check-meta'));
       top.append(left,reportBadge(item.status||'unknown',item.status||''));card.append(top);
       if(item.detail||item.description||item.message)card.append(reportElement('p',item.detail||item.description||item.message));
-      if(item.fix||item.recommendation||item.action)card.append(reportElement('p','Recommended fix: '+(item.fix||item.recommendation||item.action)));
+      const status=String(item.status||'unknown').toLowerCase();
+      const actionLabel=status==='pass'?'Guidance':status==='info'?'Interpretation / applicability':['warn','fail'].includes(status)?'Recommended fix':'Details';
+      if(item.fix||item.recommendation||item.action)card.append(reportElement('p',actionLabel+': '+(item.fix||item.recommendation||item.action)));
       if(item.evidence!==undefined&&item.evidence!==null&&item.evidence!=='')card.append(reportElement('p','Evidence: '+reportDisplayValue(item.evidence)));
       checkList.append(card);
     });
