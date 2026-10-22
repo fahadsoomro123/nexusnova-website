@@ -44,7 +44,14 @@ test('every HTML page has the canonical static index header and footer', () => {
     const source = fs.readFileSync(file, 'utf8');
     const relative = path.relative(root, file);
     assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
-    assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
+    let pageFooter = shellPart(source, 'footer');
+    if (relative === 'seo-audit-studio.html') {
+      const ownerEntry = '<a href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>';
+      assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
+        'SEO Audit Studio must expose exactly one Owner Console footer entry');
+      pageFooter = pageFooter.replace('\n' + ownerEntry, '');
+    }
+    assert.equal(pageFooter, footer, relative + ' footer differs outside the approved owner entry');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
