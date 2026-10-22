@@ -35,7 +35,10 @@
           <div class="hp-v20-inline">
             <div class="hp-v20-viewer">
               <canvas id="hpV20Canvas" aria-label="Rotating 3D human head scan"></canvas>
-              <div class="hp-v20-loading" id="hpV20Loading">LOADING HUMAN HEAD…</div>
+              <div class="hp-v20-loading" id="hpV20Loading">
+                <span>INTERACTIVE 3D HEAD SCAN</span>
+                <button type="button" class="hp-v20-load-button" data-hp-v20-load>Load 3D scan</button>
+              </div>
               <div class="hp-v20-scan-band"></div>
               <div class="hp-v20-scan-line"></div>
               <div class="hp-v20-corner tl"></div><div class="hp-v20-corner tr"></div>
@@ -96,11 +99,20 @@
       });
       document.head.appendChild(s);
     }
-    // Paint the existing hero and copy first. Defer the decorative WebGL/model work
-    // until the browser has idle time so it cannot delay the homepage's main content.
-    const startV20=()=>initV20();
-    if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(startV20,{timeout:1800});
-    else window.setTimeout(startV20,700);
+    // Keep the decorative WebGL runtime and remote 3D model off the initial critical
+    // path. Load it only after the visitor explicitly asks to see the interactive scan.
+    const loading=document.getElementById('hpV20Loading');
+    if(loading){
+      loading.addEventListener('click',event=>{
+        const target=event.target;
+        const button=target instanceof Element?target.closest('[data-hp-v20-load]'):null;
+        if(!button||button.disabled)return;
+        button.disabled=true;
+        loading.setAttribute('aria-busy','true');
+        loading.textContent='LOADING HUMAN HEAD…';
+        void initV20();
+      });
+    }
   };
 
   async function initV20(){
@@ -122,7 +134,7 @@
       camera3.position.set(0,.03,4.8);
       const rig=new THREE.Group();scene.add(rig);
       const shaders=[];
-      const MODEL='https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb';
+      const MODEL='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r180/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb';
 
       function trimGeometry(sourceGeo,cutY){
         const geo=sourceGeo.toNonIndexed(),pos=geo.getAttribute('position'),out=[];
@@ -164,8 +176,8 @@
 
         const tb=new THREE.Box3().setFromObject(rig),ts=new THREE.Vector3();tb.getSize(ts);
         rig.scale.setScalar(2.55/Math.max(ts.x,ts.y));
-        loading.classList.add('hide');
-      },undefined,()=>{loading.textContent='3D HEAD COULD NOT LOAD';});
+        loading.removeAttribute('aria-busy');loading.classList.add('hide');
+      },undefined,()=>{loading.removeAttribute('aria-busy');loading.textContent='3D HEAD COULD NOT LOAD. Reload the page to retry.';});
 
       const resize=()=>{
         const r=canvas.parentElement.getBoundingClientRect();
@@ -200,6 +212,7 @@
       addEventListener('pagehide',()=>{running=false;cancelAnimationFrame(raf);io.disconnect();ro.disconnect();renderer.dispose()},{once:true});
     }catch(e){
       console.warn('[HumanProof V20]',e);
+      loading.removeAttribute('aria-busy');
       loading.innerHTML='<div class="hp-home-fallback">360° scan unavailable on this browser.<br>HumanProof content remains available below.</div>';
     }
   }
