@@ -13,12 +13,12 @@ const launchCss = fs.readFileSync(path.join(root, 'assets/css/seo-audit-launch.c
 const launchJs = fs.readFileSync(path.join(root, 'assets/js/seo-audit-launch.js'), 'utf8');
 const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
-test('voucher is issued only by the active server campaign and optional sharing never claims verification', () => {
+test('voucher is issued only by the active backend campaign and public copy stays concise', () => {
   assert.match(home, /class="nn-audit-voucher-terms"/);
-  assert.match(home, /Sharing is optional and does not change voucher eligibility/);
-  assert.match(home, /https:\/\/twitter\.com\/intent\/tweet/);
-  assert.match(home, /https:\/\/www\.facebook\.com\/sharer\/sharer\.php/);
-  assert.match(home, /Only server-issued vouchers are displayed/);
+  assert.match(home, /<summary>Voucher terms<\/summary>/);
+  assert.match(home, /One single-use report voucher per browser session/);
+  assert.doesNotMatch(home, /Sharing is optional|twitter\.com\/intent\/tweet|facebook\.com\/sharer\/sharer\.php|Share on X|Share on Facebook/);
+  assert.doesNotMatch(home, /Only server-issued vouchers are displayed|nn-audit-launch-note/);
   assert.match(launchJs, /\/api\/promotions\/active/);
   assert.match(launchJs, /\/api\/promotions\/claim/);
   assert.match(launchJs, /payload.ok!==true/);
@@ -73,7 +73,7 @@ test('promotion controls remain mobile-safe and never imply a successful fake ch
   assert.match(promoCss, /@media\(max-width:600px\)/);
   assert.match(promoCss, /#promotionCodeStatus\[hidden\]/);
   assert.match(launchCss, /nn-audit-voucher-terms/);
-  assert.match(launchCss, /nn-audit-share-link/);
+  assert.doesNotMatch(launchCss, /nn-audit-share-actions|nn-audit-share-link/);
   assert.match(page, /Unlocked only after server-side payment verification or a valid voucher/i);
   assert.match(page, /only after server-side payment verification or a valid voucher/i);
 });
