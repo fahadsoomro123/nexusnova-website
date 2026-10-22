@@ -166,12 +166,14 @@ test('Adsterra retries two transient load failures then settles on a non-blockin
 
   const retryOne = state.timers.find(timer => !timer.cancelled);
   assert.equal(retryOne.delay, 1000);
+  retryOne.cancelled = true; // Simulate the browser consuming this timer.
   retryOne.callback();
   assert.equal(state.inserted.length, 2);
   state.inserted[1].trigger('error');
 
   const retryTwo = state.timers.filter(timer => !timer.cancelled).at(-1);
   assert.equal(retryTwo.delay, 2000);
+  retryTwo.cancelled = true; // Simulate the browser consuming this timer.
   retryTwo.callback();
   assert.equal(state.inserted.length, 3);
   state.inserted[2].trigger('error');
