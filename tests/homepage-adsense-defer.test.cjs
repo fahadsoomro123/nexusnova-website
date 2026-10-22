@@ -38,6 +38,13 @@ test('homepage AdSense waits for settled LCP, load, and idle with a bounded fall
   assert.ok(runtime.includes("else{\n    insertAdsenseScript();\n  }"), 'non-homepage ad behavior remains unchanged');
 });
 
+test('live Performance 100 Gate validates the LCP-aware AdSense scheduler, not the old idle-only path', () => {
+  const gate = fs.readFileSync(path.join(root, '.github/workflows/live-performance-100.yml'), 'utf8');
+  assert.ok(gate.includes('const scheduleAfterLargestContentfulPaint=(task,options={})=>'));
+  assert.ok(gate.includes('scheduleAfterLargestContentfulPaint(insertAdsenseScript,{delay:2500,fallbackDelay:7000,idleTimeout:1500})'));
+  assert.ok(!gate.includes('window.requestIdleCallback(insertAdsenseScript,{timeout:4000})'));
+});
+
 test('GA4 measurement ID and consent updater remain untouched', () => {
   assert.ok(runtime.includes("const measurementId='" + measurementId + "';"));
   assert.ok(runtime.includes('window.__nexusnovaLoadAnalytics=choice=>{'));
