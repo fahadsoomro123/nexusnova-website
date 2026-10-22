@@ -80,7 +80,13 @@ jobs:
               def send_head(self):
                   path = self.translate_path(self.path)
                   if os.path.isdir(path):
-                      return super().send_head()
+                      if not self.path.split('?', 1)[0].endswith('/'):
+                          return super().send_head()
+                      index_path = os.path.join(path, 'index.html')
+                      if os.path.isfile(index_path):
+                          path = index_path
+                      else:
+                          return super().send_head()
                   try:
                       stat = os.stat(path)
                   except OSError:
