@@ -17,12 +17,10 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   const banner = html.indexOf('class="nn-audit-launch nn-shell"');
   const toolsHeading = Math.max(html.indexOf('<h1 id="new-tools-title">'), html.indexOf('<h2 id="new-tools-title">'));
   assert.ok(header >= 0 && main > header && banner > main && banner < toolsHeading);
-  assert.match(html, /See what search engines see\./);
+  assert.match(html, /<h1 class="nn-audit-launch-title" id="nn-audit-launch-title">SEO Audit Studio<\/h1>/);
   assert.match(html, /class="nn-audit-workspace"/);
-  assert.match(html, /class="nn-audit-sidebar"/);
-  assert.match(html, /class="nn-audit-mini-metrics"/);
-  assert.match(html, /Your report will appear here/);
-  assert.match(html, /Run an audit to populate findings, evidence and affected URLs\./);
+  assert.match(html, /nn-audit-workspace-layout-simple/);
+  assert.doesNotMatch(html, /nn-audit-value-list|nn-audit-sidebar|nn-audit-mini-metrics|Your report will appear here|WAITING FOR AUDIT/);
   assert.match(html, /id="nnAuditHomeForm"/);
   assert.match(html, /id="nnAuditLaunchUrl"/);
   assert.match(html, /id="nnAuditClaimVoucher"/);
@@ -195,4 +193,17 @@ test('Owner Console renders full audit reports as readable sections instead of a
   assert.match(admin, /Category coverage/);
   assert.match(admin, /item\\.fix\\|\\|item\\.recommendation\\|\\|item\\.action/);
   assert.doesNotMatch(admin, /text\('pre',JSON\.stringify\(report,null,2\),'output'\)/);
+});
+
+
+test('SEO Audit Studio public page keeps only essential copy and has no prefilled sample URL', () => {
+  assert.match(auditHtml, /id="urlInput"[^>]*placeholder="https:\/\/example\.com" aria-describedby="urlHelp"/);
+  assert.doesNotMatch(auditHtml, /value="https:\/\/example\.com"/);
+  assert.doesNotMatch(auditHtml, /id="seo-audit-faq"|Frequently Asked Questions/);
+  const data = auditHtml.match(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/i);
+  assert.ok(data, 'web application structured data must remain');
+  const schema = JSON.parse(data[1]);
+  assert.ok(schema['@graph'].some(node => node['@type'] === 'WebApplication'));
+  assert.ok(!schema['@graph'].some(node => node['@type'] === 'FAQPage'), 'FAQ structured data must match removed visible FAQ');
+  for (const copy of ['Unavailable checks stay unscored.', 'Free summary. Full report: $2.99 or valid voucher.', 'Unlocked only after server-side payment verification or a valid voucher.']) assert.ok(auditHtml.includes(copy), copy);
 });
