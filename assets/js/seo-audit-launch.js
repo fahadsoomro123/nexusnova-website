@@ -210,17 +210,15 @@
         try{window.sessionStorage.setItem(CHALLENGE_KEY,JSON.stringify({campaignId:activeChallengeCampaignId,reference:activeChallengeReference,expiresAt:activeChallengeExpiresAt}));}catch{}
       }
       const postText=[
-        'Less searching. More doing.',
+        'Your digital world, made simpler.',
         '',
-        'NexusNova Tools brings useful PDF, image and web tools together in one place.',
+        'NexusNova Tools brings useful online tools, guides and digital resources together in one place.',
         '',
-        'Need a website check? Run SEO Audit Studio:',
-        'https://nexusnovatools.com/seo-audit-studio.html',
-        '',
+        'Explore: https://nexusnovatools.com/',
         'Campaign ref: '+activeChallengeReference,
         '',
-        '#NexusNova #SEOTools'
-      ].join('\n');
+        '#NexusNova'
+      ].join('\\n');
       const xLength=countXWeightedCharacters(postText);
       if(xLength>250)throw new Error('The ready post exceeds the safe X character budget. No text was copied.');
       readyPostTextarea.value=postText;
