@@ -210,7 +210,7 @@
         try{window.sessionStorage.setItem(CHALLENGE_KEY,JSON.stringify({campaignId:activeChallengeCampaignId,reference:activeChallengeReference,expiresAt:activeChallengeExpiresAt}));}catch{}
       }
       const postText=[
-        'Your digital world, made simpler.',
+        'One hub. More done.',
         '',
         'NexusNova Tools brings useful online tools, guides and digital resources together in one place.',
         '',
