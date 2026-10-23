@@ -28,6 +28,13 @@ test('Fix Issues clearly prices US$5 and displays an explicit consent gate befor
   assert.match(html, /No payment has been taken/);
 });
 
+test('Fix Issues can verify an existing GitHub installation without a repeated install redirect', () => {
+  assert.match(html, /id="fixIssuesInstallationId"/);
+  assert.match(html, /id="fixIssuesExistingConnectBtn"/);
+  assert.match(html, /\/api\/fix-issues\/connect\/existing/);
+  assert.match(html, /matching website domain/);
+  assert.match(html, /github_installation_verification_failed/);
+});
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const fixController = scripts.at(-1);
