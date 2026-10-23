@@ -90,6 +90,22 @@ test('crypto calculator includes percentage fees and validates fee rates', () =>
   assert.equal(computeWesternFinance('crypto-profit', { entryPrice: 100, exitPrice: 125, quantity: 2, buyFeePct: 100, sellFeePct: 0.1 }).ok, false);
 });
 
+test('crypto calculator rejects finite inputs whose trade arithmetic overflows', () => {
+  const result = computeWesternFinance('crypto-profit', {
+    entryPrice: 1e308, exitPrice: 1e308, quantity: 2, buyFeePct: 0, sellFeePct: 0
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /supported calculation range/i);
+});
+
+test('crypto calculator rejects totals that overflow cent rounding', () => {
+  const result = computeWesternFinance('crypto-profit', {
+    entryPrice: 1e307, exitPrice: 1e307, quantity: 10, buyFeePct: 0, sellFeePct: 0
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /supported calculation range/i);
+});
+
 test('all five new finance tool pages have indexable canonicals, shared search integration and 250+ words of guidance', () => {
   const slugs = [
     'us-federal-tax-bracket-calculator',
