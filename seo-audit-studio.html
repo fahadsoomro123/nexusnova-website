@@ -682,13 +682,14 @@
         <h2 id="fixIssuesHeading">Fix Issues</h2>
         <span class="fix-issues-price">USD $5.00 · one-time</span>
       </div>
-      <p class="fix-issues-copy">Review deterministic fixes for issues found in this audit, connect the repository that owns this website, and approve the exact changes before payment. Only listed changes are applied. Unsupported issues stay untouched.</p>
+      <p class="fix-issues-copy">Start with one click. If your website can be published automatically, we connect it securely. Otherwise, we prepare the exact fixes and simple platform-specific steps. You see the deliverable before any payment.</p>
       <p id="fixIssuesStatus" class="fix-issues-status" role="status" aria-live="polite">Checking safe-fix availability.</p>
       <div class="fix-issues-controls">
-        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Fix Issues · $5.00</button>
+        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Connect website automatically</button>
+        <button id="fixIssuesGuidedBtn" class="secondary-btn" type="button" disabled>My site uses WordPress, Shopify, Wix, or another platform</button>
       </div>
       <details class="fix-issues-existing-installation">
-        <summary>Already installed? Connect existing GitHub App</summary>
+        <summary>Advanced GitHub connection help</summary>
         <p class="fix-issues-copy">Copy the installation ID from the GitHub settings URL. For example, in /settings/installations/174464662, the ID is 174464662. NexusNova will verify the installation and only accept repositories with write permission and a matching website domain.</p>
         <div class="fix-issues-controls">
           <label class="form-label" for="fixIssuesInstallationId">GitHub installation ID</label>
@@ -711,9 +712,9 @@
         <p id="fixIssuesPlanNotes" class="fix-issues-notes"></p>
         <label class="fix-issues-consent">
           <input id="fixIssuesAccept" type="checkbox">
-          <span>I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.</span>
+          <span id="fixIssuesConsentText">I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.</span>
         </label>
-        <p class="fix-issues-danger">The fix service changes only the listed HTML file. It checks the repository version again before writing, verifies the published page, and refuses rollback if the file or branch has changed since its commit.</p>
+        <p id="fixIssuesPlanSafetyText" class="fix-issues-danger">The direct-publish route checks the repository version before writing and verifies the published page. Guided Fix Kits provide the corrected HTML and platform-specific instructions without claiming the live site was changed.</p>
         <div class="fix-issues-controls">
           <button id="fixIssuesPayBtn" class="primary-btn" type="button" disabled>Pay $5.00 USD and apply fixes</button>
         </div>
@@ -723,7 +724,8 @@
         <p id="fixIssuesJobSummary" class="fix-issues-copy"></p>
         <ul id="fixIssuesAppliedList" class="fix-issues-list"></ul>
         <div class="fix-issues-controls">
-          <button id="fixIssuesRollbackBtn" class="secondary-btn" type="button" disabled>Roll back this commit</button>
+          <button id="fixIssuesDownloadBtn" class="primary-btn" type="button" hidden>Download my Fix Kit</button>
+            <button id="fixIssuesRollbackBtn" class="secondary-btn" type="button" disabled>Roll back this commit</button>
         </div>
       </div>
     </section>
