@@ -22,13 +22,13 @@ test('Owner Console offers direct repair only for owner-created audits with a pr
   assert.match(admin, /button\('Fix safe issues'/);
   assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(auditId\)\+'\/auto-fix\/plan/);
   assert.match(admin, /requiresRepositorySelection/);
-  assert.match(admin, /Approve only these listed safe changes/);
+  assert.match(admin, /approve only these listed safe changes/i);
   assert.match(admin, /Apply approved changes/);
   assert.match(admin, /The live page must pass verification before the job is called fixed/);
   assert.match(admin, /Fixes verified/);
   assert.match(admin, /rollbackAvailable/);
   assert.match(admin, /\/auto-fix\/'\+encodeURIComponent\(job\.id\)\+'\/rollback/);
-  assert.match(admin, /Live page verification/);
+  assert.match(admin, /The live page must pass verification before the job is called fixed/);
 });
 
 test('Owner Console Fix Kit download uses current report findings and platform recovery details', () => {
