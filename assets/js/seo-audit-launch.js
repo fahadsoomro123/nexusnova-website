@@ -220,7 +220,7 @@
         'Campaign ref: '+activeChallengeReference,
         '',
         '#NexusNova #SEOTools'
-      ].join('\\n');
+      ].join('\n');
       const xLength=countXWeightedCharacters(postText);
       if(xLength>250)throw new Error('The ready post exceeds the safe X character budget. No text was copied.');
       readyPostTextarea.value=postText;
