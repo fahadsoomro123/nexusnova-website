@@ -8,13 +8,27 @@ const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
 const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
 
-test('Owner Console audit history includes a working Fix Kit action connected to the owner API', () => {
-  assert.match(admin, /button\('Get Fixes'/);
+test('Owner Console labels downloadable suggestions as guidance, not an automatic live fix', () => {
+  assert.match(admin, /button\('Prepare repair guidance'/);
   assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(a\.audit_id\)\+'\/fix-kit/);
   assert.match(admin, /function renderOwnerFixKit\(item,kit\)/);
   assert.match(admin, /Download corrected HTML file/);
   assert.match(admin, /Download simple Fix List/);
   assert.match(admin, /Live website changes were not made/);
+});
+
+test('Owner Console offers direct repair only for owner-created audits with a preview, explicit approval and verification', () => {
+  assert.match(admin, /Number\(a\.owner_created\)===1/);
+  assert.match(admin, /button\('Fix safe issues'/);
+  assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(auditId\)\+'\/auto-fix\/plan/);
+  assert.match(admin, /requiresRepositorySelection/);
+  assert.match(admin, /approve only these listed safe changes/i);
+  assert.match(admin, /Apply approved changes/);
+  assert.match(admin, /The live page must pass verification before the job is called fixed/);
+  assert.match(admin, /Fixes verified/);
+  assert.match(admin, /rollbackAvailable/);
+  assert.match(admin, /\/auto-fix\/'\+encodeURIComponent\(job\.id\)\+'\/rollback/);
+  assert.match(admin, /The live page must pass verification before the job is called fixed/);
 });
 
 test('Owner Console Fix Kit download uses current report findings and platform recovery details', () => {
