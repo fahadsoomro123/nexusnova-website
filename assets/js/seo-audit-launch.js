@@ -21,6 +21,10 @@
   const submitClaimButton=document.getElementById('nnAuditSubmitClaim');
   const checkClaimButton=document.getElementById('nnAuditCheckClaim');
   const claimReviewStatus=document.getElementById('nnAuditClaimReviewStatus');
+  const readyPostCard=document.querySelector('.nn-audit-ready-post');
+  const readyPostTextarea=document.getElementById('nnAuditReadyPost');
+  const copyReadyPostButton=document.getElementById('nnAuditCopyReadyPost');
+  const readyPostStatus=document.getElementById('nnAuditReadyPostStatus');
   if(homeForm&&homeUrl){
     homeForm.addEventListener('submit',event=>{
       event.preventDefault();
@@ -54,11 +58,24 @@
   const SESSION_KEY='nexusnova_audit_session_v1';
   const VOUCHER_KEY='nexusnova_audit_voucher_v1';
   const CLAIM_KEY='nexusnova_voucher_claim_request_v1';
+  const CHALLENGE_KEY='nexusnova_voucher_share_challenge_v1';
   let voucherServiceReady=false;
   let voucherAlreadyClaimed=false;
   let activeCampaign=null;
+  let activeChallengeReference='';
+  let activeChallengeExpiresAt=0;
+  let activeChallengeCampaignId='';
   let pendingClaimId='';
-  try{const savedClaim=window.sessionStorage.getItem(CLAIM_KEY)||'';if(/^[0-9a-f-]{36}$/i.test(savedClaim))pendingClaimId=savedClaim;}catch{}
+  try{
+    const savedClaim=window.sessionStorage.getItem(CLAIM_KEY)||'';
+    if(/^[0-9a-f-]{36}$/i.test(savedClaim))pendingClaimId=savedClaim;
+    const savedChallenge=JSON.parse(window.sessionStorage.getItem(CHALLENGE_KEY)||'null');
+    if(savedChallenge&&/^NNPOST-[A-F0-9]{12}$/.test(savedChallenge.reference)&&Number(savedChallenge.expiresAt)>Date.now()&&typeof savedChallenge.campaignId==='string'){
+      activeChallengeReference=savedChallenge.reference;
+      activeChallengeExpiresAt=Number(savedChallenge.expiresAt);
+      activeChallengeCampaignId=savedChallenge.campaignId;
+    }
+  }catch{}
   try{
     const existing=window.sessionStorage.getItem(VOUCHER_KEY)||'';
     if(/^[A-Z0-9-]{8,40}$/.test(existing)){
@@ -146,6 +163,78 @@
     pendingClaimId='';
     try{window.sessionStorage.removeItem(CLAIM_KEY);}catch{}
   }
+  function clearShareChallenge(){
+    activeChallengeReference='';
+    activeChallengeExpiresAt=0;
+    activeChallengeCampaignId='';
+    try{window.sessionStorage.removeItem(CHALLENGE_KEY);}catch{}
+  }
+  function hasValidShareChallenge(){
+    return Boolean(activeCampaign&&activeChallengeReference&&/^NNPOST-[A-F0-9]{12}$/.test(activeChallengeReference)&&activeChallengeCampaignId===activeCampaign.id&&activeChallengeExpiresAt>Date.now()+30000);
+  }
+  function setReadyPostStatus(message,tone=''){
+    if(!readyPostStatus)return;
+    readyPostStatus.hidden=false;
+    readyPostStatus.textContent=message;
+    if(tone)readyPostStatus.dataset.tone=tone;else delete readyPostStatus.dataset.tone;
+  }
+  async function prepareAndCopyReadyPost(){
+    if(!voucherServiceReady||!activeCampaign||activeCampaign.claimEnabled!==true){
+      setReadyPostStatus('The campaign is not ready yet. No reference or voucher was created.','error');return;
+    }
+    if(voucherAlreadyClaimed||pendingClaimId){
+      setReadyPostStatus('A voucher request already exists for this browser session. Check its status rather than starting another post.','error');return;
+    }
+    if(copyReadyPostButton)copyReadyPostButton.disabled=true;
+    setReadyPostStatus('Preparing your unique campaign reference…');
+    try{
+      if(!hasValidShareChallenge()){
+        const token=await getSessionToken();
+        const response=await fetch(API_BASE_URL+'/api/promotions/claim-challenge',{
+          method:'POST',mode:'cors',credentials:'omit',cache:'no-store',
+          headers:{Accept:'application/json',Authorization:'Bearer '+token,'Content-Type':'application/json'},
+          body:JSON.stringify({campaignId:activeCampaign.id})
+        });
+        const payload=await response.json().catch(()=>({}));
+        if(!response.ok||payload.ok!==true||payload.campaignId!==activeCampaign.id||typeof payload.reference!=='string'||!/^NNPOST-[A-F0-9]{12}$/.test(payload.reference)||!Number.isFinite(Number(payload.expiresAt))||Number(payload.expiresAt)<=Date.now()){
+          throw new Error(payload.error||'Could not prepare your campaign post. No voucher was issued.');
+        }
+        activeChallengeReference=payload.reference;
+        activeChallengeExpiresAt=Number(payload.expiresAt);
+        activeChallengeCampaignId=payload.campaignId;
+        try{window.sessionStorage.setItem(CHALLENGE_KEY,JSON.stringify({campaignId:activeChallengeCampaignId,reference:activeChallengeReference,expiresAt:activeChallengeExpiresAt}));}catch{}
+      }
+      const postText=[
+        'Too many tabs for one small online task?',
+        '',
+        'NexusNova Tools brings practical browser-based utilities together in one place, from PDF and image tools to calculators, developer helpers and network checks.',
+        '',
+        'Working on a website? SEO Audit Studio helps examine technical SEO issues and mobile/desktop performance.',
+        '',
+        'Explore NexusNova Tools: https://nexusnovatools.com/',
+        'Try SEO Audit Studio: https://nexusnovatools.com/seo-audit-studio.html',
+        '',
+        'Useful tools. Less tab-hunting.',
+        'Campaign reference: '+activeChallengeReference,
+        '',
+        '#NexusNova #FreeOnlineTools #SEOTools'
+      ].join('\n');
+      readyPostTextarea.value=postText;
+      try{
+        await navigator.clipboard.writeText(postText);
+        setReadyPostStatus('Copied! Publish the complete post, including both NexusNova links and the campaign reference. Then copy that published post’s URL into Step 3.','success');
+        if(copyReadyPostButton)copyReadyPostButton.textContent='Copy ready post again';
+      }catch{
+        readyPostTextarea.focus();
+        readyPostTextarea.select();
+        setReadyPostStatus('Your post is ready below. Copy the selected text, publish it publicly with the campaign reference intact, then paste the published post URL into Step 3.');
+      }
+    }catch(error){
+      setReadyPostStatus(error.message||'Could not prepare your post. No voucher was issued.','error');
+    }finally{
+      if(copyReadyPostButton)copyReadyPostButton.disabled=!voucherServiceReady||!activeCampaign||activeCampaign.claimEnabled!==true||voucherAlreadyClaimed||Boolean(pendingClaimId);
+    }
+  }
   function showVoucherCode(payload){
     if(typeof payload.code!=='string'||!/^NN-[A-Z0-9]{8}-[A-Z0-9]{8}-[A-Z0-9]{8}$/.test(payload.code))throw new Error('The approved voucher response was invalid.');
     voucherAlreadyClaimed=true;
@@ -164,6 +253,8 @@
     claimStatus(automatic?'Your public post was automatically verified. Your voucher is unlocked. Apply it in Audit Studio for this browser session.':'Your post was verified by the owner. Your voucher is now unlocked. Apply it in Audit Studio for this browser session.','success');
     status(automatic?'Voucher unlocked after automatic public-post verification.':'Voucher unlocked after owner verification.','success');
     clearPendingClaim();
+    clearShareChallenge();
+    if(copyReadyPostButton)copyReadyPostButton.disabled=true;
   }
   async function checkClaimStatus(){
     if(!pendingClaimId)return;
@@ -225,6 +316,11 @@
       claimStatus('Use a public HTTPS post/proof URL without credentials.','error');proofUrlInput.focus();return;
     }
     if(!termsAcceptedInput.checked){claimStatus('Confirm that you completed the steps and agree to these voucher terms.','error');return;}
+    if(!hasValidShareChallenge()){
+      claimStatus('First tap “Prepare & copy ready post”, publish the complete post with its unique reference, and then paste that exact post URL.','error');
+      if(copyReadyPostButton)copyReadyPostButton.focus();
+      return;
+    }
     submitClaimButton.disabled=true;
     claimButton.disabled=true;
     try{
@@ -237,6 +333,7 @@
           completedRequirements,
           proofUrl:parsed.href,
           proofNote:proofNoteInput?.value.trim()||'',
+          challengeReference:activeChallengeReference,
           termsAccepted:termsAcceptedInput.checked
         })
       });
@@ -253,8 +350,12 @@
       checkClaimButton.hidden=false;
       claimButton.querySelector('span').textContent='Verification pending';
       claimButton.disabled=true;
-      claimStatus('Proof submitted. Your voucher stays locked until the owner opens your public post, checks every required step, and approves this request.','success');
-      status('Proof submitted for owner verification. No voucher code has been issued yet.');
+      clearShareChallenge();
+      if(copyReadyPostButton)copyReadyPostButton.disabled=true;
+      claimStatus(payload.autoVerificationStatus==='unavailable'||payload.autoVerificationStatus==='unsupported'
+        ?'Your post URL was submitted, but the platform did not expose enough text for automatic verification. Your voucher remains locked for Owner Console review.'
+        :'Your post was submitted. No voucher code has been issued yet; use Check verification status below.');
+      status('Proof submitted for verification. No voucher code has been issued yet.','success');
     }catch(error){
       claimStatus(error.message||'Could not submit proof. No voucher code was issued.','error');
       submitClaimButton.disabled=false;
@@ -262,6 +363,7 @@
       claimButton.querySelector('span').textContent='Try submitting proof again';
     }
   }
+  if(copyReadyPostButton)copyReadyPostButton.addEventListener('click',prepareAndCopyReadyPost);
   if(claimForm)claimForm.addEventListener('submit',submitClaimRequest);
   if(checkClaimButton)checkClaimButton.addEventListener('click',checkClaimStatus);
   claimButton.addEventListener('click',()=>{
@@ -283,7 +385,8 @@
       void checkClaimStatus();
     }else{
       claimPanel.scrollIntoView({behavior:'smooth',block:'nearest'});
-      if(proofUrlInput)proofUrlInput.focus({preventScroll:true});
+      if(hasValidShareChallenge()){if(proofUrlInput)proofUrlInput.focus({preventScroll:true});}
+      else if(copyReadyPostButton)copyReadyPostButton.focus({preventScroll:true});
     }
   });
   copyButton?.addEventListener('click',async()=>{
@@ -312,6 +415,8 @@
       return;
     }
     activeCampaign=campaign;
+    if(copyReadyPostButton)copyReadyPostButton.disabled=campaign.claimEnabled!==true||voucherAlreadyClaimed||Boolean(pendingClaimId);
+    if(activeChallengeCampaignId&&activeChallengeCampaignId!==campaign.id)clearShareChallenge();
     const requirements=Array.isArray(campaign.claimRequirements)?campaign.claimRequirements:[];
     renderClaimRequirements(requirements);
     const label=offerLabel(campaign);
@@ -341,6 +446,7 @@
         claimStatus(campaign.disabledReason||'The owner has not configured the required steps and post verification. No code can be issued yet.','error');
         status('Voucher claims are paused until verification is configured. No voucher was issued.','error');
       }else if(pendingClaimId){
+        if(copyReadyPostButton)copyReadyPostButton.disabled=true;
         if(claimPanel)claimPanel.hidden=false;
         if(claimForm)claimForm.hidden=true;
         if(checkClaimButton)checkClaimButton.hidden=false;
