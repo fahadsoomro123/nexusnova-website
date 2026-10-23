@@ -2559,12 +2559,22 @@
       running: 'Payment verified. The service is checking the repository version and applying the listed edits.',
       applied: 'A commit was created, but the live website has not confirmed publication yet.',
       completed: isFallback
-        ? (verification.summary || 'Payment verified. Automatic publishing was not confirmed; your fallback instructions and exact SEO values are ready. No live change is claimed.')
+        ? (verification.summary || 'Automatic publishing was not confirmed. No live change is claimed.')
         : isManual
-          ? 'Payment verified. Your Fix Kit is ready to download. The instructions still need to be applied to your website; no live change is claimed.'
-          : 'The listed changes were committed and the live page checks confirmed the supported fixes.',
-      failed: 'The fix job failed safely. No success is claimed.',
-      conflict: 'The repository changed concurrently. The service refused to overwrite newer work.',
+          ? 'This legacy Fix Kit was prepared, but it does not change the live site automatically.'
+          : 'The listed changes were committed and the live page checks confirmed the exact supported values.',
+      failed: verification.refund?.status === 'refunded'
+        ? 'The live fix was not verified. Safepay confirmed the full refund request; posting time depends on the payment provider.'
+        : verification.refund?.status === 'manual_review_required'
+          ? 'The live fix was not verified. A full refund could not be confirmed automatically, so support review is required. No successful fix is claimed.'
+          : verification.refund?.status === 'requesting'
+            ? 'The live fix was not verified. The refund request status is still being confirmed. No successful fix is claimed.'
+            : 'The fix job failed safely. No success is claimed.',
+      conflict: verification.refund?.status === 'refunded'
+        ? 'The repository changed concurrently, so no overwrite was made. Safepay confirmed the full refund request.'
+        : verification.refund?.status === 'manual_review_required'
+          ? 'The repository changed concurrently and no overwrite was made. Refund review is required; no successful fix is claimed.'
+          : 'The repository changed concurrently. The service refused to overwrite newer work.',
       rolled_back: 'The fix commit was rolled back with a new repository commit.'
     };
     const state = job.status || 'unknown';
@@ -2618,7 +2628,7 @@
     }
   }
   async function pollFixOrder(orderId) {
-    for (let attempt = 0; attempt < 90; attempt++) {
+    for (let attempt = 0; attempt < 180; attempt++) {
       const result = await api('/api/fix-issues/orders/' + encodeURIComponent(orderId) + '/status');
       if (result.status === 'paid' || result.status === 'pending' || result.status === 'failed' || result.status === 'cancelled') {
         if (result.job) renderJob(result.job);
@@ -2626,7 +2636,7 @@
           setStatus('SafePay order ended with status ' + result.status + '. No fix is reported as complete.', 'error');
           return;
         }
-        if (result.status === 'paid' && result.job && ['completed', 'applied', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
+        if (result.status === 'paid' && result.job && ['completed', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
           renderJob(result.job);
           const resultVerification = result.job.verification || {};
           setStatus(result.job.status === 'completed' && resultVerification.deliveryMode === 'manual_fallback'
@@ -2641,8 +2651,13 @@
             result.job.status === 'completed' ? 'success' : 'error');
           return;
         }
-        if (result.status === 'paid') setStatus('SafePay payment verified by the backend. The authorized fix job is processing; keep this page open to see verification.');
-        else setStatus('Checking the payment directly with the backend. A return from Safepay is not proof of payment.');
+        if (result.status === 'paid' && result.job?.status === 'applied') {
+          setStatus('Changes were committed, but the published page is still being checked against the exact approved values. This is not marked fixed yet; the system will request a refund if verification cannot complete.');
+        } else if (result.status === 'paid') {
+          setStatus('SafePay payment is verified by the backend. The authorized fix job is processing; completion is not reported until verification passes.');
+        } else {
+          setStatus('Checking the payment directly with the backend. A return from Safepay is not proof of payment.');
+        }
       }
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
