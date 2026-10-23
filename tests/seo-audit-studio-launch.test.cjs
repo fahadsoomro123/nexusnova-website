@@ -24,7 +24,7 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   assert.match(html, /id="nnAuditHomeForm"/);
   assert.match(html, /id="nnAuditLaunchUrl"/);
   assert.match(html, /id="nnAuditClaimVoucher"/);
-  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261023-v1/);
+  assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261023-ready-post-v3/);
   assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261023-ready-post-v3/);
   assert.doesNotMatch(html, /Missing page title|Meta description review|Image alt-text review/);
 });
