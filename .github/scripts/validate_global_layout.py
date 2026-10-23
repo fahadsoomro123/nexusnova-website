@@ -37,7 +37,7 @@ def footer_signature(source):
     for pattern in patterns:
         match = re.search(pattern, footer, re.I)
         parts.append(normalize_shell_markup(match.group(0)) if match else "")
-    return tuple(parts)
+    return tuple(parts[-1:])
 
 def nav_labels(header):
     nav = outer(header, "nav")
