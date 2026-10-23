@@ -680,13 +680,13 @@
     <section id="fixIssuesPanel" class="fix-issues-panel panel" aria-labelledby="fixIssuesHeading" hidden>
       <div class="fix-issues-head">
         <h2 id="fixIssuesHeading">Fix Issues</h2>
-        <span class="fix-issues-price">USD $5.00 · one-time</span>
+        <span class="fix-issues-price">US$5 · direct auto-fixes only</span>
       </div>
-      <p class="fix-issues-copy">Start with one click. Verified GitHub sites can publish approved safe fixes automatically. Other platforms get a short Fix Kit with exact SEO values and 3 steps. You see the changes before paying, and we never replace a site-builder page with unsafe HTML.</p>
+      <p class="fix-issues-copy">Verified GitHub sites can publish supported safe fixes directly. Other platforms receive free guidance only until direct publishing support is ready. You review exact changes before paying, and a fix is marked verified only when the live page matches the planned values.</p>
       <p id="fixIssuesStatus" class="fix-issues-status" role="status" aria-live="polite">Checking safe-fix availability.</p>
       <div class="fix-issues-controls">
         <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Auto-fix with GitHub</button>
-        <button id="fixIssuesGuidedBtn" class="secondary-btn" type="button" disabled>My site uses another platform</button>
+        <button id="fixIssuesGuidedBtn" class="secondary-btn" type="button" disabled>Other platforms · free guidance</button>
       </div>
       <details class="fix-issues-existing-installation">
         <summary>Advanced GitHub connection help</summary>
@@ -2385,6 +2385,7 @@
       github_repository_not_connected: 'Choose and connect the verified repository for this website first.',
       repository_not_authorized_for_audited_site: 'That repository could not be verified as the audited website, or it lacks write permission.',
       safe_fix_plan_unavailable: 'No supported automatic fixes are available for this report. No charge was started.',
+      automatic_fixing_not_supported_for_platform: 'Automatic publishing is not enabled for this platform yet. Free guidance is available; no charge was started.',
       repository_changed_since_plan: 'The repository page changed after planning. Review a new plan before payment.',
       fix_plan_could_not_be_built_safely: 'A safe fix plan could not be verified. No payment was started.',
       github_repository_unavailable: 'The connected repository could not be re-verified. No payment was started.',
@@ -2484,7 +2485,7 @@
     const isManual = payload.deliveryMode === 'manual';
     planSummary.textContent = changes.length
       ? changes.length + ' supported fix' + (changes.length === 1 ? '' : 'es') +
-        (isManual ? ' for ' + (payload.platformName || 'your website') + '. A download and exact setup steps will be provided after payment.'
+        (isManual ? ' for ' + (payload.platformName || 'your website') + '. Free guidance only; this route does not edit the live site.'
                   : ' in ' + payload.filePath + ' (' + payload.repository + ').')
       : 'No supported fix matched the audited page. No charge will be started.';
     for (const item of changes) {
@@ -2518,17 +2519,20 @@
     }
     text(notes, (payload.notes || []).join(' '));
     if (consentText) consentText.textContent = isManual
-      ? 'I reviewed these exact changes and authorize the one-time $5.00 USD payment for my Fix Kit, which includes a corrected HTML file and platform-specific instructions. It will not edit the live site automatically.'
+      ? 'This is free guidance only. No payment is requested and no automatic website change is made on this platform.'
       : 'I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.';
     if (planSafetyText) planSafetyText.textContent = isManual
-      ? 'This guided package does not change your live site automatically. It provides the corrected HTML and exact platform-specific steps. Follow the steps to publish, then verify the page.'
-      : 'The direct-publish route changes only the listed HTML file, checks the repository version again before writing, and verifies the published page.';
-    payButton.textContent = isManual ? 'Pay $5.00 USD and get Fix Kit' : 'Pay $5.00 USD and apply fixes';
+      ? 'Automatic publishing is not supported for this platform yet. These instructions are free, and the live site has not been changed.'
+      : 'The direct-publish route changes only the listed HTML file, rechecks the repository version before writing, and verifies exact values on the published page.';
+    const consentLabel = accept ? accept.closest('.fix-issues-consent') : null;
+    if (consentLabel) consentLabel.hidden = isManual || !payload.canCheckout;
+    payButton.hidden = isManual || !payload.canCheckout;
+    payButton.textContent = isManual ? 'Automatic fixing not available' : 'Pay $5.00 USD and apply fixes';
     accept.checked = false;
     payButton.disabled = changes.length === 0 || !payload.canCheckout || !accept.checked;
     if (changes.length) {
       setStatus(isManual
-        ? 'Review the exact edits and steps for ' + (payload.platformName || 'your platform') + '. Payment is requested only after you approve this Fix Kit.'
+        ? 'Free instructions are shown below. Direct automatic publishing is not available for this platform yet, and no payment was started.'
         : 'Review the listed edits. SafePay is requested only after you explicitly authorize these exact changes.', 'success');
     } else {
       setStatus('No safe fixes matched this page. No charge was created.', 'error');
@@ -2555,12 +2559,22 @@
       running: 'Payment verified. The service is checking the repository version and applying the listed edits.',
       applied: 'A commit was created, but the live website has not confirmed publication yet.',
       completed: isFallback
-        ? (verification.summary || 'Payment verified. Automatic publishing was not confirmed; your fallback instructions and exact SEO values are ready. No live change is claimed.')
+        ? (verification.summary || 'Automatic publishing was not confirmed. No live change is claimed.')
         : isManual
-          ? 'Payment verified. Your Fix Kit is ready to download. The instructions still need to be applied to your website; no live change is claimed.'
-          : 'The listed changes were committed and the live page checks confirmed the supported fixes.',
-      failed: 'The fix job failed safely. No success is claimed.',
-      conflict: 'The repository changed concurrently. The service refused to overwrite newer work.',
+          ? 'This legacy Fix Kit was prepared, but it does not change the live site automatically.'
+          : 'The listed changes were committed and the live page checks confirmed the exact supported values.',
+      failed: verification.refund?.status === 'refunded'
+        ? 'The live fix was not verified. Safepay confirmed the full refund request; posting time depends on the payment provider.'
+        : verification.refund?.status === 'manual_review_required'
+          ? 'The live fix was not verified. A full refund could not be confirmed automatically, so support review is required. No successful fix is claimed.'
+          : verification.refund?.status === 'requesting'
+            ? 'The live fix was not verified. The refund request status is still being confirmed. No successful fix is claimed.'
+            : 'The fix job failed safely. No success is claimed.',
+      conflict: verification.refund?.status === 'refunded'
+        ? 'The repository changed concurrently, so no overwrite was made. Safepay confirmed the full refund request.'
+        : verification.refund?.status === 'manual_review_required'
+          ? 'The repository changed concurrently and no overwrite was made. Refund review is required; no successful fix is claimed.'
+          : 'The repository changed concurrently. The service refused to overwrite newer work.',
       rolled_back: 'The fix commit was rolled back with a new repository commit.'
     };
     const state = job.status || 'unknown';
@@ -2614,7 +2628,7 @@
     }
   }
   async function pollFixOrder(orderId) {
-    for (let attempt = 0; attempt < 90; attempt++) {
+    for (let attempt = 0; attempt < 180; attempt++) {
       const result = await api('/api/fix-issues/orders/' + encodeURIComponent(orderId) + '/status');
       if (result.status === 'paid' || result.status === 'pending' || result.status === 'failed' || result.status === 'cancelled') {
         if (result.job) renderJob(result.job);
@@ -2622,7 +2636,7 @@
           setStatus('SafePay order ended with status ' + result.status + '. No fix is reported as complete.', 'error');
           return;
         }
-        if (result.status === 'paid' && result.job && ['completed', 'applied', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
+        if (result.status === 'paid' && result.job && ['completed', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
           renderJob(result.job);
           const resultVerification = result.job.verification || {};
           setStatus(result.job.status === 'completed' && resultVerification.deliveryMode === 'manual_fallback'
@@ -2637,8 +2651,13 @@
             result.job.status === 'completed' ? 'success' : 'error');
           return;
         }
-        if (result.status === 'paid') setStatus('SafePay payment verified by the backend. The authorized fix job is processing; keep this page open to see verification.');
-        else setStatus('Checking the payment directly with the backend. A return from Safepay is not proof of payment.');
+        if (result.status === 'paid' && result.job?.status === 'applied') {
+          setStatus('Changes were committed, but the published page is still being checked against the exact approved values. This is not marked fixed yet; the system will request a refund if verification cannot complete.');
+        } else if (result.status === 'paid') {
+          setStatus('SafePay payment is verified by the backend. The authorized fix job is processing; completion is not reported until verification passes.');
+        } else {
+          setStatus('Checking the payment directly with the backend. A return from Safepay is not proof of payment.');
+        }
       }
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
