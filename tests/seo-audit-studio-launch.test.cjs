@@ -25,7 +25,7 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
   assert.match(html, /id="nnAuditLaunchUrl"/);
   assert.match(html, /id="nnAuditClaimVoucher"/);
   assert.match(html, /assets\/css\/seo-audit-launch\.css\?v=20261023-v1/);
-  assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261023-claim-verify-v1/);
+  assert.match(html, /assets\/js\/seo-audit-launch\.js\?v=20261023-auto-post-verify-v2/);
   assert.doesNotMatch(html, /Missing page title|Meta description review|Image alt-text review/);
 });
 
@@ -33,11 +33,11 @@ test('homepage introduces a realistic SEO audit workspace before tool discovery'
 test('voucher terms stay concise and voucher claims remain backend-controlled', () => {
   assert.match(html, /class="nn-audit-voucher-terms"/);
   assert.match(html, /<summary>Voucher terms<\/summary>/);
-  assert.match(html, /the active campaign's displayed terms and required steps/i);
+  assert.match(html, /Publish a public post with a direct link to nexusnovatools.com or the SEO Audit Studio campaign/i);
   assert.match(html, /id="nnAuditClaimPanel"/);
   assert.match(html, /id="nnAuditProofUrl"/);
   assert.match(html, /id="nnAuditTermsAccepted"/);
-  assert.match(html, /owner manually verifies the post and approves the request/i);
+  assert.match(html, /A verified matching post unlocks a single-use voucher/i);
   assert.doesNotMatch(html, /twitter\.com\/intent\/tweet|facebook\.com\/sharer\/sharer\.php|Sharing is optional|Share on X|Share on Facebook/);
   assert.match(js, /\/api\/promotions\/claim/);
 });

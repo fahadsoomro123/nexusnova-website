@@ -16,11 +16,11 @@ const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 test('voucher is issued only by the active backend campaign and public copy stays concise', () => {
   assert.match(home, /class="nn-audit-voucher-terms"/);
   assert.match(home, /<summary>Voucher terms<\/summary>/);
-  assert.match(home, /the active campaign's displayed terms and required steps/i);
+  assert.match(home, /Publish a public post with a direct link to nexusnovatools.com or the SEO Audit Studio campaign/i);
   assert.match(home, /id="nnAuditClaimPanel"/);
   assert.match(home, /id="nnAuditProofUrl"/);
   assert.match(home, /id="nnAuditTermsAccepted"/);
-  assert.match(home, /manually verifies the post and approves the request/i);
+  assert.match(home, /A verified matching post unlocks a single-use voucher/i);
   assert.doesNotMatch(home, /Sharing is optional|twitter\.com\/intent\/tweet|facebook\.com\/sharer\/sharer\.php|Share on X|Share on Facebook/);
   assert.doesNotMatch(home, /Only server-issued vouchers are displayed|nn-audit-launch-note/);
   assert.match(launchJs, /\/api\/promotions\/active/);
