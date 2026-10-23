@@ -14,7 +14,16 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /id="nnAuditClaimPanel"[^>]*hidden/);
   assert.match(homepage, /id="nnAuditReadyPost"[^>]*readonly/);
   assert.match(homepage, /id="nnAuditCopyReadyPost"/);
-  assert.match(homepage, /Campaign reference/);
+  assert.match(homepage, /Campaign ref:/);
+  assert.match(homepage, /id="nnAuditReadyPostCount"/);
+  const postBlock = launchJs.slice(launchJs.indexOf('const postText=['), launchJs.indexOf('readyPostTextarea.value=postText;'));
+  assert.match(postBlock, /Less searching\\. More doing\\./);
+  assert.match(postBlock, /NexusNova Tools brings useful PDF, image and web tools together in one place/);
+  assert.match(postBlock, /nexusnovatools\\.com\\/seo-audit-studio\\.html/);
+  assert.match(postBlock, /Campaign ref: '\\+activeChallengeReference/);
+  assert.match(launchJs, /function countXWeightedCharacters/);
+  assert.match(launchJs, /xLength>250/);
+  assert.match(launchJs, /Standard X post: '\\+xLength\+'\\/280 weighted characters/);
   assert.match(homepage, /id="nnAuditClaimRequirements"/);
   assert.match(homepage, /id="nnAuditClaimForm"/);
   assert.match(homepage, /id="nnAuditProofUrl"[^>]*type="url"[^>]*required/);
