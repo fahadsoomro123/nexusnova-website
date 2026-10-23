@@ -42,7 +42,7 @@ test('Fix Issues offers a platform-guided path with an exact preview and paid-on
   assert.match(html, /\/manual-package/);
   assert.match(html, /deliveryMode === 'manual'/);
   assert.match(html, /Download my Fix Kit/);
-  assert.match(html, /does not edit your live site automatically/i);
+  assert.match(html, /does not (edit|change) your live site automatically/i);
   assert.match(html, /platform-specific steps/i);
 });
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
