@@ -18,6 +18,10 @@ test('voucher is issued only by the active backend campaign and public copy stay
   assert.match(home, /<summary>Voucher terms<\/summary>/);
   assert.match(home, /Publish a public post with a direct link to nexusnovatools.com or the SEO Audit Studio campaign/i);
   assert.match(home, /id="nnAuditClaimPanel"/);
+  assert.match(home, /id="nnAuditReadyPost"/);
+  assert.match(home, /Prepare &amp; copy ready post/);
+  assert.match(launchJs, /nexusnova_voucher_share_challenge_v1/);
+  assert.match(launchJs, /unique campaign reference/);
   assert.match(home, /id="nnAuditProofUrl"/);
   assert.match(home, /id="nnAuditTermsAccepted"/);
   assert.match(home, /A verified matching post unlocks a single-use voucher/i);
