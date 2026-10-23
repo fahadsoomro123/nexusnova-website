@@ -171,6 +171,16 @@
         audit_report_unavailable:'The saved report is missing required data. Run a fresh audit and try again.',
         audit_report_invalid:'The saved report could not be read. Run a fresh audit and try again.',
         audit_evidence_incomplete:'Some measurements are missing, so exact auto-edits were skipped. The Fix List can still use the saved findings.',
+        github_app_not_configured:'The secure GitHub App is not configured. No repository change was made.',
+        owner_github_repository_not_connected:'No authorized GitHub repository with write access could be verified for this domain. Install the NexusNova GitHub App for this site first.',
+        github_repository_discovery_failed:'The authorized GitHub repositories could not be checked. No file was changed.',
+        owner_fix_already_running:'An automatic repair is already running or awaiting live verification for this audit.',
+        owner_auto_fix_requires_owner_created_audit:'Automatic Owner Console repairs are limited to audits created inside the Owner Console.',
+        owner_fix_plan_expired_or_used:'This preview expired or was already used. Create a new preview before applying changes.',
+        rollback_head_changed:'The repository has newer commits. Rollback was refused to protect them.',
+        rollback_file_changed:'The target file changed after repair. Rollback was refused to protect newer work.',
+        rollback_not_available:'Rollback is not available for this job state or has already been used.',
+        plan_acceptance_required:'Approve the exact change list before applying it. No file was changed.',
         audit_url_invalid:'The audited URL is invalid. Open the original report and check its URL.',
         audit_url_not_supported:'This fix route supports public HTTPS websites only.',
         audit_url_host_not_supported:'This host cannot be checked safely from the fix service.',
@@ -417,6 +427,133 @@
     panel.append(button(hasHtml?'Download corrected HTML file':'Download simple Fix List',()=>downloadOwnerFixKit(kit),'primary'));
     item.append(panel);
   }
+  function renderOwnerAutoFixJob(item,auditId,job){
+    item.querySelector('.owner-auto-fix-result')?.remove();
+    const panel=text('section','','report-section owner-auto-fix-result');
+    panel.style.marginTop='12px';
+    const status=String(job.status||'unknown');
+    const verification=job.verification||{};
+    const headings={
+      queued:'Repair queued',
+      running:'Applying approved changes',
+      applied:'Change committed · verifying live page',
+      completed:'Fixes verified',
+      failed:'Fix not verified',
+      conflict:'Repository changed · no overwrite',
+      rolled_back:'Rollback commit created',
+      expired:'Preview expired'
+    };
+    panel.append(text('h3',headings[status]||'Repair status: '+status));
+    const messages={
+      queued:'The approved repair is waiting to run.',
+      running:'The system is applying only the previewed HTML metadata changes.',
+      applied:'A repository commit exists, but this is not marked fixed until the public page matches the exact planned values.',
+      completed:'The approved changes are present on the live page and passed exact-value verification.',
+      failed:verification.message||'The changes could not be verified. No success is claimed.',
+      conflict:'The repository changed after the preview. The system refused to overwrite newer work.',
+      rolled_back:verification.message||'A rollback commit was created. Hosting still needs to publish that commit.',
+      expired:'This preview expired. Create a new preview before applying changes.'
+    };
+    panel.append(notice(messages[status]||verification.message||'Current status: '+status,status==='completed'?'good':(['failed','conflict','expired'].includes(status)?'error':'')));
+    if(job.repository)panel.append(text('p','Repository: '+job.repository,'meta'));
+    if(job.filePath)panel.append(text('p','File: '+job.filePath,'meta'));
+    if(Array.isArray(job.changes)&&job.changes.length){
+      panel.append(text('h4','Approved safe changes'));
+      const list=text('ol');
+      job.changes.forEach(change=>list.append(text('li',(change.label||change.key||'Safe change')+(change.path?' · '+change.path:''))));
+      panel.append(list);
+    }
+    if(Array.isArray(verification.verified)&&verification.verified.length)panel.append(text('p','Live checks passed: '+verification.verified.join(', '),'meta'));
+    if(Array.isArray(verification.missing)&&verification.missing.length)panel.append(text('p','Still not verified: '+verification.missing.join(', '),'meta'));
+    if(job.commitSha)panel.append(text('p','Commit: '+job.commitSha,'meta'));
+    if(job.errorCode&&status!=='completed')panel.append(text('p','Reference: '+job.errorCode.replace(/_/g,' '),'meta'));
+    if(job.rollbackAvailable){
+      panel.append(button('Roll back this commit',async()=>{
+        if(!confirm('Create a rollback commit for this exact repair? It will be refused if the repository/file changed since this repair. Live publishing may still take time.'))return;
+        try{
+          const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/'+encodeURIComponent(job.id)+'/rollback',{method:'POST',body:'{}'});
+          renderOwnerAutoFixJob(item,auditId,result.job);
+          setGlobal('Rollback commit created. Check live-page status after the host deploys it.','');
+        }catch(error){setGlobal(error.message||'Rollback was refused or failed safely.','error');}
+      },'danger'));
+    }
+    item.append(panel);
+  }
+  async function pollOwnerAutoFixJob(item,auditId,jobId){
+    for(let attempt=0;attempt<70;attempt++){
+      const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/'+encodeURIComponent(jobId));
+      renderOwnerAutoFixJob(item,auditId,result.job);
+      if(['completed','failed','conflict','rolled_back','expired'].includes(result.job?.status)){
+        setGlobal(result.job.status==='completed'?'Owner repair was verified against the live page.':'Owner repair ended as '+result.job.status.replace(/_/g,' ')+'. Review its status; no unverified success is claimed.',result.job.status==='completed'?'good':'');
+        return;
+      }
+      await new Promise(resolve=>setTimeout(resolve,5000));
+    }
+    setGlobal('Repair is still running or the host has not published it yet. The job is not marked verified; reopen its status to continue checking.','');
+  }
+  async function requestOwnerAutoFixPlan(item,auditId,repositoryId=null){
+    const body=repositoryId===null?{}:{repositoryId:Number(repositoryId)};
+    const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/plan',{method:'POST',body:JSON.stringify(body)});
+    renderOwnerAutoFixPlan(item,auditId,result);
+  }
+  function renderOwnerAutoFixPlan(item,auditId,plan){
+    item.querySelector('.owner-auto-fix-result')?.remove();
+    const panel=text('section','','report-section owner-auto-fix-result');
+    panel.style.marginTop='12px';
+    panel.append(text('h3',plan.requiresRepositorySelection?'Choose the website repository':'Review safe changes'));
+    if(plan.requiresRepositorySelection){
+      panel.append(notice(plan.message||'Choose the exact repository that publishes this website. No file has been changed.'));
+      const label=text('label','Verified repository');
+      const select=text('select');
+      select.append(new Option('Choose a repository',''));
+      (plan.repositories||[]).forEach(repo=>select.append(new Option(repo.fullName+' · '+repo.defaultBranch+(repo.private?' · private':''),String(repo.repositoryId))));
+      label.append(select);panel.append(label);
+      panel.append(button('Preview selected repository',async()=>{
+        if(!select.value){setGlobal('Choose a repository before continuing. No file has been changed.','error');return;}
+        try{
+          setGlobal('Checking the selected repository and rebuilding the exact preview. No live change is being made.');
+          await requestOwnerAutoFixPlan(item,auditId,select.value);
+          setGlobal('Preview ready. No website file has been changed yet.','');
+        }catch(error){setGlobal(error.message||'Could not build a safe preview.','error');}
+      },'primary'));
+      item.append(panel);return;
+    }
+    if(plan.repository)panel.append(text('p','Repository: '+plan.repository,'meta'));
+    if(plan.filePath)panel.append(text('p','File: '+plan.filePath,'meta'));
+    if(!plan.canApply){
+      panel.append(notice(plan.message||'No deterministic automatic fix matched this page. No file was changed.'));
+      (plan.notes||[]).forEach(note=>panel.append(text('p',note,'meta')));
+      item.append(panel);return;
+    }
+    panel.append(notice(plan.safety||'Preview only. Nothing has been changed yet. Approve the exact list before a commit is created.'));
+    if(Array.isArray(plan.changes)&&plan.changes.length){
+      const list=text('ol');
+      plan.changes.forEach(change=>list.append(text('li',(change.label||change.key||'Safe change')+(change.path?' · '+change.path:''))));
+      panel.append(list);
+    }
+    if(Array.isArray(plan.notes)&&plan.notes.length){
+      const list=text('ul');plan.notes.forEach(note=>list.append(text('li',note)));panel.append(list);
+    }
+    const consentLabel=text('label','');
+    const consent=text('input');consent.type='checkbox';
+    consentLabel.append(consent,document.createTextNode(' I approve only these listed safe changes to this website file.'));
+    panel.append(consentLabel);
+    const apply=button('Apply approved changes',async()=>{
+      if(!consent.checked){setGlobal('Approve the listed changes before applying them. No file was changed.','error');return;}
+      const summary=(plan.changes||[]).map(change=>change.label||change.key).join(', ');
+      if(!confirm('Apply these exact changes to '+plan.repository+' / '+plan.filePath+'?\\n\\n'+summary+'\\n\\nOnly this planned file will be changed. The live page must pass verification before the job is called fixed.'))return;
+      apply.disabled=true;
+      try{
+        const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/'+encodeURIComponent(plan.jobId)+'/apply',{method:'POST',body:JSON.stringify({accepted:true})});
+        renderOwnerAutoFixJob(item,auditId,result.job);
+        setGlobal('Repair submitted. The live page still has to verify before success is shown.','');
+        pollOwnerAutoFixJob(item,auditId,plan.jobId).catch(error=>setGlobal(error.message||'Status polling stopped. The job itself remains recorded.','error'));
+      }catch(error){setGlobal(error.message||'The repair could not start. The preview was not reported as applied.','error');}
+      finally{apply.disabled=false;}
+    },'primary');
+    apply.disabled=true;consent.addEventListener('change',()=>{apply.disabled=!consent.checked;});
+    panel.append(apply);item.append(panel);
+  }
   function renderAuditHistory(){
     const root=$('auditHistory');root.replaceChildren();
     if(state.audits.length){
@@ -439,17 +576,29 @@
       head.append(left,text('span',a.audit_id.slice(0,8),'pill'));item.append(head);
       const actions=text('div','','actions');
       actions.append(button('View full report',()=>showFullReport(a.audit_id)));
-      actions.append(button('Get Fixes',async(event)=>{
+      if(Number(a.owner_created)===1){
+        actions.append(button('Fix safe issues',async(event)=>{
+          const fixButton=event?.currentTarget;
+          if(!confirm('Prepare a no-charge preview for this Owner Console audit? Only deterministic safe HTML metadata fixes will be offered. The live site will not change until you approve the exact preview.'))return;
+          if(fixButton){fixButton.disabled=true;fixButton.textContent='Checking website…';}
+          try{
+            await requestOwnerAutoFixPlan(item,a.audit_id);
+            setGlobal('Preview checked. No live website changes have been made yet.','');
+          }catch(error){setGlobal(error.message||'Could not prepare a safe automatic-fix preview.','error');}
+          finally{if(fixButton){fixButton.disabled=false;fixButton.textContent='Fix safe issues';}}
+        },'primary'));
+      }
+      actions.append(button('Prepare repair guidance',async(event)=>{
         const fixButton=event?.currentTarget;
-        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing fixes…';}
+        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing guidance…';}
         try{
           const kit=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/fix-kit',{method:'POST',body:'{}'});
           renderOwnerFixKit(item,kit);
-          setGlobal(kit.summary||'Fix Kit prepared. No live website changes were made.','good');
+          setGlobal('Guidance prepared. No live website changes were made.','');
         }catch(error){
-          setGlobal(error.message||'Could not prepare a safe Fix Kit for this audit.','error');
+          setGlobal(error.message||'Could not prepare repair guidance for this audit.','error');
         }finally{
-          if(fixButton){fixButton.disabled=false;fixButton.textContent='Get Fixes';}
+          if(fixButton){fixButton.disabled=false;fixButton.textContent='Prepare repair guidance';}
         }
       }));
       actions.append(button('Unlock for this session',async()=>{
