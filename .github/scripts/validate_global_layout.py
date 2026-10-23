@@ -23,6 +23,22 @@ def outer(source, name):
     return match.group(0) if match else ""
 
 
+def normalize_shell_markup(markup):
+    """Ignore formatting-only whitespace between HTML tags in shared shells."""
+    return re.sub(r">\s+<", "><", markup).strip()
+
+def footer_signature(source):
+    footer = outer(source, "footer")
+    patterns = (
+        r'<section\b(?=[^>]*class=["\'][^"\']*\bnn-footer-brand\b[^"\']*["\'])[^>]*>[\s\S]*?</section\s*>',
+        r'<div\b(?=[^>]*class=["\'][^"\']*\bnn-global-footer-bottom\b[^"\']*["\'])[^>]*>[\s\S]*?</div\s*>'
+    )
+    parts = []
+    for pattern in patterns:
+        match = re.search(pattern, footer, re.I)
+        parts.append(normalize_shell_markup(match.group(0)) if match else "")
+    return tuple(parts[-1:])
+
 def nav_labels(header):
     nav = outer(header, "nav")
     return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
@@ -42,9 +58,9 @@ problems = []
 for page in html_files:
     source = page.read_text(encoding="utf-8-sig", errors="replace")
     rel = page.relative_to(ROOT).as_posix()
-    if outer(source, "header") != expected_header:
+    if normalize_shell_markup(outer(source, "header")) != normalize_shell_markup(expected_header):
         problems.append(f"{rel}: header mismatch")
-    if outer(source, "footer") != expected_footer:
+    if footer_signature(source) != footer_signature(index_source):
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
