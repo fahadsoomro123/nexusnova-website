@@ -687,7 +687,15 @@
       <div class="fix-issues-controls">
         <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Fix Issues · $5.00</button>
       </div>
-      <div id="fixIssuesRepositoryTools" hidden>
+      <details class="fix-issues-existing-installation">
+        <summary>Already installed? Connect existing GitHub App</summary>
+        <p class="fix-issues-copy">Copy the installation ID from the GitHub settings URL. For example, in /settings/installations/174464662, the ID is 174464662. NexusNova will verify the installation and only accept repositories with write permission and a matching website domain.</p>
+        <div class="fix-issues-controls">
+          <label class="form-label" for="fixIssuesInstallationId">GitHub installation ID</label>
+          <input id="fixIssuesInstallationId" class="fix-issues-select" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="20" autocomplete="off" spellcheck="false" placeholder="e.g. 174464662">
+          <button id="fixIssuesExistingConnectBtn" class="secondary-btn" type="button" disabled>Verify existing installation</button>
+        </div>
+      </details>      <div id="fixIssuesRepositoryTools" hidden>
         <label class="form-label" for="fixIssuesRepoSelect">Verified repository for this website</label>
         <div class="fix-issues-controls">
           <select id="fixIssuesRepoSelect" class="fix-issues-select">
@@ -2318,6 +2326,8 @@
   const panel = q('fixIssuesPanel');
   if (!panel) return;
   const start = q('fixIssuesStartBtn');
+  const existingInstallationId = q('fixIssuesInstallationId');
+  const existingConnectButton = q('fixIssuesExistingConnectBtn');
   const status = q('fixIssuesStatus');
   const repoTools = q('fixIssuesRepositoryTools');
   const repoSelect = q('fixIssuesRepoSelect');
@@ -2339,6 +2349,14 @@
   let repositories = [];
   let currentJob = null;
   let busy = false;
+  function syncExistingConnectButton() {
+    const raw = existingInstallationId ? existingInstallationId.value.trim() : "";
+    const validId = /^\d{1,20}$/.test(raw) && Number.isSafeInteger(Number(raw)) && Number(raw) > 0;
+    if (existingConnectButton) {
+      existingConnectButton.disabled = busy || !available || !audit ||
+        !audit.completeEvidence || audit.mode === "sample" || !validId;
+    }
+  }
   const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
   function setStatus(message, tone) {
     text(status, message);
@@ -2354,6 +2372,8 @@
       audit_not_found: 'This audit expired or is no longer available. Run a fresh audit.',
       audit_evidence_incomplete: 'Fix Issues is disabled because this audit is missing required source measurements.',
       github_installation_required: 'Install the NexusNova GitHub App with repository contents write permission, then return here.',
+      github_installation_invalid: 'Enter the numeric installation ID shown in the GitHub settings URL.',
+      github_installation_verification_failed: 'GitHub could not verify that installation. Check the ID and that the NexusNova app is installed.',
       github_repository_not_connected: 'Choose and connect the verified repository for this website first.',
       repository_not_authorized_for_audited_site: 'That repository could not be verified as the audited website, or it lacks write permission.',
       safe_fix_plan_unavailable: 'No supported automatic fixes are available for this report. No charge was started.',
@@ -2580,9 +2600,11 @@
       if (!available) setStatus(payload.reason || 'Fix Issues is temporarily unavailable. No charge can be started.', 'error');
       if (audit && audit.completeEvidence && audit.mode !== 'sample' && available) start.disabled = false;
       else start.disabled = true;
+      syncExistingConnectButton();
     } catch (error) {
       available = false;
       start.disabled = true;
+      syncExistingConnectButton();
       setStatus('The fix service could not confirm configuration. No payment or site write is available.', 'error');
     }
   }
@@ -2602,7 +2624,32 @@
       busy = false; start.disabled = !available;
     }
   });
-  planButton?.addEventListener('click', async () => {
+  existingInstallationId?.addEventListener('input', syncExistingConnectButton);
+  existingConnectButton?.addEventListener('click', async () => {
+    if (busy || !available || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
+    const installationId = existingInstallationId ? existingInstallationId.value.trim() : '';
+    if (!/^\d{1,20}$/.test(installationId) || !Number.isSafeInteger(Number(installationId)) || Number(installationId) <= 0) {
+      setStatus('Enter the numeric installation ID from the GitHub settings URL.', 'error');
+      return;
+    }
+    busy = true;
+    syncExistingConnectButton();
+    start.disabled = true;
+    try {
+      await api('/api/fix-issues/connect/existing', 'POST', { auditId: audit.auditId, installationId });
+      await loadRepositories(audit.auditId);
+      if (repositories.length) {
+        setStatus('Existing GitHub installation verified. Select the repository for ' +
+          new URL(audit.url).hostname + ' and review the exact proposed fixes before payment.', 'success');
+      }
+    } catch (error) {
+      setStatus(errorMessage(error.message), 'error');
+    } finally {
+      busy = false;
+      start.disabled = !available;
+      syncExistingConnectButton();
+    }
+  });  planButton?.addEventListener('click', async () => {
     if (!audit || !repoSelect.value || busy) return;
     const repository = repositories.find((item) => String(item.repositoryId) === repoSelect.value);
     if (!repository) return;
