@@ -26,6 +26,12 @@ test('tax calculator supports joint and head-of-household schedules and rejects 
   assert.equal(taxFor(10000, 'unknown').ok, false);
 });
 
+test('tax calculator rejects finite income values that overflow currency rounding', () => {
+  const result = taxFor(1e307, 'single');
+  assert.equal(result.ok, false);
+  assert.match(result.error, /supported calculation range/i);
+});
+
 test('amortization handles zero-interest loans and rejects payments that cannot reduce principal', () => {
   const zeroRate = simulatePayoff(1200, 0, 100);
   assert.equal(zeroRate.ok, true);
