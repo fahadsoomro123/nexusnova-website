@@ -24,7 +24,7 @@ test('Fix Issues clearly prices US$5 and displays an explicit consent gate befor
   assert.match(html, /accept\.checked && plan\.changes/);
   assert.match(html, /acceptedPlan: true/);
   assert.match(html, /changes.length === 0 \|\| !payload.canCheckout \|\| !accept.checked/);
-  assert.match(html, /Connect website automatically/);
+  assert.match(html, /Auto-fix with GitHub/);
   assert.match(html, /fixIssuesConsentText/);
   assert.match(html, /No payment was taken/);
 });
@@ -45,7 +45,7 @@ test('one-click connection previews the sole verified repository and never enabl
 });
 test('Fix Issues offers a platform-guided path with an exact preview and paid-only Fix Kit', () => {
   assert.match(html, /id="fixIssuesGuidedBtn"/);
-  assert.match(html, /My site uses WordPress, Shopify, Wix, or another platform/);
+  assert.match(html, /My site uses another platform/);
   assert.match(html, /\/api\/fix-issues\/plan\/guided/);
   assert.match(html, /\/manual-package/);
   assert.match(html, /deliveryMode === 'manual'/);
@@ -92,4 +92,10 @@ test('Fix Issues browser controller does not hold GitHub installation credential
   assert.doesNotMatch(fixController, /BEGIN PRIVATE KEY|FIX_ISSUES_GITHUB_APP_PRIVATE_KEY|gh[pousr]_[A-Za-z0-9]{24,}/);
   assert.match(fixController, /token\(\)/);
   assert.match(fixController, /credentials: 'omit'/);
+});
+
+test('Guided fixes use a short, plain-language path for non-GitHub hosting', () => {
+  assert.match(html, /short Fix Kit with exact SEO values and 3 steps/i);
+  assert.match(html, /My site uses another platform/);
+  assert.match(html, /Auto-fix with GitHub/);
 });
