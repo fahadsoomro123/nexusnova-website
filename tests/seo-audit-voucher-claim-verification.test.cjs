@@ -12,6 +12,9 @@ const owner = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'u
 
 test('homepage exposes the real voucher verification box with checklist, proof URL and terms consent', () => {
   assert.match(homepage, /id="nnAuditClaimPanel"[^>]*hidden/);
+  assert.match(homepage, /id="nnAuditReadyPost"[^>]*readonly/);
+  assert.match(homepage, /id="nnAuditCopyReadyPost"/);
+  assert.match(homepage, /Campaign reference/);
   assert.match(homepage, /id="nnAuditClaimRequirements"/);
   assert.match(homepage, /id="nnAuditClaimForm"/);
   assert.match(homepage, /id="nnAuditProofUrl"[^>]*type="url"[^>]*required/);
@@ -20,7 +23,7 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /id="nnAuditCheckClaim"/);
   assert.match(homepage, /checks the public post for a link to NexusNova Tools or SEO Audit Studio/);
   assert.match(homepage, /Verify post &amp; unlock voucher/);
-  assert.match(homepage, /seo-audit-launch\.js\?v=20261023-auto-post-verify-v2/);
+  assert.match(homepage, /seo-audit-launch\.js\?v=20261023-ready-post-v3/);
 });
 
 test('visitor claim submission includes exact campaign, completed steps, public proof and accepted terms', () => {
@@ -28,6 +31,10 @@ test('visitor claim submission includes exact campaign, completed steps, public 
   assert.match(submit, /activeCampaign\.claimEnabled!==true/);
   assert.match(submit, /completedRequirements/);
   assert.match(submit, /proofUrl:parsed\.href/);
+  assert.match(submit, /challengeReference:activeChallengeReference/);
+  assert.match(submit, /hasValidShareChallenge\(\)/);
+  assert.match(launchJs, /\/api\/promotions\/claim-challenge/);
+  assert.match(launchJs, /Prepare & copy ready post/);
   assert.match(submit, /termsAccepted:termsAcceptedInput\.checked/);
   assert.match(submit, /\/api\/promotions\/claim/);
   assert.match(submit, /payload\.status!=='pending'/);
