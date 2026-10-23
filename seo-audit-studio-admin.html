@@ -403,7 +403,7 @@
       kit.instructions.forEach(step=>steps.append(text('li',step)));
       panel.append(steps);
     }
-    if(Array.isArray(kit.values)&&Object.keys(kit.values).length){
+    if(kit.values&&typeof kit.values==='object'&&!Array.isArray(kit.values)&&Object.keys(kit.values).length){
       panel.append(text('h4','Exact values to use'));
       const values=text('ul');
       Object.entries(kit.values).forEach(([key,value])=>values.append(text('li',reportLabel(key)+': '+String(value))));
