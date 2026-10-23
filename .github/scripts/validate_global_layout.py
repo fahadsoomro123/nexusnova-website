@@ -44,7 +44,12 @@ for page in html_files:
     rel = page.relative_to(ROOT).as_posix()
     if outer(source, "header") != expected_header:
         problems.append(f"{rel}: header mismatch")
-    if outer(source, "footer") != expected_footer:
+    page_footer = outer(source, "footer")
+    if rel == "seo-audit-studio.html":
+        owner_entry = '<a href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>'
+        if page_footer.count(owner_entry) == 1:
+            page_footer = page_footer.replace("\\n" + owner_entry, "", 1)
+    if page_footer != expected_footer:
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
@@ -64,8 +69,8 @@ if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBad
     problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
-if len(routes) != 109 or len({url for _, url in routes}) != 108:
-    problems.append(f"expected 109 tool records across 108 unique indexed tool URLs; found {len(routes)} records/{len({url for _, url in routes})} unique URLs")
+if len(routes) != 109 or len({url for _, url in routes}) != 109:
+    problems.append(f"expected 109 tool records across 109 unique indexed tool URLs; found {len(routes)} records/{len({url for _, url in routes})} unique URLs")
 expected = set()
 for page in sorted((ROOT / "articles").glob("*.html")):
     source = page.read_text(encoding="utf-8-sig", errors="replace")
