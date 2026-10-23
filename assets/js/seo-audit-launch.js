@@ -205,20 +205,20 @@
         try{window.sessionStorage.setItem(CHALLENGE_KEY,JSON.stringify({campaignId:activeChallengeCampaignId,reference:activeChallengeReference,expiresAt:activeChallengeExpiresAt}));}catch{}
       }
       const postText=[
-        'Too many tabs for one small online task?',
+        'Your everyday digital tasks, in one place. 🚀',
         '',
-        'NexusNova Tools brings practical browser-based utilities together in one place, from PDF and image tools to calculators, developer helpers and network checks.',
+        'NexusNova Tools brings together useful browser-based PDF and image tools, calculators, developer helpers, network checks, and more.',
         '',
-        'Working on a website? SEO Audit Studio helps examine technical SEO issues and mobile/desktop performance.',
+        'Have a website? SEO Audit Studio examines technical SEO signals and mobile/desktop performance to help you spot what needs attention.',
         '',
-        'Explore NexusNova Tools: https://nexusnovatools.com/',
+        'Explore the tools: https://nexusnovatools.com/',
         'Try SEO Audit Studio: https://nexusnovatools.com/seo-audit-studio.html',
         '',
-        'Useful tools. Less tab-hunting.',
+        'Practical tools. Clear next steps.',
         'Campaign reference: '+activeChallengeReference,
         '',
         '#NexusNova #FreeOnlineTools #SEOTools'
-      ].join('\n');
+      ].join('\\n');
       readyPostTextarea.value=postText;
       try{
         await navigator.clipboard.writeText(postText);
