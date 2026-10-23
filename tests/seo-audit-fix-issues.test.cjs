@@ -99,5 +99,7 @@ test('Fix Issues browser controller does not hold GitHub installation credential
 test('Guided fixes use a short, plain-language path for non-GitHub hosting', () => {
   assert.match(html, /Other platforms receive free guidance only/i);
   assert.match(html, /Other platforms · free guidance/);
+  assert.match(html, /guidanceAvailable = payload\.guidanceAvailable === true/);
+  assert.match(html, /guidedButton\.disabled = busy \|\| !guidanceAvailable/);
   assert.match(html, /Auto-fix with GitHub/);
 });
