@@ -171,14 +171,28 @@
       const cost = grossCost * (1 + buyFeeRate);
       const proceeds = grossProceeds * (1 - sellFeeRate);
       const profit = proceeds - cost;
+      const returnRate = cost > 0 ? profit / cost : 0;
+      const breakEvenPrice = entryPrice * (1 + buyFeeRate) / (1 - sellFeeRate);
+      const roundedGrossCost = round2(grossCost);
+      const roundedCost = round2(cost);
+      const roundedProceeds = round2(proceeds);
+      const roundedProfit = round2(profit);
+
+      // Finite inputs can still overflow during multiplication or cent rounding.
+      // Reject the result rather than displaying Infinity/NaN as a valid estimate.
+      if (![grossCost, grossProceeds, cost, proceeds, profit, returnRate, returnRate * 100,
+        breakEvenPrice, roundedGrossCost, roundedCost, roundedProceeds, roundedProfit].every(Number.isFinite)) {
+        return { ok: false, error: 'These values exceed the supported calculation range. Use smaller values and check each input.' };
+      }
+
       return {
         ok: true,
-        grossCost: round2(grossCost),
-        cost: round2(cost),
-        proceeds: round2(proceeds),
-        profit: round2(profit),
-        returnRate: cost > 0 ? profit / cost : 0,
-        breakEvenPrice: entryPrice * (1 + buyFeeRate) / (1 - sellFeeRate),
+        grossCost: roundedGrossCost,
+        cost: roundedCost,
+        proceeds: roundedProceeds,
+        profit: roundedProfit,
+        returnRate,
+        breakEvenPrice,
         quantity
       };
     }
