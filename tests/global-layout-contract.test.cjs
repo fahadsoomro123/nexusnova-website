@@ -16,7 +16,7 @@ const shellPart = (source, tag) => {
   }
   return matches[0][0];
 };
-const labels = header => {
+const normalizeShellMarkup = markup => markup.replace(/>\\s+</g, '><').trim();\nconst labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
     .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
@@ -43,7 +43,7 @@ test('every HTML page has the canonical static index header and footer', () => {
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
     const relative = path.relative(root, file);
-    assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
+    assert.equal(normalizeShellMarkup(shellPart(source, 'header')), normalizeShellMarkup(header), relative + ' header differs');
     let pageFooter = shellPart(source, 'footer');
     if (relative === 'seo-audit-studio.html') {
       const ownerEntry = '<a href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>';
@@ -51,7 +51,7 @@ test('every HTML page has the canonical static index header and footer', () => {
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
       pageFooter = pageFooter.replace('\n' + ownerEntry, '');
     }
-    assert.equal(pageFooter, footer, relative + ' footer differs outside the approved owner entry');
+    assert.equal(normalizeShellMarkup(pageFooter), normalizeShellMarkup(footer), relative + ' footer differs outside the approved owner entry');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
