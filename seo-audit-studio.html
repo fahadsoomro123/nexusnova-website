@@ -2525,7 +2525,7 @@
       : 'The direct-publish route changes only the listed HTML file, checks the repository version again before writing, and verifies the published page.';
     payButton.textContent = isManual ? 'Pay $5.00 USD and get Fix Kit' : 'Pay $5.00 USD and apply fixes';
     accept.checked = false;
-    payButton.disabled = changes.length === 0 || !payload.canCheckout;
+    payButton.disabled = changes.length === 0 || !payload.canCheckout || !accept.checked;
     if (changes.length) {
       setStatus(isManual
         ? 'Review the exact edits and steps for ' + (payload.platformName || 'your platform') + '. Payment is requested only after you approve this Fix Kit.'
@@ -2678,14 +2678,28 @@
     try {
       const payload = await api('/api/fix-issues/connect/auto', 'POST', { auditId: audit.auditId });
       if (payload.connected === true) {
-        setStatus('Your existing website connection was found. Checking the verified repository…', 'success');
+        setStatus('Your existing website connection was found. Checking the verified repository.', 'success');
         await loadRepositories(audit.auditId);
+        if (repositories.length === 1) {
+          const repository = repositories[0];
+          repoSelect.value = String(repository.repositoryId);
+          const chosen = await api('/api/fix-issues/connect/repo', 'POST', {
+            auditId: audit.auditId, repositoryId: Number(repository.repositoryId)
+          });
+          const preview = await api('/api/fix-issues/plan', 'POST', { auditId: audit.auditId });
+          preview.repository = chosen.connection.repository;
+          renderPlan(preview);
+          setStatus(preview.changes && preview.changes.length
+            ? 'Website connected and exact fix preview ready below. No payment has been taken.'
+            : 'Website connected and checked. No safe change is needed on this page, so checkout stays disabled.', preview.changes && preview.changes.length ? 'success' : 'error');
+        } else if (repositories.length > 1) {
+          setStatus('Website connection verified. Choose the correct repository below to preview the changes. No payment has been taken.', 'success');
+        }
         busy = false;
         start.disabled = !available;
         syncExistingConnectButton();
         return;
-      }
-      const target = new URL(payload.url);
+      }      const target = new URL(payload.url);
       if (target.protocol !== 'https:' || target.hostname !== 'github.com' || !target.pathname.includes('/installations/new')) {
         throw new Error('github_install_url_invalid');
       }
