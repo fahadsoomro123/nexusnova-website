@@ -126,7 +126,7 @@
     </section>
 
     <section class="panel">
-      <div class="row"><div><h2>Voucher claim verification</h2><p>Open the visitor's public post, confirm each required campaign step and approve only after the proof is verified. Codes are not issued on submission or checklist completion.</p></div><span class="pill">Owner review required</span></div>
+      <div class="row"><div><h2>Voucher claim verification</h2><p>Matching public posts are checked automatically. Requests that the platform does not expose clearly remain locked here for manual review. Open the real post and verify every configured step before approving. Codes are not issued from a pasted URL alone.</p></div><span class="pill">Manual fallback review</span></div>
       <div id="claimReviewList" class="list"><div class="notice">Load owner data to view pending verification requests.</div></div>
     </section>
 
@@ -289,6 +289,9 @@
       }else details.append(notice('No requirement snapshot was found. Do not approve this request.','error'));
       details.append(text('div','Terms accepted: '+(Number(request.terms_accepted)===1?'Yes':'No'),'meta'));
       details.append(text('div','Terms shown to visitor: '+(request.terms_snapshot||'Missing terms'),'meta'));
+      const autoStatus=String(request.auto_verification_status||'not_attempted');
+      const autoMessages={verified:'Public post contains a NexusNova link.',not_matching:'Post was readable but did not match the NexusNova link rule.',unavailable:'Automatic check could not read the post. Open it below and check it manually.',unsupported:'This platform does not expose post content to the automatic checker. Manual verification is required.',not_attempted:'No automatic verification result recorded.'};
+      details.append(text('div','Automatic post check: '+(autoMessages[autoStatus]||'Unknown result. Manual review required.'),'meta'));
       const proofLabel=text('div','Visitor-submitted public post / proof URL:','meta');
       details.append(proofLabel);
       try{

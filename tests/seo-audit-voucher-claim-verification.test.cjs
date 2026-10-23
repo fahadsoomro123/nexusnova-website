@@ -15,11 +15,12 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /id="nnAuditClaimRequirements"/);
   assert.match(homepage, /id="nnAuditClaimForm"/);
   assert.match(homepage, /id="nnAuditProofUrl"[^>]*type="url"[^>]*required/);
-  assert.match(homepage, /id="nnAuditProofNote"/);
+  assert.match(homepage, /Paste your social post URL/);
   assert.match(homepage, /id="nnAuditTermsAccepted"[^>]*type="checkbox"[^>]*required/);
   assert.match(homepage, /id="nnAuditCheckClaim"/);
-  assert.match(homepage, /manually verifies the post and approves the request/);
-  assert.match(homepage, /seo-audit-launch\.js\?v=20261023-claim-verify-v1/);
+  assert.match(homepage, /checks the public post for a link to NexusNova Tools or SEO Audit Studio/);
+  assert.match(homepage, /Verify post &amp; unlock voucher/);
+  assert.match(homepage, /seo-audit-launch\.js\?v=20261023-auto-post-verify-v2/);
 });
 
 test('visitor claim submission includes exact campaign, completed steps, public proof and accepted terms', () => {

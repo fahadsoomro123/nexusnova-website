@@ -160,8 +160,9 @@
     claimButton.querySelector('span').textContent='Voucher approved';
     if(claimForm)claimForm.hidden=true;
     if(checkClaimButton)checkClaimButton.hidden=true;
-    claimStatus('Your post was verified by the owner. Your voucher is now unlocked. Apply it in Audit Studio for this browser session.','success');
-    status('Voucher unlocked after owner verification.','success');
+    const automatic=payload.automaticVerification===true;
+    claimStatus(automatic?'Your public post was automatically verified. Your voucher is unlocked. Apply it in Audit Studio for this browser session.':'Your post was verified by the owner. Your voucher is now unlocked. Apply it in Audit Studio for this browser session.','success');
+    status(automatic?'Voucher unlocked after automatic public-post verification.':'Voucher unlocked after owner verification.','success');
     clearPendingClaim();
   }
   async function checkClaimStatus(){
@@ -210,7 +211,7 @@
   async function submitClaimRequest(event){
     event.preventDefault();
     if(!voucherServiceReady||!activeCampaign||activeCampaign.claimEnabled!==true){
-      claimStatus('The owner has not configured voucher verification for this campaign. No code was issued.','error');return;
+      claimStatus('Voucher verification is not ready for this campaign. No code was issued. Please retry later or contact the site owner.','error');return;
     }
     const requirements=[...claimRequirementsNode.querySelectorAll('input[name="completedRequirements"]')];
     const completedRequirements=requirements.filter(item=>item.checked).map(item=>item.value);
@@ -235,7 +236,7 @@
           campaignId:activeCampaign.id,
           completedRequirements,
           proofUrl:parsed.href,
-          proofNote:proofNoteInput.value.trim(),
+          proofNote:proofNoteInput?.value.trim()||'',
           termsAccepted:termsAcceptedInput.checked
         })
       });
@@ -338,7 +339,7 @@
         if(claimPanel)claimPanel.hidden=false;
         if(claimForm)claimForm.hidden=true;
         claimStatus(campaign.disabledReason||'The owner has not configured the required steps and post verification. No code can be issued yet.','error');
-        status('Voucher claims are paused until the owner configures the requirements and proof-review rules. No voucher was issued.','error');
+        status('Voucher claims are paused until verification is configured. No voucher was issued.','error');
       }else if(pendingClaimId){
         if(claimPanel)claimPanel.hidden=false;
         if(claimForm)claimForm.hidden=true;
