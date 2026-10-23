@@ -321,6 +321,7 @@
       const autoStatus=String(request.auto_verification_status||'not_attempted');
       const autoMessages={verified:'Public post contains a NexusNova link.',not_matching:'Post was readable but did not match the NexusNova link rule.',unavailable:'Automatic check could not read the post. Open it below and check it manually.',unsupported:'This platform does not expose post content to the automatic checker. Manual verification is required.',not_attempted:'No automatic verification result recorded.'};
       details.append(text('div','Automatic post check: '+(autoMessages[autoStatus]||'Unknown result. Manual review required.'),'meta'));
+      details.append(text('div','Required campaign reference: '+(request.challenge_reference||'MISSING — do not approve'),'meta'));
       const proofLabel=text('div','Visitor-submitted public post / proof URL:','meta');
       details.append(proofLabel);
       try{
