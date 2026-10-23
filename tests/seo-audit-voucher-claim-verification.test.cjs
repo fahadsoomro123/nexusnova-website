@@ -17,9 +17,9 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /Campaign ref:/);
   assert.match(homepage, /id="nnAuditReadyPostCount"/);
   const postBlock = launchJs.slice(launchJs.indexOf('const postText=['), launchJs.indexOf('readyPostTextarea.value=postText;'));
-  assert.ok(postBlock.includes('Less searching. More doing.'));
-  assert.ok(postBlock.includes('NexusNova Tools brings useful PDF, image and web tools together in one place.'));
-  assert.ok(postBlock.includes('https://nexusnovatools.com/seo-audit-studio.html'));
+  assert.ok(postBlock.includes('Your digital world, made simpler.'));
+  assert.ok(postBlock.includes('NexusNova Tools brings useful online tools, guides and digital resources together in one place.'));
+  assert.ok(postBlock.includes('https://nexusnovatools.com/'));
   assert.ok(postBlock.includes("Campaign ref: '+activeChallengeReference"));
   assert.ok(launchJs.includes('function countXWeightedCharacters'));
   assert.ok(launchJs.includes('xLength>250'));
