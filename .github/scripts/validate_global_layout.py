@@ -25,7 +25,7 @@ def outer(source, name):
 
 def normalize_shell_markup(markup):
     """Ignore formatting-only whitespace between HTML tags in shared shells."""
-    return re.sub(r">\\s+<", "><", markup).strip()
+    return re.sub(r">\s+<", "><", markup).strip()
 
 def nav_labels(header):
     nav = outer(header, "nav")
