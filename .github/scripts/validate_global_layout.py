@@ -23,6 +23,10 @@ def outer(source, name):
     return match.group(0) if match else ""
 
 
+def normalize_shell_markup(markup):
+    """Ignore formatting-only whitespace between HTML tags in shared shells."""
+    return re.sub(r">\\s+<", "><", markup).strip()
+
 def nav_labels(header):
     nav = outer(header, "nav")
     return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
@@ -42,9 +46,9 @@ problems = []
 for page in html_files:
     source = page.read_text(encoding="utf-8-sig", errors="replace")
     rel = page.relative_to(ROOT).as_posix()
-    if outer(source, "header") != expected_header:
+    if normalize_shell_markup(outer(source, "header")) != normalize_shell_markup(expected_header):
         problems.append(f"{rel}: header mismatch")
-    if outer(source, "footer") != expected_footer:
+    if normalize_shell_markup(outer(source, "footer")) != normalize_shell_markup(expected_footer):
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
