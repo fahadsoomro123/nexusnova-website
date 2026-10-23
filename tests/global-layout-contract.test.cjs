@@ -16,7 +16,8 @@ const shellPart = (source, tag) => {
   }
   return matches[0][0];
 };
-const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();\nconst labels = header => {
+const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
+const labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
     .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
