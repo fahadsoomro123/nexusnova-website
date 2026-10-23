@@ -34,7 +34,7 @@ test('visitor claim submission includes exact campaign, completed steps, public 
   assert.match(submit, /challengeReference:activeChallengeReference/);
   assert.match(submit, /hasValidShareChallenge\(\)/);
   assert.match(launchJs, /\/api\/promotions\/claim-challenge/);
-  assert.match(launchJs, /Prepare & copy ready post/);
+  assert.match(homepage, /Prepare &amp; copy ready post/);
   assert.match(submit, /termsAccepted:termsAcceptedInput\.checked/);
   assert.match(submit, /\/api\/promotions\/claim/);
   assert.match(submit, /payload\.status!=='pending'/);
@@ -70,6 +70,7 @@ test('Owner Console lets the owner configure requirements and review each public
   assert.match(owner, /\/api\/admin\/promotions\/campaigns\/[\s\S]*?\/verification/);
   assert.match(owner, /\/api\/admin\/promotions\/claims\/[\s\S]*?\/review/);
   assert.match(owner, /Visitor-submitted public post \/ proof URL/);
+  assert.match(owner, /Required campaign reference:/);
   assert.match(owner, /Approve and issue voucher/);
   assert.match(owner, /Reject proof/);
   assert.match(owner, /opened the public post and verified EVERY requirement/);
