@@ -25,6 +25,7 @@
   const readyPostTextarea=document.getElementById('nnAuditReadyPost');
   const copyReadyPostButton=document.getElementById('nnAuditCopyReadyPost');
   const readyPostStatus=document.getElementById('nnAuditReadyPostStatus');
+  const readyPostCount=document.getElementById('nnAuditReadyPostCount');
   if(homeForm&&homeUrl){
     homeForm.addEventListener('submit',event=>{
       event.preventDefault();
@@ -172,6 +173,10 @@
   function hasValidShareChallenge(){
     return Boolean(activeCampaign&&activeChallengeReference&&/^NNPOST-[A-F0-9]{12}$/.test(activeChallengeReference)&&activeChallengeCampaignId===activeCampaign.id&&activeChallengeExpiresAt>Date.now()+30000);
   }
+  // This generated copy is ASCII-only; X counts each URL as 23 weighted characters.
+  function countXWeightedCharacters(value){
+    return value.replace(/https?:\/\/[^\s]+/g,'x'.repeat(23)).length;
+  }
   function setReadyPostStatus(message,tone=''){
     if(!readyPostStatus)return;
     readyPostStatus.hidden=false;
@@ -205,21 +210,24 @@
         try{window.sessionStorage.setItem(CHALLENGE_KEY,JSON.stringify({campaignId:activeChallengeCampaignId,reference:activeChallengeReference,expiresAt:activeChallengeExpiresAt}));}catch{}
       }
       const postText=[
-        'Your everyday digital tasks, in one place. 🚀',
+        'Less searching. More doing.',
         '',
-        'NexusNova Tools brings together useful browser-based PDF and image tools, calculators, developer helpers, network checks, and more.',
+        'NexusNova Tools brings useful PDF, image and web tools together in one place.',
         '',
-        'Have a website? SEO Audit Studio examines technical SEO signals and mobile/desktop performance to help you spot what needs attention.',
+        'Need a website check? Run SEO Audit Studio:',
+        'https://nexusnovatools.com/seo-audit-studio.html',
         '',
-        'Explore the tools: https://nexusnovatools.com/',
-        'Try SEO Audit Studio: https://nexusnovatools.com/seo-audit-studio.html',
+        'Campaign ref: '+activeChallengeReference,
         '',
-        'Practical tools. Clear next steps.',
-        'Campaign reference: '+activeChallengeReference,
-        '',
-        '#NexusNova #FreeOnlineTools #SEOTools'
+        '#NexusNova #SEOTools'
       ].join('\\n');
+      const xLength=countXWeightedCharacters(postText);
+      if(xLength>250)throw new Error('The ready post exceeds the safe X character budget. No text was copied.');
       readyPostTextarea.value=postText;
+      if(readyPostCount){
+        readyPostCount.textContent='Standard X post: '+xLength+'/280 weighted characters, including the link and campaign reference.';
+        readyPostCount.hidden=false;
+      }
       try{
         await navigator.clipboard.writeText(postText);
         setReadyPostStatus('Copied! Publish the complete post, including both NexusNova links and the campaign reference. Then copy that published post’s URL into Step 3.','success');
