@@ -164,7 +164,26 @@
     const response=await fetch(API+path,{...options,headers,mode:'cors',credentials:'omit',cache:'no-store',redirect:'error'});
     const body=await response.json().catch(()=>({}));
     if(response.status===401){disconnect();throw new Error('Owner token was rejected. This may be an outdated access file from an older review deployment. Download the access artifact from the latest successful review Worker run, then connect again.');}
-    if(!response.ok)throw new Error(body.error||('Request failed (HTTP '+response.status+').'));
+    if(!response.ok){
+      const code=String(body.error||'');
+      const friendly={
+        audit_not_found:'This audit has expired or is no longer available. Refresh history and try a newer report.',
+        audit_report_unavailable:'The saved report is missing required data. Run a fresh audit and try again.',
+        audit_report_invalid:'The saved report could not be read. Run a fresh audit and try again.',
+        audit_evidence_incomplete:'Some measurements are missing, so exact auto-edits were skipped. The Fix List can still use the saved findings.',
+        audit_url_invalid:'The audited URL is invalid. Open the original report and check its URL.',
+        audit_url_not_supported:'This fix route supports public HTTPS websites only.',
+        audit_url_host_not_supported:'This host cannot be checked safely from the fix service.',
+        manual_page_unreachable:'The website could not be read just now. Try again, or use the Fix List from the saved audit findings.',
+        manual_page_redirect_unsafe:'The page redirected to a host that cannot be verified safely.',
+        manual_page_not_html:'This URL did not return an HTML page. Open the page URL, not a download or file endpoint.',
+        manual_page_http_403:'The host blocked the fix service from reading the page. A Fix List can still be made from saved audit findings.',
+        manual_page_http_404:'The page was not found. Recheck the URL or run a new audit.',
+        owner_fix_kit_failed_safely:'A safe fix could not be generated. Refresh the report and try again.',
+        database_not_configured:'The Owner Console service is missing its database configuration.'
+      };
+      throw new Error(friendly[code]||body.error||('Request failed (HTTP '+response.status+').'));
+    }
     return body;
   }
   function setGlobal(message,tone=''){const target=$('globalStatus');target.className='notice'+(tone?' '+tone:'');target.textContent=message;}
@@ -333,14 +352,14 @@
     const changes=Array.isArray(kit.changes)?kit.changes:[];
     const values=kit.values&&typeof kit.values==='object'?kit.values:{};
     return [
-      'NEXUSNOVA OWNER CONSOLE FIX KIT',
+      'NEXUSNOVA OWNER CONSOLE FIX LIST',
       'URL: '+(kit.url||'Not available'),
       'Platform: '+(kit.platformName||kit.platform||'Not detected'),
       'Generated: '+(kit.generatedAt||new Date().toISOString()),
       '',
       kit.summary||'No summary supplied.',
       '',
-      'PROPOSED CHANGES',
+      'ITEMS TO FIX',
       ...(changes.length?changes.map((change,index)=>(index+1)+'. '+(change.label||change.title||change.key||'Change')+(change.detail?' — '+change.detail:'')):['No safe deterministic fix was matched.']),
       '',
       'EXACT SEO VALUES',
@@ -365,32 +384,54 @@
     document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function renderOwnerFixKit(item,kit){
-    const panel=text('section','','report-section');
+    item.querySelector('.owner-fix-result')?.remove();
+    const hasHtml=typeof kit.correctedHtml==='string'&&kit.correctedHtml.length>0;
+    const panel=text('section','','report-section owner-fix-result');
     panel.style.marginTop='12px';
-    panel.append(text('h3','Fix Kit preview'));
-    panel.append(notice((kit.summary||'Fix Kit prepared.')+' Live website changes were not made.',kit.changes?.length?'good':''));
+    panel.append(text('h3',hasHtml?'Corrected HTML proposal':'Fix List'));
+    panel.append(notice((kit.summary||'Fix List prepared.')+' Live website changes were not made.',hasHtml?'good':''));
     const changes=Array.isArray(kit.changes)?kit.changes:[];
     if(changes.length){
+      panel.append(text('h4',hasHtml?'Safe edits prepared':'Audit findings to address'));
       const list=text('ol');
-      changes.forEach(change=>list.append(text('li',(change.label||change.title||change.key||'Proposed change')+(change.detail?' · '+change.detail:''))));
+      changes.forEach(change=>list.append(text('li',(change.label||change.title||change.key||'Audit finding')+(change.detail?' · '+change.detail:''))));
       panel.append(list);
-    }else panel.append(text('p','No safe, deterministic fix matched this report and the current page. The download contains the exact values and verification guidance returned by the service.'));
+    }else panel.append(text('p','No exact automatic edit matched this report. The download gives the safest next steps using the saved audit findings.'));
+    if(Array.isArray(kit.instructions)&&kit.instructions.length){
+      panel.append(text('h4','Do these 3 steps'));
+      const steps=text('ol');
+      kit.instructions.forEach(step=>steps.append(text('li',step)));
+      panel.append(steps);
+    }
+    if(Array.isArray(kit.values)&&Object.keys(kit.values).length){
+      panel.append(text('h4','Exact values to use'));
+      const values=text('ul');
+      Object.entries(kit.values).forEach(([key,value])=>values.append(text('li',reportLabel(key)+': '+String(value))));
+      panel.append(values);
+    }
     if(Array.isArray(kit.notes)&&kit.notes.length){
       const notes=text('ul');
       kit.notes.forEach(note=>notes.append(text('li',note)));
       panel.append(notes);
     }
-    if(Array.isArray(kit.instructions)&&kit.instructions.length){
-      panel.append(text('h4','Platform steps'));
-      const steps=text('ol');
-      kit.instructions.forEach(step=>steps.append(text('li',step)));
-      panel.append(steps);
-    }
-    panel.append(button(typeof kit.correctedHtml==='string'?'Download corrected HTML proposal':'Download Fix Kit instructions',()=>downloadOwnerFixKit(kit),'primary'));
+    panel.append(button(hasHtml?'Download corrected HTML file':'Download simple Fix List',()=>downloadOwnerFixKit(kit),'primary'));
     item.append(panel);
   }
   function renderAuditHistory(){
     const root=$('auditHistory');root.replaceChildren();
+    if(state.audits.length){
+      const bulkActions=text('div','','actions');
+      bulkActions.append(button('Remove All History',async()=>{
+        const count=state.audits.length;
+        if(!confirm('Hide all active audit reports from Owner Console history? This only clears the history list. Reports, payments, and entitlements are retained.'))return;
+        try{
+          const result=await api('/api/admin/audits/hide-all',{method:'POST',body:'{}'});
+          setGlobal('Removed '+Number(result.hiddenCount??count)+' audit entries from history. Original records were retained.','good');
+          await refreshAll();
+        }catch(error){setGlobal(error.message||'Could not clear audit history.','error');}
+      },'danger'));
+      root.append(bulkActions);
+    }
     if(!state.audits.length){root.append(notice('No audit history.'));return;}
     state.audits.forEach(a=>{
       const item=text('article','','item'),head=text('div','','item-head'),left=text('div');
@@ -398,9 +439,9 @@
       head.append(left,text('span',a.audit_id.slice(0,8),'pill'));item.append(head);
       const actions=text('div','','actions');
       actions.append(button('View full report',()=>showFullReport(a.audit_id)));
-      actions.append(button('Prepare Fix Kit',async(event)=>{
+      actions.append(button('Get Fixes',async(event)=>{
         const fixButton=event?.currentTarget;
-        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing Fix Kit…';}
+        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing fixes…';}
         try{
           const kit=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/fix-kit',{method:'POST',body:'{}'});
           renderOwnerFixKit(item,kit);
@@ -408,7 +449,7 @@
         }catch(error){
           setGlobal(error.message||'Could not prepare a safe Fix Kit for this audit.','error');
         }finally{
-          if(fixButton){fixButton.disabled=false;fixButton.textContent='Prepare Fix Kit';}
+          if(fixButton){fixButton.disabled=false;fixButton.textContent='Get Fixes';}
         }
       }));
       actions.append(button('Unlock for this session',async()=>{
