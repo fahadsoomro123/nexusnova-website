@@ -474,8 +474,8 @@
 
 
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
-  <link rel="stylesheet" href="assets/css/seo-audit-launch.css?v=20261023-v1">
-  <script src="assets/js/seo-audit-launch.js?v=20261023-auto-post-verify-v2" defer></script>
+  <link rel="stylesheet" href="assets/css/seo-audit-launch.css?v=20261023-ready-post-v4">
+  <script src="assets/js/seo-audit-launch.js?v=20261023-ready-post-v4" defer></script>
 </head>
 <body>
   <div class="nn-consent" id="nexusnova-analytics-consent" data-nexusnova-consent role="region" aria-label="Privacy and analytics choices">
@@ -575,10 +575,23 @@
           <p id="nnAuditVoucherStatus" class="nn-audit-voucher-status" role="status" aria-live="polite" hidden></p>
           <section id="nnAuditClaimPanel" class="nn-audit-claim-panel" hidden aria-labelledby="nnAuditClaimTitle">
             <div class="nn-audit-claim-heading">
-              <h2 id="nnAuditClaimTitle">Verify your public post to unlock the voucher</h2>
-              <p>Paste the link to the post you actually published. The system checks the public post for a link to NexusNova Tools or SEO Audit Studio. A matching, readable post unlocks your voucher automatically.</p>
+              <h2 id="nnAuditClaimTitle">Copy, publish and verify your post</h2>
+              <p>Prepare the post below with your one-time campaign reference, publish the full text publicly, then paste the URL of that exact post. A supported automatic check needs both the NexusNova link and your reference.</p>
             </div>
+            <section class="nn-audit-ready-post" aria-labelledby="nnAuditReadyPostTitle">
+              <div class="nn-audit-ready-post-heading">
+                <span class="nn-audit-ready-post-step">STEP 1</span>
+                <div><h3 id="nnAuditReadyPostTitle">Your ready-to-share post</h3><p>One tap prepares your post and copies it with a unique reference for this browser session.</p></div>
+              </div>
+              <textarea id="nnAuditReadyPost" rows="10" readonly spellcheck="false" aria-label="Ready-to-share NexusNova campaign post" placeholder="Tap “Prepare &amp; copy ready post” to generate your unique campaign reference and copy the complete post."></textarea>
+              <p class="nn-audit-ready-post-reference-note">Campaign ref: keep this line in the copied post. It links your claim to this browser session.</p>
+              <p id="nnAuditReadyPostCount" class="nn-audit-ready-post-count" aria-live="polite" hidden></p>
+              <button id="nnAuditCopyReadyPost" class="nn-audit-ready-post-copy" type="button" disabled>Prepare &amp; copy ready post</button>
+              <p id="nnAuditReadyPostStatus" class="nn-audit-ready-post-status" role="status" aria-live="polite" hidden></p>
+            </section>
+            <p class="nn-audit-ready-post-follow">STEP 2 · Publish the copied text publicly without removing the NexusNova links or campaign reference.</p>
             <ol id="nnAuditClaimRequirements" class="nn-audit-claim-requirements"></ol>
+            <p class="nn-audit-ready-post-follow">STEP 3 · Paste the URL of the exact post you published.</p>
             <form id="nnAuditClaimForm" class="nn-audit-claim-form">
               <label for="nnAuditProofUrl">Paste your social post URL <span>Required</span></label>
               <input id="nnAuditProofUrl" name="proofUrl" type="url" inputmode="url" maxlength="1000" autocomplete="url" placeholder="https://social.example/your-public-post" required>
