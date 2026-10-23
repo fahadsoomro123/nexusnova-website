@@ -568,6 +568,30 @@
 
 
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
+<style id="fixIssuesStyles">
+.fix-issues-panel{margin:22px 0;border:1px solid #d9e2ef;border-radius:14px;padding:clamp(16px,2vw,24px);background:linear-gradient(145deg,#fff 0%,#f6f8fc 100%);box-shadow:0 8px 26px rgba(23,36,59,.045)}
+.fix-issues-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.fix-issues-head h2{margin:0;font-size:clamp(20px,2.4vw,26px);color:#17243b}
+.fix-issues-price{display:inline-flex;padding:6px 10px;border:1px solid #d5deeb;border-radius:999px;background:#fff;color:#263b59;font-weight:800;font-size:12px}
+.fix-issues-copy{max-width:780px;color:#586980;font-size:13px;line-height:1.7;margin:10px 0 14px}
+.fix-issues-status{margin:12px 0;padding:10px 12px;border-radius:8px;background:#eef3fb;color:#43536a;font-size:13px;line-height:1.55}
+.fix-issues-status[data-tone="error"]{background:#fff2f2;color:#a42d37}
+.fix-issues-status[data-tone="success"]{background:#edf8f1;color:#206342}
+.fix-issues-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.fix-issues-controls .primary-btn,.fix-issues-controls .secondary-btn{min-height:42px}
+.fix-issues-select{min-width:min(100%,280px);max-width:100%;padding:10px 12px;border:1px solid #c8d3e2;border-radius:8px;background:#fff;color:#1d304b;font:inherit}
+.fix-issues-plan{margin-top:16px;padding:14px;border:1px solid #dce4ef;border-radius:10px;background:#fff}
+.fix-issues-plan h3{margin:0 0 8px;font-size:15px;color:#243754}
+.fix-issues-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.fix-issues-list li{padding:10px;border:1px solid #e2e8f1;border-radius:8px;background:#f9fbfe}
+.fix-issues-list strong{display:block;color:#2b405c;font-size:13px}
+.fix-issues-list code{display:block;overflow-wrap:anywhere;color:#63728a;font-size:11px;margin-top:4px}
+.fix-issues-notes{color:#6a788c;font-size:12px;line-height:1.6;margin:12px 0}
+.fix-issues-consent{display:flex;align-items:flex-start;gap:9px;color:#33455e;font-size:12px;line-height:1.55;margin:12px 0}
+.fix-issues-consent input{margin-top:3px;flex:0 0 auto}
+.fix-issues-danger{font-size:11px;color:#707f94;line-height:1.6}
+@media(max-width:600px){.fix-issues-panel{padding:14px}.fix-issues-controls{align-items:stretch;flex-direction:column}.fix-issues-controls>*{width:100%;max-width:none}.fix-issues-controls button{white-space:normal}.fix-issues-price{font-size:11px}}
+</style>
 </head>
 <body>
 <header class="nn-header">
@@ -651,6 +675,49 @@
       <div class="recommendation-header"><div><h2 id="freeRecommendationsTitle">Top findings</h2></div><span class="free-plan-pill">FREE PREVIEW</span></div>
       <div class="free-rec-list" id="freeRecommendationList" aria-live="polite"></div>
       <div class="free-upgrade-strip"><div><strong>Full report</strong><span>All findings, evidence, mobile/desktop metrics and exports.</span></div><button type="button" class="primary-btn" data-open-paywall>Unlock · $2.99</button></div>
+    </section>
+
+    <section id="fixIssuesPanel" class="fix-issues-panel panel" aria-labelledby="fixIssuesHeading" hidden>
+      <div class="fix-issues-head">
+        <h2 id="fixIssuesHeading">Fix Issues</h2>
+        <span class="fix-issues-price">US$5.00 one-time</span>
+      </div>
+      <p class="fix-issues-copy">Review deterministic fixes for issues found in this audit, connect the repository that owns this website, and approve the exact changes before payment. Only listed changes are applied. Unsupported issues stay untouched.</p>
+      <p id="fixIssuesStatus" class="fix-issues-status" role="status" aria-live="polite">Checking safe-fix availability.</p>
+      <div class="fix-issues-controls">
+        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Fix Issues · US$5</button>
+      </div>
+      <div id="fixIssuesRepositoryTools" hidden>
+        <label class="form-label" for="fixIssuesRepoSelect">Verified repository for this website</label>
+        <div class="fix-issues-controls">
+          <select id="fixIssuesRepoSelect" class="fix-issues-select">
+            <option value="">Choose a repository</option>
+          </select>
+          <button id="fixIssuesPlanBtn" class="secondary-btn" type="button" disabled>Review safe fixes</button>
+        </div>
+      </div>
+      <div id="fixIssuesPlan" class="fix-issues-plan" hidden>
+        <h3>Proposed changes</h3>
+        <p id="fixIssuesPlanSummary" class="fix-issues-copy"></p>
+        <ul id="fixIssuesChangeList" class="fix-issues-list"></ul>
+        <p id="fixIssuesPlanNotes" class="fix-issues-notes"></p>
+        <label class="fix-issues-consent">
+          <input id="fixIssuesAccept" type="checkbox">
+          <span>I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my US$5 payment.</span>
+        </label>
+        <p class="fix-issues-danger">The fix service changes only the listed HTML file. It checks the repository version again before writing, verifies the published page, and refuses rollback if the file or branch has changed since its commit.</p>
+        <div class="fix-issues-controls">
+          <button id="fixIssuesPayBtn" class="primary-btn" type="button" disabled>Pay US$5 and apply fixes</button>
+        </div>
+      </div>
+      <div id="fixIssuesJob" class="fix-issues-plan" hidden>
+        <h3 id="fixIssuesJobHeading">Fix job status</h3>
+        <p id="fixIssuesJobSummary" class="fix-issues-copy"></p>
+        <ul id="fixIssuesAppliedList" class="fix-issues-list"></ul>
+        <div class="fix-issues-controls">
+          <button id="fixIssuesRollbackBtn" class="secondary-btn" type="button" disabled>Roll back this commit</button>
+        </div>
+      </div>
     </section>
 
     <section class="premium-gate" id="premiumGate" aria-label="Full audit report preview, locked">
@@ -1701,6 +1768,7 @@
     el.footerSource.textContent=`Sources: ${report.sources?.content?'Website content ✓':'Website content unavailable'} · ${report.sources?.pagespeedMobile?'Mobile PageSpeed ✓':'Mobile PageSpeed unavailable'} · ${report.sources?.pagespeedDesktop?'Desktop PageSpeed ✓':'Desktop PageSpeed unavailable'}.`;
     renderSourceDiagnostics(report); renderCategories(report); renderFreeRecommendations(report);
     state.paid = false; state.fullReport = null; renderPremiumLocked();
+    document.dispatchEvent(new CustomEvent('nexusnova:audit-report-ready', { detail: { auditId: state.auditId, url: report.url, completeEvidence: hasCompleteReportEvidence(report), mode: report.mode } }));
   };
   const unlockReport = async (auditId) => {
     const targetId = auditId || state.auditId;
@@ -2239,6 +2307,356 @@
   }
   const footerYear=$('footerYear'); if(footerYear) footerYear.textContent=new Date().getFullYear();
   initializePayments().then(()=>restoreLatestAudit().then(()=>handlePaymentReturn()));
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const API = 'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
+  const SESSION_KEY = 'nexusnova_audit_session_v1';
+  const q = (id) => document.getElementById(id);
+  const panel = q('fixIssuesPanel');
+  if (!panel) return;
+  const start = q('fixIssuesStartBtn');
+  const status = q('fixIssuesStatus');
+  const repoTools = q('fixIssuesRepositoryTools');
+  const repoSelect = q('fixIssuesRepoSelect');
+  const planButton = q('fixIssuesPlanBtn');
+  const planPanel = q('fixIssuesPlan');
+  const planSummary = q('fixIssuesPlanSummary');
+  const changeList = q('fixIssuesChangeList');
+  const notes = q('fixIssuesPlanNotes');
+  const accept = q('fixIssuesAccept');
+  const payButton = q('fixIssuesPayBtn');
+  const jobPanel = q('fixIssuesJob');
+  const jobHeading = q('fixIssuesJobHeading');
+  const jobSummary = q('fixIssuesJobSummary');
+  const appliedList = q('fixIssuesAppliedList');
+  const rollbackButton = q('fixIssuesRollbackBtn');
+  let available = false;
+  let audit = null;
+  let plan = null;
+  let repositories = [];
+  let currentJob = null;
+  let busy = false;
+  const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
+  function setStatus(message, tone) {
+    text(status, message);
+    if (status) {
+      if (tone) status.dataset.tone = tone;
+      else delete status.dataset.tone;
+    }
+  }
+  function errorMessage(code) {
+    const messages = {
+      github_app_not_configured: 'The secure GitHub App connection is not configured yet. No payment can be taken.',
+      safepay_not_ready: 'SafePay is not ready for this service. No payment has been started.',
+      audit_not_found: 'This audit expired or is no longer available. Run a fresh audit.',
+      audit_evidence_incomplete: 'Fix Issues is disabled because this audit is missing required source measurements.',
+      github_installation_required: 'Install the NexusNova GitHub App with repository contents write permission, then return here.',
+      github_repository_not_connected: 'Choose and connect the verified repository for this website first.',
+      repository_not_authorized_for_audited_site: 'That repository could not be verified as the audited website, or it lacks write permission.',
+      safe_fix_plan_unavailable: 'No supported automatic fixes are available for this report. No charge was started.',
+      repository_changed_since_plan: 'The repository page changed after planning. Review a new plan before payment.',
+      fix_plan_could_not_be_built_safely: 'A safe fix plan could not be verified. No payment was started.',
+      github_repository_unavailable: 'The connected repository could not be re-verified. No payment was started.',
+      github_repository_connect_failed: 'The repository connection could not be completed.',
+      github_repository_list_failed: 'Could not retrieve eligible repositories from the installed GitHub App.',
+      safe_fix_plan_unavailable: 'There are no supported fixes to buy for this report.',
+      plan_acceptance_required: 'Review the proposed changes and tick the authorization box before paying.',
+      checkout_failed: 'SafePay checkout could not be created. No changes were made.',
+      safepay_checkout_failed_safely: 'SafePay could not create the US$5 checkout. No changes were made.'
+    };
+    return messages[code] || String(code || 'The fix service could not complete this request safely.');
+  }
+  async function token() {
+    let value = '';
+    try { value = sessionStorage.getItem(SESSION_KEY) || ''; } catch {}
+    if (/^[a-f0-9]{64}$/i.test(value)) return value;
+    const response = await fetch(API + '/api/session', {
+      method: 'POST', mode: 'cors', credentials: 'omit', cache: 'no-store',
+      headers: { Accept: 'application/json' }
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || typeof body.token !== 'string' || !/^[a-f0-9]{64}$/i.test(body.token)) {
+      throw new Error(body.error || 'Could not start a secure audit session.');
+    }
+    value = body.token;
+    try { sessionStorage.setItem(SESSION_KEY, value); } catch {}
+    return value;
+  }
+  async function api(path, method, body) {
+    const bearer = await token();
+    const options = {
+      method: method || 'GET', mode: 'cors', credentials: 'omit', cache: 'no-store',
+      headers: { Accept: 'application/json', Authorization: 'Bearer ' + bearer }
+    };
+    if (body !== undefined) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(body);
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    options.signal = controller.signal;
+    try {
+      const response = await fetch(API + path, options);
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok === false) throw new Error(payload.error || ('Request failed (' + response.status + ').'));
+      return payload;
+    } finally { clearTimeout(timeout); }
+  }
+  function showPanel(detail) {
+    if (!detail || typeof detail.auditId !== 'string' || !detail.auditId) return;
+    audit = detail;
+    panel.hidden = false;
+    plan = null;
+    repositories = [];
+    repoTools.hidden = true;
+    planPanel.hidden = true;
+    jobPanel.hidden = true;
+    payButton.disabled = true;
+    accept.checked = false;
+    start.disabled = true;
+    if (detail.mode === 'sample') {
+      setStatus('Fix Issues is available only for a real audit, not sample data.', 'error');
+      return;
+    }
+    if (!detail.completeEvidence) {
+      setStatus('Fix Issues is disabled because the audit needs complete measured content, mobile PageSpeed and desktop PageSpeed evidence. No payment can be taken.', 'error');
+      return;
+    }
+    if (available) {
+      start.disabled = busy;
+      setStatus('Audit evidence is complete. Connect the GitHub repository that owns this domain to review the exact safe changes before paying.');
+    } else {
+      setStatus('The Fix Issues flow is fail-closed until the secure GitHub App write connection and SafePay are configured. No charge or website change can occur yet.', 'error');
+    }
+  }
+  function renderRepositories(list) {
+    repositories = Array.isArray(list) ? list : [];
+    repoSelect.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = repositories.length ? 'Choose a repository' : 'No verified repository found';
+    repoSelect.append(placeholder);
+    for (const repo of repositories) {
+      const option = document.createElement('option');
+      option.value = String(repo.repositoryId);
+      option.textContent = repo.fullName + ' · ' + repo.defaultBranch + (repo.private ? ' · private' : '');
+      repoSelect.append(option);
+    }
+    repoTools.hidden = false;
+    planButton.disabled = repositories.length === 0;
+  }
+  function renderPlan(payload) {
+    plan = payload;
+    planPanel.hidden = false;
+    changeList.replaceChildren();
+    const changes = Array.isArray(payload.changes) ? payload.changes : [];
+    planSummary.textContent = changes.length
+      ? changes.length + ' supported change' + (changes.length === 1 ? '' : 's') + ' in ' + payload.filePath + ' (' + payload.repository + ').'
+      : 'No supported automatic changes were detected for this page.';
+    for (const item of changes) {
+      const li = document.createElement('li');
+      const label = document.createElement('strong');
+      label.textContent = item.label || item.key;
+      const pathNode = document.createElement('code');
+      pathNode.textContent = item.path || payload.filePath;
+      li.append(label, pathNode);
+      changeList.append(li);
+    }
+    text(notes, (payload.notes || []).join(' '));
+    accept.checked = false;
+    payButton.disabled = changes.length === 0 || !payload.canCheckout;
+    if (changes.length) {
+      setStatus('Review the listed edits. SafePay is requested only after Aap explicitly authorize these exact changes.', 'success');
+    } else {
+      setStatus('No safe automated fixes match this report. No charge was created.', 'error');
+    }
+  }
+  function renderJob(job) {
+    currentJob = job;
+    if (!jobPanel) return;
+    jobPanel.hidden = false;
+    appliedList.replaceChildren();
+    const descriptions = {
+      awaiting_payment: 'Waiting for the backend to confirm your US$5 payment. A checkout redirect alone is not confirmation.',
+      queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
+      running: 'Verified payment received. The service is checking the repository version and applying the listed edits.',
+      applied: 'A commit was created, but the live website has not confirmed publication yet. Do not treat this as fully verified.',
+      completed: 'The listed changes were committed and the live page checks confirmed the supported fixes.',
+      failed: 'The fix job failed safely. See the status above; no success is claimed.',
+      conflict: 'The repository changed concurrently. The service refused to overwrite newer work.',
+      rolled_back: 'The fix commit was rolled back with a new repository commit.'
+    };
+    const state = job.status || 'unknown';
+    text(jobHeading, state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
+    text(jobSummary, descriptions[state] || 'Current fix job status: ' + state);
+    if (job.commitSha) {
+      const li = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = 'Repository commit';
+      const code = document.createElement('code');
+      code.textContent = job.commitSha;
+      li.append(strong, code);
+      appliedList.append(li);
+    }
+    for (const item of (job.changes || [])) {
+      const li = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = item.label || item.key;
+      const code = document.createElement('code');
+      code.textContent = item.path || '';
+      li.append(strong, code);
+      appliedList.append(li);
+    }
+    rollbackButton.disabled = !job.rollbackAvailable;
+  }
+  async function loadRepositories(auditId) {
+    const payload = await api('/api/fix-issues/repos?auditId=' + encodeURIComponent(auditId));
+    renderRepositories(payload.repositories);
+    if (!payload.repositories || !payload.repositories.length) {
+      setStatus('GitHub App is installed, but no writable repository was verified as owning this website domain. No payment is possible.', 'error');
+    } else {
+      setStatus('Choose the verified repository for ' + new URL(audit.url).hostname + '. A read/write action will not happen until you review and accept a plan.', 'success');
+    }
+  }
+  async function pollFixOrder(orderId) {
+    for (let attempt = 0; attempt < 90; attempt++) {
+      const result = await api('/api/fix-issues/orders/' + encodeURIComponent(orderId) + '/status');
+      if (result.status === 'paid' || result.status === 'pending' || result.status === 'failed' || result.status === 'cancelled') {
+        if (result.job) renderJob(result.job);
+        if (result.status === 'failed' || result.status === 'cancelled') {
+          setStatus('SafePay order ended with status ' + result.status + '. No fix is reported as complete.', 'error');
+          return;
+        }
+        if (result.status === 'paid' && result.job && ['completed', 'applied', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
+          renderJob(result.job);
+          setStatus(result.job.status === 'completed'
+            ? 'Payment was verified, fixes were committed, and the published page passed its supported checks.'
+            : result.job.status === 'applied'
+              ? 'Payment was verified and a commit was created. Live-page verification is still pending; review the job details before considering it complete.'
+              : 'Payment was verified but the fix job status is ' + result.job.status + '. No successful completion is claimed.', result.job.status === 'completed' ? 'success' : 'error');
+          return;
+        }
+        if (result.status === 'paid') setStatus('SafePay payment verified by the backend. The authorized fix job is processing; keep this page open to see verification.');
+        else setStatus('Checking the payment directly with the backend. A return from Safepay is not proof of payment.');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    setStatus('The fix job is still processing. Reopen this audit to check the backend job status; no unverified success is displayed.', 'error');
+  }
+  async function handleQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const fixState = params.get('fixIssues');
+    const auditId = params.get('auditId');
+    if (fixState === 'error') setStatus('GitHub connection did not complete: ' + (params.get('reason') || 'connection_failed') + '. No payment was started.', 'error');
+    if (fixState === 'connected' && auditId) {
+      if (!audit || audit.auditId !== auditId) return;
+      try {
+        await loadRepositories(auditId);
+        history.replaceState({}, '', window.location.pathname);
+      } catch (error) {
+        setStatus(errorMessage(error.message), 'error');
+        history.replaceState({}, '', window.location.pathname);
+      }
+    }
+    if (fixState === 'return' && params.get('fixOrderId')) {
+      if (!audit || (auditId && audit.auditId !== auditId)) return;
+      try { await pollFixOrder(params.get('fixOrderId')); }
+      catch (error) { setStatus(errorMessage(error.message), 'error'); }
+      history.replaceState({}, '', window.location.pathname);
+    }
+    if (fixState === 'cancel') {
+      setStatus('Checkout was cancelled. No website changes were applied.', 'error');
+      history.replaceState({}, '', window.location.pathname);
+    }
+  }
+  async function refreshAvailability() {
+    try {
+      const payload = await api('/api/fix-issues/config');
+      available = payload.available === true;
+      if (!available) setStatus(payload.reason || 'Fix Issues is temporarily unavailable. No charge can be started.', 'error');
+      if (audit && audit.completeEvidence && audit.mode !== 'sample' && available) start.disabled = false;
+      else start.disabled = true;
+    } catch (error) {
+      available = false;
+      start.disabled = true;
+      setStatus('The fix service could not confirm configuration. No payment or site write is available.', 'error');
+    }
+  }
+  start?.addEventListener('click', async () => {
+    if (busy || !available || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
+    busy = true; start.disabled = true;
+    try {
+      const payload = await api('/api/fix-issues/connect/start', 'POST', { auditId: audit.auditId });
+      const target = new URL(payload.url);
+      if (target.protocol !== 'https:' || target.hostname !== 'github.com' || !target.pathname.includes('/installations/new')) {
+        throw new Error('github_install_url_invalid');
+      }
+      setStatus('Opening GitHub App installation. Select only repositories that own this audited domain.');
+      window.location.assign(target.href);
+    } catch (error) {
+      setStatus(errorMessage(error.message), 'error');
+      busy = false; start.disabled = !available;
+    }
+  });
+  planButton?.addEventListener('click', async () => {
+    if (!audit || !repoSelect.value || busy) return;
+    const repository = repositories.find((item) => String(item.repositoryId) === repoSelect.value);
+    if (!repository) return;
+    busy = true; planButton.disabled = true;
+    try {
+      const connected = await api('/api/fix-issues/connect/repo', 'POST', { auditId: audit.auditId, repositoryId: Number(repoSelect.value) });
+      const payload = await api('/api/fix-issues/plan', 'POST', { auditId: audit.auditId });
+      payload.repository = connected.connection.repository;
+      renderPlan(payload);
+    } catch (error) {
+      setStatus(errorMessage(error.message), 'error');
+    } finally { busy = false; planButton.disabled = repositories.length === 0; }
+  });
+  accept?.addEventListener('change', () => {
+    payButton.disabled = !(plan && plan.canCheckout && accept.checked && plan.changes && plan.changes.length);
+  });
+  payButton?.addEventListener('click', async () => {
+    if (busy || !audit || !plan || !accept.checked || !plan.canCheckout) return;
+    busy = true; payButton.disabled = true;
+    try {
+      const order = await api('/api/fix-issues/checkout', 'POST', {
+        auditId: audit.auditId, planId: plan.planId, acceptedPlan: true
+      });
+      const target = new URL(order.checkoutUrl);
+      if (target.protocol !== 'https:' || !(target.hostname === 'getsafepay.com' || target.hostname.endsWith('.getsafepay.com'))) {
+        throw new Error('safepay_checkout_host_invalid');
+      }
+      setStatus('SafePay checkout created for US$5. The report/voucher entitlement is unchanged. The site fix will begin only after backend payment verification.');
+      window.location.assign(target.href);
+    } catch (error) {
+      setStatus(errorMessage(error.message), 'error');
+      payButton.disabled = !accept.checked;
+      busy = false;
+    }
+  });
+  rollbackButton?.addEventListener('click', async () => {
+    if (!currentJob || !currentJob.rollbackAvailable || busy) return;
+    if (!window.confirm('Roll back this exact commit only if the repository is still unchanged?')) return;
+    busy = true; rollbackButton.disabled = true;
+    try {
+      const result = await api('/api/fix-issues/jobs/' + encodeURIComponent(currentJob.id) + '/rollback', 'POST', {});
+      setStatus('Rollback commit created: ' + result.rollbackCommitSha, 'success');
+      await api('/api/fix-issues/jobs/' + encodeURIComponent(currentJob.id)).then((payload) => renderJob(payload.job));
+    } catch (error) {
+      setStatus(errorMessage(error.message), 'error');
+      rollbackButton.disabled = false;
+    } finally { busy = false; }
+  });
+  document.addEventListener('nexusnova:audit-report-ready', async (event) => {
+    showPanel(event.detail);
+    await refreshAvailability();
+    await handleQuery();
+  });
+  void refreshAvailability();
+  void handleQuery();
 })();
 </script>
 </body>
