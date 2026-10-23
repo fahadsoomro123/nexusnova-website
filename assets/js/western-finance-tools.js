@@ -40,13 +40,21 @@
       lower = upper;
       marginalRate = rate;
     }
+    const roundedTax = Math.round((tax + Number.EPSILON) * 100) / 100;
+    const effectiveRate = taxableIncome > 0 ? tax / taxableIncome : 0;
+
+    // Very large finite inputs can overflow when the tax is rounded to cents.
+    if (![tax, roundedTax, effectiveRate, effectiveRate * 100].every(Number.isFinite)) {
+      return { ok: false, error: 'This taxable income exceeds the supported calculation range. Enter a smaller amount.' };
+    }
+
     return {
       ok: true,
       taxableIncome,
       filingStatus,
-      tax: Math.round((tax + Number.EPSILON) * 100) / 100,
+      tax: roundedTax,
       marginalRate,
-      effectiveRate: taxableIncome > 0 ? tax / taxableIncome : 0
+      effectiveRate
     };
   }
 
