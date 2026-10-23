@@ -30,8 +30,8 @@ def normalize_shell_markup(markup):
 def footer_signature(source):
     footer = outer(source, "footer")
     patterns = (
-        r'<section\\b(?=[^>]*class=["\'][^"\']*\\bnn-footer-brand\\b[^"\']*["\'])[^>]*>[\\s\\S]*?</section\\s*>',
-        r'<div\\b(?=[^>]*class=["\'][^"\']*\\bnn-global-footer-bottom\\b[^"\']*["\'])[^>]*>[\\s\\S]*?</div\\s*>'
+        r'<section\b(?=[^>]*class=["\'][^"\']*\bnn-footer-brand\b[^"\']*["\'])[^>]*>[\s\S]*?</section\s*>',
+        r'<div\b(?=[^>]*class=["\'][^"\']*\bnn-global-footer-bottom\b[^"\']*["\'])[^>]*>[\s\S]*?</div\s*>'
     )
     parts = []
     for pattern in patterns:
