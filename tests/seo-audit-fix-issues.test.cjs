@@ -23,9 +23,9 @@ test('Fix Issues clearly prices US$5 and displays an explicit consent gate befor
   assert.match(html, /id="fixIssuesAccept" type="checkbox"/);
   assert.match(html, /accept\.checked && plan\.changes/);
   assert.match(html, /acceptedPlan: true/);
-  assert.match(html, /Contents permission to Read and write/);
-  assert.match(html, /root CNAME file must contain/);
-  assert.match(html, /No payment has been taken/);
+  assert.match(html, /Connect website automatically/);
+  assert.match(html, /fixIssuesConsentText/);
+  assert.match(html, /No payment was taken/);
 });
 
 test('Fix Issues can verify an existing GitHub installation without a repeated install redirect', () => {
@@ -34,6 +34,16 @@ test('Fix Issues can verify an existing GitHub installation without a repeated i
   assert.match(html, /\/api\/fix-issues\/connect\/existing/);
   assert.match(html, /matching website domain/);
   assert.match(html, /github_installation_verification_failed/);
+});
+test('Fix Issues offers a platform-guided path with an exact preview and paid-only Fix Kit', () => {
+  assert.match(html, /id="fixIssuesGuidedBtn"/);
+  assert.match(html, /My site uses WordPress, Shopify, Wix, or another platform/);
+  assert.match(html, /\/api\/fix-issues\/plan\/guided/);
+  assert.match(html, /\/manual-package/);
+  assert.match(html, /deliveryMode === 'manual'/);
+  assert.match(html, /Download my Fix Kit/);
+  assert.match(html, /does not (edit|change) your live site automatically/i);
+  assert.match(html, /platform-specific steps/i);
 });
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
