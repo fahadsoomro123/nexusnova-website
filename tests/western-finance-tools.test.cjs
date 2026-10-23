@@ -58,6 +58,22 @@ test('stock calculator includes order fees and dividends in its trade-level retu
   assert.equal(result.breakEvenPrice, 99);
 });
 
+test('stock calculator rejects finite inputs whose arithmetic overflows', () => {
+  const result = computeWesternFinance('stock-profit', {
+    buyPrice: 1e308, sellPrice: 1e308, shares: 2, buyFees: 0, sellFees: 0, dividends: 0
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /supported calculation range/i);
+});
+
+test('stock calculator rejects totals that overflow cent rounding', () => {
+  const result = computeWesternFinance('stock-profit', {
+    buyPrice: 1e307, sellPrice: 1e307, shares: 10, buyFees: 0, sellFees: 0, dividends: 0
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.error, /supported calculation range/i);
+});
+
 test('crypto calculator includes percentage fees and validates fee rates', () => {
   const result = computeWesternFinance('crypto-profit', { entryPrice: 100, exitPrice: 125, quantity: 2, buyFeePct: 0.1, sellFeePct: 0.1 });
   assert.equal(result.ok, true);
