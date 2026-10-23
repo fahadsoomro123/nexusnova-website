@@ -2540,22 +2540,31 @@
     appliedList.replaceChildren();
     const verification = job.verification || {};
     const isManual = verification.deliveryMode === 'manual';
-    const manualReady = isManual && job.status === 'completed';
-    if (downloadButton) downloadButton.hidden = !manualReady;
+    const isFallback = verification.deliveryMode === 'manual_fallback';
+    const isFixKit = isManual || isFallback;
+    const manualReady = isFixKit && job.status === 'completed';
+    if (downloadButton) {
+      downloadButton.hidden = !manualReady;
+      downloadButton.textContent = isFallback
+        ? (verification.contentAvailable === false ? 'Download recovery instructions' : 'Download fallback Fix Kit')
+        : 'Download my Fix Kit';
+    }
     const descriptions = {
       awaiting_payment: 'Waiting for the backend to confirm your $5.00 USD payment. A checkout redirect alone is not confirmation.',
       queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
       running: 'Payment verified. The service is checking the repository version and applying the listed edits.',
       applied: 'A commit was created, but the live website has not confirmed publication yet.',
-      completed: isManual
-        ? 'Payment verified. Your Fix Kit is ready to download. The instructions still need to be applied to your website; no live change is claimed.'
-        : 'The listed changes were committed and the live page checks confirmed the supported fixes.',
+      completed: isFallback
+        ? (verification.summary || 'Payment verified. Automatic publishing was not confirmed; your fallback instructions and exact SEO values are ready. No live change is claimed.')
+        : isManual
+          ? 'Payment verified. Your Fix Kit is ready to download. The instructions still need to be applied to your website; no live change is claimed.'
+          : 'The listed changes were committed and the live page checks confirmed the supported fixes.',
       failed: 'The fix job failed safely. No success is claimed.',
       conflict: 'The repository changed concurrently. The service refused to overwrite newer work.',
       rolled_back: 'The fix commit was rolled back with a new repository commit.'
     };
     const state = job.status || 'unknown';
-    text(jobHeading, manualReady ? 'Your Fix Kit is ready' : state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
+    text(jobHeading, manualReady ? (isFallback ? 'Your fallback Fix Kit is ready' : 'Your Fix Kit is ready') : state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
     text(jobSummary, descriptions[state] || 'Current fix job status: ' + state);
     if (job.commitSha) {
       const li = document.createElement('li');
@@ -2615,11 +2624,17 @@
         }
         if (result.status === 'paid' && result.job && ['completed', 'applied', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
           renderJob(result.job);
-          setStatus(result.job.status === 'completed'
-            ? 'Payment was verified, fixes were committed, and the published page passed its supported checks.'
-            : result.job.status === 'applied'
-              ? 'Payment was verified and a commit was created. Live-page verification is still pending; review the job details before considering it complete.'
-              : 'Payment was verified but the fix job status is ' + result.job.status + '. No successful completion is claimed.', result.job.status === 'completed' ? 'success' : 'error');
+          const resultVerification = result.job.verification || {};
+          setStatus(result.job.status === 'completed' && resultVerification.deliveryMode === 'manual_fallback'
+            ? (resultVerification.summary || 'Payment was verified. Automatic publishing was not confirmed; a fallback Fix Kit is ready. No live change is claimed.')
+            : result.job.status === 'completed' && resultVerification.deliveryMode === 'manual'
+              ? 'Payment was verified and your Fix Kit is ready to download. It still needs to be applied to your live site.'
+              : result.job.status === 'completed'
+                ? 'Payment was verified, fixes were committed, and the published page passed its supported checks.'
+                : result.job.status === 'applied'
+                  ? 'Payment was verified and a commit was created. Live-page verification is still pending; review the job details before considering it complete.'
+                  : 'Payment was verified but the fix job status is ' + result.job.status + '. No successful completion is claimed.',
+            result.job.status === 'completed' ? 'success' : 'error');
           return;
         }
         if (result.status === 'paid') setStatus('SafePay payment verified by the backend. The authorized fix job is processing; keep this page open to see verification.');
@@ -2790,22 +2805,53 @@
     }
   });
   downloadButton?.addEventListener('click', async () => {
-    if (!currentJob || currentJob.verification?.deliveryMode !== 'manual' || currentJob.status !== 'completed' || busy) return;
+    if (!currentJob || !['manual', 'manual_fallback'].includes(currentJob.verification?.deliveryMode) || currentJob.status !== 'completed' || busy) return;
     busy = true;
     downloadButton.disabled = true;
     try {
       const payload = await api('/api/fix-issues/jobs/' + encodeURIComponent(currentJob.id) + '/manual-package');
-      if (!payload.ok || typeof payload.content !== 'string') throw new Error(payload.error || 'manual_package_not_ready');
-      const blob = new Blob([payload.content], { type: 'text/html;charset=utf-8' });
+      if (!payload.ok) throw new Error(payload.error || 'manual_package_not_ready');
+      let content, mimeType, fallbackDownload = payload.deliveryMode === 'manual_fallback';
+      if (typeof payload.content === 'string') {
+        content = payload.content;
+        mimeType = 'text/html;charset=utf-8';
+      } else if (fallbackDownload && Array.isArray(payload.instructions)) {
+        const values = payload.values || {};
+        content = [
+          'NexusNova SEO Fix Recovery',
+          'Website: ' + (audit?.url || ''),
+          'Platform: ' + (payload.platformName || payload.platform || 'Website platform'),
+          '',
+          payload.summary || 'Automatic publishing was not confirmed. No live change is claimed.',
+          '',
+          'EXACT SEO VALUES',
+          ...Object.entries(values).map(([key, value]) => key + ': ' + value),
+          '',
+          'NEXT STEPS',
+          ...payload.instructions.map((step, index) => (index + 1) + '. ' + step),
+          '',
+          'VERIFICATION',
+          ...(payload.verification || []).map((step, index) => (index + 1) + '. ' + step),
+          '',
+          'CHANGES PREPARED',
+          ...(payload.changes || []).map((item) => '- ' + (item.label || item.key) + ' (' + (item.path || '') + ')')
+        ].join('\n');
+        mimeType = 'text/plain;charset=utf-8';
+      } else {
+        throw new Error(payload.error || 'manual_package_not_ready');
+      }
+      const blob = new Blob([content], { type: mimeType });
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = objectUrl;
-      link.download = payload.fileName || 'nexusnova-fix-kit.html';
+      link.download = payload.fileName || (fallbackDownload ? 'nexusnova-fix-recovery.txt' : 'nexusnova-fix-kit.html');
       document.body.append(link);
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
-      setStatus('Fix Kit downloaded. Follow the platform-specific steps shown above; the live page has not been changed automatically.', 'success');
+      setStatus(fallbackDownload
+        ? 'Fallback Fix Kit downloaded. Automatic publishing was not confirmed; follow the recovery steps and verify the live page. No live change is claimed.'
+        : 'Fix Kit downloaded. Follow the platform-specific steps shown above; the live page has not been changed automatically.', 'success');
     } catch (error) {
       setStatus(errorMessage(error.message), 'error');
     } finally {
