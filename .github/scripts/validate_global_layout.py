@@ -48,7 +48,7 @@ for page in html_files:
     if rel == "seo-audit-studio.html":
         owner_entry = '<a href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>'
         if page_footer.count(owner_entry) == 1:
-            page_footer = page_footer.replace("\\n" + owner_entry, "", 1)
+            page_footer = page_footer.replace("\n" + owner_entry, "", 1)
     if page_footer != expected_footer:
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
