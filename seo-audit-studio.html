@@ -2328,6 +2328,7 @@
   const panel = q('fixIssuesPanel');
   if (!panel) return;
   const start = q('fixIssuesStartBtn');
+  const guidedButton = q('fixIssuesGuidedBtn');
   const existingInstallationId = q('fixIssuesInstallationId');
   const existingConnectButton = q('fixIssuesExistingConnectBtn');
   const status = q('fixIssuesStatus');
@@ -2339,12 +2340,15 @@
   const changeList = q('fixIssuesChangeList');
   const notes = q('fixIssuesPlanNotes');
   const accept = q('fixIssuesAccept');
+  const consentText = q('fixIssuesConsentText');
+  const planSafetyText = q('fixIssuesPlanSafetyText');
   const payButton = q('fixIssuesPayBtn');
   const jobPanel = q('fixIssuesJob');
   const jobHeading = q('fixIssuesJobHeading');
   const jobSummary = q('fixIssuesJobSummary');
   const appliedList = q('fixIssuesAppliedList');
   const rollbackButton = q('fixIssuesRollbackBtn');
+  const downloadButton = q('fixIssuesDownloadBtn');
   let available = false;
   let audit = null;
   let plan = null;
@@ -2358,6 +2362,7 @@
       existingConnectButton.disabled = busy || !available || !audit ||
         !audit.completeEvidence || audit.mode === "sample" || !validId;
     }
+    if (guidedButton) guidedButton.disabled = busy || !available || !audit || !audit.completeEvidence || audit.mode === "sample";
   }
   const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
   function setStatus(message, tone) {
@@ -2374,6 +2379,7 @@
       audit_not_found: 'This audit expired or is no longer available. Run a fresh audit.',
       audit_evidence_incomplete: 'Fix Issues is disabled because this audit is missing required source measurements.',
       github_installation_required: 'Install the NexusNova GitHub App with repository contents write permission, then return here.',
+      github_multiple_installations_for_site: 'More than one GitHub connection can publish this website. Use the guided Fix Kit option or ask support to help choose safely.',
       github_installation_invalid: 'Enter the numeric installation ID shown in the GitHub settings URL.',
       github_installation_verification_failed: 'GitHub could not verify that installation. Check the ID and that the NexusNova app is installed.',
       github_repository_not_connected: 'Choose and connect the verified repository for this website first.',
@@ -2475,9 +2481,12 @@
     planPanel.hidden = false;
     changeList.replaceChildren();
     const changes = Array.isArray(payload.changes) ? payload.changes : [];
+    const isManual = payload.deliveryMode === 'manual';
     planSummary.textContent = changes.length
-      ? changes.length + ' supported change' + (changes.length === 1 ? '' : 's') + ' in ' + payload.filePath + ' (' + payload.repository + ').'
-      : 'No supported automatic changes were detected for this page.';
+      ? changes.length + ' supported fix' + (changes.length === 1 ? '' : 'es') +
+        (isManual ? ' for ' + (payload.platformName || 'your website') + '. A download and exact setup steps will be provided after payment.'
+                  : ' in ' + payload.filePath + ' (' + payload.repository + ').')
+      : 'No supported fix matched the audited page. No charge will be started.';
     for (const item of changes) {
       const li = document.createElement('li');
       const label = document.createElement('strong');
@@ -2487,32 +2496,66 @@
       li.append(label, pathNode);
       changeList.append(li);
     }
+    if (isManual) {
+      for (const [index, step] of (payload.instructions || []).entries()) {
+        const li = document.createElement('li');
+        const label = document.createElement('strong');
+        label.textContent = 'Step ' + (index + 1) + ': ';
+        const value = document.createElement('span');
+        value.textContent = step;
+        li.append(label, value);
+        changeList.append(li);
+      }
+      for (const [key, value] of Object.entries(payload.values || {})) {
+        const li = document.createElement('li');
+        const label = document.createElement('strong');
+        label.textContent = ({ title: 'SEO title', metaDescription: 'Meta description', canonicalUrl: 'Canonical URL', viewport: 'Viewport setting' })[key] || key;
+        const code = document.createElement('code');
+        code.textContent = value;
+        li.append(label, code);
+        changeList.append(li);
+      }
+    }
     text(notes, (payload.notes || []).join(' '));
+    if (consentText) consentText.textContent = isManual
+      ? 'I reviewed these exact changes and authorize the one-time $5.00 USD payment for my Fix Kit, which includes a corrected HTML file and platform-specific instructions. It will not edit the live site automatically.'
+      : 'I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.';
+    if (planSafetyText) planSafetyText.textContent = isManual
+      ? 'This guided package does not change your live site automatically. It provides the corrected HTML and exact platform-specific steps. Follow the steps to publish, then verify the page.'
+      : 'The direct-publish route changes only the listed HTML file, checks the repository version again before writing, and verifies the published page.';
+    payButton.textContent = isManual ? 'Pay $5.00 USD and get Fix Kit' : 'Pay $5.00 USD and apply fixes';
     accept.checked = false;
     payButton.disabled = changes.length === 0 || !payload.canCheckout;
     if (changes.length) {
-      setStatus('Review the listed edits. SafePay is requested only after Aap explicitly authorize these exact changes.', 'success');
+      setStatus(isManual
+        ? 'Review the exact edits and steps for ' + (payload.platformName || 'your platform') + '. Payment is requested only after you approve this Fix Kit.'
+        : 'Review the listed edits. SafePay is requested only after you explicitly authorize these exact changes.', 'success');
     } else {
-      setStatus('No safe automated fixes match this report. No charge was created.', 'error');
+      setStatus('No safe fixes matched this page. No charge was created.', 'error');
     }
-  }
-  function renderJob(job) {
+  }  function renderJob(job) {
     currentJob = job;
     if (!jobPanel) return;
     jobPanel.hidden = false;
     appliedList.replaceChildren();
+    const verification = job.verification || {};
+    const isManual = verification.deliveryMode === 'manual';
+    const manualReady = isManual && job.status === 'completed';
+    if (downloadButton) downloadButton.hidden = !manualReady;
     const descriptions = {
       awaiting_payment: 'Waiting for the backend to confirm your $5.00 USD payment. A checkout redirect alone is not confirmation.',
       queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
-      running: 'Verified payment received. The service is checking the repository version and applying the listed edits.',
-      applied: 'A commit was created, but the live website has not confirmed publication yet. Do not treat this as fully verified.',
-      completed: 'The listed changes were committed and the live page checks confirmed the supported fixes.',
-      failed: 'The fix job failed safely. See the status above; no success is claimed.',
+      running: 'Payment verified. The service is checking the repository version and applying the listed edits.',
+      applied: 'A commit was created, but the live website has not confirmed publication yet.',
+      completed: isManual
+        ? 'Payment verified. Your Fix Kit is ready to download. The instructions still need to be applied to your website; no live change is claimed.'
+        : 'The listed changes were committed and the live page checks confirmed the supported fixes.',
+      failed: 'The fix job failed safely. No success is claimed.',
       conflict: 'The repository changed concurrently. The service refused to overwrite newer work.',
       rolled_back: 'The fix commit was rolled back with a new repository commit.'
     };
     const state = job.status || 'unknown';
-    text(jobHeading, state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
+    text(jobHeading, manualReady ? 'Your Fix Kit is ready' : state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
     text(jobSummary, descriptions[state] || 'Current fix job status: ' + state);
     if (job.commitSha) {
       const li = document.createElement('li');
@@ -2532,14 +2575,31 @@
       li.append(strong, code);
       appliedList.append(li);
     }
+    if (manualReady) {
+      const info = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = (verification.platformName || 'Your platform') + ' steps: ';
+      const span = document.createElement('span');
+      span.textContent = (verification.instructions || []).join(' ');
+      info.append(strong, span);
+      appliedList.append(info);
+      for (const [key, value] of Object.entries(verification.values || {})) {
+        const li = document.createElement('li');
+        const strongValue = document.createElement('strong');
+        strongValue.textContent = key + ': ';
+        const code = document.createElement('code');
+        code.textContent = value;
+        li.append(strongValue, code);
+        appliedList.append(li);
+      }
+    }
     rollbackButton.disabled = !job.rollbackAvailable;
-  }
-  async function loadRepositories(auditId) {
+  }  async function loadRepositories(auditId) {
     const payload = await api('/api/fix-issues/repos?auditId=' + encodeURIComponent(auditId));
     renderRepositories(payload.repositories);
     if (!payload.repositories || !payload.repositories.length) {
       const host = new URL(audit.url).hostname;
-      setStatus('No eligible repository was found for ' + host + '. In the GitHub App installation settings, select the repository that serves this domain and set Contents permission to Read and write. Its Homepage URL must match ' + host + ' or its root CNAME file must contain ' + host + '. Refresh this audit after saving changes. No payment has been taken.', 'error');
+      setStatus('We could not safely verify a writable repository for ' + host + '. No payment was taken. Use the guided Fix Kit option below for platform-specific steps instead of changing advanced GitHub settings.', 'error');
     } else {
       setStatus('Choose the verified repository for ' + new URL(audit.url).hostname + '. A read/write action will not happen until you review and accept a plan.', 'success');
     }
