@@ -53,6 +53,19 @@ test('Fix Issues offers a platform-guided path with an exact preview and paid-on
   assert.match(html, /does not (edit|change) your live site automatically/i);
   assert.match(html, /platform-specific steps/i);
 });
+test('paid auto-publish failure exposes a fallback download without claiming live fixes', () => {
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+  const fixController = scripts.at(-1);
+  assert.ok(fixController.includes("!['manual', 'manual_fallback'].includes"));
+  assert.match(fixController, /Download fallback Fix Kit/);
+  assert.match(fixController, /Download recovery instructions/);
+  assert.match(fixController, /typeof payload\.content === 'string'/);
+  assert.match(fixController, /EXACT SEO VALUES/);
+  assert.match(fixController, /No live change is claimed/);
+  assert.ok(fixController.includes("verification.deliveryMode === 'manual_fallback'"));
+  assert.ok(fixController.includes("!['manual', 'manual_fallback'].includes"));
+});
+
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   const fixController = scripts.at(-1);
