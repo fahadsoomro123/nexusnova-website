@@ -2350,6 +2350,7 @@
   const rollbackButton = q('fixIssuesRollbackBtn');
   const downloadButton = q('fixIssuesDownloadBtn');
   let available = false;
+  let guidanceAvailable = false;
   let audit = null;
   let plan = null;
   let repositories = [];
@@ -2362,7 +2363,7 @@
       existingConnectButton.disabled = busy || !available || !audit ||
         !audit.completeEvidence || audit.mode === "sample" || !validId;
     }
-    if (guidedButton) guidedButton.disabled = busy || !available || !audit || !audit.completeEvidence || audit.mode === "sample";
+    if (guidedButton) guidedButton.disabled = busy || !guidanceAvailable || !audit || !audit.completeEvidence || audit.mode === "sample";
   }
   const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
   function setStatus(message, tone) {
@@ -2456,10 +2457,12 @@
     }
     if (available) {
       start.disabled = busy;
-      setStatus('Audit evidence is complete. Connect the GitHub repository that owns this domain to review the exact safe changes before paying.');
+      setStatus('Automatic publishing is available for supported GitHub fixes. Free platform guidance remains available below.');
     } else {
-      setStatus('The Fix Issues flow is fail-closed until the secure GitHub App write connection and SafePay are configured. No charge or website change can occur yet.', 'error');
+      start.disabled = true;
+      setStatus('Automatic publishing is not ready because the GitHub write connection or payment setup is unavailable. You can still use free platform guidance below.', 'error');
     }
+    syncExistingConnectButton();
   }
   function renderRepositories(list) {
     repositories = Array.isArray(list) ? list : [];
@@ -2693,15 +2696,17 @@
     try {
       const payload = await api('/api/fix-issues/config');
       available = payload.available === true;
-      if (!available) setStatus(payload.reason || 'Fix Issues is temporarily unavailable. No charge can be started.', 'error');
+      guidanceAvailable = payload.guidanceAvailable === true;
+      if (!available) setStatus(payload.reason || 'Automatic publishing is temporarily unavailable. Free guidance may still be used.', 'error');
       if (audit && audit.completeEvidence && audit.mode !== 'sample' && available) start.disabled = false;
       else start.disabled = true;
       syncExistingConnectButton();
     } catch (error) {
       available = false;
+      guidanceAvailable = false;
       start.disabled = true;
       syncExistingConnectButton();
-      setStatus('The fix service could not confirm configuration. No payment or site write is available.', 'error');
+      setStatus('The fix service could not confirm configuration. No payment or site write is available until it responds.', 'error');
     }
   }
   start?.addEventListener('click', async () => {
@@ -2747,12 +2752,12 @@
     }
   });
   guidedButton?.addEventListener('click', async () => {
-    if (busy || !available || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
+    if (busy || !guidanceAvailable || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
     busy = true;
-    start.disabled = true;
+    start.disabled = !available;
     syncExistingConnectButton();
     try {
-      setStatus('Checking your public page and preparing the exact platform-specific steps. No payment is started yet.');
+      setStatus('Checking your public page and preparing the exact platform-specific steps. This guidance is free; no payment is started.');
       const payload = await api('/api/fix-issues/plan/guided', 'POST', { auditId: audit.auditId });
       renderPlan(payload);
     } catch (error) {
