@@ -20,7 +20,7 @@ test('voucher is issued only by the active backend campaign and public copy stay
   assert.match(home, /id="nnAuditClaimPanel"/);
   assert.match(home, /id="nnAuditReadyPost"/);
   assert.match(home, /id="nnAuditReadyPostCount"/);
-  assert.ok(launchJs.includes('Your digital world, made simpler.'));
+  assert.ok(launchJs.includes('One hub. More done.'));
   assert.ok(launchJs.includes('NexusNova Tools brings useful online tools, guides and digital resources together in one place.'));
   assert.ok(launchJs.includes('function countXWeightedCharacters'));
   assert.ok(launchJs.includes('xLength>250'));
