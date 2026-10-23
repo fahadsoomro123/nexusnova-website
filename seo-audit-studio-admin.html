@@ -131,7 +131,7 @@
     </section>
 
     <section class="panel">
-      <div class="row"><div><h2>Audit history and private access</h2><p>Open any unexpired report with owner authentication, or unlock it for its existing session using a private server-side entitlement.</p></div></div>
+      <div class="row"><div><h2>Audit history and private access</h2><p>Open reports, prepare a safe Fix Kit for an eligible report, or remove an entry from this history list. Removing an entry does not delete its report, payment, or entitlement records.</p></div></div>
       <div id="auditHistory" class="list"><div class="notice">No history loaded.</div></div>
     </section>
 
@@ -329,6 +329,66 @@
       item.append(head,details,actions);root.append(item);
     });
   }
+  function ownerFixKitText(kit){
+    const changes=Array.isArray(kit.changes)?kit.changes:[];
+    const values=kit.values&&typeof kit.values==='object'?kit.values:{};
+    return [
+      'NEXUSNOVA OWNER CONSOLE FIX KIT',
+      'URL: '+(kit.url||'Not available'),
+      'Platform: '+(kit.platformName||kit.platform||'Not detected'),
+      'Generated: '+(kit.generatedAt||new Date().toISOString()),
+      '',
+      kit.summary||'No summary supplied.',
+      '',
+      'PROPOSED CHANGES',
+      ...(changes.length?changes.map((change,index)=>(index+1)+'. '+(change.label||change.title||change.key||'Change')+(change.detail?' — '+change.detail:'')):['No safe deterministic fix was matched.']),
+      '',
+      'EXACT SEO VALUES',
+      ...(Object.keys(values).length?Object.entries(values).map(([key,value])=>key+': '+String(value)):['No specific SEO values supplied.']),
+      '',
+      'PLATFORM INSTRUCTIONS',
+      ...(Array.isArray(kit.instructions)?kit.instructions:[]),
+      '',
+      'VERIFICATION',
+      ...(Array.isArray(kit.verification)?kit.verification:[]),
+      '',
+      'SAFETY: This package is a proposal only. It did not publish or change the live website.'
+    ].join('\n');
+  }
+  function downloadOwnerFixKit(kit){
+    const html=typeof kit.correctedHtml==='string'&&kit.correctedHtml.length>0;
+    const payload=html?kit.correctedHtml:ownerFixKitText(kit);
+    const blob=new Blob([payload],{type:html?'text/html;charset=utf-8':'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+    anchor.href=url;
+    anchor.download=html?(kit.fileName||'nexusnova-seo-fix.html'):(String(kit.fileName||'nexusnova-seo-fix.html').replace(/\.html$/i,'-instructions.txt'));
+    document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function renderOwnerFixKit(item,kit){
+    const panel=text('section','','report-section');
+    panel.style.marginTop='12px';
+    panel.append(text('h3','Fix Kit preview'));
+    panel.append(notice((kit.summary||'Fix Kit prepared.')+' Live website changes were not made.',kit.changes?.length?'good':''));
+    const changes=Array.isArray(kit.changes)?kit.changes:[];
+    if(changes.length){
+      const list=text('ol');
+      changes.forEach(change=>list.append(text('li',(change.label||change.title||change.key||'Proposed change')+(change.detail?' · '+change.detail:''))));
+      panel.append(list);
+    }else panel.append(text('p','No safe, deterministic fix matched this report and the current page. The download contains the exact values and verification guidance returned by the service.'));
+    if(Array.isArray(kit.notes)&&kit.notes.length){
+      const notes=text('ul');
+      kit.notes.forEach(note=>notes.append(text('li',note)));
+      panel.append(notes);
+    }
+    if(Array.isArray(kit.instructions)&&kit.instructions.length){
+      panel.append(text('h4','Platform steps'));
+      const steps=text('ol');
+      kit.instructions.forEach(step=>steps.append(text('li',step)));
+      panel.append(steps);
+    }
+    panel.append(button(typeof kit.correctedHtml==='string'?'Download corrected HTML proposal':'Download Fix Kit instructions',()=>downloadOwnerFixKit(kit),'primary'));
+    item.append(panel);
+  }
   function renderAuditHistory(){
     const root=$('auditHistory');root.replaceChildren();
     if(!state.audits.length){root.append(notice('No audit history.'));return;}
@@ -338,11 +398,32 @@
       head.append(left,text('span',a.audit_id.slice(0,8),'pill'));item.append(head);
       const actions=text('div','','actions');
       actions.append(button('View full report',()=>showFullReport(a.audit_id)));
+      actions.append(button('Prepare Fix Kit',async(event)=>{
+        const fixButton=event?.currentTarget;
+        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing Fix Kit…';}
+        try{
+          const kit=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/fix-kit',{method:'POST',body:'{}'});
+          renderOwnerFixKit(item,kit);
+          setGlobal(kit.summary||'Fix Kit prepared. No live website changes were made.','good');
+        }catch(error){
+          setGlobal(error.message||'Could not prepare a safe Fix Kit for this audit.','error');
+        }finally{
+          if(fixButton){fixButton.disabled=false;fixButton.textContent='Prepare Fix Kit';}
+        }
+      }));
       actions.append(button('Unlock for this session',async()=>{
         if(!confirm('Grant a permanent owner entitlement for this existing audit session until its audit expires?'))return;
         try{const r=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/unlock',{method:'POST',body:'{}'});setGlobal('Owner entitlement recorded for audit '+r.auditId+'.','good');}
         catch(e){setGlobal(e.message,'error');}
       }));
+      actions.append(button('Remove from history',async()=>{
+        if(!confirm('Remove this audit from the Owner Console history list? The underlying report, payment, and entitlement records will remain stored.'))return;
+        try{
+          await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/hide',{method:'POST',body:'{}'});
+          setGlobal('Audit removed from Owner Console history. The underlying records were retained.','good');
+          await refreshAll();
+        }catch(error){setGlobal(error.message||'Audit could not be removed from history.','error');}
+      },'danger'));
       root.append(item);item.append(actions);
     });
   }
