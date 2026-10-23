@@ -680,12 +680,12 @@
     <section id="fixIssuesPanel" class="fix-issues-panel panel" aria-labelledby="fixIssuesHeading" hidden>
       <div class="fix-issues-head">
         <h2 id="fixIssuesHeading">Fix Issues</h2>
-        <span class="fix-issues-price">US$5.00 one-time</span>
+        <span class="fix-issues-price">USD $5.00 · one-time</span>
       </div>
       <p class="fix-issues-copy">Review deterministic fixes for issues found in this audit, connect the repository that owns this website, and approve the exact changes before payment. Only listed changes are applied. Unsupported issues stay untouched.</p>
       <p id="fixIssuesStatus" class="fix-issues-status" role="status" aria-live="polite">Checking safe-fix availability.</p>
       <div class="fix-issues-controls">
-        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Fix Issues · US$5</button>
+        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Fix Issues · $5.00</button>
       </div>
       <div id="fixIssuesRepositoryTools" hidden>
         <label class="form-label" for="fixIssuesRepoSelect">Verified repository for this website</label>
@@ -703,11 +703,11 @@
         <p id="fixIssuesPlanNotes" class="fix-issues-notes"></p>
         <label class="fix-issues-consent">
           <input id="fixIssuesAccept" type="checkbox">
-          <span>I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my US$5 payment.</span>
+          <span>I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.</span>
         </label>
         <p class="fix-issues-danger">The fix service changes only the listed HTML file. It checks the repository version again before writing, verifies the published page, and refuses rollback if the file or branch has changed since its commit.</p>
         <div class="fix-issues-controls">
-          <button id="fixIssuesPayBtn" class="primary-btn" type="button" disabled>Pay US$5 and apply fixes</button>
+          <button id="fixIssuesPayBtn" class="primary-btn" type="button" disabled>Pay $5.00 USD and apply fixes</button>
         </div>
       </div>
       <div id="fixIssuesJob" class="fix-issues-plan" hidden>
@@ -2365,7 +2365,7 @@
       safe_fix_plan_unavailable: 'There are no supported fixes to buy for this report.',
       plan_acceptance_required: 'Review the proposed changes and tick the authorization box before paying.',
       checkout_failed: 'SafePay checkout could not be created. No changes were made.',
-      safepay_checkout_failed_safely: 'SafePay could not create the US$5 checkout. No changes were made.'
+      safepay_checkout_failed_safely: 'SafePay could not create the $5.00 USD checkout. No changes were made.'
     };
     return messages[code] || String(code || 'The fix service could not complete this request safely.');
   }
@@ -2437,7 +2437,7 @@
     repoSelect.replaceChildren();
     const placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = repositories.length ? 'Choose a repository' : 'No verified repository found';
+    placeholder.textContent = repositories.length ? 'Choose a repository' : 'No eligible repository found';
     repoSelect.append(placeholder);
     for (const repo of repositories) {
       const option = document.createElement('option');
@@ -2480,7 +2480,7 @@
     jobPanel.hidden = false;
     appliedList.replaceChildren();
     const descriptions = {
-      awaiting_payment: 'Waiting for the backend to confirm your US$5 payment. A checkout redirect alone is not confirmation.',
+      awaiting_payment: 'Waiting for the backend to confirm your $5.00 USD payment. A checkout redirect alone is not confirmation.',
       queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
       running: 'Verified payment received. The service is checking the repository version and applying the listed edits.',
       applied: 'A commit was created, but the live website has not confirmed publication yet. Do not treat this as fully verified.',
@@ -2516,7 +2516,8 @@
     const payload = await api('/api/fix-issues/repos?auditId=' + encodeURIComponent(auditId));
     renderRepositories(payload.repositories);
     if (!payload.repositories || !payload.repositories.length) {
-      setStatus('GitHub App is installed, but no writable repository was verified as owning this website domain. No payment is possible.', 'error');
+      const host = new URL(audit.url).hostname;
+      setStatus('No eligible repository was found for ' + host + '. In the GitHub App installation settings, select the repository that serves this domain and set Contents permission to Read and write. Its Homepage URL must match ' + host + ' or its root CNAME file must contain ' + host + '. Refresh this audit after saving changes. No payment has been taken.', 'error');
     } else {
       setStatus('Choose the verified repository for ' + new URL(audit.url).hostname + '. A read/write action will not happen until you review and accept a plan.', 'success');
     }
@@ -2629,7 +2630,7 @@
       if (target.protocol !== 'https:' || !(target.hostname === 'getsafepay.com' || target.hostname.endsWith('.getsafepay.com'))) {
         throw new Error('safepay_checkout_host_invalid');
       }
-      setStatus('SafePay checkout created for US$5. The report/voucher entitlement is unchanged. The site fix will begin only after backend payment verification.');
+      setStatus('SafePay checkout created for $5.00 USD. The report/voucher entitlement is unchanged. The site fix will begin only after backend payment verification.');
       window.location.assign(target.href);
     } catch (error) {
       setStatus(errorMessage(error.message), 'error');
