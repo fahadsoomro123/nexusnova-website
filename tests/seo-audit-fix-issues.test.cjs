@@ -23,6 +23,7 @@ test('Fix Issues clearly prices US$5 and displays an explicit consent gate befor
   assert.match(html, /id="fixIssuesAccept" type="checkbox"/);
   assert.match(html, /accept\.checked && plan\.changes/);
   assert.match(html, /acceptedPlan: true/);
+  assert.match(html, /changes.length === 0 \|\| !payload.canCheckout \|\| !accept.checked/);
   assert.match(html, /Connect website automatically/);
   assert.match(html, /fixIssuesConsentText/);
   assert.match(html, /No payment was taken/);
@@ -34,6 +35,13 @@ test('Fix Issues can verify an existing GitHub installation without a repeated i
   assert.match(html, /\/api\/fix-issues\/connect\/existing/);
   assert.match(html, /matching website domain/);
   assert.match(html, /github_installation_verification_failed/);
+});
+test('one-click connection previews the sole verified repository and never enables payment before consent', () => {
+  assert.match(html, /repositories\.length === 1/);
+  assert.match(html, /api\('\/api\/fix-issues\/connect\/repo'/);
+  assert.match(html, /api\('\/api\/fix-issues\/plan'/);
+  assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
+  assert.match(html, /preview ready below\. No payment has been taken/);
 });
 test('Fix Issues offers a platform-guided path with an exact preview and paid-only Fix Kit', () => {
   assert.match(html, /id="fixIssuesGuidedBtn"/);
