@@ -19,8 +19,8 @@ const shellPart = (source, tag) => {
 const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
 const footerSignature = source => {
   const footer = shellPart(source, 'footer');
-  const brand = (footer.match(/<section\\b(?=[^>]*class=["'][^"']*\\bnn-footer-brand\\b[^"']*["'])[^>]*>[\\s\\S]*?<\\/section\\s*>/i) || [''])[0];
-  const bottom = (footer.match(/<div\\b(?=[^>]*class=["'][^"']*\\bnn-global-footer-bottom\\b[^"']*["'])[^>]*>[\\s\\S]*?<\\/div\\s*>/i) || [''])[0];
+  const brand = (footer.match(/<section\b(?=[^>]*class=["'][^"']*\bnn-footer-brand\b[^"']*["'])[^>]*>[\s\S]*?<\/section\s*>/i) || [''])[0];
+  const bottom = (footer.match(/<div\b(?=[^>]*class=["'][^"']*\bnn-global-footer-bottom\b[^"']*["'])[^>]*>[\s\S]*?<\/div\s*>/i) || [''])[0];
   return normalizeShellMarkup(brand) + normalizeShellMarkup(bottom);
 };
 const labels = header => {
