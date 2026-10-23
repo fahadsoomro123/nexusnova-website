@@ -21,7 +21,7 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /Paste your social post URL/);
   assert.match(homepage, /id="nnAuditTermsAccepted"[^>]*type="checkbox"[^>]*required/);
   assert.match(homepage, /id="nnAuditCheckClaim"/);
-  assert.match(homepage, /checks the public post for a link to NexusNova Tools or SEO Audit Studio/);
+  assert.match(homepage, /A supported automatic check needs both the NexusNova link and your reference/);
   assert.match(homepage, /Verify post &amp; unlock voucher/);
   assert.match(homepage, /seo-audit-launch\.js\?v=20261023-ready-post-v3/);
 });
