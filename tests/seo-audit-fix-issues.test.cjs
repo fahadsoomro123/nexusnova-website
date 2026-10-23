@@ -18,11 +18,14 @@ test('Fix Issues is initially hidden and reveals only after a real audit-report-
 });
 
 test('Fix Issues clearly prices US$5 and displays an explicit consent gate before checkout', () => {
-  assert.match(html, /US\$5\.00 one-time/);
-  assert.match(html, /id="fixIssuesPayBtn"[^>]*disabled[^>]*>Pay US\$5 and apply fixes/);
+  assert.match(html, /USD \$5\.00.*one-time/);
+  assert.match(html, /id="fixIssuesPayBtn"[^>]*disabled[^>]*>Pay \$5\.00 USD and apply fixes/);
   assert.match(html, /id="fixIssuesAccept" type="checkbox"/);
   assert.match(html, /accept\.checked && plan\.changes/);
   assert.match(html, /acceptedPlan: true/);
+  assert.match(html, /Contents permission to Read and write/);
+  assert.match(html, /root CNAME file must contain/);
+  assert.match(html, /No payment has been taken/);
 });
 
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
