@@ -10,7 +10,7 @@ const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'u
 
 test('Owner Console audit history includes a working Fix Kit action connected to the owner API', () => {
   assert.match(admin, /button\('Prepare Fix Kit'/);
-  assert.match(admin, /\/api\/admin\/audits\/['"]\s*\+encodeURIComponent\(a\.audit_id\)\s*\+['"]\/fix-kit/);
+  assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(a\.audit_id\)\+'\/fix-kit/);
   assert.match(admin, /function renderOwnerFixKit\(item,kit\)/);
   assert.match(admin, /Download corrected HTML proposal/);
   assert.match(admin, /Download Fix Kit instructions/);
@@ -27,7 +27,7 @@ test('Owner Console Fix Kit download uses current report findings and platform r
 
 test('Owner Console can remove an audit from the history list without deleting the audit record', () => {
   assert.match(admin, /button\('Remove from history'/);
-  assert.match(admin, /\/api\/admin\/audits\/['"]\s*\+encodeURIComponent\(a\.audit_id\)\s*\+['"]\/hide/);
+  assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(a\.audit_id\)\+'\/hide/);
   assert.match(admin, /The underlying report, payment, and entitlement records will remain stored/);
   assert.match(admin, /history list/);
 });
