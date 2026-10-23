@@ -17,8 +17,8 @@ test('Fix Issues is initially hidden and reveals only after a real audit-report-
   assert.match(html, /panel\.hidden = false/);
 });
 
-test('Fix Issues clearly prices US$5 and displays an explicit consent gate before checkout', () => {
-  assert.match(html, /USD \$5\.00.*one-time/);
+test('Fix Issues reserves the US$5 checkout for direct automatic fixes and keeps a consent gate', () => {
+  assert.match(html, /US\$5.*direct auto-fixes only/);
   assert.match(html, /id="fixIssuesPayBtn"[^>]*disabled[^>]*>Pay \$5\.00 USD and apply fixes/);
   assert.match(html, /id="fixIssuesAccept" type="checkbox"/);
   assert.match(html, /accept\.checked && plan\.changes/);
@@ -43,14 +43,16 @@ test('one-click connection previews the sole verified repository and never enabl
   assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
   assert.match(html, /preview ready below\. No payment has been taken/);
 });
-test('Fix Issues offers a platform-guided path with an exact preview and paid-only Fix Kit', () => {
+test('Fix Issues offers a platform-guided path with an exact preview and no manual checkout', () => {
   assert.match(html, /id="fixIssuesGuidedBtn"/);
-  assert.match(html, /My site uses another platform/);
+  assert.match(html, /Other platforms · free guidance/);
   assert.match(html, /\/api\/fix-issues\/plan\/guided/);
   assert.match(html, /\/manual-package/);
   assert.match(html, /deliveryMode === 'manual'/);
   assert.match(html, /Download my Fix Kit/);
-  assert.match(html, /does not (edit|change) your live site automatically/i);
+  assert.match(html, /Automatic publishing is not supported for this platform yet/i);
+  assert.match(html, /payButton\.hidden = isManual \|\| !payload\.canCheckout/);
+  assert.match(html, /no payment was started/i);
   assert.match(html, /platform-specific steps/i);
 });
 test('paid auto-publish failure exposes a fallback download without claiming live fixes', () => {
@@ -95,7 +97,7 @@ test('Fix Issues browser controller does not hold GitHub installation credential
 });
 
 test('Guided fixes use a short, plain-language path for non-GitHub hosting', () => {
-  assert.match(html, /short Fix Kit with exact SEO values and 3 steps/i);
-  assert.match(html, /My site uses another platform/);
+  assert.match(html, /Other platforms receive free guidance only/i);
+  assert.match(html, /Other platforms · free guidance/);
   assert.match(html, /Auto-fix with GitHub/);
 });
