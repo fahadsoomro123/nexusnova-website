@@ -231,3 +231,17 @@ test('SEO Audit Studio public page keeps only essential copy and has no prefille
   assert.ok(!schema['@graph'].some(node => node['@type'] === 'FAQPage'), 'FAQ structured data must match removed visible FAQ');
   for (const copy of ['Unavailable checks stay unscored.', 'Free summary. Full report: $2.99 or valid voucher.', 'Unlocked only after server-side payment verification or a valid voucher.']) assert.ok(auditHtml.includes(copy), copy);
 });
+
+
+test('Owner Console scorecard uses accessible gauges only for measured scores and real check statuses', () => {
+  const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
+  assert.match(admin, /function reportGauge\\(label,value,note\\)/);
+  assert.match(admin, /document\\.createElementNS\\(namespace,'svg'\\)/);
+  assert.match(admin, /svg\\.setAttribute\\('aria-label',label\\+': '\\+normalized\\+' out of 100'\\)/);
+  assert.match(admin, /report\\.overallStatus==='measured'&&typeof report\\.overall==='number'/);
+  assert.match(admin, /reportGauge\\('Mobile performance',mobileScore/);
+  assert.match(admin, /reportGauge\\('Desktop performance',desktopScore/);
+  assert.match(admin, /const countDefs=\\[\\['Passing','pass'\\],\\['Warnings','warn'\\],\\['Failures','fail'\\],\\['Notices','info'\\],\\['Other \\/ unverified','other'\\]\\]/);
+  assert.match(admin, /Not measured/);
+  assert.match(admin, /Operational scorecard/);
+});
