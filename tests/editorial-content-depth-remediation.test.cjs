@@ -64,7 +64,10 @@ test('photo restoration guide cites primary documentation for resampling and gen
   assert.ok(jsonLd, 'Article structured data should be present');
   const article = JSON.parse(jsonLd[1]);
   assert.equal(article['@type'], 'Article');
-  assert.equal(article.dateModified, '2026-10-14');
+  const registry = JSON.parse(fs.readFileSync(path.join(root, 'articles.json'), 'utf8'));
+  const record = registry.items.find(item => item.url === 'https://nexusnovatools.com/articles/ai-photo-restoration-vs-enhancement.html');
+  assert.ok(record, 'Article should remain in the canonical article feed');
+  assert.equal(article.dateModified, record.modifiedAt);
 });
 
 
