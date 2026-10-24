@@ -748,6 +748,7 @@
           <p class="fix-issues-verification-note">This bonus performs a new scan of the original target. Findings count as resolved only when the matching check passes; missing or unmeasured checks remain unverified.</p>
           <div class="fix-issues-controls">
             <button id="fixIssuesVerificationBtn" class="primary-btn" type="button" hidden>Run one free verification audit</button>
+            <button id="fixIssuesVerificationOpenReportBtn" class="secondary-btn" type="button" hidden>Open full verification report</button>
           </div>
         </section>
       </div>
@@ -1814,6 +1815,30 @@
     el.measurement.textContent += ' · Full report unlocked for this session';
     closePaywall();
   };
+  document.addEventListener('nexusnova:open-verification-audit', async (event) => {
+    const targetId = String(event.detail?.auditId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(targetId)) return;
+    try {
+      const response = await apiFetch('/api/audits/' + encodeURIComponent(targetId) + '/preview', {headers:{Accept:'application/json'},cache:'no-store'});
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload || typeof payload.url !== 'string') throw new Error(payload.error || 'The verification report is not available.');
+      state.auditId = targetId;
+      state.report = payload;
+      state.fullReport = null;
+      state.paid = false;
+      state.promotionRedemptionId = null;
+      state.promotionOfferType = null;
+      state.promotionOfferValue = null;
+      el.url.value = payload.url;
+      renderReport(payload);
+      await unlockReport(targetId);
+      $('auditReportSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    } catch (error) {
+      el.error.textContent = error.message || 'The verification report could not be opened.';
+      el.error.style.display = 'block';
+      el.error.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  });
   const restoreLatestAudit = async () => {
     try {
       const response=await apiFetch('/api/audits/latest',{headers:{Accept:'application/json'},cache:'no-store'});
@@ -2374,6 +2399,7 @@
   const downloadButton = q('fixIssuesDownloadBtn');
   const verificationPanel = q('fixIssuesVerificationPanel');
   const verificationButton = q('fixIssuesVerificationBtn');
+  const verificationOpenReportButton = q('fixIssuesVerificationOpenReportBtn');
   const verificationSummary = q('fixIssuesVerificationSummary');
   const verificationCounts = q('fixIssuesVerificationCounts');
   const verificationResults = q('fixIssuesVerificationResults');
@@ -2402,6 +2428,11 @@
     verificationPanel.hidden = false;
     verificationButton.hidden = false;
     const state = String(result?.status || (result?.canRetry ? 'failed' : 'unknown')).toLowerCase();
+    if (verificationOpenReportButton) {
+      verificationOpenReportButton.hidden = state !== 'completed' || !result?.auditId;
+      verificationOpenReportButton.disabled = state !== 'completed' || !result?.auditId;
+    }
+    if (state === 'completed' && verificationPanel && result?.auditId) verificationPanel.dataset.auditId = result.auditId;
     verificationCounts.replaceChildren();
     verificationResults.replaceChildren();
     verificationCounts.hidden = true;
@@ -3035,7 +3066,12 @@
       busy = false;
       downloadButton.disabled = false;
     }
-  });  verificationButton?.addEventListener('click', async () => {
+  });  verificationOpenReportButton?.addEventListener('click', () => {
+    const auditId = String(verificationPanel?.dataset.auditId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(auditId)) return;
+    document.dispatchEvent(new CustomEvent('nexusnova:open-verification-audit', {detail:{auditId}}));
+  });
+  verificationButton?.addEventListener('click', async () => {
     if (!currentJob || currentJob.status !== 'completed' || currentJob.verification?.status !== 'verified' ||
         ['manual', 'manual_fallback'].includes(currentJob.verification?.deliveryMode) || busy || verificationComplete || verificationRunning) return;
     busy = true;
