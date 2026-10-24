@@ -231,3 +231,19 @@ test('SEO Audit Studio public page keeps only essential copy and has no prefille
   assert.ok(!schema['@graph'].some(node => node['@type'] === 'FAQPage'), 'FAQ structured data must match removed visible FAQ');
   for (const copy of ['Unavailable checks stay unscored.', 'Free summary. Full report: $2.99 or valid voucher.', 'Unlocked only after server-side payment verification or a valid voucher.']) assert.ok(auditHtml.includes(copy), copy);
 });
+
+
+test('Fix Issues offers the one-time complimentary audit only after live verification and renders results safely', () => {
+  const html = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
+  assert.ok(html.includes('id="fixIssuesVerificationPanel"'));
+  assert.ok(html.includes('id="fixIssuesVerificationBtn"'));
+  assert.ok(html.includes("job.status === 'completed' && !isFixKit && verification.status === 'verified'"));
+  assert.ok(html.includes("/verification-audit"));
+  assert.ok(html.includes("['resolved', 'Resolved checks']"));
+  assert.ok(html.includes("['remaining', 'Issues still present']"));
+  assert.ok(html.includes("['newlyDetected', 'New findings']"));
+  assert.ok(html.includes("['unverified', 'Could not be verified']"));
+  assert.ok(html.includes("li.textContent = String(item.category || 'Check') + ': ' + String(item.title || 'Untitled finding')"));
+  assert.ok(html.includes("Retry free verification audit"));
+  assert.ok(html.includes('the server prevents duplicate bonus audits'));
+});
