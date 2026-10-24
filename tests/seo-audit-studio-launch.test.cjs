@@ -235,13 +235,13 @@ test('SEO Audit Studio public page keeps only essential copy and has no prefille
 
 test('Owner Console scorecard uses accessible gauges only for measured scores and real check statuses', () => {
   const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
-  assert.match(admin, /function reportGauge\\(label,value,note\\)/);
-  assert.match(admin, /document\\.createElementNS\\(namespace,'svg'\\)/);
-  assert.match(admin, /svg\\.setAttribute\\('aria-label',label\\+': '\\+normalized\\+' out of 100'\\)/);
-  assert.match(admin, /report\\.overallStatus==='measured'&&typeof report\\.overall==='number'/);
-  assert.match(admin, /reportGauge\\('Mobile performance',mobileScore/);
-  assert.match(admin, /reportGauge\\('Desktop performance',desktopScore/);
-  assert.match(admin, /const countDefs=\\[\\['Passing','pass'\\],\\['Warnings','warn'\\],\\['Failures','fail'\\],\\['Notices','info'\\],\\['Other \\/ unverified','other'\\]\\]/);
-  assert.match(admin, /Not measured/);
-  assert.match(admin, /Operational scorecard/);
+  assert.ok(admin.includes('function reportGauge(label,value,note)'));
+  assert.ok(admin.includes("document.createElementNS(namespace,'svg')"));
+  assert.ok(admin.includes("svg.setAttribute('aria-label',label+': '+normalized+' out of 100')"));
+  assert.ok(admin.includes("report.overallStatus==='measured'&&typeof report.overall==='number'"));
+  assert.ok(admin.includes("reportGauge('Mobile performance',mobileScore"));
+  assert.ok(admin.includes("reportGauge('Desktop performance',desktopScore"));
+  assert.ok(admin.includes("const countDefs=[['Passing','pass'],['Warnings','warn'],['Failures','fail'],['Notices','info'],['Other / unverified','other']]"));
+  assert.ok(admin.includes('Not measured'));
+  assert.ok(admin.includes('Operational scorecard'));
 });
