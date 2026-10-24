@@ -32,6 +32,28 @@
     @media(max-width:700px){.report-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.report-metric-grid{grid-template-columns:1fr}.report-hero{padding:12px}.report-stat-value{font-size:19px}.report-category-head,.report-check-top{align-items:flex-start}}
     #console[hidden],#ownerApp[hidden]{display:none!important}.field-note{font-weight:500;color:#718096;font-size:9px}.inline{display:flex;align-items:center;gap:8px}.inline input{width:auto}.top-links{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:800}
     @media(max-width:700px){main{padding:20px 12px 44px}header{flex-direction:column}.panel{padding:13px}.grid,.three{grid-template-columns:1fr}.item-head{flex-direction:column}.top-links{gap:8px}}
+  
+    .report-visual-summary{display:grid;gap:10px}
+    .report-visual-gauges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+    .report-gauge-card{display:grid;justify-items:center;align-content:start;gap:6px;padding:12px 9px;border:1px solid #dbe3ee;border-radius:11px;background:linear-gradient(180deg,#fff,#fbfcff);min-width:0}
+    .report-gauge-title{font-size:10px;font-weight:850;color:#43536b;text-align:center;letter-spacing:.01em}
+    .report-gauge-visual{position:relative;display:grid;place-items:center;width:112px;max-width:100%;aspect-ratio:1}
+    .report-gauge-svg{display:block;width:100%;height:100%;overflow:visible}
+    .report-gauge-track{fill:none;stroke:#e6ebf3;stroke-width:8}
+    .report-gauge-arc{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .25s ease}
+    .report-gauge-good{stroke:#17834c}.report-gauge-watch{stroke:#bd7205}.report-gauge-poor{stroke:#be3434}
+    .report-gauge-number{position:absolute;font-size:23px;font-weight:900;line-height:1;color:#1e293b;letter-spacing:-.05em}
+    .report-gauge-value{font-size:10px;font-weight:850;color:#526177}
+    .report-gauge-empty{display:grid;place-items:center;width:112px;max-width:100%;aspect-ratio:1;border:1px dashed #cbd5e1;border-radius:50%;padding:12px;color:#64748b;font-size:11px;font-weight:800;text-align:center;background:#f8fafc}
+    .report-gauge-note{font-size:9px;line-height:1.4;color:#64748b;text-align:center;margin:0;max-width:30ch}
+    .report-finding-counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    .report-finding-count{min-width:0;padding:9px 10px;border:1px solid #dbe3ee;border-top:3px solid #94a3b8;border-radius:9px;background:#fff}
+    .report-finding-count strong{display:block;font-size:20px;line-height:1.2;font-weight:900;color:#1e293b}
+    .report-finding-count span{font-size:9px;line-height:1.35;font-weight:850;text-transform:uppercase;letter-spacing:.045em;color:#596981}
+    .report-finding-count.pass{border-top-color:#17834c}.report-finding-count.warn{border-top-color:#bd7205}.report-finding-count.fail{border-top-color:#be3434}.report-finding-count.info{border-top-color:#2563eb}.report-finding-count.other{border-top-color:#94a3b8}
+    .report-finding-count-note{font-size:9px;line-height:1.4;color:#64748b;margin:7px 0 0}
+    @media(max-width:820px){.report-visual-gauges{grid-template-columns:repeat(2,minmax(0,1fr))}.report-finding-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:460px){.report-visual-gauges{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.report-gauge-card{padding:10px 6px}.report-gauge-visual,.report-gauge-empty{width:96px}.report-finding-counts{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body>
@@ -645,6 +667,32 @@
     const safeTone=String(tone||'').toLowerCase().replace(/[^a-z0-9_-]/g,'');
     return reportElement('span',reportDisplayValue(label,'Not measured'),'report-badge'+(safeTone?' '+safeTone:''));
   }
+  function reportGauge(label,value,note){
+    const card=reportElement('article','','report-gauge-card');
+    card.append(reportElement('div',label,'report-gauge-title'));
+    if(typeof value!=='number'||!Number.isFinite(value)){
+      card.append(reportElement('div','Not measured','report-gauge-empty'));
+      card.append(reportElement('p',note||'No valid numeric measurement was recorded for this report.','report-gauge-note'));
+      return card;
+    }
+    const score=Math.max(0,Math.min(100,value)),normalized=Math.round(score),namespace='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(namespace,'svg');
+    svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('class','report-gauge-svg');svg.setAttribute('role','img');
+    svg.setAttribute('aria-label',label+': '+normalized+' out of 100');
+    const svgTitle=document.createElementNS(namespace,'title');svgTitle.textContent=label+': '+normalized+' out of 100';
+    const track=document.createElementNS(namespace,'circle');track.setAttribute('class','report-gauge-track');
+    track.setAttribute('cx','50');track.setAttribute('cy','50');track.setAttribute('r','42');track.setAttribute('aria-hidden','true');
+    const arc=document.createElementNS(namespace,'circle'),radius=42,circumference=2*Math.PI*radius;
+    const tier=score>=80?'good':score>=50?'watch':'poor';
+    arc.setAttribute('class','report-gauge-arc report-gauge-'+tier);arc.setAttribute('cx','50');arc.setAttribute('cy','50');arc.setAttribute('r',String(radius));
+    arc.setAttribute('stroke-dasharray',String(circumference));arc.setAttribute('stroke-dashoffset',String(circumference*(1-score/100)));
+    arc.setAttribute('transform','rotate(-90 50 50)');arc.setAttribute('aria-hidden','true');
+    svg.append(svgTitle,track,arc);
+    const visual=reportElement('div','','report-gauge-visual');visual.append(svg,reportElement('div',String(normalized),'report-gauge-number'));
+    card.append(visual,reportElement('div',normalized+'/100','report-gauge-value'));
+    if(note)card.append(reportElement('p',note,'report-gauge-note'));
+    return card;
+  }
   function renderAuditReport(report,auditId){
     const out=$('auditOutput');out.replaceChildren();
     const shell=reportElement('div','','report-shell');out.append(shell);
@@ -660,6 +708,39 @@
       hero.append(reportElement('p',[report.overallScoreReason,report.fallbackReason].filter(Boolean).join(' '),'report-section-intro'));
     }
     shell.append(hero);
+
+    const summaryCategories=report.categories&&typeof report.categories==='object'?report.categories:{};
+    const summaryCategoryMeta=report.categoryMeta&&typeof report.categoryMeta==='object'?report.categoryMeta:{};
+    const summaryMetrics=report.metrics&&typeof report.metrics==='object'?report.metrics:{};
+    const overallScore=report.overallStatus==='measured'&&typeof report.overall==='number'&&Number.isFinite(report.overall)?report.overall:null;
+    const technicalStatus=String(summaryCategoryMeta.technical?.status||'measured').toLowerCase();
+    const technicalScore=typeof summaryCategories.technical==='number'&&Number.isFinite(summaryCategories.technical)&&technicalStatus==='measured'?summaryCategories.technical:null;
+    const mobileScore=typeof summaryMetrics.mobile?.score==='number'&&Number.isFinite(summaryMetrics.mobile.score)?summaryMetrics.mobile.score:null;
+    const desktopScore=typeof summaryMetrics.desktop?.score==='number'&&Number.isFinite(summaryMetrics.desktop.score)?summaryMetrics.desktop.score:null;
+    const scorecard=reportSection('Operational scorecard','Each gauge uses a numeric score from this stored audit. Missing or partial measurements are shown as not measured, never as zero.');
+    const gaugeGrid=reportElement('div','','report-visual-gauges');
+    gaugeGrid.append(
+      reportGauge('Overall SEO health',overallScore,'Overall grade is available only when the report marks the required evidence as measured.'),
+      reportGauge('Technical health',technicalScore,'Measured technical category score; incomplete category evidence is not converted to a grade.'),
+      reportGauge('Mobile performance',mobileScore,'Device performance score from the stored audit measurements, when available.'),
+      reportGauge('Desktop performance',desktopScore,'Device performance score from the stored audit measurements, when available.')
+    );
+    scorecard.append(gaugeGrid);
+    const summaryChecks=Array.isArray(report.checks)?report.checks.filter(item=>item&&item.category!=='Audit scoring'):null;
+    const statusKeys=['pass','warn','fail','info'];
+    const findingCounts=reportElement('div','','report-finding-counts');
+    const countDefs=[['Passing','pass'],['Warnings','warn'],['Failures','fail'],['Notices','info'],['Other / unverified','other']];
+    countDefs.forEach(([label,key])=>{
+      const count=summaryChecks===null?null:summaryChecks.filter(item=>{
+        const status=String(item.status||'unknown').toLowerCase();
+        return key==='other'?!statusKeys.includes(status):status===key;
+      }).length;
+      const card=reportElement('div','','report-finding-count '+key);
+      card.append(reportElement('strong',count===null?'N/A':String(count)),reportElement('span',label));findingCounts.append(card);
+    });
+    scorecard.append(findingCounts);
+    scorecard.append(reportElement('p',summaryChecks===null?'Finding counters are unavailable because this stored report contains no individual check list.':summaryChecks.length+' individual checks counted; statuses are taken directly from the audit engine.','report-finding-count-note'));
+    shell.append(scorecard);
 
     const stats=reportElement('div','','report-stats');
     const statDefs=[
