@@ -96,6 +96,9 @@ jobs:
       - name: Check all required viewports on core surfaces
         run: |
           python - <<'PY'
+          import json
+          import re
+          from urllib.parse import urlparse
           from playwright.sync_api import sync_playwright
 
           pages = [
@@ -107,6 +110,7 @@ jobs:
               ('guide', 'guides.html'),
               ('register', 'register.html'),
               ('privacy', 'privacy.html'),
+              ('audit-studio', 'seo-audit-studio.html'),
           ]
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
@@ -124,6 +128,76 @@ jobs:
                               content_type='application/json',
                               body='{"enabled":false}'
                           ))
+                      if rel == 'seo-audit-studio.html':
+                          api_requests = []
+                          fixture_audit_id = '11111111-1111-4111-8111-111111111111'
+                          fixture_verification_id = '22222222-2222-4222-8222-222222222222'
+                          fixture_url = 'https://responsive-fixture.example/'
+                          def mock_audit_api(route):
+                              request = route.request
+                              parsed = urlparse(request.url)
+                              path = parsed.path
+                              method = request.method.upper()
+                              api_requests.append((method, path))
+                              origin = request.headers.get('origin') or 'http://127.0.0.1:8000'
+                              cors_headers = {
+                                  'access-control-allow-origin': origin,
+                                  'access-control-allow-methods': 'GET, POST, OPTIONS',
+                                  'access-control-allow-headers': 'authorization, content-type, accept',
+                                  'access-control-max-age': '86400',
+                                  'vary': 'Origin',
+                                  'cache-control': 'no-store',
+                              }
+                              if method == 'OPTIONS':
+                                  route.fulfill(status=204, headers=cors_headers)
+                                  return
+                              if path == '/api/session' and method == 'POST':
+                                  payload = {'ok': True, 'token': 'a' * 64, 'expiresAt': 4102444800}
+                              elif path == '/api/config':
+                                  payload = {
+                                      'ok': True, 'environment': 'sandbox', 'price': 2.99,
+                                      'cryptoPrice': 2.99, 'livePaymentsEnabled': False,
+                                      'devSimulatorEnabled': False, 'safepayConfigured': False,
+                                      'nowPaymentsConfigured': False, 'cryptoComplianceConfirmed': False,
+                                  }
+                              elif path == '/api/audits/latest':
+                                  payload = {'ok': True, 'audit': None, 'unlocked': False}
+                              elif path == '/api/fix-issues/config':
+                                  payload = {
+                                      'ok': True, 'available': False, 'guidanceAvailable': True,
+                                      'reason': 'Responsive test fixture: live publishing is intentionally disabled.'
+                                  }
+                              elif path.endswith('/preview') and '/api/audits/' in path:
+                                  payload = {
+                                      'ok': True, 'auditId': fixture_verification_id, 'id': fixture_verification_id,
+                                      'url': fixture_url, 'mode': 'live', 'overallStatus': 'measured',
+                                      'overall': 82, 'grade': 'B', 'checks': [], 'recommendations': [],
+                                      'categories': [], 'categoryMeta': {},
+                                      'sources': {'content': True, 'pagespeedMobile': 'google-pagespeed',
+                                                  'pagespeedDesktop': 'google-pagespeed', 'errors': {}},
+                                      'metrics': {'mobile': {'score': 82}, 'desktop': {'score': 91}},
+                                      'meta': {'contentMode': 'html'}, 'sourceCoverage': 100,
+                                      'categoryCoverage': 100,
+                                  }
+                              elif path.endswith('/full') and '/api/audits/' in path:
+                                  payload = {
+                                      'ok': True, 'auditId': fixture_verification_id, 'id': fixture_verification_id,
+                                      'url': fixture_url, 'mode': 'live', 'overallStatus': 'measured',
+                                      'overall': 82, 'grade': 'B', 'checks': [], 'recommendations': [],
+                                      'categories': [], 'categoryMeta': {}, 'issueGroups': [],
+                                      'sources': {'content': True, 'pagespeedMobile': 'google-pagespeed',
+                                                  'pagespeedDesktop': 'google-pagespeed',
+                                                  'performanceProviderMobile': 'google-pagespeed',
+                                                  'performanceProviderDesktop': 'google-pagespeed', 'errors': {}},
+                                      'metrics': {'mobile': {'score': 82}, 'desktop': {'score': 91}},
+                                      'meta': {'contentMode': 'html'}, 'sourceCoverage': 100,
+                                      'categoryCoverage': 100, 'overallCoverage': 100,
+                                  }
+                              else:
+                                  payload = {'ok': True, 'available': False, 'guidanceAvailable': True}
+                              route.fulfill(status=200, content_type='application/json',
+                                            headers=cors_headers, body=json.dumps(payload))
+                          page.route('**/api/**', mock_audit_api)
                       try:
                           response = page.goto(f'http://127.0.0.1:8000/{rel}', wait_until='networkidle', timeout=30000)
                           if not response or response.status >= 400:
@@ -134,7 +208,7 @@ jobs:
                               sw: document.documentElement.scrollWidth,
                               cw: document.documentElement.clientWidth,
                               h1: document.querySelectorAll('h1').length,
-                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header'),
+                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header') || !!document.querySelector('.topbar'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
                           })''')
@@ -148,6 +222,46 @@ jobs:
                               failures.append(f'{name}@{width}: shared header missing')
                           if not metrics['footer']:
                               failures.append(f'{name}@{width}: footer missing')
+                          if rel == 'seo-audit-studio.html':
+                              page.evaluate("""(auditId) => document.dispatchEvent(new CustomEvent(
+                                  'nexusnova:audit-report-ready',
+                                  { detail: {
+                                      auditId,
+                                      url: 'https://responsive-fixture.example/',
+                                      completeEvidence: true,
+                                      mode: 'live'
+                                  }}
+                              ))""", '11111111-1111-4111-8111-111111111111')
+                              page.wait_for_function("""() => {
+                                  const panel = document.querySelector('#fixIssuesPanel');
+                                  return panel && panel.hidden === false;
+                              }""", timeout=5000)
+                              if not page.locator('#fixIssuesStartBtn').is_disabled():
+                                  failures.append(f'{name}@{width}: live publishing must stay disabled with mocked unavailable backend')
+                              if not page.locator('#fixIssuesVerificationPanel').evaluate('(el) => el.hidden'):
+                                  failures.append(f'{name}@{width}: complimentary verification panel must stay hidden before verified job completion')
+                              # Simulate the already-authorized report-open button click after a completed result.
+                              # All API requests stay inside the fixture route; no payment/provider request is made.
+                              page.evaluate("""(auditId) => {
+                                  const panel = document.querySelector('#fixIssuesVerificationPanel');
+                                  const button = document.querySelector('#fixIssuesVerificationOpenReportBtn');
+                                  panel.dataset.auditId = auditId;
+                                  button.hidden = false;
+                                  button.disabled = false;
+                                  button.click();
+                              }""", '22222222-2222-4222-8222-222222222222')
+                              page.wait_for_function("""() => document.body.classList.contains('report-is-paid')""", timeout=8000)
+                              paths = [path for method, path in api_requests]
+                              if not any(path.endswith('/preview') for path in paths):
+                                  failures.append(f'{name}@{width}: opening verification report did not load preview')
+                              if not any(path.endswith('/full') for path in paths):
+                                  failures.append(f'{name}@{width}: opening verification report did not unlock full report')
+                              after = page.evaluate("""() => ({
+                                  sw: document.documentElement.scrollWidth,
+                                  cw: document.documentElement.clientWidth
+                              })""")
+                              if after['sw'] > after['cw'] + 6:
+                                  failures.append(f'{name}@{width}: horizontal overflow after verification report open ({after["sw"]}/{after["cw"]})')
                       except Exception as exc:
                           failures.append(f'{name}@{width}: browser failure: {exc}')
                       finally:
