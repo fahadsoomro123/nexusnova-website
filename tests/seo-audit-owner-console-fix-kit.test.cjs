@@ -12,9 +12,9 @@ test('Owner Console labels downloadable suggestions as guidance, not an automati
   assert.match(admin, /button\('Prepare repair guidance'/);
   assert.match(admin, /\/api\/admin\/audits\/'\+encodeURIComponent\(a\.audit_id\)\+'\/fix-kit/);
   assert.match(admin, /function renderOwnerFixKit\(item,kit\)/);
-  assert.match(admin, /Download corrected HTML file/);
-  assert.match(admin, /Download simple Fix List/);
-  assert.match(admin, /Live website changes were not made/);
+  assert.match(admin, /Download proposed HTML patch/);
+  assert.match(admin, /Download manual fix checklist/);
+  assert.match(admin, /This is guidance only; the live website was not changed/);
 });
 
 test('Owner Console offers direct repair only for owner-created audits with a preview, explicit approval and verification', () => {
@@ -51,7 +51,7 @@ test('Owner Console Fix List gives readable next steps and handles missing live-
   assert.match(admin, /audit_evidence_incomplete:/);
   assert.match(admin, /could not be safely re-read|could not be read just now/i);
   assert.match(admin, /Do these 3 steps/);
-  assert.match(admin, /Download simple Fix List/);
+  assert.match(admin, /Download manual fix checklist/);
 });
 
 test('Owner Console can remove all history in one confirmed request without deleting source records', () => {
@@ -59,4 +59,22 @@ test('Owner Console can remove all history in one confirmed request without dele
   assert.match(admin, /\/api\/admin\/audits\/hide-all/);
   assert.match(admin, /Reports, payments, and entitlements are retained/);
   assert.match(admin, /Original records were retained/);
+});
+
+test('Owner Command Center v2 surfaces direct repair, overview metrics and paginated searchable lists', () => {
+  assert.match(admin, /\{id:'overview',label:'Overview'/);
+  assert.match(admin, /Owner command navigation/);
+  assert.match(admin, /aria-orientation','vertical'/);
+  assert.match(admin, /function renderOwnerOverview\(\)/);
+  assert.match(admin, /owner-overview-metrics/);
+  assert.match(admin, /function setupCompactList\(root,key,placeholder\)/);
+  assert.match(admin, /setupCompactList\(root,'audits','Search audit URL or reference/);
+  assert.match(admin, /setupCompactList\(root,'claims','Search pending claims/);
+  assert.match(admin, /Preview safe repairs/);
+  assert.match(admin, /page is not marked fixed until live verification succeeds/i);
+  assert.match(admin, /<meta name="robots" content="noindex,nofollow,noarchive">/);
+  assert.match(admin, /It is not saved in browser storage/);
+  assert.match(admin, /PageSpeed opportunities/);
+  assert.match(admin, /Download raw report JSON/);
+  assert.doesNotMatch(admin, /Download corrected HTML file/);
 });
