@@ -314,6 +314,8 @@ jobs:
                                   const consolePanel = document.querySelector('#console');
                                   return consolePanel && consolePanel.hidden === false;
                               }""", timeout=5000)
+                              # The command center opens on Overview, so navigate to the audit form before filling it.
+                              page.get_by_role('tab', name='Audit workspace').click()
                               page.locator('#ownerAuditUrl').fill('https://measured-fixture.example/')
                               page.locator('#ownerAuditBtn').click()
                               page.locator('#auditOutput').get_by_role('button', name='View full report').wait_for(timeout=5000)
