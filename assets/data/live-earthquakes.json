@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-24T17:32:33.702Z",
+  "generated_at": "2026-10-24T19:50:17.747Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-24T17:32:07.000Z",
+  "feed_generated_at": "2026-10-24T19:50:13.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 71,
+  "source_count": 75,
   "pakistan_region_events": [
     {
       "id": "us6000u4h9",
@@ -41,6 +41,120 @@
     }
   ],
   "worldwide_events": [
+    {
+      "id": "us6000u4ny",
+      "magnitude": 4.9,
+      "place": "73 km SW of Isangel, Vanuatu",
+      "time": "2026-10-24T19:18:20.515Z",
+      "updated": "2026-10-24T19:43:33.040Z",
+      "depth_km": 22.4,
+      "coordinates": {
+        "lat": -20.025,
+        "lon": 168.7941
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4ny",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u4nv",
+      "magnitude": 5,
+      "place": "193 km NW of Port-Olry, Vanuatu",
+      "time": "2026-10-24T19:07:15.895Z",
+      "updated": "2026-10-24T19:24:33.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -13.975,
+        "lon": 165.6556
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4nv",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75454281",
+      "magnitude": 2.45,
+      "place": "17 km SW of Toms Place, CA",
+      "time": "2026-10-24T18:42:04.560Z",
+      "updated": "2026-10-24T19:07:21.549Z",
+      "depth_km": -0.2,
+      "coordinates": {
+        "lat": 37.4562,
+        "lon": -118.826
+      },
+      "significance": 92,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75454281",
+      "pakistan_region": false
+    },
+    {
+      "id": "uu80161711",
+      "magnitude": 2.67,
+      "place": "16 km NNE of Milford, Utah",
+      "time": "2026-10-24T17:59:01.470Z",
+      "updated": "2026-10-24T18:28:44.040Z",
+      "depth_km": -0.1,
+      "coordinates": {
+        "lat": 38.525,
+        "lon": -112.9215
+      },
+      "significance": 110,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/uu80161711",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u4ng",
+      "magnitude": 2.8,
+      "place": "193 km WSW of Pistol River, Oregon",
+      "time": "2026-10-24T17:49:46.312Z",
+      "updated": "2026-10-24T18:09:46.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 41.8193,
+        "lon": -126.6544
+      },
+      "significance": 121,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4ng",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u4na",
+      "magnitude": 4.2,
+      "place": "74 km W of Ollagüe, Chile",
+      "time": "2026-10-24T17:14:30.377Z",
+      "updated": "2026-10-24T17:44:28.040Z",
+      "depth_km": 124,
+      "coordinates": {
+        "lat": -21.3025,
+        "lon": -68.9699
+      },
+      "significance": 271,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4na",
+      "pakistan_region": false
+    },
     {
       "id": "us6000u4n8",
       "magnitude": 4.8,
@@ -1350,44 +1464,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4gc",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4g1",
-      "magnitude": 4.2,
-      "place": "37 km ESE of Sainyabuli, Laos",
-      "time": "2026-10-23T19:31:21.121Z",
-      "updated": "2026-10-24T14:07:43.040Z",
-      "depth_km": 10.3,
-      "coordinates": {
-        "lat": 19.0951,
-        "lon": 102.0178
-      },
-      "significance": 271,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4g1",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026vaivkz",
-      "magnitude": 3.1,
-      "place": "48 km WNW of Nanwalek, Alaska",
-      "time": "2026-10-23T19:10:45.124Z",
-      "updated": "2026-10-24T13:54:17.040Z",
-      "depth_km": 93.4,
-      "coordinates": {
-        "lat": 59.574,
-        "lon": -152.665
-      },
-      "significance": 148,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026vaivkz",
       "pakistan_region": false
     }
   ]
