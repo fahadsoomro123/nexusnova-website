@@ -96,6 +96,8 @@ jobs:
       - name: Check all required viewports on core surfaces
         run: |
           python - <<'PY'
+          import json
+          from urllib.parse import urlparse
           from playwright.sync_api import sync_playwright
 
           pages = [
@@ -107,6 +109,7 @@ jobs:
               ('guide', 'guides.html'),
               ('register', 'register.html'),
               ('privacy', 'privacy.html'),
+              ('owner-console', 'seo-audit-studio-admin.html'),
           ]
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
@@ -124,6 +127,88 @@ jobs:
                               content_type='application/json',
                               body='{"enabled":false}'
                           ))
+                      if rel == 'seo-audit-studio-admin.html':
+                          owner_state = {'created': 0}
+                          def mock_owner_api(route):
+                              request = route.request
+                              path = urlparse(request.url).path
+                              method = request.method.upper()
+                              origin = request.headers.get('origin') or 'http://127.0.0.1:8000'
+                              cors_headers = {
+                                  'access-control-allow-origin': origin,
+                                  'access-control-allow-methods': 'GET, POST, OPTIONS',
+                                  'access-control-allow-headers': 'x-owner-admin-token, content-type, accept',
+                                  'access-control-max-age': '86400',
+                                  'vary': 'Origin',
+                                  'cache-control': 'no-store',
+                              }
+                              if method == 'OPTIONS':
+                                  route.fulfill(status=204, headers=cors_headers)
+                                  return
+                              if path == '/api/admin/promotions':
+                                  payload = {'campaigns': [], 'codes': [], 'redemptions': [], 'claimRequests': []}
+                              elif path == '/api/admin/audits' and method == 'GET':
+                                  payload = {'audits': []}
+                              elif path == '/api/admin/audits' and method == 'POST':
+                                  owner_state['created'] += 1
+                                  audit_id = 'fixture-audit-' + str(owner_state['created'])
+                                  try:
+                                      submitted = json.loads(request.post_data or '{}')
+                                  except Exception:
+                                      submitted = {}
+                                  payload = {'auditId': audit_id, 'preview': {'url': submitted.get('url', 'https://fixture.example/')}}
+                              elif path.endswith('/full') and '/api/admin/audits/' in path:
+                                  audit_id = path.split('/')[-2]
+                                  if audit_id == 'fixture-audit-1':
+                                      payload = {
+                                          'url': 'https://measured-fixture.example/', 'overallStatus': 'measured',
+                                          'overall': 82, 'grade': 'B', 'overallCoverage': 100,
+                                          'sourceCoverage': 100, 'categoryCoverage': 100,
+                                          'overallCategoriesUsed': 3, 'passCount': 1, 'scoredCount': 4,
+                                          'meta': {'title': 'Measured fixture report', 'description': 'Measured report for viewport testing.',
+                                                   'canonical': 'https://measured-fixture.example/', 'lang': 'en',
+                                                   'viewport': 'width=device-width, initial-scale=1'},
+                                          'http': {'status': 200, 'contentType': 'text/html', 'bytes': 2048},
+                                          'categories': {'technical': 74, 'onPage': 88, 'performance': 81},
+                                          'categoryMeta': {
+                                              'technical': {'status': 'measured', 'measuredChecks': 4, 'requiredChecks': 4, 'source': 'measured checks'},
+                                              'onPage': {'status': 'measured'}, 'performance': {'status': 'measured'}
+                                          },
+                                          'metrics': {
+                                              'mobile': {'score': 78, 'lcp': 1200, 'cls': 0.02, 'tbt': 200, 'fcp': 700,
+                                                         'speedIndex': 1100, 'tti': 1500, 'opportunities': [], 'diagnostics': []},
+                                              'desktop': {'score': 92, 'lcp': 900, 'cls': 0.01, 'tbt': 100, 'fcp': 400,
+                                                          'speedIndex': 700, 'tti': 900, 'opportunities': [], 'diagnostics': []}
+                                          },
+                                          'checks': [
+                                              {'category': 'Technical SEO', 'title': 'Robots directive', 'status': 'pass', 'evidence': 'Present'},
+                                              {'category': 'Technical SEO', 'title': 'Canonical URL', 'status': 'warn', 'evidence': 'Review'},
+                                              {'category': 'Content', 'title': 'Heading hierarchy', 'status': 'fail', 'evidence': 'Missing section'},
+                                              {'category': 'Social', 'title': 'Open Graph metadata', 'status': 'info', 'evidence': 'Informational'}
+                                          ],
+                                          'recommendations': [],
+                                          'sources': {'content': True, 'pagespeedMobile': 'google-pagespeed',
+                                                      'pagespeedDesktop': 'google-pagespeed', 'errors': {}}
+                                      }
+                                  else:
+                                      payload = {
+                                          'url': 'https://partial-fixture.example/', 'overallStatus': 'limited',
+                                          'overall': None, 'grade': None, 'overallScoreReason': 'Required measurements were incomplete.',
+                                          'overallCoverage': 35, 'sourceCoverage': 35, 'categoryCoverage': 25,
+                                          'meta': {'title': 'Partial fixture report', 'description': 'Partial data for viewport testing.'},
+                                          'categories': {'technical': None}, 'categoryMeta': {'technical': {'status': 'limited'}},
+                                          'metrics': {'mobile': {'score': 63, 'opportunities': [], 'diagnostics': []},
+                                                      'desktop': {'opportunities': [], 'diagnostics': []}},
+                                          'recommendations': [],
+                                          'sources': {'content': False, 'pagespeedMobile': False, 'pagespeedDesktop': False,
+                                                      'errors': {'content': 'fixture unavailable', 'psiMobile': 'fixture unavailable',
+                                                                 'psiDesktop': 'fixture unavailable'}}
+                                      }
+                              else:
+                                  payload = {}
+                              route.fulfill(status=200, content_type='application/json',
+                                            headers=cors_headers, body=json.dumps(payload))
+                          page.route('**/api/**', mock_owner_api)
                       try:
                           response = page.goto(f'http://127.0.0.1:8000/{rel}', wait_until='networkidle', timeout=30000)
                           if not response or response.status >= 400:
@@ -134,7 +219,7 @@ jobs:
                               sw: document.documentElement.scrollWidth,
                               cw: document.documentElement.clientWidth,
                               h1: document.querySelectorAll('h1').length,
-                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header'),
+                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header') || !!document.querySelector('main > header'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
                           })''')
@@ -148,6 +233,50 @@ jobs:
                               failures.append(f'{name}@{width}: shared header missing')
                           if not metrics['footer']:
                               failures.append(f'{name}@{width}: footer missing')
+                          if rel == 'seo-audit-studio-admin.html':
+                              page.locator('#ownerTokenInput').fill('o' * 40)
+                              page.locator('#connectBtn').click()
+                              page.wait_for_function("""() => {
+                                  const consolePanel = document.querySelector('#console');
+                                  return consolePanel && consolePanel.hidden === false;
+                              }""", timeout=5000)
+                              page.locator('#ownerAuditUrl').fill('https://measured-fixture.example/')
+                              page.locator('#ownerAuditBtn').click()
+                              page.locator('#auditOutput').get_by_role('button', name='View full report').wait_for(timeout=5000)
+                              page.locator('#auditOutput').get_by_role('button', name='View full report').click()
+                              page.wait_for_selector('#auditOutput .report-visual-gauges', timeout=5000)
+                              measured = page.locator('#auditOutput .report-gauge-svg').evaluate_all("(nodes) => nodes.map(node => node.getAttribute('aria-label'))")
+                              expected = ['Overall SEO health: 82 out of 100', 'Technical health: 74 out of 100',
+                                          'Mobile performance: 78 out of 100', 'Desktop performance: 92 out of 100']
+                              if measured != expected:
+                                  failures.append(f'{name}@{width}: measured gauge labels/values mismatch ({measured})')
+                              counts = page.locator('#auditOutput .report-finding-count strong').all_text_contents()
+                              if counts[:4] != ['1', '1', '1', '1']:
+                                  failures.append(f'{name}@{width}: finding counters do not reflect measured checks ({counts})')
+                              first_report = page.evaluate("""() => ({
+                                  sw: document.documentElement.scrollWidth,
+                                  cw: document.documentElement.clientWidth
+                              })""")
+                              if first_report['sw'] > first_report['cw'] + 6:
+                                  failures.append(f'{name}@{width}: overflow in measured owner scorecard ({first_report["sw"]}/{first_report["cw"]})')
+                              page.locator('#ownerAuditUrl').fill('https://partial-fixture.example/')
+                              page.locator('#ownerAuditBtn').click()
+                              page.locator('#auditOutput').get_by_role('button', name='View full report').wait_for(timeout=5000)
+                              page.locator('#auditOutput').get_by_role('button', name='View full report').click()
+                              page.wait_for_selector('#auditOutput .report-visual-gauges', timeout=5000)
+                              empty_gauges = page.locator('#auditOutput .report-gauge-empty').count()
+                              partial_labels = page.locator('#auditOutput .report-gauge-svg').evaluate_all("(nodes) => nodes.map(node => node.getAttribute('aria-label'))")
+                              if empty_gauges != 3 or partial_labels != ['Mobile performance: 63 out of 100']:
+                                  failures.append(f'{name}@{width}: missing measurements were not shown as empty gauges ({empty_gauges}, {partial_labels})')
+                              partial_counts = page.locator('#auditOutput .report-finding-count strong').all_text_contents()
+                              if partial_counts and any(value != 'N/A' for value in partial_counts):
+                                  failures.append(f'{name}@{width}: unavailable findings were shown as fabricated counts ({partial_counts})')
+                              final_report = page.evaluate("""() => ({
+                                  sw: document.documentElement.scrollWidth,
+                                  cw: document.documentElement.clientWidth
+                              })""")
+                              if final_report['sw'] > final_report['cw'] + 6:
+                                  failures.append(f'{name}@{width}: overflow in partial owner scorecard ({final_report["sw"]}/{final_report["cw"]})')
                       except Exception as exc:
                           failures.append(f'{name}@{width}: browser failure: {exc}')
                       finally:
