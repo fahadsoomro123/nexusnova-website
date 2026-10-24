@@ -262,3 +262,36 @@ test('Owner Console scorecard uses accessible gauges only for measured scores an
   assert.ok(admin.includes('Not measured'));
   assert.ok(admin.includes('Operational scorecard'));
 });
+
+
+test('Owner Console is a compact flagship workspace with contained tab views', () => {
+  const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
+  assert.match(admin, /function setupOwnerWorkspace\(\)/);
+  assert.match(admin, /owner-workspace-tabs/);
+  assert.match(admin, /Audit workspace/);
+  assert.match(admin, /Campaigns & vouchers/);
+  assert.match(admin, /Claim review/);
+  assert.match(admin, /Audit history/);
+  assert.match(admin, /Redemptions/);
+  assert.match(admin, /body\.owner-session-active\{height:100dvh;overflow:hidden/);
+  assert.match(admin, /\.owner-workspace-pane:not\(\[hidden\]\)\{display:grid/);
+  assert.match(admin, /function activateOwnerWorkspace\(id,root\)/);
+});
+
+test('Full owner audit report has compact tabs without dropping checks or PageSpeed evidence', () => {
+  const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
+  assert.match(admin, /function compactAuditReport\(shell\)/);
+  assert.match(admin, /Overview/);
+  assert.match(admin, /Performance/);
+  assert.match(admin, /Priority fixes/);
+  assert.match(admin, /All checks/);
+  assert.match(admin, /Technical evidence/);
+  assert.match(admin, /compactAuditReport\(shell\)/);
+  assert.match(admin, /Download raw report JSON/);
+  assert.match(admin, /entries\.forEach\(entry=>\{/);
+  assert.match(admin, /\(Array\.isArray\(entry\.items\)\?entry\.items:\[\]\)\.forEach\(row=>\{/);
+  assert.doesNotMatch(admin, /entries\.slice\(0,6\)|entry\.items:\[\]\)\.slice\(0,3\)/);
+  for (const section of ['Operational scorecard','Category scores','Mobile and desktop performance','Prioritized recommendations','All audit checks','Website and measurement details','Measurement limitations']) {
+    assert.ok(admin.includes(section), section+' must remain available');
+  }
+});
