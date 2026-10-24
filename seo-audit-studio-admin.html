@@ -468,7 +468,8 @@ body.owner-session-active .report-bar{background:#263750}
     ?'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
     :'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const $=id=>document.getElementById(id);
-  const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[],listViews:{}};
+  const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[]};
+  state.listViews={};
   const text=(tag,value,className='')=>{const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value??'');return node;};
   const button=(label,handler,kind='')=>{const node=text('button',label,kind);node.type='button';node.addEventListener('click',handler);return node;};
   const notice=(message,tone='')=>text('div',message,'notice'+(tone?' '+tone:''));
