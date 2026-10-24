@@ -108,6 +108,24 @@ test('production audit source retrieval is server-side and has no public browser
   assert.doesNotMatch(auditHtml, /api\/page-source|api-page-source|allorigins\.win|r\.jina\.ai/);
 });
 
+test('Fix Issues offers the one-time complimentary audit only after live verification and renders results safely', () => {
+  const html = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
+  assert.ok(html.includes('id="fixIssuesVerificationPanel"'));
+  assert.ok(html.includes('id="fixIssuesVerificationBtn"'));
+  assert.ok(html.includes('id="fixIssuesVerificationOpenReportBtn"'));
+  assert.ok(html.includes("document.addEventListener('nexusnova:open-verification-audit'"));
+  assert.ok(html.includes("await unlockReport(targetId)"));
+  assert.ok(html.includes("job.status === 'completed' && !isFixKit && verification.status === 'verified'"));
+  assert.ok(html.includes("/verification-audit"));
+  assert.ok(html.includes("['resolved', 'Resolved checks']"));
+  assert.ok(html.includes("['remaining', 'Issues still present']"));
+  assert.ok(html.includes("['newlyDetected', 'New findings']"));
+  assert.ok(html.includes("['unverified', 'Could not be verified']"));
+  assert.ok(html.includes("li.textContent = String(item.category || 'Check') + ': ' + String(item.title || 'Untitled finding')"));
+  assert.ok(html.includes("Retry free verification audit"));
+  assert.ok(html.includes('the server prevents duplicate bonus audits'));
+});
+
 test('category scores require real evidence coverage', () => {
   assert.match(auditHtml, /requiredHtmlChecks=\{onPage:6,geo:4,links:4,usability:4,social:4,local:3\}/);
   assert.match(auditHtml, /geo: scoreCategory\(checks,'GEO readiness',categoryMinimum\('geo'\)\)/);
@@ -231,7 +249,6 @@ test('SEO Audit Studio public page keeps only essential copy and has no prefille
   assert.ok(!schema['@graph'].some(node => node['@type'] === 'FAQPage'), 'FAQ structured data must match removed visible FAQ');
   for (const copy of ['Unavailable checks stay unscored.', 'Free summary. Full report: $2.99 or valid voucher.', 'Unlocked only after server-side payment verification or a valid voucher.']) assert.ok(auditHtml.includes(copy), copy);
 });
-
 
 test('Owner Console scorecard uses accessible gauges only for measured scores and real check statuses', () => {
   const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');

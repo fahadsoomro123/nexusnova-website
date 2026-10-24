@@ -591,6 +591,19 @@
 .fix-issues-consent input{margin-top:3px;flex:0 0 auto}
 .fix-issues-danger{font-size:11px;color:#707f94;line-height:1.6}
 @media(max-width:600px){.fix-issues-panel{padding:14px}.fix-issues-controls{align-items:stretch;flex-direction:column}.fix-issues-controls>*{width:100%;max-width:none}.fix-issues-controls button{white-space:normal}.fix-issues-price{font-size:11px}}
+
+  .fix-issues-verification{margin-top:16px;border-color:#c9d9ef;background:#f7faff}
+  .fix-issues-verification .fix-issues-controls{margin-top:12px}
+  .fix-issues-verification-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+  .fix-issues-verification-count{padding:10px;border:1px solid #dbe5f2;border-radius:9px;background:#fff;min-width:0}
+  .fix-issues-verification-count strong{display:block;font-size:20px;line-height:1.3;color:#17365e}
+  .fix-issues-verification-count span{display:block;font-size:10px;font-weight:800;color:#536780;text-transform:uppercase;letter-spacing:.035em}
+  .fix-issues-verification-group{margin:14px 0 4px}
+  .fix-issues-verification-group h4{font-size:13px;margin:0 0 5px;color:#203854}
+  .fix-issues-verification-group ul{margin:0;padding-left:21px}
+  .fix-issues-verification-group li{margin:5px 0;overflow-wrap:anywhere}
+  .fix-issues-verification-note{font-size:12px;color:#556780;line-height:1.5}
+  @media(max-width:560px){.fix-issues-verification-counts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -727,6 +740,17 @@
           <button id="fixIssuesDownloadBtn" class="primary-btn" type="button" hidden>Download my Fix Kit</button>
             <button id="fixIssuesRollbackBtn" class="secondary-btn" type="button" disabled>Roll back this commit</button>
         </div>
+        <section id="fixIssuesVerificationPanel" class="fix-issues-plan fix-issues-verification" aria-labelledby="fixIssuesVerificationHeading" hidden>
+          <h3 id="fixIssuesVerificationHeading">Complimentary verification audit</h3>
+          <p id="fixIssuesVerificationSummary" class="fix-issues-copy">Available after a paid fix is completed and the live page checks confirm the approved changes.</p>
+          <div id="fixIssuesVerificationCounts" class="fix-issues-verification-counts" hidden></div>
+          <div id="fixIssuesVerificationResults"></div>
+          <p class="fix-issues-verification-note">This bonus performs a new scan of the original target. Findings count as resolved only when the matching check passes; missing or unmeasured checks remain unverified.</p>
+          <div class="fix-issues-controls">
+            <button id="fixIssuesVerificationBtn" class="primary-btn" type="button" hidden>Run one free verification audit</button>
+            <button id="fixIssuesVerificationOpenReportBtn" class="secondary-btn" type="button" hidden>Open full verification report</button>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -1791,6 +1815,30 @@
     el.measurement.textContent += ' · Full report unlocked for this session';
     closePaywall();
   };
+  document.addEventListener('nexusnova:open-verification-audit', async (event) => {
+    const targetId = String(event.detail?.auditId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(targetId)) return;
+    try {
+      const response = await apiFetch('/api/audits/' + encodeURIComponent(targetId) + '/preview', {headers:{Accept:'application/json'},cache:'no-store'});
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload || typeof payload.url !== 'string') throw new Error(payload.error || 'The verification report is not available.');
+      state.auditId = targetId;
+      state.report = payload;
+      state.fullReport = null;
+      state.paid = false;
+      state.promotionRedemptionId = null;
+      state.promotionOfferType = null;
+      state.promotionOfferValue = null;
+      el.url.value = payload.url;
+      renderReport(payload);
+      await unlockReport(targetId);
+      $('auditReportSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    } catch (error) {
+      el.error.textContent = error.message || 'The verification report could not be opened.';
+      el.error.style.display = 'block';
+      el.error.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  });
   const restoreLatestAudit = async () => {
     try {
       const response=await apiFetch('/api/audits/latest',{headers:{Accept:'application/json'},cache:'no-store'});
@@ -2349,6 +2397,15 @@
   const appliedList = q('fixIssuesAppliedList');
   const rollbackButton = q('fixIssuesRollbackBtn');
   const downloadButton = q('fixIssuesDownloadBtn');
+  const verificationPanel = q('fixIssuesVerificationPanel');
+  const verificationButton = q('fixIssuesVerificationBtn');
+  const verificationOpenReportButton = q('fixIssuesVerificationOpenReportBtn');
+  const verificationSummary = q('fixIssuesVerificationSummary');
+  const verificationCounts = q('fixIssuesVerificationCounts');
+  const verificationResults = q('fixIssuesVerificationResults');
+  let loadedVerificationJobId = '';
+  let verificationComplete = false;
+  let verificationRunning = false;
   let available = false;
   let guidanceAvailable = false;
   let audit = null;
@@ -2366,6 +2423,113 @@
     if (guidedButton) guidedButton.disabled = busy || !guidanceAvailable || !audit || !audit.completeEvidence || audit.mode === "sample";
   }
   const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
+  function renderVerificationAudit(result) {
+    if (!verificationPanel || !verificationButton) return;
+    verificationPanel.hidden = false;
+    verificationButton.hidden = false;
+    const state = String(result?.status || (result?.canRetry ? 'failed' : 'unknown')).toLowerCase();
+    if (verificationOpenReportButton) {
+      verificationOpenReportButton.hidden = state !== 'completed' || !result?.auditId;
+      verificationOpenReportButton.disabled = state !== 'completed' || !result?.auditId;
+    }
+    if (state === 'completed' && verificationPanel && result?.auditId) verificationPanel.dataset.auditId = result.auditId;
+    verificationCounts.replaceChildren();
+    verificationResults.replaceChildren();
+    verificationCounts.hidden = true;
+    if (state === 'completed') {
+      verificationComplete = true;
+      verificationRunning = false;
+      verificationButton.disabled = true;
+      verificationButton.textContent = 'Verification audit completed';
+      const counts = result.comparison?.counts || {};
+      text(verificationSummary, 'A new scan was saved for the original target. Report ID: ' + (result.auditId || 'unavailable') + (result.reportAvailable === false ? '. The stored report has expired, but its comparison summary remains available.' : '.'));
+      const labels = [
+        ['Resolved', counts.resolved],
+        ['Remaining', counts.remaining],
+        ['Newly detected', counts.newlyDetected],
+        ['Unverified', counts.unverified]
+      ];
+      for (const [label, value] of labels) {
+        const card = document.createElement('div');
+        card.className = 'fix-issues-verification-count';
+        const number = document.createElement('strong');
+        number.textContent = Number.isFinite(Number(value)) ? String(Number(value)) : 'N/A';
+        const caption = document.createElement('span');
+        caption.textContent = label;
+        card.append(number, caption);
+        verificationCounts.append(card);
+      }
+      verificationCounts.hidden = false;
+      const comparison = result.comparison || {};
+      for (const [key, label] of [['resolved', 'Resolved checks'], ['remaining', 'Issues still present'], ['newlyDetected', 'New findings'], ['unverified', 'Could not be verified']]) {
+        const items = Array.isArray(comparison[key]) ? comparison[key] : [];
+        if (!items.length) continue;
+        const group = document.createElement('section');
+        group.className = 'fix-issues-verification-group';
+        const heading = document.createElement('h4');
+        heading.textContent = label;
+        const list = document.createElement('ul');
+        for (const item of items.slice(0, 30)) {
+          const li = document.createElement('li');
+          li.textContent = String(item.category || 'Check') + ': ' + String(item.title || 'Untitled finding');
+          list.append(li);
+        }
+        group.append(heading, list);
+        verificationResults.append(group);
+      }
+      if (comparison.scoreComparison && Number.isFinite(comparison.scoreComparison.before) && Number.isFinite(comparison.scoreComparison.after)) {
+        const score = document.createElement('p');
+        const delta = Number(comparison.scoreComparison.delta);
+        score.className = 'fix-issues-verification-note';
+        score.textContent = 'Measured score: ' + comparison.scoreComparison.before + ' → ' + comparison.scoreComparison.after + ' (' + (delta > 0 ? '+' : '') + delta + ').';
+        verificationResults.append(score);
+      }
+      return;
+    }
+    verificationComplete = false;
+    if (state === 'running') {
+      verificationRunning = true;
+      verificationButton.disabled = true;
+      verificationButton.textContent = 'Verification audit running…';
+      text(verificationSummary, 'The audit is in progress. This is still the same complimentary audit; no new payment is required.');
+      return;
+    }
+    verificationRunning = false;
+    if (state === 'failed' || result?.canRetry) {
+      verificationButton.disabled = busy;
+      verificationButton.textContent = 'Retry free verification audit';
+      text(verificationSummary, 'The scan did not complete. You can retry the same complimentary audit; no extra payment is required.');
+      return;
+    }
+    verificationButton.disabled = busy;
+    verificationButton.textContent = 'Run one free verification audit';
+    text(verificationSummary, 'Eligible after a paid fix is completed and its live changes are verified. The target comes from the original audit, not a new URL input.');
+  }
+  async function pollVerificationAudit(jobId) {
+    for (let attempt = 0; attempt < 25; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      const result = await api('/api/fix-issues/jobs/' + encodeURIComponent(jobId) + '/verification-audit');
+      renderVerificationAudit(result);
+      if (result.status !== 'running') return result;
+    }
+    text(verificationSummary, 'The audit is still being processed. Refresh the status before retrying; the server prevents duplicate bonus audits.');
+    verificationRunning = true;
+    verificationButton.disabled = true;
+    verificationButton.textContent = 'Verification audit still running';
+    return { status: 'running' };
+  }
+  async function loadVerificationAuditStatus(jobId) {
+    try {
+      const result = await api('/api/fix-issues/jobs/' + encodeURIComponent(jobId) + '/verification-audit');
+      renderVerificationAudit(result);
+      if (result.status === 'running') await pollVerificationAudit(jobId);
+    } catch {
+      text(verificationSummary, 'The verification audit status could not be loaded. Reload the saved audit report to check availability.');
+      verificationButton.disabled = true;
+      verificationButton.hidden = false;
+      verificationPanel.hidden = false;
+    }
+  }
   function setStatus(message, tone) {
     text(status, message);
     if (status) {
@@ -2444,6 +2608,10 @@
     repoTools.hidden = true;
     planPanel.hidden = true;
     jobPanel.hidden = true;
+    if (verificationPanel) verificationPanel.hidden = true;
+    loadedVerificationJobId = '';
+    verificationComplete = false;
+    verificationRunning = false;
     payButton.disabled = true;
     accept.checked = false;
     start.disabled = true;
@@ -2620,6 +2788,22 @@
       }
     }
     rollbackButton.disabled = !job.rollbackAvailable;
+    const canVerify = job.status === 'completed' && !isFixKit && verification.status === 'verified';
+    if (verificationPanel) verificationPanel.hidden = !canVerify;
+    if (verificationButton) verificationButton.hidden = !canVerify;
+    if (canVerify) {
+      if (loadedVerificationJobId !== job.id) {
+        loadedVerificationJobId = job.id;
+        verificationComplete = false;
+        verificationRunning = false;
+        verificationButton.disabled = true;
+        void loadVerificationAuditStatus(job.id);
+      }
+    } else {
+      loadedVerificationJobId = '';
+      verificationComplete = false;
+      verificationRunning = false;
+    }
   }  async function loadRepositories(auditId) {
     const payload = await api('/api/fix-issues/repos?auditId=' + encodeURIComponent(auditId));
     renderRepositories(payload.repositories);
@@ -2882,7 +3066,41 @@
       busy = false;
       downloadButton.disabled = false;
     }
-  });  rollbackButton?.addEventListener('click', async () => {
+  });  verificationOpenReportButton?.addEventListener('click', () => {
+    const auditId = String(verificationPanel?.dataset.auditId || '');
+    if (!/^[0-9a-f-]{36}$/i.test(auditId)) return;
+    document.dispatchEvent(new CustomEvent('nexusnova:open-verification-audit', {detail:{auditId}}));
+  });
+  verificationButton?.addEventListener('click', async () => {
+    if (!currentJob || currentJob.status !== 'completed' || currentJob.verification?.status !== 'verified' ||
+        ['manual', 'manual_fallback'].includes(currentJob.verification?.deliveryMode) || busy || verificationComplete || verificationRunning) return;
+    busy = true;
+    verificationButton.disabled = true;
+    verificationButton.textContent = 'Running complimentary audit…';
+    text(verificationSummary, 'Scanning the original target with the normal safety limits. No new payment is required.');
+    try {
+      let result = await api('/api/fix-issues/jobs/' + encodeURIComponent(currentJob.id) + '/verification-audit', 'POST', {});
+      renderVerificationAudit(result);
+      if (result.status === 'running') result = await pollVerificationAudit(currentJob.id);
+      if (result.status === 'completed') {
+        setStatus('Complimentary verification audit completed. The result uses live scan evidence.', 'success');
+      } else if (result.status === 'running') {
+        setStatus('The complimentary verification audit is still running. Its server-side claim prevents duplicates.', 'success');
+      }
+    } catch (error) {
+      verificationRunning = false;
+      verificationComplete = false;
+      verificationButton.disabled = false;
+      verificationButton.textContent = 'Retry free verification audit';
+      text(verificationSummary, 'The scan could not finish. A retry reuses the same reserved bonus audit and does not request another payment.');
+      setStatus(errorMessage(error.message), 'error');
+    } finally {
+      busy = false;
+      if (!verificationComplete && !verificationRunning) verificationButton.disabled = false;
+      syncExistingConnectButton();
+    }
+  });
+  rollbackButton?.addEventListener('click', async () => {
     if (!currentJob || !currentJob.rollbackAvailable || busy) return;
     if (!window.confirm('Roll back this exact commit only if the repository is still unchanged?')) return;
     busy = true; rollbackButton.disabled = true;
