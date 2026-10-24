@@ -884,7 +884,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       });
     });
     workspace.append(tabs,viewport);
-    root.insertBefore(workspace,sections[0]);
+    root.insertBefore(workspace,sessionPanel.nextSibling);
     root.dataset.workspaceReady='true';
     root._ownerWorkspaceDefinitions=definitions;
     syncOwnerWorkspaceCounts();
