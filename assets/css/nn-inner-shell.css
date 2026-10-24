@@ -224,3 +224,10 @@
   flex:0 0 18px!important;
   display:block!important;
 }
+
+/* Keep article content and tables inside narrow viewports. */
+.nn-inner-page .article-main{min-width:0;max-width:100%}
+.nn-inner-page .article-main table{width:100%;max-width:100%;border-collapse:collapse;table-layout:fixed}
+.nn-inner-page .article-main th,.nn-inner-page .article-main td{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+.nn-inner-page .article-main code,.nn-inner-page .article code{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:560px){.nn-inner-page .article-main th,.nn-inner-page .article-main td{padding:7px 5px;font-size:12px}}
