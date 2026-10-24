@@ -873,7 +873,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
         const section=sections.find(candidate=>candidate.querySelector(selector));
         if(section)pane.append(section);
       });
-      tabs.append(tab);viewport.append(pane);entries.push({tab,pane,definition});
+      tabs.append(tab);viewport.append(pane);
       tab.addEventListener('click',()=>activateOwnerWorkspace(definition.id,root));
       tab.addEventListener('keydown',event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
