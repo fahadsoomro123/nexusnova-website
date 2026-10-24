@@ -196,6 +196,161 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
   .report-category-list{grid-template-columns:minmax(0,1fr)}
   .report-compact-overview .report-finding-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+  
+/* Owner Command Center v2: left command rail, concise overview and searchable paged records. */
+body.owner-session-active{height:100dvh;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 8% 0%,#17243d 0,#0b1423 42%,#080f1b 100%)}
+body.owner-session-active main{height:100dvh;min-height:0;max-width:1680px;padding:12px 16px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+body.owner-session-active main>header{min-height:46px;margin:0;align-items:center;gap:12px}
+body.owner-session-active main>header h1{font-size:clamp(20px,1.7vw,26px);color:#f4f7ff;letter-spacing:-.045em}
+body.owner-session-active main>header p{font-size:11px;color:#9caec7;margin-top:3px}
+body.owner-session-active main>header .eyebrow{color:#bba5ff;margin-bottom:4px}
+body.owner-session-active main>header .top-links a{display:inline-flex;padding:7px 10px;border:1px solid #2b3b55;border-radius:9px;background:#111d30;color:#d5e2f5;text-decoration:none}
+body.owner-session-active #console{display:flex;flex:1;min-height:0;flex-direction:column;gap:9px;overflow:hidden}
+body.owner-session-active #console>.panel.row{flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 12px;margin:0;padding:8px 12px;border-radius:12px;border:1px solid #293a54;background:linear-gradient(110deg,#122137,#101a2b);box-shadow:0 8px 24px #02061128}
+body.owner-session-active #console>.panel.row h2{margin:0;font-size:12px;color:#f5f8ff}
+body.owner-session-active #console>.panel.row p{margin:2px 0 0;color:#9fb0c8;font-size:10px}
+body.owner-session-active #console>.panel.row .actions{margin:0;align-items:center}
+body.owner-session-active #console>.panel.row #globalStatus{grid-column:1/-1;width:auto!important;margin:0;padding:5px 8px;border-color:#2a3d57;background:#0d1a2c;color:#b5c5da;font-size:10px}
+.owner-workspace{display:grid;grid-template-columns:205px minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:12px;flex:1;min-height:0;overflow:hidden}
+.owner-workspace-tabs{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:205px;min-width:0;overflow:auto;padding:8px;border:1px solid #263750;border-radius:13px;background:linear-gradient(180deg,#101d31,#0d1728)}
+.owner-workspace-tab{display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;min-height:42px;padding:8px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#a8b9d0;font-size:11px;font-weight:800;text-align:left;white-space:normal}
+.owner-workspace-tab:hover{background:#17263c;border-color:#2a3d59}
+.owner-workspace-tab[aria-selected=true]{border-color:#7566d9;background:linear-gradient(120deg,#6f61d9,#5143b5);color:#fff;box-shadow:0 5px 18px #5143b533}
+.owner-tab-label-wrap{display:flex;align-items:center;gap:9px;min-width:0}
+.owner-tab-icon{display:inline-grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:7px;background:#1e2d43;color:#c9d9f1;font-size:12px}
+.owner-workspace-tab[aria-selected=true] .owner-tab-icon{background:#ffffff20;color:#fff}
+.owner-tab-count{display:inline-grid;place-items:center;flex:0 0 auto;min-width:20px;height:20px;padding:0 5px;border-radius:7px;background:#1c2b41;color:#c4d3e7;font-size:9px;font-variant-numeric:tabular-nums}
+.owner-workspace-tab[aria-selected=true] .owner-tab-count{background:#ffffff2d;color:#fff}
+.owner-workspace-body{position:relative;min-width:0;min-height:0;height:100%;overflow:hidden}
+.owner-workspace-pane{display:none;width:100%;height:100%;max-height:none;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 3px 5px 0;scrollbar-width:thin;scrollbar-color:#435675 transparent}
+.owner-workspace-pane:not([hidden]){display:grid;align-content:start;align-items:start;gap:10px}
+.owner-workspace-pane[hidden]{display:none!important}
+.owner-workspace-pane>.panel{min-width:0;margin:0}
+.owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);align-items:start}
+.owner-workspace-pane[data-workspace-pane="campaigns"] #campaignList,.owner-workspace-pane[data-workspace-pane="campaigns"] #codeList,.owner-workspace-pane[data-workspace-pane="claim-review"] #claimReviewList,.owner-workspace-pane[data-workspace-pane="audit-history"] #auditHistory,.owner-workspace-pane[data-workspace-pane="redemptions"] #redemptionHistory{max-height:none;overflow:visible;padding:0}
+body.owner-session-active .panel{border-color:#283a54;background:#111f32;color:#e6eef9;box-shadow:0 8px 24px #02061122}
+body.owner-session-active .panel h2,body.owner-session-active .panel h3{color:#f0f5ff}
+body.owner-session-active .panel p,body.owner-session-active .muted,body.owner-session-active .meta{color:#9eafc7}
+body.owner-session-active input,body.owner-session-active select,body.owner-session-active textarea{border-color:#354963;background:#0b1728;color:#edf4ff}
+body.owner-session-active label{color:#b3c2d7}
+body.owner-session-active button{border-color:#354963;background:#15253b;color:#dce8f8}
+body.owner-session-active button.primary{border-color:#9a84ff;background:linear-gradient(135deg,#8e75f5,#6551d8);color:#fff}
+body.owner-session-active button.danger{border-color:#75404c;color:#ffb3bd}
+body.owner-session-active .notice{border-color:#30435e;background:#0d1a2c;color:#b3c3d8}
+body.owner-session-active .notice.good{border-color:#225c49;background:#0c2b27;color:#a5f2d0}
+body.owner-session-active .notice.error{border-color:#77414c;background:#301a25;color:#ffc1c8}
+body.owner-session-active .item{border-color:#2a3e59;background:#0e1b2d}
+.owner-overview-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:16px 18px;border:1px solid #30415e;border-radius:13px;background:radial-gradient(ellipse at 95% 5%,#3a3470 0,transparent 38%),linear-gradient(115deg,#162942,#171b34);min-width:0}
+.owner-overview-hero h2{margin:3px 0 0;font-size:clamp(17px,1.5vw,23px);letter-spacing:-.035em;color:#f5f7ff}
+.owner-overview-hero p{max-width:68ch;margin:4px 0 0;color:#adbed4;font-size:11px}
+.owner-overview-kicker{font:800 9px/1.3 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#b8a7ff}
+.owner-overview-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;min-width:0}
+.owner-metric-card{display:grid;gap:8px;min-width:0;padding:14px;border:1px solid #293b56;border-radius:12px;background:linear-gradient(155deg,#122238,#101a2b)}
+.owner-metric-label{color:#9eafc7;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.owner-metric-value{font-size:clamp(22px,2vw,30px);line-height:1;font-weight:900;letter-spacing:-.05em;color:#f5f8ff;font-variant-numeric:tabular-nums}
+.owner-overview-lower{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(240px,.9fr);gap:10px;align-items:start}
+.owner-overview-panel{min-width:0;margin:0}
+.owner-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.owner-quick-actions button{display:grid;gap:3px;min-height:52px;text-align:left;white-space:normal;padding:10px 12px}
+.owner-quick-actions button strong{font-size:11px}
+.owner-quick-actions button span{font-size:9px;font-weight:600;opacity:.8}
+.owner-recent-list{display:grid;gap:7px}
+.owner-recent-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;padding:9px;border:1px solid #2a3d58;border-radius:9px;background:#0e1a2c;min-width:0}
+.owner-recent-url{font-size:11px;font-weight:850;overflow-wrap:anywhere;color:#e6eef9}
+.owner-recent-meta{margin-top:3px;color:#9aabc2;font-size:9px;overflow-wrap:anywhere}
+.owner-recent-actions{display:flex;gap:5px;flex-wrap:wrap}
+.owner-recent-actions button{min-height:30px;padding:5px 8px;font-size:9px}
+.owner-list-toolbar{display:flex;align-items:center;gap:8px;margin:0 0 8px;min-width:0}
+.owner-list-toolbar input{flex:1;min-width:100px;max-width:none}
+.owner-list-count{flex:0 0 auto;color:#9fb1ca;font-size:10px;font-variant-numeric:tabular-nums}
+.owner-list-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #2a3d58}
+.owner-list-pagination button{min-height:31px;padding:5px 9px;font-size:9px}
+.owner-list-page-status{color:#a9bad0;font-size:10px;font-variant-numeric:tabular-nums}
+.owner-list-empty{padding:8px 0;color:#9eafc7;font-size:10px}
+.owner-report-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;padding:9px 11px;border:1px solid #2f4261;border-radius:11px;background:#0e1b2d}
+.owner-report-actions p{margin:0;color:#a4b5cb;font-size:10px;max-width:74ch}
+.owner-report-actions button{flex:0 0 auto}
+body.owner-session-active .report-hero{border-color:#344461;background:linear-gradient(135deg,#13243a,#201d3d);color:#f4f7ff}
+body.owner-session-active .report-hero h3{color:#f6f8ff}
+body.owner-session-active .report-hero .report-url{color:#aabbd3}
+body.owner-session-active .report-section,body.owner-session-active .report-stat,body.owner-session-active .report-category,body.owner-session-active .report-metric-panel,body.owner-session-active .report-check,body.owner-session-active .report-finding-count,body.owner-session-active .report-gauge-card,body.owner-session-active .report-metadata-item{border-color:#2a3b55;background:#101d30;color:#e8effa;box-shadow:none}
+body.owner-session-active .report-stat-label,body.owner-session-active .report-stat-note,body.owner-session-active .report-category-meta,body.owner-session-active .report-metric-label,body.owner-session-active .report-check-meta,body.owner-session-active .report-gauge-title,body.owner-session-active .report-gauge-note,body.owner-session-active .report-metadata-label{color:#9daec5}
+body.owner-session-active .report-stat-value,body.owner-session-active .report-category-title,body.owner-session-active .report-category-score,body.owner-session-active .report-check h5,body.owner-session-active .report-metric-value,body.owner-session-active .report-metadata-value{color:#edf3ff}
+body.owner-session-active .report-metric,body.owner-session-active .report-empty{background:#0b1728;color:#adbed4}
+body.owner-session-active .report-gauge-track{stroke:#34455e}
+body.owner-session-active .report-gauge-number{color:#f2f6ff}
+body.owner-session-active .report-bar{background:#263750}
+.report-compact-tabs{position:sticky;top:0;z-index:3;display:flex;gap:5px;overflow-x:auto;padding:5px;border:1px solid #293b56;border-radius:11px;background:rgba(12,24,40,.98);scrollbar-width:thin}
+.report-compact-tab{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:#a4b5cc;font-size:10px;font-weight:850;white-space:nowrap}
+.report-compact-tab[aria-selected=true]{border-color:#7566d9;background:linear-gradient(120deg,#6f61d9,#5143b5);color:#fff}
+.report-compact-tab-count{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:6px;background:#1d2b42;color:#c4d3e7;font-size:9px}
+.report-compact-tab[aria-selected=true] .report-compact-tab-count{background:#ffffff2b;color:#fff}
+.report-compact-pane{display:none;max-height:clamp(330px,calc(100dvh - 330px),720px);overflow:auto;overscroll-behavior:contain;padding:9px;border:1px solid #293b56;border-radius:11px;background:#0b1728;scrollbar-width:thin;scrollbar-color:#435675 transparent}
+.report-compact-pane:not([hidden]){display:grid;align-content:start;gap:9px}
+.report-compact-pane[hidden]{display:none!important}
+.report-compact-overview .report-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.report-compact-overview .report-stat{padding:9px}
+.report-compact-overview .report-stat-value{font-size:17px}
+.report-compact-overview .report-stat-note{font-size:9px}
+.report-compact-overview .report-visual-gauges{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.report-compact-overview .report-gauge-card{padding:8px 5px;gap:4px}
+.report-compact-overview .report-gauge-visual,.report-compact-overview .report-gauge-empty{width:80px}
+.report-compact-overview .report-gauge-number{font-size:18px}
+.report-compact-overview .report-finding-counts{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.report-compact-overview .report-finding-count{padding:7px}
+.report-compact-overview .report-finding-count strong{font-size:16px}
+.report-category-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.report-category{padding:8px}
+.report-category .report-category-meta{overflow-wrap:anywhere}
+.report-compact-disclosure{padding:9px;border:1px solid #293b56;border-radius:9px;background:#101d30}
+.report-compact-disclosure>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;font-weight:850;color:#e2ebf8}
+.report-compact-disclosure>summary::-webkit-details-marker{display:none}
+.report-compact-disclosure>summary:after{content:"＋";font-size:14px;color:#aebfe0}
+.report-compact-disclosure[open]>summary:after{content:"−"}
+.owner-workspace-pane[data-workspace-pane="audit"] .report-compact-pane{max-height:clamp(300px,calc(100dvh - 310px),640px)}
+.owner-workspace-pane[data-workspace-pane="audit"] #auditOutput{min-width:0}
+.owner-workspace-pane[data-workspace-pane="audit"] #auditOutput>.report-shell{gap:8px}
+.owner-list-toolbar input:focus-visible,.owner-workspace-tab:focus-visible,.report-compact-tab:focus-visible,body.owner-session-active button:focus-visible{outline:2px solid #b4a3ff;outline-offset:2px}
+@media(max-width:900px){
+ body.owner-session-active main{padding:10px}
+ .owner-workspace{grid-template-columns:170px minmax(0,1fr);gap:8px}
+ .owner-workspace-tabs{width:170px}
+ .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr)}
+ .owner-overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .owner-overview-lower{grid-template-columns:minmax(0,1fr)}
+ .owner-overview-hero{align-items:flex-start;flex-direction:column}
+ .report-compact-overview .report-visual-gauges{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .report-compact-overview .report-finding-counts{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .report-category-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ body.owner-session-active{height:auto;min-height:100dvh;overflow:auto}
+ body.owner-session-active main{height:auto;min-height:100dvh;padding:12px 10px;display:flex;overflow:visible}
+ body.owner-session-active #console{display:flex;flex:initial;min-height:0;overflow:visible}
+ .owner-workspace{display:flex;flex:initial;min-height:0;overflow:visible;flex-direction:column}
+ .owner-workspace-tabs{position:sticky;top:0;z-index:5;display:flex;flex-direction:row;width:100%;max-width:100%;overflow-x:auto}
+ .owner-workspace-tab{flex:0 0 auto;width:auto;min-height:38px;white-space:nowrap}
+ .owner-tab-label-wrap{gap:6px}
+ .owner-tab-icon{width:20px;height:20px;flex-basis:20px}
+ .owner-workspace-body{height:auto;overflow:visible}
+ .owner-workspace-pane,.owner-workspace-pane:not([hidden]){height:auto;max-height:none;overflow:visible}
+ .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr)}
+ .owner-overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .owner-overview-lower{grid-template-columns:minmax(0,1fr)}
+ .report-compact-pane,.owner-workspace-pane[data-workspace-pane="audit"] .report-compact-pane{max-height:none;overflow:visible;padding:8px}
+ .report-compact-overview .report-stats,.report-compact-overview .report-visual-gauges{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .report-compact-overview .report-finding-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .report-category-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .owner-list-toolbar{flex-wrap:wrap}
+}
+@media(max-width:430px){
+ .owner-overview-metrics{gap:6px}
+ .owner-metric-card{padding:10px}
+ .owner-recent-row{grid-template-columns:minmax(0,1fr)}
+ .owner-recent-actions{width:100%}
+ .report-category-list{grid-template-columns:minmax(0,1fr)}
+ .report-compact-overview .report-finding-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
   </style>
 </head>
 <body>
@@ -313,7 +468,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     ?'https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev'
     :'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const $=id=>document.getElementById(id);
-  const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[]};
+  const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[],listViews:{}};
   const text=(tag,value,className='')=>{const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value??'');return node;};
   const button=(label,handler,kind='')=>{const node=text('button',label,kind);node.type='button';node.addEventListener('click',handler);return node;};
   const notice=(message,tone='')=>text('div',message,'notice'+(tone?' '+tone:''));
@@ -419,6 +574,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       if(c.status!=='active'&&c.status!=='ended')addVerificationEditor(item,c);
       root.append(item);
     });
+    setupCompactList(root,'campaigns','Search campaigns…');
   }
   function addVerificationEditor(item,c){
     const form=text('form','','stack');
@@ -468,6 +624,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       },'danger'));
       root.append(item);
     });
+    setupCompactList(root,'codes','Search voucher codes…');
   }
   function renderClaimRequests(){
     const root=$('claimReviewList');root.replaceChildren();
@@ -528,6 +685,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       },'danger'));
       item.append(head,details,actions);root.append(item);
     });
+    setupCompactList(root,'claims','Search pending claims…');
   }
   function ownerFixKitText(kit){
     const changes=Array.isArray(kit.changes)?kit.changes:[];
@@ -569,8 +727,8 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     const hasHtml=typeof kit.correctedHtml==='string'&&kit.correctedHtml.length>0;
     const panel=text('section','','report-section owner-fix-result');
     panel.style.marginTop='12px';
-    panel.append(text('h3',hasHtml?'Corrected HTML proposal':'Fix List'));
-    panel.append(notice((kit.summary||'Fix List prepared.')+' Live website changes were not made.',hasHtml?'good':''));
+    panel.append(text('h3',hasHtml?'Manual HTML patch proposal':'Manual fix checklist'));
+    panel.append(notice((kit.summary||'Manual fix package prepared.')+' This is guidance only; the live website was not changed. Use “Preview safe repairs” to apply supported changes with explicit approval and live verification.'));
     const changes=Array.isArray(kit.changes)?kit.changes:[];
     if(changes.length){
       panel.append(text('h4',hasHtml?'Safe edits prepared':'Audit findings to address'));
@@ -595,7 +753,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       kit.notes.forEach(note=>notes.append(text('li',note)));
       panel.append(notes);
     }
-    panel.append(button(hasHtml?'Download corrected HTML file':'Download simple Fix List',()=>downloadOwnerFixKit(kit),'primary'));
+    panel.append(button(hasHtml?'Download proposed HTML patch':'Download manual fix checklist',()=>downloadOwnerFixKit(kit),'primary'));
     item.append(panel);
   }
   function renderOwnerAutoFixJob(item,auditId,job){
@@ -839,72 +997,116 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
   function syncOwnerWorkspaceCounts(){
     const root=$('console');if(!root)return;
     root.querySelectorAll('.owner-workspace-tab[data-count-selector]').forEach(tab=>{
-      const selector=tab.dataset.countSelector, badge=tab.querySelector('.owner-tab-count');
-      if(!selector||!badge)return;
-      const count=document.querySelectorAll(selector).length;
-      badge.textContent=String(count);badge.hidden=false;
+      const selector=tab.dataset.countSelector,badge=tab.querySelector('.owner-tab-count');if(!selector||!badge)return;
+      badge.textContent=String(document.querySelectorAll(selector).length);badge.hidden=false;
+    });
+    renderOwnerOverview();
+  }
+  function buildOwnerOverview(pane){
+    const hero=document.createElement('section');hero.className='owner-overview-hero';
+    const copy=document.createElement('div');
+    copy.append(text('div','NEXUSNOVA · OWNER COMMAND CENTER','owner-overview-kicker'),text('h2','Your site operations, at a glance'),
+      text('p','Start an audit, review the next action, and move directly to the records you need. Full evidence remains available inside each report.'));
+    hero.append(copy);
+    const metrics=document.createElement('div');metrics.className='owner-overview-metrics';
+    [['audits','Audit records'],['campaigns','Campaigns'],['pending','Claims awaiting review'],['redemptions','Redemptions']].forEach(([key,label])=>{
+      const card=text('article','','owner-metric-card');card.dataset.metric=key;card.append(text('span',label,'owner-metric-label'),text('strong','0','owner-metric-value'));metrics.append(card);
+    });
+    const lower=document.createElement('div');lower.className='owner-overview-lower';
+    const recent=text('section','','panel owner-overview-panel'),recentHead=text('div','','row');
+    recentHead.append(text('h2','Recent audit activity'),button('Open audit history',()=>activateOwnerWorkspace('audit-history',$('console'))));
+    const list=text('div','','owner-recent-list');list.id='ownerRecentAudits';
+    recent.append(recentHead,text('p','Latest reports are shortcuts, not a replacement for full audit history.'),list);
+    const quick=text('section','','panel owner-overview-panel');
+    quick.append(text('h2','Quick actions'),text('p','Direct routes to the next task. No campaign or voucher is activated automatically.'));
+    const actions=text('div','','owner-quick-actions');
+    [['Run a website audit','Enter a public HTTPS URL','audit'],['Review voucher claims','Verify proofs before issuing codes','claim-review'],['Manage campaigns','Drafts, vouchers and limits','campaigns'],['View redemptions','Orders and use history','redemptions']].forEach(([title,subtitle,target])=>{
+      const action=button(title,()=>activateOwnerWorkspace(target,$('console')));action.replaceChildren(text('strong',title),text('span',subtitle));actions.append(action);
+    });
+    quick.append(actions);lower.append(recent,quick);pane.append(hero,metrics,lower);
+  }
+  function renderOwnerOverview(){
+    const root=$('ownerRecentAudits');if(!root)return;
+    const counts={audits:state.audits.length,campaigns:state.campaigns.length,pending:state.claimRequests.filter(item=>item.status==='pending').length,redemptions:state.redemptions.length};
+    Object.entries(counts).forEach(([key,value])=>{const node=document.querySelector('.owner-metric-card[data-metric="'+key+'"] .owner-metric-value');if(node)node.textContent=String(value);});
+    root.replaceChildren();
+    const recent=[...state.audits].sort((a,b)=>Number(b.created_at||0)-Number(a.created_at||0)).slice(0,4);
+    if(!recent.length){root.append(notice('No audit records yet. Run a private audit to create the first report.'));return;}
+    recent.forEach(a=>{
+      const row=text('div','','owner-recent-row'),details=text('div'),actions=text('div','','owner-recent-actions');
+      details.append(text('div',a.url||'Website audit','owner-recent-url'),text('div','Created '+dateTime(a.created_at)+' · Ref '+String(a.audit_id||'').slice(0,8),'owner-recent-meta'));
+      actions.append(button('Report',()=>showFullReport(a.audit_id)));
+      if(Number(a.owner_created)===1)actions.append(button('Repair',async()=>{
+        if(!confirm('Prepare a preview of deterministic safe fixes for this audit? No live change occurs until you approve the exact preview.'))return;
+        try{activateOwnerWorkspace('audit-history',$('console'));await requestOwnerAutoFixPlan(row,a.audit_id);setGlobal('Repair preview created. The page is not marked fixed until live verification succeeds.','');}
+        catch(error){setGlobal(error.message||'Could not prepare a verified repair preview.','error');}
+      },'primary'));
+      row.append(details,actions);root.append(row);
     });
   }
   function setupOwnerWorkspace(){
     const root=$('console');if(!root||root.dataset.workspaceReady==='true')return;
     const sessionPanel=Array.from(root.children).find(node=>node.classList.contains('panel')&&node.classList.contains('row'));
-    const sections=Array.from(root.children).filter(node=>node.tagName==='SECTION'&&node.classList.contains('panel'));
-    if(!sessionPanel||!sections.length)return;
+    const sections=Array.from(root.children).filter(node=>node.tagName==='SECTION'&&node.classList.contains('panel'));if(!sessionPanel||!sections.length)return;
     const definitions=[
-      {id:'audit',label:'Audit workspace',sectionSelector:'#ownerAuditForm'},
-      {id:'campaigns',label:'Campaigns & vouchers',sectionSelector:'#campaignForm',secondSelector:'#campaignList',countSelector:'#campaignList .item, #codeList .item'},
-      {id:'claim-review',label:'Claim review',sectionSelector:'#claimReviewList',countSelector:'#claimReviewList .item'},
-      {id:'audit-history',label:'Audit history',sectionSelector:'#auditHistory',countSelector:'#auditHistory .item'},
-      {id:'redemptions',label:'Redemptions',sectionSelector:'#redemptionHistory',countSelector:'#redemptionHistory .item'}
+      {id:'overview',label:'Overview',icon:'⌂'},
+      {id:'audit',label:'Audit workspace',icon:'◎',sectionSelector:'#ownerAuditForm'},
+      {id:'campaigns',label:'Campaigns & vouchers',icon:'▤',sectionSelector:'#campaignForm',secondSelector:'#campaignList',countSelector:'#campaignList .item, #codeList .item'},
+      {id:'claim-review',label:'Claim review',icon:'✓',sectionSelector:'#claimReviewList',countSelector:'#claimReviewList .item'},
+      {id:'audit-history',label:'Audit history',icon:'◷',sectionSelector:'#auditHistory',countSelector:'#auditHistory .item'},
+      {id:'redemptions',label:'Redemptions',icon:'⇄',sectionSelector:'#redemptionHistory',countSelector:'#redemptionHistory .item'}
     ];
     const workspace=document.createElement('div');workspace.className='owner-workspace';
-    const tabs=document.createElement('nav');tabs.className='owner-workspace-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Owner console workspaces');
+    const tabs=document.createElement('nav');tabs.className='owner-workspace-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Owner command navigation');tabs.setAttribute('aria-orientation','vertical');
     const viewport=document.createElement('div');viewport.className='owner-workspace-body';
     definitions.forEach((definition,index)=>{
       const tab=document.createElement('button');tab.type='button';tab.className='owner-workspace-tab';tab.id='owner-tab-'+definition.id;
       tab.setAttribute('role','tab');tab.setAttribute('aria-controls','owner-pane-'+definition.id);tab.setAttribute('aria-selected',index===0?'true':'false');tab.tabIndex=index===0?0:-1;
-      const label=document.createElement('span');label.textContent=definition.label;tab.append(label);
-      if(definition.countSelector){tab.dataset.countSelector=definition.countSelector;const badge=document.createElement('span');badge.className='owner-tab-count';badge.textContent='0';badge.setAttribute('aria-label','items');tab.append(badge);}
+      const labelWrap=text('span','','owner-tab-label-wrap');labelWrap.append(text('span',definition.icon,'owner-tab-icon'),text('span',definition.label));tab.append(labelWrap);
+      if(definition.countSelector){tab.dataset.countSelector=definition.countSelector;const badge=text('span','0','owner-tab-count');badge.setAttribute('aria-label','records');tab.append(badge);}
       const pane=document.createElement('section');pane.className='owner-workspace-pane';pane.dataset.workspacePane=definition.id;
       pane.id='owner-pane-'+definition.id;pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',tab.id);pane.tabIndex=0;
       pane.hidden=index!==0;pane.setAttribute('aria-hidden',index===0?'false':'true');
-      const selectors=[definition.sectionSelector,definition.secondSelector].filter(Boolean);
-      selectors.forEach(selector=>{
-        const section=sections.find(candidate=>candidate.querySelector(selector));
-        if(section)pane.append(section);
-      });
-      tabs.append(tab);viewport.append(pane);
-      tab.addEventListener('click',()=>activateOwnerWorkspace(definition.id,root));
+      if(definition.id==='overview')buildOwnerOverview(pane);
+      [definition.sectionSelector,definition.secondSelector].filter(Boolean).forEach(selector=>{const section=sections.find(candidate=>candidate.querySelector(selector));if(section)pane.append(section);});
+      tabs.append(tab);viewport.append(pane);tab.addEventListener('click',()=>activateOwnerWorkspace(definition.id,root));
       tab.addEventListener('keydown',event=>{
-        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-        event.preventDefault();
-        const buttons=Array.from(tabs.querySelectorAll('[role="tab"]'));const current=buttons.indexOf(tab);
-        const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(current+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;
+        if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+        event.preventDefault();const buttons=Array.from(tabs.querySelectorAll('[role="tab"]')),current=buttons.indexOf(tab);
+        const forward=event.key==='ArrowRight'||event.key==='ArrowDown',next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(current+(forward?1:-1)+buttons.length)%buttons.length;
         buttons[next].focus();buttons[next].click();
       });
     });
-    workspace.append(tabs,viewport);
-    root.insertBefore(workspace,sessionPanel.nextSibling);
-    root.dataset.workspaceReady='true';
-    root._ownerWorkspaceDefinitions=definitions;
+    workspace.append(tabs,viewport);root.insertBefore(workspace,sessionPanel.nextSibling);root.dataset.workspaceReady='true';root._ownerWorkspaceDefinitions=definitions;
     syncOwnerWorkspaceCounts();
-    const setSessionLayout=()=>{
-      document.body.classList.toggle('owner-session-active',!root.hidden);
-      if(!root.hidden)syncOwnerWorkspaceCounts();
-    };
-    const observer=new MutationObserver(setSessionLayout);observer.observe(root,{attributes:true,attributeFilter:['hidden']});
-    setSessionLayout();
+    const setSessionLayout=()=>{document.body.classList.toggle('owner-session-active',!root.hidden);if(!root.hidden)syncOwnerWorkspaceCounts();};
+    const observer=new MutationObserver(setSessionLayout);observer.observe(root,{attributes:true,attributeFilter:['hidden']});setSessionLayout();
   }
   function activateOwnerWorkspace(id,root){
-    const tabs=Array.from(root.querySelectorAll('.owner-workspace-tab'));
-    const panes=Array.from(root.querySelectorAll('.owner-workspace-pane'));
-    tabs.forEach(tab=>{
-      const active=tab.id==='owner-tab-'+id;tab.setAttribute('aria-selected',active?'true':'false');tab.tabIndex=active?0:-1;
-    });
-    panes.forEach(pane=>{
-      const active=pane.dataset.workspacePane===id;pane.hidden=!active;pane.setAttribute('aria-hidden',active?'false':'true');
-    });
+    if(!root)return;
+    const tabs=Array.from(root.querySelectorAll('.owner-workspace-tab')),panes=Array.from(root.querySelectorAll('.owner-workspace-pane'));
+    tabs.forEach(tab=>{const active=tab.id==='owner-tab-'+id;tab.setAttribute('aria-selected',active?'true':'false');tab.tabIndex=active?0:-1;});
+    panes.forEach(pane=>{const active=pane.dataset.workspacePane===id;pane.hidden=!active;pane.setAttribute('aria-hidden',active?'false':'true');});
     syncOwnerWorkspaceCounts();
+  }
+  function setupCompactList(root,key,placeholder){
+    if(!root)return;
+    root.querySelector(':scope > .owner-list-toolbar')?.remove();root.querySelector(':scope > .owner-list-pagination')?.remove();
+    const items=Array.from(root.querySelectorAll(':scope > .item'));if(!items.length)return;
+    const views=state.listViews||(state.listViews={}),view=views[key]||(views[key]={query:'',page:0,pageSize:6});
+    const toolbar=text('div','','owner-list-toolbar'),search=text('input');search.type='search';search.value=view.query;search.placeholder=placeholder;search.setAttribute('aria-label',placeholder);
+    const count=text('span','','owner-list-count');toolbar.append(search,count);root.prepend(toolbar);
+    const footer=text('div','','owner-list-pagination'),prev=button('← Previous',()=>{view.page=Math.max(0,view.page-1);apply();});
+    const status=text('span','','owner-list-page-status'),next=button('Next →',()=>{view.page+=1;apply();});footer.append(prev,status,next);root.append(footer);
+    function apply(){
+      const query=String(view.query||'').trim().toLocaleLowerCase(),filtered=items.filter(item=>!query||item.textContent.toLocaleLowerCase().includes(query));
+      const pageCount=Math.max(1,Math.ceil(filtered.length/view.pageSize));view.page=Math.max(0,Math.min(view.page,pageCount-1));
+      const visible=new Set(filtered.slice(view.page*view.pageSize,(view.page+1)*view.pageSize));items.forEach(item=>{item.hidden=!visible.has(item);});
+      count.textContent=filtered.length+' records';status.textContent='Page '+(view.page+1)+' of '+pageCount;prev.disabled=view.page===0;next.disabled=view.page>=pageCount-1;footer.hidden=filtered.length<=view.pageSize;
+      let empty=root.querySelector(':scope > .owner-list-empty');if(!filtered.length&&!empty){empty=text('div','No records match this search.','owner-list-empty');root.insertBefore(empty,footer);}
+      empty=root.querySelector(':scope > .owner-list-empty');if(empty)empty.hidden=filtered.length>0;
+    }
+    search.addEventListener('input',()=>{view.query=search.value;view.page=0;apply();});apply();
   }
   function compactAuditReport(shell){
     if(!shell||shell.dataset.compactReport==='true')return;
@@ -1184,6 +1386,20 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       const report=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/full');
       if(!report||typeof report!=='object'||Array.isArray(report))throw new Error('The full report response was not valid report data.');
       renderAuditReport(report,auditId);
+      const owned=state.audits.find(item=>item.audit_id===auditId&&Number(item.owner_created)===1);
+      if(owned){
+        const shell=$('auditOutput').querySelector('.report-shell');
+        if(shell&&!shell.querySelector('.owner-report-actions')){
+          const actions=text('div','','owner-report-actions');
+          actions.append(text('p','Supported HTML metadata fixes can be previewed, approved and verified against the live page. Other findings remain visible and may need a code-level repair.'));
+          actions.append(button('Preview safe repairs',async()=>{
+            if(!confirm('Build a no-charge preview of supported safe fixes for this audit? No live change occurs until you approve the exact preview.'))return;
+            try{await requestOwnerAutoFixPlan(shell,auditId);setGlobal('Repair preview created. The page is not marked fixed until live verification succeeds.','');}
+            catch(error){setGlobal(error.message||'Could not prepare a verified repair preview.','error');}
+          },'primary'));
+          shell.prepend(actions);
+        }
+      }
     }catch(e){setGlobal(e.message,'error');}
   }
   function renderRedemptions(){
@@ -1197,6 +1413,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
         text('div','Order: '+(r.order_id||'No payment order linked'),'meta'));
       head.append(left,text('span',r.status,'pill '+r.status));item.append(head);root.append(item);
     });
+    setupCompactList(root,'redemptions','Search redemptions…');
   }
   $('loginForm').addEventListener('submit',async event=>{
     event.preventDefault();const value=$('ownerTokenInput').value;
