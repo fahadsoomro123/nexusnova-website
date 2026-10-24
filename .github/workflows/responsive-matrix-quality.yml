@@ -111,6 +111,7 @@ jobs:
               ('register', 'register.html'),
               ('privacy', 'privacy.html'),
               ('audit-studio', 'seo-audit-studio.html'),
+              ('owner-console', 'seo-audit-studio-admin.html'),
           ]
           widths = [360, 375, 390, 412, 430, 768, 1024, 1280, 1440]
           failures = []
@@ -208,7 +209,7 @@ jobs:
                               sw: document.documentElement.scrollWidth,
                               cw: document.documentElement.clientWidth,
                               h1: document.querySelectorAll('h1').length,
-                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header') || !!document.querySelector('.topbar'),
+                              header: !!document.querySelector('[data-header]') || !!document.querySelector('.nn-header') || !!document.querySelector('.topbar') || !!document.querySelector('main > header'),
                               footer: !!document.querySelector('footer'),
                               prompt: !!document.querySelector('#niPrompt'),
                           })''')
