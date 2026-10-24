@@ -237,6 +237,9 @@ test('Fix Issues offers the one-time complimentary audit only after live verific
   const html = fs.readFileSync(path.join(root, 'seo-audit-studio.html'), 'utf8');
   assert.ok(html.includes('id="fixIssuesVerificationPanel"'));
   assert.ok(html.includes('id="fixIssuesVerificationBtn"'));
+  assert.ok(html.includes('id="fixIssuesVerificationOpenReportBtn"'));
+  assert.ok(html.includes("document.addEventListener('nexusnova:open-verification-audit'"));
+  assert.ok(html.includes("await unlockReport(targetId)"));
   assert.ok(html.includes("job.status === 'completed' && !isFixKit && verification.status === 'verified'"));
   assert.ok(html.includes("/verification-audit"));
   assert.ok(html.includes("['resolved', 'Resolved checks']"));
