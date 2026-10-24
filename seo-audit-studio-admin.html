@@ -860,7 +860,6 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     const workspace=document.createElement('div');workspace.className='owner-workspace';
     const tabs=document.createElement('nav');tabs.className='owner-workspace-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Owner console workspaces');
     const viewport=document.createElement('div');viewport.className='owner-workspace-body';
-    const entries=[];
     definitions.forEach((definition,index)=>{
       const tab=document.createElement('button');tab.type='button';tab.className='owner-workspace-tab';tab.id='owner-tab-'+definition.id;
       tab.setAttribute('role','tab');tab.setAttribute('aria-controls','owner-pane-'+definition.id);tab.setAttribute('aria-selected',index===0?'true':'false');tab.tabIndex=index===0?0:-1;
@@ -872,7 +871,6 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       const selectors=[definition.sectionSelector,definition.secondSelector].filter(Boolean);
       selectors.forEach(selector=>{
         const section=sections.find(candidate=>candidate.querySelector(selector));
-        if(section&&!entries.some(entry=>entry.sections.includes(section)))entries.push({section,pane});
         if(section)pane.append(section);
       });
       tabs.append(tab);viewport.append(pane);entries.push({tab,pane,definition});
