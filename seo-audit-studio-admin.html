@@ -945,6 +945,7 @@ body.owner-session-active .report-bar{background:#263750}
       },'danger'));
       root.append(item);item.append(actions);
     });
+    setupCompactList(root,'audits','Search audit URL or reference…');
   }
   function reportDisplayValue(value,fallback='Not available'){
     if(value===null||value===undefined||value==='')return fallback;
@@ -1036,11 +1037,6 @@ body.owner-session-active .report-bar{background:#263750}
       const row=text('div','','owner-recent-row'),details=text('div'),actions=text('div','','owner-recent-actions');
       details.append(text('div',a.url||'Website audit','owner-recent-url'),text('div','Created '+dateTime(a.created_at)+' · Ref '+String(a.audit_id||'').slice(0,8),'owner-recent-meta'));
       actions.append(button('Report',()=>showFullReport(a.audit_id)));
-      if(Number(a.owner_created)===1)actions.append(button('Repair',async()=>{
-        if(!confirm('Prepare a preview of deterministic safe fixes for this audit? No live change occurs until you approve the exact preview.'))return;
-        try{activateOwnerWorkspace('audit-history',$('console'));await requestOwnerAutoFixPlan(row,a.audit_id);setGlobal('Repair preview created. The page is not marked fixed until live verification succeeds.','');}
-        catch(error){setGlobal(error.message||'Could not prepare a verified repair preview.','error');}
-      },'primary'));
       row.append(details,actions);root.append(row);
     });
   }
