@@ -163,7 +163,13 @@
     if(options.body!==undefined)headers.set('Content-Type','application/json');
     const response=await fetch(API+path,{...options,headers,mode:'cors',credentials:'omit',cache:'no-store',redirect:'error'});
     const body=await response.json().catch(()=>({}));
-    if(response.status===401){disconnect();throw new Error('Owner token was rejected. This may be an outdated access file from an older review deployment. Download the access artifact from the latest successful review Worker run, then connect again.');}
+    if(response.status===401){
+      const isReviewWorker=API==='https://nexusnova-audit-studio-review.fahadsoomro123.workers.dev';
+      disconnect();
+      throw new Error(isReviewWorker
+        ? 'Review Owner token was rejected. Download the access artifact from the latest successful review Worker run; review tokens are temporary and cannot access production.'
+        : 'Production Owner token was rejected. Review access artifacts are not valid for production. Use the production Owner Console token configured for the production Worker.');
+    }
     if(!response.ok){
       const code=String(body.error||'');
       const friendly={
