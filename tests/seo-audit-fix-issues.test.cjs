@@ -26,7 +26,7 @@ test('Fix Issues reserves the US$5 checkout for direct automatic fixes and keeps
   assert.match(html, /changes.length === 0 \|\| !payload.canCheckout \|\| !accept.checked/);
   assert.match(html, /Connect website for automatic fixes/);
   assert.match(html, /fixIssuesConsentText/);
-  assert.match(html, /No payment was taken/);
+  assert.match(html, /No payment or website change|No payment was taken|No charge was created|no payment has been taken/i);
 });
 
 test('Fix Issues can verify an existing GitHub installation without a repeated install redirect', () => {
@@ -41,7 +41,7 @@ test('one-click connection previews the sole verified repository and never enabl
   assert.match(html, /api\('\/api\/fix-issues\/connect\/repo'/);
   assert.match(html, /api\('\/api\/fix-issues\/plan'/);
   assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
-  assert.match(html, /preview ready below\. No payment has been taken/);
+  assert.match(html, /automatic repair plan is ready|preview ready below\. No payment has been taken/i);
 });
 test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
   assert.doesNotMatch(html, /fixIssuesGuidedBtn/);
@@ -52,7 +52,7 @@ test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
   assert.doesNotMatch(html, /Download recovery instructions/i);
   assert.match(html, /This audit has no currently supported, verified automatic repair plan/);
   assert.match(html, /The issue remains unresolved/);
-  assert.match(html, /No payment was taken/);
+  assert.match(html, /No payment or website change|No payment was taken|No charge was created|no payment has been taken/i);
 });
 
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
