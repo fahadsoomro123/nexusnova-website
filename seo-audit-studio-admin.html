@@ -197,6 +197,176 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
   .report-compact-overview .report-finding-counts{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
   </style>
+
+  <style id="owner-flagship-v3">
+    :root{color-scheme:dark;--flag-bg:#070e1b;--flag-panel:#0d192b;--flag-panel-2:#111f34;--flag-line:#263954;--flag-line-soft:#1b2b42;--flag-ink:#eef4ff;--flag-muted:#90a4bf;--flag-violet:#8b7bff;--flag-cyan:#66d9e8;--flag-good:#3cdb9b;--flag-warn:#f8c566;--flag-bad:#ff7d8b}
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;background:var(--flag-bg);color:var(--flag-ink);overflow:hidden}
+    body{font:13px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .nn-header{display:none!important}
+    main{width:100%;max-width:none;height:100dvh;max-height:100dvh;margin:0;padding:16px 20px 14px;display:flex;flex-direction:column;overflow:hidden}
+    main>header{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 12px;padding:0}
+    main>header>div{min-width:0}
+    main>header .eyebrow{margin:0 0 4px;color:#9e91ff;letter-spacing:.16em;font-size:9px}
+    main>header h1{font-size:clamp(22px,2vw,30px);line-height:1.1;letter-spacing:-.045em;margin:0;color:#f3f6ff}
+    main>header p{margin:5px 0 0;color:#90a4bf;font-size:11px}
+    .top-links{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .top-links a{color:#c6d5ee;border:1px solid #263954;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:750;text-decoration:none;background:#0d192b}
+    #loginPanel{width:min(100%,480px);margin:auto;background:linear-gradient(145deg,#101f35,#0c1728);border:1px solid #293d5b;border-radius:20px;padding:26px;box-shadow:0 30px 100px #0005}
+    #loginPanel h2{font-size:21px;letter-spacing:-.035em;color:#f3f6ff}
+    #loginPanel p{color:#a5b7d1;font-size:12px;line-height:1.65}
+    #loginPanel label{color:#d8e3f4;font-size:11px;font-weight:750}
+    #loginPanel input{background:#07111f;border:1px solid #304663;color:#f1f6ff;border-radius:10px;padding:11px 12px;min-height:42px}
+    #console[hidden],#loginPanel[hidden]{display:none!important}
+    #console:not([hidden]){display:flex;flex:1;min-height:0;flex-direction:column;gap:10px;overflow:hidden}
+    #console>.panel.row{flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 14px;margin:0;padding:9px 12px;border:1px solid var(--flag-line);border-radius:12px;background:#0b1728;box-shadow:none}
+    #console>.panel.row h2{margin:0;color:#eaf1ff;font-size:11px;letter-spacing:.02em}
+    #console>.panel.row p{margin:2px 0 0;color:#8197b3;font-size:10px}
+    #console>.panel.row .actions{justify-content:flex-end}
+    #globalStatus{grid-column:1/-1;width:auto!important;margin:0!important;padding:5px 8px!important;min-height:26px;border-color:#263954;background:#101f33;color:#afc0d8;font-size:10px}
+    button,input,select,textarea{font:inherit}
+    button{border-radius:9px;min-height:32px;padding:6px 10px;font-size:10px;font-weight:800;transition:transform .12s,border-color .12s,background .12s}
+    button:hover{border-color:#7d8fac;transform:translateY(-1px)}
+    button.primary{background:linear-gradient(110deg,#9b8aff,#7063f2);border-color:#9284ff;color:white;box-shadow:0 6px 18px #7664f522}
+    button.danger{background:#2a1524;border-color:#663148;color:#ffbbc4}
+    .notice{border:1px solid #2b405c;border-radius:9px;background:#101f33;color:#b5c5db;padding:8px 10px;font-size:10px;line-height:1.5}
+    .notice.good{background:#0d2a28;border-color:#235b50;color:#9ce9cd}
+    .notice.error{background:#311922;border-color:#6e3445;color:#ffbec7}
+    .panel{background:var(--flag-panel);border:1px solid var(--flag-line);border-radius:14px;padding:13px;box-shadow:0 8px 26px #0002}
+    .panel h2{color:#edf3ff;font-size:13px;letter-spacing:-.01em;margin:0 0 5px}
+    .panel h3{color:#dce7f8;font-size:11px;margin:0 0 5px}
+    .panel p,.field-note{color:var(--flag-muted);font-size:10px;line-height:1.5}
+    label{color:#bdcce1;font-size:10px;font-weight:750;gap:4px}
+    input,select,textarea{background:#071321;color:#eaf2ff;border:1px solid #2a405c;border-radius:8px;min-height:31px;padding:6px 8px;font-size:11px}
+    input:focus,select:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px solid #8275ff;outline-offset:2px}
+    textarea{resize:none}
+    .row{gap:10px}
+    .stack{gap:8px}
+    .three{gap:8px}
+    .actions{gap:6px;align-items:center}
+    .pill{border-radius:6px;padding:3px 7px;font-size:9px;font-weight:850}
+    .pill.active,.pill.good{background:#0e302c;color:#9be9ca;border:1px solid #245b4d}
+    .pill.draft,.pill.pending{background:#2b2417;color:#f6d291;border:1px solid #58472a}
+    .owner-workspace{display:flex;flex:1;min-height:0;flex-direction:column;gap:9px}
+    .owner-workspace-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;padding:0;border:0;background:transparent;overflow:visible}
+    .owner-workspace-tab{display:flex;justify-content:center;align-items:center;gap:7px;min-width:0;min-height:38px;padding:7px 9px;border:1px solid #253852;border-radius:9px;background:#0b1728;color:#8fa4c0;text-align:center;white-space:normal;font-size:10px}
+    .owner-workspace-tab[aria-selected=true]{background:linear-gradient(110deg,#24224b,#171f3c);border-color:#8678ff;color:#f8f8ff;box-shadow:inset 0 0 0 1px #a69aff2b,0 5px 18px #6153d51d}
+    .owner-tab-count{display:inline-grid;place-items:center;min-width:19px;height:18px;padding:0 5px;border-radius:6px;background:#15253a;color:#c4d6ee;font-size:9px}
+    .owner-workspace-body{flex:1;min-height:0;position:relative;overflow:hidden}
+    .owner-workspace-pane{display:none;box-sizing:border-box;width:100%;height:100%;max-height:none;min-height:0;overflow:hidden;overscroll-behavior:contain;padding:0;scrollbar-width:none}
+    .owner-workspace-pane:not([hidden]){display:grid;align-content:stretch;gap:9px}
+    .owner-workspace-pane[hidden]{display:none!important}
+    .owner-workspace-pane>.panel{margin:0;min-width:0;min-height:0;overflow:hidden}
+    .owner-workspace-pane[data-workspace-pane="overview"]{grid-template-rows:minmax(0,1fr)}
+    .owner-workspace-pane[data-workspace-pane="audit"]{grid-template-rows:auto minmax(0,1fr)}
+    .owner-workspace-pane[data-workspace-pane="audit"]>section.panel{display:flex;flex-direction:column}
+    .owner-workspace-pane[data-workspace-pane="audit"] #auditOutput{min-height:0;overflow:auto;margin-top:8px!important}
+    .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:stretch}
+    .owner-workspace-pane[data-workspace-pane="campaigns"]>.panel{height:100%;overflow:hidden}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:7px}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>h2,
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>.row,
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>label:nth-of-type(1),
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>label:nth-of-type(4),
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>.notice,
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm>.actions{grid-column:1/-1}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignTerms,
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignClaimRequirements{height:48px;min-height:48px}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignForm .field-note{display:none}
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignList,
+    .owner-workspace-pane[data-workspace-pane="campaigns"] #codeList,
+    .owner-workspace-pane[data-workspace-pane="claim-review"] #claimReviewList,
+    .owner-workspace-pane[data-workspace-pane="audit-history"] #auditHistory,
+    .owner-workspace-pane[data-workspace-pane="redemptions"] #redemptionHistory{max-height:none;overflow:hidden;padding:0;display:grid;align-content:start;gap:6px}
+    .item{background:#101e32;border:1px solid #233954;border-radius:10px;padding:9px 10px;box-shadow:none;margin:0}
+    .item h3{font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+    .item .meta{font-size:9px;color:#8197b5;line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
+    .item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .item .actions{margin-top:7px;flex-wrap:wrap}
+    .item .actions button{min-height:28px;font-size:9px;padding:4px 7px}
+    .list-pagination{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 1px 0;margin-top:0}
+    .list-pagination span{font-size:9px;color:#8197b5;font-variant-numeric:tabular-nums}
+    .list-pagination button{min-height:26px;padding:4px 8px;background:#112039;border-color:#293e5c;color:#d2def0}
+    .list-pagination button:disabled{opacity:.3;cursor:default;transform:none}
+    .owner-overview{display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:11px;padding:12px}
+    .owner-overview-header{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .owner-overview-header h2{font-size:16px;letter-spacing:-.03em;margin:2px 0}
+    .owner-overview-header p{font-size:10px;margin:0;color:#90a4bf}
+    .owner-overview-eyebrow{font-size:8px;font-weight:900;letter-spacing:.16em;color:#a59aff;text-transform:uppercase}
+    .owner-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .owner-kpi{min-width:0;border:1px solid #243954;background:linear-gradient(145deg,#112039,#0b1728);border-radius:11px;padding:10px 12px}
+    .owner-kpi-label{font-size:9px;color:#9aadc6;font-weight:800}
+    .owner-kpi-value{display:block;font-size:25px;line-height:1.05;letter-spacing:-.045em;color:#f0f4ff;font-weight:850;margin:5px 0 3px;font-variant-numeric:tabular-nums}
+    .owner-kpi-note{font-size:9px;color:#738baa}
+    .owner-overview-lower{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,1fr);gap:10px;min-height:0}
+    .owner-overview-card{min-height:0;border:1px solid #243954;background:#0a1626;border-radius:12px;padding:11px;overflow:hidden}
+    .owner-overview-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+    .owner-overview-card-head h3{margin:0;font-size:10px;color:#dce7f9;letter-spacing:.04em;text-transform:uppercase}
+    .owner-overview-activity{display:grid;align-content:start;gap:6px;min-height:0}
+    .owner-activity-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;border:1px solid #1f3048;background:#0d1b2e;border-radius:8px;padding:7px 9px}
+    .owner-activity-url{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:780;color:#e5edfb}
+    .owner-activity-meta{font-size:9px;color:#8298b6;margin-top:2px}
+    .owner-activity-row button{min-height:26px;padding:4px 8px;font-size:9px}
+    .owner-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .owner-quick-action{min-height:65px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;text-align:left;border:1px solid #263b58;border-radius:9px;background:#101f34;color:#e6eeff;padding:9px}
+    .owner-quick-action strong{font-size:10px;color:#eaf1ff}
+    .owner-quick-action span{font-size:9px;color:#8da3c0;font-weight:550;line-height:1.35}
+    .owner-auto-fix-result{max-height:48%;overflow:auto}
+    .report-compact-pane{max-height:52dvh}
+    .report-compact-overview .report-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .report-compact-tab{font-size:9px}
+    .report-compact-pane,.owner-auto-fix-result{scrollbar-width:thin;scrollbar-color:#374d6b transparent}
+    .report-hero{background:linear-gradient(130deg,#13243b,#221e48)!important;border-color:#2c4160!important;color:#f4f7ff!important}
+    .report-hero h3{color:#f4f7ff!important}
+    .report-hero .report-url,.report-hero .report-category-meta{color:#acbdd7!important}
+    .report-section,.report-stat,.report-category,.report-metric-panel,.report-check,.report-finding-count,.report-gauge-card,.report-metadata-item{border-color:#263954!important;background:#101e32!important;color:#e8effa!important;box-shadow:none!important}
+    .report-stat-label,.report-stat-note,.report-category-meta,.report-metric-label,.report-check-meta,.report-gauge-title,.report-gauge-note,.report-metadata-label{color:#9aadc6!important}
+    .report-stat-value,.report-category-title,.report-category-score,.report-check h5,.report-metric-value,.report-metadata-value{color:#edf3ff!important}
+    @media(max-width:1050px){
+      main{padding:12px}
+      .owner-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .owner-workspace-tab{min-height:32px}
+      .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr);overflow:auto;grid-auto-rows:auto}
+      .owner-workspace-pane[data-workspace-pane="campaigns"]>.panel{height:auto;overflow:visible}
+      .owner-overview-lower{grid-template-columns:minmax(0,1.2fr) minmax(220px,1fr)}
+    }
+    @media(max-width:640px){
+      main{padding:8px}
+      main>header h1{font-size:19px}
+      main>header .top-links{display:none}
+      #console>.panel.row{grid-template-columns:minmax(0,1fr);gap:5px}
+      #console>.panel.row .actions{justify-content:flex-start}
+      .owner-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+      .owner-workspace-tab{font-size:9px;padding:5px 4px;min-height:31px}
+      .owner-workspace-pane:not([hidden]){overflow:auto}
+      .owner-workspace-pane[data-workspace-pane="campaigns"]>.panel:nth-child(2){display:block}
+      .owner-overview{grid-template-rows:auto auto minmax(0,1fr);padding:8px;overflow:auto}
+      .owner-overview-header{align-items:flex-start}
+      .owner-overview-header h2{font-size:14px}
+      .owner-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+      .owner-kpi{padding:8px}
+      .owner-kpi-value{font-size:20px}
+      .owner-overview-lower{grid-template-columns:minmax(0,1fr)}
+      .owner-overview-card{overflow:visible}
+      .owner-overview-lower .owner-overview-card:nth-child(2){display:none}
+      .report-compact-pane{max-height:none}
+    }
+    @media(max-height:760px) and (min-width:641px){
+      main{padding:8px 14px}
+      main>header{margin-bottom:6px}
+      main>header h1{font-size:22px}
+      #console>.panel.row{padding:6px 10px}
+      .owner-workspace{gap:6px}
+      .owner-workspace-tab{min-height:32px}
+      .owner-workspace-pane:not([hidden]){gap:6px}
+      .panel{padding:9px}
+      .owner-kpi{padding:7px 9px}
+      .owner-kpi-value{font-size:21px;margin:3px 0}
+      .owner-overview{gap:7px;padding:9px}
+    }
+  </style>
+
 </head>
 <body>
   <header class="nn-header">
@@ -314,6 +484,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     :'https://nexusnova-audit-studio.fahadsoomro123.workers.dev';
   const $=id=>document.getElementById(id);
   const state={token:'',campaigns:[],codes:[],redemptions:[],claimRequests:[],audits:[]};
+  const ownerListPages={};
   const text=(tag,value,className='')=>{const node=document.createElement(tag);if(className)node.className=className;node.textContent=String(value??'');return node;};
   const button=(label,handler,kind='')=>{const node=text('button',label,kind);node.type='button';node.addEventListener('click',handler);return node;};
   const notice=(message,tone='')=>text('div',message,'notice'+(tone?' '+tone:''));
@@ -380,7 +551,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       renderAll();setGlobal('Owner data refreshed. No campaign was activated by this request.','good');
     }catch(error){setGlobal(error.message||'Could not load owner data.','error');}
   }
-  function renderAll(){renderCampaigns();renderCodes();renderClaimRequests();renderAuditHistory();renderRedemptions();renderCampaignSelect();syncOwnerWorkspaceCounts();}
+  function renderAll(){renderCampaigns();renderCodes();renderClaimRequests();renderAuditHistory();renderRedemptions();renderCampaignSelect();paginateOwnerLists();renderOwnerOverview();syncOwnerWorkspaceCounts();}
   function renderCampaignSelect(){
     const select=$('codeCampaign'),current=select.value;select.replaceChildren(new Option('Select a campaign',''));
     state.campaigns.forEach(c=>select.add(new Option(c.name+' · '+c.status+' · '+c.claimed_count+'/'+c.total_limit,c.id)));
@@ -529,76 +700,80 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       item.append(head,details,actions);root.append(item);
     });
   }
-  function ownerFixKitText(kit){
-    const changes=Array.isArray(kit.changes)?kit.changes:[];
-    const values=kit.values&&typeof kit.values==='object'?kit.values:{};
-    return [
-      'NEXUSNOVA OWNER CONSOLE FIX LIST',
-      'URL: '+(kit.url||'Not available'),
-      'Platform: '+(kit.platformName||kit.platform||'Not detected'),
-      'Generated: '+(kit.generatedAt||new Date().toISOString()),
-      '',
-      kit.summary||'No summary supplied.',
-      '',
-      'ITEMS TO FIX',
-      ...(changes.length?changes.map((change,index)=>(index+1)+'. '+(change.label||change.title||change.key||'Change')+(change.detail?' — '+change.detail:'')):['No safe deterministic fix was matched.']),
-      '',
-      'EXACT SEO VALUES',
-      ...(Object.keys(values).length?Object.entries(values).map(([key,value])=>key+': '+String(value)):['No specific SEO values supplied.']),
-      '',
-      'PLATFORM INSTRUCTIONS',
-      ...(Array.isArray(kit.instructions)?kit.instructions:[]),
-      '',
-      'VERIFICATION',
-      ...(Array.isArray(kit.verification)?kit.verification:[]),
-      '',
-      'SAFETY: This package is a proposal only. It did not publish or change the live website.'
-    ].join('\n');
+  function activateOwnerQuickAction(view){
+    const root=$('console');
+    if(root)activateOwnerWorkspace(view,root);
+    const focusTarget=view==='audit' ? $('ownerAuditUrl') : null;
+    if(focusTarget)focusTarget.focus({preventScroll:true});
   }
-  function downloadOwnerFixKit(kit){
-    const html=typeof kit.correctedHtml==='string'&&kit.correctedHtml.length>0;
-    const payload=html?kit.correctedHtml:ownerFixKitText(kit);
-    const blob=new Blob([payload],{type:html?'text/html;charset=utf-8':'text/plain;charset=utf-8'});
-    const url=URL.createObjectURL(blob),anchor=document.createElement('a');
-    anchor.href=url;
-    anchor.download=html?(kit.fileName||'nexusnova-seo-fix.html'):(String(kit.fileName||'nexusnova-seo-fix.html').replace(/\.html$/i,'-instructions.txt'));
-    document.body.append(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  function renderOwnerOverview(){
+    const root=$('ownerOverview');if(!root)return;
+    root.replaceChildren();
+    const header=text('div','','owner-overview-header');
+    const heading=text('div');
+    heading.append(text('div','NEXUSNOVA / COMMAND CENTER','owner-overview-eyebrow'),
+      text('h2','Everything important, one screen'),
+      text('p','A compact live view of audits, campaigns, claims and access history.'));
+    const headerActions=text('div','','actions');
+    headerActions.append(button('Run a website audit',()=>activateOwnerQuickAction('audit'),'primary'));
+    header.append(heading,headerActions);
+    const kpis=text('div','','owner-kpi-grid');
+    const metrics=[
+      {label:'AUDIT HISTORY',value:state.audits.length,note:'Saved owner reports'},
+      {label:'ACTIVE CAMPAIGNS',value:state.campaigns.filter(c=>c.status==='active').length,note:'Publicly redeemable'},
+      {label:'CLAIMS TO REVIEW',value:state.claimRequests.length,note:'Awaiting verification'},
+      {label:'REDEMPTIONS',value:state.redemptions.length,note:'Recorded voucher activity'}
+    ];
+    metrics.forEach(m=>{const card=text('div','','owner-kpi');card.append(text('div',m.label,'owner-kpi-label'),text('strong',m.value,'owner-kpi-value'),text('div',m.note,'owner-kpi-note'));kpis.append(card);});
+    const lower=text('div','','owner-overview-lower');
+    const activity=text('section','','owner-overview-card');
+    const activityHead=text('div','','owner-overview-card-head');
+    activityHead.append(text('h3','Recent audits'),button('Open history',()=>activateOwnerQuickAction('audit-history')));
+    activity.append(activityHead);
+    const recent=state.audits.slice(0,4);
+    if(!recent.length)activity.append(notice('No audit history yet. Run a private audit to start this workspace.'));
+    else{
+      const list=text('div','','owner-overview-activity');
+      recent.forEach(a=>{
+        const row=text('div','','owner-activity-row');
+        const details=text('div');
+        details.append(text('span',a.url,'owner-activity-url'),text('div',dateTime(a.created_at)+' · expires '+dateTime(a.expires_at),'owner-activity-meta'));
+        row.append(details,button('View',()=>{activateOwnerQuickAction('audit-history');showFullReport(a.audit_id);}));
+        list.append(row);
+      });
+      activity.append(list);
+    }
+    const quick=text('section','','owner-overview-card');
+    const quickHead=text('div','','owner-overview-card-head');quickHead.append(text('h3','Quick actions'));quick.append(quickHead);
+    const quickGrid=text('div','','owner-quick-actions');
+    const actions=[
+      {title:'Audit a website',detail:'Run a private technical audit',view:'audit'},
+      {title:'Campaigns & vouchers',detail:'Create or manage offers',view:'campaigns'},
+      {title:'Review claims',detail:'Check pending voucher proof',view:'claim-review'},
+      {title:'Audit history',detail:'Open reports and run repairs',view:'audit-history'}
+    ];
+    actions.forEach(a=>{const b=document.createElement('button');b.type='button';b.className='owner-quick-action';b.append(text('strong',a.title),text('span',a.detail));b.addEventListener('click',()=>activateOwnerQuickAction(a.view));quickGrid.append(b);});
+    quick.append(quickGrid);lower.append(activity,quick);root.append(header,kpis,lower);
   }
-  function renderOwnerFixKit(item,kit){
-    item.querySelector('.owner-fix-result')?.remove();
-    const hasHtml=typeof kit.correctedHtml==='string'&&kit.correctedHtml.length>0;
-    const panel=text('section','','report-section owner-fix-result');
-    panel.style.marginTop='12px';
-    panel.append(text('h3',hasHtml?'Corrected HTML proposal':'Fix List'));
-    panel.append(notice((kit.summary||'Fix List prepared.')+' Live website changes were not made.',hasHtml?'good':''));
-    const changes=Array.isArray(kit.changes)?kit.changes:[];
-    if(changes.length){
-      panel.append(text('h4',hasHtml?'Safe edits prepared':'Audit findings to address'));
-      const list=text('ol');
-      changes.forEach(change=>list.append(text('li',(change.label||change.title||change.key||'Audit finding')+(change.detail?' · '+change.detail:''))));
-      panel.append(list);
-    }else panel.append(text('p','No exact automatic edit matched this report. The download gives the safest next steps using the saved audit findings.'));
-    if(Array.isArray(kit.instructions)&&kit.instructions.length){
-      panel.append(text('h4','Do these 3 steps'));
-      const steps=text('ol');
-      kit.instructions.forEach(step=>steps.append(text('li',step)));
-      panel.append(steps);
-    }
-    if(kit.values&&typeof kit.values==='object'&&!Array.isArray(kit.values)&&Object.keys(kit.values).length){
-      panel.append(text('h4','Exact values to use'));
-      const values=text('ul');
-      Object.entries(kit.values).forEach(([key,value])=>values.append(text('li',reportLabel(key)+': '+String(value))));
-      panel.append(values);
-    }
-    if(Array.isArray(kit.notes)&&kit.notes.length){
-      const notes=text('ul');
-      kit.notes.forEach(note=>notes.append(text('li',note)));
-      panel.append(notes);
-    }
-    panel.append(button(hasHtml?'Download corrected HTML file':'Download simple Fix List',()=>downloadOwnerFixKit(kit),'primary'));
-    item.append(panel);
+  function paginateOwnerList(root,key,pageSize=3){
+    if(!root)return;
+    root.querySelector(':scope > .list-pagination')?.remove();
+    const items=Array.from(root.children).filter(node=>node.classList.contains('item'));
+    if(!items.length)return;
+    const maxPage=Math.max(0,Math.ceil(items.length/pageSize)-1);
+    const page=Math.min(Math.max(0,Number(ownerListPages[key]||0)),maxPage);ownerListPages[key]=page;
+    items.forEach((item,index)=>{item.hidden=index<page*pageSize||index>=(page+1)*pageSize;});
+    if(maxPage===0)return;
+    const pager=text('div','','list-pagination');
+    const previous=button('Previous',()=>{ownerListPages[key]=Math.max(0,page-1);paginateOwnerList(root,key,pageSize);});previous.disabled=page===0;
+    const label=text('span',(page*pageSize+1)+'–'+Math.min(items.length,(page+1)*pageSize)+' of '+items.length);
+    const next=button('Next',()=>{ownerListPages[key]=Math.min(maxPage,page+1);paginateOwnerList(root,key,pageSize);});next.disabled=page===maxPage;
+    pager.append(previous,label,next);root.append(pager);
   }
-  function renderOwnerAutoFixJob(item,auditId,job){
+  function paginateOwnerLists(){
+    [['campaignList','campaigns',2],['codeList','codes',2],['claimReviewList','claims',3],['auditHistory','audits',3],['redemptionHistory','redemptions',3]].forEach(([id,key,size])=>paginateOwnerList($(id),key,size));
+  }
+    function renderOwnerAutoFixJob(item,auditId,job){
     item.querySelector('.owner-auto-fix-result')?.remove();
     const panel=text('section','','report-section owner-auto-fix-result');
     panel.style.marginTop='12px';
@@ -748,30 +923,17 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       const actions=text('div','','actions');
       actions.append(button('View full report',()=>showFullReport(a.audit_id)));
       if(Number(a.owner_created)===1){
-        actions.append(button('Fix safe issues',async(event)=>{
+        actions.append(button('Fix issues automatically',async(event)=>{
           const fixButton=event?.currentTarget;
-          if(!confirm('Prepare a no-charge preview for this Owner Console audit? Only deterministic safe HTML metadata fixes will be offered. The live site will not change until you approve the exact preview.'))return;
+          if(!confirm('Prepare an automatic repair for this owner-created audit? Only tested fixes can be proposed. The website changes only after you review and approve the exact plan.'))return;
           if(fixButton){fixButton.disabled=true;fixButton.textContent='Checking website…';}
           try{
             await requestOwnerAutoFixPlan(item,a.audit_id);
             setGlobal('Preview checked. No live website changes have been made yet.','');
           }catch(error){setGlobal(error.message||'Could not prepare a safe automatic-fix preview.','error');}
-          finally{if(fixButton){fixButton.disabled=false;fixButton.textContent='Fix safe issues';}}
+          finally{if(fixButton){fixButton.disabled=false;fixButton.textContent='Fix issues automatically';}}
         },'primary'));
       }
-      actions.append(button('Prepare repair guidance',async(event)=>{
-        const fixButton=event?.currentTarget;
-        if(fixButton){fixButton.disabled=true;fixButton.textContent='Preparing guidance…';}
-        try{
-          const kit=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/fix-kit',{method:'POST',body:'{}'});
-          renderOwnerFixKit(item,kit);
-          setGlobal('Guidance prepared. No live website changes were made.','');
-        }catch(error){
-          setGlobal(error.message||'Could not prepare repair guidance for this audit.','error');
-        }finally{
-          if(fixButton){fixButton.disabled=false;fixButton.textContent='Prepare repair guidance';}
-        }
-      }));
       actions.append(button('Unlock for this session',async()=>{
         if(!confirm('Grant a permanent owner entitlement for this existing audit session until its audit expires?'))return;
         try{const r=await api('/api/admin/audits/'+encodeURIComponent(a.audit_id)+'/unlock',{method:'POST',body:'{}'});setGlobal('Owner entitlement recorded for audit '+r.auditId+'.','good');}
@@ -851,6 +1013,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     const sections=Array.from(root.children).filter(node=>node.tagName==='SECTION'&&node.classList.contains('panel'));
     if(!sessionPanel||!sections.length)return;
     const definitions=[
+      {id:'overview',label:'Command center',overview:true},
       {id:'audit',label:'Audit workspace',sectionSelector:'#ownerAuditForm'},
       {id:'campaigns',label:'Campaigns & vouchers',sectionSelector:'#campaignForm',secondSelector:'#campaignList',countSelector:'#campaignList .item, #codeList .item'},
       {id:'claim-review',label:'Claim review',sectionSelector:'#claimReviewList',countSelector:'#claimReviewList .item'},
@@ -868,6 +1031,9 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       const pane=document.createElement('section');pane.className='owner-workspace-pane';pane.dataset.workspacePane=definition.id;
       pane.id='owner-pane-'+definition.id;pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',tab.id);pane.tabIndex=0;
       pane.hidden=index!==0;pane.setAttribute('aria-hidden',index===0?'false':'true');
+      if(definition.overview){
+        const overview=document.createElement('section');overview.className='owner-overview panel';overview.id='ownerOverview';pane.append(overview);
+      }
       const selectors=[definition.sectionSelector,definition.secondSelector].filter(Boolean);
       selectors.forEach(selector=>{
         const section=sections.find(candidate=>candidate.querySelector(selector));
