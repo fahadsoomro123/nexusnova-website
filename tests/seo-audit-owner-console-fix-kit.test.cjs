@@ -16,7 +16,7 @@ test('Owner Console opens as a compact command center with live workspace metric
   assert.match(admin, /ACTIVE CAMPAIGNS/);
   assert.match(admin, /CLAIMS TO REVIEW/);
   assert.match(admin, /owner-quick-actions/);
-  assert.match(admin, /body\{width:100%;height:100%;margin:0;background:var\(--flag-bg\);color:var\(--flag-ink\);overflow:hidden\}/);
+  assert.match(admin, /html,body\\{width:100%;height:100%;margin:0;background:var\\(--flag-bg\\);color:var\\(--flag-ink\\);overflow:hidden\\}/);
   assert.match(admin, /owner-flagship-v3/);
 });
 
