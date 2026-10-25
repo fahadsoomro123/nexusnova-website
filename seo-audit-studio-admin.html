@@ -686,6 +686,58 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       .owner-overview { padding: 17px !important; gap: 12px !important; }
       .owner-kpi { padding: 11px !important; }
     }
+    /* Owner workspace v6: reclaim vertical room and remove nested list scrollbars on desktop. */
+    @media (min-width: 851px) {
+      body.owner-session-active main {
+        padding: 10px clamp(12px, 1.5vw, 26px) 10px !important;
+        gap: 9px !important;
+      }
+      body.owner-session-active main > header {
+        padding-bottom: 8px !important;
+      }
+      body.owner-session-active main > header .eyebrow {
+        margin-bottom: 5px !important;
+      }
+      body.owner-session-active main > header h1 {
+        font-size: clamp(22px, 1.8vw, 30px) !important;
+      }
+      body.owner-session-active main > header p {
+        margin-top: 5px !important;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      body.owner-session-active #console { gap: 8px !important; }
+      body.owner-session-active #console > .panel.row {
+        padding: 7px 10px !important;
+        gap: 5px 10px !important;
+      }
+      body.owner-session-active #console > .panel.row h2 {
+        font-size: 12px !important;
+      }
+      body.owner-session-active #console > .panel.row p {
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      body.owner-session-active #console > .panel.row #globalStatus {
+        padding: 5px 8px !important;
+      }
+      .owner-workspace { gap: 11px !important; }
+      .owner-workspace-tabs { padding: 8px !important; }
+      .owner-workspace-tab { min-height: 38px !important; }
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="audit-history"] #auditHistory,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="claim-review"] #claimReviewList,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="redemptions"] #redemptionHistory {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+    }
+    @media (min-width: 851px) and (min-height: 900px) {
+      body.owner-session-active main {
+        padding-top: 13px !important;
+        padding-bottom: 12px !important;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
     }
@@ -1161,10 +1213,16 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     }
     setGlobal('Repair is still running or the host has not published it yet. The job is not marked verified; reopen its status to continue checking.','');
   }
+  function isLegacyOwnerAutoFixNoOp(plan){
+    const planNotes=Array.isArray(plan?.notes)?plan.notes:[];
+    const diagnosticText=[plan?.message,...planNotes].filter(Boolean).join(' ');
+    return !plan?.canApply&&/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
+  }
   async function requestOwnerAutoFixPlan(item,auditId,repositoryId=null){
     const body=repositoryId===null?{}:{repositoryId:Number(repositoryId)};
     const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/plan',{method:'POST',body:JSON.stringify(body)});
     renderOwnerAutoFixPlan(item,auditId,result);
+    return result;
   }
   function renderOwnerAutoFixPlan(item,auditId,plan){
     item.querySelector('.owner-auto-fix-result')?.remove();
@@ -1182,8 +1240,9 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
         if(!select.value){setGlobal('Choose a repository before continuing. No file has been changed.','error');return;}
         try{
           setGlobal('Checking the selected repository and rebuilding the exact preview. No live change is being made.');
-          await requestOwnerAutoFixPlan(item,auditId,select.value);
-          setGlobal('Preview ready. No website file has been changed yet.','');
+          const plan=await requestOwnerAutoFixPlan(item,auditId,select.value);
+          if(isLegacyOwnerAutoFixNoOp(plan))setGlobal('The live auto-fix Worker is using the legacy engine. No website changes were made; update the production Worker before retrying.','error');
+          else setGlobal('Preview ready. No website file has been changed yet.','');
         }catch(error){setGlobal(error.message||'Could not build a safe preview.','error');}
       },'primary'));
       item.append(panel);return;
@@ -1191,8 +1250,14 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     if(plan.repository)panel.append(text('p','Repository: '+plan.repository,'meta'));
     if(plan.filePath)panel.append(text('p','File: '+plan.filePath,'meta'));
     if(!plan.canApply){
-      panel.append(notice(plan.message||'No deterministic automatic fix matched this page. No file was changed.'));
-      (plan.notes||[]).forEach(note=>panel.append(text('p',note,'meta')));
+      const planNotes=Array.isArray(plan.notes)?plan.notes:[];
+      const diagnosticText=[plan.message,...planNotes].filter(Boolean).join(' ');
+      const legacyNoOp=/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
+      const noChangeMessage=legacyNoOp
+        ? 'Live repair backend is returning legacy no-op diagnostics. No website changes were proposed. Update the production Worker to the current repair engine before retrying; this is not a completed fix.'
+        : (plan.message||'No deterministic automatic fix matched this page. No file was changed.');
+      panel.append(notice(noChangeMessage));
+      planNotes.forEach(note=>panel.append(text('p',note,'meta')));
       item.append(panel);return;
     }
     panel.append(notice(plan.safety||'Preview only. Nothing has been changed yet. Approve the exact list before a commit is created.'));
@@ -1252,8 +1317,9 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
           if(!confirm('Prepare an automatic repair for this owner-created audit? Only tested fixes can be proposed. The website changes only after you review and approve the exact plan.'))return;
           if(fixButton){fixButton.disabled=true;fixButton.textContent='Checking website…';}
           try{
-            await requestOwnerAutoFixPlan(item,a.audit_id);
-            setGlobal('Preview checked. No live website changes have been made yet.','');
+            const plan=await requestOwnerAutoFixPlan(item,a.audit_id);
+            if(isLegacyOwnerAutoFixNoOp(plan))setGlobal('The live auto-fix Worker is using the legacy engine. No website changes were made; update the production Worker before retrying.','error');
+            else setGlobal('Preview checked. No live website changes have been made yet.','');
           }catch(error){setGlobal(error.message||'Could not prepare a safe automatic-fix preview.','error');}
           finally{if(fixButton){fixButton.disabled=false;fixButton.textContent='Fix issues automatically';}}
         },'primary'));

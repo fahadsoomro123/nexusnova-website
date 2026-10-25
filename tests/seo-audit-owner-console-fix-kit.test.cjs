@@ -103,3 +103,21 @@ test('Owner Console v5 uses a distinct light editorial workspace and a vertical 
   assert.match(admin, /@media \(max-width: 850px\)/);
   assert.match(admin, /prefers-reduced-motion: reduce/);
 });
+
+test('Owner Console expands the desktop workspace and avoids nested list scrolling', () => {
+  const v5Start = admin.indexOf('<style id="owner-flagship-v5-editorial">');
+  const v5End = admin.indexOf('</style>', v5Start);
+  const v5 = admin.slice(v5Start, v5End);
+  assert.match(v5, /Owner workspace v6: reclaim vertical room/);
+  assert.match(v5, /padding: 10px clamp\(12px, 1\.5vw, 26px\) 10px !important/);
+  assert.match(v5, /max-height: none !important;\s*overflow: visible !important/);
+  assert.match(v5, /@media \(min-width: 851px\)/);
+});
+
+test('Owner Console flags legacy automatic-fix no-op responses and status as unresolved', () => {
+  assert.match(admin, /No supported automatic fixes matched the measured findings/);
+  assert.match(admin, /Live repair backend is returning legacy no-op diagnostics/);
+  assert.match(admin, /function isLegacyOwnerAutoFixNoOp\(/);
+  assert.match(admin, /The live auto-fix Worker is using the legacy engine/);
+  assert.match(admin, /this is not a completed fix/);
+});
