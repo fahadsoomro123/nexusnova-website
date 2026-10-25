@@ -22,7 +22,6 @@ UNFINISHED_MARKERS = (
     "active development",
     "under construction",
     "coming soon",
-    "work in progress",
     "flagship betas",
     "real working mvps",
     "release checks continue",
@@ -114,6 +113,20 @@ class PageParser(HTMLParser):
     @property
     def noindex(self):
         return "noindex" in self.robots.lower()
+
+
+def unfinished_surface_markers(parser: PageParser) -> list[str]:
+    """Detect unfinished status text without flagging valid technical terminology."""
+    low = parser.visible_text.casefold()
+    found = [marker for marker in UNFINISHED_MARKERS if marker in low]
+    status_only = re.compile(
+        r"(?:(?:page|tool|feature|content|service)\s+)?"
+        r"(?:status\s*[:\-]\s*)?work\s+in\s+progress[.!?…]*",
+        flags=re.IGNORECASE,
+    )
+    if any(status_only.fullmatch(node.strip()) for node in parser.text):
+        found.append("work in progress")
+    return found
 
 
 def parse_page(html: str) -> PageParser:
@@ -273,9 +286,8 @@ def local_audit():
             warnings.append({"type": "borderline_content_depth", "url": url, "words": p.word_count})
 
         low = p.visible_text.lower()
-        for marker in UNFINISHED_MARKERS:
-            if marker in low:
-                blockers.append({"type": "unfinished_surface", "url": url, "marker": marker})
+        for marker in unfinished_surface_markers(p):
+            blockers.append({"type": "unfinished_surface", "url": url, "marker": marker})
         for marker in LEGACY_MARKERS:
             if marker in low:
                 blockers.append({"type": "legacy_branding", "url": url, "marker": marker})
@@ -410,9 +422,8 @@ def live_audit(urls: list[str]):
                 elif p.word_count < WARN_WORDS:
                     warnings.append({"type": "live_borderline_depth", "url": url, "words": p.word_count})
                 low = p.visible_text.lower()
-                for marker in UNFINISHED_MARKERS:
-                    if marker in low:
-                        blockers.append({"type": "live_unfinished_surface", "url": url, "marker": marker})
+                for marker in unfinished_surface_markers(p):
+                    blockers.append({"type": "live_unfinished_surface", "url": url, "marker": marker})
                 for marker in LEGACY_MARKERS:
                     if marker in low:
                         blockers.append({"type": "live_legacy_branding", "url": url, "marker": marker})
