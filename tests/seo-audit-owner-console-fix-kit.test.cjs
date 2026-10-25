@@ -16,8 +16,9 @@ test('Owner Console opens as a compact command center with live workspace metric
   assert.match(admin, /ACTIVE CAMPAIGNS/);
   assert.match(admin, /CLAIMS TO REVIEW/);
   assert.match(admin, /owner-quick-actions/);
-  assert.match(admin, /html,body\{width:100%;height:100%;margin:0;background:var\(--flag-bg\);color:var\(--flag-ink\);overflow:hidden\}/);
-  assert.match(admin, /owner-flagship-v3/);
+  assert.match(admin, /<style id="owner-flagship-v5-editorial">/);
+  assert.match(admin, /--pine: #173e33/);
+  assert.match(admin, /owner-workspace-tabs::before/);
 });
 
 test('Owner Console uses paged lists instead of forcing owners through long audit and voucher lists', () => {
@@ -69,24 +70,25 @@ test('Owner Console report uses a compact multi-view layout rather than one long
   assert.match(admin, /All audit checks/);
 });
 
-test('Owner Console applies the Nebula v4 futuristic visual system without changing the owner API flow', () => {
-  assert.match(admin, /<style id="owner-flagship-v4">/);
-  assert.match(admin, /--nebula-cyan:#58e4ff/);
-  assert.match(admin, /body::before/);
+test('Owner Console replaces the rejected dark theme with the editorial pine-and-paper system', () => {
+  assert.match(admin, /<style id="owner-flagship-v5-editorial">/);
+  assert.match(admin, /--paper: #f4f3ed/);
+  assert.match(admin, /--pine: #173e33/);
+  assert.match(admin, /--clay: #b65d3d/);
   assert.match(admin, /owner-workspace-tab\[aria-controls="owner-pane-overview"\]::before/);
-  assert.match(admin, /\.owner-kpi::after/);
-  assert.match(admin, /prefers-reduced-motion:reduce/);
+  assert.match(admin, /body\.owner-session-active #console > \.panel\.row #globalStatus\.good/);
+  assert.match(admin, /prefers-reduced-motion: reduce/);
   assert.match(admin, /headers\.set\('X-Owner-Admin-Token',state\.token\)/);
 });
 
-test('Owner Console keeps desktop navigation and the main shell within one viewport', () => {
-  const v4Start = admin.indexOf('<style id="owner-flagship-v4">');
-  const v4End = admin.indexOf('</style>', v4Start);
-  const v4 = admin.slice(v4Start, v4End);
-  assert.match(v4, /main\{position:relative;z-index:1;padding:[^}]*gap:0\}/);
-  assert.match(v4, /grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
-  assert.match(v4, /@media\(max-width:1050px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
-  assert.match(admin, /html,body\{width:100%;height:100%;margin:0;background:var\(--flag-bg\);color:var\(--flag-ink\);overflow:hidden\}/);
+test('Owner Console uses a desktop rail and keeps mobile navigation responsive', () => {
+  const v5Start = admin.indexOf('<style id="owner-flagship-v5-editorial">');
+  const v5End = admin.indexOf('</style>', v5Start);
+  const v5 = admin.slice(v5Start, v5End);
+  assert.match(v5, /height:100dvh !important/);
+  assert.match(v5, /grid-template-columns: 224px minmax\(0, 1fr\)/);
+  assert.match(v5, /@media \(max-width: 850px\)/);
+  assert.match(v5, /@media \(max-height: 760px\) and \(min-width: 851px\)/);
   assert.match(admin, /function paginateOwnerLists\(/);
   assert.match(admin, /list-pagination/);
 });
