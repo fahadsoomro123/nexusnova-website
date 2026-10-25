@@ -55,6 +55,14 @@ test('sitemap automation explains a Google Search Console 403 with the exact ser
  assert.match(wf,/GSC_PERMISSION_BLOCKED/);
  assert.match(wf,/will not claim a successful submission until the API accepts it/);
 });
+test('sitemap automation records the accepted HTTP result, property, and sitemap in the workflow summary',()=> {
+ const wf=fs.readFileSync('.github/workflows/google-sitemap-submit.yml','utf8');
+ assert.match(wf,/GSC_SUBMISSION_ACCEPTED/);
+ assert.match(wf,/API response: HTTP /);
+ assert.match(wf,/Configured property: /);
+ assert.match(wf,/GITHUB_STEP_SUMMARY/);
+ assert.match(wf,/does not guarantee that every URL will be indexed/i);
+});
 test('Phase 2 synchronization workflow exists and does not promise instant indexing',()=>{
  const wf=fs.readFileSync('.github/workflows/google-sitemap-submit.yml','utf8');
  const guide=fs.readFileSync('docs/google-search-console-indexing.md','utf8');
