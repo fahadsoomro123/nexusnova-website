@@ -257,7 +257,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     .owner-workspace-pane:not([hidden]){display:grid;align-content:stretch;gap:9px}
     .owner-workspace-pane[hidden]{display:none!important}
     .owner-workspace-pane>.panel{margin:0;min-width:0;min-height:0;overflow:hidden}
-    .owner-workspace-pane[data-workspace-pane="overview"]{grid-template-rows:auto auto minmax(0,1fr)}
+    .owner-workspace-pane[data-workspace-pane="overview"]{grid-template-rows:minmax(0,1fr)}
     .owner-workspace-pane[data-workspace-pane="audit"]{grid-template-rows:auto minmax(0,1fr)}
     .owner-workspace-pane[data-workspace-pane="audit"]>section.panel{display:flex;flex-direction:column}
     .owner-workspace-pane[data-workspace-pane="audit"] #auditOutput{min-height:0;overflow:auto;margin-top:8px!important}
@@ -327,8 +327,8 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
       main{padding:12px}
       .owner-workspace-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
       .owner-workspace-tab{min-height:32px}
-      .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr)}
-      .owner-workspace-pane[data-workspace-pane="campaigns"]>.panel:nth-child(2){display:none}
+      .owner-workspace-pane[data-workspace-pane="campaigns"]{grid-template-columns:minmax(0,1fr);overflow:auto;grid-auto-rows:auto}
+      .owner-workspace-pane[data-workspace-pane="campaigns"]>.panel{height:auto;overflow:visible}
       .owner-overview-lower{grid-template-columns:minmax(0,1.2fr) minmax(220px,1fr)}
     }
     @media(max-width:640px){
