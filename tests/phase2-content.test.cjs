@@ -45,6 +45,16 @@ test('Batch 2 articles each contain at least 500 words in the visible article bo
   assert.ok(visibleBody(h,p).length>=500,p+' needs at least 500 visible body words');
  }
 });
+test('sitemap automation explains a Google Search Console 403 with the exact service account',()=> {
+ const wf=fs.readFileSync('.github/workflows/google-sitemap-submit.yml','utf8');
+ assert.match(wf,/response\.status_code == 403/);
+ assert.match(wf,/info\.get\('client_email'/);
+ assert.match(wf,/Service account to grant access/);
+ assert.match(wf,/Users and permissions/);
+ assert.match(wf,/Full user or Owner/);
+ assert.match(wf,/GSC_PERMISSION_BLOCKED/);
+ assert.match(wf,/will not claim a successful submission until the API accepts it/);
+});
 test('Phase 2 synchronization workflow exists and does not promise instant indexing',()=>{
  const wf=fs.readFileSync('.github/workflows/google-sitemap-submit.yml','utf8');
  const guide=fs.readFileSync('docs/google-search-console-indexing.md','utf8');
