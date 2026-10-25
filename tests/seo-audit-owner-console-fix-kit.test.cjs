@@ -114,8 +114,10 @@ test('Owner Console expands the desktop workspace and avoids nested list scrolli
   assert.match(v5, /@media \(min-width: 851px\)/);
 });
 
-test('Owner Console flags the legacy automatic-fix no-op response as an unresolved deployment issue', () => {
+test('Owner Console flags legacy automatic-fix no-op responses and status as unresolved', () => {
   assert.match(admin, /No supported automatic fixes matched the measured findings/);
   assert.match(admin, /Live repair backend is returning legacy no-op diagnostics/);
+  assert.match(admin, /function isLegacyOwnerAutoFixNoOp\(/);
+  assert.match(admin, /The live auto-fix Worker is using the legacy engine/);
   assert.match(admin, /this is not a completed fix/);
 });
