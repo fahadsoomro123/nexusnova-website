@@ -90,3 +90,14 @@ test('Owner Console keeps desktop navigation and the main shell within one viewp
   assert.match(admin, /function paginateOwnerLists\(/);
   assert.match(admin, /list-pagination/);
 });
+
+test('Owner Console v5 uses a distinct light editorial workspace and a vertical operation rail', () => {
+  assert.match(admin, /<style id="owner-flagship-v5-editorial">/);
+  assert.match(admin, /--paper: #f4f3ed/);
+  assert.match(admin, /--pine: #173e33/);
+  assert.match(admin, /grid-template-columns: 224px minmax\(0, 1fr\)/);
+  assert.match(admin, /OWNER WORKSPACE/);
+  assert.match(admin, /PRIVATE SESSION\\A CHANGES REQUIRE REVIEW/);
+  assert.match(admin, /@media \(max-width: 850px\)/);
+  assert.match(admin, /prefers-reduced-motion: reduce/);
+});
