@@ -1213,10 +1213,16 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     }
     setGlobal('Repair is still running or the host has not published it yet. The job is not marked verified; reopen its status to continue checking.','');
   }
+  function isLegacyOwnerAutoFixNoOp(plan){
+    const planNotes=Array.isArray(plan?.notes)?plan.notes:[];
+    const diagnosticText=[plan?.message,...planNotes].filter(Boolean).join(' ');
+    return !plan?.canApply&&/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
+  }
   async function requestOwnerAutoFixPlan(item,auditId,repositoryId=null){
     const body=repositoryId===null?{}:{repositoryId:Number(repositoryId)};
     const result=await api('/api/admin/audits/'+encodeURIComponent(auditId)+'/auto-fix/plan',{method:'POST',body:JSON.stringify(body)});
     renderOwnerAutoFixPlan(item,auditId,result);
+    return result;
   }
   function renderOwnerAutoFixPlan(item,auditId,plan){
     item.querySelector('.owner-auto-fix-result')?.remove();
@@ -1234,8 +1240,9 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
         if(!select.value){setGlobal('Choose a repository before continuing. No file has been changed.','error');return;}
         try{
           setGlobal('Checking the selected repository and rebuilding the exact preview. No live change is being made.');
-          await requestOwnerAutoFixPlan(item,auditId,select.value);
-          setGlobal('Preview ready. No website file has been changed yet.','');
+          const plan=await requestOwnerAutoFixPlan(item,auditId,select.value);
+          if(isLegacyOwnerAutoFixNoOp(plan))setGlobal('The live auto-fix Worker is using the legacy engine. No website changes were made; update the production Worker before retrying.','error');
+          else setGlobal('Preview ready. No website file has been changed yet.','');
         }catch(error){setGlobal(error.message||'Could not build a safe preview.','error');}
       },'primary'));
       item.append(panel);return;
@@ -1310,8 +1317,9 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
           if(!confirm('Prepare an automatic repair for this owner-created audit? Only tested fixes can be proposed. The website changes only after you review and approve the exact plan.'))return;
           if(fixButton){fixButton.disabled=true;fixButton.textContent='Checking website…';}
           try{
-            await requestOwnerAutoFixPlan(item,a.audit_id);
-            setGlobal('Preview checked. No live website changes have been made yet.','');
+            const plan=await requestOwnerAutoFixPlan(item,a.audit_id);
+            if(isLegacyOwnerAutoFixNoOp(plan))setGlobal('The live auto-fix Worker is using the legacy engine. No website changes were made; update the production Worker before retrying.','error');
+            else setGlobal('Preview checked. No live website changes have been made yet.','');
           }catch(error){setGlobal(error.message||'Could not prepare a safe automatic-fix preview.','error');}
           finally{if(fixButton){fixButton.disabled=false;fixButton.textContent='Fix issues automatically';}}
         },'primary'));
