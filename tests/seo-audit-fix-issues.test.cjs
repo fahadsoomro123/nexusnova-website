@@ -24,7 +24,7 @@ test('Fix Issues reserves the US$5 checkout for direct automatic fixes and keeps
   assert.match(html, /accept\.checked && plan\.changes/);
   assert.match(html, /acceptedPlan: true/);
   assert.match(html, /changes.length === 0 \|\| !payload.canCheckout \|\| !accept.checked/);
-  assert.match(html, /Auto-fix with GitHub/);
+  assert.match(html, /Connect website for automatic fixes/);
   assert.match(html, /fixIssuesConsentText/);
   assert.match(html, /No payment was taken/);
 });
@@ -43,29 +43,16 @@ test('one-click connection previews the sole verified repository and never enabl
   assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
   assert.match(html, /preview ready below\. No payment has been taken/);
 });
-test('Fix Issues offers a platform-guided path with an exact preview and no manual checkout', () => {
-  assert.match(html, /id="fixIssuesGuidedBtn"/);
-  assert.match(html, /Other platforms · free guidance/);
-  assert.match(html, /\/api\/fix-issues\/plan\/guided/);
-  assert.match(html, /\/manual-package/);
-  assert.match(html, /deliveryMode === 'manual'/);
-  assert.match(html, /Download my Fix Kit/);
-  assert.match(html, /Automatic publishing is not supported for this platform yet/i);
-  assert.match(html, /payButton\.hidden = isManual \|\| !payload\.canCheckout/);
-  assert.match(html, /no payment was started/i);
-  assert.match(html, /platform-specific steps/i);
-});
-test('paid auto-publish failure exposes a fallback download without claiming live fixes', () => {
-  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
-  const fixController = scripts.at(-1);
-  assert.ok(fixController.includes("!['manual', 'manual_fallback'].includes"));
-  assert.match(fixController, /Download fallback Fix Kit/);
-  assert.match(fixController, /Download recovery instructions/);
-  assert.match(fixController, /typeof payload\.content === 'string'/);
-  assert.match(fixController, /EXACT SEO VALUES/);
-  assert.match(fixController, /No live change is claimed/);
-  assert.ok(fixController.includes("verification.deliveryMode === 'manual_fallback'"));
-  assert.ok(fixController.includes("!['manual', 'manual_fallback'].includes"));
+test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
+  assert.doesNotMatch(html, /fixIssuesGuidedBtn/);
+  assert.doesNotMatch(html, /Other platforms · free guidance/i);
+  assert.doesNotMatch(html, /\/api\/fix-issues\/plan\/guided/);
+  assert.doesNotMatch(html, /\/manual-package/);
+  assert.doesNotMatch(html, /Download (?:my |fallback )?Fix Kit/i);
+  assert.doesNotMatch(html, /Download recovery instructions/i);
+  assert.match(html, /This audit has no currently supported, verified automatic repair plan/);
+  assert.match(html, /The issue remains unresolved/);
+  assert.match(html, /No payment was taken/);
 });
 
 test('Phase 2 has a separate payment order and never reuses report unlock checkout or voucher entitlements', () => {
@@ -96,10 +83,11 @@ test('Fix Issues browser controller does not hold GitHub installation credential
   assert.match(fixController, /credentials: 'omit'/);
 });
 
-test('Guided fixes use a short, plain-language path for non-GitHub hosting', () => {
-  assert.match(html, /Other platforms receive free guidance only/i);
-  assert.match(html, /Other platforms · free guidance/);
-  assert.match(html, /guidanceAvailable = payload\.guidanceAvailable === true/);
-  assert.match(html, /guidedButton\.disabled = busy \|\| !guidanceAvailable/);
-  assert.match(html, /Auto-fix with GitHub/);
+test('Fix Issues requires a direct writable source and verifies supported repairs', () => {
+  assert.match(html, /Connect website for automatic fixes/);
+  assert.match(html, /matching website domain/);
+  assert.match(html, /Only the exact listed edits will be committed after payment verification/);
+  assert.match(html, /live page must confirm the exact planned values/);
+  assert.match(html, /This finding remains unresolved until a tested automatic repair can be applied and verified/);
+  assert.doesNotMatch(html, /guidanceAvailable/);
 });
