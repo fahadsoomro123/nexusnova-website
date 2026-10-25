@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, '..');
 const admin = fs.readFileSync(path.join(root, 'seo-audit-studio-admin.html'), 'utf8');
 
 test('Owner Console opens as a compact command center with live workspace metrics', () => {
-  assert.match(admin, /id="ownerOverview"/);
+  assert.match(admin, /overview\.id='ownerOverview'/);
   assert.match(admin, /label:'Command center'/);
   assert.match(admin, /Everything important, one screen/);
   assert.match(admin, /AUDIT HISTORY/);
@@ -23,7 +23,7 @@ test('Owner Console opens as a compact command center with live workspace metric
 test('Owner Console uses paged lists instead of forcing owners through long audit and voucher lists', () => {
   assert.match(admin, /function paginateOwnerList\(/);
   assert.match(admin, /function paginateOwnerLists\(/);
-  assert.match(admin, /className='list-pagination'/);
+  assert.match(admin, /text\('div','','list-pagination'\)/);
   assert.match(admin, /Previous/);
   assert.match(admin, /Next/);
   assert.match(admin, /ownerListPages\[key\]/);
