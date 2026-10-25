@@ -75,6 +75,32 @@ jobs:
           sitemap = 'https://nexusnovatools.com/sitemap.xml'
           endpoint = 'https://www.googleapis.com/webmasters/v3/sites/' + __import__('urllib.parse').parse.quote(site, safe='') + '/sitemaps/' + __import__('urllib.parse').parse.quote(sitemap, safe='')
           response = session.put(endpoint, timeout=30)
+          if response.status_code == 403:
+              email = str(info.get('client_email', '')).strip() or '(client_email unavailable in credential JSON)'
+              message = "\\n".join([
+                  "## Google Search Console denied sitemap submission (HTTP 403)",
+                  "",
+                  "Google authenticated the request but refused access to the configured Search Console property.",
+                  "",
+                  "Service account to grant access: " + email,
+                  "Configured property: " + site,
+                  "Sitemap: " + sitemap,
+                  "",
+                  "One-time fix:",
+                  "1. Open Google Search Console for the configured property.",
+                  "2. Open Settings → Users and permissions.",
+                  "3. Add the service-account email above as a Full user or Owner.",
+                  "4. Re-run the Submit Sitemap to Google Search Console workflow.",
+                  "",
+                  "The sitemap file and submission automation are already configured. This permission grant is required by Google; the workflow will not claim a successful submission until the API accepts it."
+              ])
+              print('GSC_PERMISSION_BLOCKED: service account lacks access to configured property.')
+              print(message)
+              summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary_path:
+                  with open(summary_path, 'a', encoding='utf-8') as summary:
+                      summary.write(message + "\\n")
+              raise SystemExit(1)
           if response.status_code not in (200, 204):
               print(response.text)
               response.raise_for_status()
