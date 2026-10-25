@@ -85,7 +85,7 @@ test('Owner Console uses a desktop rail and keeps mobile navigation responsive',
   const v5Start = admin.indexOf('<style id="owner-flagship-v5-editorial">');
   const v5End = admin.indexOf('</style>', v5Start);
   const v5 = admin.slice(v5Start, v5End);
-  assert.match(v5, /height:100dvh !important/);
+  assert.match(v5, /height:\s*100dvh !important/);
   assert.match(v5, /grid-template-columns: 224px minmax\(0, 1fr\)/);
   assert.match(v5, /@media \(max-width: 850px\)/);
   assert.match(v5, /@media \(max-height: 760px\) and \(min-width: 851px\)/);
