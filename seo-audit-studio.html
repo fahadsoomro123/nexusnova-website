@@ -2393,7 +2393,6 @@
   const jobSummary = q('fixIssuesJobSummary');
   const appliedList = q('fixIssuesAppliedList');
   const rollbackButton = q('fixIssuesRollbackBtn');
-  const downloadButton = q('fixIssuesDownloadBtn');
   const verificationPanel = q('fixIssuesVerificationPanel');
   const verificationButton = q('fixIssuesVerificationBtn');
   const verificationOpenReportButton = q('fixIssuesVerificationOpenReportBtn');
@@ -2620,7 +2619,7 @@
     }
     if (available) {
       start.disabled = busy;
-      setStatus('Automatic publishing is available for supported GitHub fixes. Free platform guidance remains available below.');
+      setStatus('Automatic repair is available for supported GitHub fixes. Connect the verified repository, review the exact changes and approve once to run the repair.');
     } else {
       start.disabled = true;
       setStatus('Automatic repair is not ready because the GitHub write connection or payment setup is unavailable. No guidance download or payment is offered; connect a supported website source first.', 'error');
@@ -2693,7 +2692,6 @@
     const isFallback = verification.deliveryMode === 'manual_fallback';
     const isFixKit = isManual || isFallback;
     const manualReady = isFixKit && job.status === 'completed';
-    if (downloadButton) downloadButton.hidden = true;
     const descriptions = {
       awaiting_payment: 'Waiting for the backend to confirm your $5.00 USD payment. A checkout redirect alone is not confirmation.',
       queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
@@ -2846,14 +2844,12 @@
     try {
       const payload = await api('/api/fix-issues/config');
       available = payload.available === true;
-      guidanceAvailable = payload.guidanceAvailable === true;
       if (!available) setStatus(payload.reason || 'Automatic publishing is not ready. No payment or website change is available until the connection is verified.', 'error');
       if (audit && audit.completeEvidence && audit.mode !== 'sample' && available) start.disabled = false;
       else start.disabled = true;
       syncExistingConnectButton();
     } catch (error) {
       available = false;
-      guidanceAvailable = false;
       start.disabled = true;
       syncExistingConnectButton();
       setStatus('The fix service could not confirm configuration. No payment or site write is available until it responds.', 'error');
