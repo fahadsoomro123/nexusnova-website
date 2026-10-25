@@ -68,3 +68,25 @@ test('Owner Console report uses a compact multi-view layout rather than one long
   assert.match(admin, /Prioritized recommendations/);
   assert.match(admin, /All audit checks/);
 });
+
+test('Owner Console applies the Nebula v4 futuristic visual system without changing the owner API flow', () => {
+  assert.match(admin, /<style id="owner-flagship-v4">/);
+  assert.match(admin, /--nebula-cyan:#58e4ff/);
+  assert.match(admin, /body::before/);
+  assert.match(admin, /owner-workspace-tab\[aria-controls="owner-pane-overview"\]::before/);
+  assert.match(admin, /\.owner-kpi::after/);
+  assert.match(admin, /prefers-reduced-motion:reduce/);
+  assert.match(admin, /headers\.set\('X-Owner-Admin-Token',state\.token\)/);
+});
+
+test('Owner Console keeps desktop navigation and the main shell within one viewport', () => {
+  const v4Start = admin.indexOf('<style id="owner-flagship-v4">');
+  const v4End = admin.indexOf('</style>', v4Start);
+  const v4 = admin.slice(v4Start, v4End);
+  assert.match(v4, /main\{position:relative;z-index:1;padding:[^}]*gap:0\}/);
+  assert.match(v4, /grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
+  assert.match(v4, /@media\(max-width:1050px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(admin, /html,body\{width:100%;height:100%;margin:0;background:var\(--flag-bg\);color:var\(--flag-ink\);overflow:hidden\}/);
+  assert.match(admin, /function paginateOwnerLists\(/);
+  assert.match(admin, /list-pagination/);
+});
