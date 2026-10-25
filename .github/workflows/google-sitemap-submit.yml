@@ -104,7 +104,7 @@ jobs:
           if response.status_code not in (200, 204):
               print(response.text)
               response.raise_for_status()
-          summary = "\\n".join([
+          summary = "\n".join([
               "## Google Search Console sitemap submission accepted",
               "",
               "API response: HTTP " + str(response.status_code),
@@ -119,5 +119,5 @@ jobs:
           summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
           if summary_path:
               with open(summary_path, "a", encoding="utf-8") as output:
-                  output.write(summary + "\\n")
+                  output.write(summary + "\n")
           PY
