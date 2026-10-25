@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/production-audit-vouchers-owner-console
+      - feature/owner-console-nebula-v4
     paths:
       - "seo-audit-studio-admin.html"
       - "_headers"
@@ -11,6 +12,8 @@ on:
       - "assets/**"
       - ".github/workflows/deploy-audit-console-review.yml"
       - "tests/seo-audit-studio-launch.test.cjs"
+      - "tests/seo-audit-owner-console-entry.test.cjs"
+      - "tests/seo-audit-owner-console-fix-kit.test.cjs"
   workflow_dispatch:
 
 permissions:
