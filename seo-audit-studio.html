@@ -695,11 +695,10 @@
         <h2 id="fixIssuesHeading">Fix Issues</h2>
         <span class="fix-issues-price">US$5 · direct auto-fixes only</span>
       </div>
-      <p class="fix-issues-copy">Verified GitHub sites can publish supported safe fixes directly. Other platforms receive free guidance only until direct publishing support is ready. You review exact changes before paying, and a fix is marked verified only when the live page matches the planned values.</p>
+      <p class="fix-issues-copy">Connect the website source once, authorize the exact changes, and NexusNova will publish supported repairs directly. A finding is marked fixed only after the public page verifies it. Unsupported findings are not sold as fixes and are never relabeled as resolved.</p>
       <p id="fixIssuesStatus" class="fix-issues-status" role="status" aria-live="polite">Checking safe-fix availability.</p>
       <div class="fix-issues-controls">
-        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Auto-fix with GitHub</button>
-        <button id="fixIssuesGuidedBtn" class="secondary-btn" type="button" disabled>Other platforms · free guidance</button>
+        <button id="fixIssuesStartBtn" class="primary-btn" type="button" disabled>Connect website for automatic fixes</button>
       </div>
       <details class="fix-issues-existing-installation">
         <summary>Advanced GitHub connection help</summary>
@@ -727,7 +726,7 @@
           <input id="fixIssuesAccept" type="checkbox">
           <span id="fixIssuesConsentText">I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.</span>
         </label>
-        <p id="fixIssuesPlanSafetyText" class="fix-issues-danger">The direct-publish route checks the repository version before writing and verifies the published page. Guided Fix Kits provide the corrected HTML and platform-specific instructions without claiming the live site was changed.</p>
+        <p id="fixIssuesPlanSafetyText" class="fix-issues-danger">Only the listed edits will be written to the verified website source after your approval and confirmed payment. NexusNova will recheck the public page. If it cannot publish and verify the repair, the job will not be marked fixed and the payment-recovery path will be shown.</p>
         <div class="fix-issues-controls">
           <button id="fixIssuesPayBtn" class="primary-btn" type="button" disabled>Pay $5.00 USD and apply fixes</button>
         </div>
@@ -737,7 +736,6 @@
         <p id="fixIssuesJobSummary" class="fix-issues-copy"></p>
         <ul id="fixIssuesAppliedList" class="fix-issues-list"></ul>
         <div class="fix-issues-controls">
-          <button id="fixIssuesDownloadBtn" class="primary-btn" type="button" hidden>Download my Fix Kit</button>
             <button id="fixIssuesRollbackBtn" class="secondary-btn" type="button" disabled>Roll back this commit</button>
         </div>
         <section id="fixIssuesVerificationPanel" class="fix-issues-plan fix-issues-verification" aria-labelledby="fixIssuesVerificationHeading" hidden>
@@ -2376,7 +2374,6 @@
   const panel = q('fixIssuesPanel');
   if (!panel) return;
   const start = q('fixIssuesStartBtn');
-  const guidedButton = q('fixIssuesGuidedBtn');
   const existingInstallationId = q('fixIssuesInstallationId');
   const existingConnectButton = q('fixIssuesExistingConnectBtn');
   const status = q('fixIssuesStatus');
@@ -2396,7 +2393,6 @@
   const jobSummary = q('fixIssuesJobSummary');
   const appliedList = q('fixIssuesAppliedList');
   const rollbackButton = q('fixIssuesRollbackBtn');
-  const downloadButton = q('fixIssuesDownloadBtn');
   const verificationPanel = q('fixIssuesVerificationPanel');
   const verificationButton = q('fixIssuesVerificationBtn');
   const verificationOpenReportButton = q('fixIssuesVerificationOpenReportBtn');
@@ -2407,7 +2403,6 @@
   let verificationComplete = false;
   let verificationRunning = false;
   let available = false;
-  let guidanceAvailable = false;
   let audit = null;
   let plan = null;
   let repositories = [];
@@ -2420,7 +2415,6 @@
       existingConnectButton.disabled = busy || !available || !audit ||
         !audit.completeEvidence || audit.mode === "sample" || !validId;
     }
-    if (guidedButton) guidedButton.disabled = busy || !guidanceAvailable || !audit || !audit.completeEvidence || audit.mode === "sample";
   }
   const text = (node, value) => { if (node) node.textContent = String(value ?? ''); };
   function renderVerificationAudit(result) {
@@ -2544,13 +2538,13 @@
       audit_not_found: 'This audit expired or is no longer available. Run a fresh audit.',
       audit_evidence_incomplete: 'Fix Issues is disabled because this audit is missing required source measurements.',
       github_installation_required: 'Install the NexusNova GitHub App with repository contents write permission, then return here.',
-      github_multiple_installations_for_site: 'More than one GitHub connection can publish this website. Use the guided Fix Kit option or ask support to help choose safely.',
+      github_multiple_installations_for_site: 'More than one GitHub connection can publish this website. Choose the exact verified repository before any repair or charge.',
       github_installation_invalid: 'Enter the numeric installation ID shown in the GitHub settings URL.',
       github_installation_verification_failed: 'GitHub could not verify that installation. Check the ID and that the NexusNova app is installed.',
       github_repository_not_connected: 'Choose and connect the verified repository for this website first.',
       repository_not_authorized_for_audited_site: 'That repository could not be verified as the audited website, or it lacks write permission.',
-      safe_fix_plan_unavailable: 'No supported automatic fixes are available for this report. No charge was started.',
-      automatic_fixing_not_supported_for_platform: 'Automatic publishing is not enabled for this platform yet. Free guidance is available; no charge was started.',
+      safe_fix_plan_unavailable: 'No tested automatic repair matched this report. No charge was started and nothing was changed.',
+      automatic_fixing_not_supported_for_platform: 'This website platform does not have a verified automatic publisher yet. No live change was made and no charge was started.',
       repository_changed_since_plan: 'The repository page changed after planning. Review a new plan before payment.',
       fix_plan_could_not_be_built_safely: 'A safe fix plan could not be verified. No payment was started.',
       github_repository_unavailable: 'The connected repository could not be re-verified. No payment was started.',
@@ -2625,10 +2619,10 @@
     }
     if (available) {
       start.disabled = busy;
-      setStatus('Automatic publishing is available for supported GitHub fixes. Free platform guidance remains available below.');
+      setStatus('Automatic repair is available for supported GitHub fixes. Connect the verified repository, review the exact changes and approve once to run the repair.');
     } else {
       start.disabled = true;
-      setStatus('Automatic publishing is not ready because the GitHub write connection or payment setup is unavailable. You can still use free platform guidance below.', 'error');
+      setStatus('Automatic repair is not ready because the GitHub write connection or payment setup is unavailable. No guidance download or payment is offered; connect a supported website source first.', 'error');
     }
     syncExistingConnectButton();
   }
@@ -2653,12 +2647,21 @@
     planPanel.hidden = false;
     changeList.replaceChildren();
     const changes = Array.isArray(payload.changes) ? payload.changes : [];
-    const isManual = payload.deliveryMode === 'manual';
+    const isAutomatic = payload.deliveryMode !== 'manual' && payload.canCheckout === true;
+    if (!isAutomatic) {
+      planSummary.textContent = 'This audit has no currently supported, verified automatic repair plan. No live change was made and no charge was started.';
+      text(notes, 'Connect a supported writable source or wait until this finding has a tested repair handler. NexusNova will not substitute a guide for an automatic fix.');
+      if (consentText) consentText.closest('.fix-issues-consent')?.setAttribute('hidden', '');
+      if (payButton) { payButton.hidden = true; payButton.disabled = true; }
+      if (planSafetyText) planSafetyText.textContent = 'No website write was attempted. This finding remains unresolved until a tested automatic repair can be applied and verified.';
+      return;
+    }
+    if (consentText) consentText.closest('.fix-issues-consent')?.removeAttribute('hidden');
+    if (payButton) payButton.hidden = false;
     planSummary.textContent = changes.length
-      ? changes.length + ' supported fix' + (changes.length === 1 ? '' : 'es') +
-        (isManual ? ' for ' + (payload.platformName || 'your website') + '. Free guidance only; this route does not edit the live site.'
-                  : ' in ' + payload.filePath + ' (' + payload.repository + ').')
-      : 'No supported fix matched the audited page. No charge will be started.';
+      ? changes.length + ' supported repair' + (changes.length === 1 ? '' : 's') +
+        ' ready for ' + payload.filePath + ' (' + payload.repository + ').'
+      : 'No supported automatic repair matched this page. No charge will be started.';
     for (const item of changes) {
       const li = document.createElement('li');
       const label = document.createElement('strong');
@@ -2668,47 +2671,18 @@
       li.append(label, pathNode);
       changeList.append(li);
     }
-    if (isManual) {
-      for (const [index, step] of (payload.instructions || []).entries()) {
-        const li = document.createElement('li');
-        const label = document.createElement('strong');
-        label.textContent = 'Step ' + (index + 1) + ': ';
-        const value = document.createElement('span');
-        value.textContent = step;
-        li.append(label, value);
-        changeList.append(li);
-      }
-      for (const [key, value] of Object.entries(payload.values || {})) {
-        const li = document.createElement('li');
-        const label = document.createElement('strong');
-        label.textContent = ({ title: 'SEO title', metaDescription: 'Meta description', canonicalUrl: 'Canonical URL', viewport: 'Viewport setting' })[key] || key;
-        const code = document.createElement('code');
-        code.textContent = value;
-        li.append(label, code);
-        changeList.append(li);
-      }
-    }
     text(notes, (payload.notes || []).join(' '));
-    if (consentText) consentText.textContent = isManual
-      ? 'This is free guidance only. No payment is requested and no automatic website change is made on this platform.'
-      : 'I reviewed these exact changes and authorize NexusNova to commit them to the selected website repository after SafePay confirms my $5.00 USD payment.';
-    if (planSafetyText) planSafetyText.textContent = isManual
-      ? 'Automatic publishing is not supported for this platform yet. These instructions are free, and the live site has not been changed.'
-      : 'The direct-publish route changes only the listed HTML file, rechecks the repository version before writing, and verifies exact values on the published page.';
-    const consentLabel = accept ? accept.closest('.fix-issues-consent') : null;
-    if (consentLabel) consentLabel.hidden = isManual || !payload.canCheckout;
-    payButton.hidden = isManual || !payload.canCheckout;
-    payButton.textContent = isManual ? 'Automatic fixing not available' : 'Pay $5.00 USD and apply fixes';
+    if (consentText) consentText.textContent = 'I approve these exact changes to the selected website repository after SafePay confirms my US$5.00 payment.';
+    if (planSafetyText) planSafetyText.textContent = 'Only the exact listed edits will be committed after payment verification. The live page must confirm the exact planned values before this repair is marked fixed.';
     accept.checked = false;
     payButton.disabled = changes.length === 0 || !payload.canCheckout || !accept.checked;
     if (changes.length) {
-      setStatus(isManual
-        ? 'Free instructions are shown below. Direct automatic publishing is not available for this platform yet, and no payment was started.'
-        : 'Review the listed edits. SafePay is requested only after you explicitly authorize these exact changes.', 'success');
+      setStatus('The automatic repair plan is ready. Review the exact changes and approve once; no payment or live change has happened yet.', 'success');
     } else {
-      setStatus('No safe fixes matched this page. No charge was created.', 'error');
+      setStatus('No safe automatic repairs matched this page. No charge was created.', 'error');
     }
-  }  function renderJob(job) {
+  }
+  function renderJob(job) {
     currentJob = job;
     if (!jobPanel) return;
     jobPanel.hidden = false;
@@ -2718,22 +2692,14 @@
     const isFallback = verification.deliveryMode === 'manual_fallback';
     const isFixKit = isManual || isFallback;
     const manualReady = isFixKit && job.status === 'completed';
-    if (downloadButton) {
-      downloadButton.hidden = !manualReady;
-      downloadButton.textContent = isFallback
-        ? (verification.contentAvailable === false ? 'Download recovery instructions' : 'Download fallback Fix Kit')
-        : 'Download my Fix Kit';
-    }
     const descriptions = {
       awaiting_payment: 'Waiting for the backend to confirm your $5.00 USD payment. A checkout redirect alone is not confirmation.',
       queued: 'SafePay confirmed payment. Your authorized fix job is queued.',
       running: 'Payment verified. The service is checking the repository version and applying the listed edits.',
       applied: 'A commit was created, but the live website has not confirmed publication yet.',
-      completed: isFallback
-        ? (verification.summary || 'Automatic publishing was not confirmed. No live change is claimed.')
-        : isManual
-          ? 'This legacy Fix Kit was prepared, but it does not change the live site automatically.'
-          : 'The listed changes were committed and the live page checks confirmed the exact supported values.',
+      completed: isFixKit
+        ? 'No automatic live repair was applied by this legacy job. Do not treat the finding as resolved.'
+        : 'The listed changes were committed and the live page checks confirmed the exact supported values.',
       failed: verification.refund?.status === 'refunded'
         ? 'The live fix was not verified. Safepay confirmed the full refund request; posting time depends on the payment provider.'
         : verification.refund?.status === 'manual_review_required'
@@ -2749,7 +2715,7 @@
       rolled_back: 'The fix commit was rolled back with a new repository commit.'
     };
     const state = job.status || 'unknown';
-    text(jobHeading, manualReady ? (isFallback ? 'Your fallback Fix Kit is ready' : 'Your Fix Kit is ready') : state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
+    text(jobHeading, manualReady ? 'Live fix not applied' : state === 'completed' ? 'Fixes verified' : state === 'applied' ? 'Commit created · publication not yet verified' : 'Fix job: ' + state.replace(/_/g, ' '));
     text(jobSummary, descriptions[state] || 'Current fix job status: ' + state);
     if (job.commitSha) {
       const li = document.createElement('li');
@@ -2809,7 +2775,7 @@
     renderRepositories(payload.repositories);
     if (!payload.repositories || !payload.repositories.length) {
       const host = new URL(audit.url).hostname;
-      setStatus('We could not safely verify a writable repository for ' + host + '. No payment was taken. Use the guided Fix Kit option below for platform-specific steps instead of changing advanced GitHub settings.', 'error');
+      setStatus('We could not verify an authorized writable repository for ' + host + '. Nothing was changed and no payment was taken. Connect the correct GitHub repository before automatic repairs can run.', 'error');
     } else {
       setStatus('Choose the verified repository for ' + new URL(audit.url).hostname + '. A read/write action will not happen until you review and accept a plan.', 'success');
     }
@@ -2826,11 +2792,9 @@
         if (result.status === 'paid' && result.job && ['completed', 'failed', 'conflict', 'rolled_back'].includes(result.job.status)) {
           renderJob(result.job);
           const resultVerification = result.job.verification || {};
-          setStatus(result.job.status === 'completed' && resultVerification.deliveryMode === 'manual_fallback'
-            ? (resultVerification.summary || 'Payment was verified. Automatic publishing was not confirmed; a fallback Fix Kit is ready. No live change is claimed.')
-            : result.job.status === 'completed' && resultVerification.deliveryMode === 'manual'
-              ? 'Payment was verified and your Fix Kit is ready to download. It still needs to be applied to your live site.'
-              : result.job.status === 'completed'
+          setStatus(result.job.status === 'completed' && ['manual','manual_fallback'].includes(resultVerification.deliveryMode)
+            ? 'This legacy job did not apply a live repair. The issue remains unresolved; check its payment/refund status.'
+            : result.job.status === 'completed'
                 ? 'Payment was verified, fixes were committed, and the published page passed its supported checks.'
                 : result.job.status === 'applied'
                   ? 'Payment was verified and a commit was created. Live-page verification is still pending; review the job details before considering it complete.'
@@ -2880,14 +2844,12 @@
     try {
       const payload = await api('/api/fix-issues/config');
       available = payload.available === true;
-      guidanceAvailable = payload.guidanceAvailable === true;
-      if (!available) setStatus(payload.reason || 'Automatic publishing is temporarily unavailable. Free guidance may still be used.', 'error');
+      if (!available) setStatus(payload.reason || 'Automatic publishing is not ready. No payment or website change is available until the connection is verified.', 'error');
       if (audit && audit.completeEvidence && audit.mode !== 'sample' && available) start.disabled = false;
       else start.disabled = true;
       syncExistingConnectButton();
     } catch (error) {
       available = false;
-      guidanceAvailable = false;
       start.disabled = true;
       syncExistingConnectButton();
       setStatus('The fix service could not confirm configuration. No payment or site write is available until it responds.', 'error');
@@ -2935,23 +2897,7 @@
       syncExistingConnectButton();
     }
   });
-  guidedButton?.addEventListener('click', async () => {
-    if (busy || !guidanceAvailable || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
-    busy = true;
-    start.disabled = !available;
-    syncExistingConnectButton();
-    try {
-      setStatus('Checking your public page and preparing the exact platform-specific steps. This guidance is free; no payment is started.');
-      const payload = await api('/api/fix-issues/plan/guided', 'POST', { auditId: audit.auditId });
-      renderPlan(payload);
-    } catch (error) {
-      setStatus(errorMessage(error.message), 'error');
-    } finally {
-      busy = false;
-      start.disabled = !available;
-      syncExistingConnectButton();
-    }
-  });  existingInstallationId?.addEventListener('input', syncExistingConnectButton);
+  existingInstallationId?.addEventListener('input', syncExistingConnectButton);
   existingConnectButton?.addEventListener('click', async () => {
     if (busy || !available || !audit || !audit.completeEvidence || audit.mode === 'sample') return;
     const installationId = existingInstallationId ? existingInstallationId.value.trim() : '';
@@ -3012,61 +2958,7 @@
       busy = false;
     }
   });
-  downloadButton?.addEventListener('click', async () => {
-    if (!currentJob || !['manual', 'manual_fallback'].includes(currentJob.verification?.deliveryMode) || currentJob.status !== 'completed' || busy) return;
-    busy = true;
-    downloadButton.disabled = true;
-    try {
-      const payload = await api('/api/fix-issues/jobs/' + encodeURIComponent(currentJob.id) + '/manual-package');
-      if (!payload.ok) throw new Error(payload.error || 'manual_package_not_ready');
-      let content, mimeType, fallbackDownload = payload.deliveryMode === 'manual_fallback';
-      if (typeof payload.content === 'string') {
-        content = payload.content;
-        mimeType = 'text/html;charset=utf-8';
-      } else if (fallbackDownload && Array.isArray(payload.instructions)) {
-        const values = payload.values || {};
-        content = [
-          'NexusNova SEO Fix Recovery',
-          'Website: ' + (audit?.url || ''),
-          'Platform: ' + (payload.platformName || payload.platform || 'Website platform'),
-          '',
-          payload.summary || 'Automatic publishing was not confirmed. No live change is claimed.',
-          '',
-          'EXACT SEO VALUES',
-          ...Object.entries(values).map(([key, value]) => key + ': ' + value),
-          '',
-          'NEXT STEPS',
-          ...payload.instructions.map((step, index) => (index + 1) + '. ' + step),
-          '',
-          'VERIFICATION',
-          ...(payload.verification || []).map((step, index) => (index + 1) + '. ' + step),
-          '',
-          'CHANGES PREPARED',
-          ...(payload.changes || []).map((item) => '- ' + (item.label || item.key) + ' (' + (item.path || '') + ')')
-        ].join('\n');
-        mimeType = 'text/plain;charset=utf-8';
-      } else {
-        throw new Error(payload.error || 'manual_package_not_ready');
-      }
-      const blob = new Blob([content], { type: mimeType });
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = payload.fileName || (fallbackDownload ? 'nexusnova-fix-recovery.txt' : 'nexusnova-fix-kit.html');
-      document.body.append(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
-      setStatus(fallbackDownload
-        ? 'Fallback Fix Kit downloaded. Automatic publishing was not confirmed; follow the recovery steps and verify the live page. No live change is claimed.'
-        : 'Fix Kit downloaded. Follow the platform-specific steps shown above; the live page has not been changed automatically.', 'success');
-    } catch (error) {
-      setStatus(errorMessage(error.message), 'error');
-    } finally {
-      busy = false;
-      downloadButton.disabled = false;
-    }
-  });  verificationOpenReportButton?.addEventListener('click', () => {
+  verificationOpenReportButton?.addEventListener('click', () => {
     const auditId = String(verificationPanel?.dataset.auditId || '');
     if (!/^[0-9a-f-]{36}$/i.test(auditId)) return;
     document.dispatchEvent(new CustomEvent('nexusnova:open-verification-audit', {detail:{auditId}}));
