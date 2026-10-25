@@ -55,7 +55,7 @@ test('homepage header and footer use responsive WebP logo sources with PNG fallb
   const source = /<source type="image\/webp" srcset="\/?assets\/logo-2x\.webp(?:\?[^ ]*)? 2x, \/?assets\/logo-3x\.webp(?:\?[^ ]*)? 3x">/g;
   assert.equal((html.match(source) || []).length, 2, 'header and footer must use responsive WebP sources');
   for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
-    const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo" width="1040" height="345" class="' + className + '"></picture>');
+    const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo" width="1040" height="345"(?: loading="lazy" decoding="async")? class="' + className + '"></picture>');
     assert.ok(pattern.test(html), className + ' keeps the original accessible PNG fallback and intrinsic dimensions');
   }
   assert.ok(/content="https:\/\/nexusnovatools\.com\/assets\/logo\.png(?:\?[^"]*)?"/.test(html), 'social preview image URL remains valid and cache-busted');
@@ -230,4 +230,29 @@ test('homepage downloads the deep search index only on first search intent and r
     "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
     "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });"
   ]) assert.ok(bootstrap.includes(token), token);
+});
+
+
+test('homepage has complementary WebPage JSON-LD and lazy-loads only the offscreen footer logo', () => {
+  const homepage = fs.readFileSync('index.html', 'utf8');
+  const orgBlock = homepage.match(/<script type="application\/ld\+json" data-nexusnova-organization>([\s\S]*?)<\/script>/i);
+  const pageBlock = homepage.match(/<script type="application\/ld\+json" data-nexusnova-webpage>([\s\S]*?)<\/script>/i);
+  assert.ok(orgBlock, 'existing Organization schema remains present');
+  assert.ok(pageBlock, 'homepage gets a separate WebPage schema');
+  const org = JSON.parse(orgBlock[1]);
+  const page = JSON.parse(pageBlock[1]);
+  assert.equal(org['@type'], 'Organization');
+  assert.equal(page['@type'], 'WebPage');
+  assert.equal(page.url, 'https://nexusnovatools.com/');
+  assert.equal(page.name, 'NexusNova Tools — 109 Free Online Browser Tools & PDFs');
+  assert.equal(page.publisher['@id'], 'https://nexusnovatools.com/#organization');
+  assert.equal(page.about['@id'], 'https://nexusnovatools.com/#organization');
+  assert.match(page.description, /109 free online browser tools/);
+
+  const header = homepage.match(/<picture>[\s\S]*?<img[^>]*class="nn-brand-logo-img"[^>]*>[\s\S]*?<\/picture>/i)?.[0] || '';
+  const footer = homepage.match(/<picture>[\s\S]*?<img[^>]*class="nn-footer-brand-logo"[^>]*>[\s\S]*?<\/picture>/i)?.[0] || '';
+  assert.ok(header, 'header logo remains present');
+  assert.ok(footer, 'footer logo remains present');
+  assert.doesNotMatch(header, /\bloading="lazy"/i, 'header/LCP logo stays eager');
+  assert.match(footer, /\bloading="lazy"\s+decoding="async"/i, 'footer logo loads when needed');
 });
