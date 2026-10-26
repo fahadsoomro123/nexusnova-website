@@ -32,7 +32,7 @@ test('homepage exposes the real voucher verification box with checklist, proof U
   assert.match(homepage, /id="nnAuditCheckClaim"/);
   assert.match(homepage, /A supported automatic check needs both the NexusNova link and your reference/);
   assert.match(homepage, /Verify post &amp; unlock voucher/);
-  assert.match(homepage, /seo-audit-launch\.js\?v=20261023-ready-post-v4/);
+  assert.match(homepage, /seo-audit-launch\.js\?v=20261026-live-cls-a11y-v1/);
 });
 
 test('visitor claim submission includes exact campaign, completed steps, public proof and accepted terms', () => {
