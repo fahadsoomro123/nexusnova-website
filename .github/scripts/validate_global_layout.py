@@ -78,7 +78,7 @@ if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBad
     problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
-if len(routes) != 109 or len({url for _, url in routes}) != 108:
+if len(routes) != 109 or len({url for _, url in routes}) != 109:
     problems.append(f"expected 109 unique indexed tool routes; found {len(routes)}")
 expected = set()
 for page in sorted((ROOT / "articles").glob("*.html")):

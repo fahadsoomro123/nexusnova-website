@@ -111,6 +111,15 @@ test('109 indexed tool routes resolve to unique HTML files', () => {
   const routes = [...core.matchAll(/\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"/g)].map(match => match[2]);
   assert.equal(routes.length, 109);
   assert.equal(new Set(routes).size, 109);
+  const validator = read('.github/scripts/validate_global_layout.py');
+  const sync = read('.github/scripts/sync_static_site_shell.py');
+  const uniqueRouteContract = 'if len(routes) != 109 or len({url for _, url in routes}) != 109:';
+  assert.ok(validator.includes(uniqueRouteContract), 'standalone validator must require exactly 109 unique URLs');
+  const templateStart = sync.indexOf('VALIDATE_GLOBAL_LAYOUT = r');
+  const templateEnd = sync.indexOf('TEST_FILE = r', templateStart);
+  assert.ok(templateStart >= 0 && templateEnd > templateStart, 'generated validator template must exist');
+  assert.ok(sync.slice(templateStart, templateEnd).includes(uniqueRouteContract),
+    'the synchronizer must generate the same 109-unique-URL contract');
   for (const route of routes) assert.ok(fs.existsSync(path.join(root, route.replace(/^\/+/, ''))), 'missing indexed tool route ' + route);
 });
 
