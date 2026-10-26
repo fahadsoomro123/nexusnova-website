@@ -2,10 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 
-test('homepage preconnects to its early third-party script origins', () => {
+test('homepage preconnects to its actual early API and analytics origins, not unused AdSense', () => {
   const html = fs.readFileSync('index.html', 'utf8');
-  assert.ok(html.includes('rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin'));
+  assert.ok(html.includes('rel="preconnect" href="https://nexusnova-audit-studio.fahadsoomro123.workers.dev" crossorigin'));
   assert.ok(html.includes('rel="preconnect" href="https://www.googletagmanager.com" crossorigin'));
+  assert.ok(!html.includes('rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin'));
 });
 
 test('below-the-fold HumanProof and footer CSS load asynchronously with no-script fallback', () => {
@@ -130,8 +131,12 @@ test('the visible homepage HumanProof scan loads only after explicit click or ke
   const homepage = fs.readFileSync('index.html', 'utf8');
   const script = fs.readFileSync('assets/js/humanproof-hero-360.js', 'utf8');
   assert.ok(!homepage.includes('data-hp-360-autostart'), 'the homepage must not auto-start the main 3D scan when it enters view');
-  assert.ok(homepage.includes('id="nnHumanProof360Load">Click to load 3D human scan…</div>'), 'the initial state must explain that the scan is user-triggered');
-  assert.ok(script.includes("load.addEventListener('click',start,{once:true})"), 'a deliberate click must remain supported');
+  assert.match(homepage, /id="nnHumanProof360Load"[^>]*>Click to load 3D human scan…<\/div>/, 'the initial state must explain that the scan is user-triggered');
+  assert.ok(!homepage.includes('<script type="module" src="assets/js/humanproof-hero-360.js'), 'the non-critical 3D module must not be fetched during initial load');
+  assert.ok(homepage.includes("const scriptUrl = 'assets/js/humanproof-hero-360.js?v=20261026-user-intent-v1'"), 'the 3D module loads only after a deliberate action');
+  assert.ok(homepage.includes("load.addEventListener('click', requestScan)"), 'a deliberate click must remain supported');
+  assert.ok(homepage.includes("load.addEventListener('keydown', requestScan)"), 'keyboard activation must trigger the deferred load');
+  assert.ok(script.includes("load.addEventListener('click',start,{once:true})"), 'the existing scan activation remains supported');
   assert.ok(script.includes("load.addEventListener('keydown',event=>"), 'keyboard activation must remain supported');
   assert.ok(script.includes("CLICK TO LOAD 3D HUMAN SCAN"), 'the loader announces the explicit action after initialization');
 });
@@ -271,5 +276,19 @@ test('homepage reserves space for the backend-driven launch offer and skips obso
   assert.doesNotMatch(html, /assets\/css\/humanproof-home\.css/);
   assert.doesNotMatch(html, /assets\/js\/humanproof-home\.js/);
   assert.match(bootstrap, /document\.querySelector\('\.nn-command-hero'\)/);
+});
+
+test('homepage caches current launch assets, keeps async offer growth below the CTA row, and meets label accessibility basics', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const css = fs.readFileSync('assets/css/seo-audit-launch.css', 'utf8');
+  assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261026-live-cls-a11y-v1'));
+  assert.ok(html.includes('assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1'));
+  assert.match(html, /class="nn-audit-launch-actions"[\\s\\S]*?<\\/div>\\s*<div id="nnAuditLaunchOffer"/);
+  assert.ok(html.includes('aria-label="Owner Console">Owner Console'));
+  assert.match(html, /\\.nn-step-label\\{[^}]*color:var\\(--nn-muted\\)/);
+  assert.ok(css.includes('.nn-audit-product-wordmark small{color:#526176;'));
+  assert.ok(css.includes('gap:9px;color:#526176;'));
+  assert.ok(css.includes('margin-left:auto;color:#526176;'));
+  assert.ok(css.includes('.nn-audit-home-help{margin:7px 0 0;color:#526176;'));
 });
 
