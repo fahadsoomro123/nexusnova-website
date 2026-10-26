@@ -43,11 +43,11 @@ test('static shell synchronizer transforms every HTML page to the complete canon
     '    expected = module.preserve_owner_console_entry(source, footer)',
     '    start, end, _ = spans[0]',
     '    actual = normalized[start:end]',
-    '    compact = lambda value: re.sub(r">\\\\s+<", "><", value).strip()',
+    '    compact = lambda value: re.sub(r">\\s+<", "><", value).strip()',
     '    if compact(actual) != compact(expected):',
     '        failures.append(f"{path.relative_to(module.ROOT).as_posix()}: normalized footer differs from the canonical footer")',
     'if failures:',
-    '    print("\\\\n".join(failures[:30]), file=sys.stderr)',
+    '    print("\\n".join(failures[:30]), file=sys.stderr)',
     '    sys.exit(1)',
     'print(json.dumps([path.relative_to(module.ROOT).as_posix() for path in paths]))'
   ].join('\n');
