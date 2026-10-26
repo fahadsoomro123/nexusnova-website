@@ -28,6 +28,7 @@ radial-gradient(circle at 50% 40%,rgba(255,255,255,.92) 0 18%,rgba(225,255,242,.
 
 
 
+
 <link rel="stylesheet" href="/assets/css/static-site-shell.css?v=20261017-static-shell-v1">
 </head>
 <body>
@@ -81,7 +82,7 @@ new GLTFLoader().load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/exampl
 new ResizeObserver(fit).observe(viewer);fit();const clock=new THREE.Clock();let last=0;function tick(){requestAnimationFrame(tick);const t=clock.getElapsedTime();if(t-last<1/18)return;last=t;rig.rotation.y=(t/42)*Math.PI*2;rig.position.y=Math.sin(t*.5)*.012;shaders.forEach(s=>s.uniforms.uTime.value=t);renderer.render(scene,camera)}tick();
 </script>
 </body></html>
-<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/"><picture><source type="image/webp" srcset="/assets/logo-2x.webp?v=20261015-v4 2x, /assets/logo-3x.webp?v=20261015-v4 3x"><img src="/assets/logo.png?v=20261015-v4" alt="NexusNova Tools Logo" width="1040" height="345" class="nn-footer-brand-logo"></picture><span class="nn-footer-brand-copy"><span class="nn-footer-brand-name">NEXUSNOVA TOOLS</span><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
+<footer class="nn-footer nn-global-footer"><div class="nn-shell nn-global-footer-main"><section class="nn-footer-brand"><a class="nn-footer-brand-link" href="/"><picture><source type="image/webp" srcset="/assets/logo-2x.webp?v=20261015-v4 2x, /assets/logo-3x.webp?v=20261015-v4 3x"><img src="/assets/logo.png?v=20261015-v4" alt="NexusNova Tools Logo" width="1040" height="345" loading="lazy" decoding="async" class="nn-footer-brand-logo"></picture><span class="nn-footer-brand-copy"><span class="nn-footer-brand-name">NEXUSNOVA TOOLS</span><small>FOCUSED DIGITAL UTILITIES</small></span></a><p class="nn-footer-copy">Practical browser tools, guides and utilities for everyday digital work.</p></section><nav class="nn-footer-trust" aria-label="Trust and policies"><h2 class="nn-footer-section-title">Trust</h2><div class="nn-footer-trust-grid"><a href="/terms.html">Terms</a>
 <a href="/refund-policy.html">Refund Policy</a>
 <a href="/about.html">About</a>
 <a href="/editorial-team.html">Editorial Team</a>

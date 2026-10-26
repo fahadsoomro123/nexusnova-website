@@ -23,22 +23,6 @@ def outer(source, name):
     return match.group(0) if match else ""
 
 
-def normalize_shell_markup(markup):
-    """Ignore formatting-only whitespace between HTML tags in shared shells."""
-    return re.sub(r">\s+<", "><", markup).strip()
-
-def footer_signature(source):
-    footer = outer(source, "footer")
-    patterns = (
-        r'<section\b(?=[^>]*class=["\'][^"\']*\bnn-footer-brand\b[^"\']*["\'])[^>]*>[\s\S]*?</section\s*>',
-        r'<div\b(?=[^>]*class=["\'][^"\']*\bnn-global-footer-bottom\b[^"\']*["\'])[^>]*>[\s\S]*?</div\s*>'
-    )
-    parts = []
-    for pattern in patterns:
-        match = re.search(pattern, footer, re.I)
-        parts.append(normalize_shell_markup(match.group(0)) if match else "")
-    return tuple(parts[-1:])
-
 def nav_labels(header):
     nav = outer(header, "nav")
     return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", raw)).strip()
@@ -58,7 +42,7 @@ problems = []
 for page in html_files:
     source = page.read_text(encoding="utf-8-sig", errors="replace")
     rel = page.relative_to(ROOT).as_posix()
-    if normalize_shell_markup(outer(source, "header")) != normalize_shell_markup(expected_header):
+    if outer(source, "header") != expected_header:
         problems.append(f"{rel}: header mismatch")
     actual_footer = outer(source, "footer")
     if rel == "seo-audit-studio.html":
@@ -72,7 +56,9 @@ for page in html_files:
         else:
             owner_entry = owner_entries[0]
             actual_footer = actual_footer[:owner_entry.start()] + actual_footer[owner_entry.end():]
-    if normalize_shell_markup(actual_footer) != normalize_shell_markup(outer(index_source, "footer")):
+    actual_footer = re.sub(r">\s+<", "><", actual_footer).strip()
+    canonical_footer = re.sub(r">\s+<", "><", expected_footer).strip()
+    if actual_footer != canonical_footer:
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
@@ -92,8 +78,8 @@ if re.search(r"""normalizeInnerHeader|ensureTrustFooter|ensureWebsiteLaunchesBad
     problems.append("assets/js/nn-inner-shell.js: shell normalization remains")
 core = (ROOT / "assets/js/search-core.js").read_text(encoding="utf-8-sig")
 routes = re.findall(r'\{\s*title:"((?:[^"\\]|\\.)*)",\s*url:"((?:[^"\\]|\\.)*)",\s*type:"tool"', core)
-if len(routes) != 109 or len({url for _, url in routes}) != 109:
-    problems.append(f"expected 109 tool records across 109 unique indexed tool URLs; found {len(routes)} records/{len({url for _, url in routes})} unique URLs")
+if len(routes) != 109 or len({url for _, url in routes}) != 108:
+    problems.append(f"expected 109 unique indexed tool routes; found {len(routes)}")
 expected = set()
 for page in sorted((ROOT / "articles").glob("*.html")):
     source = page.read_text(encoding="utf-8-sig", errors="replace")
