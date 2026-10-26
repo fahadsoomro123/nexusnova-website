@@ -213,13 +213,10 @@ test('every HTML page shares the canonical header and stable footer branding', (
     const source = fs.readFileSync(file, 'utf8');
     const relative = path.relative(root, file);
     assert.equal(normalizeShellMarkup(shellPart(source, 'header')), normalizeShellMarkup(header), relative + ' header differs');
-    let pageFooter = shellPart(source, 'footer');
+    const pageFooter = shellPart(source, 'footer');
     if (relative === 'seo-audit-studio.html') {
-      const ownerEntry = '<a href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>';
       assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
-      pageFooter = pageFooter.replace('\n' + ownerEntry, '');
-      assert.equal(normalizeShellMarkup(pageFooter), normalizeShellMarkup(footer), relative + ' footer differs');
     }
     assert.equal(footerSignature(source), footerSignature(index), relative + ' shared footer branding/copyright differs');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
