@@ -314,14 +314,14 @@ test('broad site cleanup preserves deliberate performance and related-content ca
     'for name, content in fixtures.items(): (root / name).write_text(content, encoding="utf-8")',
     'module.cache_bust()',
     'for name in fixtures: print(name + "=" + (root / name).read_text(encoding="utf-8"))'
-  ].join('\\n');
+  ].join('\n');
   try {
     const scriptPath = path.join(root, '.github/scripts/total_site_overhaul.py');
     const result = spawnSync(process.env.PYTHON || 'python3', ['-c', python, scriptPath, temp], {
       cwd: root, encoding: 'utf8', timeout: 15000
     });
     assert.equal(result.error, undefined, 'cache-bust test process did not start: ' + (result.error?.message || ''));
-    assert.equal(result.status, 0, 'cache-bust fixture failed:\\n' + result.stdout + '\\n' + result.stderr);
+    assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
     assert.match(result.stdout, /seo-audit-launch\\.css\\?v=20261026-live-cls-a11y-v1/);
     assert.match(result.stdout, /seo-audit-launch\\.js\\?v=20261026-live-cls-a11y-v1/);
     assert.match(result.stdout, /main\\.js\\?v=20261015-v4&lcpAds=20261022-v2/);
