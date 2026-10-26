@@ -340,6 +340,38 @@ def apply_edits(source: str, edits: list[tuple[int, int, str]]) -> str:
     return source
 
 
+def preserve_owner_console_entry(source: str, footer_template: str) -> str:
+    """Copy the Owner Console link only when it originally belongs to a footer."""
+    parser = ElementSpanParser(source)
+    link = None
+    owner_link_re = re.compile(
+        r"<a\b(?=[^>]*\bhref=[\"']/?seo-audit-studio-admin\.html(?:[?#][^\"']*)?[\"'])[^>]*>[\s\S]*?</a\s*>",
+        re.I,
+    )
+    for start, end, _ancestors in sorted(parser.spans.get("footer", []), key=lambda span: span[0]):
+        match = owner_link_re.search(source[start:end])
+        if match:
+            link = match.group(0)
+            break
+    if not link or re.search(r"href=[\"']/?seo-audit-studio-admin\.html", footer_template, re.I):
+        return footer_template
+
+    trust_nav = re.search(
+        r"<nav\b(?=[^>]*aria-label=[\"']Trust and policies[\"'])[^>]*>[\s\S]*?</nav\s*>",
+        footer_template, re.I
+    )
+    if trust_nav:
+        close_nav = re.search(r"</nav\s*>$", trust_nav.group(0), re.I)
+        insert_at = trust_nav.end() - len(close_nav.group(0)) if close_nav else trust_nav.end()
+        return footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+
+    close_footer = re.search(r"</footer\s*>", footer_template, re.I)
+    if close_footer:
+        insert_at = close_footer.start()
+        return footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+    return footer_template
+
+
 def normalize_html(source: str, header_template: str, footer_template: str) -> str:
     parser = ElementSpanParser(source)
     headers, footers, mains = parser.spans.get("header", []), parser.spans.get("footer", []), parser.spans.get("main", [])
@@ -360,27 +392,7 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
     all_footers = sorted(footers, key=lambda span: span[0])
     global_footers = sorted((span for span in all_footers if is_global(span[2]) and span[0] > last_main_end), key=lambda span: span[0])
 
-    # Capture the page-specific private Owner Console link from the original HTML
-    # before replacing any shell ranges. This must not depend on footer span detection.
-    owner_link_match = re.search(
-        r"<a\b(?=[^>]*\bhref=[\"']/?seo-audit-studio-admin\.html(?:[?#][^\"']*)?[\"'])[^>]*>[\s\S]*?</a\s*>",
-        source, re.I
-    )
-    if owner_link_match and not re.search(r"href=[\"']/?seo-audit-studio-admin\.html", footer_template, re.I):
-        link = owner_link_match.group(0)
-        trust_nav = re.search(
-            r"<nav\b(?=[^>]*aria-label=[\"']Trust and policies[\"'])[^>]*>[\s\S]*?</nav\s*>",
-            footer_template, re.I
-        )
-        if trust_nav:
-            close_nav = re.search(r"</nav\s*>$", trust_nav.group(0), re.I)
-            insert_at = trust_nav.end() - len(close_nav.group(0)) if close_nav else trust_nav.end()
-            footer_template = footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
-        else:
-            close_footer = re.search(r"</footer\s*>", footer_template, re.I)
-            if close_footer:
-                insert_at = close_footer.start()
-                footer_template = footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+    footer_template = preserve_owner_console_entry(source, footer_template)
 
     if global_footers:
         keep_footer = global_footers[0]
@@ -651,7 +663,8 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: retired shell script still referenced")
         if headers and source[headers[0][0]:headers[0][1]] != header_template:
             problems.append(f"{relative}: header differs from canonical index.html")
-        if footers and source[footers[-1][0]:footers[-1][1]] != footer_template:
+        expected_footer = preserve_owner_console_entry(source, footer_template)
+        if footers and source[footers[-1][0]:footers[-1][1]] != expected_footer:
             problems.append(f"{relative}: footer differs from canonical index.html")
     for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/related-tools.js"):
         if "global-shell-guard.js" in (ROOT / relative).read_text(encoding="utf-8", errors="replace"):
