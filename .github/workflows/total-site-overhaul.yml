@@ -86,9 +86,14 @@ jobs:
             const assets=[...html.matchAll(/(?:src|href)=["']([^"']*assets\/[^"']+\.(?:js|css)(?:\?[^"']*)?)["']/gi)].map(m=>m[1]);
             const isSharedShellAsset = value =>
               /(?:^|\/)static-site-shell\.css\?v=20261017-static-shell-v1(?:$|#)/.test(value);
+            // analytics.js intentionally uses its own related-content fingerprint;
+            // tests pin this asset key independently of the global shell version.
+            const isIndependentlyVersionedBootstrap = value =>
+              /(?:^|\/)analytics\.js\?v=20261016-related-content-v1(?:$|#)/.test(value);
             const stale = assets.filter(value =>
-              !value.includes(`v=${VERSION}`) &&
+              !value.includes(\`v=\${VERSION}\`) &&
               !isSharedShellAsset(value) &&
+              !isIndependentlyVersionedBootstrap(value) &&
               !/nn-inner-shell(?:\.js|\.css)/i.test(value)
             );
             if(stale.length) throw new Error(`${path}: stale asset key ${stale[0]}`);
