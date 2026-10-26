@@ -153,7 +153,7 @@ test('Owner Console uses one full-page scroll surface for desktop reports and hi
   assert.match(v7, /body\.owner-session-active #console\s*\{[\s\S]*?overflow: visible !important;/);
   assert.match(v7, /\.owner-workspace-pane:not\(\[hidden\]\)\s*\{[\s\S]*?max-height: none !important;[\s\S]*?overflow: visible !important;/);
   assert.match(v7, /\.report-compact-pane,[\s\S]*?\.owner-auto-fix-result\s*\{[\s\S]*?max-height: none !important;[\s\S]*?overflow: visible !important;/);
-  assert.match(v7, /\.owner-auto-fix-result \.meta\s*\{[\s\S]*?color: #34473c !important;[\s\S]*?max-width: none !important;/);
+  assert.match(v7, /\.owner-auto-fix-result \.meta\s*\{[\s\S]*?max-width: none !important;[\s\S]*?color: #34473c !important;/);
   assert.match(v7, /\.owner-workspace-tab:hover:not\(\[aria-selected="true"\]\)\s*\{[\s\S]*?color: #173e33 !important;/);
   assert.match(v7, /\.owner-workspace-tab\[aria-selected="true"\]:hover\s*\{[\s\S]*?color: #ffffff !important;/);
 });
