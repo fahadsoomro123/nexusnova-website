@@ -30,12 +30,12 @@ test('shared shell synchronization preserves the page-specific Owner Console ent
     "header = '<header><a href=\"/\">Home</a></header>'",
     "footer = '<footer><nav aria-label=\"Trust and policies\"><a href=\"/privacy.html\">Privacy</a></nav></footer>'",
     'print(module.normalize_html(source, header, footer))'
-  ].join('\\n');
+  ].join('\n');
   const result = spawnSync(process.env.PYTHON || 'python3', [
     '-c', python, path.join(root, '.github/scripts/sync_static_site_shell.py')
   ], { cwd: root, encoding: 'utf8', timeout: 15000 });
   assert.equal(result.error, undefined, 'shell-sync test process did not start: ' + (result.error?.message || ''));
-  assert.equal(result.status, 0, 'shell-sync fixture failed:\\n' + result.stdout + '\\n' + result.stderr);
+  assert.equal(result.status, 0, 'shell-sync fixture failed:\n' + result.stdout + '\n' + result.stderr);
   assert.ok(
     result.stdout.includes('href="/seo-audit-studio-admin.html" rel="nofollow" aria-label="Owner-only SEO Audit Studio administration">Owner Console</a>'),
     'the shared public footer must not erase the page-specific Owner Console entry'
