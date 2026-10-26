@@ -15,7 +15,7 @@ test('indexed-tool audit accepts only the intentional shared-shell cache version
   const workflow = fs.readFileSync('.github/workflows/total-site-overhaul.yml', 'utf8');
   assert.ok(workflow.includes("const isSharedShellAsset = value =>"), 'shared shell exception must be explicit');
   assert.ok(workflow.includes('20261017-static-shell-v1'), 'exception must pin the known static-shell key');
-  assert.ok(workflow.includes('!value.includes(`v=${VERSION}`)'), 'the current global asset key remains required by default');
+  assert.ok(workflow.includes("!value.includes('v=' + VERSION)"), 'the current global asset key remains required by default');
   assert.ok(workflow.includes('!isSharedShellAsset(value)'), 'the explicit shared-shell exception remains pinned');
   assert.ok(workflow.includes('!isIndependentlyVersionedBootstrap(value)'), 'the exact analytics bootstrap exception remains explicit');
   assert.ok(workflow.includes('20261016-related-content-v1'), 'the analytics bootstrap exception must pin the existing component key');
