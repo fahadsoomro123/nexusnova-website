@@ -797,6 +797,101 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     }
 </style>
 
+
+  <style id="owner-report-full-page-v7">
+    /* Use the browser page as the single scroll surface for owner audit reports.
+       Fixed-height workspaces made the full report and Fix Issues review feel clipped. */
+    @media (min-width: 851px) {
+      html, body {
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+      body.owner-session-active {
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+      body.owner-session-active main {
+        height: auto !important;
+        min-height: 100dvh !important;
+        overflow: visible !important;
+      }
+      body.owner-session-active #console {
+        flex: 0 0 auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+      }
+      body.owner-session-active .owner-workspace,
+      body.owner-session-active .owner-workspace-body {
+        flex: 0 0 auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+      }
+      body.owner-session-active .owner-workspace-pane,
+      body.owner-session-active .owner-workspace-pane:not([hidden]) {
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        overscroll-behavior: auto !important;
+      }
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="audit-history"] #auditHistory,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="claim-review"] #claimReviewList,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="redemptions"] #redemptionHistory,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignList,
+      body.owner-session-active .owner-workspace-pane[data-workspace-pane="campaigns"] #codeList,
+      body.owner-session-active .report-compact-pane,
+      body.owner-session-active .owner-auto-fix-result {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      body.owner-session-active .owner-auto-fix-result {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+      body.owner-session-active .owner-auto-fix-result p,
+      body.owner-session-active .owner-auto-fix-result li,
+      body.owner-session-active .owner-auto-fix-result .meta {
+        max-width: none !important;
+        color: #34473c !important;
+        font-size: 13px !important;
+        line-height: 1.65 !important;
+        overflow-wrap: anywhere !important;
+      }
+      body.owner-session-active .owner-auto-fix-result h3 { color: #173e33 !important; }
+      body.owner-session-active .owner-auto-fix-result h4 { color: #173e33 !important; }
+      body.owner-session-active .owner-auto-fix-result a { color: #165a45 !important; }
+      body.owner-session-active .owner-auto-fix-result a:hover,
+      body.owner-session-active .owner-auto-fix-result a:focus-visible {
+        color: #103b2d !important;
+        background: #e6eee7 !important;
+        outline: 2px solid #557b61 !important;
+        outline-offset: 2px !important;
+      }
+      body.owner-session-active .owner-workspace-tab:hover:not([aria-selected="true"]) {
+        background: #e5ece3 !important;
+        border-color: #9eb5a0 !important;
+        color: #173e33 !important;
+      }
+      body.owner-session-active .owner-workspace-tab[aria-selected="true"]:hover {
+        background: #173e33 !important;
+        border-color: #173e33 !important;
+        color: #ffffff !important;
+      }
+      body.owner-session-active .item:hover .meta,
+      body.owner-session-active .item:focus-within .meta {
+        color: #34473c !important;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <header class="nn-header">
