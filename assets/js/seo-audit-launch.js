@@ -100,6 +100,11 @@
     statusNode.className='nn-audit-voucher-status'+(tone?' '+tone:'');
     statusNode.textContent=message;
   };
+  const revealOffer=()=>{
+    offerBox.removeAttribute('data-pending');
+    offerBox.removeAttribute('aria-hidden');
+    offerBox.hidden=false;
+  };
   const showOfferUnavailable=(heading,detail)=>{
     offerBox.replaceChildren();
     const label=document.createElement('span');
@@ -112,7 +117,7 @@
     explanation.className='nn-audit-launch-offer-availability';
     explanation.textContent=detail;
     offerBox.append(label,title,explanation);
-    offerBox.hidden=false;
+    revealOffer();
   };
   const offerLabel=(campaign)=>{
     const type=String(campaign.offerType||''),value=Number(campaign.offerValue);
@@ -442,7 +447,7 @@
     const ends=displayDate(campaign.endsAt);
     if(ends){const expiry=document.createElement('span');expiry.className='nn-audit-launch-offer-expiry';expiry.textContent='Offer ends '+ends;offerBox.append(expiry);}
     if(campaign.terms&&typeof campaign.terms==='string'){const terms=document.createElement('span');terms.className='nn-audit-launch-terms';terms.textContent=campaign.terms;offerBox.append(terms);}
-    offerBox.hidden=false;
+    revealOffer();
     if(!voucherAlreadyClaimed){
       claimButton.disabled=campaign.claimEnabled!==true;
       claimButton.querySelector('span').textContent=campaign.claimEnabled===true?'Complete steps & submit proof':'Voucher verification not configured';

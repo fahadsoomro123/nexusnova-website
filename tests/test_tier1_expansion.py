@@ -74,7 +74,10 @@ for rel in GUIDES:
  assert f'url:"{rel}", type:"guide"' in core,f"missing search record: {rel}"
 for rel in TOOLS: assert f'url:"{rel}", type:"tool"' in core,f"missing tool search record: {rel}"
 assert "v=20261015-v4" in home,"homepage assets need the current cache version"
-assert "assets/css/humanproof-home.css?v=20261022-user-triggered-3d-v1" in home,"homepage hero stylesheet must use its current cache version"
+assert "assets/css/humanproof-home.css" not in home,"obsolete homepage hero stylesheet must not add a render-blocking request"
+assert "assets/js/humanproof-home.js" not in home,"obsolete homepage hero script must not add an unused request"
+bootstrap=(ROOT/"assets"/"js"/"auth-header-state.js").read_text(encoding="utf-8")
+assert "document.querySelector('.nn-command-hero')" in bootstrap,"legacy HumanProof bootstrap must require its actual target"
 assert "v=20261015-v4" in directory,"directory assets must be cache-busted for the live refresh"
 print("PASS: 109 searchable tools; 14 guide records; five new tools and five guides over 1,200 words; metadata; sitemap; internal discovery; and cache-busted assets.")
 for rel in GUIDES: print(f"GUIDE WORD COUNT: {rel}: {words(ROOT/rel)}")

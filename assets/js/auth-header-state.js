@@ -6,7 +6,7 @@
   // Loader markers are intentionally different from the mounted-section marker used
   // inside humanproof-home.js, otherwise the loader can mistake itself for the hero.
   const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
-  if(page==='index.html'&&typeof document?.querySelector==='function'&&document.head){
+  if(page==='index.html'&&typeof document?.querySelector==='function'&&document.head&&document.querySelector('.nn-command-hero')){
     if(!document.querySelector('link[data-humanproof-loader]')){
       const style=document.createElement('link');
       style.rel='stylesheet';

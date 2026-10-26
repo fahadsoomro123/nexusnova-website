@@ -91,8 +91,6 @@
   <link rel="stylesheet" href="assets/css/flagship-home-refinement.css?v=20261015-v4">
   <!-- Critical-path HumanProof hero: load its existing styling and markup before first paint,
        rather than waiting for the delayed shared footer/runtime loader. -->
-  <link rel="stylesheet" href="assets/css/humanproof-home.css?v=20261022-user-triggered-3d-v1" data-humanproof-loader>
-  <script src="assets/js/humanproof-home.js?v=20261022-user-triggered-3d-v1" data-humanproof-loader defer></script>
 
   <style>
     :root{
@@ -581,7 +579,7 @@
           <h1 class="nn-audit-launch-title" id="nn-audit-launch-title">SEO Audit Studio</h1>
           <p class="nn-audit-launch-description">Measured technical SEO checks and mobile/desktop performance.</p>
 
-          <div id="nnAuditLaunchOffer" class="nn-audit-launch-offer" hidden aria-live="polite"></div>
+          <div id="nnAuditLaunchOffer" class="nn-audit-launch-offer" data-pending aria-hidden="true" aria-live="polite"></div>
           <div class="nn-audit-launch-actions">
             <button type="button" id="nnAuditClaimVoucher" class="nn-audit-launch-button" disabled><span>Checking voucher availability…</span><span class="nn-audit-launch-arrow" aria-hidden="true">↗</span></button>
             <a id="nnAuditLaunchCta" href="/seo-audit-studio.html" class="nn-audit-launch-secondary">Open Audit Studio <span aria-hidden="true">→</span></a>
