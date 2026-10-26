@@ -60,7 +60,19 @@ for page in html_files:
     rel = page.relative_to(ROOT).as_posix()
     if normalize_shell_markup(outer(source, "header")) != normalize_shell_markup(expected_header):
         problems.append(f"{rel}: header mismatch")
-    if footer_signature(source) != footer_signature(index_source):
+    actual_footer = outer(source, "footer")
+    if rel == "seo-audit-studio.html":
+        owner_pattern = re.compile(
+            r"""<a\b(?=[^>]*\bhref=["']/?seo-audit-studio-admin\.html(?:[?#][^"']*)?["'])[^>]*>[\s\S]*?</a\s*>""",
+            re.I,
+        )
+        owner_entries = list(owner_pattern.finditer(actual_footer))
+        if len(owner_entries) != 1:
+            problems.append(f"{rel}: expected exactly one page-specific Owner Console footer entry")
+        else:
+            owner_entry = owner_entries[0]
+            actual_footer = actual_footer[:owner_entry.start()] + actual_footer[owner_entry.end():]
+    if normalize_shell_markup(actual_footer) != normalize_shell_markup(outer(index_source, "footer")):
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
