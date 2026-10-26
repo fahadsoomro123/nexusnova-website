@@ -130,3 +130,16 @@ test('Owner Console displays a reason and concrete next action for unsupported F
   assert.match(admin, /Number\(plan\?\.manualGuidanceVersion\)!==1/);
 });
 
+test('Owner Console keeps full Fix Issues guidance visible without nested scrolling', () => {
+  const v5Start = admin.indexOf('<style id="owner-flagship-v5-editorial">');
+  const v5End = admin.indexOf('</style>', v5Start);
+  const v5 = admin.slice(v5Start, v5End);
+  assert.match(v5, /body\.owner-session-active \.report-compact-pane\s*\{[\s\S]*?max-height:\s*none !important;[\s\S]*?overflow:\s*visible !important;/);
+  assert.match(v5, /body\.owner-session-active \.owner-auto-fix-result,[\s\S]*?max-height:\s*none !important;[\s\S]*?overflow:\s*visible !important;/);
+  assert.match(v5, /\.owner-auto-fix-result p,[\s\S]*?font-size:\s*13px !important;[\s\S]*?line-height:\s*1\.65 !important;/);
+  assert.match(v5, /\.owner-auto-fix-result h3 \{[^}]*font-size:\s*18px !important/);
+  assert.match(v5, /:root \{ --muted:\s*#53645a; \}/);
+  assert.match(v5, /\.report-compact-tab:hover:not\(\[aria-selected="true"\]\)[\s\S]*?color:\s*#173e33 !important;/);
+  assert.match(v5, /\.report-compact-tab\[aria-selected="true"\]:hover[\s\S]*?color:\s*#ffffff !important;/);
+});
+
