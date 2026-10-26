@@ -1258,6 +1258,18 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
         : (plan.message||'No deterministic automatic fix matched this page. No file was changed.');
       panel.append(notice(noChangeMessage));
       planNotes.forEach(note=>panel.append(text('p',note,'meta')));
+      if(Array.isArray(plan.unresolvedFindings)&&plan.unresolvedFindings.length){
+        panel.append(text('h4','Manual actions still required'));
+        const list=text('ul');
+        plan.unresolvedFindings.forEach(finding=>{
+          const li=text('li');
+          li.append(text('strong',finding.label||'Audit finding'));
+          li.append(text('p','Why this was not auto-fixed: '+(finding.reason||'The correct change could not be verified safely.'),'meta'));
+          li.append(text('p','Next action: '+(finding.nextAction||'Review the finding evidence, make a targeted manual edit, publish it, and re-run the audit.'),'meta'));
+          list.append(li);
+        });
+        panel.append(list);
+      }
       item.append(panel);return;
     }
     panel.append(notice(plan.safety||'Preview only. Nothing has been changed yet. Approve the exact list before a commit is created.'));
