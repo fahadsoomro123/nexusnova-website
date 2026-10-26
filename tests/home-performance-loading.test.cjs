@@ -283,7 +283,7 @@ test('homepage caches current launch assets, keeps async offer growth below the 
   const css = fs.readFileSync('assets/css/seo-audit-launch.css', 'utf8');
   assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261026-live-cls-a11y-v1'));
   assert.ok(html.includes('assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1'));
-  assert.match(html, /class="nn-audit-launch-actions"[\\s\\S]*?<\\/div>\\s*<div id="nnAuditLaunchOffer"/);
+  assert.match(html, /class="nn-audit-launch-actions"[\s\S]*?<\/div>\s*<div id="nnAuditLaunchOffer"/);
   assert.ok(html.includes('aria-label="Owner Console">Owner Console'));
   assert.match(html, /\\.nn-step-label\\{[^}]*color:var\\(--nn-muted\\)/);
   assert.ok(css.includes('.nn-audit-product-wordmark small{color:#526176;'));
