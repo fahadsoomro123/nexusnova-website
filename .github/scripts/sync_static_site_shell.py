@@ -107,7 +107,21 @@ for page in html_files:
     rel = page.relative_to(ROOT).as_posix()
     if outer(source, "header") != expected_header:
         problems.append(f"{rel}: header mismatch")
-    if outer(source, "footer") != expected_footer:
+    actual_footer = outer(source, "footer")
+    if rel == "seo-audit-studio.html":
+        owner_pattern = re.compile(
+            r"""<a\b(?=[^>]*\bhref=["']/?seo-audit-studio-admin\.html(?:[?#][^"']*)?["'])[^>]*>[\s\S]*?</a\s*>""",
+            re.I,
+        )
+        owner_entries = list(owner_pattern.finditer(actual_footer))
+        if len(owner_entries) != 1:
+            problems.append(f"{rel}: expected exactly one page-specific Owner Console footer entry")
+        else:
+            owner_entry = owner_entries[0]
+            actual_footer = actual_footer[:owner_entry.start()] + actual_footer[owner_entry.end():]
+    actual_footer = re.sub(r">\s+<", "><", actual_footer).strip()
+    canonical_footer = re.sub(r">\s+<", "><", expected_footer).strip()
+    if actual_footer != canonical_footer:
         problems.append(f"{rel}: footer mismatch")
     if len(re.findall(r"<footer\b", source, re.I)) != 1:
         problems.append(f"{rel}: expected one footer element")
@@ -179,17 +193,49 @@ const shellPart = (source, tag) => {
   return matches[0][0];
 };
 const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
-const footerSignature = source => {
-  const footer = shellPart(source, 'footer');
-  const brand = (footer.match(/<section\b(?=[^>]*class=["'][^"']*\bnn-footer-brand\b[^"']*["'])[^>]*>[\s\S]*?<\/section\s*>/i) || [''])[0];
-  const bottom = (footer.match(/<div\b(?=[^>]*class=["'][^"']*\bnn-global-footer-bottom\b[^"']*["'])[^>]*>[\s\S]*?<\/div\s*>/i) || [''])[0];
-  return normalizeShellMarkup(bottom);
-};
 const labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
     .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 };
+
+test('static shell synchronizer transforms every HTML page to the complete canonical footer', () => {
+  const { spawnSync } = require('node:child_process');
+  const python = [
+    'import importlib.util, json, re, sys',
+    'spec = importlib.util.spec_from_file_location("shell_sync", sys.argv[1])',
+    'module = importlib.util.module_from_spec(spec)',
+    'spec.loader.exec_module(module)',
+    'header, footer = module.canonical_templates()',
+    'paths = module.all_html_files()',
+    'failures = []',
+    'for path in paths:',
+    '    source = path.read_text(encoding="utf-8-sig", errors="replace")',
+    '    normalized = module.normalize_html(source, header, footer)',
+    '    spans = module.ElementSpanParser(normalized).spans.get("footer", [])',
+    '    if len(spans) != 1:',
+    '        failures.append(f"{path.relative_to(module.ROOT).as_posix()}: expected one normalized footer, found {len(spans)}")',
+    '        continue',
+    '    expected = module.preserve_owner_console_entry(source, footer)',
+    '    start, end, _ = spans[0]',
+    '    actual = normalized[start:end]',
+    '    compact = lambda value: re.sub(r">\\s+<", "><", value).strip()',
+    '    if compact(actual) != compact(expected):',
+    '        failures.append(f"{path.relative_to(module.ROOT).as_posix()}: normalized footer differs from the canonical footer")',
+    'if failures:',
+    '    print("\\n".join(failures[:30]), file=sys.stderr)',
+    '    sys.exit(1)',
+    'print(json.dumps([path.relative_to(module.ROOT).as_posix() for path in paths]))'
+  ].join('\n');
+  const result = spawnSync(process.env.PYTHON || 'python3', [
+    '-c', python, path.join(root, '.github/scripts/sync_static_site_shell.py')
+  ], { cwd: root, encoding: 'utf8', timeout: 60000 });
+  assert.equal(result.error, undefined, 'shell normalization process did not start: ' + (result.error?.message || ''));
+  assert.equal(result.status, 0, 'every static page must normalize to the canonical footer:\\n' + result.stdout + '\\n' + result.stderr);
+  const pages = JSON.parse(result.stdout);
+  assert.ok(pages.length >= 325, 'expected a full public HTML normalization sweep; found ' + pages.length + ' pages');
+  assert.ok(pages.includes('seo-audit-studio.html'), 'the Audit Studio page is included in the normalization sweep');
+});
 
 test('every HTML page shares the canonical header and stable footer branding', () => {
   const index = read('index.html');
@@ -218,7 +264,6 @@ test('every HTML page shares the canonical header and stable footer branding', (
       assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
     }
-    assert.equal(footerSignature(source), footerSignature(index), relative + ' shared footer branding/copyright differs');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
@@ -258,7 +303,6 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
-
 '''
 
 class ElementSpanParser(HTMLParser):
