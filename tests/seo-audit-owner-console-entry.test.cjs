@@ -54,14 +54,14 @@ test('shared shell synchronization does not move a homepage Owner Console CTA in
     "header = '<header><a href=\"/\">Home</a></header>'",
     "footer = '<footer><nav aria-label=\"Trust and policies\"><a href=\"/privacy.html\">Privacy</a></nav></footer>'",
     'print(module.normalize_html(source, header, footer))'
-  ].join('\\n');
+  ].join('\n');
   const result = spawnSync(process.env.PYTHON || 'python3', [
     '-c', python, path.join(root, '.github/scripts/sync_static_site_shell.py')
   ], { cwd: root, encoding: 'utf8', timeout: 15000 });
   assert.equal(result.error, undefined, 'shell-sync test process did not start: ' + (result.error?.message || ''));
-  assert.equal(result.status, 0, 'shell-sync fixture failed:\\n' + result.stdout + '\\n' + result.stderr);
-  const footer = result.stdout.match(/<footer\\b[^>]*>[\\s\\S]*?<\\/footer\\s*>/i)?.[0] || '';
-  assert.match(result.stdout, /<main><a href="\\/seo-audit-studio-admin\\.html">Owner Console<\\/a><\\/main>/);
-  assert.doesNotMatch(footer, /seo-audit-studio-admin\\.html/,
+  assert.equal(result.status, 0, 'shell-sync fixture failed:\n' + result.stdout + '\n' + result.stderr);
+  const footer = result.stdout.match(/<footer\b[^>]*>[\s\S]*?<\/footer\s*>/i)?.[0] || '';
+  assert.match(result.stdout, /<main><a href="\/seo-audit-studio-admin\.html">Owner Console<\/a><\/main>/);
+  assert.doesNotMatch(footer, /seo-audit-studio-admin\.html/,
     'a homepage CTA outside the footer must not be copied into the shared footer');
 });
