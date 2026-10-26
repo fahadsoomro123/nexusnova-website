@@ -57,8 +57,8 @@ test('every HTML page shares the canonical header and stable footer branding', (
       assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
       pageFooter = pageFooter.replace('\n' + ownerEntry, '');
+      assert.equal(normalizeShellMarkup(pageFooter), normalizeShellMarkup(footer), relative + ' footer differs');
     }
-    assert.equal(normalizeShellMarkup(pageFooter), normalizeShellMarkup(footer), relative + ' footer differs');
     assert.equal(footerSignature(source), footerSignature(index), relative + ' shared footer branding/copyright differs');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
