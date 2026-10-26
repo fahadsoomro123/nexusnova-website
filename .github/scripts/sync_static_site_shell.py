@@ -364,17 +364,25 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
     if global_footers:
         current_footer = source[global_footers[0][0]:global_footers[0][1]]
         owner_link = re.search(
-            r'<a\\b(?=[^>]*\\bhref=["\\']/?seo-audit-studio-admin\\.html(?:[?#][^"\\']*)?["\\'])[^>]*>[\\s\\S]*?</a\\s*>',
+            r'<a\b(?=[^>]*\bhref=["\']/?seo-audit-studio-admin\.html(?:[?#][^"\']*)?["\'])[^>]*>[\s\S]*?</a\s*>',
             current_footer, re.I
         )
-        if owner_link and not re.search(r'href=["\\']/?seo-audit-studio-admin\\.html', footer_template, re.I):
+        if owner_link and not re.search(r'href=["\']/?seo-audit-studio-admin\.html', footer_template, re.I):
             link = owner_link.group(0)
             trust_nav = re.search(
-                r'<nav\\b(?=[^>]*aria-label=["\\']Trust and policies["\\'])[^>]*>[\\s\\S]*?</nav\\s*>',
+                r'<nav\b(?=[^>]*aria-label=["\']Trust and policies["\'])[^>]*>[\s\S]*?</nav\s*>',
                 footer_template, re.I
             )
             if trust_nav:
-                close_nav = re.search(r'</nav\\s*>        keep_footer = global_footers[0]
+                close_nav = re.search(r'</nav\s*>$', trust_nav.group(0), re.I)
+                insert_at = trust_nav.start() + close_nav.start()
+                footer_template = footer_template[:insert_at] + link + footer_template[insert_at:]
+            else:
+                close_footer = footer_template.lower().rfind('</footer>')
+                if close_footer >= 0:
+                    footer_template = footer_template[:close_footer] + link + footer_template[close_footer:]
+    if global_footers:
+        keep_footer = global_footers[0]
         edits.append((*keep_footer[:2], footer_template))
         for span in all_footers:
             if span == keep_footer:
