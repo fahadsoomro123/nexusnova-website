@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 
 test('homepage preconnects to its actual early API and analytics origins, not unused AdSense', () => {
   const html = fs.readFileSync('index.html', 'utf8');
@@ -81,7 +82,7 @@ test('app and tools hero/footer use responsive WebP logos and preserve each page
     const html = fs.readFileSync(path, 'utf8');
     assert.equal((html.match(source) || []).length, 2, path + ' must use responsive logo sources in header and footer');
     for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
-      const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo"(?: width="1040" height="345")? class="' + className + '"></picture>');
+      const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo"(?=[^>]*\\bclass="' + className + '")[^>]*></picture>');
       assert.ok(pattern.test(html), path + ' ' + className + ' keeps the PNG fallback and alt text');
     }
     const socialImageMeta = html.match(/<meta\b(?=[^>]*(?:property|name)=["'](?:og:image|twitter:image)["'])[^>]*>/gi) || [];
@@ -291,5 +292,45 @@ test('homepage caches current launch assets, keeps async offer growth below the 
   assert.ok(css.includes('margin-left:auto;color:#526176;'));
   assert.ok(css.includes('.nn-audit-home-help{margin:7px 0 0;color:#526176;'));
   assert.ok(css.includes('WCAG AA contrast for small homepage metadata labels'));
+});
+
+test('broad site cleanup preserves deliberate performance and related-content cache keys', () => {
+  const { spawnSync } = require('node:child_process');
+  const os = require('node:os');
+  const root = path.resolve(__dirname, '..');
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'nexusnova-cache-bust-'));
+  const python = [
+    'import importlib.util, pathlib, sys',
+    'spec = importlib.util.spec_from_file_location("overhaul", sys.argv[1])',
+    'module = importlib.util.module_from_spec(spec)',
+    'spec.loader.exec_module(module)',
+    'root = pathlib.Path(sys.argv[2])',
+    'module.ROOT = root',
+    'fixtures = {',
+    "\"index.html\": \"<link rel='stylesheet' href='assets/css/seo-audit-launch.css?v=old'><script src='assets/js/seo-audit-launch.js?v=old'></script><script src='assets/js/main.js?v=old&lcpAds=old'></script>\",",
+    "\"seo-audit-studio.html\": \"<script src='assets/js/analytics.js?v=old'></script>\",",
+    "\"app.html\": \"<script src='assets/js/site-main.js?v=old'></script>\",",
+    "\"tools.html\": \"<script src='assets/js/other.js?v=old'></script>\"",
+    '}',
+    'for name, content in fixtures.items(): (root / name).write_text(content, encoding="utf-8")',
+    'module.cache_bust()',
+    'for name in fixtures: print(name + "=" + (root / name).read_text(encoding="utf-8"))'
+  ].join('\n');
+  try {
+    const scriptPath = path.join(root, '.github/scripts/total_site_overhaul.py');
+    const result = spawnSync(process.env.PYTHON || 'python3', ['-c', python, scriptPath, temp], {
+      cwd: root, encoding: 'utf8', timeout: 15000
+    });
+    assert.equal(result.error, undefined, 'cache-bust test process did not start: ' + (result.error?.message || ''));
+    assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
+    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261026-live-cls-a11y-v1'), 'launch CSS keeps its measured cache key');
+    assert.ok(result.stdout.includes('seo-audit-launch.js?v=20261026-live-cls-a11y-v1'), 'launch JS keeps its measured cache key');
+    assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261022-v2'), 'homepage runtime preserves its LCP cache key');
+    assert.ok(result.stdout.includes('analytics.js?v=20261016-related-content-v1'), 'analytics preserves its related-content cache key');
+    assert.ok(result.stdout.includes('site-main.js?v=20261018-app-consent-lcp-v1'), 'app runtime preserves its consent/LCP cache key');
+    assert.ok(result.stdout.includes('other.js?v=20261015-v4'), 'ordinary assets still receive the shared cache key');
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
 });
 

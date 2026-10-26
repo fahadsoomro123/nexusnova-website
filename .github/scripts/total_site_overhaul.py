@@ -36,17 +36,31 @@ def indexable(text: str) -> bool:
     return not m or 'noindex' not in m.group(1).lower()
 
 
+# Asset versions that intentionally differ from the shared site-shell key. Preserve them
+# during this broad cleanup so it cannot undo measured performance fixes or feature contracts.
+SPECIAL_CACHE_KEYS = {
+    ("app.html", "assets/js/site-main.js"): "v=20261018-app-consent-lcp-v1",
+    ("index.html", "assets/css/seo-audit-launch.css"): "v=20261026-live-cls-a11y-v1",
+    ("index.html", "assets/js/seo-audit-launch.js"): "v=20261026-live-cls-a11y-v1",
+    ("index.html", "assets/js/main.js"): "v=20261015-v4&lcpAds=20261022-v2",
+    ("seo-audit-studio.html", "assets/js/analytics.js"): "v=20261016-related-content-v1",
+}
+
+
 def cache_bust():
     changed=[]
     attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])(?P<url>(?:\.\.?/)*assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
     absolute_attr_re = re.compile(r'(?P<prefix>(?:src|href)=["\'])/(?P<url>assets/(?:[^"\']+?\.(?:js|css)))(?:\?[^"\']*)?(?P<quote>["\'])', re.I)
     for path in public_html():
         text=read(path)
+        relative_path = path.relative_to(ROOT).as_posix()
         def repl(m):
-            # app.html loads this consent runtime directly during the first deferred pass.
-            # Keep its targeted cache key so production edges do not reuse the previous script.
-            if path.as_posix() == 'app.html' and m.group("url").endswith('assets/js/site-main.js'):
-                return f'{m.group("prefix")}{m.group("url")}?v=20261018-app-consent-lcp-v1{m.group("quote")}'
+            asset_path = m.group("url")
+            while asset_path.startswith("../") or asset_path.startswith("./"):
+                asset_path = asset_path.split("/", 1)[1]
+            special_key = SPECIAL_CACHE_KEYS.get((relative_path, asset_path))
+            if special_key:
+                return f'{m.group("prefix")}{m.group("url")}?{special_key}{m.group("quote")}'
             return f'{m.group("prefix")}{m.group("url")}?v={VERSION}{m.group("quote")}'
         new=attr_re.sub(repl,text)
         new=absolute_attr_re.sub(repl,new)
