@@ -892,6 +892,172 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     }
   </style>
 
+
+
+
+  <style id="owner-console-readable-report-v8">
+    /* One scroll surface at every viewport size. Nested scroll areas made Fix Issues
+       previews appear truncated when the authenticated workspace was zoomed. */
+    html, body {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+    }
+    body.owner-session-active {
+      height: auto !important;
+      min-height: 100dvh !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+    }
+    body.owner-session-active main {
+      height: auto !important;
+      min-height: 100dvh !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+    body.owner-session-active #console {
+      flex: 0 0 auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+    body.owner-session-active .owner-workspace,
+    body.owner-session-active .owner-workspace-body,
+    body.owner-session-active .owner-workspace-pane,
+    body.owner-session-active .owner-workspace-pane:not([hidden]) {
+      flex: 0 0 auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+    }
+    body.owner-session-active .owner-workspace-pane[data-workspace-pane="audit-history"] #auditHistory,
+    body.owner-session-active .owner-workspace-pane[data-workspace-pane="claim-review"] #claimReviewList,
+    body.owner-session-active .owner-workspace-pane[data-workspace-pane="redemptions"] #redemptionHistory,
+    body.owner-session-active .owner-workspace-pane[data-workspace-pane="campaigns"] #campaignList,
+    body.owner-session-active .owner-workspace-pane[data-workspace-pane="campaigns"] #codeList,
+    body.owner-session-active .report-compact-pane,
+    body.owner-session-active .owner-auto-fix-result {
+      width: 100% !important;
+      min-width: 0 !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+    }
+    body.owner-session-active .owner-auto-fix-result {
+      display: block !important;
+      box-sizing: border-box !important;
+      padding: 18px clamp(14px, 2vw, 26px) !important;
+      border-radius: 12px !important;
+      background: #fffefa !important;
+      color: #1f352c !important;
+      font-size: 14px !important;
+      line-height: 1.65 !important;
+    }
+    body.owner-session-active .owner-auto-fix-result h3 {
+      margin: 0 0 12px !important;
+      color: #173e33 !important;
+      font-size: 20px !important;
+      line-height: 1.3 !important;
+    }
+    body.owner-session-active .owner-auto-fix-result h4 {
+      margin: 18px 0 8px !important;
+      color: #173e33 !important;
+      font-size: 16px !important;
+      line-height: 1.4 !important;
+    }
+    body.owner-session-active .owner-auto-fix-result p,
+    body.owner-session-active .owner-auto-fix-result li,
+    body.owner-session-active .owner-auto-fix-result .meta,
+    body.owner-session-active .owner-auto-fix-result label,
+    body.owner-session-active .owner-auto-fix-result strong {
+      max-width: none !important;
+      color: #34473c !important;
+      font-size: 14px !important;
+      line-height: 1.7 !important;
+      overflow-wrap: anywhere !important;
+    }
+    body.owner-session-active .owner-auto-fix-result .notice {
+      padding: 13px 15px !important;
+      color: #263b30 !important;
+      background: #f3f6ef !important;
+      border-color: #c8d4c6 !important;
+      font-size: 14px !important;
+      line-height: 1.6 !important;
+    }
+    body.owner-session-active .owner-auto-fix-result a,
+    body.owner-session-active .owner-auto-fix-result a:visited {
+      color: #14563f !important;
+      text-decoration: underline !important;
+      text-underline-offset: 2px;
+    }
+    body.owner-session-active .owner-auto-fix-result a:hover,
+    body.owner-session-active .owner-auto-fix-result a:focus-visible {
+      color: #102f24 !important;
+      background: #e4eee5 !important;
+      outline: 2px solid #557b61 !important;
+      outline-offset: 2px !important;
+    }
+    body.owner-session-active .item {
+      min-width: 0 !important;
+      color: #1f352c !important;
+      background: #fffefa !important;
+      border-color: #d3ded3 !important;
+    }
+    body.owner-session-active .item .meta {
+      color: #53645a !important;
+      font-size: 12px !important;
+      line-height: 1.6 !important;
+      overflow-wrap: anywhere !important;
+    }
+    body.owner-session-active .item:hover,
+    body.owner-session-active .item:focus-within {
+      background: #fffefa !important;
+      border-color: #9eb5a0 !important;
+      color: #1f352c !important;
+      box-shadow: 0 4px 16px #173e3310 !important;
+    }
+    body.owner-session-active .item:hover .meta,
+    body.owner-session-active .item:focus-within .meta {
+      color: #34473c !important;
+    }
+    body.owner-session-active .item button:hover:not(:disabled),
+    body.owner-session-active .owner-auto-fix-result button:hover:not(:disabled) {
+      background: #173e33 !important;
+      border-color: #173e33 !important;
+      color: #ffffff !important;
+    }
+    body.owner-session-active .owner-workspace-tab:hover:not([aria-selected="true"]) {
+      background: #e5ece3 !important;
+      border-color: #9eb5a0 !important;
+      color: #173e33 !important;
+    }
+    body.owner-session-active .owner-workspace-tab[aria-selected="true"]:hover {
+      background: #173e33 !important;
+      border-color: #173e33 !important;
+      color: #ffffff !important;
+    }
+    @media (max-width: 850px) {
+      body.owner-session-active .owner-workspace,
+      body.owner-session-active .owner-workspace-body {
+        flex: initial !important;
+        height: auto !important;
+        min-height: 0 !important;
+      }
+      body.owner-session-active .owner-workspace-pane:not([hidden]) {
+        display: grid !important;
+        height: auto !important;
+      }
+      body.owner-session-active .owner-auto-fix-result {
+        padding: 14px !important;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <header class="nn-header">
