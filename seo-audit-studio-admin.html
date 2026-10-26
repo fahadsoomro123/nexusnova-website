@@ -1216,7 +1216,7 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
   function isLegacyOwnerAutoFixNoOp(plan){
     const planNotes=Array.isArray(plan?.notes)?plan.notes:[];
     const diagnosticText=[plan?.message,...planNotes].filter(Boolean).join(' ');
-    return !plan?.canApply&&/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
+    return !plan?.canApply&&Number(plan?.manualGuidanceVersion)!==1&&/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
   }
   async function requestOwnerAutoFixPlan(item,auditId,repositoryId=null){
     const body=repositoryId===null?{}:{repositoryId:Number(repositoryId)};
@@ -1252,12 +1252,24 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     if(!plan.canApply){
       const planNotes=Array.isArray(plan.notes)?plan.notes:[];
       const diagnosticText=[plan.message,...planNotes].filter(Boolean).join(' ');
-      const legacyNoOp=/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
+      const legacyNoOp=Number(plan?.manualGuidanceVersion)!==1&&/No supported automatic fixes matched the measured findings|No supported deterministic edit matched this report|Performance scores, broken links, structured data, image accessibility and rankings are not altered automatically by this release/i.test(diagnosticText);
       const noChangeMessage=legacyNoOp
         ? 'Live repair backend is returning legacy no-op diagnostics. No website changes were proposed. Update the production Worker to the current repair engine before retrying; this is not a completed fix.'
         : (plan.message||'No deterministic automatic fix matched this page. No file was changed.');
       panel.append(notice(noChangeMessage));
       planNotes.forEach(note=>panel.append(text('p',note,'meta')));
+      if(Array.isArray(plan.unresolvedFindings)&&plan.unresolvedFindings.length){
+        panel.append(text('h4','Manual actions still required'));
+        const list=text('ul');
+        plan.unresolvedFindings.forEach(finding=>{
+          const li=text('li');
+          li.append(text('strong',finding.label||'Audit finding'));
+          li.append(text('p','Why this was not auto-fixed: '+(finding.reason||'The correct change could not be verified safely.'),'meta'));
+          li.append(text('p','Next action: '+(finding.nextAction||'Review the finding evidence, make a targeted manual edit, publish it, and re-run the audit.'),'meta'));
+          list.append(li);
+        });
+        panel.append(list);
+      }
       item.append(panel);return;
     }
     panel.append(notice(plan.safety||'Preview only. Nothing has been changed yet. Approve the exact list before a commit is created.'));

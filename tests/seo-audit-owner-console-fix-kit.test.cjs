@@ -121,3 +121,12 @@ test('Owner Console flags legacy automatic-fix no-op responses and status as unr
   assert.match(admin, /The live auto-fix Worker is using the legacy engine/);
   assert.match(admin, /this is not a completed fix/);
 });
+
+test('Owner Console displays a reason and concrete next action for unsupported Fix Issues findings', () => {
+  assert.match(admin, /plan\.unresolvedFindings/);
+  assert.match(admin, /Manual actions still required/);
+  assert.match(admin, /Why this was not auto-fixed:/);
+  assert.match(admin, /Next action:/);
+  assert.match(admin, /Number\(plan\?\.manualGuidanceVersion\)!==1/);
+});
+
