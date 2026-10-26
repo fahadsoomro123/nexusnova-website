@@ -366,31 +366,33 @@ def preserve_owner_console_entry(source: str, footer_template: str) -> str:
         return footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
 
     close_footer = re.search(r"</footer\s*>", footer_template, re.I)
-    if c    footer_template = preserve_owner_console_entry(source, footer_template)
-ers, key=lambda span: span[0])
+    if close_footer:
+        insert_at = close_footer.start()
+        return footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+    return footer_template
+
+
+def normalize_html(source: str, header_template: str, footer_template: str) -> str:
+    parser = ElementSpanParser(source)
+    headers, footers, mains = parser.spans.get("header", []), parser.spans.get("footer", []), parser.spans.get("main", [])
+    def is_global(ancestors):
+        return not any(tag in CONTENT_ANCESTORS for tag in ancestors)
+    first_main_start = min((span[0] for span in mains), default=len(source) + 1)
+    global_headers = sorted((s for s in headers if is_global(s[2]) and s[0] < first_main_start), key=lambda s: s[0])
+    edits = []
+    if global_headers:
+        edits.append((*global_headers[0][:2], header_template))
+        edits.extend((*span[:2], "") for span in global_headers[1:])
+    else:
+        body = re.search(r"<body\b[^>]*>", source, re.I)
+        main = re.search(r"<main\b", source, re.I)
+        position = body.end() if body else (main.start() if main else 0)
+        edits.append((position, position, "\n" + header_template + "\n"))
+    last_main_end = max((span[1] for span in mains), default=-1)
+    all_footers = sorted(footers, key=lambda span: span[0])
     global_footers = sorted((span for span in all_footers if is_global(span[2]) and span[0] > last_main_end), key=lambda span: span[0])
 
-    # Capture the page-specific private Owner Console link from the original HTML
-    # before replacing any shell ranges. This must not depend on footer span detection.
-    owner_link_match = re.search(
-        r"<a\b(?=[^>]*\bhref=[\"']/?seo-audit-studio-admin\.html(?:[?#][^\"']*)?[\"'])[^>]*>[\s\S]*?</a\s*>",
-        source, re.I
-    )
-    if owner_link_match and not re.search(r"href=[\"']/?seo-audit-studio-admin\.html", footer_template, re.I):
-        link = owner_link_match.group(0)
-        trust_nav = re.search(
-            r"<nav\b(?=[^>]*aria-label=[\"']Trust and policies[\"'])[^>]*>[\s\S]*?</nav\s*>",
-            footer_template, re.I
-        )
-        if trust_nav:
-            close_nav = re.search(r"</nav\s*>$", trust_nav.group(0), re.I)
-            insert_at = trust_nav.end() - len(close_nav.group(0)) if close_nav else trust_nav.end()
-            footer_template = footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
-        else:
-            close_footer = re.search(r"</footer\s*>", footer_template, re.I)
-            if close_footer:
-                insert_at = close_footer.start()
-                footer_template = footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+    footer_template = preserve_owner_console_entry(source, footer_template)
 
     if global_footers:
         keep_footer = global_footers[0]
