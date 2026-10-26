@@ -290,5 +290,6 @@ test('homepage caches current launch assets, keeps async offer growth below the 
   assert.ok(css.includes('gap:9px;color:#526176;'));
   assert.ok(css.includes('margin-left:auto;color:#526176;'));
   assert.ok(css.includes('.nn-audit-home-help{margin:7px 0 0;color:#526176;'));
+  assert.ok(css.includes('WCAG AA contrast for small homepage metadata labels'));
 });
 
