@@ -359,71 +359,30 @@ def normalize_html(source: str, header_template: str, footer_template: str) -> s
     last_main_end = max((span[1] for span in mains), default=-1)
     all_footers = sorted(footers, key=lambda span: span[0])
     global_footers = sorted((span for span in all_footers if is_global(span[2]) and span[0] > last_main_end), key=lambda span: span[0])
+
     # Preserve the page-specific private Owner Console entry when normalizing the
     # Audit Studio footer; the shared public footer template intentionally omits it.
     if global_footers:
         current_footer = source[global_footers[0][0]:global_footers[0][1]]
         owner_link = re.search(
-            r'<a\b(?=[^>]*\bhref=["\']/?seo-audit-studio-admin\.html(?:[?#][^"\']*)?["\'])[^>]*>[\s\S]*?</a\s*>',
+            r"<a\b(?=[^>]*\bhref=[\"']/?seo-audit-studio-admin\.html(?:[?#][^\"']*)?[\"'])[^>]*>[\s\S]*?</a\s*>",
             current_footer, re.I
         )
-        if owner_link and not re.search(r'href=["\']/?seo-audit-studio-admin\.html', footer_template, re.I):
+        if owner_link and not re.search(r"href=[\"']/?seo-audit-studio-admin\.html", footer_template, re.I):
             link = owner_link.group(0)
             trust_nav = re.search(
-                r'<nav\b(?=[^>]*aria-label=["\']Trust and policies["\'])[^>]*>[\s\S]*?</nav\s*>',
+                r"<nav\b(?=[^>]*aria-label=[\"']Trust and policies[\"'])[^>]*>[\s\S]*?</nav\s*>",
                 footer_template, re.I
             )
             if trust_nav:
-                close_nav = re.search(r'</nav\s*>$', trust_nav.group(0), re.I)
-                insert_at = trust_nav.start() + close_nav.start()
-                footer_template = footer_template[:insert_at] + link + footer_template[insert_at:]
+                close_nav = re.search(r"</nav\s*>$", trust_nav.group(0), re.I)
+                insert_at = trust_nav.start() + (close_nav.start() if close_nav else len(trust_nav.group(0)))
+                footer_template = footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
             else:
-                close_footer = footer_template.lower().rfind('</footer>')
+                close_footer = footer_template.lower().rfind("</footer>")
                 if close_footer >= 0:
-                    footer_template = footer_template[:close_footer] + link + footer_template[close_footer:]
-    if global_footers:
-        keep_footer = global_footers[0]
-        edits.append((*keep_footer[:2], footer_template))
-        for span in all_footers:
-            if span == keep_footer:
-                continue
-            # Nested footer tags are removed with their enclosing footer, avoiding overlapping edits.
-            if any(parent[0] <= span[0] and span[1] <= parent[1] and parent != span for parent in all_footers):
-                continue
-            edits.append((*span[:2], ""))
-    else:
-        # Some legacy pages put their only footer inside <main>. Remove every variant,
-        # then append the canonical footer once, after the page content.
-        for span in all_footers:
-            if any(parent[0] <= span[0] and span[1] <= parent[1] and parent != span for parent in all_footers):
-                continue
-            edits.append((*span[:2], ""))
-        closes = list(re.finditer(r"</body\s*>", source, re.I))
-        position = closes[-1].start() if closes else len(source)
-        edits.append((position, position, "\n" + footer_template + "\n"))
-    source = apply_edits(source, edits)
-    source = re.sub(
-        r"<script\b(?=[^>]*\bsrc\s*=\s*[\"'][^\"']*global-shell-guard\.js(?:\?[^\"']*)?[\"'])[^>]*>[\s\S]*?</script\s*>",
-        "", source, flags=re.I,
-    )
-    source = re.sub(r"<link\b(?=[^>]*global-shell-repair\.css)[^>]*>", "", source, flags=re.I)
-    source = re.sub(r"<link\b(?=[^>]*static-site-shell\.css)[^>]*>", "", source, flags=re.I)
-    css_link = f'<link rel="stylesheet" href="{SHELL_CSS_HREF}">'
-    if re.search(r"</head\s*>", source, re.I):
-        source = re.sub(r"</head\s*>", css_link + "\n</head>", source, count=1, flags=re.I)
-    else:
-        body = re.search(r"<body\b[^>]*>", source, re.I)
-        position = body.start() if body else 0
-        source = source[:position] + css_link + "\n" + source[position:]
-    source = re.sub(r"[ \t]+(?=\r?$)", "", source, flags=re.M)
-    return source
-, trust_nav.group(0), re.I)
-                insert_at = trust_nav.start() + close_nav.start()
-                footer_template = footer_template[:insert_at] + link + footer_template[insert_at:]
-            else:
-                close_footer = footer_template.lower().rfind('</footer>')
-                if close_footer >= 0:
-                    footer_template = footer_template[:close_footer] + link + footer_template[close_footer:]
+                    footer_template = footer_template[:close_footer] + "\n" + link + "\n" + footer_template[close_footer:]
+
     if global_footers:
         keep_footer = global_footers[0]
         edits.append((*keep_footer[:2], footer_template))
