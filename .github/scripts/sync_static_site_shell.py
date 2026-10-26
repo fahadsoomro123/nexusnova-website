@@ -340,24 +340,34 @@ def apply_edits(source: str, edits: list[tuple[int, int, str]]) -> str:
     return source
 
 
-def normalize_html(source: str, header_template: str, footer_template: str) -> str:
+def preserve_owner_console_entry(source: str, footer_template: str) -> str:
+    """Copy the Owner Console link only when it originally belongs to a footer."""
     parser = ElementSpanParser(source)
-    headers, footers, mains = parser.spans.get("header", []), parser.spans.get("footer", []), parser.spans.get("main", [])
-    def is_global(ancestors):
-        return not any(tag in CONTENT_ANCESTORS for tag in ancestors)
-    first_main_start = min((span[0] for span in mains), default=len(source) + 1)
-    global_headers = sorted((s for s in headers if is_global(s[2]) and s[0] < first_main_start), key=lambda s: s[0])
-    edits = []
-    if global_headers:
-        edits.append((*global_headers[0][:2], header_template))
-        edits.extend((*span[:2], "") for span in global_headers[1:])
-    else:
-        body = re.search(r"<body\b[^>]*>", source, re.I)
-        main = re.search(r"<main\b", source, re.I)
-        position = body.end() if body else (main.start() if main else 0)
-        edits.append((position, position, "\n" + header_template + "\n"))
-    last_main_end = max((span[1] for span in mains), default=-1)
-    all_footers = sorted(footers, key=lambda span: span[0])
+    link = None
+    owner_link_re = re.compile(
+        r"<a\b(?=[^>]*\bhref=[\"']/?seo-audit-studio-admin\.html(?:[?#][^\"']*)?[\"'])[^>]*>[\s\S]*?</a\s*>",
+        re.I,
+    )
+    for start, end, _ancestors in sorted(parser.spans.get("footer", []), key=lambda span: span[0]):
+        match = owner_link_re.search(source[start:end])
+        if match:
+            link = match.group(0)
+            break
+    if not link or re.search(r"href=[\"']/?seo-audit-studio-admin\.html", footer_template, re.I):
+        return footer_template
+
+    trust_nav = re.search(
+        r"<nav\b(?=[^>]*aria-label=[\"']Trust and policies[\"'])[^>]*>[\s\S]*?</nav\s*>",
+        footer_template, re.I
+    )
+    if trust_nav:
+        close_nav = re.search(r"</nav\s*>$", trust_nav.group(0), re.I)
+        insert_at = trust_nav.end() - len(close_nav.group(0)) if close_nav else trust_nav.end()
+        return footer_template[:insert_at] + "\n" + link + "\n" + footer_template[insert_at:]
+
+    close_footer = re.search(r"</footer\s*>", footer_template, re.I)
+    if c    footer_template = preserve_owner_console_entry(source, footer_template)
+ers, key=lambda span: span[0])
     global_footers = sorted((span for span in all_footers if is_global(span[2]) and span[0] > last_main_end), key=lambda span: span[0])
 
     # Capture the page-specific private Owner Console link from the original HTML
@@ -651,7 +661,8 @@ def check_static_shell(header_template, footer_template):
             problems.append(f"{relative}: retired shell script still referenced")
         if headers and source[headers[0][0]:headers[0][1]] != header_template:
             problems.append(f"{relative}: header differs from canonical index.html")
-        if footers and source[footers[-1][0]:footers[-1][1]] != footer_template:
+        expected_footer = preserve_owner_console_entry(source, footer_template)
+        if footers and source[footers[-1][0]:footers[-1][1]] != expected_footer:
             problems.append(f"{relative}: footer differs from canonical index.html")
     for relative in ("assets/js/main.js", "assets/js/analytics.js", "assets/js/site-main.js", "assets/js/related-tools.js"):
         if "global-shell-guard.js" in (ROOT / relative).read_text(encoding="utf-8", errors="replace"):
