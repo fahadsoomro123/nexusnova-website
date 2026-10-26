@@ -103,16 +103,25 @@ id_marker = 'id="article-no-results"'
 marker_pos = hub.find(id_marker)
 if marker_pos < 0:
     marker_pos = hub.find("id='article-no-results'")
+
+# The article anchors must be inserted before the grid's closing </div>, not
+# merely before the following no-results panel (which puts them outside the grid).
+grid_open_marker = '<div class="nn-article-grid" id="articles-grid">'
+grid_open_pos = hub.find(grid_open_marker)
+if grid_open_pos < 0:
+    raise SystemExit("ERROR: articles hub is missing its searchable grid container")
 if marker_pos >= 0:
-    marker_start = hub.rfind("<div", 0, marker_pos)
-    if marker_start < 0:
-        raise SystemExit("ERROR: article no-results ID exists without its opening div")
-    hub = hub[:marker_start] + "".join(cards) + hub[marker_start:]
+    insertion_boundary = hub.rfind("</div>", grid_open_pos, marker_pos)
+    if insertion_boundary < grid_open_pos:
+        raise SystemExit("ERROR: articles hub grid closing tag was not found before no-results UI")
 else:
     main_close_pos = hub.lower().find("</main>")
     if main_close_pos < 0:
-        raise SystemExit("ERROR: articles hub has neither the no-results marker nor a main landmark")
-    hub = hub[:main_close_pos] + "".join(cards) + hub[main_close_pos:]
+        raise SystemExit("ERROR: articles hub has no main landmark")
+    insertion_boundary = hub.rfind("</div>", grid_open_pos, main_close_pos)
+    if insertion_boundary < grid_open_pos:
+        raise SystemExit("ERROR: articles hub grid closing tag was not found before main ends")
+hub = hub[:insertion_boundary] + "".join(cards) + hub[insertion_boundary:]
 HUB.write_text(hub,encoding="utf-8")
 
 sm=SITEMAP.read_text(encoding="utf-8-sig")
