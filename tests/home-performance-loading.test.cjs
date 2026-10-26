@@ -323,12 +323,12 @@ test('broad site cleanup preserves deliberate performance and related-content ca
     });
     assert.equal(result.error, undefined, 'cache-bust test process did not start: ' + (result.error?.message || ''));
     assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
-    assert.match(result.stdout, /seo-audit-launch\\.css\\?v=20261026-live-cls-a11y-v1/);
-    assert.match(result.stdout, /seo-audit-launch\\.js\\?v=20261026-live-cls-a11y-v1/);
-    assert.match(result.stdout, /main\\.js\\?v=20261015-v4&lcpAds=20261022-v2/);
-    assert.match(result.stdout, /analytics\\.js\\?v=20261016-related-content-v1/);
-    assert.match(result.stdout, /site-main\\.js\\?v=20261018-app-consent-lcp-v1/);
-    assert.match(result.stdout, /other\\.js\\?v=20261015-v4/);
+    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261026-live-cls-a11y-v1'), 'launch CSS keeps its measured cache key');
+    assert.ok(result.stdout.includes('seo-audit-launch.js?v=20261026-live-cls-a11y-v1'), 'launch JS keeps its measured cache key');
+    assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261022-v2'), 'homepage runtime preserves its LCP cache key');
+    assert.ok(result.stdout.includes('analytics.js?v=20261016-related-content-v1'), 'analytics preserves its related-content cache key');
+    assert.ok(result.stdout.includes('site-main.js?v=20261018-app-consent-lcp-v1'), 'app runtime preserves its consent/LCP cache key');
+    assert.ok(result.stdout.includes('other.js?v=20261015-v4'), 'ordinary assets still receive the shared cache key');
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }
