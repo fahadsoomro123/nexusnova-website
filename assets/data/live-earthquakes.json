@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-25T22:30:13.780Z",
+  "generated_at": "2026-10-26T00:41:49.297Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-25T22:29:55.000Z",
+  "feed_generated_at": "2026-10-26T00:41:13.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 51,
+  "source_count": 48,
   "pakistan_region_events": [
     {
       "id": "us6000u4va",
@@ -42,6 +42,44 @@
   ],
   "worldwide_events": [
     {
+      "id": "us6000u4wt",
+      "magnitude": 4.3,
+      "place": "180 km NNW of Maubara, Timor Leste",
+      "time": "2026-10-25T23:32:07.547Z",
+      "updated": "2026-10-25T23:46:58.040Z",
+      "depth_km": 556.7,
+      "coordinates": {
+        "lat": -7.2486,
+        "lon": 124.3083
+      },
+      "significance": 284,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4wt",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000u4wi",
+      "magnitude": 4.8,
+      "place": "Bonin Islands, Japan region",
+      "time": "2026-10-25T22:16:27.821Z",
+      "updated": "2026-10-25T23:11:02.040Z",
+      "depth_km": 482.2,
+      "coordinates": {
+        "lat": 27.8494,
+        "lon": 139.7272
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4wi",
+      "pakistan_region": false
+    },
+    {
       "id": "us6000u4we",
       "magnitude": 5.3,
       "place": "Bonin Islands, Japan region",
@@ -62,16 +100,16 @@
     },
     {
       "id": "us6000u4wc",
-      "magnitude": 4.4,
+      "magnitude": 4.7,
       "place": "170 km ENE of Nagqu, China",
-      "time": "2026-10-25T22:01:36.115Z",
-      "updated": "2026-10-25T22:12:24.040Z",
+      "time": "2026-10-25T22:01:35.793Z",
+      "updated": "2026-10-26T00:17:59.040Z",
       "depth_km": 10,
       "coordinates": {
-        "lat": 32.1648,
-        "lon": 93.672
+        "lat": 32.23,
+        "lon": 93.6303
       },
-      "significance": 298,
+      "significance": 340,
       "felt": 0,
       "alert": null,
       "status": "reviewed",
@@ -913,101 +951,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41352007",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4qq",
-      "magnitude": 5.3,
-      "place": "44 km ESE of Miyazaki, Japan",
-      "time": "2026-10-24T23:59:36.599Z",
-      "updated": "2026-10-25T01:04:12.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 31.8226,
-        "lon": 131.873
-      },
-      "significance": 433,
-      "felt": 2,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4qq",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4qp",
-      "magnitude": 5,
-      "place": "192 km NW of Port-Olry, Vanuatu",
-      "time": "2026-10-24T23:44:57.729Z",
-      "updated": "2026-10-25T00:10:49.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": -13.9002,
-        "lon": 165.7311
-      },
-      "significance": 385,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4qp",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4qm",
-      "magnitude": 4.8,
-      "place": "203 km NW of Port-Olry, Vanuatu",
-      "time": "2026-10-24T23:39:07.167Z",
-      "updated": "2026-10-24T23:55:56.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": -13.8892,
-        "lon": 165.6036
-      },
-      "significance": 354,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4qm",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4q8",
-      "magnitude": 5,
-      "place": "210 km NW of Port-Olry, Vanuatu",
-      "time": "2026-10-24T22:47:08.577Z",
-      "updated": "2026-10-24T23:10:59.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": -13.8678,
-        "lon": 165.534
-      },
-      "significance": 385,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4q8",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026vclrmb",
-      "magnitude": 3.3,
-      "place": "52 km SSW of Cantwell, Alaska",
-      "time": "2026-10-24T22:35:24.563Z",
-      "updated": "2026-10-25T00:38:54.040Z",
-      "depth_km": 76.4,
-      "coordinates": {
-        "lat": 62.944,
-        "lon": -149.243
-      },
-      "significance": 168,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026vclrmb",
       "pakistan_region": false
     }
   ]
