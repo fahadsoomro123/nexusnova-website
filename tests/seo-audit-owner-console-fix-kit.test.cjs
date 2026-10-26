@@ -127,5 +127,6 @@ test('Owner Console displays a reason and concrete next action for unsupported F
   assert.match(admin, /Manual actions still required/);
   assert.match(admin, /Why this was not auto-fixed:/);
   assert.match(admin, /Next action:/);
+  assert.match(admin, /Number\(plan\?\.manualGuidanceVersion\)!==1/);
 });
 
