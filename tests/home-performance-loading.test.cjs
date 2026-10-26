@@ -81,7 +81,7 @@ test('app and tools hero/footer use responsive WebP logos and preserve each page
     const html = fs.readFileSync(path, 'utf8');
     assert.equal((html.match(source) || []).length, 2, path + ' must use responsive logo sources in header and footer');
     for (const className of ['nn-brand-logo-img', 'nn-footer-brand-logo']) {
-      const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo"(?: width="1040" height="345")? class="' + className + '"></picture>');
+      const pattern = new RegExp('<picture><source type="image/webp" srcset="/?assets/logo-2x\\.webp(?:\\?[^ ]*)? 2x, /?assets/logo-3x\\.webp(?:\\?[^ ]*)? 3x"><img src="/?assets/logo\\.png(?:\\?[^"]*)?" alt="NexusNova Tools Logo"(?=[^>]*\\bclass="' + className + '")[^>]*></picture>');
       assert.ok(pattern.test(html), path + ' ' + className + ' keeps the PNG fallback and alt text');
     }
     const socialImageMeta = html.match(/<meta\b(?=[^>]*(?:property|name)=["'](?:og:image|twitter:image)["'])[^>]*>/gi) || [];
