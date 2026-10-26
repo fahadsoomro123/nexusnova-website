@@ -157,3 +157,21 @@ test('Owner Console uses one full-page scroll surface for desktop reports and hi
   assert.match(v7, /\.owner-workspace-tab:hover:not\(\[aria-selected="true"\]\)\s*\{[\s\S]*?color: #173e33 !important;/);
   assert.match(v7, /\.owner-workspace-tab\[aria-selected="true"\]:hover\s*\{[\s\S]*?color: #ffffff !important;/);
 });
+
+test('Owner Console v8 keeps Fix Issues guidance full-width, readable, and inside one page scroll', () => {
+  assert.match(admin, /<style id="owner-console-readable-report-v8">/);
+  const start = admin.indexOf('<style id="owner-console-readable-report-v8">');
+  const end = admin.indexOf('</style>', start);
+  const v8 = admin.slice(start, end);
+  assert.match(v8, /html, body\s*\{[\s\S]*?height: auto !important;[\s\S]*?overflow-y: auto !important;/);
+  assert.match(v8, /body\.owner-session-active main\s*\{[\s\S]*?height: auto !important;[\s\S]*?overflow: visible !important;/);
+  assert.match(v8, /body\.owner-session-active #console\s*\{[\s\S]*?overflow: visible !important;/);
+  assert.match(v8, /\.owner-workspace-pane\[data-workspace-pane="audit-history"\] #auditHistory[\s\S]*?max-height: none !important;[\s\S]*?overflow: visible !important;/);
+  assert.match(v8, /\.owner-auto-fix-result\s*\{[\s\S]*?width: 100% !important;[\s\S]*?overflow: visible !important;/);
+  assert.match(v8, /\.owner-auto-fix-result p,[\s\S]*?font-size: 14px !important;[\s\S]*?line-height: 1\.7 !important;/);
+  assert.match(v8, /\.owner-auto-fix-result \.notice\s*\{[\s\S]*?color: #263b30 !important;/);
+  assert.match(v8, /\.item:hover \.meta,[\s\S]*?color: #34473c !important;/);
+  assert.match(v8, /\.item button:hover:not\(:disabled\)[\s\S]*?background: #173e33 !important;[\s\S]*?color: #ffffff !important;/);
+  assert.match(v8, /@media \(max-width: 850px\)/);
+});
+
