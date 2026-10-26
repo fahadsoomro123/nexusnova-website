@@ -178,13 +178,20 @@ const shellPart = (source, tag) => {
   }
   return matches[0][0];
 };
+const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
+const footerSignature = source => {
+  const footer = shellPart(source, 'footer');
+  const brand = (footer.match(/<section\b(?=[^>]*class=["'][^"']*\bnn-footer-brand\b[^"']*["'])[^>]*>[\s\S]*?<\/section\s*>/i) || [''])[0];
+  const bottom = (footer.match(/<div\b(?=[^>]*class=["'][^"']*\bnn-global-footer-bottom\b[^"']*["'])[^>]*>[\s\S]*?<\/div\s*>/i) || [''])[0];
+  return normalizeShellMarkup(bottom);
+};
 const labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
     .map(match => match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 };
 
-test('every HTML page has the canonical static index header and footer', () => {
+test('every HTML page shares the canonical header and stable footer branding', () => {
   const index = read('index.html');
   const header = shellPart(index, 'header');
   const footer = shellPart(index, 'footer');
@@ -205,8 +212,13 @@ test('every HTML page has the canonical static index header and footer', () => {
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
     const relative = path.relative(root, file);
-    assert.equal(shellPart(source, 'header'), header, relative + ' header differs');
-    assert.equal(shellPart(source, 'footer'), footer, relative + ' footer differs');
+    assert.equal(normalizeShellMarkup(shellPart(source, 'header')), normalizeShellMarkup(header), relative + ' header differs');
+    const pageFooter = shellPart(source, 'footer');
+    if (relative === 'seo-audit-studio.html') {
+      assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
+        'SEO Audit Studio must expose exactly one Owner Console footer entry');
+    }
+    assert.equal(footerSignature(source), footerSignature(index), relative + ' shared footer branding/copyright differs');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
@@ -246,6 +258,7 @@ test('static shell stylesheet caps logos and provides mobile-safe navigation', (
   assert.match(css, /overflow-x:\s*auto\s*!important/);
   assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
+
 '''
 
 class ElementSpanParser(HTMLParser):
