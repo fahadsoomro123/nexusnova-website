@@ -256,3 +256,20 @@ test('homepage has complementary WebPage JSON-LD and lazy-loads only the offscre
   assert.doesNotMatch(header, /\bloading="lazy"/i, 'header/LCP logo stays eager');
   assert.match(footer, /\bloading="lazy"\s+decoding="async"/i, 'footer logo loads when needed');
 });
+
+test('homepage reserves space for the backend-driven launch offer and skips obsolete HumanProof home assets', () => {
+  const html = fs.readFileSync('index.html', 'utf8');
+  const css = fs.readFileSync('assets/css/seo-audit-launch.css', 'utf8');
+  const script = fs.readFileSync('assets/js/seo-audit-launch.js', 'utf8');
+  const bootstrap = fs.readFileSync('assets/js/auth-header-state.js', 'utf8');
+  assert.match(html, /id="nnAuditLaunchOffer" class="nn-audit-launch-offer" data-pending aria-hidden="true" aria-live="polite"/);
+  assert.match(css, /\.nn-audit-launch-offer\[data-pending\]\{visibility:hidden;min-height:82px/);
+  assert.match(css, /\.nn-audit-launch \.nn-audit-launch-offer\[data-pending\]\{min-height:126px\}/);
+  assert.match(script, /const revealOffer=\(\)=>\{/);
+  assert.match(script, /offerBox\.removeAttribute\('data-pending'\)/);
+  assert.match(script, /offerBox\.removeAttribute\('aria-hidden'\)/);
+  assert.doesNotMatch(html, /assets\/css\/humanproof-home\.css/);
+  assert.doesNotMatch(html, /assets\/js\/humanproof-home\.js/);
+  assert.match(bootstrap, /document\.querySelector\('\.nn-command-hero'\)/);
+});
+
