@@ -17,12 +17,15 @@ const shellPart = (source, tag) => {
   return matches[0][0];
 };
 const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
-const footerSignature = source => {
-  const footer = shellPart(source, 'footer');
-  const brand = (footer.match(/<section\b(?=[^>]*class=["'][^"']*\bnn-footer-brand\b[^"']*["'])[^>]*>[\s\S]*?<\/section\s*>/i) || [''])[0];
-  const bottom = (footer.match(/<div\b(?=[^>]*class=["'][^"']*\bnn-global-footer-bottom\b[^"']*["'])[^>]*>[\s\S]*?<\/div\s*>/i) || [''])[0];
-  return normalizeShellMarkup(bottom);
+const footerSignature = (source, relative = '') => {
+  let footer = shellPart(source, 'footer');
+  if (relative === 'seo-audit-studio.html') {
+    const ownerEntries = [...footer.matchAll(/<a\b(?=[^>]*\bhref=["']\/?seo-audit-studio-admin\.html(?:[?#][^"']*)?["'])[^>]*>[\s\S]*?<\/a\s*>/gi)];
+    if (ownerEntries.length === 1) footer = footer.replace(ownerEntries[0][0], '');
+  }
+  return normalizeShellMarkup(footer);
 };
+
 const labels = header => {
   const nav = (header.match(/<nav\b[^>]*>[\s\S]*?<\/nav\s*>/i) || [''])[0];
   return [...nav.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a\s*>/gi)]
@@ -56,7 +59,7 @@ test('every HTML page shares the canonical header and stable footer branding', (
       assert.equal((pageFooter.match(/href="\/seo-audit-studio-admin\.html"/g) || []).length, 1,
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
     }
-    assert.equal(footerSignature(source), footerSignature(index), relative + ' shared footer branding/copyright differs');
+    assert.equal(footerSignature(source, relative), footerSignature(index), relative + ' footer differs');
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
     assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
       relative + ' must load shared shell stylesheet once');
