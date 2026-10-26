@@ -17,13 +17,18 @@ const shellPart = (source, tag) => {
   return matches[0][0];
 };
 const normalizeShellMarkup = markup => markup.replace(/>\s+</g, '><').trim();
+const normalizeFooterMarkup = markup => normalizeShellMarkup(
+  markup.replace(/<img\b(?=[^>]*\bclass=["'][^"']*\bnn-footer-brand-logo\b[^"']*["'])[^>]*>/gi, tag =>
+    tag.replace(/\s+loading=["']lazy["']/i, '').replace(/\s+decoding=["']async["']/i, '')
+  )
+);
 const footerSignature = (source, relative = '') => {
   let footer = shellPart(source, 'footer');
   if (relative === 'seo-audit-studio.html') {
     const ownerEntries = [...footer.matchAll(/<a\b(?=[^>]*\bhref=["']\/?seo-audit-studio-admin\.html(?:[?#][^"']*)?["'])[^>]*>[\s\S]*?<\/a\s*>/gi)];
     if (ownerEntries.length === 1) footer = footer.replace(ownerEntries[0][0], '');
   }
-  return normalizeShellMarkup(footer);
+  return normalizeFooterMarkup(footer);
 };
 
 const labels = header => {
