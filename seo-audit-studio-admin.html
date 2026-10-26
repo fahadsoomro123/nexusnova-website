@@ -741,7 +741,61 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
     }
-  </style>
+  
+    /* Owner usability fix: use one readable scroll surface instead of nested clipped reports. */
+    :root { --muted: #53645a; }
+    body.owner-session-active .report-compact-pane {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+    }
+    body.owner-session-active .owner-auto-fix-result,
+    .owner-auto-fix-result {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+      width: 100%;
+      color: var(--ink) !important;
+      font-size: 13px !important;
+      line-height: 1.6 !important;
+    }
+    .owner-auto-fix-result p,
+    .owner-auto-fix-result li,
+    .owner-auto-fix-result .meta {
+      color: #3f4f46 !important;
+      font-size: 13px !important;
+      line-height: 1.65 !important;
+      max-width: 90ch;
+    }
+    .owner-auto-fix-result h3 { color: var(--pine) !important; font-size: 18px !important; line-height: 1.3 !important; }
+    .owner-auto-fix-result h4 { color: var(--pine) !important; font-size: 15px !important; line-height: 1.35 !important; margin-top: 15px !important; }
+    .owner-auto-fix-result ul { padding-left: 22px !important; }
+    .owner-auto-fix-result li + li { margin-top: 12px !important; }
+    .report-compact-pane .report-section-intro,
+    .report-compact-pane .report-check-meta,
+    .report-compact-pane .report-category-meta,
+    .report-compact-pane .report-stat-note,
+    .report-compact-pane .report-metric-label,
+    .report-compact-pane .report-metadata-label,
+    .report-compact-pane .report-gauge-note {
+      color: #53645a !important;
+      font-size: 11px !important;
+      line-height: 1.55 !important;
+    }
+    .report-compact-tab:hover:not([aria-selected="true"]),
+    .report-compact-tab:focus-visible:not([aria-selected="true"]) {
+      background: #e5ece3 !important;
+      border-color: #9eb5a0 !important;
+      color: #173e33 !important;
+    }
+    .report-compact-tab[aria-selected="true"]:hover,
+    .report-compact-tab[aria-selected="true"]:focus-visible {
+      background: #173e33 !important;
+      border-color: #173e33 !important;
+      color: #ffffff !important;
+    }
+</style>
 
 </head>
 <body>
