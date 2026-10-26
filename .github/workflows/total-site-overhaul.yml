@@ -91,7 +91,7 @@ jobs:
             const isIndependentlyVersionedBootstrap = value =>
               /(?:^|\/)analytics\.js\?v=20261016-related-content-v1(?:$|#)/.test(value);
             const stale = assets.filter(value =>
-              !value.includes(\`v=\${VERSION}\`) &&
+              !value.includes('v=' + VERSION) &&
               !isSharedShellAsset(value) &&
               !isIndependentlyVersionedBootstrap(value) &&
               !/nn-inner-shell(?:\.js|\.css)/i.test(value)
