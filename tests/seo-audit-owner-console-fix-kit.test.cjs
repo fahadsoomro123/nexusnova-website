@@ -52,6 +52,23 @@ test('Owner Console never presents guidance or downloads as a successful repair'
   assert.match(admin, /The changes could not be verified\. No success is claimed\./);
 });
 
+
+
+test('Owner Console renders structured PageSpeed resource and CLS evidence instead of a generic dead end', () => {
+  assert.match(admin, /finding\.evidence/);
+  assert.match(admin, /Measured resource \/ element evidence/);
+  assert.match(admin, /Viewport strategy/);
+  assert.match(admin, /Evidence source/);
+  assert.match(admin, /Affected element/);
+  assert.match(admin, /Resource URL/);
+  assert.match(admin, /Request initiator/);
+  assert.match(admin, /Dependency chain/);
+  assert.match(admin, /Intrinsic dimensions/);
+  assert.match(admin, /Evidence gap: PageSpeed did not return a valid element\/resource-level record/);
+  assert.match(admin, /layout\[- \]shift/);
+  assert.match(admin, /network dependency tree/);
+});
+
 test('Owner Console keeps authenticated requests in memory and preserves source records when hiding history', () => {
   assert.match(admin, /AUDIT_OWNER_ADMIN_TOKEN/);
   assert.match(admin, /X-Owner-Admin-Token/);
