@@ -48,7 +48,7 @@ test('static shell sync excludes OTA and protected runtime trees rather than rew
 test('overhaul cache-buster preserves deliberate per-page performance keys', () => {
   const overhaul = fs.readFileSync('.github/scripts/total_site_overhaul.py', 'utf8');
   assert.ok(overhaul.includes('("app.html", "assets/js/site-main.js"): "v=20261018-app-consent-lcp-v1"'), 'the app consent runtime keeps its scoped key');
-  assert.ok(overhaul.includes('("index.html", "assets/css/seo-audit-launch.css"): "v=20261026-live-cls-a11y-v1"'), 'homepage launch CSS keeps the measured CLS-fix key');
+  assert.ok(overhaul.includes('("index.html", "assets/css/seo-audit-launch.css"): "v=20261027-cls-reserve-v1"'), 'homepage launch CSS keeps the measured CLS-fix key');
   assert.ok(overhaul.includes('("index.html", "assets/js/seo-audit-launch.js"): "v=20261026-live-cls-a11y-v1"'), 'homepage launch JS keeps the matching CLS-fix key');
   assert.ok(overhaul.includes('("index.html", "assets/js/main.js"): "v=20261015-v4&lcpAds=20261022-v2"'), 'the LCP-aware ad scheduler cache key survives cleanup');
   assert.ok(overhaul.includes('("seo-audit-studio.html", "assets/js/analytics.js"): "v=20261016-related-content-v1"'), 'the audit page related-content bootstrap is not reset');
