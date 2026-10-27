@@ -2914,10 +2914,9 @@
           });
           const preview = await api('/api/fix-issues/plan', 'POST', { auditId: audit.auditId });
           preview.repository = chosen.connection.repository;
+          // renderPlan owns the final status: it shows either the exact tested repair
+          // or the measured unsupported-finding explanation. Do not overwrite it here.
           renderPlan(preview);
-          setStatus(preview.changes && preview.changes.length
-            ? 'Website connected and exact fix preview ready below. No payment has been taken.'
-            : 'Website connected and checked. No safe change is needed on this page, so checkout stays disabled.', preview.changes && preview.changes.length ? 'success' : 'error');
         } else if (repositories.length > 1) {
           setStatus('Website connection verified. Choose the correct repository below to preview the changes. No payment has been taken.', 'success');
         }
