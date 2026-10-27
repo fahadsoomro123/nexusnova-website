@@ -36,11 +36,11 @@ test('Fix Issues can verify an existing GitHub installation without a repeated i
   assert.match(html, /matching website domain/);
   assert.match(html, /github_installation_verification_failed/);
 });
-test('one-click connection previews the sole verified repository and never enables payment before consent', () => {
+test('one-click connection reports unsupported findings clearly and never enables payment before consent', () => {
   assert.match(html, /repositories\.length === 1/);
   assert.match(html, /api\('\/api\/fix-issues\/connect\/repo'/);
   assert.match(html, /api\('\/api\/fix-issues\/plan'/);
-  assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
+  assert.match(html, /No tested safe automatic edit matched this report\. Any PageSpeed opportunities remain unresolved; no charge was started and checkout stays disabled/);
   assert.match(html, /automatic repair plan is ready|preview ready below\. No payment has been taken/i);
 });
 test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
