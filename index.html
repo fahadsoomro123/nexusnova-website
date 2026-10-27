@@ -127,7 +127,12 @@
     :focus-visible{outline:2px solid rgba(109,40,217,.35);outline-offset:2px}
     ::selection{background:#ede9fe;color:#4c1d95}
 
-    .nn-shell{width:min(var(--nn-max),calc(100% - 32px));margin-inline:auto}
+    /* Match the late global content-width rules before first paint, preventing horizontal CLS. */
+    .nn-shell{width:min(var(--nn-max),calc(100% - 64px));margin-inline:auto}
+    @media(max-width:760px){.nn-shell{width:min(var(--nn-max),calc(100% - 22px));}}
+    @media(min-width:1600px){.nn-shell{width:min(var(--nn-max),calc(100% - 80px));}}
+    .nn-header .nn-shell,.nn-global-footer .nn-shell{width:min(var(--nn-max),calc(100% - 32px));}
+    @media(max-width:560px){.nn-header .nn-shell,.nn-global-footer .nn-shell{width:min(var(--nn-max),calc(100% - 22px));}}
     .nn-header{
       position:sticky;top:0;z-index:200;
       border-bottom:1px solid var(--nn-line);
