@@ -40,7 +40,11 @@ test('one-click connection previews the sole verified repository and never enabl
   assert.match(html, /repositories\.length === 1/);
   assert.match(html, /api\('\/api\/fix-issues\/connect\/repo'/);
   assert.match(html, /api\('\/api\/fix-issues\/plan'/);
-  assert.match(html, /No safe change is needed on this page, so checkout stays disabled/);
+  assert.doesNotMatch(html, /No safe change is needed on this page, so checkout stays disabled/,
+    'a no-plan result must not be mislabeled as if no performance finding exists');
+  assert.match(html, /renderPlan\(preview\);/);
+  assert.match(html, /PageSpeed reported these separate opportunities/);
+  assert.match(html, /No charge was created/);
   assert.match(html, /automatic repair plan is ready|preview ready below\. No payment has been taken/i);
 });
 test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
