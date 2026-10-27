@@ -1583,6 +1583,40 @@ body.owner-session-active .report-compact-disclosure>summary{color:#e7effb}
           li.append(text('strong',finding.label||'Audit finding'));
           li.append(text('p','Why this was not auto-fixed: '+(finding.reason||'The correct change could not be verified safely.'),'meta'));
           li.append(text('p','Next action: '+(finding.nextAction||'Review the finding evidence, make a targeted manual edit, publish it, and re-run the audit.'),'meta'));
+          const evidence=Array.isArray(finding.evidence)?finding.evidence.filter(row=>row&&typeof row==='object').slice(0,8):[];
+          if(evidence.length){
+            const evidencePanel=text('details','','owner-auto-fix-evidence');
+            evidencePanel.append(text('summary','Measured resource / element evidence ('+evidence.length+')'));
+            const evidenceList=text('ul');
+            evidence.forEach(row=>{
+              const evidenceItem=text('li');
+              const fields=[
+                ['Viewport strategy',row.strategy],
+                ['Evidence source',row.sourceAudit],
+                ['Affected element',row.selector],
+                ['Element description',row.label],
+                ['Resource URL',row.resource],
+                ['Request initiator',row.initiator],
+                ['Dependency chain',Array.isArray(row.initiatorChain)?row.initiatorChain.join(' → '):''],
+                ['Resource type',row.resourceType],
+                ['Intrinsic dimensions',row.intrinsicWidth&&row.intrinsicHeight?row.intrinsicWidth+' × '+row.intrinsicHeight:''],
+                ['Render blocking',typeof row.isRenderBlocking==='boolean'?(row.isRenderBlocking?'yes':'no'):''],
+                ['Critical resource',typeof row.isCritical==='boolean'?(row.isCritical?'yes':'no'):''],
+                ['Duration',typeof row.durationMs==='number'?row.durationMs+' ms':''],
+                ['Blocking time',typeof row.blockingMs==='number'?row.blockingMs+' ms':''],
+                ['Wasted time',typeof row.wastedMs==='number'?row.wastedMs+' ms':''],
+                ['Element snippet',row.snippet]
+              ];
+              fields.forEach(([label,value])=>{
+                if(value!==undefined&&value!==null&&String(value).trim())evidenceItem.append(text('p',label+': '+String(value).slice(0,800),'meta'));
+              });
+              evidenceList.append(evidenceItem);
+            });
+            evidencePanel.append(evidenceList);
+            li.append(evidencePanel);
+          }else if(/network dependency tree|critical request chain|lcp discovery|request chain|\bcls\b|cumulative layout shift|layout[- ]shift|unsized images?/i.test(String(finding.label||''))){
+            li.append(text('p','Evidence gap: PageSpeed did not return a valid element/resource-level record for this finding. No source edit was guessed. Next: capture the matching Desktop/Mobile Lighthouse diagnostic and re-run the preview.','meta'));
+          }
           list.append(li);
         });
         panel.append(list);
