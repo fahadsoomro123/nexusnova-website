@@ -2690,7 +2690,7 @@
       text(notes,[pageSpeedNote,...unresolved,...backendNotes,connected?'The repository is already connected; reconnecting will not create a supported fix.':'Connect the exact writable repository only if the website source is not connected.'].filter(Boolean).join(' '));
       if (consentText) consentText.closest('.fix-issues-consent')?.setAttribute('hidden', '');
       if (payButton) { payButton.hidden = true; payButton.disabled = true; }
-      if (planSafetyText) planSafetyText.textContent = 'No source write or payment was attempted. A $5 charge is allowed only after a specific tested repair is shown, approved, applied and live-verified.';
+      if (planSafetyText) planSafetyText.textContent = 'No website write was attempted. This finding remains unresolved until a tested automatic repair can be applied and verified. A $5 charge is allowed only after a specific tested repair is shown, approved, applied and live-verified.';
       setStatus(connected
         ? 'No eligible direct auto-fix for this report. No charge was created.'
         : 'No eligible direct auto-fix is available yet. No charge was created.','error');
