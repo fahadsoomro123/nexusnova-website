@@ -288,7 +288,8 @@ test('homepage caches current launch assets, keeps async offer growth below the 
   assert.ok(html.includes('assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1'));
   assert.match(html, /class="nn-audit-launch-actions"[\s\S]*?<\/div>\s*<div id="nnAuditLaunchOffer"/);
   assert.ok(html.includes('aria-label="Owner Console">Owner Console'));
-  assert.ok(html.includes('.nn-step-label{\n      display:block;color:var(--nn-muted);'));
+  assert.match(html, /\.nn-step-label\{\r?\n\s*display:block;color:var\(--nn-muted\);/,
+    'step label layout style remains explicit before first paint');
   assert.ok(css.includes('.nn-audit-product-wordmark small{color:#526176;'));
   assert.ok(css.includes('gap:9px;color:#526176;'));
   assert.ok(css.includes('margin-left:auto;color:#526176;'));
