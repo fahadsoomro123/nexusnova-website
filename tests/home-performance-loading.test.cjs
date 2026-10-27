@@ -269,8 +269,10 @@ test('homepage reserves space for the backend-driven launch offer and skips obso
   const script = fs.readFileSync('assets/js/seo-audit-launch.js', 'utf8');
   const bootstrap = fs.readFileSync('assets/js/auth-header-state.js', 'utf8');
   assert.match(html, /id="nnAuditLaunchOffer" class="nn-audit-launch-offer" data-pending aria-hidden="true" aria-live="polite"/);
-  assert.match(css, /\.nn-audit-launch-offer\[data-pending\]\{visibility:hidden;min-height:82px/);
-  assert.match(css, /\.nn-audit-launch \.nn-audit-launch-offer\[data-pending\]\{min-height:126px\}/);
+  assert.match(css, /\.nn-audit-launch-offer\[data-pending\]\{visibility:hidden;min-height:280px/);
+  assert.match(css, /\.nn-audit-launch \.nn-audit-launch-offer\[data-pending\]\{min-height:320px\}/);
+  assert.match(css, /@media\(max-width:350px\)[\s\S]*?min-height:390px/);
+  assert.match(css, /@media\(min-width:351px\) and \(max-width:359px\)[\s\S]*?min-height:370px/);
   assert.match(script, /const revealOffer=\(\)=>\{/);
   assert.match(script, /offerBox\.removeAttribute\('data-pending'\)/);
   assert.match(script, /offerBox\.removeAttribute\('aria-hidden'\)/);
