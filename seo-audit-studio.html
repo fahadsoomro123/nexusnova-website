@@ -1669,6 +1669,17 @@
     const recs=getIssueGroups(report);
     const countStatus=(status)=>checks.filter(item=>String(item.status||'info').toLowerCase()===status).length;
     const errors=countStatus('fail'),warnings=countStatus('warn'),passes=countStatus('pass');
+    const pageSpeedOpportunityMap=new Map();
+    for(const device of [report.metrics?.mobile,report.metrics?.desktop]){
+      for(const item of (Array.isArray(device?.opportunities)?device.opportunities:[])){
+        const key=String(item.id||item.title||'').trim().toLowerCase();
+        if(key&&!pageSpeedOpportunityMap.has(key))pageSpeedOpportunityMap.set(key,item);
+      }
+    }
+    const pageSpeedOpportunityCount=pageSpeedOpportunityMap.size;
+    const warningFoot=warnings?'Review warning checks':pageSpeedOpportunityCount
+      ?pageSpeedOpportunityCount+' distinct PageSpeed opportunit'+(pageSpeedOpportunityCount===1?'y':'ies')+' listed separately under Performance; not counted as SEO check warnings'
+      :'No warnings in returned SEO checks';
     const priorityOf=(item)=>String(item.priority||'Low').toLowerCase();
     const high=recs.filter(item=>priorityOf(item)==='high').length;
     const medium=recs.filter(item=>priorityOf(item)==='medium').length;
@@ -1710,13 +1721,13 @@
           <div class="exec-score-copy"><div class="exec-score-label">Overall site health</div><div class="exec-grade-pill">${escapeHtml(grade)} ${score==null?'· Partial':'· Overall grade'}</div><div class="exec-score-title">${escapeHtml(title)}</div><div class="exec-score-subtitle">${escapeHtml(scoreNote)}</div></div>
         </article>
         ${statCard('error','×','Errors detected',errors,errors?'Requires correction':'No errors in returned checks')}
-        ${statCard('warning','!','Warnings',warnings,warnings?'Review these opportunities':'No warnings in returned checks')}
+        ${statCard('warning','!','Warnings',warnings,warningFoot)}
         ${statCard('pass','✓','Checks passed',passes,'Positive signals from measured checks')}
         ${statCard('reviewed','≡','Checks reviewed',report.checkCount??checks.length,'Detailed signals included in this report')}
       </div>
       <div class="exec-bottom-grid">
         <article class="exec-insight-card">
-          <div class="exec-insight-head"><div><div class="exec-insight-title">Priority breakdown</div><div class="exec-insight-subtitle">Flagged recommendations grouped by their audit priority.</div></div><span class="exec-count-badge">${recTotal} finding${recTotal===1?'':'s'}</span></div>
+          <div class="exec-insight-head"><div><div class="exec-insight-title">Priority breakdown</div><div class="exec-insight-subtitle">${pageSpeedOpportunityCount?'SEO check findings are listed here; PageSpeed opportunities are counted separately under Performance.':'Flagged recommendations grouped by their audit priority.'}</div></div><span class="exec-count-badge">${recTotal} audit finding${recTotal===1?'':'s'}</span></div>
           <div class="exec-priority-stack" role="img" aria-label="${high} high, ${medium} medium, ${low} low priority recommendations">
             <span class="high" style="width:${ratio(high,stackTotal)}%"></span><span class="medium" style="width:${ratio(medium,stackTotal)}%"></span><span class="low" style="width:${ratio(low,stackTotal)}%"></span>
           </div>
@@ -2654,11 +2665,35 @@
     const changes = Array.isArray(payload.changes) ? payload.changes : [];
     const isAutomatic = payload.deliveryMode !== 'manual' && payload.canCheckout === true;
     if (!isAutomatic) {
-      planSummary.textContent = 'This audit has no currently supported, verified automatic repair plan. No live change was made and no charge was started.';
-      text(notes, 'Connect a supported writable source or wait until this finding has a tested repair handler. NexusNova will not substitute a guide for an automatic fix.');
+      const metrics=state.report?.metrics||{};
+      const opportunityMap=new Map();
+      for(const device of [metrics.mobile,metrics.desktop]){
+        for(const item of (Array.isArray(device?.opportunities)?device.opportunities:[])){
+          const key=String(item.id||item.title||'').trim().toLowerCase();
+          if(key&&!opportunityMap.has(key))opportunityMap.set(key,item);
+        }
+      }
+      const opportunityNames=[...opportunityMap.values()].map(item=>String(item.title||item.id||'PageSpeed opportunity')).slice(0,4);
+      const connected=Boolean(payload.repository);
+      planSummary.textContent = connected
+        ? 'Website repository is connected, but this audit has no tested safe automatic repair. No file was changed and no charge was started.'
+        : 'This audit has no tested safe automatic repair yet. No live change was made and no charge was started.';
+      const backendNotes=(Array.isArray(payload.notes)?payload.notes:[]).map(item=>String(item||'')).filter(Boolean);
+      const unresolved=(Array.isArray(payload.unresolvedFindings)?payload.unresolvedFindings:[]).slice(0,4).map(item=>{
+        const label=String(item.label||item.title||item.key||'Unresolved finding').trim();
+        const action=String(item.nextAction||'').trim();
+        return label+(action?': '+action:'');
+      });
+      const pageSpeedNote=opportunityNames.length
+        ? 'PageSpeed reported these separate opportunities: '+opportunityNames.join('; ')+'. The current Auto Fix engine has no proven safe source edit for them, so checkout is disabled. It will not remove or rewrite third-party code by guesswork.'
+        : 'No PageSpeed opportunity currently maps to a tested automatic repair handler.';
+      text(notes,[pageSpeedNote,...unresolved,...backendNotes,connected?'The repository is already connected; reconnecting will not create a supported fix.':'Connect the exact writable repository only if the website source is not connected.'].filter(Boolean).join(' '));
       if (consentText) consentText.closest('.fix-issues-consent')?.setAttribute('hidden', '');
       if (payButton) { payButton.hidden = true; payButton.disabled = true; }
-      if (planSafetyText) planSafetyText.textContent = 'No website write was attempted. This finding remains unresolved until a tested automatic repair can be applied and verified.';
+      if (planSafetyText) planSafetyText.textContent = 'No source write or payment was attempted. A $5 charge is allowed only after a specific tested repair is shown, approved, applied and live-verified.';
+      setStatus(connected
+        ? 'No eligible direct auto-fix for this report. No charge was created.'
+        : 'No eligible direct auto-fix is available yet. No charge was created.','error');
       return;
     }
     if (consentText) consentText.closest('.fix-issues-consent')?.removeAttribute('hidden');
