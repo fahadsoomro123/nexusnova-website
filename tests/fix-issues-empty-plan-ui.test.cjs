@@ -14,7 +14,7 @@ test('Fix Issues explains why checkout is disabled when no tested direct repair 
 test('Executive summary distinguishes PageSpeed opportunities from failed SEO checks', () => {
   const html = fs.readFileSync('seo-audit-studio.html', 'utf8');
   assert.match(html, /pageSpeedOpportunityMap/);
-  assert.match(html, /PageSpeed opportunit\+\(pageSpeedOpportunityCount===1\?'y':'ies'\)/);
+  assert.match(html, /PageSpeed opportunit'\+\(pageSpeedOpportunityCount===1\?'y':'ies'\)/);
   assert.match(html, /SEO check findings are listed here; PageSpeed opportunities are counted separately under Performance/);
   assert.match(html, /audit finding/);
 });
