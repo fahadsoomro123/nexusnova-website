@@ -18,7 +18,7 @@ test('Fix Issues is initially hidden and reveals only after a real audit-report-
 });
 
 test('Fix Issues reserves the US$5 checkout for direct automatic fixes and keeps a consent gate', () => {
-  assert.match(html, /US\$5.*direct auto-fixes only/);
+  assert.match(html, /US\$5.*only when a tested repair is eligible/);
   assert.match(html, /id="fixIssuesPayBtn"[^>]*disabled[^>]*>Pay \$5\.00 USD and apply fixes/);
   assert.match(html, /id="fixIssuesAccept" type="checkbox"/);
   assert.match(html, /accept\.checked && plan\.changes/);
@@ -50,7 +50,7 @@ test('Fix Issues never offers manual guidance or Fix Kit downloads', () => {
   assert.doesNotMatch(html, /\/manual-package/);
   assert.doesNotMatch(html, /Download (?:my |fallback )?Fix Kit/i);
   assert.doesNotMatch(html, /Download recovery instructions/i);
-  assert.match(html, /This audit has no currently supported, verified automatic repair plan/);
+  assert.match(html, /Website repository is connected, but this audit has no tested safe automatic repair/);
   assert.match(html, /The issue remains unresolved/);
   assert.match(html, /No payment or website change|No payment was taken|No charge was created|no payment has been taken/i);
 });
