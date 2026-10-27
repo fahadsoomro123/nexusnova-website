@@ -284,7 +284,7 @@ test('homepage reserves space for the backend-driven launch offer and skips obso
 test('homepage caches current launch assets, keeps async offer growth below the CTA row, and meets label accessibility basics', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const css = fs.readFileSync('assets/css/seo-audit-launch.css', 'utf8');
-  assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261026-live-cls-a11y-v1'));
+  assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261027-cls-reserve-v1'));
   assert.ok(html.includes('assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1'));
   assert.match(html, /class="nn-audit-launch-actions"[\s\S]*?<\/div>\s*<div id="nnAuditLaunchOffer"/);
   assert.ok(html.includes('aria-label="Owner Console">Owner Console'));
