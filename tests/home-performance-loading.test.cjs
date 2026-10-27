@@ -269,8 +269,10 @@ test('homepage reserves space for the backend-driven launch offer and skips obso
   const script = fs.readFileSync('assets/js/seo-audit-launch.js', 'utf8');
   const bootstrap = fs.readFileSync('assets/js/auth-header-state.js', 'utf8');
   assert.match(html, /id="nnAuditLaunchOffer" class="nn-audit-launch-offer" data-pending aria-hidden="true" aria-live="polite"/);
-  assert.match(css, /\.nn-audit-launch-offer\[data-pending\]\{visibility:hidden;min-height:82px/);
-  assert.match(css, /\.nn-audit-launch \.nn-audit-launch-offer\[data-pending\]\{min-height:126px\}/);
+  assert.match(css, /\.nn-audit-launch-offer\[data-pending\]\{visibility:hidden;min-height:280px/);
+  assert.match(css, /\.nn-audit-launch \.nn-audit-launch-offer\[data-pending\]\{min-height:320px\}/);
+  assert.match(css, /@media\(max-width:350px\)[\s\S]*?min-height:390px/);
+  assert.match(css, /@media\(min-width:351px\) and \(max-width:359px\)[\s\S]*?min-height:370px/);
   assert.match(script, /const revealOffer=\(\)=>\{/);
   assert.match(script, /offerBox\.removeAttribute\('data-pending'\)/);
   assert.match(script, /offerBox\.removeAttribute\('aria-hidden'\)/);
@@ -282,11 +284,12 @@ test('homepage reserves space for the backend-driven launch offer and skips obso
 test('homepage caches current launch assets, keeps async offer growth below the CTA row, and meets label accessibility basics', () => {
   const html = fs.readFileSync('index.html', 'utf8');
   const css = fs.readFileSync('assets/css/seo-audit-launch.css', 'utf8');
-  assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261026-live-cls-a11y-v1'));
+  assert.ok(html.includes('assets/css/seo-audit-launch.css?v=20261027-cls-reserve-v1'));
   assert.ok(html.includes('assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1'));
   assert.match(html, /class="nn-audit-launch-actions"[\s\S]*?<\/div>\s*<div id="nnAuditLaunchOffer"/);
   assert.ok(html.includes('aria-label="Owner Console">Owner Console'));
-  assert.ok(html.includes('.nn-step-label{\n      display:block;color:var(--nn-muted);'));
+  assert.match(html, /\.nn-step-label\{\r?\n\s*display:block;color:var\(--nn-muted\);/,
+    'step label layout style remains explicit before first paint');
   assert.ok(css.includes('.nn-audit-product-wordmark small{color:#526176;'));
   assert.ok(css.includes('gap:9px;color:#526176;'));
   assert.ok(css.includes('margin-left:auto;color:#526176;'));
@@ -323,7 +326,7 @@ test('broad site cleanup preserves deliberate performance and related-content ca
     });
     assert.equal(result.error, undefined, 'cache-bust test process did not start: ' + (result.error?.message || ''));
     assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
-    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261026-live-cls-a11y-v1'), 'launch CSS keeps its measured cache key');
+    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261027-cls-reserve-v1'), 'launch CSS keeps its measured cache key');
     assert.ok(result.stdout.includes('seo-audit-launch.js?v=20261026-live-cls-a11y-v1'), 'launch JS keeps its measured cache key');
     assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261022-v2'), 'homepage runtime preserves its LCP cache key');
     assert.ok(result.stdout.includes('analytics.js?v=20261016-related-content-v1'), 'analytics preserves its related-content cache key');
