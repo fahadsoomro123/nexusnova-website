@@ -326,7 +326,7 @@ test('broad site cleanup preserves deliberate performance and related-content ca
     });
     assert.equal(result.error, undefined, 'cache-bust test process did not start: ' + (result.error?.message || ''));
     assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
-    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261026-live-cls-a11y-v1'), 'launch CSS keeps its measured cache key');
+    assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261027-cls-reserve-v1'), 'launch CSS keeps its measured cache key');
     assert.ok(result.stdout.includes('seo-audit-launch.js?v=20261026-live-cls-a11y-v1'), 'launch JS keeps its measured cache key');
     assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261022-v2'), 'homepage runtime preserves its LCP cache key');
     assert.ok(result.stdout.includes('analytics.js?v=20261016-related-content-v1'), 'analytics preserves its related-content cache key');
