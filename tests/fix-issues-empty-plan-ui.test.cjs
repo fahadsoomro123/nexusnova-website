@@ -7,6 +7,7 @@ test('Fix Issues explains why checkout is disabled when no tested direct repair 
   assert.match(html, /Website repository is connected, but this audit has no tested safe automatic repair/);
   assert.match(html, /No eligible direct auto-fix for this report\. No charge was created\./);
   assert.match(html, /The repository is already connected; reconnecting will not create a supported fix\./);
+  assert.match(html, /US\$5 · only when a tested repair is eligible/);
   assert.match(html, /A \$5 charge is allowed only after a specific tested repair is shown, approved, applied and live-verified/);
   assert.match(html, /PageSpeed reported these separate opportunities/);
 });
