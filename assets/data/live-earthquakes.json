@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-10-26T21:55:15.257Z",
+  "generated_at": "2026-10-27T01:22:31.128Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-10-26T21:54:59.000Z",
+  "feed_generated_at": "2026-10-27T01:22:13.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 31,
+  "source_count": 32,
   "pakistan_region_events": [
     {
       "id": "us6000u4y8",
@@ -42,6 +42,101 @@
   ],
   "worldwide_events": [
     {
+      "id": "us7000ttdt",
+      "magnitude": 4.8,
+      "place": "54 km E of Tomioka, Japan",
+      "time": "2026-10-27T00:25:08.167Z",
+      "updated": "2026-10-27T00:57:45.040Z",
+      "depth_km": 48.9,
+      "coordinates": {
+        "lat": 37.3869,
+        "lon": 141.625
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttdt",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000ttd3",
+      "magnitude": 4.5,
+      "place": "98 km NNW of Tobelo, Indonesia",
+      "time": "2026-10-26T22:52:22.912Z",
+      "updated": "2026-10-27T00:14:15.040Z",
+      "depth_km": 88.7,
+      "coordinates": {
+        "lat": 2.5777,
+        "lon": 127.7372
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttd3",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000ttd1",
+      "magnitude": 4.5,
+      "place": "96 km ENE of Pamandzi, Mayotte",
+      "time": "2026-10-26T22:33:48.538Z",
+      "updated": "2026-10-27T00:28:23.403Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -12.4277,
+        "lon": 46.0831
+      },
+      "significance": 312,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttd1",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000ttci",
+      "magnitude": 4.7,
+      "place": "98 km S of Encounter Bay, Australia",
+      "time": "2026-10-26T21:18:11.526Z",
+      "updated": "2026-10-27T01:04:17.722Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -36.4594,
+        "lon": 138.5321
+      },
+      "significance": 350,
+      "felt": 26,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttci",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000ttc8",
+      "magnitude": 4.6,
+      "place": "20 km NNW of La Ligua, Chile",
+      "time": "2026-10-26T20:52:11.505Z",
+      "updated": "2026-10-26T22:08:11.040Z",
+      "depth_km": 47.7,
+      "coordinates": {
+        "lat": -32.2811,
+        "lon": -71.3014
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttc8",
+      "pakistan_region": false
+    },
+    {
       "id": "us7000ttc5",
       "magnitude": 3,
       "place": "44 km SSW of Terlingua, Texas",
@@ -58,6 +153,25 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttc5",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000ttc6",
+      "magnitude": 4.5,
+      "place": "89 km SSE of Pondaguitan, Philippines",
+      "time": "2026-10-26T20:41:25.106Z",
+      "updated": "2026-10-26T22:03:05.040Z",
+      "depth_km": 75.1,
+      "coordinates": {
+        "lat": 5.6361,
+        "lon": 126.5418
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ttc6",
       "pakistan_region": false
     },
     {
@@ -84,14 +198,14 @@
       "magnitude": 2.6,
       "place": "37 km ESE of Malaga, New Mexico",
       "time": "2026-10-26T19:38:04.946Z",
-      "updated": "2026-10-26T19:54:08.338Z",
+      "updated": "2026-10-26T22:04:00.249Z",
       "depth_km": 7.9,
       "coordinates": {
         "lat": 32.073,
         "lon": -103.72
       },
       "significance": 104,
-      "felt": 0,
+      "felt": 1,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -103,14 +217,14 @@
       "magnitude": 4.9,
       "place": "100 km E of La Tirana, Chile",
       "time": "2026-10-26T19:36:16.160Z",
-      "updated": "2026-10-26T19:52:13.040Z",
+      "updated": "2026-10-27T00:13:51.755Z",
       "depth_km": 119.5,
       "coordinates": {
         "lat": -20.3438,
         "lon": -68.6903
       },
-      "significance": 369,
-      "felt": 0,
+      "significance": 370,
+      "felt": 1,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -533,101 +647,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4xa",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4x2",
-      "magnitude": 4.2,
-      "place": "50 km W of Valparaíso, Chile",
-      "time": "2026-10-26T00:55:57.006Z",
-      "updated": "2026-10-26T03:38:05.040Z",
-      "depth_km": 19,
-      "coordinates": {
-        "lat": -33.0605,
-        "lon": -72.1743
-      },
-      "significance": 271,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4x2",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4wt",
-      "magnitude": 4.3,
-      "place": "181 km NNW of Maubara, Timor Leste",
-      "time": "2026-10-25T23:32:08.371Z",
-      "updated": "2026-10-26T03:21:29.040Z",
-      "depth_km": 568.8,
-      "coordinates": {
-        "lat": -7.2149,
-        "lon": 124.338
-      },
-      "significance": 284,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4wt",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4wi",
-      "magnitude": 4.8,
-      "place": "Bonin Islands, Japan region",
-      "time": "2026-10-25T22:16:27.821Z",
-      "updated": "2026-10-25T23:11:02.040Z",
-      "depth_km": 482.2,
-      "coordinates": {
-        "lat": 27.8494,
-        "lon": 139.7272
-      },
-      "significance": 354,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4wi",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4we",
-      "magnitude": 5.3,
-      "place": "Bonin Islands, Japan region",
-      "time": "2026-10-25T22:14:16.010Z",
-      "updated": "2026-10-26T01:57:30.040Z",
-      "depth_km": 485.1,
-      "coordinates": {
-        "lat": 27.8572,
-        "lon": 139.6916
-      },
-      "significance": 432,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4we",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000u4wc",
-      "magnitude": 4.7,
-      "place": "170 km ENE of Nagqu, China",
-      "time": "2026-10-25T22:01:35.793Z",
-      "updated": "2026-10-26T00:17:59.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 32.23,
-        "lon": 93.6303
-      },
-      "significance": 340,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000u4wc",
       "pakistan_region": false
     }
   ]
