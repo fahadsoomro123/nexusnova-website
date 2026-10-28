@@ -193,53 +193,42 @@ test('local Lighthouse server mirrors production gzip compression and cache head
   assert.ok(!workflow.includes('python3 -m http.server 8000'), 'do not benchmark uncompressed HTML against compressed GitHub Pages production');
 });
 
-test('homepage search builds its fallback index only after search intent, without breaking keyboard access', () => {
+test('homepage search downloads its parser-heavy initializer only after user intent and preserves keyboard access', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
-  const marker = "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');";
-  const markerIndex = homepage.indexOf(marker);
-  const start = homepage.lastIndexOf('<script', markerIndex);
-  const end = homepage.indexOf('</script>', markerIndex);
-  assert.ok(markerIndex >= 0 && start >= 0 && end > markerIndex, 'homepage search bootstrap must exist');
-  const script = homepage.slice(start, end);
-  for (const token of [
-    "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');",
-    "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
-    "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });",
-    "function initializeHomepageSearch()",
-    'new window.NexusNovaSearchCore()',
-    "input.addEventListener('input', runQuery)",
-    "event.key.toLowerCase() === 'k'",
-    'yearNodes.forEach(function (node)'
-  ]) assert.ok(script.includes(token), token);
-  assert.ok(!script.includes("document.addEventListener('DOMContentLoaded', function ()"), 'homepage search index must not initialize on DOMContentLoaded');
-});
-
-test('homepage downloads the deep search index only on first search intent and resumes queued input', () => {
+  const loader = fs.readFileSync('assets/js/homepage-search.js', 'utf8');
+  assert.ok(homepage.includes('<script id="nn-home-search-lazy-loader">'));
+  assert.ok(homepage.includes("script.src = '/assets/js/homepage-search.js?v=20261028-lazy-search-v1'"));
+  assert.ok(homepage.includes("root.addEventListener('pointerdown', loadHomepageSearch)"));
+  assert.ok(homepage.includes("root.addEventListener('focusin', loadHomepageSearch)"));
+  assert.ok(homepage.includes("event.key.toLowerCase() === 'k'"));
+  assert.ok(homepage.includes('input.focus()'));
+  assert.ok(homepage.includes('node.textContent = String(new Date().getFullYear())'));
+  assert.ok(!homepage.includes('function initializeHomepageSearch()'), 'the large search implementation must not be inline at initial parse');
+  assert.ok(loader.includes('function initializeHomepageSearch()'));
+  assert.ok(loader.includes('new window.NexusNovaSearchCore()'));
+  assert.ok(loader.includes("input.addEventListener('input', runQuery)"));
+  assert.ok(loader.includes('if (input.value.trim()) runQuery();'));
+  assert.ok(!homepage.includes("document.addEventListener('DOMContentLoaded', function ()"));
+});test('homepage loads the deep search index only after the external search implementation is requested', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
-  const marker = "var lazySearchRoot = document.querySelector('[data-nexusnova-search-root]');";
-  const markerIndex = homepage.indexOf(marker);
-  const scriptStart = homepage.lastIndexOf('<script', markerIndex);
-  const scriptEnd = homepage.indexOf('</script>', markerIndex);
-  assert.ok(markerIndex >= 0 && scriptStart >= 0 && scriptEnd > markerIndex, 'homepage search bootstrap must exist');
-  const bootstrap = homepage.slice(scriptStart, scriptEnd);
+  const bootstrap = fs.readFileSync('index.html', 'utf8').match(/<script id="nn-home-search-lazy-loader">([\\s\\S]*?)<\\/script>/)?.[1] || '';
+  const implementation = fs.readFileSync('assets/js/homepage-search.js', 'utf8');
   assert.ok(!homepage.includes('<script src="assets/js/search-core.js?v=20261015-v4" defer></script>'),
     'search-core must not be downloaded on every homepage visit');
   assert.ok(!homepage.includes('<link rel="preload" href="assets/js/search-core.js?v=20261015-v4" as="script">'),
     'search-core must not be preloaded before the visitor uses search');
+  assert.ok(bootstrap.includes("script.src = '/assets/js/homepage-search.js?v=20261028-lazy-search-v1'"));
+  assert.ok(bootstrap.includes("root.addEventListener('pointerdown', loadHomepageSearch)"));
+  assert.ok(bootstrap.includes("root.addEventListener('focusin', loadHomepageSearch)"));
   for (const token of [
     "searchCoreScript.src = '/assets/js/search-core.js?v=20261015-v4'",
     'searchCoreScript.async = true',
     'searchCoreScript.onload = initializeHomepageSearch',
     'searchCoreScript.onerror = initializeHomepageSearch',
-    'if (typeof window.NexusNovaSearchCore === \'function\')',
-    'if (input.value.trim()) runQuery();',
-    "lazySearchRoot.addEventListener('pointerdown', initializeOnSearchIntent, { once: true });",
-    "lazySearchRoot.addEventListener('focusin', initializeOnSearchIntent, { once: true });"
-  ]) assert.ok(bootstrap.includes(token), token);
-});
-
-
-test('homepage has complementary WebPage JSON-LD and lazy-loads only the offscreen footer logo', () => {
+    "if (typeof window.NexusNovaSearchCore === 'function')",
+    'if (input.value.trim()) runQuery();'
+  ]) assert.ok(implementation.includes(token), token);
+});test('homepage has complementary WebPage JSON-LD and lazy-loads only the offscreen footer logo', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
   const orgBlock = homepage.match(/<script type="application\/ld\+json" data-nexusnova-organization>([\s\S]*?)<\/script>/i);
   const pageBlock = homepage.match(/<script type="application\/ld\+json" data-nexusnova-webpage>([\s\S]*?)<\/script>/i);
