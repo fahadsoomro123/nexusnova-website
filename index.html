@@ -686,9 +686,9 @@
       <div class="nn-shell">
         <div class="nn-adsterra-placement" data-nn-adsterra-placement>
           <div class="nn-adsterra-placement-head">
-            <span>Sponsored advertisement · adult creatives may appear</span>
+            <span>Sponsored advertisement</span>
           </div>
-          <div id="container-b7cb02fa163a7585244e7c2876553cea"></div>
+          <div id="nn-adsterra-banner-320x50" aria-label="Advertisement"></div>
           <p class="nn-adsterra-status" data-nn-adsterra-status role="status" aria-live="polite"></p>
         </div>
       </div>
@@ -697,7 +697,7 @@
     (() => {
       'use strict';
       const placement = document.querySelector('[data-nn-adsterra-placement]');
-      const container = document.getElementById('container-b7cb02fa163a7585244e7c2876553cea');
+      const container = document.getElementById('nn-adsterra-banner-320x50');
       const status = document.querySelector('[data-nn-adsterra-status]');
       if (!placement || !container || ['loading', 'loaded', 'retrying'].includes(window.__nexusnovaAdsterraState)) return;
 
@@ -707,7 +707,7 @@
         return;
       }
 
-      const scriptUrl = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
+      const scriptUrl = 'https://bauval.org/22/343a52c0a6def30c0a660a41930bbf82';
       const maxAttempts = 3;
       let attempts = 0;
       let retryTimer = 0;
@@ -716,6 +716,14 @@
         if (['loaded', 'loading'].includes(window.__nexusnovaAdsterraState)) return;
         attempts += 1;
         window.__nexusnovaAdsterraState = 'loading';
+
+        window.atOptions = {
+          key: '343a52c0a6def30c0a660a41930bbf82',
+          format: 'iframe',
+          height: 50,
+          width: 320,
+          params: {}
+        };
 
         const script = document.createElement('script');
         script.async = true;
