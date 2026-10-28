@@ -2,6 +2,11 @@ name: GSC URL Inspection Audit
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/gsc-url-indexing-audit.yml"
+      - ".github/workflows/google-sitemap-submit.yml"
   push:
     branches: [main]
     paths:
@@ -46,7 +51,7 @@ jobs:
               summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
               if summary_path:
                   with open(summary_path, 'a', encoding='utf-8') as output:
-                      output.write('## GSC URL inspection blocked\\n\\n' + message + '\\n')
+                      output.write('## GSC URL inspection blocked\n\n' + message + '\n')
               raise SystemExit(1)
 
           sitemaps = [
@@ -150,11 +155,11 @@ jobs:
               summary.extend(['', '## URLs not returning PASS', '', '| URL | Verdict | Coverage state | Robots | Indexing | Google canonical |', '|---|---|---|---|---|---|'])
               for item in review:
                   cells = [item.get(key, '') for key in ('url', 'verdict', 'coverageState', 'robotsTxtState', 'indexingState', 'googleCanonical')]
-                  cells = [str(value).replace('|', '\\|').replace('\\n', ' ') for value in cells]
+                  cells = [str(value).replace('|', '\\|').replace('\n', ' ') for value in cells]
                   summary.append('| ' + ' | '.join(cells) + ' |')
           summary.extend(['', 'Full per-URL details are in the `gsc-indexing-audit.csv` artifact.'])
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as output:
-              output.write('\\n'.join(summary) + '\\n')
+              output.write('\n'.join(summary) + '\n')
           if api_errors:
               print(f'GSC_INSPECTION_INCOMPLETE: {len(api_errors)} URL(s) failed inspection; see CSV and job summary.')
               raise SystemExit(1)
