@@ -1,0 +1,203 @@
+name: GSC URL Inspection Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/gsc-url-indexing-audit.yml"
+      - ".github/workflows/google-sitemap-submit.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/gsc-url-indexing-audit.yml"
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Inspect published sitemap URLs with Search Console
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: |
+          python -m pip install --quiet google-auth requests
+          python - <<'PY'
+          import csv
+          import json
+          import os
+          import sys
+          import time
+          import xml.etree.ElementTree as ET
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+
+          raw = os.environ.get('GSC_SERVICE_ACCOUNT_JSON', '').strip()
+          site = os.environ.get('GSC_SITE_URL', '').strip()
+          if not raw or not site:
+              missing = [name for name, value in (
+                  ('GSC_SERVICE_ACCOUNT_JSON', raw),
+                  ('GSC_SITE_URL', site),
+              ) if not value]
+              message = 'Missing repository Actions secret(s): ' + ', '.join(missing)
+              print('GSC_INSPECTION_BLOCKED: ' + message)
+              summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+              if summary_path:
+                  with open(summary_path, 'a', encoding='utf-8') as output:
+                      output.write('## GSC URL inspection blocked\n\n' + message + '\n')
+              raise SystemExit(1)
+
+          sitemaps = [
+              'https://nexusnovatools.com/sitemap.xml',
+              'https://nexusnovatools.com/sitemap-daily-tools.xml',
+          ]
+          urls = []
+          seen = set()
+          for sitemap in sitemaps:
+              response = requests.get(sitemap, timeout=30)
+              response.raise_for_status()
+              root = ET.fromstring(response.content)
+              found = 0
+              for element in root.iter():
+                  if element.tag.rsplit('}', 1)[-1] == 'loc' and element.text:
+                      url = element.text.strip()
+                      if url and url not in seen:
+                          seen.add(url)
+                          urls.append(url)
+                          found += 1
+              print(f'SITEMAP_FETCH_OK: {sitemap} new_unique_urls={found}')
+          if not urls:
+              raise SystemExit('No URLs were found in the published sitemaps.')
+
+          info = json.loads(raw)
+          credentials = service_account.Credentials.from_service_account_info(
+              info, scopes=['https://www.googleapis.com/auth/webmasters.readonly']
+          )
+          session = AuthorizedSession(credentials)
+          endpoint = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect'
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          fields = [
+              'url', 'verdict', 'coverageState', 'robotsTxtState', 'indexingState',
+              'pageFetchState', 'lastCrawlTime', 'googleCanonical', 'userCanonical', 'sitemaps', 'apiStatus'
+          ]
+          endpoint = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect'
+          api_errors = []
+          def inspect_one(url):
+              record = {'url': url, 'apiStatus': ''}
+              response = None
+              local_session = AuthorizedSession(credentials)
+              payload = {'inspectionUrl': url, 'siteUrl': site, 'languageCode': 'en-US'}
+              try:
+                  for attempt in range(4):
+                      response = local_session.post(endpoint, json=payload, timeout=15)
+                      if response.status_code in (429, 500, 502, 503, 504) and attempt < 3:
+                          time.sleep(2 ** (attempt + 1))
+                          continue
+                      break
+                  record['apiStatus'] = response.status_code
+                  response.raise_for_status()
+                  inspection = response.json().get('inspectionResult', {}).get('indexStatusResult', {})
+                  record.update({
+                      'verdict': inspection.get('verdict', 'UNKNOWN'),
+                      'coverageState': inspection.get('coverageState', ''),
+                      'robotsTxtState': inspection.get('robotsTxtState', ''),
+                      'indexingState': inspection.get('indexingState', ''),
+                      'pageFetchState': inspection.get('pageFetchState', ''),
+                      'lastCrawlTime': inspection.get('lastCrawlTime', ''),
+                      'googleCanonical': inspection.get('googleCanonical', ''),
+                      'userCanonical': inspection.get('userCanonical', ''),
+                      'sitemaps': '; '.join(inspection.get('sitemap', []) or []),
+                  })
+              except Exception as error:
+                  record.update({key: '' for key in fields if key not in ('url', 'apiStatus')})
+                  if response is not None:
+                      record['apiStatus'] = response.status_code
+                  record['verdict'] = 'API_ERROR'
+                  record['coverageState'] = str(error)
+                  record['_fatal'] = bool(response is not None and response.status_code in (400, 401, 403, 404))
+              time.sleep(1)
+              return record
+
+          # Catch account, API-enablement and property-permission errors before scanning every URL.
+          preflight = inspect_one(urls[0])
+          if preflight.get('_fatal') or preflight.get('verdict') == 'API_ERROR':
+              print('GSC_INSPECTION_BLOCKED: URL Inspection preflight failed; HTTP status=' + str(preflight.get('apiStatus') or 'no HTTP response'))
+              print('Check that the Search Console API is enabled, GSC_SITE_URL is the verified property, and the service account has access to it. For transient or network failures, rerun after resolving the reported issue.')
+              raise SystemExit('Google URL Inspection preflight failed: ' + str(preflight.get('coverageState')))
+          results = [preflight]
+          print(f"[1/{len(urls)}] {preflight.get('verdict')} | {preflight.get('coverageState')} | {urls[0]}")
+          with ThreadPoolExecutor(max_workers=5) as executor:
+              future_urls = {executor.submit(inspect_one, url): url for url in urls[1:]}
+              for completed, future in enumerate(as_completed(future_urls), 2):
+                  url = future_urls[future]
+                  try:
+                      record = future.result()
+                  except Exception as error:
+                      record = {'url': url, 'verdict': 'API_ERROR', 'coverageState': str(error), 'apiStatus': ''}
+                      api_errors.append((url, str(error)))
+                  if record.get('verdict') == 'API_ERROR':
+                      api_errors.append((url, record.get('coverageState', 'Unknown URL Inspection error')))
+                  record.pop('_fatal', None)
+                  results.append(record)
+                  print(f"[{len(results)}/{len(urls)}] {record.get('verdict')} | {record.get('coverageState')} | {url}")
+          results.sort(key=lambda item: item['url'])
+          api_errors = [(item['url'], item.get('coverageState', '')) for item in results if item.get('verdict') == 'API_ERROR']
+
+          with open('gsc-indexing-audit.csv', 'w', newline='', encoding='utf-8-sig') as output:
+              writer = csv.DictWriter(output, fieldnames=fields, extrasaction='ignore')
+              writer.writeheader()
+              writer.writerows(results)
+
+          indexed = [item for item in results if item.get('verdict') == 'PASS']
+          review = [item for item in results if item.get('verdict') != 'PASS']
+          state_counts = {}
+          for item in results:
+              state = item.get('coverageState') or item.get('verdict') or 'UNKNOWN'
+              state_counts[state] = state_counts.get(state, 0) + 1
+          summary = [
+              '# Google Search Console URL Inspection Audit',
+              '',
+              f'- Property: `{site}`',
+              f'- Unique sitemap URLs inspected: **{len(results)}**',
+              f'- Inspection verdict PASS: **{len(indexed)}**',
+              f'- Other verdicts needing review: **{len(review)}**',
+              f'- URL Inspection API errors: **{len(api_errors)}**',
+              '',
+              'This audit reads Google’s URL Inspection API. It does not request indexing, and a non-PASS result can be an intentional noindex/canonical/redirect/404 exclusion rather than a defect.',
+              '',
+              '## Google-reported coverage states',
+              '',
+              '| Coverage state | URLs |',
+              '|---|---:|'
+          ]
+          for state, count in sorted(state_counts.items(), key=lambda entry: (-entry[1], entry[0])):
+              summary.append(f'| {state.replace(chr(124), chr(92) + chr(124))} | {count} |')
+          if review:
+              summary.extend(['', '## URLs not returning PASS', '', '| URL | Verdict | Coverage state | Robots | Indexing | Google canonical |', '|---|---|---|---|---|---|'])
+              for item in review:
+                  cells = [item.get(key, '') for key in ('url', 'verdict', 'coverageState', 'robotsTxtState', 'indexingState', 'googleCanonical')]
+                  cells = [str(value).replace('|', '\\|').replace('\n', ' ') for value in cells]
+                  summary.append('| ' + ' | '.join(cells) + ' |')
+          summary.extend(['', 'Full per-URL details are in the `gsc-indexing-audit.csv` artifact.'])
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as output:
+              output.write('\n'.join(summary) + '\n')
+          if api_errors:
+              print(f'GSC_INSPECTION_INCOMPLETE: {len(api_errors)} URL(s) failed inspection; see CSV and job summary.')
+              raise SystemExit(1)
+          print(f'GSC_INSPECTION_COMPLETE: inspected={len(results)} pass={len(indexed)} other={len(review)} api_errors=0')
+          PY
+      - name: Upload per-URL inspection report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gsc-url-inspection-${{ github.run_number }}
+          path: gsc-indexing-audit.csv
+          if-no-files-found: ignore
+          retention-days: 30
