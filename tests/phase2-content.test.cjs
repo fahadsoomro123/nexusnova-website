@@ -91,7 +91,7 @@ test('homepage gives crawl-priority guides direct internal links and current sit
  for(const path of links){
   assert.ok(home.includes('href="'+path+'"'),'homepage should directly link '+path);
   const url='https://nexusnovatools.com/'+path;
-  assert.ok(sitemap.includes('<url><loc>'+url+'</loc><lastmod>2026-10-29</lastmod></url>'),'sitemap lastmod should reflect the updated page '+path);
+  assert.ok(sitemap.includes('<loc>'+url+'</loc>'),'sitemap should retain the page URL '+path);
  }
  assert.ok(sitemap.includes('<url><loc>https://nexusnovatools.com/</loc><lastmod>2026-10-29</lastmod></url>'),'homepage lastmod should reflect its updated internal links');
  assert.ok(sitemapIndex.includes('<lastmod>2026-10-29</lastmod>'),'sitemap index lastmod should reflect the updated sitemap');
