@@ -140,10 +140,11 @@
     }
   };
   if(isProductionAnalyticsHost&&isHomepage){
-    // Homepage GA4 is queued only after first content has settled, then loaded
-    // during idle time. This moves network and script evaluation off the LCP
-    // critical path while retaining consent defaults and the queued page_view.
-    scheduleAfterLargestContentfulPaint(initializeGa4,{delay:500,fallbackDelay:4000,idleTimeout:1500});
+    // Queue the page_view immediately, but give mobile browsers a longer settled-LCP
+    // window before loading Google's large analytics runtime. Production Lighthouse
+    // attributed 109 ms + 93 ms long tasks to gtag.js around 3.3 s, just before TTI.
+    // Consent defaults and queued events are preserved; non-homepage timing is unchanged.
+    scheduleAfterLargestContentfulPaint(initializeGa4,{delay:2500,fallbackDelay:6500,idleTimeout:1500});
   }else{
     initializeGa4();
   }
