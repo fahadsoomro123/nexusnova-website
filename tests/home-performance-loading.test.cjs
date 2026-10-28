@@ -209,7 +209,9 @@ test('homepage search downloads its parser-heavy initializer only after user int
   assert.ok(loader.includes("input.addEventListener('input', runQuery)"));
   assert.ok(loader.includes('if (input.value.trim()) runQuery();'));
   assert.ok(!homepage.includes("document.addEventListener('DOMContentLoaded', function ()"));
-});test('homepage loads the deep search index only after the external search implementation is requested', () => {
+});
+
+test('homepage loads the deep search index only after the external search implementation is requested', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
   const html = fs.readFileSync('index.html', 'utf8');
   const marker = '<script id="nn-home-search-lazy-loader">';
