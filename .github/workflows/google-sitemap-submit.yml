@@ -85,7 +85,7 @@ jobs:
               response = session.put(endpoint, timeout=30)
               if response.status_code == 403:
                   email = str(info.get('client_email', '')).strip() or '(client_email unavailable in credential JSON)'
-                  message = "\\n".join([
+                  message = "\n".join([
                       '## Google Search Console denied sitemap submission (HTTP 403)',
                       '',
                       'Google authenticated the request but refused access to the configured Search Console property.',
@@ -107,7 +107,7 @@ jobs:
                   summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
                   if summary_path:
                       with open(summary_path, 'a', encoding='utf-8') as summary:
-                          summary.write(message + '\\n')
+                          summary.write(message + '\n')
                   raise SystemExit(1)
               if response.status_code not in (200, 204):
                   print('GSC_SUBMISSION_FAILED: ' + sitemap + ' HTTP ' + str(response.status_code) + ': ' + response.text)
@@ -122,10 +122,10 @@ jobs:
               summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
               if summary_path:
                   with open(summary_path, 'a', encoding='utf-8') as summary:
-                      summary.write('## Sitemap submission failed\\n\\n' + message + '\\n')
+                      summary.write('## Sitemap submission failed\n\n' + message + '\n')
               raise SystemExit(1)
 
-          summary = '\\n'.join([
+          summary = '\n'.join([
               '## Google Search Console sitemap submissions accepted',
               '',
               'Configured property: ' + site,
@@ -138,5 +138,5 @@ jobs:
           summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
           if summary_path:
               with open(summary_path, 'a', encoding='utf-8') as output:
-                  output.write(summary + '\\n')
+                  output.write(summary + '\n')
           PY
