@@ -328,7 +328,7 @@ test('broad site cleanup preserves deliberate performance and related-content ca
     assert.equal(result.status, 0, 'cache-bust fixture failed:\n' + result.stdout + '\n' + result.stderr);
     assert.ok(result.stdout.includes('seo-audit-launch.css?v=20261027-cls-reserve-v1'), 'launch CSS keeps its measured cache key');
     assert.ok(result.stdout.includes('seo-audit-launch.js?v=20261026-live-cls-a11y-v1'), 'launch JS keeps its measured cache key');
-    assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261022-v2'), 'homepage runtime preserves its LCP cache key');
+    assert.ok(result.stdout.includes('main.js?v=20261015-v4&lcpAds=20261028-ga4-tbt-v1'), 'homepage runtime preserves its LCP cache key');
     assert.ok(result.stdout.includes('analytics.js?v=20261016-related-content-v1'), 'analytics preserves its related-content cache key');
     assert.ok(result.stdout.includes('site-main.js?v=20261018-app-consent-lcp-v1'), 'app runtime preserves its consent/LCP cache key');
     assert.ok(result.stdout.includes('other.js?v=20261015-v4'), 'ordinary assets still receive the shared cache key');
