@@ -77,3 +77,22 @@ test('Phase 2 synchronization workflow exists and does not promise instant index
  assert.match(guide,/does not guarantee one-second indexing/i); assert.match(guide,/Search Console Sitemap API/i);
  assert.match(sync,/\.glob\("\*\.html"\)/); assert.match(sync,/sitemap\.xml/); assert.match(sync,/NEXUSNOVA_EXPECTED_COUNTS/); assert.match(sync,/sitemap_records/); assert.match(sync,/page_url/);
 });
+
+test('homepage gives crawl-priority guides direct internal links and current sitemap dates',()=>{
+ const home=fs.readFileSync('index.html','utf8');
+ const sitemap=fs.readFileSync('sitemap.xml','utf8');
+ const sitemapIndex=fs.readFileSync('sitemap-index.xml','utf8');
+ const links=[
+  'articles/capital-gains-cost-basis.html',
+  'articles/currency-conversion-fees.html',
+  'articles/freelance-tax-reserve.html',
+  'articles/profit-margin-vs-markup-small-business.html'
+ ];
+ for(const path of links){
+  assert.ok(home.includes('href="'+path+'"'),'homepage should directly link '+path);
+  const url='https://nexusnovatools.com/'+path;
+  assert.ok(sitemap.includes('<url><loc>'+url+'</loc><lastmod>2026-10-29</lastmod></url>'),'sitemap lastmod should reflect the updated page '+path);
+ }
+ assert.ok(sitemap.includes('<url><loc>https://nexusnovatools.com/</loc><lastmod>2026-10-29</lastmod></url>'),'homepage lastmod should reflect its updated internal links');
+ assert.match(sitemapIndex,/<lastmod>2026-10-29<\\/lastmod>/);
+});
