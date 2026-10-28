@@ -42,7 +42,7 @@ SPECIAL_CACHE_KEYS = {
     ("app.html", "assets/js/site-main.js"): "v=20261018-app-consent-lcp-v1",
     ("index.html", "assets/css/seo-audit-launch.css"): "v=20261027-cls-reserve-v1",
     ("index.html", "assets/js/seo-audit-launch.js"): "v=20261026-live-cls-a11y-v1",
-    ("index.html", "assets/js/main.js"): "v=20261015-v4&lcpAds=20261022-v2",
+    ("index.html", "assets/js/main.js"): "v=20261015-v4&lcpAds=20261028-ga4-tbt-v1",
     ("seo-audit-studio.html", "assets/js/analytics.js"): "v=20261016-related-content-v1",
 }
 
