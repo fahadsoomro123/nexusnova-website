@@ -211,7 +211,12 @@ test('homepage search downloads its parser-heavy initializer only after user int
   assert.ok(!homepage.includes("document.addEventListener('DOMContentLoaded', function ()"));
 });test('homepage loads the deep search index only after the external search implementation is requested', () => {
   const homepage = fs.readFileSync('index.html', 'utf8');
-  const bootstrap = fs.readFileSync('index.html', 'utf8').match(/<script id="nn-home-search-lazy-loader">([\\s\\S]*?)<\\/script>/)?.[1] || '';
+  const html = fs.readFileSync('index.html', 'utf8');
+  const marker = '<script id="nn-home-search-lazy-loader">';
+  const markerIndex = html.indexOf(marker);
+  const openEnd = html.indexOf('>', markerIndex);
+  const close = html.indexOf('</script>', openEnd);
+  const bootstrap = markerIndex >= 0 && openEnd > markerIndex && close > openEnd ? html.slice(openEnd + 1, close) : '';
   const implementation = fs.readFileSync('assets/js/homepage-search.js', 'utf8');
   assert.ok(!homepage.includes('<script src="assets/js/search-core.js?v=20261015-v4" defer></script>'),
     'search-core must not be downloaded on every homepage visit');
