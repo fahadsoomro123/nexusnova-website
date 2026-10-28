@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "sitemap.xml"
+      - "sitemap-daily-tools.xml"
       - "articles/**"
       - "guides/**"
       - "tools/**"
@@ -72,52 +73,70 @@ jobs:
               scopes=['https://www.googleapis.com/auth/webmasters']
           )
           session = AuthorizedSession(credentials)
-          sitemap = 'https://nexusnovatools.com/sitemap.xml'
-          endpoint = 'https://www.googleapis.com/webmasters/v3/sites/' + __import__('urllib.parse').parse.quote(site, safe='') + '/sitemaps/' + __import__('urllib.parse').parse.quote(sitemap, safe='')
-          response = session.put(endpoint, timeout=30)
-          if response.status_code == 403:
-              email = str(info.get('client_email', '')).strip() or '(client_email unavailable in credential JSON)'
-              message = "\n".join([
-                  "## Google Search Console denied sitemap submission (HTTP 403)",
-                  "",
-                  "Google authenticated the request but refused access to the configured Search Console property.",
-                  "",
-                  "Service account to grant access: " + email,
-                  "Configured property: " + site,
-                  "Sitemap: " + sitemap,
-                  "",
-                  "One-time fix:",
-                  "1. Open Google Search Console for the configured property.",
-                  "2. Open Settings → Users and permissions.",
-                  "3. Add the service-account email above as a Full user or Owner.",
-                  "4. Re-run the Submit Sitemap to Google Search Console workflow.",
-                  "",
-                  "The sitemap file and submission automation are already configured. This permission grant is required by Google; the workflow will not claim a successful submission until the API accepts it."
-              ])
-              print('GSC_PERMISSION_BLOCKED: service account lacks access to configured property.')
-              print(message)
+          sitemaps = [
+              'https://nexusnovatools.com/sitemap.xml',
+              'https://nexusnovatools.com/sitemap-daily-tools.xml',
+          ]
+          api_base = 'https://www.googleapis.com/webmasters/v3/sites/' + __import__('urllib.parse').parse.quote(site, safe='') + '/sitemaps/'
+          accepted = []
+          failures = []
+          for sitemap in sitemaps:
+              endpoint = api_base + __import__('urllib.parse').parse.quote(sitemap, safe='')
+              response = session.put(endpoint, timeout=30)
+              if response.status_code == 403:
+                  email = str(info.get('client_email', '')).strip() or '(client_email unavailable in credential JSON)'
+                  message = "\\n".join([
+                      '## Google Search Console denied sitemap submission (HTTP 403)',
+                      '',
+                      'Google authenticated the request but refused access to the configured Search Console property.',
+                      '',
+                      'Service account to grant access: ' + email,
+                      'Configured property: ' + site,
+                      'Sitemap: ' + sitemap,
+                      '',
+                      'One-time fix:',
+                      '1. Open Google Search Console for the configured property.',
+                      '2. Open Settings → Users and permissions.',
+                      '3. Add the service-account email above as a Full user or Owner.',
+                      '4. Re-run the Submit Sitemap to Google Search Console workflow.',
+                      '',
+                      'The sitemap file and submission automation are already configured. This permission grant is required by Google; the workflow will not claim a successful submission until the API accepts it.'
+                  ])
+                  print('GSC_PERMISSION_BLOCKED: service account lacks access to configured property.')
+                  print(message)
+                  summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+                  if summary_path:
+                      with open(summary_path, 'a', encoding='utf-8') as summary:
+                          summary.write(message + '\\n')
+                  raise SystemExit(1)
+              if response.status_code not in (200, 204):
+                  print('GSC_SUBMISSION_FAILED: ' + sitemap + ' HTTP ' + str(response.status_code) + ': ' + response.text)
+                  failures.append(sitemap)
+                  continue
+              accepted.append((sitemap, response.status_code))
+              print('GSC_SUBMISSION_ACCEPTED: HTTP ' + str(response.status_code) + ' ' + sitemap)
+
+          if failures:
+              message = 'Google did not accept these sitemap submissions: ' + ', '.join(failures)
+              print('GSC_SUBMISSION_FAILED: ' + message)
               summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
               if summary_path:
                   with open(summary_path, 'a', encoding='utf-8') as summary:
-                      summary.write(message + "\n")
+                      summary.write('## Sitemap submission failed\\n\\n' + message + '\\n')
               raise SystemExit(1)
-          if response.status_code not in (200, 204):
-              print(response.text)
-              response.raise_for_status()
-          summary = "\n".join([
-              "## Google Search Console sitemap submission accepted",
-              "",
-              "API response: HTTP " + str(response.status_code),
-              "Configured property: " + site,
-              "Sitemap: " + sitemap,
-              "",
-              "Google accepted the sitemap submission request. This does not guarantee that every URL will be indexed.",
+
+          summary = '\\n'.join([
+              '## Google Search Console sitemap submissions accepted',
+              '',
+              'Configured property: ' + site,
+              'Accepted sitemap count: ' + str(len(accepted)),
+              '',
+              *['- HTTP ' + str(status) + ': ' + sitemap for sitemap, status in accepted],
+              '',
+              'Google accepted the sitemap submission requests. This does not guarantee that every URL will be indexed.'
           ])
-          print("GSC_SUBMISSION_ACCEPTED: HTTP " + str(response.status_code))
-          print("Configured property:", site)
-          print("Sitemap:", sitemap)
-          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
           if summary_path:
-              with open(summary_path, "a", encoding="utf-8") as output:
-                  output.write(summary + "\n")
+              with open(summary_path, 'a', encoding='utf-8') as output:
+                  output.write(summary + '\\n')
           PY
