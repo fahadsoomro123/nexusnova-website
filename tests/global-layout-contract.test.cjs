@@ -89,15 +89,8 @@ test('every HTML page shares the canonical header and stable footer branding', (
         'SEO Audit Studio must expose exactly one Owner Console footer entry');
     }
     assert.equal((source.match(/<footer\b/gi) || []).length, 1, relative + ' must contain exactly one footer element');
-    const shellCssTags = source.match(/<link\b[^>]*\/assets\/css\/static-site-shell\.css\?[^>]*>/gi) || [];
-    const shellStylesheets = shellCssTags.filter(tag => /\brel=["']stylesheet["']/i.test(tag));
-    const shellPreloads = shellCssTags.filter(tag =>
-      /\brel=["']preload["']/i.test(tag) && /\bas=["']style["']/i.test(tag)
-    );
-    assert.equal(shellStylesheets.length, 1,
-      relative + ' must load the shared shell stylesheet once');
-    assert.ok(shellPreloads.length <= 1,
-      relative + ' must not duplicate the shared shell style preload');
+    assert.equal((source.match(/\/assets\/css\/static-site-shell\.css\?/g) || []).length, 1,
+      relative + ' must load shared shell stylesheet once');
     assert.doesNotMatch(source, /<script\b[^>]*\bsrc=["'][^"']*global-shell-guard\.js/i,
       relative + ' still loads retired dynamic guard');
   }
