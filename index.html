@@ -480,31 +480,6 @@
 
 
 
-<style id="nn-adsterra-slot-css">
-  .nn-adsterra-slot{padding:14px 0 20px}
-  .nn-adsterra-card,.nn-adsterra-off{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 15px;border:1px solid var(--nn-line);background:#fff}
-  .nn-adsterra-copy{min-width:0;max-width:760px}
-  .nn-adsterra-kicker{display:block;color:var(--nn-muted);font-family:var(--nn-mono);font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
-  .nn-adsterra-copy p{margin:4px 0 0;color:var(--nn-muted);font-size:11px;line-height:1.5}
-  .nn-adsterra-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px;flex-shrink:0}
-  .nn-adsterra-actions button,.nn-adsterra-off button,.nn-adsterra-placement-head button{min-height:32px;padding:0 10px;border:1px solid var(--nn-line-strong);background:#fff;color:var(--nn-text);font-size:10px;font-weight:850}
-  .nn-adsterra-actions button.primary{border-color:var(--nn-purple);background:var(--nn-purple);color:#fff}
-  .nn-adsterra-placement{min-width:0;width:100%;overflow:hidden}
-  .nn-adsterra-placement-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;color:var(--nn-subtle);font-family:var(--nn-mono);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}
-  .nn-adsterra-status{margin:5px 0 0;color:var(--nn-muted);font-size:10px}
-  .nn-adsterra-slot [hidden]{display:none!important}
-  @media(max-width:640px){.nn-adsterra-card,.nn-adsterra-off{align-items:stretch;flex-direction:column;gap:10px;padding:11px}.nn-adsterra-actions{width:100%}.nn-adsterra-actions button{flex:1}.nn-adsterra-placement-head{align-items:flex-start}}
-</style>
-
-
-
-
-
-
-
-
-
-
   <link rel="stylesheet" href="assets/css/seo-audit-launch.css?v=20261027-cls-reserve-v1">
   <script src="assets/js/seo-audit-launch.js?v=20261026-live-cls-a11y-v1" defer></script>
 
@@ -682,100 +657,7 @@
       </div>
     </section>
 
-    <section class="nn-adsterra-slot" aria-label="Sponsored advertising">
-      <div class="nn-shell">
-        <div class="nn-adsterra-placement" data-nn-adsterra-placement>
-          <div class="nn-adsterra-placement-head">
-            <span>Sponsored advertisement · adult creatives may appear</span>
-          </div>
-          <div id="container-b7cb02fa163a7585244e7c2876553cea"></div>
-          <p class="nn-adsterra-status" data-nn-adsterra-status role="status" aria-live="polite"></p>
-        </div>
-      </div>
-    </section>
-    <script id="nn-adsterra-auto-loader">
-    (() => {
-      'use strict';
-      const placement = document.querySelector('[data-nn-adsterra-placement]');
-      const container = document.getElementById('container-b7cb02fa163a7585244e7c2876553cea');
-      const status = document.querySelector('[data-nn-adsterra-status]');
-      if (!placement || !container || ['loading', 'loaded', 'retrying'].includes(window.__nexusnovaAdsterraState)) return;
-
-      // Honor an explicit browser-level privacy opt-out signal.
-      if (window.navigator?.globalPrivacyControl === true) {
-        if (status) status.textContent = 'Ad loading is disabled because your browser sent a Global Privacy Control signal.';
-        return;
-      }
-
-      const scriptUrl = 'https://pl31802817.profitableratecpmnetwork.com/b7cb02fa163a7585244e7c2876553cea/invoke.js';
-      const maxAttempts = 3;
-      let attempts = 0;
-      let retryTimer = 0;
-
-      const loadAdsterra = () => {
-        if (['loaded', 'loading'].includes(window.__nexusnovaAdsterraState)) return;
-        attempts += 1;
-        window.__nexusnovaAdsterraState = 'loading';
-
-        const script = document.createElement('script');
-        script.async = true;
-        script.setAttribute('data-cfasync', 'false');
-        script.dataset.nexusnovaAdsterra = '';
-        script.src = scriptUrl;
-
-        script.addEventListener('load', () => {
-          window.__nexusnovaAdsterraState = 'loaded';
-          if (status) status.textContent = '';
-        }, { once: true });
-
-        script.addEventListener('error', () => {
-          script.remove();
-          if (attempts < maxAttempts) {
-            window.__nexusnovaAdsterraState = 'retrying';
-            if (status) status.textContent = 'Ad network temporarily unavailable. Retrying (' + attempts + '/' + (maxAttempts - 1) + ')…';
-            retryTimer = window.setTimeout(() => {
-              window.__nexusnovaAdsterraState = '';
-              retryTimer = 0;
-              loadAdsterra();
-            }, attempts * 1000);
-            return;
-          }
-          window.__nexusnovaAdsterraState = 'failed';
-          if (status) status.textContent = 'The external ad network is unavailable right now. The website tools remain available.';
-        }, { once: true });
-
-        container.parentNode.insertBefore(script, container);
-      };
-
-      const scheduleAdLoad = () => {
-        if (window.__nexusnovaAdsterraState === 'loaded' || retryTimer) return;
-        if (typeof window.requestIdleCallback === 'function') {
-          window.requestIdleCallback(loadAdsterra, { timeout: 1500 });
-        } else {
-          window.setTimeout(loadAdsterra, 300);
-        }
-      };
-
-      // The slot is below the featured content; do not fetch advertising code
-      // until a visitor scrolls near it. This saves work on visits that never
-      // reach the placement while still preloading before it enters view.
-      if (typeof window.IntersectionObserver === 'function') {
-        const observer = new IntersectionObserver(entries => {
-          if (entries.some(entry => entry.isIntersecting)) {
-            observer.disconnect();
-            scheduleAdLoad();
-          }
-        }, { rootMargin: '600px 0px', threshold: 0.01 });
-        observer.observe(placement);
-      } else if (document.readyState === 'complete') {
-        scheduleAdLoad();
-      } else {
-        window.addEventListener('load', scheduleAdLoad, { once: true });
-      }
-    })();
-    </script>
-
-    <!-- STEP 1: SEARCH -->
+        <!-- STEP 1: SEARCH -->
     <section class="nn-step" aria-labelledby="search-title">
       <div class="nn-shell">
         <div class="nn-step-head">
