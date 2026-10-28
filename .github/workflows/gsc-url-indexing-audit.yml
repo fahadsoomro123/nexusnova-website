@@ -96,7 +96,7 @@ jobs:
               payload = {'inspectionUrl': url, 'siteUrl': site, 'languageCode': 'en-US'}
               try:
                   for attempt in range(4):
-                      response = local_session.post(endpoint, json=payload, timeout=30)
+                      response = local_session.post(endpoint, json=payload, timeout=15)
                       if response.status_code in (429, 500, 502, 503, 504) and attempt < 3:
                           time.sleep(2 ** (attempt + 1))
                           continue
@@ -127,9 +127,9 @@ jobs:
 
           # Catch account, API-enablement and property-permission errors before scanning every URL.
           preflight = inspect_one(urls[0])
-          if preflight.get('_fatal'):
-              print('GSC_INSPECTION_BLOCKED: URL Inspection API returned HTTP ' + str(preflight.get('apiStatus')))
-              print('Check that the Search Console API is enabled, GSC_SITE_URL is the verified property, and the service account has access to it.')
+          if preflight.get('_fatal') or preflight.get('verdict') == 'API_ERROR':
+              print('GSC_INSPECTION_BLOCKED: URL Inspection preflight failed; HTTP status=' + str(preflight.get('apiStatus') or 'no HTTP response'))
+              print('Check that the Search Console API is enabled, GSC_SITE_URL is the verified property, and the service account has access to it. For transient or network failures, rerun after resolving the reported issue.')
               raise SystemExit('Google URL Inspection preflight failed: ' + str(preflight.get('coverageState')))
           results = [preflight]
           print(f"[1/{len(urls)}] {preflight.get('verdict')} | {preflight.get('coverageState')} | {urls[0]}")
