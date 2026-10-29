@@ -847,7 +847,7 @@
       </div>
     </section>
     <div class="modal-trust-list"><span>✓ $2.99 one-time</span><span>✓ Paid access checked server-side</span><span>✓ Safepay webhook must verify before unlock</span></div>
-    <div class="modal-actions"><a class="primary-btn modal-whatsapp" id="upgradeWhatsApp" href="https://wa.me/923458818331" target="_blank" rel="noopener noreferrer">WhatsApp support ↗</a><a class="secondary-btn modal-email" id="upgradeEmail" href="mailto:nexusnovatools@gmail.com">Email support</a></div>
+    <div class="modal-actions"><a class="primary-btn modal-whatsapp" id="upgradeWhatsApp" href="https://wa.me/923458818331" target="_blank" rel="noopener noreferrer">WhatsApp support ↗</a><a class="secondary-btn modal-email" id="upgradeEmail" href="mailto:fahad@nexusnovatools.com">Email support</a></div>
     <p class="modal-disclaimer">The report stays locked until the backend verifies the exact transaction. Never send crypto to an unverified address or network.</p>
   </section>
 </div>
@@ -1891,7 +1891,7 @@
   const updateUpgradeLinks = () => {
     const message=makeUpgradeMessage();
     upgradeWhatsApp.href='https://wa.me/923458818331?text='+encodeURIComponent(message);
-    upgradeEmail.href='mailto:nexusnovatools@gmail.com?subject='+encodeURIComponent('NexusNova SEO Audit Full Report Upgrade')+'&body='+encodeURIComponent(message);
+    upgradeEmail.href='mailto:fahad@nexusnovatools.com?subject='+encodeURIComponent('NexusNova SEO Audit Full Report Upgrade')+'&body='+encodeURIComponent(message);
   };
   document.querySelectorAll('[data-open-paywall]').forEach(button=>button.addEventListener('click',()=>{updateUpgradeLinks();openPaywall();}));
   $('cryptoNetwork').addEventListener('change',updateCryptoCheckoutAvailability);
