@@ -64,7 +64,7 @@ if 'Google Analytics' not in privacy or 'Analytics choice:' not in privacy:
     errors.append('privacy page does not explain the analytics choice')
 
 # Current public support route. Do not require a paid/domain mailbox that does not exist.
-if 'nexusnovatools@gmail.com' not in contact:
+if 'fahad@nexusnovatools.com' not in contact:
     errors.append('contact page does not publish the official support email')
 if 'dedicated support mailbox has not been published' in contact.lower():
     errors.append('stale no-support-mailbox copy still exists on contact page')
