@@ -3,7 +3,7 @@ import {ALL_CITIES,parseLocationForecast} from './live_weather_core.mjs';
 
 const OUT='assets/data/live-weather.json';
 const BASE='https://api.met.no/weatherapi/locationforecast/2.0/compact';
-const USER_AGENT='NexusNova-LIVE/1.0 nexusnovatools.com nexusnovatools@gmail.com';
+const USER_AGENT='NexusNova-LIVE/1.0 nexusnovatools.com fahad@nexusnovatools.com';
 let previous={cities:[]};try{previous=JSON.parse(await fs.readFile(OUT,'utf8'))}catch{}
 const previousMap=new Map((previous.cities||[]).map(city=>[city.slug,city]));
 

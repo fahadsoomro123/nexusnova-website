@@ -1,12 +1,12 @@
 # NexusNova Project Knowledge — Local AI Context
 
-Updated: 26 Aug 2026
+Updated: 29 Oct 2026
 
 ## Main public assets
 - Website: https://nexusnovatools.com/
 - Website GitHub repo: `fahadsoomro123/nexusnova-website`
 - Android repo: `fahadsoomro123/nexusnova-app`
-- Official email: `nexusnovatools@gmail.com`
+- Official email: `fahad@nexusnovatools.com`
 - Telegram bot: `@NexusNovaToolsBot`
 - Telegram Mini App URL: https://nexusnovatools.com/
 - Telegram Worker webhook URL is public, but bot token is SECRET and must never enter client code or public GitHub files.
