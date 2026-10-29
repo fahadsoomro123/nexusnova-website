@@ -1,6 +1,6 @@
 # NexusNova Project Knowledge — Local AI Context
 
-Updated: 26 Aug 2026
+Updated: 29 Oct 2026
 
 ## Main public assets
 - Website: https://nexusnovatools.com/
