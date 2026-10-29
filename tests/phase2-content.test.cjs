@@ -78,15 +78,30 @@ test('Phase 2 synchronization workflow exists and does not promise instant index
  assert.match(sync,/\.glob\("\*\.html"\)/); assert.match(sync,/sitemap\.xml/); assert.match(sync,/NEXUSNOVA_EXPECTED_COUNTS/); assert.match(sync,/sitemap_records/); assert.match(sync,/page_url/);
 });
 
-test('homepage gives crawl-priority guides direct internal links and current sitemap dates',()=>{
+test('homepage directly links all 19 reported URLs needing indexing attention',()=>{
  const home=fs.readFileSync('index.html','utf8');
  const sitemap=fs.readFileSync('sitemap.xml','utf8');
  const sitemapIndex=fs.readFileSync('sitemap-index.xml','utf8');
  const links=[
   'articles/capital-gains-cost-basis.html',
+  'articles/cash-reserve-vs-credit-line.html',
+  'articles/credit-card-payoff-avalanche-vs-snowball.html',
   'articles/currency-conversion-fees.html',
+  'articles/electricity-fixed-charges-vs-usage-cost.html',
+  'articles/freelance-cash-flow-budget.html',
   'articles/freelance-tax-reserve.html',
-  'articles/profit-margin-vs-markup-small-business.html'
+  'articles/generator-fuel-cost.html',
+  'articles/gross-pay-vs-take-home-pay.html',
+  'articles/overdraft-fee-opportunity-cost.html',
+  'articles/paycheck-budget-allocation.html',
+  'articles/percent-vs-percentage-point.html',
+  'articles/portfolio-rebalancing-bands.html',
+  'articles/profit-margin-vs-markup-small-business.html',
+  'articles/quarterly-estimated-taxes-1099.html',
+  'articles/solar-panel-payback-period.html',
+  'articles/subscription-annual-cost.html',
+  'articles/water-leak-bill-estimate.html',
+  'pdf-tools.html'
  ];
  for(const path of links){
   assert.ok(home.includes('href="'+path+'"'),'homepage should directly link '+path);
