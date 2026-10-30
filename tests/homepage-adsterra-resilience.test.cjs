@@ -25,6 +25,10 @@ test('homepage uses the replacement banner unit and contains no old adult-enable
   assert.ok(homepage.includes('data-nn-adsterra-placement'));
   assert.ok(homepage.includes('nn-adsterra-banner-320x50'));
   assert.ok(homepage.includes('Sponsored advertisement'));
+  assert.ok(homepage.includes('Advertising is temporarily disabled while NexusNova completes its current review.'));
+  assert.ok(homepage.includes('html[data-nn-adsterra-disabled="true"] .nn-adsterra-slot{display:none!important}'));
+  assert.ok(!homepage.includes('A third-party Adsterra advertisement may load automatically'));
+  assert.ok(!homepage.includes('ad creatives may include adult content'));
   assert.ok(!homepage.includes('adult creatives may appear'));
   assert.ok(!homepage.includes('container-b7cb02fa163a7585244e7c2876553cea'));
   assert.ok(!homepage.includes('b7cb02fa163a7585244e7c2876553cea'));
