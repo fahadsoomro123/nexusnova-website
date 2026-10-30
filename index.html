@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-nn-adsterra-disabled="true">
 <head>
   <meta charset="utf-8">
 
@@ -704,6 +704,14 @@
     <script id="nn-adsterra-auto-loader">
     (() => {
       'use strict';
+
+      // Temporary AdSense-review safeguard: keep the third-party Adsterra request off.
+      // Re-enable by changing the root html attribute data-nn-adsterra-disabled to "false".
+      if (document.documentElement?.dataset?.nnAdsterraDisabled === 'true') {
+        const disabledStatus = document.querySelector('[data-nn-adsterra-status]');
+        if (disabledStatus) disabledStatus.textContent = 'Third-party advertising is temporarily disabled.';
+        return;
+      }
       const placement = document.querySelector('[data-nn-adsterra-placement]');
       const container = document.getElementById('nn-adsterra-banner-320x50');
       const status = document.querySelector('[data-nn-adsterra-status]');
