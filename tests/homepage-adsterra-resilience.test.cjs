@@ -67,7 +67,7 @@ test('Ad network failures receive two bounded retries and a graceful terminal st
   assert.ok(!loader.includes('Please refresh later.'));
 });
 
-function runAdsterraLoader({ globalPrivacyControl = false } = {}) {
+function runAdsterraLoader({ globalPrivacyControl = false, adsterraDisabled = false } = {}) {
   const inserted = [];
   const idleTasks = [];
   const timers = [];
@@ -97,6 +97,7 @@ function runAdsterraLoader({ globalPrivacyControl = false } = {}) {
   }
 
   const document = {
+    documentElement: { dataset: { nnAdsterraDisabled: adsterraDisabled ? 'true' : 'false' } },
     querySelector(selector) {
       if (selector === '[data-nn-adsterra-placement]') return placement;
       if (selector === '[data-nn-adsterra-status]') return status;
