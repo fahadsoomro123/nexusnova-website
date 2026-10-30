@@ -67,6 +67,19 @@ test('Ad network failures receive two bounded retries and a graceful terminal st
   assert.ok(!loader.includes('Please refresh later.'));
 });
 
+test('Adsterra loader is temporarily disabled before any third-party ad request', () => {
+  assert.ok(homepage.includes('<html lang="en" data-nn-adsterra-disabled="true">'));
+  const loader = getAdsterraLoader();
+  const killSwitch = loader.indexOf("if (document.documentElement?.dataset?.nnAdsterraDisabled === 'true')");
+  const placementSetup = loader.indexOf("const placement = document.querySelector('[data-nn-adsterra-placement]')");
+  assert.ok(killSwitch >= 0 && killSwitch < placementSetup, 'kill switch must run before placement/network setup');
+
+  const state = runAdsterraLoader({ adsterraDisabled: true });
+  assert.equal(state.inserted.length, 0, 'disabled mode must not inject the Adsterra script');
+  assert.equal(state.observers.length, 0, 'disabled mode must not schedule an ad observer');
+  assert.match(state.status.textContent, /temporarily disabled/i);
+});
+
 function runAdsterraLoader({ globalPrivacyControl = false, adsterraDisabled = false } = {}) {
   const inserted = [];
   const idleTasks = [];
