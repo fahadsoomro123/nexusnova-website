@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-11-01T18:51:07.448Z",
+  "generated_at": "2026-11-01T22:41:23.397Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,9 +16,9 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-11-01T18:51:07.000Z",
+  "feed_generated_at": "2026-11-01T22:41:13.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 44,
+  "source_count": 47,
   "pakistan_region_events": [
     {
       "id": "us7000tupb",
@@ -41,6 +41,139 @@
     }
   ],
   "worldwide_events": [
+    {
+      "id": "us7000turv",
+      "magnitude": 4.6,
+      "place": "Mid-Indian Ridge",
+      "time": "2026-11-01T22:22:44.414Z",
+      "updated": "2026-11-01T22:37:14.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -35.403,
+        "lon": 78.404
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000turv",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000turj",
+      "magnitude": 4.7,
+      "place": "Kermadec Islands region",
+      "time": "2026-11-01T21:26:57.524Z",
+      "updated": "2026-11-01T21:58:58.040Z",
+      "depth_km": 150.9,
+      "coordinates": {
+        "lat": -27.291,
+        "lon": -177.8708
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000turj",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026vrataq",
+      "magnitude": 2.7,
+      "place": "7 km E of Ridgeway, Alaska",
+      "time": "2026-11-01T20:02:05.041Z",
+      "updated": "2026-11-01T20:05:32.021Z",
+      "depth_km": 52.2,
+      "coordinates": {
+        "lat": 60.54,
+        "lon": -150.953
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026vrataq",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tur0",
+      "magnitude": 4.8,
+      "place": "Mid-Indian Ridge",
+      "time": "2026-11-01T18:53:57.590Z",
+      "updated": "2026-11-01T19:12:41.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -35.441,
+        "lon": 78.4169
+      },
+      "significance": 354,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tur0",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tuqy",
+      "magnitude": 4.6,
+      "place": "101 km SW of Basco, Philippines",
+      "time": "2026-11-01T18:42:57.023Z",
+      "updated": "2026-11-01T19:42:00.040Z",
+      "depth_km": 38.5,
+      "coordinates": {
+        "lat": 19.7626,
+        "lon": 121.328
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tuqy",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tuqx",
+      "magnitude": 5,
+      "place": "Mid-Indian Ridge",
+      "time": "2026-11-01T18:34:39.200Z",
+      "updated": "2026-11-01T18:54:01.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -23.8735,
+        "lon": 69.5217
+      },
+      "significance": 385,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tuqx",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000tuqv",
+      "magnitude": 4.6,
+      "place": "Mid-Indian Ridge",
+      "time": "2026-11-01T18:30:23.197Z",
+      "updated": "2026-11-01T18:55:28.040Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -23.9496,
+        "lon": 69.5065
+      },
+      "significance": 326,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tuqv",
+      "pakistan_region": false
+    },
     {
       "id": "us7000tuqk",
       "magnitude": 5.1,
@@ -236,7 +369,7 @@
       "magnitude": 6,
       "place": "165 km NW of Port-Olry, Vanuatu",
       "time": "2026-11-01T11:47:03.778Z",
-      "updated": "2026-11-01T13:53:55.673Z",
+      "updated": "2026-11-01T21:59:02.040Z",
       "depth_km": 10,
       "coordinates": {
         "lat": -14.1689,
@@ -464,14 +597,14 @@
       "magnitude": 3.7,
       "place": "17 km SSW of Weston, Colorado",
       "time": "2026-11-01T07:55:18.998Z",
-      "updated": "2026-11-01T12:01:46.492Z",
+      "updated": "2026-11-01T21:46:46.040Z",
       "depth_km": 9.2,
       "coordinates": {
         "lat": 37.0038,
         "lon": -104.9525
       },
-      "significance": 212,
-      "felt": 4,
+      "significance": 213,
+      "felt": 5,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -673,7 +806,7 @@
       "magnitude": 2.49,
       "place": "27 km WSW of Westley, CA",
       "time": "2026-11-01T02:21:17.910Z",
-      "updated": "2026-11-01T09:28:42.781Z",
+      "updated": "2026-11-01T20:56:24.879Z",
       "depth_km": 2.1,
       "coordinates": {
         "lat": 37.422,
@@ -799,82 +932,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tuky",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tuku",
-      "magnitude": 6,
-      "place": "58 km SSE of Shima, Japan",
-      "time": "2026-10-31T22:15:02.901Z",
-      "updated": "2026-11-01T14:23:02.068Z",
-      "depth_km": 352.4,
-      "coordinates": {
-        "lat": 33.822,
-        "lon": 136.9854
-      },
-      "significance": 563,
-      "felt": 28,
-      "alert": "green",
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tuku",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tukm",
-      "magnitude": 5,
-      "place": "115 km SE of Bushehr, Iran",
-      "time": "2026-10-31T21:20:39.173Z",
-      "updated": "2026-10-31T21:35:56.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 28.114,
-        "lon": 51.5076
-      },
-      "significance": 385,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tukm",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71538123",
-      "magnitude": 2.77,
-      "place": "18 km NNE of Tierras Nuevas Poniente, Puerto Rico",
-      "time": "2026-10-31T21:03:19.370Z",
-      "updated": "2026-10-31T21:13:25.530Z",
-      "depth_km": 68,
-      "coordinates": {
-        "lat": 18.6257,
-        "lon": -66.4375
-      },
-      "significance": 118,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71538123",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71538103",
-      "magnitude": 3.15,
-      "place": "4 km SSE of Maria Antonia, Puerto Rico",
-      "time": "2026-10-31T19:58:08.010Z",
-      "updated": "2026-10-31T20:44:26.040Z",
-      "depth_km": 14.8,
-      "coordinates": {
-        "lat": 17.9428,
-        "lon": -66.8773
-      },
-      "significance": 153,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71538103",
       "pakistan_region": false
     }
   ]
