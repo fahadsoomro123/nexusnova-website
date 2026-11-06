@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-05T20:03:15.612015Z",
+  "generated_at": "2026-11-06T06:57:17.562412Z",
   "items": [
     {
       "title": "Stable Channel Update for Desktop",
@@ -12,13 +12,22 @@
       "score": 65
     },
     {
-      "title": "Extended Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/11/extended-stable-update-for-desktop.html",
+      "title": "Chrome for Android Update",
+      "url": "https://chromereleases.googleblog.com/2026/11/chrome-for-android-update_01050980700.html",
       "source": "Chrome Releases",
       "category": "Security",
-      "published": "2026-11-03T18:47:14Z",
-      "summary": "The Extended Stable channel has been updated to 156.0.8078.88 for Windows and Mac which will roll out over the coming days/weeks. Security Fixes and Rewards Note: Access to bug details and links may be kept restricted until a majority of users are updated with",
+      "published": "2026-11-05T22:00:00Z",
+      "summary": "Hi, everyone! We've just released Chrome 157 (157.0.8103.46) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
       "score": 33
+    },
+    {
+      "title": "Usage metrics API adds code review details and addressed rate",
+      "url": "https://github.blog/changelog/2026-11-05-usage-metrics-api-adds-code-review-details-and-addressed-rate",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-11-06T00:19:07Z",
+      "summary": "The enterprise and organization repository-level Copilot usage metrics reports now show what happens to Copilot code review feedback. A new copilot_code_review object on each repos-1-day row reports how many Copilot-reviewed… The post Usage metrics API adds co",
+      "score": 26
     },
     {
       "title": "BYOK and enterprise custom models in the Copilot usage API",
@@ -27,15 +36,6 @@
       "category": "AI",
       "published": "2026-11-04T00:32:19Z",
       "summary": "The Copilot usage metrics API now shows bring your own key (BYOK) usage across GitHub Copilot, so you can separate it from Copilot-hosted model usage. Reports cover two kinds of… The post BYOK and enterprise custom models in the Copilot usage API appeared firs",
-      "score": 24
-    },
-    {
-      "title": "GitHub Copilot is now available in JetBrains Air",
-      "url": "https://github.blog/changelog/2026-11-03-github-copilot-is-now-available-in-jetbrains-air",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-11-03T15:11:46Z",
-      "summary": "You can now delegate coding tasks, guide execution, and review results with GitHub Copilot in JetBrains Air. The integration uses the Agent Client Protocol (ACP) and supports tasks in your… The post GitHub Copilot is now available in JetBrains Air appeared fir",
       "score": 24
     },
     {
@@ -86,27 +86,27 @@
       "score": 65
     },
     {
-      "title": "Extended Stable Update for Desktop",
-      "url": "https://chromereleases.googleblog.com/2026/11/extended-stable-update-for-desktop.html",
+      "title": "Chrome for Android Update",
+      "url": "https://chromereleases.googleblog.com/2026/11/chrome-for-android-update_01050980700.html",
       "source": "Chrome Releases",
       "category": "Security",
-      "published": "2026-11-03T18:47:14Z",
-      "summary": "The Extended Stable channel has been updated to 156.0.8078.88 for Windows and Mac which will roll out over the coming days/weeks. Security Fixes and Rewards Note: Access to bug details and links may be kept restricted until a majority of users are updated with",
+      "published": "2026-11-05T22:00:00Z",
+      "summary": "Hi, everyone! We've just released Chrome 157 (157.0.8103.46) for Android. It'll become available on Google Play over the next few days. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you",
       "score": 33
     },
     {
-      "title": "BYOK and enterprise custom models in the Copilot usage API",
-      "url": "https://github.blog/changelog/2026-11-03-byok-and-enterprise-custom-models-in-the-copilot-usage-api",
+      "title": "Usage metrics API adds code review details and addressed rate",
+      "url": "https://github.blog/changelog/2026-11-05-usage-metrics-api-adds-code-review-details-and-addressed-rate",
       "source": "GitHub Changelog",
       "category": "AI",
-      "published": "2026-11-04T00:32:19Z",
-      "summary": "The Copilot usage metrics API now shows bring your own key (BYOK) usage across GitHub Copilot, so you can separate it from Copilot-hosted model usage. Reports cover two kinds of… The post BYOK and enterprise custom models in the Copilot usage API appeared firs",
-      "score": 24
+      "published": "2026-11-06T00:19:07Z",
+      "summary": "The enterprise and organization repository-level Copilot usage metrics reports now show what happens to Copilot code review feedback. A new copilot_code_review object on each repos-1-day row reports how many Copilot-reviewed… The post Usage metrics API adds co",
+      "score": 26
     }
   ],
   "tool_of_day": {
-    "title": "AI Token Calculator",
-    "url": "ai-token-calculator.html",
-    "summary": "Estimate prompt and context-window token size."
+    "title": "AI VRAM Calculator",
+    "url": "ai-vram-calculator.html",
+    "summary": "Estimate model-weight VRAM needs by parameter count and precision."
   }
 }
