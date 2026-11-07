@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-11-07T01:05:56.837Z",
+  "generated_at": "2026-11-07T07:14:59.913Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,144 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-11-07T01:05:44.000Z",
+  "feed_generated_at": "2026-11-07T07:14:18.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 30,
+  "source_count": 28,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "aka2026wbdbcr",
+      "magnitude": 2.6,
+      "place": "64 km SE of Denali National Park, Alaska",
+      "time": "2026-11-07T07:07:49.331Z",
+      "updated": "2026-11-07T07:10:36.078Z",
+      "depth_km": 134.4,
+      "coordinates": {
+        "lat": 63.124,
+        "lon": -150.82
+      },
+      "significance": 104,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026wbdbcr",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000twqe",
+      "magnitude": 4.3,
+      "place": "37 km E of Churubamba, Peru",
+      "time": "2026-11-07T05:36:55.416Z",
+      "updated": "2026-11-07T06:24:19.040Z",
+      "depth_km": 108.8,
+      "coordinates": {
+        "lat": -9.8421,
+        "lon": -75.7965
+      },
+      "significance": 284,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twqe",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026waxyfq",
+      "magnitude": 2.7,
+      "place": "29 km WNW of Valdez, Alaska",
+      "time": "2026-11-07T04:34:32.802Z",
+      "updated": "2026-11-07T04:39:25.857Z",
+      "depth_km": 17.9,
+      "coordinates": {
+        "lat": 61.248,
+        "lon": -146.837
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026waxyfq",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71538668",
+      "magnitude": 2.74,
+      "place": "45 km NNE of Cruz Bay, U.S. Virgin Islands",
+      "time": "2026-11-07T02:47:40.170Z",
+      "updated": "2026-11-07T03:48:30.420Z",
+      "depth_km": 47.6,
+      "coordinates": {
+        "lat": 18.7055,
+        "lon": -64.6127
+      },
+      "significance": 116,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71538668",
+      "pakistan_region": false
+    },
+    {
+      "id": "pr71538663",
+      "magnitude": 2.68,
+      "place": "1 km S of Sabana Grande, Puerto Rico",
+      "time": "2026-11-07T02:47:04.480Z",
+      "updated": "2026-11-07T03:35:34.790Z",
+      "depth_km": 16.3,
+      "coordinates": {
+        "lat": 18.0603,
+        "lon": -66.9575
+      },
+      "significance": 110,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71538663",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026watjic",
+      "magnitude": 2.6,
+      "place": "0 km ESE of Kasilof, Alaska",
+      "time": "2026-11-07T02:17:26.288Z",
+      "updated": "2026-11-07T02:51:07.882Z",
+      "depth_km": 62.2,
+      "coordinates": {
+        "lat": 60.334,
+        "lon": -151.263
+      },
+      "significance": 104,
+      "felt": 1,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026watjic",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000twpl",
+      "magnitude": 2.7,
+      "place": "5 km E of Hoback, Wyoming",
+      "time": "2026-11-07T01:18:03.617Z",
+      "updated": "2026-11-07T01:37:30.851Z",
+      "depth_km": 5,
+      "coordinates": {
+        "lat": 43.275,
+        "lon": -110.7175
+      },
+      "significance": 112,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twpl",
+      "pakistan_region": false
+    },
     {
       "id": "uu80163296",
       "magnitude": 3.12,
@@ -79,18 +212,37 @@
       "pakistan_region": false
     },
     {
+      "id": "us7000twqm",
+      "magnitude": 4.6,
+      "place": "11 km ENE of Yigo Village, Guam",
+      "time": "2026-11-06T22:37:54.867Z",
+      "updated": "2026-11-07T06:47:50.454Z",
+      "depth_km": 113.4,
+      "coordinates": {
+        "lat": 13.5679,
+        "lon": 144.9932
+      },
+      "significance": 326,
+      "felt": 2,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twqm",
+      "pakistan_region": false
+    },
+    {
       "id": "hv75068057",
       "magnitude": 2.9,
       "place": "5 km NE of Kalaoa, Hawaii",
       "time": "2026-11-06T22:08:38.790Z",
-      "updated": "2026-11-07T00:05:56.328Z",
+      "updated": "2026-11-07T01:15:10.039Z",
       "depth_km": 13.9,
       "coordinates": {
         "lat": 19.7557,
         "lon": -155.9415
       },
       "significance": 136,
-      "felt": 24,
+      "felt": 27,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -349,14 +501,14 @@
       "magnitude": 6.1,
       "place": "144 km SE of Hasaki, Japan",
       "time": "2026-11-06T10:39:27.869Z",
-      "updated": "2026-11-06T23:40:29.472Z",
+      "updated": "2026-11-07T07:02:45.537Z",
       "depth_km": 29,
       "coordinates": {
         "lat": 34.9677,
         "lon": 142.1175
       },
-      "significance": 587,
-      "felt": 34,
+      "significance": 588,
+      "felt": 37,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -399,196 +551,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twfu",
-      "pakistan_region": false
-    },
-    {
-      "id": "ci41359103",
-      "magnitude": 2.6,
-      "place": "14 km N of Warner Springs, CA",
-      "time": "2026-11-06T06:44:09.160Z",
-      "updated": "2026-11-06T20:20:49.447Z",
-      "depth_km": 7.5,
-      "coordinates": {
-        "lat": 33.4062,
-        "lon": -116.6532
-      },
-      "significance": 106,
-      "felt": 7,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/ci41359103",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026vzftyy",
-      "magnitude": 3,
-      "place": "52 km NNW of Karluk, Alaska",
-      "time": "2026-11-06T06:30:13.250Z",
-      "updated": "2026-11-06T06:49:53.040Z",
-      "depth_km": 90.4,
-      "coordinates": {
-        "lat": 57.967,
-        "lon": -154.924
-      },
-      "significance": 138,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026vzftyy",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twfk",
-      "magnitude": 4.9,
-      "place": "41 km SW of Balangonan, Philippines",
-      "time": "2026-11-06T06:28:26.156Z",
-      "updated": "2026-11-06T08:55:09.040Z",
-      "depth_km": 35,
-      "coordinates": {
-        "lat": 5.2999,
-        "lon": 125.0977
-      },
-      "significance": 369,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twfk",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr71538583",
-      "magnitude": 2.67,
-      "place": "20 km N of Charlotte Amalie, U.S. Virgin Islands",
-      "time": "2026-11-06T06:04:02.910Z",
-      "updated": "2026-11-06T06:29:07.240Z",
-      "depth_km": 42.4,
-      "coordinates": {
-        "lat": 18.5242,
-        "lon": -64.9415
-      },
-      "significance": 110,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr71538583",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twf2",
-      "magnitude": 4.4,
-      "place": "185 km NNW of Gorontalo, Indonesia",
-      "time": "2026-11-06T04:13:15.747Z",
-      "updated": "2026-11-06T04:25:59.040Z",
-      "depth_km": 510.4,
-      "coordinates": {
-        "lat": 2.1669,
-        "lon": 122.649
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twf2",
-      "pakistan_region": false
-    },
-    {
-      "id": "pr2026310000",
-      "magnitude": 3.45,
-      "place": "1 km NW of Moca, Puerto Rico",
-      "time": "2026-11-06T04:03:44.220Z",
-      "updated": "2026-11-06T05:34:07.867Z",
-      "depth_km": 59,
-      "coordinates": {
-        "lat": 18.4006,
-        "lon": -67.1223
-      },
-      "significance": 183,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/pr2026310000",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twey",
-      "magnitude": 3.1,
-      "place": "210 km W of Port Orford, Oregon",
-      "time": "2026-11-06T03:57:49.352Z",
-      "updated": "2026-11-06T04:05:43.040Z",
-      "depth_km": 10,
-      "coordinates": {
-        "lat": 43.1127,
-        "lon": -127.0289
-      },
-      "significance": 148,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twey",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twet",
-      "magnitude": 3.6,
-      "place": "51 km WSW of Puerto, Chile",
-      "time": "2026-11-06T03:09:34.166Z",
-      "updated": "2026-11-06T06:50:17.730Z",
-      "depth_km": 22.3,
-      "coordinates": {
-        "lat": -20.364,
-        "lon": -70.6225
-      },
-      "significance": 200,
-      "felt": 4,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twet",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tweq",
-      "magnitude": 4.7,
-      "place": "139 km SSE of False Pass, Alaska",
-      "time": "2026-11-06T02:35:25.631Z",
-      "updated": "2026-11-06T04:40:49.673Z",
-      "depth_km": 28,
-      "coordinates": {
-        "lat": 53.6347,
-        "lon": -162.9502
-      },
-      "significance": 340,
-      "felt": 0,
-      "alert": "green",
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tweq",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000tweb",
-      "magnitude": 4.6,
-      "place": "58 km WNW of Isangel, Vanuatu",
-      "time": "2026-11-06T01:37:39.847Z",
-      "updated": "2026-11-06T01:53:40.040Z",
-      "depth_km": 83.3,
-      "coordinates": {
-        "lat": -19.3647,
-        "lon": 168.7529
-      },
-      "significance": 326,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000tweb",
       "pakistan_region": false
     }
   ]
