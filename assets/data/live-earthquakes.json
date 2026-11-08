@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-11-07T22:37:58.509Z",
+  "generated_at": "2026-11-08T01:52:25.589Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,17 +16,93 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-11-07T22:37:52.000Z",
+  "feed_generated_at": "2026-11-08T01:51:46.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 38,
+  "source_count": 37,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "us7000twus",
+      "magnitude": 5.1,
+      "place": "91 km ENE of Hihifo, Tonga",
+      "time": "2026-11-07T23:27:09.444Z",
+      "updated": "2026-11-08T00:35:59.475Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": -15.6837,
+        "lon": -172.9847
+      },
+      "significance": 400,
+      "felt": 1,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twus",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000twur",
+      "magnitude": 4.9,
+      "place": "41 km WSW of Gadung, Philippines",
+      "time": "2026-11-07T23:25:35.852Z",
+      "updated": "2026-11-07T23:41:08.040Z",
+      "depth_km": 607,
+      "coordinates": {
+        "lat": 6.706,
+        "lon": 123.6541
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twur",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000twuq",
+      "magnitude": 4.5,
+      "place": "77 km SW of La Gomera, Guatemala",
+      "time": "2026-11-07T23:22:35.649Z",
+      "updated": "2026-11-08T00:39:44.040Z",
+      "depth_km": 34.2,
+      "coordinates": {
+        "lat": 13.5083,
+        "lon": -91.4602
+      },
+      "significance": 312,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twuq",
+      "pakistan_region": false
+    },
+    {
+      "id": "us7000twun",
+      "magnitude": 5.9,
+      "place": "central Mid-Atlantic Ridge",
+      "time": "2026-11-07T23:17:06.073Z",
+      "updated": "2026-11-08T01:22:47.160Z",
+      "depth_km": 10,
+      "coordinates": {
+        "lat": 7.3411,
+        "lon": -36.9727
+      },
+      "significance": 536,
+      "felt": 0,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twun",
+      "pakistan_region": false
+    },
     {
       "id": "pr71538728",
       "magnitude": 3.02,
       "place": "1 km WSW of La Parguera, Puerto Rico",
       "time": "2026-11-07T21:47:14.980Z",
-      "updated": "2026-11-07T22:21:25.730Z",
+      "updated": "2026-11-07T22:53:04.040Z",
       "depth_km": 8,
       "coordinates": {
         "lat": 17.9668,
@@ -197,14 +273,14 @@
       "magnitude": 5.5,
       "place": "10 km NW of Hamakita, Japan",
       "time": "2026-11-07T16:04:35.125Z",
-      "updated": "2026-11-07T22:28:44.875Z",
+      "updated": "2026-11-08T01:48:41.426Z",
       "depth_km": 38.1,
       "coordinates": {
         "lat": 34.8611,
         "lon": 137.691
       },
-      "significance": 497,
-      "felt": 57,
+      "significance": 500,
+      "felt": 61,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -646,101 +722,6 @@
       "status": "automatic",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026watjic",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twpl",
-      "magnitude": 2.7,
-      "place": "5 km E of Hoback, Wyoming",
-      "time": "2026-11-07T01:18:03.617Z",
-      "updated": "2026-11-07T01:37:30.851Z",
-      "depth_km": 5,
-      "coordinates": {
-        "lat": 43.275,
-        "lon": -110.7175
-      },
-      "significance": 112,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twpl",
-      "pakistan_region": false
-    },
-    {
-      "id": "uu80163296",
-      "magnitude": 3.12,
-      "place": "2 km N of Little America, Wyoming",
-      "time": "2026-11-07T00:37:43.850Z",
-      "updated": "2026-11-07T00:51:35.990Z",
-      "depth_km": -2.6,
-      "coordinates": {
-        "lat": 41.5683,
-        "lon": -109.8655
-      },
-      "significance": 150,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/uu80163296",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twp3",
-      "magnitude": 4.4,
-      "place": "75 km SSE of Kuril’sk, Russia",
-      "time": "2026-11-06T23:15:45.408Z",
-      "updated": "2026-11-07T00:16:09.040Z",
-      "depth_km": 78.8,
-      "coordinates": {
-        "lat": 44.5682,
-        "lon": 148.1062
-      },
-      "significance": 298,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twp3",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026wamrab",
-      "magnitude": 2.5,
-      "place": "61 km WNW of Aleneva, Alaska",
-      "time": "2026-11-06T22:56:22.522Z",
-      "updated": "2026-11-06T22:59:46.564Z",
-      "depth_km": 69.5,
-      "coordinates": {
-        "lat": 58.315,
-        "lon": -153.836
-      },
-      "significance": 96,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026wamrab",
-      "pakistan_region": false
-    },
-    {
-      "id": "us7000twqm",
-      "magnitude": 4.6,
-      "place": "11 km ENE of Yigo Village, Guam",
-      "time": "2026-11-06T22:37:54.867Z",
-      "updated": "2026-11-07T12:19:52.255Z",
-      "depth_km": 113.4,
-      "coordinates": {
-        "lat": 13.5679,
-        "lon": 144.9932
-      },
-      "significance": 327,
-      "felt": 4,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000twqm",
       "pakistan_region": false
     }
   ]
