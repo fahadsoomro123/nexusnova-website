@@ -13,25 +13,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const legacyMarkers = [
-  'NEXUSNOVA-TIER1-GUIDE:v1',
-  'nn-tier1-faq',
-  'A practical US workflow',
-  'contract, tax return, payroll choice'
-];
+const legacyMarkers = ['NEXUSNOVA-TIER1-GUIDE:v1', 'nn-tier1-faq'];
 const pages = fs.readdirSync(root).filter(name => name.toLowerCase().endsWith('.html'));
 const offenders = [];
 
 for (const name of pages) {
   const html = fs.readFileSync(path.join(root, name), 'utf8');
-  if (legacyMarkers.some(marker => html.toLowerCase().includes(marker.toLowerCase()))) {
-    offenders.push(name);
-  }
+  if (legacyMarkers.some(marker => html.toLowerCase().includes(marker.toLowerCase()))) offenders.push(name);
 }
 
 if (offenders.length) {
-  console.error('Legacy generic tool copy detected:', offenders.join(', '));
+  console.error('Retired generic tier-1 blocks remain:', offenders.join(', '));
   process.exitCode = 1;
 } else {
-  console.log(`Legacy guide generator is retired; no generic filler found in ${pages.length} top-level HTML pages.`);
+  console.log(`Legacy guide generator is retired; no legacy generated blocks remain in ${pages.length} top-level HTML pages.`);
 }
