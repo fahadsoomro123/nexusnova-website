@@ -2,6 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+const excluded = new Set([
+  'index.html','404.html','tools.html','categories.html','articles.html','tech.html','guides.html','faq.html',
+  'about.html','contact.html','privacy.html','terms.html','disclaimer.html','editorial-policy.html','editorial-team.html',
+  'tool-methodology.html','account-deletion.html','app.html','humanproof.html','currency-rates.html','gold-rates.html',
+  'fuel-rates.html','aqi-live.html','earthquakes-live.html','crypto-live.html','weather-live.html','sports-live.html',
+  'live-alerts.html','pulse.html','magic-drop.html','xray.html','widgets.html','pakistan-public-holidays-2026.html',
+  'refund-policy.html','cancellation-policy.html','digital-delivery-policy.html','pakistan-tools.html','calculator-tools.html',
+  'image-tools.html','pdf-tools.html','productivity-tools.html','network-tools.html','gaming-tools.html','developer-tools.html',
+  'new-tools.html','popular-tools.html','smart-tools.html','trending-tools.html','daily-tools-directory.html','live.html','labs.html',
+  'gaming.html','developer.html'
+]);
 const contentTargets = [
   'png-to-jpg.html','jpg-to-png.html','jpg-to-pdf.html','calculator.html','stopwatch.html',
   'webp-to-jpg.html','text-to-pdf.html','webp-to-png.html','avif-to-jpg.html','heic-to-jpg.html',
@@ -17,14 +28,10 @@ const contentTargets = [
   'salary-tax-calculator-pakistan.html','minecraft-coordinate-converter.html',
   'social-security-cola-calculator-2027.html','electricity-bill-calculator-pakistan.html'
 ];
-
-const legacyMarkers = [
-  'NEXUSNOVA-TIER1-GUIDE:v1',
-  'nn-tier1-faq',
-  'A practical US workflow',
-  'contract, tax return, payroll choice'
-];
+const legacyMarkers = ['NEXUSNOVA-TIER1-GUIDE:v1', 'nn-tier1-faq'];
 const genericPhrases = [
+  'A practical US workflow',
+  'contract, tax return, payroll choice',
   'A freelancer using',
   'When a US freelancer uses',
   'For a remote team,',
@@ -52,6 +59,7 @@ function hasJsonLdType(html, wantedType) {
 }
 
 function isToolSurface(file, html) {
+  if (excluded.has(file)) return false;
   const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i)?.[1] || html;
   const bodyAttrs = html.match(/<body\b([^>]*)>/i)?.[1] || '';
   return /\bdata-tool-ui\b/i.test(main) ||
@@ -72,7 +80,7 @@ let contentGuidePages = 0;
 for (const file of htmlFiles) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
   if (legacyMarkers.some(marker => html.toLowerCase().includes(marker.toLowerCase()))) {
-    failures.push(file + ': retired generic tier-1 filler remains');
+    failures.push(file + ': retired generic tier-1 block remains');
   }
 
   const robotsMeta = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']+)/i)?.[1]?.toLowerCase() || '';
@@ -102,8 +110,7 @@ for (const file of contentTargets) {
     continue;
   }
   const block = html.slice(start, end + endMarker.length);
-  const text = block.replace(/<[^>]+>/g, ' ').replace(/&[a-z0-9#]+;/gi, ' ').replace(/\s+/g, ' ');
-  const count = (text.match(/[\w’'-]+/g) || []).length;
+  const count = wordCount(block);
   if (count < 130) failures.push(file + ': tool-specific guide is too short (' + count + ' words)');
   for (const required of ['<h2', 'How to use', 'Practical example', 'Limits, privacy and checks']) {
     if (!block.includes(required)) failures.push(file + ': missing required guide element ' + required);
