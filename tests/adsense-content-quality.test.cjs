@@ -26,11 +26,11 @@ const genericPhrases = ['A freelancer using', 'When a US freelancer uses', 'For 
 
 function visibleText(html) {
   return html
-    .replace(/<script\\b[\\s\\S]*?<\\/script>/gi, ' ')
-    .replace(/<style\\b[\\s\\S]*?<\\/style>/gi, ' ')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&[a-z0-9#]+;/gi, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -46,7 +46,7 @@ test('48 selected tool pages have a reviewed, tool-specific content block', () =
     const end = html.indexOf(endMarker, start + startMarker.length);
     assert.ok(start >= 0 && end > start, name + ' must contain the reviewed guide block');
     const block = html.slice(start, end + endMarker.length);
-    const words = (visibleText(block).match(/[\\w’'-]+/g) || []).length;
+    const words = (visibleText(block).match(/[\w’'-]+/g) || []).length;
     assert.ok(words >= 130, name + ' guide is too short: ' + words);
     for (const text of ['<h2', 'How to use', 'Practical example', 'Limits, privacy and checks']) {
       assert.ok(block.includes(text), name + ' missing ' + text);
