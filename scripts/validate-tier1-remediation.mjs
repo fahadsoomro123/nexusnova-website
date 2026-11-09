@@ -133,7 +133,7 @@ for (const file of htmlFiles) {
   const robotsMeta = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']+)/i)?.[1]?.toLowerCase() || '';
   if (robotsMeta.includes('noindex')) continue;
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '';
-  const isFinancialOrYmyL = /(tax|salary|currency|gold|fuel|fbr|emi|social-security|cola|crypto)/i.test(file + ' ' + title);
+  const isFinancialOrYmyL = /(tax|salary|currency|gold|fuel|fbr|emi|social-security|cola)/i.test(file + ' ' + title);
   const hasDedicatedDisclaimer = html.includes('nn-ymyl-disclaimer');
   const hasExplicitTaxCaution = /informational, not tax advice|not tax advice|not financial advice/i.test(html);
   if (isFinancialOrYmyL && !hasDedicatedDisclaimer && !hasExplicitTaxCaution) {
