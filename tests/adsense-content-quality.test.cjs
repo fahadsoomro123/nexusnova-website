@@ -21,7 +21,7 @@ const targets = [
   'salary-tax-calculator-pakistan.html','minecraft-coordinate-converter.html',
   'social-security-cola-calculator-2027.html','electricity-bill-calculator-pakistan.html'
 ];
-const legacy = ['NEXUSNOVA-TIER1-GUIDE:v1', 'nn-tier1-faq', 'A practical US workflow', 'contract, tax return, payroll choice'];
+const legacy = ['NEXUSNOVA-TIER1-GUIDE:v1', 'nn-tier1-faq'];
 const genericPhrases = ['A freelancer using', 'When a US freelancer uses', 'For a remote team,', 'After completing the underlying work, students can use'];
 
 function visibleText(html) {
