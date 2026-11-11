@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-10T19:50:07.256335Z",
+  "generated_at": "2026-11-11T06:38:59.534669Z",
   "items": [
     {
       "title": "Stable Channel Update for Desktop",
@@ -9,7 +9,16 @@
       "category": "Security",
       "published": "2026-11-03T20:38:18Z",
       "summary": "The Chrome team is delighted to announce the promotion of Chrome 157 to the stable channel for Windows, Mac and Linux. This will roll out over the coming days/weeks. Chrome 157.0.8103.38 (Linux) 157.0.8103.38/.39 Windows/Mac contains a number of fixes and impr",
-      "score": 63
+      "score": 60
+    },
+    {
+      "title": "Gemini 4 Carbon in GitHub Copilot",
+      "url": "https://github.blog/changelog/2026-11-10-gemini-4-carbon-in-github-copilot",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-11-10T19:26:51Z",
+      "summary": "Gemini 4 Carbon, Google’s latest model, is now generally available in GitHub Copilot. It is designed for complex coding, agentic, and reasoning tasks, with a focus on secure code generation… The post Gemini 4 Carbon in GitHub Copilot appeared first on The GitH",
+      "score": 34
     },
     {
       "title": "Extended Stable Update for Desktop",
@@ -18,7 +27,7 @@
       "category": "Security",
       "published": "2026-11-09T20:45:01Z",
       "summary": "The Extended Stable channel has been updated to 156.0.8078.96 for Windows and Mac which will roll out over the coming days/weeks. Security Fixes Note: Access to bug details and links may be kept restricted until a majority of users are updated with a fix. We w",
-      "score": 35
+      "score": 33
     },
     {
       "title": "Claude Fable 5.2 in GitHub Copilot",
@@ -30,15 +39,6 @@
       "score": 24
     },
     {
-      "title": "C++ language server now auto-configures MSBuild builds",
-      "url": "https://github.blog/changelog/2026-11-10-c-language-server-now-auto-configures-msbuild-builds",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-11-10T17:04:10Z",
-      "summary": "The Microsoft C++ Language Server for GitHub Copilot CLI now bundles its MSBuild compile commands extractor and invokes it automatically. An agent no longer needs to discover and run a… The post C++ language server now auto-configures MSBuild builds appeared f",
-      "score": 23
-    },
-    {
       "title": "Secret scanning detects secrets in GitHub Actions workflow logs",
       "url": "https://github.blog/changelog/2026-11-09-secret-scanning-detects-secrets-in-github-actions-workflow-logs",
       "source": "GitHub Changelog",
@@ -48,12 +48,12 @@
       "score": 21
     },
     {
-      "title": "Beta Channel Update for ChromeOS / ChromeOS Flex",
-      "url": "https://chromereleases.googleblog.com/2026/11/beta-channel-update-for-chromeos_01835406967.html",
+      "title": "Chrome Stable for iOS Update",
+      "url": "https://chromereleases.googleblog.com/2026/11/chrome-stable-for-ios-update_01666689214.html",
       "source": "Chrome Releases",
       "category": "Browser",
-      "published": "2026-11-10T05:45:27Z",
-      "summary": "The Beta channel is being updated to OS version 16868.13.0 (Browser version 158.0.8127.24 ) for mo st ChromeOS devices. If you find new issues, please let us know one of the following ways: File a bug Visit our ChromeOS communities General: Chromebook Help Com",
+      "published": "2026-11-10T19:58:32Z",
+      "summary": "Hi everyone! We've just released Chrome Stable 158 (158.0.8127.32) for iOS; it'll become available on App Store in the next few hours. This release includes stability and performance improvements. You can see a full list of the changes in the Git log . If you ",
       "score": 19
     },
     {
@@ -83,7 +83,16 @@
       "category": "Security",
       "published": "2026-11-03T20:38:18Z",
       "summary": "The Chrome team is delighted to announce the promotion of Chrome 157 to the stable channel for Windows, Mac and Linux. This will roll out over the coming days/weeks. Chrome 157.0.8103.38 (Linux) 157.0.8103.38/.39 Windows/Mac contains a number of fixes and impr",
-      "score": 63
+      "score": 60
+    },
+    {
+      "title": "Gemini 4 Carbon in GitHub Copilot",
+      "url": "https://github.blog/changelog/2026-11-10-gemini-4-carbon-in-github-copilot",
+      "source": "GitHub Changelog",
+      "category": "AI",
+      "published": "2026-11-10T19:26:51Z",
+      "summary": "Gemini 4 Carbon, Google’s latest model, is now generally available in GitHub Copilot. It is designed for complex coding, agentic, and reasoning tasks, with a focus on secure code generation… The post Gemini 4 Carbon in GitHub Copilot appeared first on The GitH",
+      "score": 34
     },
     {
       "title": "Extended Stable Update for Desktop",
@@ -92,21 +101,12 @@
       "category": "Security",
       "published": "2026-11-09T20:45:01Z",
       "summary": "The Extended Stable channel has been updated to 156.0.8078.96 for Windows and Mac which will roll out over the coming days/weeks. Security Fixes Note: Access to bug details and links may be kept restricted until a majority of users are updated with a fix. We w",
-      "score": 35
-    },
-    {
-      "title": "Claude Fable 5.2 in GitHub Copilot",
-      "url": "https://github.blog/changelog/2026-11-09-claude-fable-5-2-in-github-copilot",
-      "source": "GitHub Changelog",
-      "category": "AI",
-      "published": "2026-11-09T16:46:43Z",
-      "summary": "Claude Fable 5.2, Anthropic’s newest Fable model, is now generally available in GitHub Copilot. You can use it for complex, multistep coding tasks across large codebases. In early testing, Fable… The post Claude Fable 5.2 in GitHub Copilot appeared first on Th",
-      "score": 24
+      "score": 33
     }
   ],
   "tool_of_day": {
-    "title": "Image to Text OCR",
-    "url": "image-to-text-ocr.html",
-    "summary": "Extract text from screenshots and scanned images."
+    "title": "Image Metadata Remover",
+    "url": "image-metadata-remover.html",
+    "summary": "Create a clean image copy without common EXIF/GPS metadata."
   }
 }
