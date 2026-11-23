@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "generated_at": "2026-11-22T22:51:04.016Z",
+  "generated_at": "2026-11-23T03:39:18.216Z",
   "source": {
     "name": "U.S. Geological Survey (USGS)",
     "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
@@ -16,11 +16,201 @@
     "maxLon": 78,
     "label": "Approx. Pakistan region (23–38°N, 60–78°E)"
   },
-  "feed_generated_at": "2026-11-22T22:50:10.000Z",
+  "feed_generated_at": "2026-11-23T03:39:10.000Z",
   "feed_title": "USGS Magnitude 2.5+ Earthquakes, Past Day",
-  "source_count": 34,
+  "source_count": 40,
   "pakistan_region_events": [],
   "worldwide_events": [
+    {
+      "id": "aka2026xekfce",
+      "magnitude": 2.7,
+      "place": "48 km NE of Chase, Alaska",
+      "time": "2026-11-23T03:32:00.575Z",
+      "updated": "2026-11-23T03:35:24.820Z",
+      "depth_km": 69.3,
+      "coordinates": {
+        "lat": 62.796,
+        "lon": -149.517
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026xekfce",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000ucw1",
+      "magnitude": 4.9,
+      "place": "Vanuatu region",
+      "time": "2026-11-23T03:07:52.031Z",
+      "updated": "2026-11-23T03:25:33.040Z",
+      "depth_km": 596,
+      "coordinates": {
+        "lat": -13.5634,
+        "lon": 172.2236
+      },
+      "significance": 369,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucw1",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000ucvm",
+      "magnitude": 6.5,
+      "place": "Vanuatu region",
+      "time": "2026-11-23T02:40:57.933Z",
+      "updated": "2026-11-23T03:06:51.455Z",
+      "depth_km": 601,
+      "coordinates": {
+        "lat": -13.6607,
+        "lon": 172.2423
+      },
+      "significance": 650,
+      "felt": 0,
+      "alert": "green",
+      "status": "reviewed",
+      "tsunami": true,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucvm",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75470917",
+      "magnitude": 2.51,
+      "place": "15 km NW of Pinnacles, CA",
+      "time": "2026-11-23T02:25:44.990Z",
+      "updated": "2026-11-23T02:52:24.059Z",
+      "depth_km": 11.4,
+      "coordinates": {
+        "lat": 36.6218,
+        "lon": -121.2668
+      },
+      "significance": 97,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75470917",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026xedqst",
+      "magnitude": 2.6,
+      "place": "69 km SE of Pope-Vannoy Landing, Alaska",
+      "time": "2026-11-23T00:15:38.606Z",
+      "updated": "2026-11-23T01:04:17.040Z",
+      "depth_km": 96,
+      "coordinates": {
+        "lat": 59.162,
+        "lon": -153.549
+      },
+      "significance": 104,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026xedqst",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000ucv4",
+      "magnitude": 4.7,
+      "place": "221 km NE of Bitung, Indonesia",
+      "time": "2026-11-23T00:08:00.906Z",
+      "updated": "2026-11-23T00:34:38.040Z",
+      "depth_km": 50.3,
+      "coordinates": {
+        "lat": 2.9773,
+        "lon": 126.4079
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucv4",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000ucv2",
+      "magnitude": 4.7,
+      "place": "226 km NW of Tobelo, Indonesia",
+      "time": "2026-11-22T23:50:44.048Z",
+      "updated": "2026-11-23T00:43:50.040Z",
+      "depth_km": 40,
+      "coordinates": {
+        "lat": 3.0639,
+        "lon": 126.468
+      },
+      "significance": 340,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucv2",
+      "pakistan_region": false
+    },
+    {
+      "id": "us6000ucv1",
+      "magnitude": 4.2,
+      "place": "33 km WSW of Pánormos, Greece",
+      "time": "2026-11-22T23:42:49.074Z",
+      "updated": "2026-11-23T00:17:02.040Z",
+      "depth_km": 14.6,
+      "coordinates": {
+        "lat": 36.86,
+        "lon": 26.5913
+      },
+      "significance": 271,
+      "felt": 0,
+      "alert": null,
+      "status": "reviewed",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucv1",
+      "pakistan_region": false
+    },
+    {
+      "id": "nc75470822",
+      "magnitude": 2.8,
+      "place": "9 km NW of Pinnacles, CA",
+      "time": "2026-11-22T23:30:56.600Z",
+      "updated": "2026-11-23T00:13:30.178Z",
+      "depth_km": 6,
+      "coordinates": {
+        "lat": 36.5903,
+        "lon": -121.2103
+      },
+      "significance": 121,
+      "felt": 3,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/nc75470822",
+      "pakistan_region": false
+    },
+    {
+      "id": "aka2026xebyhe",
+      "magnitude": 2.7,
+      "place": "85 km W of Akhiok, Alaska",
+      "time": "2026-11-22T23:24:16.401Z",
+      "updated": "2026-11-22T23:25:35.234Z",
+      "depth_km": 26.9,
+      "coordinates": {
+        "lat": 56.871,
+        "lon": -155.576
+      },
+      "significance": 112,
+      "felt": 0,
+      "alert": null,
+      "status": "automatic",
+      "tsunami": false,
+      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026xebyhe",
+      "pakistan_region": false
+    },
     {
       "id": "us6000ucuk",
       "magnitude": 4.9,
@@ -64,14 +254,14 @@
       "magnitude": 5.4,
       "place": "9 km N of Carhuamayo, Peru",
       "time": "2026-11-22T21:35:31.763Z",
-      "updated": "2026-11-22T22:47:17.919Z",
+      "updated": "2026-11-23T03:19:36.973Z",
       "depth_km": 117.4,
       "coordinates": {
         "lat": -10.8345,
         "lon": -76.0169
       },
-      "significance": 454,
-      "felt": 12,
+      "significance": 456,
+      "felt": 18,
       "alert": "green",
       "status": "reviewed",
       "tsunami": false,
@@ -311,14 +501,14 @@
       "magnitude": 3.07,
       "place": "11 km WSW of Dyersburg, Tennessee",
       "time": "2026-11-22T15:04:19.510Z",
-      "updated": "2026-11-22T22:24:15.742Z",
+      "updated": "2026-11-23T03:26:40.825Z",
       "depth_km": 6.4,
       "coordinates": {
         "lat": 36.0127,
         "lon": -89.507
       },
-      "significance": 169,
-      "felt": 61,
+      "significance": 172,
+      "felt": 69,
       "alert": null,
       "status": "reviewed",
       "tsunami": false,
@@ -589,82 +779,6 @@
       "status": "reviewed",
       "tsunami": false,
       "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026xcoxth",
-      "pakistan_region": false
-    },
-    {
-      "id": "hv75074437",
-      "magnitude": 2.48,
-      "place": "13 km SE of Waimea, Hawaii",
-      "time": "2026-11-22T02:21:15.450Z",
-      "updated": "2026-11-22T06:06:55.040Z",
-      "depth_km": 21.3,
-      "coordinates": {
-        "lat": 19.9273,
-        "lon": -155.597
-      },
-      "significance": 95,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/hv75074437",
-      "pakistan_region": false
-    },
-    {
-      "id": "aka2026xchufl",
-      "magnitude": 2.9,
-      "place": "72 km WNW of Aleneva, Alaska",
-      "time": "2026-11-22T00:20:10.581Z",
-      "updated": "2026-11-22T03:11:26.040Z",
-      "depth_km": 77.4,
-      "coordinates": {
-        "lat": 58.238,
-        "lon": -154.097
-      },
-      "significance": 129,
-      "felt": 0,
-      "alert": null,
-      "status": "automatic",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/aka2026xchufl",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000ucpj",
-      "magnitude": 4.6,
-      "place": "60 km WNW of Abepura, Indonesia",
-      "time": "2026-11-21T23:16:05.571Z",
-      "updated": "2026-11-22T02:20:34.983Z",
-      "depth_km": 31.1,
-      "coordinates": {
-        "lat": -2.442,
-        "lon": 140.1129
-      },
-      "significance": 326,
-      "felt": 1,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucpj",
-      "pakistan_region": false
-    },
-    {
-      "id": "us6000ucpi",
-      "magnitude": 4.3,
-      "place": "south of the Fiji Islands",
-      "time": "2026-11-21T23:09:46.835Z",
-      "updated": "2026-11-22T00:51:48.040Z",
-      "depth_km": 542.3,
-      "coordinates": {
-        "lat": -23.879,
-        "lon": 179.99
-      },
-      "significance": 284,
-      "felt": 0,
-      "alert": null,
-      "status": "reviewed",
-      "tsunami": false,
-      "source_url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000ucpi",
       "pakistan_region": false
     }
   ]
